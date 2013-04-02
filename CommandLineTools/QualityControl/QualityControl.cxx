@@ -79,26 +79,20 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkRGBPixel.h"
 
-
-typedef itk::Image< unsigned short, 3 >                     LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >                LabelMapReaderType;
-typedef itk::Image< short, 3 >                              CTType;
-typedef itk::ImageFileReader< CTType >                      CTReaderType;
-typedef itk::Image< unsigned char, 2 >                      ProjectionImageType;
-typedef itk::ImageFileWriter< ProjectionImageType >         ProjectionWriterType;
-typedef itk::ImageRegionIteratorWithIndex< LabelMapType >   LabelMapIteratorType;
-typedef itk::ImageRegionIteratorWithIndex< CTType >         CTIteratorType;
-typedef itk::RGBPixel< unsigned char >                      RGBPixelType;
-typedef itk::Image< RGBPixelType, 2 >                       OverlayType;
-typedef itk::ImageFileWriter< OverlayType >                 OverlayWriterType;
-
+typedef itk::Image< unsigned char, 2 >                         ProjectionImageType;
+typedef itk::ImageFileWriter< ProjectionImageType >            ProjectionWriterType;
+typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType > LabelMapIteratorType;
+typedef itk::ImageRegionIteratorWithIndex< cip::CTType >       CTIteratorType;
+typedef itk::RGBPixel< unsigned char >                         RGBPixelType;
+typedef itk::Image< RGBPixelType, 2 >                          OverlayType;
+typedef itk::ImageFileWriter< OverlayType >                    OverlayWriterType;
 
 double GetWindowLeveledValue( short );
 RGBPixelType GetOverlayPixelValue( double, unsigned short, double );
-void GenerateLungLobeOverlayImages( LabelMapType::Pointer, CTType::Pointer, unsigned int, std::vector< OverlayType::Pointer >*,
+void GenerateLungLobeOverlayImages( cip::LabelMapType::Pointer, cip::CTType::Pointer, unsigned int, std::vector< OverlayType::Pointer >*,
                                     std::vector< unsigned int >, double );
-void GetLungProjectionImage( LabelMapType::Pointer, ProjectionImageType::Pointer );
-void GetAirwayProjectionImage( LabelMapType::Pointer, ProjectionImageType::Pointer );
+void GetLungProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
+void GetAirwayProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
 
 
 int main( int argc, char *argv[] )
@@ -194,7 +188,7 @@ the -r flag so that overlay images and non overlay images can be compared";
   // Read the label map
   //
   std::cout << "Reading label map image..." << std::endl;
-  LabelMapReaderType::Pointer labelMapReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
     labelMapReader->SetFileName( labelMapFileName );
   try
     {
@@ -211,8 +205,8 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   // Get sizing and spacing info for creation of projection image 
   //
-  LabelMapType::SizeType    labelMapSize    = labelMapReader->GetOutput()->GetBufferedRegion().GetSize();
-  LabelMapType::SpacingType labelMapSpacing = labelMapReader->GetOutput()->GetSpacing(); 
+  cip::LabelMapType::SizeType    labelMapSize    = labelMapReader->GetOutput()->GetBufferedRegion().GetSize();
+  cip::LabelMapType::SpacingType labelMapSpacing = labelMapReader->GetOutput()->GetSpacing(); 
 
   ProjectionImageType::SizeType projectionSize;
     projectionSize[0] = labelMapSize[0];
@@ -253,7 +247,7 @@ the -r flag so that overlay images and non overlay images can be compared";
     GetAirwayProjectionImage( labelMapReader->GetOutput(), airwayProjectionImage );
     }
 
-  CTType::Pointer ctImage = CTType::New();
+  cip::CTType::Pointer ctImage = cip::CTType::New();
 
   //
   // Read the CT image if requested
@@ -261,7 +255,7 @@ the -r flag so that overlay images and non overlay images can be compared";
   if ( ctFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Reading CT image..." << std::endl;
-    CTReaderType::Pointer ctReader = CTReaderType::New();
+    cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
       ctReader->SetFileName( ctFileName );
     try
       {
@@ -479,11 +473,11 @@ the -r flag so that overlay images and non overlay images can be compared";
 }
 
 
-void GenerateLungLobeOverlayImages( LabelMapType::Pointer labelMap, CTType::Pointer ctImage, unsigned int numImages,
+void GenerateLungLobeOverlayImages( cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer ctImage, unsigned int numImages,
                                     std::vector< OverlayType::Pointer >* overlayVec, std::vector< unsigned int > lungRegions,
                                     double opacity )
 {
-  LabelMapType::SizeType size = labelMap->GetBufferedRegion().GetSize();
+  cip::LabelMapType::SizeType size = labelMap->GetBufferedRegion().GetSize();
 
   unsigned int xMin   = size[0];
   unsigned int xMax   = 0;
@@ -530,7 +524,7 @@ void GenerateLungLobeOverlayImages( LabelMapType::Pointer labelMap, CTType::Poin
     ++lIt;
     }
 
-  LabelMapType::IndexType index;
+  cip::LabelMapType::IndexType index;
   OverlayType::IndexType  overlayIndex;
   
   RGBPixelType overlayValue;
@@ -681,11 +675,11 @@ RGBPixelType GetOverlayPixelValue( double windowLeveledValue, unsigned short lab
 }
 
 
-void GetAirwayProjectionImage( LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage )
+void GetAirwayProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage )
 {
   ProjectionImageType::IndexType projectionIndex;
     
-  LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
+  cip::LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
 
   ProjectionImageType::SizeType projectionSize;
     projectionSize[0] = labelMapSize[0];
@@ -727,13 +721,13 @@ void GetAirwayProjectionImage( LabelMapType::Pointer labelMap, ProjectionImageTy
 }
 
 
-void GetLungProjectionImage( LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage  )
+void GetLungProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage  )
 {
   ProjectionImageType::IndexType projectionIndex;
     
   ChestConventions conventions;
     
-  LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
+  cip::LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
 
   ProjectionImageType::SizeType projectionSize;
     projectionSize[0] = labelMapSize[0];

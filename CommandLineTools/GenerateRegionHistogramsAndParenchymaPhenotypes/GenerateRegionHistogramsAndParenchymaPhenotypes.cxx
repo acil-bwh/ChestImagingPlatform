@@ -60,14 +60,8 @@
 #include "itkImageRegionIterator.h"
 #include "cipConventions.h"
 
-
-typedef itk::Image< short, 3 >                                CTImageType;
-typedef itk::Image< unsigned short, 3 >                       LabelMapImageType;
-typedef itk::ImageFileReader< LabelMapImageType >             LabelMapReaderType;
-typedef itk::ImageFileReader< CTImageType >                   CTReaderType;
-typedef itk::ImageRegionIterator< CTImageType >               CTIteratorType;
-typedef itk::ImageRegionIterator< LabelMapImageType >         LabelMapIteratorType;
-
+typedef itk::ImageRegionIterator< cip::CTType >       CTIteratorType;
+typedef itk::ImageRegionIterator< cip::LabelMapType > LabelMapIteratorType;
 
 struct PARENCHYMAPHENOTYPES
 {
@@ -101,7 +95,7 @@ double GetHistogramKurtosis( std::map< short, unsigned int >, double, short, sho
 double GetHistogramSkewness( std::map< short, unsigned int >, double, short, short );
 unsigned int GetHistogramNumberOfCounts( std::map< short, unsigned int >, short, short );
 double GetHistogramSTD( std::map< short, unsigned int >, double, short, short );
-void UpdateAllHistogramsAndPhenotypes( CTImageType::Pointer ctImage, LabelMapImageType::Pointer labelMap,
+void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
                                     PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*,
                                     PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*,
                                     PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*, PARENCHYMAPHENOTYPES*,
@@ -113,7 +107,7 @@ void UpdateAllHistogramsAndPhenotypes( CTImageType::Pointer ctImage, LabelMapIma
                                     std::map< short, unsigned int >*, std::map< short, unsigned int >*, std::map< short, unsigned int >*,
                                     std::map< short, unsigned int >*, std::map< short, unsigned int >*, std::map< short, unsigned int >*,
                                     std::map< short, unsigned int >*, std::map< short, unsigned int >*, double, short minBin, short maxBin );
-void UpdateLobeHistogramsAndPhenotypes( CTImageType::Pointer ctImage, LabelMapImageType::Pointer labelMap,
+void UpdateLobeHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
 																			 PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* ,
 																			 std::map< short, unsigned int >* , std::map< short, unsigned int >* , std::map< short, unsigned int >* ,
 																			 std::map< short, unsigned int >* , std::map< short, unsigned int >* , double, short minBin, short maxBin);
@@ -204,7 +198,7 @@ int main( int argc, char *argv[] )
   // Read the CT image
   //
   std::cout << "Reading CT image..." << std::endl;
-  CTReaderType::Pointer ctReader = CTReaderType::New();
+  cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
   ctReader->SetFileName( ctFileName );
   try
     {
@@ -217,14 +211,14 @@ int main( int argc, char *argv[] )
     return cip::NRRDREADFAILURE;
     }
 
-  CTImageType::SpacingType spacing = ctReader->GetOutput()->GetSpacing();
+  cip::CTType::SpacingType spacing = ctReader->GetOutput()->GetSpacing();
   
   double voxelVolume = spacing[0]*spacing[1]*spacing[2];
 
   //
   // Read the partial lung label map image
   //
-  LabelMapReaderType::Pointer partialLungLabelMapReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer partialLungLabelMapReader = cip::LabelMapReaderType::New();
   if ( strcmp( partialLungLabelMapFileName.c_str(), "NA") != 0 )
     {
     std::cout << "Reading label map image..." << std::endl;
@@ -244,7 +238,7 @@ int main( int argc, char *argv[] )
   //
   // Read the lung lobe label map image
   //
-  LabelMapReaderType::Pointer lungLobeLabelMapReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer lungLobeLabelMapReader = cip::LabelMapReaderType::New();
   if ( strcmp( lungLobeLabelMapFileName.c_str(), "NA") != 0 )
     {
     std::cout << "Reading lung lobe label map image..." << std::endl;
@@ -1358,7 +1352,7 @@ double GetHistogramSTD( std::map< short, unsigned int > histogram, double mean, 
 }
 
 
-void UpdateAllHistogramsAndPhenotypes( CTImageType::Pointer ctImage, LabelMapImageType::Pointer labelMap,
+void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
                                     PARENCHYMAPHENOTYPES* wholeLungPhenotypes, PARENCHYMAPHENOTYPES* leftLungPhenotypes, PARENCHYMAPHENOTYPES* rightLungPhenotypes, PARENCHYMAPHENOTYPES* lulLungPhenotypes,
                                     PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
                                     PARENCHYMAPHENOTYPES* lutLungPhenotypes, PARENCHYMAPHENOTYPES* lmtLungPhenotypes, PARENCHYMAPHENOTYPES* lltLungPhenotypes, PARENCHYMAPHENOTYPES* rutLungPhenotypes,
@@ -1519,7 +1513,7 @@ void UpdateAllHistogramsAndPhenotypes( CTImageType::Pointer ctImage, LabelMapIma
 }
 	
 	
-void UpdateLobeHistogramsAndPhenotypes( CTImageType::Pointer ctImage, LabelMapImageType::Pointer labelMap,
+void UpdateLobeHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
 																		  PARENCHYMAPHENOTYPES* lulLungPhenotypes, PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
 																			 std::map< short, unsigned int >* lulLungHistogram, std::map< short, unsigned int >* lllLungHistogram, std::map< short, unsigned int >* rulLungHistogram,
 																			 std::map< short, unsigned int >* rmlLungHistogram, std::map< short, unsigned int >* rllLungHistogram, double voxelVolume, short minBin, short maxBin )

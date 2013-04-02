@@ -36,7 +36,7 @@ typedef itk::Image< short, 3 >                CTType;
 typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
 typedef itk::ImageFileWriter< LabelMapType >  LabelMapWriterType;
 typedef itk::ImageFileReader< CTType >        CTReaderType;
-typedef itk::ImageFileWriter< CTType >        CTWriterType
+typedef itk::ImageFileWriter< CTType >        CTWriterType;
 
 /**
  *  Note that chest regions are inherently hierarchical.  If you add a

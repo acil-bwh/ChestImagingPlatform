@@ -56,13 +56,8 @@
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 #include "itkImageRegionIterator.h"
 
-
-typedef itk::Image< unsigned short, 3 >             LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >        ReaderType;
-typedef itk::ImageFileWriter< LabelMapType >        WriterType;
-typedef itk::CIPExtractChestLabelMapImageFilter     LabelMapExtractorType;
-typedef itk::ImageRegionIterator< LabelMapType >    IteratorType;
-
+typedef itk::CIPExtractChestLabelMapImageFilter       LabelMapExtractorType;
+typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;
 
 int main( int argc, char *argv[] )
 {
@@ -139,7 +134,7 @@ should be used together with the -regionPair flag";
     }
 
   std::cout << "Reading..." << std::endl;
-  ReaderType::Pointer reader = ReaderType::New();
+  cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
     reader->SetFileName( inFileName );
   try
     {
@@ -184,7 +179,7 @@ should be used together with the -regionPair flag";
     }
 
   std::cout << "Writing..." << std::endl;
-  WriterType::Pointer writer = WriterType::New();
+  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
   //    writer->SetInput( extractor->GetOutput() );
     writer->SetInput( reader->GetOutput() );
     writer->SetFileName( outFileName );

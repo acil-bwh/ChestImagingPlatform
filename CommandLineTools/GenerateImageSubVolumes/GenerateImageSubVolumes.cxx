@@ -75,19 +75,11 @@
 #include "itkExtractImageFilter.h"
 #include <sstream>
 
+typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >          LabelMapIteratorType;
+typedef itk::ExtractImageFilter< cip::CTType, cip::CTType >             CTExtractorType; 
+typedef itk::ExtractImageFilter< cip::LabelMapType, cip::LabelMapType > LabelMapExtractorType; 
 
-typedef itk::Image< short, 3 >                                 CTImageType;
-typedef itk::Image< unsigned short, 3 >                        LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >                   LabelMapReaderType;
-typedef itk::ImageFileReader< CTImageType >                    CTReaderType;
-typedef itk::ImageFileWriter< CTImageType >                    CTWriterType;
-typedef itk::ImageFileWriter< LabelMapType >                   LabelMapWriterType;
-typedef itk::ImageRegionIteratorWithIndex< LabelMapType >      LabelMapIteratorType;
-typedef itk::ExtractImageFilter< CTImageType, CTImageType >    CTExtractorType; 
-typedef itk::ExtractImageFilter< LabelMapType, LabelMapType >  LabelMapExtractorType; 
-
-
-void WriteSubVolume( CTImageType::Pointer, LabelMapType::Pointer, CTImageType::RegionType,
+void WriteSubVolume( cip::CTType::Pointer, cip::LabelMapType::Pointer, cip::CTType::RegionType,
 		     std::string, std::string, bool, unsigned int* );
 
 
@@ -165,7 +157,7 @@ written in addition to the CT sub-volumes";
   // Read the CT image
   //
   std::cout << "Reading CT from file..." << std::endl;
-  CTReaderType::Pointer ctReader = CTReaderType::New();
+  cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
     ctReader->SetFileName( ctFileName );
   try
     {
@@ -183,7 +175,7 @@ written in addition to the CT sub-volumes";
   // Read the label map (if required)
   // 
   std::cout << "Reading label map image..." << std::endl;
-  LabelMapReaderType::Pointer labelMapReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
     labelMapReader->SetFileName( labelMapFileName );
   try
     {
@@ -249,15 +241,15 @@ written in addition to the CT sub-volumes";
   //
   // Now we're ready to extract the sub-volumes
   //
-  CTImageType::SizeType roiSize;
+  cip::CTType::SizeType roiSize;
     roiSize[0] = roiLength;
     roiSize[1] = roiLength;
     roiSize[2] = roiLength;
 
-  CTImageType::RegionType roiRegion;
+  cip::CTType::RegionType roiRegion;
     roiRegion.SetSize( roiSize );
 
-  CTImageType::RegionType::IndexType roiStart;
+  cip::CTType::RegionType::IndexType roiStart;
 
   int radius = (roiLength-1)/2;
 
@@ -311,7 +303,7 @@ written in addition to the CT sub-volumes";
 }
 
 
-void WriteSubVolume( CTImageType::Pointer ctImage, LabelMapType::Pointer labelMap, CTImageType::RegionType roiRegion, 
+void WriteSubVolume( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap, cip::CTType::RegionType roiRegion, 
 		     std::string ctSubVolumeFileNamePrefix, std::string labelMapSubVolumeFileNamePrefix,
 		     bool writeLabelMapSubVolumes, unsigned int* fileNameIncrement )
 {
@@ -385,7 +377,7 @@ void WriteSubVolume( CTImageType::Pointer ctImage, LabelMapType::Pointer labelMa
 	ctExtractor->Update();
       
       std::cout << "---Writing CT sub-volume..." << std::endl;
-      CTWriterType::Pointer ctWriter = CTWriterType::New();
+      cip::CTWriterType::Pointer ctWriter = cip::CTWriterType::New();
         ctWriter->SetFileName( ctFileName );
 	ctWriter->SetInput( ctExtractor->GetOutput() );
       try
@@ -406,7 +398,7 @@ void WriteSubVolume( CTImageType::Pointer ctImage, LabelMapType::Pointer labelMa
 	    labelMapExtractor->Update();
 	  
 	  std::cout << "---Writing label map sub-volume..." << std::endl;
-	  LabelMapWriterType::Pointer labelMapWriter = LabelMapWriterType::New();
+	  cip::LabelMapWriterType::Pointer labelMapWriter = cip::LabelMapWriterType::New();
   	    labelMapWriter->SetFileName( labelMapFileName );
 	    labelMapWriter->SetInput( labelMapExtractor->GetOutput() );
 	    labelMapWriter->UseCompressionOn();

@@ -30,14 +30,8 @@
 #include "cipChestRegionChestTypeLocationsIO.h"
 #include "vtkPolyData.h"
 
-
-typedef itk::Image< unsigned short, 3 >                     LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >                LabelMapReaderType;
-typedef itk::Image< short, 3 >                              CTImageType;
-typedef itk::ImageFileReader< CTImageType >                 CTReaderType;
-typedef itk::ImageRegionIteratorWithIndex< LabelMapType >   IteratorType;
-typedef itk::ContinuousIndex< double, 3 >                   ContinuousIndexType;
-
+typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType > IteratorType;
+typedef itk::ContinuousIndex< double, 3 >                      ContinuousIndexType;
 
 struct ACTORPROPERTIES
 {
@@ -449,7 +443,7 @@ flags, respectively. These flags should be invoked immediately after invoking th
   if ( ctFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Reading CT..." << std::endl;
-    CTReaderType::Pointer ctReader = CTReaderType::New();
+    cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
       ctReader->SetFileName( ctFileName );
     try
       {

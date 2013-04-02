@@ -32,19 +32,17 @@
 #include "itkImageFileReader.h"
 #include "itkImageRegionIterator.h"
 
-typedef itk::Image< unsigned short, 3 >          LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >     LabelMapReaderType;
-typedef itk::ImageRegionIterator< LabelMapType > LabelMapIteratorType;
+typedef itk::ImageRegionIterator< cip::LabelMapType > LabelMapIteratorType;
 
 double GetDistanceFromPointToThinPlateSplineSurface( double, double, double, cipThinPlateSplineSurface* );
-void PrintAndComputeDiceScores( LabelMapType::Pointer, LabelMapType::Pointer );
+void PrintAndComputeDiceScores( cip::LabelMapType::Pointer, cip::LabelMapType::Pointer );
 void PrintStats( std::vector< double > );
 void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, 
 					      cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, 
-					      LabelMapType::Pointer );
+					      cip::LabelMapType::Pointer );
 void ComputeAndPrintPointWiseSurfaceDiscrepancies( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, 
 						   vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData >, 
-						   vtkSmartPointer< vtkPolyData >, LabelMapType::Pointer );
+						   vtkSmartPointer< vtkPolyData >, cip::LabelMapType::Pointer );
 
 int main( int argc, char *argv[] )
 {
@@ -163,7 +161,7 @@ Additionally, full surface discrepancy measures will also be computed.";
   // Compute and print Dice scores if label map file names have been specified
   //
   std::cout << "Reading ground truth label map..." << std::endl;
-  LabelMapReaderType::Pointer gtReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer gtReader = cip::LabelMapReaderType::New();
     gtReader->SetFileName( gtLabelMapFileName );
   try
     {
@@ -177,7 +175,7 @@ Additionally, full surface discrepancy measures will also be computed.";
     }
   
   std::cout << "Reading automatically segmented label map..." << std::endl;
-  LabelMapReaderType::Pointer autoReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer autoReader = cip::LabelMapReaderType::New();
     autoReader->SetFileName( autoLabelMapFileName );
   try
     {
@@ -568,7 +566,7 @@ double GetDistanceFromPointToThinPlateSplineSurface( double x, double y, double 
 }
 
 
-void PrintAndComputeDiceScores( LabelMapType::Pointer gtLabelMap, LabelMapType::Pointer autoLabelMap )
+void PrintAndComputeDiceScores( cip::LabelMapType::Pointer gtLabelMap, cip::LabelMapType::Pointer autoLabelMap )
 {
   unsigned int autoLUL = 0;
   unsigned int autoLLL = 0;
@@ -672,16 +670,16 @@ void PrintAndComputeDiceScores( LabelMapType::Pointer gtLabelMap, LabelMapType::
 
 void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, cipThinPlateSplineSurface* rhTPS, cipThinPlateSplineSurface* loTPS, 
 					      cipThinPlateSplineSurface* roGTTPS, cipThinPlateSplineSurface* rhGTTPS, cipThinPlateSplineSurface* loGTTPS, 
-					      LabelMapType::Pointer labelMap )
+					      cip::LabelMapType::Pointer labelMap )
 {
   ChestConventions conventions;
 
-  LabelMapType::SizeType    size    = labelMap->GetBufferedRegion().GetSize();
-  LabelMapType::SpacingType spacing = labelMap->GetSpacing();
-  LabelMapType::PointType   origin  = labelMap->GetOrigin();
+  cip::LabelMapType::SizeType    size    = labelMap->GetBufferedRegion().GetSize();
+  cip::LabelMapType::SpacingType spacing = labelMap->GetSpacing();
+  cip::LabelMapType::PointType   origin  = labelMap->GetOrigin();
 
-  LabelMapType::PointType point;
-  LabelMapType::IndexType index;
+  cip::LabelMapType::PointType point;
+  cip::LabelMapType::IndexType index;
 
   double loHeight, roHeight, rhHeight;
   double loGTHeight, roGTHeight, rhGTHeight;
@@ -761,7 +759,7 @@ void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, 
 
 void ComputeAndPrintPointWiseSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, cipThinPlateSplineSurface* rhTPS, cipThinPlateSplineSurface* loTPS, 
 						   vtkSmartPointer< vtkPolyData > roParticles, vtkSmartPointer< vtkPolyData > rhParticles, 
-						   vtkSmartPointer< vtkPolyData > loParticles, LabelMapType::Pointer labelMap )
+						   vtkSmartPointer< vtkPolyData > loParticles, cip::LabelMapType::Pointer labelMap )
 {
   std::vector< double > loDistances;
   std::vector< double > roDistances;

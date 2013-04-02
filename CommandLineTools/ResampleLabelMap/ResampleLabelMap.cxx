@@ -50,12 +50,9 @@
 #include "itkResampleImageFilter.h"
 #include "itkMetaImageIO.h"
 
-typedef itk::Image< unsigned short, 3 >                                       LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >                                  ReaderType;
-typedef itk::ImageFileWriter< LabelMapType >                                  WriterType;
-typedef itk::NearestNeighborInterpolateImageFunction< LabelMapType, double >  InterpolatorType;
-typedef itk::ResampleImageFilter< LabelMapType, LabelMapType >                ResampleType;
-typedef itk::AffineTransform< double, 3 >                                     TransformType;
+typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >  InterpolatorType;
+typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >           ResampleType;
+typedef itk::AffineTransform< double, 3 >                                          TransformType;
 
 TransformType::Pointer GetTransformFromFile( std::string );
 
@@ -106,12 +103,12 @@ contains the necessary information (image spacing, origin, and size) for the res
   // Read the destination image information for spacing, origin, and
   // size information (neede for the resampling process).
   //
-  LabelMapType::SpacingType spacing;
-  LabelMapType::SizeType    size;
-  LabelMapType::PointType   origin;
+  cip::LabelMapType::SpacingType spacing;
+  cip::LabelMapType::SizeType    size;
+  cip::LabelMapType::PointType   origin;
   {
   std::cout << "Reading destination information..." << std::endl;
-  ReaderType::Pointer destinationReader = ReaderType::New();
+  cip::LabelMapReaderType::Pointer destinationReader = cip::LabelMapReaderType::New();
     destinationReader->SetFileName( destinationFileName );
   try
     {
@@ -134,7 +131,7 @@ contains the necessary information (image spacing, origin, and size) for the res
   // Read the label map image
   //
   std::cout << "Reading label map image..." << std::endl;
-  ReaderType::Pointer labelMapReader = ReaderType::New();
+  cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
     labelMapReader->SetFileName( labelMapFileName );
   try
     {
@@ -183,7 +180,7 @@ contains the necessary information (image spacing, origin, and size) for the res
   // Write the resampled label map to file
   //
   std::cout << "Writing resampled label map..." << std::endl;
-  WriterType::Pointer writer = WriterType::New();
+  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
     writer->SetFileName( resampledFileName );
     writer->UseCompressionOn();
     writer->SetInput( resampler->GetOutput() );

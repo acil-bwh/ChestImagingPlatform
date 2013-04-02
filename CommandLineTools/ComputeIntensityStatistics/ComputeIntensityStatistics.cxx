@@ -45,12 +45,8 @@
 #include <fstream>
 #include <limits.h>
 
-typedef itk::Image< unsigned short, 3 >          LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >     LabelMapReaderType;
-typedef itk::ImageRegionIterator< LabelMapType > LabelMapIteratorType;
-typedef itk::Image< short, 3 >                   CTType;
-typedef itk::ImageFileReader< CTType >           CTReaderType;
-typedef itk::ImageRegionIterator< CTType >       CTIteratorType;
+typedef itk::ImageRegionIterator< cip::LabelMapType > LabelMapIteratorType;
+typedef itk::ImageRegionIterator< cip::CTType >       CTIteratorType;
 
 struct STATS
 {
@@ -109,7 +105,7 @@ command line.";
   // Read the label map
   //
   std::cout << "Reading label map..." << std::endl;
-  LabelMapReaderType::Pointer labelMapReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
     labelMapReader->SetFileName( labelMapFileName );
   try
     {
@@ -127,7 +123,7 @@ command line.";
   // Read the CT image
   //
   std::cout << "Reading CT..." << std::endl;
-  CTReaderType::Pointer ctReader = CTReaderType::New();
+  cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
     ctReader->SetFileName( ctFileName );
   try
     {

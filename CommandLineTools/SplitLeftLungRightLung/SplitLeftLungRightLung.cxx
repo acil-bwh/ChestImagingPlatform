@@ -19,11 +19,11 @@
 #include "itkImageFileWriter.h"
 //#include "itkCIPSplitLeftLungRightLungImageFilter.h"
  
-typedef itk::Image< short, 3 >                                    CTType;
-typedef itk::Image< unsigned short, 3 >                           LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >                      ReaderType;
-typedef itk::ImageFileWriter< LabelMapType >                      WriterType;
-//typedef itk::CIPSplitLeftLungRightLungImageFilter< CTType >       SplitterType;
+// typedef itk::Image< short, 3 >                                    cip::CTType;
+// typedef itk::Image< unsigned short, 3 >                           LabelMapType;
+// typedef itk::ImageFileReader< LabelMapType >                      ReaderType;
+// typedef itk::ImageFileWriter< LabelMapType >                      WriterType;
+//typedef itk::CIPSplitLeftLungRightLungImageFilter< cip::CTType >       SplitterType;
 
 int main( int argc, char *argv[] )
 {

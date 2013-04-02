@@ -80,12 +80,7 @@
 #include "cipChestRegionChestTypeLocationsIO.h"
 #include <time.h>
 
-
-typedef itk::Image< unsigned short, 3 >                  LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >             LabelMapReaderType;
-typedef itk::ImageFileWriter< LabelMapType >             LabelMapWriterType;
-typedef cipLabelMapToLungLobeLabelMapImageFilter         LungLobeSegmentationType;
-
+typedef cipLabelMapToLungLobeLabelMapImageFilter LungLobeSegmentationType;
 
 void AppendFissurePoints( std::vector< double* >*, vtkPolyData* );
 
@@ -229,7 +224,7 @@ ONLY lung regions that are assumed to be labeled.";
   // Read in the left-lung-right-lung label map
   //
   std::cout << "Reading lung label map..." << std::endl;
-  LabelMapReaderType::Pointer leftLungRightLungReader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer leftLungRightLungReader = cip::LabelMapReaderType::New();
     leftLungRightLungReader->SetFileName( leftLungRightLungFileName );
   try
     {
@@ -340,7 +335,7 @@ ONLY lung regions that are assumed to be labeled.";
   // Write the lung lobe label map 
   //
   std::cout << "Writing lung lobe label map..." << std::endl;
-  LabelMapWriterType::Pointer writer = LabelMapWriterType::New();
+  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
     writer->SetInput( lobeSegmenter->GetOutput() );
     writer->UseCompressionOn();
     writer->SetFileName( lobeLabelMapFileName );

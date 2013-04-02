@@ -57,23 +57,21 @@
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 #include "itkSignedDanielssonDistanceMapImageFilter.h"
 
-typedef itk::Image< unsigned short, 3 >                                             LabelMapType;
-typedef itk::Image< short, 3 >                                                      DistanceMapType;
-typedef itk::ImageFileReader< LabelMapType >                                        ReaderType;
-typedef itk::ImageFileWriter< DistanceMapType >                                     WriterType;
-typedef itk::SignedMaurerDistanceMapImageFilter< LabelMapType, DistanceMapType >    SignedMaurerType;
-typedef itk::SignedDanielssonDistanceMapImageFilter< LabelMapType, DistanceMapType >    SignedDanielssonType;
-typedef itk::NearestNeighborInterpolateImageFunction< LabelMapType, double >        NearestNeighborInterpolatorType;
-typedef itk::LinearInterpolateImageFunction< DistanceMapType, double >              LinearInterpolatorType;
-typedef itk::ResampleImageFilter< LabelMapType, LabelMapType >                      LabelMapResampleType;
-typedef itk::ResampleImageFilter< DistanceMapType, DistanceMapType >                DistanceMapResampleType;
-typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                           LabelMapIteratorType;
-typedef itk::ImageRegionIteratorWithIndex< DistanceMapType >                        DistanceMapIteratorType;
-typedef itk::IdentityTransform< double, 3 >                                         IdentityType;
+typedef itk::Image< short, 3 >                                                            DistanceMapType;
+typedef itk::ImageFileWriter< DistanceMapType >                                           WriterType;
+typedef itk::SignedMaurerDistanceMapImageFilter< cip::LabelMapType, DistanceMapType >     SignedMaurerType;
+typedef itk::SignedDanielssonDistanceMapImageFilter< cip::LabelMapType, DistanceMapType > SignedDanielssonType;
+typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >         NearestNeighborInterpolatorType;
+typedef itk::LinearInterpolateImageFunction< DistanceMapType, double >                    LinearInterpolatorType;
+typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >                  LabelMapResampleType;
+typedef itk::ResampleImageFilter< DistanceMapType, DistanceMapType >                      DistanceMapResampleType;
+typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                            LabelMapIteratorType;
+typedef itk::ImageRegionIteratorWithIndex< DistanceMapType >                              DistanceMapIteratorType;
+typedef itk::IdentityTransform< double, 3 >                                               IdentityType;
 
 
-LabelMapType::Pointer ResampleImage( LabelMapType::Pointer, float );
-DistanceMapType::Pointer ResampleImage( DistanceMapType::Pointer, LabelMapType::SizeType, LabelMapType::SpacingType );
+cip::LabelMapType::Pointer ResampleImage( cip::LabelMapType::Pointer, float );
+DistanceMapType::Pointer ResampleImage( DistanceMapType::Pointer, cip::LabelMapType::SizeType, cip::LabelMapType::SpacingType );
 
 
 int main( int argc, char *argv[] )
@@ -141,7 +139,7 @@ of the structure of interest should be assigned positive distance values";
   // Read the label map image
   //
   std::cout << "Reading label map..." << std::endl;
-  ReaderType::Pointer reader = ReaderType::New(); 
+  cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New(); 
     reader->SetFileName( labelMapFileName );
   try
     {
@@ -156,7 +154,7 @@ of the structure of interest should be assigned positive distance values";
     }
 
 
-  LabelMapType::Pointer subSampledLabelMap;
+  cip::LabelMapType::Pointer subSampledLabelMap;
 
   std::cout << "Downsampling label map..." << std::endl;
   
@@ -221,18 +219,18 @@ of the structure of interest should be assigned positive distance values";
 }
 
 
-LabelMapType::Pointer ResampleImage( LabelMapType::Pointer image, float downsampleFactor )
+cip::LabelMapType::Pointer ResampleImage( cip::LabelMapType::Pointer image, float downsampleFactor )
 {
-  LabelMapType::SizeType inputSize = image->GetBufferedRegion().GetSize();
+  cip::LabelMapType::SizeType inputSize = image->GetBufferedRegion().GetSize();
 
-  LabelMapType::SpacingType inputSpacing = image->GetSpacing();
+  cip::LabelMapType::SpacingType inputSpacing = image->GetSpacing();
 
-  LabelMapType::SpacingType outputSpacing;
+  cip::LabelMapType::SpacingType outputSpacing;
     outputSpacing[0] = inputSpacing[0]*downsampleFactor;
     outputSpacing[1] = inputSpacing[1]*downsampleFactor;
     outputSpacing[2] = inputSpacing[2]*downsampleFactor;
 
-  LabelMapType::SizeType outputSize;
+  cip::LabelMapType::SizeType outputSize;
     outputSize[0] = static_cast< unsigned int >( static_cast< double >( inputSize[0] )/downsampleFactor );
     outputSize[1] = static_cast< unsigned int >( static_cast< double >( inputSize[1] )/downsampleFactor );
     outputSize[2] = static_cast< unsigned int >( static_cast< double >( inputSize[2] )/downsampleFactor );
@@ -264,7 +262,7 @@ LabelMapType::Pointer ResampleImage( LabelMapType::Pointer image, float downsamp
 } 
 
 
-DistanceMapType::Pointer ResampleImage( DistanceMapType::Pointer image, LabelMapType::SizeType outputSize, LabelMapType::SpacingType outputSpacing )
+DistanceMapType::Pointer ResampleImage( DistanceMapType::Pointer image, cip::LabelMapType::SizeType outputSize, cip::LabelMapType::SpacingType outputSpacing )
 {
   //DistanceMapType::SizeType inputSize = image->GetBufferedRegion().GetSize();
 

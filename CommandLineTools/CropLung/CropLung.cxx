@@ -82,21 +82,17 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 
-typedef itk::Image< short, 3 >                                                    CTImageType;
-typedef itk::Image< unsigned short, 3 >                                           LabelMapImageType;
-typedef itk::ImageFileReader< LabelMapImageType >                                 LabelMapReaderType;
+
 typedef itk::GDCMImageIO                                                          ImageIOType;
 typedef itk::GDCMSeriesFileNames                                                  NamesGeneratorType;
-typedef itk::ImageSeriesReader< CTImageType >                                     CTSeriesReaderType;
-typedef itk::ImageFileReader< CTImageType >                                       CTFileReaderType;
+typedef itk::ImageSeriesReader< cip::CTType >                                     CTSeriesReaderType;
+typedef itk::ImageFileReader< cip::CTType >                                       CTFileReaderType;
 typedef itk::CIPExtractChestLabelMapImageFilter                                   LabelMapExtractorType;
-typedef itk::RegionOfInterestImageFilter< CTImageType, CTImageType >              RegionOfInterestFilterType;
-typedef itk::RegionOfInterestImageFilter< LabelMapImageType, LabelMapImageType >  RegionOfInterestLabelMapFilterType;
-typedef itk::ImageFileWriter< CTImageType >                                       CTWriterType;
-typedef itk::ImageFileWriter< LabelMapImageType >                                 LabelMapWriterType;
-typedef itk::ImageRegionIteratorWithIndex< LabelMapImageType >                    LabelMapIteratorType;
-typedef itk::ImageRegionIterator< CTImageType >                                   CTImageIteratorType;
-typedef itk::ImageRegionIterator< LabelMapImageType >                             LabelMapIteratorType2;
+typedef itk::RegionOfInterestImageFilter< cip::CTType, cip::CTType >              RegionOfInterestFilterType;
+typedef itk::RegionOfInterestImageFilter< cip::LabelMapType, cip::LabelMapType >  RegionOfInterestLabelMapFilterType;
+typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                    LabelMapIteratorType;
+typedef itk::ImageRegionIterator< cip::CTType >                                   CTImageIteratorType;
+typedef itk::ImageRegionIterator< cip::LabelMapType >                             LabelMapIteratorType2;
 
 struct REGIONTYPEPAIR
 {
@@ -105,9 +101,9 @@ struct REGIONTYPEPAIR
 };
 
 
-CTImageType::Pointer ReadCTFromDirectory( std::string );
-CTImageType::Pointer ReadCTFromFile( std::string  );
-LabelMapImageType::Pointer ReadLabelMapFromFile( std::string );
+cip::CTType::Pointer ReadCTFromDirectory( std::string );
+cip::CTType::Pointer ReadCTFromFile( std::string  );
+cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string );
 
 
 int main( int argc, char *argv[] )
@@ -234,7 +230,7 @@ the cropped lung masked";
   // First get the CT image, either from a directory or from a single
   // file 
   //
-  CTImageType::Pointer ctImage;
+  cip::CTType::Pointer ctImage;
 
   /*
   if ( strcmp( ctDir.c_str(), "q") != 0 )
@@ -268,7 +264,7 @@ the cropped lung masked";
   // Now get the label map. Get it from an input file or
   // compute it if an inpute file has not been specified
   //
-  LabelMapImageType::Pointer labelMap = LabelMapImageType::New();
+  cip::LabelMapType::Pointer labelMap = cip::LabelMapType::New();
 
   if ( strcmp( plInputFileName.c_str(), "q") != 0 )
     {
@@ -314,7 +310,7 @@ the cropped lung masked";
   LabelMapIteratorType  lIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
   LabelMapIteratorType2 l2It (labelMap, labelMap->GetBufferedRegion() );
 
-  LabelMapImageType::IndexType index;
+  cip::LabelMapType::IndexType index;
 
   lIt.GoToBegin();
   l2It.GoToBegin();
@@ -352,9 +348,9 @@ the cropped lung masked";
 
     if (strcmp(ctOutputFileName.c_str(),"q") != 0) 
       {
-        CTImageType::RegionType roi;
-        CTImageType::IndexType startIndex;
-        CTImageType::SizeType  regionSize;
+        cip::CTType::RegionType roi;
+        cip::CTType::IndexType startIndex;
+        cip::CTType::SizeType  regionSize;
         startIndex[0] = bbox[0];
         startIndex[1] = bbox[2];
         startIndex[2] = bbox[4];
@@ -380,7 +376,7 @@ the cropped lung masked";
 
 
          std::cout<< "Writing CT cropped image..." << std::endl;
-         CTWriterType::Pointer writer = CTWriterType::New();
+       cip::CTWriterType::Pointer writer = cip::CTWriterType::New();
          writer->SetInput ( roiFilter->GetOutput() );
          writer->SetFileName( ctOutputFileName );
          writer->UseCompressionOn();
@@ -400,9 +396,9 @@ the cropped lung masked";
   //Check if we have to produce the labelmap output  
     if (strcmp(plOutputFileName.c_str(),"q") != 0) 
     {
-        LabelMapImageType::RegionType roi2;
-        LabelMapImageType::IndexType startIndex2;
-        LabelMapImageType::SizeType  regionSize2;
+        cip::LabelMapType::RegionType roi2;
+        cip::LabelMapType::IndexType startIndex2;
+        cip::LabelMapType::SizeType  regionSize2;
         startIndex2[0] = bbox[0];
         startIndex2[1] = bbox[2];
         startIndex2[2] = bbox[4];
@@ -427,7 +423,7 @@ the cropped lung masked";
           }
         
         std::cout<< "Writing cropped label map..." << std::endl;
-        LabelMapWriterType::Pointer writer = LabelMapWriterType::New();
+      cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
         writer->SetInput ( roiFilter->GetOutput() );
         writer->SetFileName( plOutputFileName );
         writer->UseCompressionOn();
@@ -449,7 +445,7 @@ the cropped lung masked";
 }
 
 
-CTImageType::Pointer ReadCTFromDirectory( std::string ctDir )
+cip::CTType::Pointer ReadCTFromDirectory( std::string ctDir )
 {
   ImageIOType::Pointer gdcmIO = ImageIOType::New();
 
@@ -478,7 +474,7 @@ CTImageType::Pointer ReadCTFromDirectory( std::string ctDir )
 }
 
 
-CTImageType::Pointer ReadCTFromFile( std::string fileName )
+cip::CTType::Pointer ReadCTFromFile( std::string fileName )
 {
   CTFileReaderType::Pointer reader = CTFileReaderType::New();
     reader->SetFileName( fileName );
@@ -497,10 +493,10 @@ CTImageType::Pointer ReadCTFromFile( std::string fileName )
 } 
 
 
-LabelMapImageType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
+cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
 {
   std::cout << "Reading label map..." << std::endl;
-  LabelMapReaderType::Pointer reader = LabelMapReaderType::New();
+  cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
     reader->SetFileName( labelMapFileName );
   try
     {
