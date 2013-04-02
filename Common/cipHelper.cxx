@@ -10,32 +10,31 @@
 
 #include "cipHelper.h"
 
-LabelMapType::Pointer cipHelper::DownsampleLabelMap(short samplingAmount, LabelMapType::Pointer inputLabelMap)
+cip::LabelMapType::Pointer DownsampleLabelMap( short samplingAmount, cip::LabelMapType::Pointer inputLabelMap )
 {
+  cip::LabelMapType::Pointer outputLabelMap;
 
-	LabelMapType::Pointer outputLabelMap;
-
-	return outputLabelMap;
+  return outputLabelMap;
 }
 
-LabelMapType::Pointer cipHelper::UpsampleLabelMap(short samplingAmount, LabelMapType::Pointer inputLabelMap)
+cip::LabelMapType::Pointer UpsampleLabelMap( short samplingAmount, cip::LabelMapType::Pointer inputLabelMap )
 {
-	LabelMapType::Pointer outputLabelMap;
-
-	return outputLabelMap;
+  cip::LabelMapType::Pointer outputLabelMap;
+  
+  return outputLabelMap;
 }
 
-CTType::Pointer cipHelper::UpsampleCT(short samplingAmount, CTType::Pointer inputCT)
+cip::CTType::Pointer UpsampleCT( short samplingAmount, cip::CTType::Pointer inputCT )
 {
-	CTType::Pointer outputCT;
+  cip::CTType::Pointer outputCT;
 
-	return outputCT;
+  return outputCT;
 }
 
-CTType::Pointer cipHelper::DownsampleCT(short samplingAmount, CTType::Pointer inputCT)
+cip::CTType::Pointer DownsampleCT( short samplingAmount, cip::CTType::Pointer inputCT )
 {
-	CTType::Pointer outputCT;
+  CTType::Pointer outputCT;
 
-	return outputCT;
+  return outputCT;
 }
 
