@@ -20,9 +20,9 @@ cip::LabelMapType::Pointer cip::DownsampleLabelMap( short samplingAmount, cip::L
 {
   cip::LabelMapType::Pointer outputLabelMap;
 
-  typedef itk::IdentityTransform< double, 3 >                                                TransformType;
-  typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double, double >  InterpolatorType;
-  typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >                   ResampleType;
+  typedef itk::IdentityTransform< double, 3 >                                        TransformType;
+  typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >  InterpolatorType;
+  typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >           ResampleType;
 
   //
   // Instantiate the transform, the b-spline interpolator and the resampler
