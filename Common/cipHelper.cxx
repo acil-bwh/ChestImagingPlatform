@@ -83,33 +83,22 @@ cip::LabelMapType::Pointer cip::DownsampleLabelMap( short samplingAmount, cip::L
   return outputLabelMap;
 }
 
+//Rola put this comment here to test git merge.
 cip::LabelMapType::Pointer cip::UpsampleLabelMap( short samplingAmount, cip::LabelMapType::Pointer inputLabelMap )
 {
   cip::LabelMapType::Pointer outputLabelMap;
 
-  typedef itk::IdentityTransform<double, 3> identityTransform;
-
-	// Code modified from //http://www.itk.org/Wiki/ITK/Examples/ImageProcessing/Upsampling
-
-	//
-	// Interpolate using a 3rd order B-pline
-	//
-	typedef itk::BSplineInterpolateImageFunction<LabelMapType, double, double> BSplineInterpolator;
-	typedef itk::ResampleImageFilter<LabelMapType, LabelMapType> ResampleFilter;
+  typedef itk::IdentityTransform< double, 3 >                                        TransformType;
+  typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >  InterpolatorType;
+  typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >           ResampleType;
 
 	//
 	// Instantiate the transform, the b-spline interpolator and the resampler
 	//
-	identityTransform::Pointer idTransform = identityTransform::New();
+	TransformType::Pointer idTransform = TransformType::New();
 	idTransform->SetIdentity();
 
-	BSplineInterpolator::Pointer imageInterpolator = BSplineInterpolator::New();
-	imageInterpolator->SetSplineOrder(3);
-
-	ResampleFilter::Pointer resizeFilter = ResampleFilter::New();
-	resizeFilter->SetTransform(idTransform);
-	resizeFilter->SetInterpolator(imageInterpolator);
-	resizeFilter->SetOutputOrigin(inputLabelMap->GetOrigin());
+	InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
 
 	//
 	// Compute and set the output spacing from the input spacing and samplingAmount 
@@ -121,16 +110,17 @@ cip::LabelMapType::Pointer cip::UpsampleLabelMap( short samplingAmount, cip::Lab
 	unsigned int originalLength = inputSize[1];
 	unsigned int originalHeight = inputSize[2];
 
-	unsigned int newWidth = (int)((double) originalWidth * (double) samplingAmount);
-	unsigned int newLength = (int)((double) originalLength * (double) samplingAmount);
-	unsigned int newHeight = (int)((double) originalHeight * (double) samplingAmount);
+  unsigned int newWidth  = (unsigned int)(double(originalWidth)/double(samplingAmount));
+  unsigned int newLength = (unsigned int)(double(originalLength)/double(samplingAmount));
+  unsigned int newHeight = (unsigned int)(double(originalHeight)/double(samplingAmount));
 
 	const LabelMapType::SpacingType& inputSpacing = inputLabelMap->GetSpacing();
 
 	double outputSpacing[3];
-	outputSpacing[0] = inputSpacing[0] * ((double) originalWidth / (double) newWidth);
-	outputSpacing[1] = inputSpacing[1] * ((double) originalLength / (double) newLength);
-	outputSpacing[2] = inputSpacing[2] * ((double) originalHeight / (double) newHeight);
+  outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
+  outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
+  outputSpacing[2] = inputSpacing[2]*(double(originalHeight)/double(newHeight));
+
 
 	std::cout<<"old dimensions are: "<< originalWidth<< " "<<originalLength<< " "<<originalHeight<< " "<<std::endl;
 	std::cout<<"spacing is: "<< inputSpacing[0]<< " "<<inputSpacing[1]<< " "<<inputSpacing[2]<< " "<<std::endl;
@@ -141,6 +131,10 @@ cip::LabelMapType::Pointer cip::UpsampleLabelMap( short samplingAmount, cip::Lab
 	//
 	// Set the resampler with the calculated parameters and resample
 	//
+	ResampleFilter::Pointer resizeFilter = ResampleFilter::New();
+	resizeFilter->SetTransform(idTransform);
+	resizeFilter->SetInterpolator(imageInterpolator);
+	resizeFilter->SetOutputOrigin(inputLabelMap->GetOrigin());
 	resizeFilter->SetOutputSpacing(outputSpacing);
 	itk::Size<3> outputSize = { {newWidth, newLength, newHeight} };
 	resizeFilter->SetSize(outputSize);
