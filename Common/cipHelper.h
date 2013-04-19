@@ -22,7 +22,6 @@ namespace cip {
    * a pointer to a LabelMapType, and returns a pointer to a downsampled LabelMapType. */
   cip::LabelMapType::Pointer DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
 
-
   /** Function that upsamples a label map. Takes in as input a value for the upsampling
    *amount and a pointer to a LabelMapType, and returns a pointer to a upsampled LabelMapType. */
   cip::LabelMapType::Pointer UpsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
@@ -48,6 +47,30 @@ namespace cip {
   /** View a vtk-style graph as poly data. It's assumed that the graph nodes correspond
    * to 3D points. */
   void ViewGraphAsPolyData(vtkSmartPointer< vtkMutableUndirectedGraph > graph);
+
+  /** Morphologically dilate label map. Only the label map value corresponding to the specified chest 
+   * region and chest type is dilated. The rectangular kernel size is specified by the 'kernelRadius'
+   * parameters.*/
+  void DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+		      unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ);
+
+  /** Morphologically erode label map. Only the label map value corresponding to the specified chest 
+   * region and chest type is eroded. The rectangular kernel size is specified by the 'kernelRadius'
+   * parameters.*/
+  void ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+		     unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ);
+
+  /** Morphologically close label map. Only the label map value corresponding to the specified chest 
+   * region and chest type is closed. The rectangular kernel size is specified by the 'kernelRadius'
+   * parameters.*/
+  void CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+		     unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ);
+
+  /** Morphologically open label map. Only the label map value corresponding to the specified chest 
+   * region and chest type is opened. The rectangular kernel size is specified by the 'kernelRadius'
+   * parameters.*/
+  void OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+		    unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ);
 }  
 
 #endif

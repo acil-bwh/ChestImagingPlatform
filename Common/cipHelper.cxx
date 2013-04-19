@@ -12,6 +12,9 @@
 #include "itkResampleImageFilter.h"
 #include "itkBSplineInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
+#include "itkBinaryDilateImageFilter.h"
+#include "itkBinaryErodeImageFilter.h"
+#include "itkBinaryBallStructuringElement.h"
 #include "vtkGraphToPolyData.h"
 #include "vtkRenderer.h"
 #include "vtkPolyDataMapper.h"
@@ -312,37 +315,37 @@ void cip::ViewGraph( vtkSmartPointer< vtkMutableDirectedGraph > graph )
 }
 
 
-void cip::ViewGraphAsPolyData( vtkSmartPointer< vtkMutableUndirectedGraph > graph )
+void cip::ViewGraphAsPolyData(vtkSmartPointer< vtkMutableUndirectedGraph > graph)
 {
-  vtkSmartPointer< vtkGraphToPolyData > graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
+  vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
     graphToPolyData->SetInput( graph );
     graphToPolyData->Update();
 
-  vtkSmartPointer< vtkRenderer > renderer = vtkSmartPointer< vtkRenderer >::New();
+  vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
     renderer->SetBackground( 1, 1, 1 ); 
 
-  vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-    mapper->SetInputConnection( graphToPolyData->GetOutputPort() );
+  vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(graphToPolyData->GetOutputPort());
 
-  vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
-    actor->SetMapper( mapper );
-    actor->GetProperty()->SetColor( 0, 0, 0 );
+  vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0, 0, 0);
 
-  renderer->AddActor( actor );
+  renderer->AddActor(actor);
 
-  vtkSmartPointer< vtkRenderWindow > renderWindow = vtkSmartPointer< vtkRenderWindow >::New();
-    renderWindow->AddRenderer( renderer );
+  vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
+    renderWindow->AddRenderer(renderer);
 
-  vtkSmartPointer< vtkInteractorStyleTrackballCamera > trackball = vtkSmartPointer< vtkInteractorStyleTrackballCamera >::New();
+  vtkSmartPointer<vtkInteractorStyleTrackballCamera> trackball = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
 
-  vtkSmartPointer< vtkRenderWindowInteractor > renderWindowInteractor = vtkSmartPointer< vtkRenderWindowInteractor >::New();
-    renderWindowInteractor->SetRenderWindow( renderWindow );
-    renderWindowInteractor->SetInteractorStyle( trackball );
+  vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    renderWindowInteractor->SetRenderWindow(renderWindow);
+    renderWindowInteractor->SetInteractorStyle(trackball);
     
     // Set up the nodes to be rendered
-  vtkSmartPointer< vtkSphereSource > sphereSource = vtkSmartPointer< vtkSphereSource >::New();
-    sphereSource->SetRadius( 0.2 );
-    sphereSource->SetCenter( 0, 0, 0 );
+  vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
+    sphereSource->SetRadius(0.2);
+    sphereSource->SetCenter(0, 0, 0);
 
     //   vtkSmartPointer< vtkPoints > leafPoints = vtkSmartPointer< vtkPoints >::New();
     //   for ( unsigned int i=0; i<this->SubGraphLeafParticleIDs.size(); i++ )
@@ -357,23 +360,197 @@ void cip::ViewGraphAsPolyData( vtkSmartPointer< vtkMutableUndirectedGraph > grap
     //     leafPoints->InsertNextPoint( leafPoint[0], leafPoint[1], leafPoint[2] );
     //     }
 
-  vtkSmartPointer< vtkPolyData > nodesPoly = vtkSmartPointer< vtkPolyData >::New();
-    nodesPoly->SetPoints( graph->GetPoints() );
+  vtkSmartPointer<vtkPolyData> nodesPoly = vtkSmartPointer<vtkPolyData>::New();
+    nodesPoly->SetPoints(graph->GetPoints());
 
-  vtkSmartPointer< vtkGlyph3D > nodesGlyph = vtkSmartPointer< vtkGlyph3D >::New();
-    nodesGlyph->SetInput( nodesPoly );
-    nodesGlyph->SetSource( sphereSource->GetOutput() );
+  vtkSmartPointer<vtkGlyph3D> nodesGlyph = vtkSmartPointer<vtkGlyph3D>::New();
+    nodesGlyph->SetInput(nodesPoly);
+    nodesGlyph->SetSource(sphereSource->GetOutput());
     nodesGlyph->Update();
     
-  vtkSmartPointer< vtkPolyDataMapper > nodesMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-    nodesMapper->SetInput( nodesGlyph->GetOutput() );
+  vtkSmartPointer<vtkPolyDataMapper> nodesMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    nodesMapper->SetInput(nodesGlyph->GetOutput());
 
-  vtkSmartPointer< vtkActor > nodesActor = vtkSmartPointer< vtkActor >::New();
-    nodesActor->SetMapper( nodesMapper );
-    nodesActor->GetProperty()->SetColor( 1, 0, 0 );
+  vtkSmartPointer<vtkActor> nodesActor = vtkSmartPointer<vtkActor>::New();
+    nodesActor->SetMapper(nodesMapper);
+    nodesActor->GetProperty()->SetColor(1, 0, 0);
 
-  renderer->AddActor( nodesActor );
+  renderer->AddActor(nodesActor);
 
   renderWindow->Render();
   renderWindowInteractor->Start();
+}
+
+void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+			 unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
+{
+  ChestConventions conventions;
+
+  unsigned short labelMapValue = conventions.GetValueFromChestRegionAndType(region, type);
+
+  typedef itk::BinaryBallStructuringElement<unsigned short, 3>                            ElementType;
+  typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
+
+  unsigned long neighborhood[3];
+    neighborhood[0] = kernelRadiusX;
+    neighborhood[1] = kernelRadiusY;
+    neighborhood[2] = kernelRadiusZ;
+
+  ElementType structuringElement;
+    structuringElement.SetRadius(neighborhood);
+    structuringElement.CreateStructuringElement();
+
+  DilateType::Pointer dilater = DilateType::New();
+    dilater->SetInput(labelMap);
+    dilater->SetKernel(structuringElement);
+    dilater->SetDilateValue(labelMapValue);
+  try
+    {
+    dilater->Update();
+    }
+  catch(itk::ExceptionObject &excp)
+    {
+    std::cerr << "Exception caught dilating label map:";
+    std::cerr << excp << std::endl;
+    }
+
+  labelMap = dilater->GetOutput();
+}
+
+void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+			unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
+{
+  ChestConventions conventions;
+
+  unsigned short labelMapValue = conventions.GetValueFromChestRegionAndType(region, type);
+
+  typedef itk::BinaryBallStructuringElement<unsigned short, 3>                           ElementType;
+  typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> ErodeType;
+
+  unsigned long neighborhood[3];
+    neighborhood[0] = kernelRadiusX;
+    neighborhood[1] = kernelRadiusY;
+    neighborhood[2] = kernelRadiusZ;
+
+  ElementType structuringElement;
+    structuringElement.SetRadius(neighborhood);
+    structuringElement.CreateStructuringElement();
+
+  ErodeType::Pointer eroder = ErodeType::New();
+    eroder->SetInput(labelMap);
+    eroder->SetKernel(structuringElement);
+    eroder->SetErodeValue(labelMapValue);
+  try
+    {
+    eroder->Update();
+    }
+  catch(itk::ExceptionObject &excp)
+    {
+      std::cerr << "Exception caught dilating label map:";
+      std::cerr << excp << std::endl;
+    }
+
+  labelMap = eroder->GetOutput();
+}
+
+void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+		     unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
+{
+  ChestConventions conventions;
+
+  unsigned short labelMapValue = conventions.GetValueFromChestRegionAndType(region, type);
+
+  typedef itk::BinaryBallStructuringElement<unsigned short, 3>                            ElementType;
+  typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
+  typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType>  ErodeType;
+
+  unsigned long neighborhood[3];
+    neighborhood[0] = kernelRadiusX;
+    neighborhood[1] = kernelRadiusY;
+    neighborhood[2] = kernelRadiusZ;
+
+  ElementType structuringElement;
+    structuringElement.SetRadius(neighborhood);
+    structuringElement.CreateStructuringElement();
+
+  DilateType::Pointer dilater = DilateType::New();
+    dilater->SetInput(labelMap);
+    dilater->SetKernel(structuringElement);
+    dilater->SetDilateValue(labelMapValue);
+  try
+    {
+    dilater->Update();
+    }
+  catch(itk::ExceptionObject &excp)
+    {
+    std::cerr << "Exception caught dilating label map:";
+    std::cerr << excp << std::endl;
+    }
+
+  ErodeType::Pointer eroder = ErodeType::New();
+    eroder->SetInput(dilater->GetOutput());
+    eroder->SetKernel(structuringElement);
+    eroder->SetErodeValue(labelMapValue);
+  try
+    {
+    eroder->Update();
+    }
+  catch(itk::ExceptionObject &excp)
+    {
+      std::cerr << "Exception caught eroding label map:";
+      std::cerr << excp << std::endl;
+    }
+
+  labelMap = eroder->GetOutput();
+}
+
+void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+		       unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
+{
+  ChestConventions conventions;
+
+  unsigned short labelMapValue = conventions.GetValueFromChestRegionAndType(region, type);
+
+  typedef itk::BinaryBallStructuringElement<unsigned short, 3>                            ElementType;
+  typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType>  ErodeType;
+  typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
+
+  unsigned long neighborhood[3];
+    neighborhood[0] = kernelRadiusX;
+    neighborhood[1] = kernelRadiusY;
+    neighborhood[2] = kernelRadiusZ;
+
+  ElementType structuringElement;
+    structuringElement.SetRadius(neighborhood);
+    structuringElement.CreateStructuringElement();
+
+  ErodeType::Pointer eroder = ErodeType::New();
+    eroder->SetInput(labelMap);
+    eroder->SetKernel(structuringElement);
+    eroder->SetErodeValue(labelMapValue);
+  try
+    {
+    eroder->Update();
+    }
+  catch(itk::ExceptionObject &excp)
+    {
+      std::cerr << "Exception caught dilating label map:";
+      std::cerr << excp << std::endl;
+    }
+
+  DilateType::Pointer dilater = DilateType::New();
+    dilater->SetInput(eroder->GetOutput());
+    dilater->SetKernel(structuringElement);
+    dilater->SetDilateValue(labelMapValue);
+  try
+    {
+    dilater->Update();
+    }
+  catch(itk::ExceptionObject &excp)
+    {
+    std::cerr << "Exception caught dilating label map:";
+    std::cerr << excp << std::endl;
+    }
+
+  labelMap = dilater->GetOutput();
 }
