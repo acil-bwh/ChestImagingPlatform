@@ -15,6 +15,7 @@
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
 #include "itkBinaryBallStructuringElement.h"
+#include "itkImageRegionIterator.h"
 #include "vtkGraphToPolyData.h"
 #include "vtkRenderer.h"
 #include "vtkPolyDataMapper.h"
@@ -390,6 +391,7 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
 
   typedef itk::BinaryBallStructuringElement<unsigned short, 3>                            ElementType;
   typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
+  typedef itk::ImageRegionIterator<cip::LabelMapType>                                     IteratorType;
 
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
@@ -414,7 +416,18 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
     std::cerr << excp << std::endl;
     }
 
-  labelMap = dilater->GetOutput();
+  IteratorType dIt(dilater->GetOutput(), dilater->GetOutput()->GetBufferedRegion());
+  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+
+  dIt.GoToBegin();
+  lIt.GoToBegin();
+  while (!lIt.IsAtEnd())
+    {
+    lIt.Set(dIt.Get());
+
+    ++dIt;
+    ++lIt;
+    }
 }
 
 void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
@@ -426,6 +439,7 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
 
   typedef itk::BinaryBallStructuringElement<unsigned short, 3>                           ElementType;
   typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> ErodeType;
+  typedef itk::ImageRegionIterator<cip::LabelMapType>                                    IteratorType;
 
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
@@ -446,11 +460,22 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     }
   catch(itk::ExceptionObject &excp)
     {
-      std::cerr << "Exception caught dilating label map:";
-      std::cerr << excp << std::endl;
+    std::cerr << "Exception caught dilating label map:";
+    std::cerr << excp << std::endl;
     }
 
-  labelMap = eroder->GetOutput();
+  IteratorType eIt(eroder->GetOutput(), eroder->GetOutput()->GetBufferedRegion());
+  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+
+  eIt.GoToBegin();
+  lIt.GoToBegin();
+  while (!lIt.IsAtEnd())
+    {
+    lIt.Set(eIt.Get());
+
+    ++eIt;
+    ++lIt;
+    }
 }
 
 void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
@@ -463,6 +488,7 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   typedef itk::BinaryBallStructuringElement<unsigned short, 3>                            ElementType;
   typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
   typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType>  ErodeType;
+  typedef itk::ImageRegionIterator<cip::LabelMapType>                                     IteratorType;
 
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
@@ -497,11 +523,22 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     }
   catch(itk::ExceptionObject &excp)
     {
-      std::cerr << "Exception caught eroding label map:";
-      std::cerr << excp << std::endl;
+    std::cerr << "Exception caught eroding label map:";
+    std::cerr << excp << std::endl;
     }
 
-  labelMap = eroder->GetOutput();
+  IteratorType eIt(eroder->GetOutput(), eroder->GetOutput()->GetBufferedRegion());
+  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+
+  eIt.GoToBegin();
+  lIt.GoToBegin();
+  while (!lIt.IsAtEnd())
+    {
+    lIt.Set(eIt.Get());
+
+    ++eIt;
+    ++lIt;
+    }
 }
 
 void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
@@ -514,6 +551,7 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
   typedef itk::BinaryBallStructuringElement<unsigned short, 3>                            ElementType;
   typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType>  ErodeType;
   typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
+  typedef itk::ImageRegionIterator<cip::LabelMapType>                                     IteratorType;
 
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
@@ -534,8 +572,8 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
     }
   catch(itk::ExceptionObject &excp)
     {
-      std::cerr << "Exception caught dilating label map:";
-      std::cerr << excp << std::endl;
+    std::cerr << "Exception caught dilating label map:";
+    std::cerr << excp << std::endl;
     }
 
   DilateType::Pointer dilater = DilateType::New();
@@ -552,5 +590,17 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
     std::cerr << excp << std::endl;
     }
 
-  labelMap = dilater->GetOutput();
+
+  IteratorType dIt(dilater->GetOutput(), dilater->GetOutput()->GetBufferedRegion());
+  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+
+  dIt.GoToBegin();
+  lIt.GoToBegin();
+  while (!lIt.IsAtEnd())
+    {
+    lIt.Set(dIt.Get());
+
+    ++dIt;
+    ++lIt;
+    }
 }
