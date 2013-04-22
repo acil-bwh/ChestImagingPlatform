@@ -4,6 +4,15 @@ ChestImagingPlatform
 The Brigham and Women's Hospital (BWH) Applied Chest Imaging Lab's (ACIL) Chest Imaging Platform private repository
 
 
+Dependencies
+============
+
+* ITK 
+* VTK (must build with boost for airway generation labeling) 
+* boost (needed for airway generation labeling) 
+* teem 
+* FLTK (needed for ACILAssistant)
+* InsightApplications (needed for ACILAssistant)
 
 Information for Developers
 ==========================
