@@ -16,6 +16,8 @@
 #include "itkBinaryErodeImageFilter.h"
 #include "itkBinaryBallStructuringElement.h"
 #include "itkImageRegionIterator.h"
+#include "itkImageRegionIteratorWithIndex.h"
+#include "itkRegionOfInterestImageFilter.h"
 #include "vtkGraphToPolyData.h"
 #include "vtkRenderer.h"
 #include "vtkPolyDataMapper.h"
@@ -183,7 +185,7 @@ cip::CTType::Pointer cip::UpsampleCT(short samplingAmount, cip::CTType::Pointer 
     resizeFilter->Update();
 
   // Save the resampled output to the output image and return
-  outputCT= resizeFilter->GetOutput();
+  outputCT = resizeFilter->GetOutput();
 
   return outputCT;
 }
@@ -392,6 +394,17 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
   typedef itk::BinaryBallStructuringElement<unsigned short, 3>                            ElementType;
   typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
   typedef itk::ImageRegionIterator<cip::LabelMapType>                                     IteratorType;
+  typedef itk::RegionOfInterestImageFilter<cip::LabelMapType, cip::LabelMapType>          ROIType;
+
+  // We will want to isolate the bounding box containing the chest region - chest type combination
+  // of interest. We will only want to perform the closing operation over that region for the
+  // sake of speed.
+  cip::LabelMapType::RegionType roiPadded = 
+    cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
+
+  ROIType::Pointer roiExtractor = ROIType::New();
+    roiExtractor->SetRegionOfInterest(roiPadded);
+    roiExtractor->SetInput(labelMap);
 
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
@@ -403,7 +416,7 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
     structuringElement.CreateStructuringElement();
 
   DilateType::Pointer dilater = DilateType::New();
-    dilater->SetInput(labelMap);
+    dilater->SetInput(roiExtractor->GetOutput());
     dilater->SetKernel(structuringElement);
     dilater->SetDilateValue(labelMapValue);
   try
@@ -417,7 +430,7 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
     }
 
   IteratorType dIt(dilater->GetOutput(), dilater->GetOutput()->GetBufferedRegion());
-  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+  IteratorType lIt(labelMap, roiPadded);
 
   dIt.GoToBegin();
   lIt.GoToBegin();
@@ -440,6 +453,17 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   typedef itk::BinaryBallStructuringElement<unsigned short, 3>                           ElementType;
   typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> ErodeType;
   typedef itk::ImageRegionIterator<cip::LabelMapType>                                    IteratorType;
+  typedef itk::RegionOfInterestImageFilter<cip::LabelMapType, cip::LabelMapType>         ROIType;
+
+  // We will want to isolate the bounding box containing the chest region - chest type combination
+  // of interest. We will only want to perform the closing operation over that region for the
+  // sake of speed.
+  cip::LabelMapType::RegionType roiPadded = 
+    cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
+
+  ROIType::Pointer roiExtractor = ROIType::New();
+    roiExtractor->SetRegionOfInterest(roiPadded);
+    roiExtractor->SetInput(labelMap);
 
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
@@ -451,7 +475,7 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     structuringElement.CreateStructuringElement();
 
   ErodeType::Pointer eroder = ErodeType::New();
-    eroder->SetInput(labelMap);
+    eroder->SetInput(roiExtractor->GetOutput());
     eroder->SetKernel(structuringElement);
     eroder->SetErodeValue(labelMapValue);
   try
@@ -465,7 +489,7 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     }
 
   IteratorType eIt(eroder->GetOutput(), eroder->GetOutput()->GetBufferedRegion());
-  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+  IteratorType lIt(labelMap, roiPadded);
 
   eIt.GoToBegin();
   lIt.GoToBegin();
@@ -489,7 +513,19 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
   typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType>  ErodeType;
   typedef itk::ImageRegionIterator<cip::LabelMapType>                                     IteratorType;
+  typedef itk::RegionOfInterestImageFilter<cip::LabelMapType, cip::LabelMapType>          ROIType;
 
+  // We will want to isolate the bounding box containing the chest region - chest type combination
+  // of interest. We will only want to perform the closing operation over that region for the
+  // sake of speed.
+  cip::LabelMapType::RegionType roiPadded = 
+    cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
+
+  ROIType::Pointer roiExtractor = ROIType::New();
+    roiExtractor->SetRegionOfInterest(roiPadded);
+    roiExtractor->SetInput(labelMap);
+
+  // Set up the kernel
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
@@ -499,8 +535,9 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     structuringElement.SetRadius(neighborhood);
     structuringElement.CreateStructuringElement();
 
+  // Perform dilation on the extracted region
   DilateType::Pointer dilater = DilateType::New();
-    dilater->SetInput(labelMap);
+    dilater->SetInput(roiExtractor->GetOutput());
     dilater->SetKernel(structuringElement);
     dilater->SetDilateValue(labelMapValue);
   try
@@ -527,8 +564,12 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     std::cerr << excp << std::endl;
     }
 
+  // Now replace the label map values with those from the closing operation. Note that
+  // the iterator over the erosion output is over the entire region but that we only 
+  // iterate over the label map in the area defined above -- the area that was 
+  // extracted from the original label map to operate on.
   IteratorType eIt(eroder->GetOutput(), eroder->GetOutput()->GetBufferedRegion());
-  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+  IteratorType lIt(labelMap, roiPadded);
 
   eIt.GoToBegin();
   lIt.GoToBegin();
@@ -552,6 +593,17 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
   typedef itk::BinaryErodeImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType>  ErodeType;
   typedef itk::BinaryDilateImageFilter<cip::LabelMapType, cip::LabelMapType, ElementType> DilateType;
   typedef itk::ImageRegionIterator<cip::LabelMapType>                                     IteratorType;
+  typedef itk::RegionOfInterestImageFilter<cip::LabelMapType, cip::LabelMapType>          ROIType;
+
+  // We will want to isolate the bounding box containing the chest region - chest type combination
+  // of interest. We will only want to perform the closing operation over that region for the
+  // sake of speed.
+  cip::LabelMapType::RegionType roiPadded = 
+    cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
+
+  ROIType::Pointer roiExtractor = ROIType::New();
+    roiExtractor->SetRegionOfInterest(roiPadded);
+    roiExtractor->SetInput(labelMap);
 
   unsigned long neighborhood[3];
     neighborhood[0] = kernelRadiusX;
@@ -563,7 +615,7 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
     structuringElement.CreateStructuringElement();
 
   ErodeType::Pointer eroder = ErodeType::New();
-    eroder->SetInput(labelMap);
+    eroder->SetInput(roiExtractor->GetOutput());
     eroder->SetKernel(structuringElement);
     eroder->SetErodeValue(labelMapValue);
   try
@@ -590,9 +642,8 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
     std::cerr << excp << std::endl;
     }
 
-
   IteratorType dIt(dilater->GetOutput(), dilater->GetOutput()->GetBufferedRegion());
-  IteratorType lIt(labelMap, labelMap->GetBufferedRegion());
+  IteratorType lIt(labelMap, roiPadded);
 
   dIt.GoToBegin();
   lIt.GoToBegin();
@@ -603,4 +654,155 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
     ++dIt;
     ++lIt;
     }
+}
+
+cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+										    unsigned char cipRegion, unsigned char cipType)
+{
+  ChestConventions conventions;
+
+  unsigned short value = conventions.GetValueFromChestRegionAndType(cipRegion, cipType);
+
+  unsigned int xMin = labelMap->GetBufferedRegion().GetSize()[0];
+  unsigned int xMax = 0;
+  unsigned int yMin = labelMap->GetBufferedRegion().GetSize()[1];
+  unsigned int yMax = 0;
+  unsigned int zMin = labelMap->GetBufferedRegion().GetSize()[2];
+  unsigned int zMax = 0;
+
+  typedef itk::ImageRegionIteratorWithIndex<cip::LabelMapType> IteratorType;
+
+  IteratorType it(labelMap, labelMap->GetBufferedRegion());
+
+  it.GoToBegin();
+  while (!it.IsAtEnd())
+    {
+    if (it.Get() == value)
+      {
+      if (it.GetIndex()[0] < xMin)
+	{
+	xMin = it.GetIndex()[0];
+	}
+      if (it.GetIndex()[0] > xMax)
+	{
+	xMax = it.GetIndex()[0];
+	}
+      if (it.GetIndex()[1] < yMin)
+	{
+	yMin = it.GetIndex()[1];
+	}
+      if (it.GetIndex()[1] > yMax)
+	{
+	yMax = it.GetIndex()[1];
+	}
+      if (it.GetIndex()[2] < zMin)
+	{
+	zMin = it.GetIndex()[2];
+	}
+      if (it.GetIndex()[2] > zMax)
+	{
+	zMax = it.GetIndex()[2];
+	}
+      }
+
+    ++it;
+    }
+
+  cip::LabelMapType::SizeType size;
+    size[0] = xMax - xMin + 1;
+    size[1] = yMax - yMin + 1;
+    size[2] = zMax - zMin + 1;
+
+  cip::LabelMapType::IndexType start;
+    start[0] = xMin;
+    start[1] = yMin;
+    start[2] = zMin;
+
+  cip::LabelMapType::RegionType region;
+    region.SetSize(size);
+    region.SetIndex(start);
+
+  return region;
+}
+
+cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type,
+											  unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ)
+{
+  // Get the bounding box region prior to padding
+  cip::LabelMapType::RegionType roi = 
+    cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(labelMap, region, type);
+
+  // Now construct the padded bounding box
+  cip::LabelMapType::IndexType roiPaddedStart;
+
+  int tmpStart[3];
+    tmpStart[0] = int(roi.GetIndex()[0]) - int(radiusX);
+    tmpStart[1] = int(roi.GetIndex()[1]) - int(radiusY);
+    tmpStart[2] = int(roi.GetIndex()[2]) - int(radiusZ);
+  
+  if (tmpStart[0] < 0)
+    {
+    roiPaddedStart[0] = 0;
+    }
+  else
+    {
+    roiPaddedStart[0] = tmpStart[0];
+    }
+  if (tmpStart[1] < 0)
+    {
+    roiPaddedStart[1] = 0;
+    }
+  else
+    {
+    roiPaddedStart[1] = tmpStart[1];
+    }
+  if (tmpStart[2] < 0)
+    {
+    roiPaddedStart[2] = 0;
+    }
+  else
+    {
+    roiPaddedStart[2] = tmpStart[2];
+    }
+
+  // Get the size of the padded region. Note that we need to check that the region does not
+  // extend past the bounds of the image.
+  cip::LabelMapType::SizeType roiPaddedSize;
+
+  int tmpSize[3];
+    tmpSize[0] = roi.GetSize()[0] + 2*radiusX;
+    tmpSize[1] = roi.GetSize()[1] + 2*radiusY;
+    tmpSize[2] = roi.GetSize()[2] + 2*radiusZ;
+
+  if (roiPaddedStart[0] + tmpSize[0] > labelMap->GetBufferedRegion().GetSize()[0])
+    {
+    roiPaddedSize[0] = labelMap->GetBufferedRegion().GetSize()[0] - roiPaddedStart[0];
+    }
+  else
+    {
+    roiPaddedSize[0] = tmpSize[0];
+    }
+  if (roiPaddedStart[1] + tmpSize[1] > labelMap->GetBufferedRegion().GetSize()[1])
+    {
+    roiPaddedSize[1] = labelMap->GetBufferedRegion().GetSize()[1] - roiPaddedStart[1];
+    }
+  else
+    {
+    roiPaddedSize[1] = tmpSize[1];
+    }
+  if (roiPaddedStart[2] + tmpSize[2] > labelMap->GetBufferedRegion().GetSize()[2])
+    {
+    roiPaddedSize[2] = labelMap->GetBufferedRegion().GetSize()[2] - roiPaddedStart[2];
+    }
+  else
+    {
+    roiPaddedSize[2] = tmpSize[2];
+    }
+				      
+  // Now we can set up the region extractor
+  cip::LabelMapType::RegionType roiPadded;
+    roiPadded.SetSize(roiPaddedSize);
+    roiPadded.SetIndex(roiPaddedStart);
+
+  return roiPadded;
 }
