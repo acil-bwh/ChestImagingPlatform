@@ -44,6 +44,9 @@ bool cipChestRegionChestTypeLocationsIO::Read()
 
     std::string wholeLineString( wholeLine );
 
+	//check if the line is empty. If so, disregard
+	if(wholeLineString.length() > 1)
+	{
     unsigned int commaLoc1 = wholeLineString.find( ',' );
     unsigned int commaLoc2 = wholeLineString.find( ',', commaLoc1+1 );    
     unsigned int commaLoc3 = wholeLineString.find( ',', commaLoc2+1 );
@@ -58,6 +61,7 @@ bool cipChestRegionChestTypeLocationsIO::Read()
       location[2] = static_cast< double >( atof( wholeLineString.substr( commaLoc4+1, wholeLineString.size()-commaLoc4-1 ).c_str() ) );
 
     this->RegionTypeLocations->SetChestRegionChestTypeLocation( cipRegion, cipType, location );
+	}
     }
 
   file.close();

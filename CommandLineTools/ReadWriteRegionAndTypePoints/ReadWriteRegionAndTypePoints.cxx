@@ -219,6 +219,7 @@ bool ReadCSVWriteVTK( std::string csvFileName, std::string vtkFileName )
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( vtkFileName.c_str() );
     writer->SetInput( polyData );
+	writer->SetFileTypeToBinary();
     writer->Write();  
 
   return true;
