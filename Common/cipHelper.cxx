@@ -657,7 +657,8 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
 }
 
 cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
-										    unsigned char cipRegion, unsigned char cipType)
+										    unsigned char cipRegion = (unsigned char)(UNDEFINEDREGION), 
+										    unsigned char cipType = (unsigned char)(UNDEFINEDTYPE))
 {
   ChestConventions conventions;
 
@@ -677,34 +678,41 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxReg
   it.GoToBegin();
   while (!it.IsAtEnd())
     {
-    if (it.Get() == value)
+    if (it.Get() > 0)
       {
-      if (it.GetIndex()[0] < xMin)
+      // By default 'value' is zero, indicating that we want the bounding box over
+      // the entire foreground region. So if either the foreground value is equal to
+      // the requested region-type pair, or if we want to consider the foreground as
+      // a whole, we will update the bounding box info.
+      if (it.Get() == value || value == 0)
 	{
-	xMin = it.GetIndex()[0];
-	}
-      if (it.GetIndex()[0] > xMax)
-	{
-	xMax = it.GetIndex()[0];
-	}
-      if (it.GetIndex()[1] < yMin)
-	{
-	yMin = it.GetIndex()[1];
-	}
-      if (it.GetIndex()[1] > yMax)
-	{
-	yMax = it.GetIndex()[1];
-	}
-      if (it.GetIndex()[2] < zMin)
-	{
-	zMin = it.GetIndex()[2];
-	}
-      if (it.GetIndex()[2] > zMax)
-	{
-	zMax = it.GetIndex()[2];
+	if (it.GetIndex()[0] < xMin)
+	  {
+	  xMin = it.GetIndex()[0];
+	  }
+	if (it.GetIndex()[0] > xMax)
+	  {
+	  xMax = it.GetIndex()[0];
+	  }
+	if (it.GetIndex()[1] < yMin)
+	  {
+	  yMin = it.GetIndex()[1];
+	  }
+	if (it.GetIndex()[1] > yMax)
+	  {
+	  yMax = it.GetIndex()[1];
+	  }
+	if (it.GetIndex()[2] < zMin)
+	  {
+	  zMin = it.GetIndex()[2];
+	  }
+	if (it.GetIndex()[2] > zMax)
+	  {
+	  zMax = it.GetIndex()[2];
+	  }
 	}
       }
-
+    
     ++it;
     }
 
