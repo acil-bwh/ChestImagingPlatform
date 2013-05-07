@@ -657,8 +657,7 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
 }
 
 cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
-										    unsigned char cipRegion = (unsigned char)(UNDEFINEDREGION), 
-										    unsigned char cipType = (unsigned char)(UNDEFINEDTYPE))
+										    unsigned char cipRegion, unsigned char cipType)
 {
   ChestConventions conventions;
 
