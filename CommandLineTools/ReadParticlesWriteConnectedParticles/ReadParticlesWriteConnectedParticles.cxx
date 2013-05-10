@@ -1,6 +1,48 @@
 /** \file
  *  \ingroup commandLineTools 
- *  \details This program rway particles file name\n
+ *  \details This program reads either an airway particles dataset or a vessel
+ *   particles dataset and uses Kruskall's min-spanning tree algorithm to
+ *   define a topology on the particles points. The output polydata is
+ *   equivalent to the input polydata but with polylines defined indicating
+ *   the edges between particle points found by the min spanning tree
+ *   algorithm. The connected dataset is rendered and then optionally written
+ *   to file
+ *
+ *  USAGE: 
+ *
+ *   ReadParticlesWriteConnectedParticles  [-d <double>] [-o <string>] [-a
+ *                                        <string>] [-v <string>] [--]
+ *                                        [--version] [-h]
+ *
+ *  Where: 
+ *
+ *   -d <double>,  --distThresh <double>
+ *     Particle distance threshold. If two particles are farther apart than
+ *     this threshold, they will not considered connected. Otherwise, a graph
+ *     edge will be formed between the particles where the edge weight is a
+ *     function of the distance between the particles. The weighted graph is
+ *     then fed to a minimum spanning tree algorithm, the output of which is
+ *     used to establish directionality throught the particles for HMM
+ *     analysis.
+ *
+ *   -o <string>,  --outPart <string>
+ *     Output particles file name
+ *
+ *   -a <string>,  --airway <string>
+ *     Input airway particles file name
+ *
+ *   -v <string>,  --vessel <string>
+ *     Input vessel particles file name
+ *
+ *   --,  --ignore_rest
+ *     Ignores the rest of the labeled arguments following this flag.
+ *
+ *   --version
+ *     Displays version information and exits.
+ *
+ *   -h,  --help
+ *     Displays usage information and exits.
+ *
  */
 
 
@@ -12,6 +54,7 @@
 #include "vtkFieldData.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
+#include "vtkGraphToPolyData.h"
 #include "vtkExtractSelectedGraph.h"
 #include "vtkBoostKruskalMinimumSpanningTree.h"
 #include "vtkMutableUndirectedGraph.h"
@@ -20,8 +63,8 @@
 #include "cipConventions.h"
 #include "cipHelper.h"
 
-vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointer<vtkPolyData>, double);
-bool GetEdgeWeight(unsigned int, unsigned int, vtkSmartPointer<vtkPolyData>, double*, double);
+vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointer<vtkPolyData>, double, std::string);
+bool GetEdgeWeight(unsigned int, unsigned int, vtkSmartPointer<vtkPolyData>, double*, double, std::string);
 
 int main( int argc, char *argv[] )
 {
@@ -36,7 +79,8 @@ int main( int argc, char *argv[] )
 vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \
 topology on the particles points. The output polydata is equivalent to the input polydata \
 but with polylines defined indicating the edges between particle points found by the min \
-spanning tree algorithm.";
+spanning tree algorithm. The connected dataset is rendered and then optionally written to \
+file";
 
   std::string vesselParticlesFileNameDesc  = "Input vessel particles file name";
   std::string airwayParticlesFileNameDesc  = "Input airway particles file name";
@@ -54,7 +98,7 @@ output of which is used to establish directionality throught the particles for H
 
     TCLAP::ValueArg<std::string> vesselParticlesFileNameArg ( "v", "vessel", vesselParticlesFileNameDesc, false, vesselParticlesFileName, "string", cl );
     TCLAP::ValueArg<std::string> airwayParticlesFileNameArg ( "a", "airway", airwayParticlesFileNameDesc, false, airwayParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outParticlesFileNameArg ( "o", "outPart", outParticlesFileNameDesc, true, outParticlesFileName, "string", cl );
+    TCLAP::ValueArg<std::string> outParticlesFileNameArg ( "o", "outPart", outParticlesFileNameDesc, false, outParticlesFileName, "string", cl );
     TCLAP::ValueArg<double> particleDistanceThresholdArg ( "d", "distThresh", particleDistanceThresholdDesc, false, particleDistanceThreshold, "double", cl );
 
     cl.parse( argc, argv );
@@ -96,17 +140,34 @@ output of which is used to establish directionality throught the particles for H
 
   std::cout << "Constructing minimum spanning tree..." << std::endl;
   vtkSmartPointer<vtkMutableUndirectedGraph> minimumSpanningTree = 
-    GetMinimumSpanningTree(particlesReader->GetOutput(), particleDistanceThreshold);
+    GetMinimumSpanningTree(particlesReader->GetOutput(), particleDistanceThreshold, particlesType);
 
   std::cout << "Visualizing graph..." << std::endl;
   cip::ViewGraphAsPolyData(minimumSpanningTree);
+
+  // If the user has specified an output file name, write the
+  // connected particles to fiel
+  if (outParticlesFileName.compare("NA") != 0)
+    {
+    // First convert the graph to polydata
+    vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
+      graphToPolyData->SetInput(minimumSpanningTree);
+      graphToPolyData->Update();
+
+    std::cout << "Writing connected particles..." << std::endl;
+    vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+      writer->SetInput(graphToPolyData->GetOutput());
+      writer->SetFileName(outParticlesFileName.c_str());
+      writer->Update();
+    }
 
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
 }
 
-vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointer<vtkPolyData> particles, double distanceThreshold)
+vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointer<vtkPolyData> particles, double distanceThreshold, 
+                                                                  std::string particlesType)
 { 
   // Now create the weighted graph that will be passed to the minimum 
   // spanning tree filter
@@ -134,7 +195,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointe
       {
       double weight;
 	  
-      if (GetEdgeWeight(i, j, particles, &weight, distanceThreshold))
+      if (GetEdgeWeight(i, j, particles, &weight, distanceThreshold, particlesType))
         {
         weightedGraph->AddEdge(particleIDToNodeIDMap[i], particleIDToNodeIDMap[j]);
         edgeWeights->InsertNextValue(weight);
@@ -159,8 +220,19 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointe
   return vtkMutableUndirectedGraph::SafeDownCast(extractSelection->GetOutput());
 }
 
-bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartPointer<vtkPolyData> particles, double* weight, double distanceThreshold)
+bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartPointer<vtkPolyData> particles, double* weight, 
+                   double distanceThreshold, std::string particlesType)
 {
+  std::string vecName;
+  if (particlesType.compare("vessel") == 0)
+    {
+    vecName = "hevec0";
+    }
+  else
+    {
+    vecName = "hevec2";
+    }
+
   // Used in the function for determing what weight to assign to each edge
   double edgeWeightAngleSigma = 1.0;
 
@@ -188,14 +260,14 @@ bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartP
     }
 
   double particle1Hevec2[3];
-    particle1Hevec2[0] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID1)[0];
-    particle1Hevec2[1] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID1)[1];
-    particle1Hevec2[2] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID1)[2];
+    particle1Hevec2[0] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID1)[0];
+    particle1Hevec2[1] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID1)[1];
+    particle1Hevec2[2] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID1)[2];
 
   double particle2Hevec2[3];
-    particle2Hevec2[0] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID2)[0];
-    particle2Hevec2[1] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID2)[1];
-    particle2Hevec2[2] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID2)[2];
+    particle2Hevec2[0] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID2)[0];
+    particle2Hevec2[1] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID2)[1];
+    particle2Hevec2[2] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID2)[2];
 
   double angle1 = cip::GetAngleBetweenVectors(particle1Hevec2, connectingVec, true);
   double angle2 = cip::GetAngleBetweenVectors(particle2Hevec2, connectingVec, true);
