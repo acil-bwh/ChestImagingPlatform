@@ -123,7 +123,8 @@ int main( int argc, char *argv[] )
                        ' ', 
                        "$Revision: 232 $" );
 
-    TCLAP::ValueArg< std::string > maskFileNameArg ( "m", "maskFile", "Mask file name", true, maskFileName, "string", cl );
+    TCLAP::ValueArg< std::string > maskFileNameArg ( "m", "maskFile", "Mask file name", true, leftAtlasFileName, "string", cl );
+
     TCLAP::ValueArg< std::string > outputFileNameArg ( "o", "output", "Output convex hull file name", false, outputFileName, "string", cl );
     TCLAP::ValueArg< int >         numRotationsArg ( "n", "numRotations", "Number of rotations. This quanity relates to the accuracy of the final\
 convex hull. Increasing the number of rotations increases accuracy. If this quantity changes, so should the resolution degrees parameter\
@@ -143,6 +144,7 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
     numRotations         = numRotationsArg.getValue();
     degreesResolution    = degreesResolutionArg.getValue();
     downsampleFactor     = downsampleFactorArg.getValue();
+
 	regionMaskLabel = regionMaskLabelArg.getValue();
     }
   catch ( TCLAP::ArgException excp )
@@ -186,7 +188,8 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
   it.GoToBegin();
   while ( !it.IsAtEnd() )
     {
-    if ( lIt.Get() ==  regionMaskLabel) //static_cast< short >
+
+    if ( lIt.Get() == static_cast< short > regionMaskLabel)
       {
       it.Set( 1 );
       }
@@ -194,7 +197,7 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
     ++lIt;
     ++it;
     }
-  
+ 
 
  
   //
@@ -203,7 +206,8 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
   ImageType::Pointer subSampledMask = ImageType::New();
 
   std::cout << "Subsampling atlas..." << std::endl;
-  ResampleImage( completeThresholdedAtlas, subSampledMask, downsampleFactor );
+
+  ResampleImage( leftReader->GetOutput(), subSampledMask, downsampleFactor );
 
   //
   // Now compute the convex hull
