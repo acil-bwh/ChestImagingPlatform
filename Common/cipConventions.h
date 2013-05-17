@@ -39,12 +39,12 @@ typedef itk::ImageFileReader< CTType >        CTReaderType;
 typedef itk::ImageFileWriter< CTType >        CTWriterType;
 
 /**
- *  Note that chest regions are inherently hierarchical.  If you add a
+ *  Note that chest regions are inherently hierarchical. If you add a
  *  region to the enumerated list below, you should also update the
  *  'ChestRegionHierarchyMap' described below.  Additionally, the
  *  ChestRegions should be updated in the constructor. Also need
  *  to update m_NumberOfEnumeratedChestRegions member variable and the
- *  'ChestRegionNames'.
+ *  'ChestRegionNames'. Also update 'ChestRegionColors' appropriately.
  */
 enum ChestRegion { 
   UNDEFINEDREGION,     //0
@@ -447,83 +447,114 @@ public:
       // editing/labeling fissures, vessels, and airway partices. If
       // colors are reassigned here, they should be UNIQUE.
       //
-      double* c001 = new double[3]; c001[0] = 1.00; c001[1] = 1.00; c001[2] = 1.00; ChestTypeColors.push_back( c001 ); //UNDEFINEDTYPE
-      double* c002 = new double[3]; c002[0] = 0.99; c002[1] = 0.99; c002[2] = 0.99; ChestTypeColors.push_back( c002 ); //NORMALPARENCHYMA
-      double* c003 = new double[3]; c003[0] = 0.98; c003[1] = 0.98; c003[2] = 0.98; ChestTypeColors.push_back( c003 ); //AIRWAY
-      double* c004 = new double[3]; c004[0] = 0.97; c004[1] = 0.97; c004[2] = 0.97; ChestTypeColors.push_back( c004 ); //VESSEL
-      double* c005 = new double[3]; c005[0] = 0.96; c005[1] = 0.96; c005[2] = 0.96; ChestTypeColors.push_back( c005 ); //EMPHYSEMATOUS
-      double* c006 = new double[3]; c006[0] = 0.95; c006[1] = 0.95; c006[2] = 0.95; ChestTypeColors.push_back( c006 ); //GROUNDGLASS
-      double* c007 = new double[3]; c007[0] = 0.94; c007[1] = 0.94; c007[2] = 0.94; ChestTypeColors.push_back( c007 ); //RETICULAR
-      double* c008 = new double[3]; c008[0] = 0.93; c008[1] = 0.93; c008[2] = 0.93; ChestTypeColors.push_back( c008 ); //NODULAR
-      double* c009 = new double[3]; c009[0] = 0.92; c009[1] = 0.92; c009[2] = 0.92; ChestTypeColors.push_back( c009 ); //OBLIQUEFISSURE
-      double* c010 = new double[3]; c010[0] = 0.91; c010[1] = 0.91; c010[2] = 0.91; ChestTypeColors.push_back( c010 ); //HORIZONTALFISSURE
-      double* c011 = new double[3]; c011[0] = 0.90; c011[1] = 0.90; c011[2] = 0.90; ChestTypeColors.push_back( c011 ); //MILDPARASEPTALEMPHYSEMA
-      double* c012 = new double[3]; c012[0] = 0.89; c012[1] = 0.89; c012[2] = 0.89; ChestTypeColors.push_back( c012 ); //MODERATEPARASEPTALEMPHYSEMA
-      double* c013 = new double[3]; c013[0] = 0.88; c013[1] = 0.88; c013[2] = 0.88; ChestTypeColors.push_back( c013 ); //SEVEREPARASEPTALEMPHYSEMA
-      double* c014 = new double[3]; c014[0] = 0.87; c014[1] = 0.87; c014[2] = 0.87; ChestTypeColors.push_back( c014 ); //MILDBULLA
-      double* c015 = new double[3]; c015[0] = 0.86; c015[1] = 0.86; c015[2] = 0.86; ChestTypeColors.push_back( c015 ); //MODERATEBULLA
-      double* c016 = new double[3]; c016[0] = 0.85; c016[1] = 0.85; c016[2] = 0.85; ChestTypeColors.push_back( c016 ); //SEVEREBULLA
-      double* c017 = new double[3]; c017[0] = 0.84; c017[1] = 0.84; c017[2] = 0.84; ChestTypeColors.push_back( c017 ); //MILDCENTRILOBULAREMPHYSEMA
-      double* c018 = new double[3]; c018[0] = 0.83; c018[1] = 0.83; c018[2] = 0.83; ChestTypeColors.push_back( c018 ); //MODERATECENTRILOBULAREMPHYSEMA
-      double* c019 = new double[3]; c019[0] = 0.82; c019[1] = 0.82; c019[2] = 0.82; ChestTypeColors.push_back( c019 ); //SEVERECENTRILOBULAREMPHYSEMA
-      double* c020 = new double[3]; c020[0] = 0.81; c020[1] = 0.81; c020[2] = 0.81; ChestTypeColors.push_back( c020 ); //MILDPANLOBULAREMPHYSEMA
-      double* c021 = new double[3]; c021[0] = 0.80; c021[1] = 0.70; c021[2] = 0.80; ChestTypeColors.push_back( c021 ); //MODERATEPANLOBULAREMPHYSEMA
-      double* c022 = new double[3]; c022[0] = 0.79; c022[1] = 0.79; c022[2] = 0.79; ChestTypeColors.push_back( c022 ); //SEVEREPANLOBULAREMPHYSEMA
-      double* c023 = new double[3]; c023[0] = 0.78; c023[1] = 0.78; c023[2] = 0.78; ChestTypeColors.push_back( c023 ); //AIRWAYWALLTHICKENING
-      double* c024 = new double[3]; c024[0] = 0.77; c024[1] = 0.77; c024[2] = 0.77; ChestTypeColors.push_back( c024 ); //AIRWAYCYLINDRICALDILATION
-      double* c025 = new double[3]; c025[0] = 0.76; c025[1] = 0.76; c025[2] = 0.76; ChestTypeColors.push_back( c025 ); //VARICOSEBRONCHIECTASIS
-      double* c026 = new double[3]; c026[0] = 0.75; c026[1] = 0.75; c026[2] = 0.75; ChestTypeColors.push_back( c026 ); //CYSTICBRONCHIECTASIS
-      double* c027 = new double[3]; c027[0] = 0.74; c027[1] = 0.74; c027[2] = 0.74; ChestTypeColors.push_back( c027 ); //CENTRILOBULARNODULE
-      double* c028 = new double[3]; c028[0] = 0.73; c028[1] = 0.73; c028[2] = 0.73; ChestTypeColors.push_back( c028 ); //MOSAICING
-      double* c029 = new double[3]; c029[0] = 0.72; c029[1] = 0.72; c029[2] = 0.72; ChestTypeColors.push_back( c029 ); //EXPIRATORYMALACIA
-      double* c030 = new double[3]; c030[0] = 0.71; c030[1] = 0.71; c030[2] = 0.71; ChestTypeColors.push_back( c030 ); //SABERSHEATH
-      double* c031 = new double[3]; c031[0] = 0.70; c031[1] = 0.70; c031[2] = 0.70; ChestTypeColors.push_back( c031 ); //OUTPOUCHING
-      double* c032 = new double[3]; c032[0] = 0.69; c032[1] = 0.69; c032[2] = 0.69; ChestTypeColors.push_back( c032 ); //MUCOIDMATERIAL
-      double* c033 = new double[3]; c033[0] = 0.68; c033[1] = 0.68; c033[2] = 0.68; ChestTypeColors.push_back( c033 ); //PATCHYGASTRAPPING
-      double* c034 = new double[3]; c034[0] = 0.67; c034[1] = 0.67; c034[2] = 0.67; ChestTypeColors.push_back( c034 ); //DIFFUSEGASTRAPPING
-      double* c035 = new double[3]; c035[0] = 0.66; c035[1] = 0.66; c035[2] = 0.66; ChestTypeColors.push_back( c035 ); //LINEARSCAR
-      double* c036 = new double[3]; c036[0] = 0.65; c036[1] = 0.65; c036[2] = 0.65; ChestTypeColors.push_back( c036 ); //CYST
-      double* c037 = new double[3]; c037[0] = 0.64; c037[1] = 0.64; c037[2] = 0.64; ChestTypeColors.push_back( c037 ); //ATELECTASIS
-      double* c038 = new double[3]; c038[0] = 0.63; c038[1] = 0.63; c038[2] = 0.63; ChestTypeColors.push_back( c038 ); //HONEYCOMBING
+      double* t001 = new double[3]; t001[0] = 1.00; t001[1] = 1.00; t001[2] = 1.00; ChestTypeColors.push_back( t001 ); //UNDEFINEDTYPE
+      double* t002 = new double[3]; t002[0] = 0.99; t002[1] = 0.99; t002[2] = 0.99; ChestTypeColors.push_back( t002 ); //NORMALPARENCHYMA
+      double* t003 = new double[3]; t003[0] = 0.98; t003[1] = 0.98; t003[2] = 0.98; ChestTypeColors.push_back( t003 ); //AIRWAY
+      double* t004 = new double[3]; t004[0] = 0.97; t004[1] = 0.97; t004[2] = 0.97; ChestTypeColors.push_back( t004 ); //VESSEL
+      double* t005 = new double[3]; t005[0] = 0.96; t005[1] = 0.96; t005[2] = 0.96; ChestTypeColors.push_back( t005 ); //EMPHYSEMATOUS
+      double* t006 = new double[3]; t006[0] = 0.95; t006[1] = 0.95; t006[2] = 0.95; ChestTypeColors.push_back( t006 ); //GROUNDGLASS
+      double* t007 = new double[3]; t007[0] = 0.94; t007[1] = 0.94; t007[2] = 0.94; ChestTypeColors.push_back( t007 ); //RETICULAR
+      double* t008 = new double[3]; t008[0] = 0.93; t008[1] = 0.93; t008[2] = 0.93; ChestTypeColors.push_back( t008 ); //NODULAR
+      double* t009 = new double[3]; t009[0] = 0.92; t009[1] = 0.92; t009[2] = 0.92; ChestTypeColors.push_back( t009 ); //OBLIQUEFISSURE
+      double* t010 = new double[3]; t010[0] = 0.91; t010[1] = 0.91; t010[2] = 0.91; ChestTypeColors.push_back( t010 ); //HORIZONTALFISSURE
+      double* t011 = new double[3]; t011[0] = 0.90; t011[1] = 0.90; t011[2] = 0.90; ChestTypeColors.push_back( t011 ); //MILDPARASEPTALEMPHYSEMA
+      double* t012 = new double[3]; t012[0] = 0.89; t012[1] = 0.89; t012[2] = 0.89; ChestTypeColors.push_back( t012 ); //MODERATEPARASEPTALEMPHYSEMA
+      double* t013 = new double[3]; t013[0] = 0.88; t013[1] = 0.88; t013[2] = 0.88; ChestTypeColors.push_back( t013 ); //SEVEREPARASEPTALEMPHYSEMA
+      double* t014 = new double[3]; t014[0] = 0.87; t014[1] = 0.87; t014[2] = 0.87; ChestTypeColors.push_back( t014 ); //MILDBULLA
+      double* t015 = new double[3]; t015[0] = 0.86; t015[1] = 0.86; t015[2] = 0.86; ChestTypeColors.push_back( t015 ); //MODERATEBULLA
+      double* t016 = new double[3]; t016[0] = 0.85; t016[1] = 0.85; t016[2] = 0.85; ChestTypeColors.push_back( t016 ); //SEVEREBULLA
+      double* t017 = new double[3]; t017[0] = 0.84; t017[1] = 0.84; t017[2] = 0.84; ChestTypeColors.push_back( t017 ); //MILDCENTRILOBULAREMPHYSEMA
+      double* t018 = new double[3]; t018[0] = 0.83; t018[1] = 0.83; t018[2] = 0.83; ChestTypeColors.push_back( t018 ); //MODERATECENTRILOBULAREMPHYSEMA
+      double* t019 = new double[3]; t019[0] = 0.82; t019[1] = 0.82; t019[2] = 0.82; ChestTypeColors.push_back( t019 ); //SEVERECENTRILOBULAREMPHYSEMA
+      double* t020 = new double[3]; t020[0] = 0.81; t020[1] = 0.81; t020[2] = 0.81; ChestTypeColors.push_back( t020 ); //MILDPANLOBULAREMPHYSEMA
+      double* t021 = new double[3]; t021[0] = 0.80; t021[1] = 0.70; t021[2] = 0.80; ChestTypeColors.push_back( t021 ); //MODERATEPANLOBULAREMPHYSEMA
+      double* t022 = new double[3]; t022[0] = 0.79; t022[1] = 0.79; t022[2] = 0.79; ChestTypeColors.push_back( t022 ); //SEVEREPANLOBULAREMPHYSEMA
+      double* t023 = new double[3]; t023[0] = 0.78; t023[1] = 0.78; t023[2] = 0.78; ChestTypeColors.push_back( t023 ); //AIRWAYWALLTHICKENING
+      double* t024 = new double[3]; t024[0] = 0.77; t024[1] = 0.77; t024[2] = 0.77; ChestTypeColors.push_back( t024 ); //AIRWAYCYLINDRICALDILATION
+      double* t025 = new double[3]; t025[0] = 0.76; t025[1] = 0.76; t025[2] = 0.76; ChestTypeColors.push_back( t025 ); //VARICOSEBRONCHIECTASIS
+      double* t026 = new double[3]; t026[0] = 0.75; t026[1] = 0.75; t026[2] = 0.75; ChestTypeColors.push_back( t026 ); //CYSTICBRONCHIECTASIS
+      double* t027 = new double[3]; t027[0] = 0.74; t027[1] = 0.74; t027[2] = 0.74; ChestTypeColors.push_back( t027 ); //CENTRILOBULARNODULE
+      double* t028 = new double[3]; t028[0] = 0.73; t028[1] = 0.73; t028[2] = 0.73; ChestTypeColors.push_back( t028 ); //MOSAICING
+      double* t029 = new double[3]; t029[0] = 0.72; t029[1] = 0.72; t029[2] = 0.72; ChestTypeColors.push_back( t029 ); //EXPIRATORYMALACIA
+      double* t030 = new double[3]; t030[0] = 0.71; t030[1] = 0.71; t030[2] = 0.71; ChestTypeColors.push_back( t030 ); //SABERSHEATH
+      double* t031 = new double[3]; t031[0] = 0.70; t031[1] = 0.70; t031[2] = 0.70; ChestTypeColors.push_back( t031 ); //OUTPOUCHING
+      double* t032 = new double[3]; t032[0] = 0.69; t032[1] = 0.69; t032[2] = 0.69; ChestTypeColors.push_back( t032 ); //MUCOIDMATERIAL
+      double* t033 = new double[3]; t033[0] = 0.68; t033[1] = 0.68; t033[2] = 0.68; ChestTypeColors.push_back( t033 ); //PATCHYGASTRAPPING
+      double* t034 = new double[3]; t034[0] = 0.67; t034[1] = 0.67; t034[2] = 0.67; ChestTypeColors.push_back( t034 ); //DIFFUSEGASTRAPPING
+      double* t035 = new double[3]; t035[0] = 0.66; t035[1] = 0.66; t035[2] = 0.66; ChestTypeColors.push_back( t035 ); //LINEARSCAR
+      double* t036 = new double[3]; t036[0] = 0.65; t036[1] = 0.65; t036[2] = 0.65; ChestTypeColors.push_back( t036 ); //CYST
+      double* t037 = new double[3]; t037[0] = 0.64; t037[1] = 0.64; t037[2] = 0.64; ChestTypeColors.push_back( t037 ); //ATELECTASIS
+      double* t038 = new double[3]; t038[0] = 0.63; t038[1] = 0.63; t038[2] = 0.63; ChestTypeColors.push_back( t038 ); //HONEYCOMBING
       // The airway generation colors are identical to the vessel generation colors except that 0.01 has been
       // added to the red channel value to make these colors unique
-      double* c039 = new double[3]; c039[0] = 0.01; c039[1] = 0.00; c039[2] = 0.00; ChestTypeColors.push_back( c039 ); //AIRWAYGENERATION0
-      double* c040 = new double[3]; c040[0] = 0.01; c040[1] = 1.00; c040[2] = 0.00; ChestTypeColors.push_back( c040 ); //AIRWAYGENERATION1
-      double* c041 = new double[3]; c041[0] = 0.01; c041[1] = 1.00; c041[2] = 1.00; ChestTypeColors.push_back( c041 ); //AIRWAYGENERATION2
-      double* c042 = new double[3]; c042[0] = 1.01; c042[1] = 1.00; c042[2] = 0.00; ChestTypeColors.push_back( c042 ); //AIRWAYGENERATION3
-      double* c043 = new double[3]; c043[0] = 1.01; c043[1] = 0.00; c043[2] = 1.00; ChestTypeColors.push_back( c043 ); //AIRWAYGENERATION4
-      double* c044 = new double[3]; c044[0] = 0.51; c044[1] = 1.00; c044[2] = 0.00; ChestTypeColors.push_back( c044 ); //AIRWAYGENERATION5
-      double* c045 = new double[3]; c045[0] = 0.01; c045[1] = 0.50; c045[2] = 1.00; ChestTypeColors.push_back( c045 ); //AIRWAYGENERATION6
-      double* c046 = new double[3]; c046[0] = 0.51; c046[1] = 0.00; c046[2] = 0.50; ChestTypeColors.push_back( c046 ); //AIRWAYGENERATION7
-      double* c047 = new double[3]; c047[0] = 0.51; c047[1] = 0.50; c047[2] = 0.00; ChestTypeColors.push_back( c047 ); //AIRWAYGENERATION8
-      double* c048 = new double[3]; c048[0] = 0.01; c048[1] = 0.50; c048[2] = 0.50; ChestTypeColors.push_back( c048 ); //AIRWAYGENERATION9
-      double* c049 = new double[3]; c049[0] = 0.45; c049[1] = 0.44; c049[2] = 0.44; ChestTypeColors.push_back( c049 ); //AIRWAYGENERATION10
-      double* c050 = new double[3]; c050[0] = 0.51; c050[1] = 0.51; c050[2] = 0.51; ChestTypeColors.push_back( c050 ); //CALCIFICATION
-      double* c051 = new double[3]; c051[0] = 0.40; c051[1] = 0.50; c051[2] = 0.50; ChestTypeColors.push_back( c051 ); //ARTERY
-      double* c052 = new double[3]; c052[0] = 0.49; c052[1] = 0.49; c052[2] = 0.49; ChestTypeColors.push_back( c052 ); //VEIN
-      double* c053 = new double[3]; c053[0] = 0.48; c053[1] = 0.48; c053[2] = 0.48; ChestTypeColors.push_back( c053 ); //PECTORALISMINOR
-      double* c054 = new double[3]; c054[0] = 0.47; c054[1] = 0.47; c054[2] = 0.47; ChestTypeColors.push_back( c054 ); //PECTORALISMAJOR
-      double* c055 = new double[3]; c055[0] = 0.46; c055[1] = 0.46; c055[2] = 0.46; ChestTypeColors.push_back( c055 ); //ANTERIORSCALENE
-      double* c056 = new double[3]; c056[0] = 0.45; c056[1] = 0.45; c056[2] = 0.45; ChestTypeColors.push_back( c056 ); //FISSURE     
+      double* t039 = new double[3]; t039[0] = 0.01; t039[1] = 0.00; t039[2] = 0.00; ChestTypeColors.push_back( t039 ); //AIRWAYGENERATION0
+      double* t040 = new double[3]; t040[0] = 0.01; t040[1] = 1.00; t040[2] = 0.00; ChestTypeColors.push_back( t040 ); //AIRWAYGENERATION1
+      double* t041 = new double[3]; t041[0] = 0.01; t041[1] = 1.00; t041[2] = 1.00; ChestTypeColors.push_back( t041 ); //AIRWAYGENERATION2
+      double* t042 = new double[3]; t042[0] = 1.00; t042[1] = 1.00; t042[2] = 0.01; ChestTypeColors.push_back( t042 ); //AIRWAYGENERATION3
+      double* t043 = new double[3]; t043[0] = 1.00; t043[1] = 0.01; t043[2] = 1.00; ChestTypeColors.push_back( t043 ); //AIRWAYGENERATION4
+      double* t044 = new double[3]; t044[0] = 0.51; t044[1] = 1.00; t044[2] = 0.00; ChestTypeColors.push_back( t044 ); //AIRWAYGENERATION5
+      double* t045 = new double[3]; t045[0] = 0.01; t045[1] = 0.50; t045[2] = 1.00; ChestTypeColors.push_back( t045 ); //AIRWAYGENERATION6
+      double* t046 = new double[3]; t046[0] = 0.51; t046[1] = 0.00; t046[2] = 0.50; ChestTypeColors.push_back( t046 ); //AIRWAYGENERATION7
+      double* t047 = new double[3]; t047[0] = 0.51; t047[1] = 0.50; t047[2] = 0.00; ChestTypeColors.push_back( t047 ); //AIRWAYGENERATION8
+      double* t048 = new double[3]; t048[0] = 0.01; t048[1] = 0.50; t048[2] = 0.50; ChestTypeColors.push_back( t048 ); //AIRWAYGENERATION9
+      double* t049 = new double[3]; t049[0] = 0.45; t049[1] = 0.44; t049[2] = 0.44; ChestTypeColors.push_back( t049 ); //AIRWAYGENERATION10
+      double* t050 = new double[3]; t050[0] = 0.51; t050[1] = 0.51; t050[2] = 0.51; ChestTypeColors.push_back( t050 ); //CALCIFICATION
+      double* t051 = new double[3]; t051[0] = 0.40; t051[1] = 0.50; t051[2] = 0.50; ChestTypeColors.push_back( t051 ); //ARTERY
+      double* t052 = new double[3]; t052[0] = 0.49; t052[1] = 0.49; t052[2] = 0.49; ChestTypeColors.push_back( t052 ); //VEIN
+      double* t053 = new double[3]; t053[0] = 0.48; t053[1] = 0.48; t053[2] = 0.48; ChestTypeColors.push_back( t053 ); //PECTORALISMINOR
+      double* t054 = new double[3]; t054[0] = 0.47; t054[1] = 0.47; t054[2] = 0.47; ChestTypeColors.push_back( t054 ); //PECTORALISMAJOR
+      double* t055 = new double[3]; t055[0] = 0.46; t055[1] = 0.46; t055[2] = 0.46; ChestTypeColors.push_back( t055 ); //ANTERIORSCALENE
+      double* t056 = new double[3]; t056[0] = 0.45; t056[1] = 0.45; t056[2] = 0.45; ChestTypeColors.push_back( t056 ); //FISSURE     
       // The vessel generation colors are identical to the airway generation colors except that the red chanel
       // is 0.01 less than the airway generation red channel. This ensures that the colors are unique
-      double* c057 = new double[3]; c057[0] = 0.00; c057[1] = 0.00; c057[2] = 0.00; ChestTypeColors.push_back( c057 ); //VESSELGENERATION0
-      double* c058 = new double[3]; c058[0] = 0.00; c058[1] = 1.00; c058[2] = 0.00; ChestTypeColors.push_back( c058 ); //VESSELGENERATION1
-      double* c059 = new double[3]; c059[0] = 0.00; c059[1] = 1.00; c059[2] = 1.00; ChestTypeColors.push_back( c059 ); //VESSELGENERATION2
-      double* c060 = new double[3]; c060[0] = 1.00; c060[1] = 1.00; c060[2] = 0.00; ChestTypeColors.push_back( c060 ); //VESSELGENERATION3
-      double* c061 = new double[3]; c061[0] = 1.00; c061[1] = 0.00; c061[2] = 1.00; ChestTypeColors.push_back( c061 ); //VESSELGENERATION4
-      double* c062 = new double[3]; c062[0] = 0.50; c062[1] = 1.00; c062[2] = 0.00; ChestTypeColors.push_back( c062 ); //VESSELGENERATION5
-      double* c063 = new double[3]; c063[0] = 0.00; c063[1] = 0.50; c063[2] = 1.00; ChestTypeColors.push_back( c063 ); //VESSELGENERATION6
-      double* c064 = new double[3]; c064[0] = 0.50; c064[1] = 0.00; c064[2] = 0.50; ChestTypeColors.push_back( c064 ); //VESSELGENERATION7
-      double* c065 = new double[3]; c065[0] = 0.50; c065[1] = 0.50; c065[2] = 0.00; ChestTypeColors.push_back( c065 ); //VESSELGENERATION8
-      double* c066 = new double[3]; c066[0] = 0.00; c066[1] = 0.50; c066[2] = 0.50; ChestTypeColors.push_back( c066 ); //VESSELGENERATION9
-      double* c067 = new double[3]; c067[0] = 0.44; c067[1] = 0.44; c067[2] = 0.44; ChestTypeColors.push_back( c067 ); //VESSELGENERATION10
+      double* t057 = new double[3]; t057[0] = 0.00; t057[1] = 0.00; t057[2] = 0.00; ChestTypeColors.push_back( t057 ); //VESSELGENERATION0
+      double* t058 = new double[3]; t058[0] = 0.00; t058[1] = 1.00; t058[2] = 0.00; ChestTypeColors.push_back( t058 ); //VESSELGENERATION1
+      double* t059 = new double[3]; t059[0] = 0.00; t059[1] = 1.00; t059[2] = 1.00; ChestTypeColors.push_back( t059 ); //VESSELGENERATION2
+      double* t060 = new double[3]; t060[0] = 1.00; t060[1] = 1.00; t060[2] = 0.00; ChestTypeColors.push_back( t060 ); //VESSELGENERATION3
+      double* t061 = new double[3]; t061[0] = 1.00; t061[1] = 0.00; t061[2] = 1.00; ChestTypeColors.push_back( t061 ); //VESSELGENERATION4
+      double* t062 = new double[3]; t062[0] = 0.50; t062[1] = 1.00; t062[2] = 0.00; ChestTypeColors.push_back( t062 ); //VESSELGENERATION5
+      double* t063 = new double[3]; t063[0] = 0.00; t063[1] = 0.50; t063[2] = 1.00; ChestTypeColors.push_back( t063 ); //VESSELGENERATION6
+      double* t064 = new double[3]; t064[0] = 0.50; t064[1] = 0.00; t064[2] = 0.50; ChestTypeColors.push_back( t064 ); //VESSELGENERATION7
+      double* t065 = new double[3]; t065[0] = 0.50; t065[1] = 0.50; t065[2] = 0.00; ChestTypeColors.push_back( t065 ); //VESSELGENERATION8
+      double* t066 = new double[3]; t066[0] = 0.00; t066[1] = 0.50; t066[2] = 0.50; ChestTypeColors.push_back( t066 ); //VESSELGENERATION9
+      double* t067 = new double[3]; t067[0] = 0.44; t067[1] = 0.44; t067[2] = 0.44; ChestTypeColors.push_back( t067 ); //VESSELGENERATION10
 
-      double* c068 = new double[3]; c068[0] = 0.00; c068[1] = 0.68; c068[2] = 0.00; ChestTypeColors.push_back( c068 ); //PARASEPTALEMPHYSEMA
-      double* c069 = new double[3]; c069[0] = 0.00; c069[1] = 0.69; c069[2] = 0.69; ChestTypeColors.push_back( c069 ); //CENTRILOBULAREMPHYSEMA
-      double* c070 = new double[3]; c070[0] = 0.00; c070[1] = 0.00; c070[2] = 0.70; ChestTypeColors.push_back( c070 ); //PANLOBULAREMPHYSEMA
+      double* t068 = new double[3]; t068[0] = 0.00; t068[1] = 0.68; t068[2] = 0.00; ChestTypeColors.push_back( t068 ); //PARASEPTALEMPHYSEMA
+      double* t069 = new double[3]; t069[0] = 0.00; t069[1] = 0.69; t069[2] = 0.69; ChestTypeColors.push_back( t069 ); //CENTRILOBULAREMPHYSEMA
+      double* t070 = new double[3]; t070[0] = 0.00; t070[1] = 0.00; t070[2] = 0.70; ChestTypeColors.push_back( t070 ); //PANLOBULAREMPHYSEMA
 
-      double* c071 = new double[3]; c071[0] = 1.00; c071[1] = 0.60; c071[2] = 0.00; ChestTypeColors.push_back( c071 ); //SUBCUTANEOUSFAT
+      double* t071 = new double[3]; t071[0] = 0.59; t071[1] = 0.65; t071[2] = 0.20; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
+
+      //
+      // Each region is associated with a color. This is generally
+      // useful creating overlay images for quick segmentation inspectio, 
+      // e.g. If colors are reassigned here, they should be UNIQUE. 
+      //
+      double* r001 = new double[3]; r001[0] = 0.00; r001[1] = 0.00; r001[2] = 0.00; ChestRegionColors.push_back( r001 ); //UNDEFINEDREGION      
+      double* r002 = new double[3]; r002[0] = 0.42; r002[1] = 0.38; r002[2] = 0.75; ChestRegionColors.push_back( r002 ); //WHOLELUNG
+      double* r003 = new double[3]; r003[0] = 0.26; r003[1] = 0.64; r003[2] = 0.10; ChestRegionColors.push_back( r003 ); //RIGHTLUNG
+      double* r004 = new double[3]; r004[0] = 0.80; r004[1] = 0.11; r004[2] = 0.36; ChestRegionColors.push_back( r004 ); //LEFTLUNG
+      double* r005 = new double[3]; r005[0] = 0.04; r005[1] = 0.00; r005[2] = 0.00; ChestRegionColors.push_back( r005 ); //RIGHTSUPERIORLOBE
+      double* r006 = new double[3]; r006[0] = 0.05; r006[1] = 0.00; r006[2] = 0.00; ChestRegionColors.push_back( r006 ); //RIGHTMIDDLELOBE
+      double* r007 = new double[3]; r007[0] = 0.06; r007[1] = 0.00; r007[2] = 0.00; ChestRegionColors.push_back( r007 ); //RIGHTINFERIORLOBE
+      double* r008 = new double[3]; r008[0] = 0.07; r008[1] = 0.00; r008[2] = 0.00; ChestRegionColors.push_back( r008 ); //LEFTSUPERIORLOBE
+      double* r009 = new double[3]; r009[0] = 0.08; r009[1] = 0.00; r009[2] = 0.00; ChestRegionColors.push_back( r009 ); //LEFTINFERIORLOBE
+      double* r010 = new double[3]; r010[0] = 0.95; r010[1] = 0.03; r010[2] = 0.03; ChestRegionColors.push_back( r010 ); //LEFTUPPERTHIRD
+      double* r011 = new double[3]; r011[0] = 0.95; r011[1] = 0.89; r011[2] = 0.03; ChestRegionColors.push_back( r011 ); //LEFTMIDDLETHIRD
+      double* r012 = new double[3]; r012[0] = 0.03; r012[1] = 0.34; r012[2] = 0.95; ChestRegionColors.push_back( r012 ); //LEFTLOWERTHIRD
+      double* r013 = new double[3]; r013[0] = 0.06; r013[1] = 0.91; r013[2] = 0.91; ChestRegionColors.push_back( r013 ); //RIGHTUPPERTHIRD
+      double* r014 = new double[3]; r014[0] = 1.00; r014[1] = 0.00; r014[2] = 0.91; ChestRegionColors.push_back( r014 ); //RIGHTMIDDLETHIRD
+      double* r015 = new double[3]; r015[0] = 0.34; r015[1] = 0.41; r015[2] = 0.09; ChestRegionColors.push_back( r015 ); //RIGHTLOWERTHIRD
+      double* r016 = new double[3]; r016[0] = 0.00; r016[1] = 0.06; r016[2] = 0.00; ChestRegionColors.push_back( r016 ); //MEDIASTINUM
+      double* r017 = new double[3]; r017[0] = 0.00; r017[1] = 0.07; r017[2] = 0.00; ChestRegionColors.push_back( r017 ); //WHOLEHEART
+      double* r018 = new double[3]; r018[0] = 0.00; r018[1] = 0.08; r018[2] = 0.00; ChestRegionColors.push_back( r018 ); //AORTA
+      double* r019 = new double[3]; r019[0] = 0.00; r019[1] = 0.09; r019[2] = 0.00; ChestRegionColors.push_back( r019 ); //PULMONARYARTERY
+      double* r020 = new double[3]; r020[0] = 0.00; r020[1] = 0.00; r020[2] = 0.01; ChestRegionColors.push_back( r020 ); //PULMONARYVEIN
+      double* r021 = new double[3]; r021[0] = 0.00; r021[1] = 0.00; r021[2] = 0.02; ChestRegionColors.push_back( r021 ); //UPPERTHIRD
+      double* r022 = new double[3]; r022[0] = 0.00; r022[1] = 0.00; r022[2] = 0.03; ChestRegionColors.push_back( r022 ); //MIDDLETHIRD
+      double* r023 = new double[3]; r023[0] = 0.00; r023[1] = 0.00; r023[2] = 0.04; ChestRegionColors.push_back( r023 ); //LOWERTHIRD
+      double* r024 = new double[3]; r024[0] = 0.34; r024[1] = 0.33; r024[2] = 0.80; ChestRegionColors.push_back( r024 ); //LEFT
+      double* r025 = new double[3]; r025[0] = 0.74; r025[1] = 0.34; r025[2] = 0.14; ChestRegionColors.push_back( r025 ); //RIGHT
     }
   unsigned char GetNumberOfEnumeratedChestRegions() const
     {
@@ -630,6 +661,23 @@ public:
       return static_cast< unsigned char >( UNDEFINEDTYPE );
     }
 
+  /** The 'color' param is assumed to have three components, each in
+   *  the interval [0,1]. All chest region colors will be tested until a
+   *  color match is found. If no match is found, 'UNDEFINEDTYPYE'
+   *  will be returned */  
+  unsigned char GetChestRegionFromColor(double* color) const
+    {
+      for (unsigned int i=0; i<m_NumberOfEnumeratedChestRegions; i++)
+        {
+        if (ChestRegionColors[i][0] == color[0] && ChestRegionColors[i][1] == color[1] && 
+	    ChestRegionColors[i][2] == color[2] )          
+          {
+	  return (unsigned char)(i);
+          }
+        }
+      return (unsigned char)(UNDEFINEDTYPE);
+    }
+
   /** Given an unsigned short value, this method will compute the
    *  8-bit type value corresponding to the input */
   unsigned char GetChestTypeFromValue( unsigned short value ) const
@@ -671,9 +719,45 @@ public:
    * allocated 3 dimensional double pointer */
   void GetChestTypeColor( unsigned char whichType, double* color ) const
     {
-      color[0] = ChestTypeColors[static_cast< int >( whichType )][0];
-      color[1] = ChestTypeColors[static_cast< int >( whichType )][1];
-      color[2] = ChestTypeColors[static_cast< int >( whichType )][2];
+    color[0] = ChestTypeColors[int(whichType)][0];
+    color[1] = ChestTypeColors[int(whichType)][1];
+    color[2] = ChestTypeColors[int(whichType)][2];
+    }
+
+  /** Get the chest region color. 'color' param is assumed to be an
+   * allocated 3 dimensional double pointer */
+  void GetChestRegionColor(unsigned char whichRegion, double* color) const
+    {
+    color[0] = ChestRegionColors[int(whichRegion)][0];
+    color[1] = ChestRegionColors[int(whichRegion)][1];
+    color[2] = ChestRegionColors[int(whichRegion)][2];
+    }
+
+  /** Get the color corresponding to the chest-region chest-pair pair. The
+   * color is computed as the average of the two corresponding region and type 
+   * colors unless the region or type is undefined, in which case the color of
+   * the defined region or type is returned. The 'color' param is assumed to be 
+   * an allocated 3 dimensional double pointer */
+  void GetColorFromChestRegionChestType(unsigned char whichRegion, unsigned char whichType, double* color) const
+    {
+    if (whichRegion == (unsigned char)(cip::UNDEFINEDREGION))
+      {
+      color[0] = ChestTypeColors[int(whichType)][0];
+      color[1] = ChestTypeColors[int(whichType)][1];
+      color[2] = ChestTypeColors[int(whichType)][2];
+      }
+    else if (whichType == (unsigned char)(cip::UNDEFINEDTYPE))
+      {
+      color[0] = ChestRegionColors[int(whichRegion)][0];
+      color[1] = ChestRegionColors[int(whichRegion)][1];
+      color[2] = ChestRegionColors[int(whichRegion)][2];
+      }
+    else
+      {
+      color[0] = (ChestRegionColors[int(whichRegion)][0] + ChestTypeColors[int(whichType)][0])/2.0;
+      color[1] = (ChestRegionColors[int(whichRegion)][1] + ChestTypeColors[int(whichType)][1])/2.0;
+      color[2] = (ChestRegionColors[int(whichRegion)][2] + ChestTypeColors[int(whichType)][2])/2.0;
+      }
     }
 
   /** Given an unsigned char value corresponding to a chest region, this
@@ -855,6 +939,7 @@ public:
   std::vector< unsigned char >              ChestTypes;
   std::vector< std::string >                ChestRegionNames;
   std::vector< std::string >                ChestTypeNames;
+  std::vector< double* >                    ChestRegionColors;
   std::vector< double* >                    ChestTypeColors;
 
 private:

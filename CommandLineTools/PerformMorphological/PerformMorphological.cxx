@@ -13,6 +13,9 @@
 #include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "cipHelper.h"
+#include "itkImageRegionIterator.h"
+
+typedef itk::ImageRegionIterator<cip::LabelMapType> IteratorType;
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +28,7 @@ int main(int argc, char *argv[])
   bool open = false;
   bool dilate = false;
   bool erode = false;
+  bool allRegionTypePairs = false;
   unsigned int kernelRadiusX = 1;
   unsigned int kernelRadiusY = 1;
   unsigned int kernelRadiusZ = 1;
@@ -47,6 +51,9 @@ should also be used to specify the corresponding type";
 only labels corresponding to the pairs will be operated on. Use this flag to specify \
 the chest type of a given pair. Each time this flag is used, the -r or --region flag \
 should also be used to specify the corresponding region";
+  std::string allRegionTypePairsDesc = "If set to 1, then all chest-region chest-type pairs \
+present in the input label map will be processed. Any region-type pairs specified using \
+the -r (--region) and -t (--type) flags will be ignored. (0 by default).";
   std::string dilateDesc = "Set to 1 to perform morphological dilation (0 by default). \
 Only one morphological operation can be specified. Operations are considered in the \
 following order: dilate, erode, open, close. E.g., if dilation is specified, only it will be \
@@ -76,12 +83,13 @@ performed regardless of whether the other operations have requested.";
 
     TCLAP::ValueArg<std::string> inFileNameArg("i", "in", inFileNameDesc, true, inFileName, "string", cl);
     TCLAP::ValueArg<std::string> outFileNameArg("o", "out", outFileNameDesc, true, outFileName, "string", cl);
-    TCLAP::MultiArg<unsigned int> regionsVecArg("r", "region", regionsVecDesc, true, "int", cl);
-    TCLAP::MultiArg<unsigned int> typesVecArg("t", "type", typesVecDesc, true, "int", cl);
+    TCLAP::MultiArg<unsigned int> regionsVecArg("r", "region", regionsVecDesc, false, "int", cl);
+    TCLAP::MultiArg<unsigned int> typesVecArg("t", "type", typesVecDesc, false, "int", cl);
     TCLAP::SwitchArg dilateArg("d", "dilate", dilateDesc, cl, false);
     TCLAP::SwitchArg erodeArg("e", "erode", erodeDesc, cl, false);
     TCLAP::SwitchArg openArg("", "op", openDesc, cl, false);
     TCLAP::SwitchArg closeArg("", "cl", closeDesc, cl, false);
+    TCLAP::SwitchArg allRegionTypePairsArg("a", "all", allRegionTypePairsDesc, cl, false);
     TCLAP::ValueArg<unsigned int> kernelRadiusXArg("", "radx", kernelRadiusXDesc, false, kernelRadiusX, "", cl);
     TCLAP::ValueArg<unsigned int> kernelRadiusYArg("", "rady", kernelRadiusYDesc, false, kernelRadiusY, "", cl);
     TCLAP::ValueArg<unsigned int> kernelRadiusZArg("", "radz", kernelRadiusZDesc, false, kernelRadiusZ, "", cl);
@@ -97,20 +105,24 @@ performed regardless of whether the other operations have requested.";
     kernelRadiusX = kernelRadiusXArg.getValue();
     kernelRadiusY = kernelRadiusYArg.getValue();
     kernelRadiusZ = kernelRadiusZArg.getValue();
+    allRegionTypePairs = allRegionTypePairsArg.getValue();
 
-    if (regionsVecArg.getValue().size() != typesVecArg.getValue().size())
+    if (regionsVecArg.getValue().size() != typesVecArg.getValue().size() && !allRegionTypePairs)
       {
       std::cerr << "Error: must specify same number of chest regions and chest types" << std::endl;
       return cip::ARGUMENTPARSINGERROR;
       }
 
-    for (unsigned int i=0; i<regionsVecArg.getValue().size(); i++)
+    if (!allRegionTypePairs)
       {
-      regionsVec.push_back((unsigned char)regionsVecArg.getValue()[i]);
-      }
-    for (unsigned int i=0; i<typesVecArg.getValue().size(); i++)
-      {
-      typesVec.push_back((unsigned char)typesVecArg.getValue()[i]);
+      for (unsigned int i=0; i<regionsVecArg.getValue().size(); i++)
+	{
+	regionsVec.push_back((unsigned char)regionsVecArg.getValue()[i]);
+	}
+      for (unsigned int i=0; i<typesVecArg.getValue().size(); i++)
+	{
+	typesVec.push_back((unsigned char)typesVecArg.getValue()[i]);
+	}
       }
     }
   catch ( TCLAP::ArgException excp )
@@ -118,6 +130,9 @@ performed regardless of whether the other operations have requested.";
     std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
     return cip::ARGUMENTPARSINGERROR;
     }
+
+  // Instantiate ChestConventions for general usage
+  ChestConventions conventions;
 
   std::cout << "Reading label map..." << std::endl;
   cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
@@ -130,6 +145,39 @@ performed regardless of whether the other operations have requested.";
     {
     std::cerr << "Exception caught reading label map:";
     std::cerr << excp << std::endl;
+    }
+
+  // If morphological operations are to be performed over all chest-region chest-type pairs present
+  // in the label map, collect them now
+  if (allRegionTypePairs)
+    {
+    std::list<unsigned short> labelsList;
+
+    IteratorType it(reader->GetOutput(), reader->GetOutput()->GetBufferedRegion());
+
+    it.GoToBegin();
+    while (!it.IsAtEnd())
+      {
+	if (it.Get() != 0)
+	  {
+	  labelsList.push_back(it.Get());
+	  }
+
+	++it;
+      }
+    labelsList.unique();
+    labelsList.sort();
+    labelsList.unique();
+
+    std::list<unsigned short>::iterator listIt = labelsList.begin();
+  
+    while (listIt != labelsList.end())
+      {
+      regionsVec.push_back(conventions.GetChestRegionFromValue(*listIt));
+      typesVec.push_back(conventions.GetChestTypeFromValue(*listIt));
+	
+      listIt++;
+      }
     }
 
   if (dilate)

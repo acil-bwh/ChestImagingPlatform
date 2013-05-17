@@ -71,6 +71,19 @@ namespace cip {
    * parameters.*/
   void OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
 		    unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ);
+  
+  /** Get the bounding with respect to a specified chest region - chest type combination. The bounding
+   * box is returned as an ITK image region. */
+  cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+										 unsigned char cipRegion = (unsigned char)(UNDEFINEDREGION), 
+										 unsigned char cipType = (unsigned char)(UNDEFINEDTYPE));
+
+  /** Similar to GetLabelMapChestRegionChestTypeBoundingBoxRegion, but this function will return an ITK bounding box region
+   * padded according to the specified x, y, and z radii. The region is determined with respect to the specifed chest-region
+   * chest-type combination. */
+  cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+										       unsigned char region, unsigned char type,
+										       unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ);
 }  
 
 #endif

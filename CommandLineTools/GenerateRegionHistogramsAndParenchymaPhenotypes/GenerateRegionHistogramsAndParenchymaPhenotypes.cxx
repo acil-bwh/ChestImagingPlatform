@@ -90,7 +90,7 @@ struct PARENCHYMAPHENOTYPES
 
 
 void InitializeParenchymaPhenotypes( PARENCHYMAPHENOTYPES* );
-void ComputeParenchymaPhenotypesSubset( PARENCHYMAPHENOTYPES*, std::map< short, unsigned int >, double, short, short );
+void ComputeParenchymaPhenotypesSubset( PARENCHYMAPHENOTYPES*, std::map< short, unsigned int >, double, short, short);
 double GetHistogramKurtosis( std::map< short, unsigned int >, double, short, short );
 double GetHistogramSkewness( std::map< short, unsigned int >, double, short, short );
 unsigned int GetHistogramNumberOfCounts( std::map< short, unsigned int >, short, short );
@@ -108,9 +108,9 @@ void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelM
                                     std::map< short, unsigned int >*, std::map< short, unsigned int >*, std::map< short, unsigned int >*,
                                     std::map< short, unsigned int >*, std::map< short, unsigned int >*, double, short minBin, short maxBin );
 void UpdateLobeHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
-																			 PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* ,
-																			 std::map< short, unsigned int >* , std::map< short, unsigned int >* , std::map< short, unsigned int >* ,
-																			 std::map< short, unsigned int >* , std::map< short, unsigned int >* , double, short minBin, short maxBin);
+                                        PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* , PARENCHYMAPHENOTYPES* ,
+                                        std::map< short, unsigned int >* , std::map< short, unsigned int >* , std::map< short, unsigned int >* ,
+                                        std::map< short, unsigned int >* , std::map< short, unsigned int >* , double, short minBin, short maxBin);
 
 
 void usage()
@@ -170,8 +170,8 @@ int main( int argc, char *argv[] )
     TCLAP::ValueArg<std::string> partialLungLabelMapFileNameArg ( "p", "ipl", partialLungLabelMapFileNameDesc, false, partialLungLabelMapFileName, "string", cl );
     TCLAP::ValueArg<std::string> lungLobeLabelMapFileNameArg ( "l", "ill", lungLobeLabelMapFileNameDesc, false, lungLobeLabelMapFileName, "string", cl );
 
-    TCLAP::ValueArg<short> minBinArg ("","min",minBinDesc,false,minBin,"integer",cl);
-    TCLAP::ValueArg<short> maxBinArg ("","max",maxBinDesc,false,minBin,"integer",cl);
+    TCLAP::ValueArg<short> minBinArg ("", "min", minBinDesc, false, minBin, "integer", cl);
+    TCLAP::ValueArg<short> maxBinArg ("", "max", maxBinDesc, false, maxBin, "integer", cl);
     
     TCLAP::ValueArg<std::string> histogramFileNameArg ( "", "oh", histogramFileNameDesc, false, histogramFileName, "string", cl );
     TCLAP::ValueArg<std::string> phenotypesFileNameArg ( "", "op", phenotypesFileNameDesc, false, phenotypesFileName, "string", cl );
@@ -342,34 +342,34 @@ int main( int argc, char *argv[] )
   if ( strcmp( lungLobeLabelMapFileName.c_str(), "NA") != 0 )
     {
     std::cout << "Computing histograms with lung lobe label map..." << std::endl;
-			//If partial lung lablemap mask is not provided, we have to compute all the regional metrics.
-			if ( strcmp( partialLungLabelMapFileName.c_str(), "NA") == 0 )
-			  {
-			    UpdateAllHistogramsAndPhenotypes( ctReader->GetOutput(), lungLobeLabelMapReader->GetOutput(),
-                                   &wholeLungPhenotypes, &leftLungPhenotypes, &rightLungPhenotypes, &lulLungPhenotypes,
-                                   &lllLungPhenotypes, &rulLungPhenotypes, &rmlLungPhenotypes, &rllLungPhenotypes,
-				   &lutLungPhenotypes, &lmtLungPhenotypes, &lltLungPhenotypes, &rutLungPhenotypes,
-                                   &rmtLungPhenotypes, &rltLungPhenotypes, &utLungPhenotypes, &mtLungPhenotypes,
-                                   &ltLungPhenotypes,
-                                   &wholeLungHistogram, &leftLungHistogram, &rightLungHistogram,
-                                   &lulLungHistogram, &lllLungHistogram, &rulLungHistogram,
-                                   &rmlLungHistogram, &rllLungHistogram, &lutLungHistogram,
-                                   &lmtLungHistogram, &lltLungHistogram, &rutLungHistogram,
-                                   &rmtLungHistogram, &rltLungHistogram, &utLungHistogram,
-                                   &mtLungHistogram, &ltLungHistogram,
-                                   voxelVolume, minBin, maxBin);
-			  } 
-			else 
-			  {
-			  // Just compute lobe-based specific metrics. The general metrics were computed above
-		      	  UpdateLobeHistogramsAndPhenotypes( ctReader->GetOutput(), lungLobeLabelMapReader->GetOutput(),
-						         &lulLungPhenotypes,&lllLungPhenotypes, &rulLungPhenotypes,
-							 &rmlLungPhenotypes, &rllLungPhenotypes,
-							 &lulLungHistogram, &lllLungHistogram, &rulLungHistogram,
-			  			 &rmlLungHistogram, &rllLungHistogram,voxelVolume, minBin, maxBin);
-			  }
+    //If partial lung lablemap mask is not provided, we have to compute all the regional metrics.
+    if ( strcmp( partialLungLabelMapFileName.c_str(), "NA") == 0 )
+      {
+      UpdateAllHistogramsAndPhenotypes( ctReader->GetOutput(), lungLobeLabelMapReader->GetOutput(),
+                                        &wholeLungPhenotypes, &leftLungPhenotypes, &rightLungPhenotypes, &lulLungPhenotypes,
+                                        &lllLungPhenotypes, &rulLungPhenotypes, &rmlLungPhenotypes, &rllLungPhenotypes,
+                                        &lutLungPhenotypes, &lmtLungPhenotypes, &lltLungPhenotypes, &rutLungPhenotypes,
+                                        &rmtLungPhenotypes, &rltLungPhenotypes, &utLungPhenotypes, &mtLungPhenotypes,
+                                        &ltLungPhenotypes,
+                                        &wholeLungHistogram, &leftLungHistogram, &rightLungHistogram,
+                                        &lulLungHistogram, &lllLungHistogram, &rulLungHistogram,
+                                        &rmlLungHistogram, &rllLungHistogram, &lutLungHistogram,
+                                        &lmtLungHistogram, &lltLungHistogram, &rutLungHistogram,
+                                        &rmtLungHistogram, &rltLungHistogram, &utLungHistogram,
+                                        &mtLungHistogram, &ltLungHistogram,
+                                        voxelVolume, minBin, maxBin);
+      } 
+    else 
+      {
+      // Just compute lobe-based specific metrics. The general metrics were computed above
+      UpdateLobeHistogramsAndPhenotypes( ctReader->GetOutput(), lungLobeLabelMapReader->GetOutput(),
+                                         &lulLungPhenotypes,&lllLungPhenotypes, &rulLungPhenotypes,
+                                         &rmlLungPhenotypes, &rllLungPhenotypes,
+                                         &lulLungHistogram, &lllLungHistogram, &rulLungHistogram,
+                                         &rmlLungHistogram, &rllLungHistogram,voxelVolume, minBin, maxBin);
+      }
     }
-
+  
   //
   // Write histograms to file
   //
@@ -1031,7 +1031,7 @@ int main( int argc, char *argv[] )
     phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countBelow905)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
     phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countBelow900)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
     phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countBelow875)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
-     phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countBelow856)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
+    phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countBelow856)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
     phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countAbove0)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
     phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countAbove600)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
     phenotypesFile << 100.0*static_cast< double >(rutLungPhenotypes.countAbove250)/static_cast< double >(rutLungPhenotypes.totalVoxels) << ",";
@@ -1178,7 +1178,7 @@ void InitializeParenchymaPhenotypes( PARENCHYMAPHENOTYPES* phenotypes )
 }
 
 
-void ComputeParenchymaPhenotypesSubset( PARENCHYMAPHENOTYPES* phenotypes, std::map< short, unsigned int > histogram, double voxelVolume, short minBin, short maxBin )
+void ComputeParenchymaPhenotypesSubset( PARENCHYMAPHENOTYPES* phenotypes, std::map< short, unsigned int > histogram, double voxelVolume, short minBin, short maxBin)
 {
   unsigned int tenthPercentileCounter     = 0;
   unsigned int fifteenthPercentileCounter = 0;
@@ -1377,12 +1377,11 @@ void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelM
   lIt.GoToBegin();
   while ( !cIt.IsAtEnd() )
     {
-      
-      if (cIt.Get() < minBin || cIt.Get() > maxBin)
+    if (cIt.Get() < minBin || cIt.Get() > maxBin)
       {
-        ++cIt;
-        ++lIt;
-        continue;
+      ++cIt;
+      ++lIt;
+      continue;
       }
       
     if ( lIt.Get() != 0 )
@@ -1514,68 +1513,68 @@ void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelM
 	
 	
 void UpdateLobeHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
-																		  PARENCHYMAPHENOTYPES* lulLungPhenotypes, PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
-																			 std::map< short, unsigned int >* lulLungHistogram, std::map< short, unsigned int >* lllLungHistogram, std::map< short, unsigned int >* rulLungHistogram,
-																			 std::map< short, unsigned int >* rmlLungHistogram, std::map< short, unsigned int >* rllLungHistogram, double voxelVolume, short minBin, short maxBin )
-	{
-		ChestConventions conventions;
+                                        PARENCHYMAPHENOTYPES* lulLungPhenotypes, PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
+                                        std::map< short, unsigned int >* lulLungHistogram, std::map< short, unsigned int >* lllLungHistogram, std::map< short, unsigned int >* rulLungHistogram,
+                                        std::map< short, unsigned int >* rmlLungHistogram, std::map< short, unsigned int >* rllLungHistogram, double voxelVolume, short minBin, short maxBin )
+{
+  ChestConventions conventions;
+  
+  unsigned char lungRegion;
+  
+  CTIteratorType cIt( ctImage, ctImage->GetBufferedRegion() );
+  LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
 		
-		unsigned char lungRegion;
-		
-		CTIteratorType cIt( ctImage, ctImage->GetBufferedRegion() );
-		LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
-		
-		cIt.GoToBegin();
-		lIt.GoToBegin();
-		while ( !cIt.IsAtEnd() )
+  cIt.GoToBegin();
+  lIt.GoToBegin();
+  while ( !cIt.IsAtEnd() )
     {
       
-      if (cIt.Get() < minBin || cIt.Get() > maxBin)
+    if (cIt.Get() < minBin || cIt.Get() > maxBin)
       {
-        ++cIt;
-        ++lIt;
-        continue;
+      ++cIt;
+      ++lIt;
+      continue;
       }
       
-			if ( lIt.Get() != 0 )
+    if ( lIt.Get() != 0 )
       {
-				lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-		
-				if ( lungRegion == static_cast< unsigned char >( LEFTSUPERIORLOBE ) )
+      lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
+      
+      if ( lungRegion == static_cast< unsigned char >( LEFTSUPERIORLOBE ) )
         {
-					(*lulLungHistogram)[cIt.Get()]++;
-					lulLungPhenotypes->totalVoxels++;
-					lulLungPhenotypes->volume += voxelVolume;
+        (*lulLungHistogram)[cIt.Get()]++;
+        lulLungPhenotypes->totalVoxels++;
+        lulLungPhenotypes->volume += voxelVolume;
         }
-				if ( lungRegion == static_cast< unsigned char >( LEFTINFERIORLOBE ) )
+      if ( lungRegion == static_cast< unsigned char >( LEFTINFERIORLOBE ) )
         {
-					(*lllLungHistogram)[cIt.Get()]++;
-					lllLungPhenotypes->totalVoxels++;
-					lllLungPhenotypes->volume += voxelVolume;
+        (*lllLungHistogram)[cIt.Get()]++;
+        lllLungPhenotypes->totalVoxels++;
+        lllLungPhenotypes->volume += voxelVolume;
         }
-				if ( lungRegion == static_cast< unsigned char >( RIGHTSUPERIORLOBE ) )
+      if ( lungRegion == static_cast< unsigned char >( RIGHTSUPERIORLOBE ) )
         {
-					(*rulLungHistogram)[cIt.Get()]++;
-					rulLungPhenotypes->totalVoxels++;
-					rulLungPhenotypes->volume += voxelVolume;
+        (*rulLungHistogram)[cIt.Get()]++;
+        rulLungPhenotypes->totalVoxels++;
+        rulLungPhenotypes->volume += voxelVolume;
         }
-				if ( lungRegion == static_cast< unsigned char >( RIGHTMIDDLELOBE ) )
+      if ( lungRegion == static_cast< unsigned char >( RIGHTMIDDLELOBE ) )
         {
-					(*rmlLungHistogram)[cIt.Get()]++;
-					rmlLungPhenotypes->totalVoxels++;
-					rmlLungPhenotypes->volume += voxelVolume;
+        (*rmlLungHistogram)[cIt.Get()]++;
+        rmlLungPhenotypes->totalVoxels++;
+        rmlLungPhenotypes->volume += voxelVolume;
         }
-				if ( lungRegion == static_cast< unsigned char >( RIGHTINFERIORLOBE ) )
+      if ( lungRegion == static_cast< unsigned char >( RIGHTINFERIORLOBE ) )
         {
-					(*rllLungHistogram)[cIt.Get()]++;
-					rllLungPhenotypes->totalVoxels++;
-					rllLungPhenotypes->volume += voxelVolume;
+        (*rllLungHistogram)[cIt.Get()]++;
+        rllLungPhenotypes->totalVoxels++;
+        rllLungPhenotypes->volume += voxelVolume;
         }
-			}
-			
-			++cIt;
-			++lIt;
+      }
+    
+    ++cIt;
+    ++lIt;
     }
-	}
+}
 
 #endif
