@@ -123,7 +123,7 @@ int main( int argc, char *argv[] )
                        ' ', 
                        "$Revision: 232 $" );
 
-    TCLAP::ValueArg< std::string > maskFileNameArg ( "m", "maskFile", "Mask file name", true, leftAtlasFileName, "string", cl );
+    TCLAP::ValueArg< std::string > maskFileNameArg ( "m", "maskFile", "Mask file name", true, maskFileName, "string", cl );
 
     TCLAP::ValueArg< std::string > outputFileNameArg ( "o", "output", "Output convex hull file name", false, outputFileName, "string", cl );
     TCLAP::ValueArg< int >         numRotationsArg ( "n", "numRotations", "Number of rotations. This quanity relates to the accuracy of the final\
@@ -144,7 +144,6 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
     numRotations         = numRotationsArg.getValue();
     degreesResolution    = degreesResolutionArg.getValue();
     downsampleFactor     = downsampleFactorArg.getValue();
-
 	regionMaskLabel = regionMaskLabelArg.getValue();
     }
   catch ( TCLAP::ArgException excp )
@@ -190,6 +189,7 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
     {
 
     if ( lIt.Get() == static_cast< short > regionMaskLabel)
+
       {
       it.Set( 1 );
       }
@@ -197,7 +197,6 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
     ++lIt;
     ++it;
     }
- 
 
  
   //
@@ -207,7 +206,7 @@ convex hull. Decreasing the degrees resolution increases accuracy. If this quant
 
   std::cout << "Subsampling atlas..." << std::endl;
 
-  ResampleImage( leftReader->GetOutput(), subSampledMask, downsampleFactor );
+  ResampleImage( completeThresholdedAtlas, subSampledMask, downsampleFactor );
 
   //
   // Now compute the convex hull
