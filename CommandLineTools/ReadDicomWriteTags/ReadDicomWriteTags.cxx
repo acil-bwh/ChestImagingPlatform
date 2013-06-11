@@ -367,8 +367,10 @@ std::string GetTagValue( std::string entryID, const DictionaryType & dictionary 
   // Replace commas and new-lines with spaces
   //
   unsigned int commaLocation = tagValue.find( ',' );
+
+//First check if comma exists
 if (commaLocation <tagValue.length())
-{ std::cout<<"comma exists"<<std::endl;
+{ 
   if ( commaLocation != std::string::npos )
     {
     tagValue.replace( commaLocation, 1, " " );
