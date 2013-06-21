@@ -44,9 +44,7 @@
  *     Displays usage information and exits.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -63,66 +61,24 @@
 #include "vtkCellArray.h"
 #include "vtkIdList.h"
 #include "vtkMatrix4x4.h"
+#include "RegisterLungAtlasCLP.h"
 
+namespace
+{
 typedef itk::Image< short, 3 >                           ImageType;
 typedef itk::ImageFileReader< ImageType >                ReaderType;
 typedef itk::ImageRegionIteratorWithIndex< ImageType >   IteratorType;
 typedef itk::AffineTransform< double, 3 >                TransformType;
 typedef itk::Matrix< double, 3, 3 >                      MatrixType;
+}
 
 int main( int argc, char *argv[] )
 {
   //
   // Begin by defining the arguments to be passed
   //
-  std::string ctFileName;
-  std::string convexHullMeshFileName;
-  std::string outputTransformFileName;
-  short       boneThreshold      = 600;
-  int         numberOfIterations = 200;
 
-  std::string programDescription = "This program is used to register a lung atlas convex hull\
-mesh to the bones (ribs) in CT image. It used the iterative\
-closest point algorithm with an affine transform to perform the\
-registration. The input CT image is thresholded at a specified\
-level: all voxels (physical points) above the threshold are added\
-to the target point set. We assume that the ribs will be the bony\
-objects that the mesh points will attract to. The final transform\
-is written to file for image resampling using other tools.";
-  std::string ctFileNameDescription = "CT file name";
-  std::string convexHullMeshFileNameDescription = "Convex hull mesh file name";
-  std::string outputTransformFileNameDescription = "Output transform file name";
-  std::string boneThresholdDescription = "Threshold value for bone. Any voxel having HU\
-intensity greater than or equal to this value will be considered bone and will be added\
-to the fixed point set. (Default: 600 HU)";
-  std::string numberOfIterationsDescription = "Number of iterations";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 93 $" );
-
-    TCLAP::ValueArg< std::string > ctFileNameArg ( "c", "ct", ctFileNameDescription, true, ctFileName, "string", cl );
-    TCLAP::ValueArg< std::string > convexHullMeshFileNameArg ( "m", "mesh", convexHullMeshFileNameDescription, true, convexHullMeshFileName, "string", cl );
-    TCLAP::ValueArg< std::string > outputTransformFileNameArg ( "o", "trans", outputTransformFileNameDescription, true, outputTransformFileName, "string", cl );
-    TCLAP::ValueArg< short >       boneThresholdArg ( "b", "bone", boneThresholdDescription, false, boneThreshold, "short", cl );
-    TCLAP::ValueArg< int >         numberOfIterationsArg ( "i", "iterations", numberOfIterationsDescription, false, numberOfIterations, "int", cl );
-
-    cl.parse( argc, argv );
-
-    ctFileName              = ctFileNameArg.getValue();
-    convexHullMeshFileName  = convexHullMeshFileNameArg.getValue();
-    outputTransformFileName = outputTransformFileNameArg.getValue();
-    boneThreshold           = boneThresholdArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
-  
+  PARSE_ARGS;
   //
   // Read the CT image
   //
@@ -231,4 +187,3 @@ to the fixed point set. (Default: 600 HU)";
   return cip::EXITSUCCESS;
 }
 
-#endif

@@ -74,9 +74,9 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
+
+
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -88,8 +88,10 @@
 #include "itkExtractImageFilter.h"
 #include "itkImageLinearIteratorWithIndex.h"
 #include "itkResampleImageFilter.h"
+#include "GenerateAtlasConvexHullCLP.h"
 
-
+namespace
+{
 typedef itk::Image< unsigned short, 3 >                                     ImageType;
 typedef itk::Image< unsigned short, 2 >                                     SliceType;
 typedef itk::ImageFileReader< ImageType >                                   ReaderType;
@@ -104,208 +106,6 @@ typedef itk::ResampleImageFilter< SliceType, SliceType >                    Slic
 typedef itk::ExtractImageFilter< ImageType, SliceType >                     SliceExtractorType;
 typedef itk::ImageRegionIterator< SliceType >                               SliceIteratorType;  
 typedef itk::ImageLinearIteratorWithIndex< SliceType >                      LinearIteratorType;
-
-
-unsigned short GetMaxValueInImage( ImageType::Pointer );
-void ReassignImageToConvexHull( ImageType::Pointer, int, float );
-void ResampleImage( ImageType::Pointer, ImageType::Pointer, float );
-
-
-int main( int argc, char *argv[] )
-{
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::string leftAtlasFileName;
-  std::string rightAtlasFileName;
-  std::string outputFileName;
-  int         numRotations         = 1;
-  float       degreesResolution    = 45.0;
-  float       downsampleFactor     = 1.0;
-  float       probabilityThreshold = 0.5;
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( "This program reads atlas lung images and generates a\
-convex hull image corresponding to them. It is assumed that the\
-atlas exists as two separate atlases: one for the left lung and\
-one for the right. It is also assumed that the the maximum value\
-in each corresponds to a probability of 1 and the value 0\
-corresponds to a probability of 0.\
-The algorithm proceeds by reading in the left atlas and\
-thresholding according to a specified probability threhold (a\
-float-valued quantity ranging from 0 to 1). The right atlas is\
-read in and similarly thresholded. The union of the two images is\
-created, and the resulting image is downsampled for faster\
-processing. After downsampling, the convex hull is created. The\
-convex hull is represented as a binary image (0 = background, 1 =\
-foreground). The convex hull is upsampled so that it has the same\
-extent as the original image, and it is then written to file.", 
-                       ' ', 
-                       "$Revision: 232 $" );
-
-    TCLAP::ValueArg< std::string > leftAtlasFileNameArg ( "l", "leftAtlas", "Left lung atlas file name", true, leftAtlasFileName, "string", cl );
-    TCLAP::ValueArg< std::string > rightAtlasFileNameArg ( "r", "rightAtlas", "Right lung atlas file name", true, rightAtlasFileName, "string", cl );
-    TCLAP::ValueArg< std::string > outputFileNameArg ( "o", "output", "Output convex hull file name", false, outputFileName, "string", cl );
-    TCLAP::ValueArg< int >         numRotationsArg ( "n", "numRotations", "Number of rotations. This quanity relates to the accuracy of the final\
-convex hull. Increasing the number of rotations increases accuracy. If this quantity changes, so should the resolution degrees parameter\
-(specified by the -dr flag). E.g. if number of rotations increases by a factor of two, degrees resolution should decrease by a factor of two.",
-                                                     false, numRotations, "int", cl );
-    TCLAP::ValueArg< float >       degreesResolutionArg ( "d", "degrees", "Degrees resolution. This quanity relates to the accuracy of the final\
-convex hull. Decreasing the degrees resolution increases accuracy. If this quantity changes, so should the number of rotations parameter\
-(specified by the -nr flag). E.g. if number of rotations increases by a factor of two, degrees resolution should decrease by a factor of two\
-(Default is 45.0 degrees)", false, degreesResolution, "float", cl );
-    TCLAP::ValueArg< float >       downsampleFactorArg ( "s", "sample", "Down sample factor (default is 1)", false, downsampleFactor, "float", cl );
-    TCLAP::ValueArg< float >       probabilityThresholdArg ( "p", "probability", "Probability threshold in the interval [0,1] (default is 0.5).\
-This parameter controls the level at which the atlas is thresholded prior to convex hull creation", false, probabilityThreshold, "float", cl );
-
-    cl.parse( argc, argv );
-
-    leftAtlasFileName    = leftAtlasFileNameArg.getValue();
-    rightAtlasFileName   = rightAtlasFileNameArg.getValue();
-    outputFileName       = outputFileNameArg.getValue();
-    numRotations         = numRotationsArg.getValue();
-    degreesResolution    = degreesResolutionArg.getValue();
-    downsampleFactor     = downsampleFactorArg.getValue();
-    probabilityThreshold = probabilityThresholdArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
-
-  ImageType::Pointer completeThresholdedAtlas = ImageType::New();
-
-  {
-  //
-  // Read the left atlas. 
-  //
-  std::cout << "Reading left atlas..." << std::endl;
-  ReaderType::Pointer leftReader = ReaderType::New();
-    leftReader->SetFileName( leftAtlasFileName );
-  try
-    {
-    leftReader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught reading left atlas:";
-    std::cerr << excp << std::endl;
-
-    return cip::ATLASREADFAILURE;
-    }
-
-  unsigned short maxValue = GetMaxValueInImage( leftReader->GetOutput() );
-
-  completeThresholdedAtlas->SetRegions( leftReader->GetOutput()->GetBufferedRegion().GetSize() );
-  completeThresholdedAtlas->Allocate();
-  completeThresholdedAtlas->FillBuffer( 0 );
-  completeThresholdedAtlas->SetSpacing( leftReader->GetOutput()->GetSpacing() );
-  completeThresholdedAtlas->SetOrigin( leftReader->GetOutput()->GetOrigin() );
-
-  IteratorType lIt( leftReader->GetOutput(), leftReader->GetOutput()->GetBufferedRegion() );
-  IteratorType it( completeThresholdedAtlas, completeThresholdedAtlas->GetBufferedRegion() );
-
-  lIt.GoToBegin();
-  it.GoToBegin();
-  while ( !it.IsAtEnd() )
-    {
-    if ( lIt.Get() >= static_cast< double >( maxValue )*probabilityThreshold )
-      {
-      it.Set( 1 );
-      }
-
-    ++lIt;
-    ++it;
-    }
-  }
-
-  {
-  //
-  // Read the right atlas
-  //
-  std::cout << "Reading right atlas..." << std::endl;
-  ReaderType::Pointer rightReader = ReaderType::New();
-    rightReader->SetFileName( rightAtlasFileName );
-  try
-    {
-    rightReader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught reading right atlas:";
-    std::cerr << excp << std::endl;
-
-    return cip::ATLASREADFAILURE;
-    }
-
-  unsigned short maxValue = GetMaxValueInImage( rightReader->GetOutput() );
-
-  IteratorType rIt( rightReader->GetOutput(), rightReader->GetOutput()->GetBufferedRegion() );
-  IteratorType it( completeThresholdedAtlas, completeThresholdedAtlas->GetBufferedRegion() );
-
-  rIt.GoToBegin();
-  it.GoToBegin();
-  while ( !it.IsAtEnd() )
-    {
-    if ( rIt.Get() >= static_cast< double >( maxValue )*probabilityThreshold )
-      {
-      it.Set( 1 );
-      }
-
-    ++rIt;
-    ++it;
-    }
-  }
-
-  //
-  // Before computing the convex hull, subsample the image
-  //
-  ImageType::Pointer subSampledThresholdedAtlas = ImageType::New();
-
-  std::cout << "Subsampling atlas..." << std::endl;
-  ResampleImage( completeThresholdedAtlas, subSampledThresholdedAtlas, downsampleFactor );
-
-  //
-  // Now compute the convex hull
-  //
-  std::cout << "Computing convex hull..." << std::endl;
-  ReassignImageToConvexHull( subSampledThresholdedAtlas, numRotations, degreesResolution );  
-
-  //
-  // Up-sample the image
-  //
-  ImageType::Pointer convexHullImage = ImageType::New();
-
-  std::cout << "Up-sampling atlas..." << std::endl;
-  ResampleImage( subSampledThresholdedAtlas, convexHullImage, 1.0/downsampleFactor );
-
-  //
-  // Write the convex hull
-  //
-  std::cout << "Writing convex hull..." << std::endl;
-  WriterType::Pointer writer = WriterType::New();
-    writer->SetFileName( outputFileName );
-    writer->UseCompressionOn();
-    writer->SetInput( convexHullImage );
-  try
-    {
-    writer->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught writing convex hull image:";
-    std::cerr << excp << std::endl;
-
-    return cip::LABELMAPWRITEFAILURE;
-    }
- 
-  return cip::EXITSUCCESS;
-}
 
 
 void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, float degreesResolution )
@@ -712,6 +512,155 @@ unsigned short GetMaxValueInImage( ImageType::Pointer image )
 
   return maxValue;
 }
-    
 
-#endif
+/*unsigned short GetMaxValueInImage( ImageType::Pointer );
+void ReassignImageToConvexHull( ImageType::Pointer, int, float );
+void ResampleImage( ImageType::Pointer, ImageType::Pointer, float );
+*/
+
+} //end namespace
+
+int main( int argc, char *argv[] )
+{
+
+	  PARSE_ARGS;
+  //
+  // Begin by defining the arguments to be passed
+  //
+  /*std::string leftAtlasFileName;
+  std::string rightAtlasFileName;
+  std::string outputFileName;
+  int         numRotations         = 1;
+  float       degreesResolution    = 45.0;
+  float       downsampleFactor     = 1.0;
+  float       probabilityThreshold = 0.5;*/
+
+   ImageType::Pointer completeThresholdedAtlas = ImageType::New();
+
+  {
+  //
+  // Read the left atlas. 
+  //
+  std::cout << "Reading left atlas..." << std::endl;
+  ReaderType::Pointer leftReader = ReaderType::New();
+    leftReader->SetFileName( leftAtlasFileName );
+  try
+    {
+    leftReader->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught reading left atlas:";
+    std::cerr << excp << std::endl;
+
+    return cip::ATLASREADFAILURE;
+    }
+
+  unsigned short maxValue = GetMaxValueInImage( leftReader->GetOutput() );
+
+  completeThresholdedAtlas->SetRegions( leftReader->GetOutput()->GetBufferedRegion().GetSize() );
+  completeThresholdedAtlas->Allocate();
+  completeThresholdedAtlas->FillBuffer( 0 );
+  completeThresholdedAtlas->SetSpacing( leftReader->GetOutput()->GetSpacing() );
+  completeThresholdedAtlas->SetOrigin( leftReader->GetOutput()->GetOrigin() );
+
+  IteratorType lIt( leftReader->GetOutput(), leftReader->GetOutput()->GetBufferedRegion() );
+  IteratorType it( completeThresholdedAtlas, completeThresholdedAtlas->GetBufferedRegion() );
+
+  lIt.GoToBegin();
+  it.GoToBegin();
+  while ( !it.IsAtEnd() )
+    {
+    if ( lIt.Get() >= static_cast< double >( maxValue )*probabilityThreshold )
+      {
+      it.Set( 1 );
+      }
+
+    ++lIt;
+    ++it;
+    }
+  }
+
+  {
+  //
+  // Read the right atlas
+  //
+  std::cout << "Reading right atlas..." << std::endl;
+  ReaderType::Pointer rightReader = ReaderType::New();
+    rightReader->SetFileName( rightAtlasFileName );
+  try
+    {
+    rightReader->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught reading right atlas:";
+    std::cerr << excp << std::endl;
+
+    return cip::ATLASREADFAILURE;
+    }
+
+  unsigned short maxValue = GetMaxValueInImage( rightReader->GetOutput() );
+
+  IteratorType rIt( rightReader->GetOutput(), rightReader->GetOutput()->GetBufferedRegion() );
+  IteratorType it( completeThresholdedAtlas, completeThresholdedAtlas->GetBufferedRegion() );
+
+  rIt.GoToBegin();
+  it.GoToBegin();
+  while ( !it.IsAtEnd() )
+    {
+    if ( rIt.Get() >= static_cast< double >( maxValue )*probabilityThreshold )
+      {
+      it.Set( 1 );
+      }
+
+    ++rIt;
+    ++it;
+    }
+  }
+
+  //
+  // Before computing the convex hull, subsample the image
+  //
+  ImageType::Pointer subSampledThresholdedAtlas = ImageType::New();
+
+  std::cout << "Subsampling atlas..." << std::endl;
+  ResampleImage( completeThresholdedAtlas, subSampledThresholdedAtlas, downsampleFactor );
+
+  //
+  // Now compute the convex hull
+  //
+  std::cout << "Computing convex hull..." << std::endl;
+  ReassignImageToConvexHull( subSampledThresholdedAtlas, numRotations, degreesResolution );  
+
+  //
+  // Up-sample the image
+  //
+  ImageType::Pointer convexHullImage = ImageType::New();
+
+  std::cout << "Up-sampling atlas..." << std::endl;
+  ResampleImage( subSampledThresholdedAtlas, convexHullImage, 1.0/downsampleFactor );
+
+  //
+  // Write the convex hull
+  //
+  std::cout << "Writing convex hull..." << std::endl;
+  WriterType::Pointer writer = WriterType::New();
+    writer->SetFileName( outputFileName );
+    writer->UseCompressionOn();
+    writer->SetInput( convexHullImage );
+  try
+    {
+    writer->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught writing convex hull image:";
+    std::cerr << excp << std::endl;
+
+    return cip::LABELMAPWRITEFAILURE;
+    }
+ 
+  return cip::EXITSUCCESS;
+}
+
