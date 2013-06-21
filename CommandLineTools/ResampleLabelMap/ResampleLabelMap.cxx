@@ -35,9 +35,6 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -49,55 +46,49 @@
 #include "itkTransformFileReader.h"
 #include "itkResampleImageFilter.h"
 #include "itkMetaImageIO.h"
+#include "ResampleLabelMapCLP.h"
 
+namespace
+{
 typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >  InterpolatorType;
 typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >           ResampleType;
 typedef itk::AffineTransform< double, 3 >                                          TransformType;
 
-TransformType::Pointer GetTransformFromFile( std::string );
+//TransformType::Pointer GetTransformFromFile( std::string );
+
+TransformType::Pointer GetTransformFromFile( std::string fileName )
+{
+  itk::TransformFileReader::Pointer transformReader = itk::TransformFileReader::New();
+    transformReader->SetFileName( fileName );
+  try
+    {
+    transformReader->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught reading transform:";
+    std::cerr << excp << std::endl;
+    }
+  
+  itk::TransformFileReader::TransformListType::const_iterator it;
+  
+  it = transformReader->GetTransformList()->begin();
+
+  TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() ); 
+
+  transform->GetInverse( transform );
+
+  return transform;
+}
+
+} // end of anonymous namespace
+
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::string labelMapFileName;
-  std::string transformFileName;
-  std::string resampledFileName;
-  std::string destinationFileName;
 
-  std::string labelMapFileNameDescription  = "Label map file name to resample";
-  std::string transformFileNameDescription = "Transform file name";
-  std::string resampledFileNameDescription = "Resampled label map (output) file name";
-  std::string destinationFileNameDescription = "Destinatin file name. This should be a header file that\
-contains the necessary information (image spacing, origin, and size) for the resampling process";
-
-  std::string programDescription = "This program resamples a label map using an affine transform (read from file)";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 93 $" );
-
-    TCLAP::ValueArg< std::string > labelMapFileNameArg( "l", "labelmap", labelMapFileNameDescription, true, labelMapFileName, "string", cl );
-    TCLAP::ValueArg< std::string > transformFileNameArg( "t", "transform", transformFileNameDescription, true, transformFileName, "string", cl );
-    TCLAP::ValueArg< std::string > resampledFileNameArg( "r", "resample", resampledFileNameDescription, true, resampledFileName, "string", cl );
-    TCLAP::ValueArg< std::string > destinationFileNameArg( "d", "destination", destinationFileNameDescription, true, destinationFileName, "string", cl );
-
-    cl.parse( argc, argv );
-
-    labelMapFileName    = labelMapFileNameArg.getValue();
-    transformFileName   = transformFileNameArg.getValue();
-    resampledFileName   = resampledFileNameArg.getValue();
-    destinationFileName = destinationFileNameArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+	PARSE_ARGS;
+  
   
   //
   // Read the destination image information for spacing, origin, and
@@ -198,33 +189,5 @@ contains the necessary information (image spacing, origin, and size) for the res
 
   std::cout << "DONE." << std::endl;
 
-  return cip::EXITSUCCESS;
+  return EXITSUCCESS;
 }
-
-
-TransformType::Pointer GetTransformFromFile( std::string fileName )
-{
-  itk::TransformFileReader::Pointer transformReader = itk::TransformFileReader::New();
-    transformReader->SetFileName( fileName );
-  try
-    {
-    transformReader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught reading transform:";
-    std::cerr << excp << std::endl;
-    }
-  
-  itk::TransformFileReader::TransformListType::const_iterator it;
-  
-  it = transformReader->GetTransformList()->begin();
-
-  TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() ); 
-
-  transform->GetInverse( transform );
-
-  return transform;
-}
-
-#endif
