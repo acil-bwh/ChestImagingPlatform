@@ -72,6 +72,8 @@ enum ChestRegion {
   LOWERTHIRD,          //22
   LEFT,                //23
   RIGHT,               //24
+  LIVER,               //25
+  SPLEEN,              //26
 };
 
 
@@ -191,7 +193,7 @@ public:
   ~ChestConventions(){};
   ChestConventions()
     {
-      m_NumberOfEnumeratedChestRegions = 25;
+      m_NumberOfEnumeratedChestRegions = 27;
       m_NumberOfEnumeratedChestTypes   = 71;
 
       typedef std::pair< unsigned char, unsigned char > Region_Pair;
@@ -270,6 +272,8 @@ public:
       ChestRegions.push_back( static_cast< unsigned char >( LOWERTHIRD ) );
       ChestRegions.push_back( static_cast< unsigned char >( LEFT ) );
       ChestRegions.push_back( static_cast< unsigned char >( RIGHT ) );
+      ChestRegions.push_back( static_cast< unsigned char >( LIVER ) );
+      ChestRegions.push_back( static_cast< unsigned char >( SPLEEN ) );
 
       ChestTypes.push_back( static_cast< unsigned char >( UNDEFINEDTYPE ) );
       ChestTypes.push_back( static_cast< unsigned char >( NORMALPARENCHYMA ) );
@@ -368,6 +372,8 @@ public:
       ChestRegionNames.push_back( "LOWERTHIRD" );
       ChestRegionNames.push_back( "LEFT" );
       ChestRegionNames.push_back( "RIGHT" );
+      ChestRegionNames.push_back( "LIVER" );
+      ChestRegionNames.push_back( "SPLEEN" );
 
       ChestTypeNames.push_back( "UNDEFINEDTYPE" );
       ChestTypeNames.push_back( "NORMALPARENCHYMA" );
@@ -555,6 +561,8 @@ public:
       double* r023 = new double[3]; r023[0] = 0.00; r023[1] = 0.00; r023[2] = 0.04; ChestRegionColors.push_back( r023 ); //LOWERTHIRD
       double* r024 = new double[3]; r024[0] = 0.34; r024[1] = 0.33; r024[2] = 0.80; ChestRegionColors.push_back( r024 ); //LEFT
       double* r025 = new double[3]; r025[0] = 0.74; r025[1] = 0.34; r025[2] = 0.14; ChestRegionColors.push_back( r025 ); //RIGHT
+      double* r026 = new double[3]; r026[0] = 0.66; r026[1] = 0.36; r026[2] = 0.40; ChestRegionColors.push_back( r026 ); //LIVER
+      double* r027 = new double[3]; r027[0] = 1.00; r027[1] = 1.00; r027[2] = 0.01; ChestRegionColors.push_back( r027 ); //SPLEEN
     }
   unsigned char GetNumberOfEnumeratedChestRegions() const
     {
