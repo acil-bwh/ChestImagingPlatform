@@ -127,7 +127,7 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
   
   if (inCTFileName.compare("NA") != 0)
     {
-    std::cout << "Reading label map..." << std::endl;
+    std::cout << "Reading CT..." << std::endl;
     CTReaderType::Pointer ctReader = CTReaderType::New();
       ctReader->SetFileName(inCTFileName);
     try
@@ -136,14 +136,14 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
       }
     catch ( itk::ExceptionObject &excp )
       {
-      std::cerr << "Exception caught reading label map:";
+      std::cerr << "Exception caught reading CT:";
       std::cerr << excp << std::endl;
-      return cip::LABELMAPREADFAILURE;
+      return cip::NRRDREADFAILURE;
       }
 
     if (outCTFileName.compare("NA") != 0)
       {
-      std::cout << "Writing label map..." << std::endl;
+      std::cout << "Writing CT..." << std::endl;
       CTWriterType::Pointer ctWriter = CTWriterType::New();
         ctWriter->SetFileName(outCTFileName);
 	ctWriter->SetInput(ctReader->GetOutput());
@@ -154,9 +154,9 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
 	}
       catch ( itk::ExceptionObject &excp )
 	{
-	std::cerr << "Exception caught writing label map:";
+	std::cerr << "Exception caught writing CT:";
 	std::cerr << excp << std::endl;
-	return cip::LABELMAPWRITEFAILURE;
+	return cip::NRRDWRITEFAILURE;
 	}
       }
     }
