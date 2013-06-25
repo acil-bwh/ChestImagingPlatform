@@ -373,13 +373,16 @@ if (commaLocation <tagValue.length())
 { 
   if ( commaLocation != std::string::npos )
     {
-    tagValue.replace( commaLocation, 1, " " );
+      tagValue.replace( commaLocation, 1, " " );
     }
 
   unsigned int newlineLocation = tagValue.find( '\n' );
   if ( newlineLocation != std::string::npos )
     {
-    tagValue.replace( newlineLocation, 1, " " );
+     if (newlineLocation<tagValue.length())
+     {
+       tagValue.replace( newlineLocation, 1, " " );
+     }
     }
 }
   return tagValue;
