@@ -102,7 +102,6 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
       {
       std::cerr << "Exception caught reading label map:";
       std::cerr << excp << std::endl;
-      return cip::LABELMAPREADFAILURE;
       }
 
     if (outLabelMapFileName.compare("NA") != 0)
@@ -120,7 +119,6 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
 	{
 	std::cerr << "Exception caught writing label map:";
 	std::cerr << excp << std::endl;
-	return cip::LABELMAPWRITEFAILURE;
 	}
       }
     }
@@ -138,7 +136,6 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
       {
       std::cerr << "Exception caught reading CT:";
       std::cerr << excp << std::endl;
-      return cip::NRRDREADFAILURE;
       }
 
     if (outCTFileName.compare("NA") != 0)
@@ -156,7 +153,6 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
 	{
 	std::cerr << "Exception caught writing CT:";
 	std::cerr << excp << std::endl;
-	return cip::NRRDWRITEFAILURE;
 	}
       }
     }
