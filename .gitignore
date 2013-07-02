@@ -4,3 +4,5 @@ MakeFile
 cmake_install.cmake
 bin
 ITKIOFactoryRegistration
+.DS_Store
+CIPConfig.cmake

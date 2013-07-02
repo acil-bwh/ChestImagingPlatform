@@ -222,14 +222,14 @@ labels have been assigned.";
 void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > particles )
 {
   unsigned int numberParticles         = particles->GetNumberOfPoints();
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
   bool foundChestRegionArray = false;
   bool foundChestTypeArray   = false;
 
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
-    std::string name( particles->GetFieldData()->GetArray(i)->GetName() );
+    std::string name( particles->GetPointData()->GetArray(i)->GetName() );
 
     if ( name.compare( "ChestRegion" ) == 0 )
       {
@@ -247,7 +247,7 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
       chestRegionArray->SetNumberOfComponents( 1 );
       chestRegionArray->SetName( "ChestRegion" );
 
-    particles->GetFieldData()->AddArray( chestRegionArray );
+    particles->GetPointData()->AddArray( chestRegionArray );
     }
   if ( !foundChestTypeArray )
     {
@@ -255,7 +255,7 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
       chestTypeArray->SetNumberOfComponents( 1 );
       chestTypeArray->SetName( "ChestType" );
 
-    particles->GetFieldData()->AddArray( chestTypeArray );
+    particles->GetPointData()->AddArray( chestTypeArray );
     }
 
   float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
@@ -266,11 +266,11 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
       {
       if ( !foundChestRegionArray )
         {
-        particles->GetFieldData()->GetArray( "ChestRegion" )->InsertTuple( i, &cipRegion );
+        particles->GetPointData()->GetArray( "ChestRegion" )->InsertTuple( i, &cipRegion );
         }
       if ( !foundChestTypeArray )
         {
-        particles->GetFieldData()->GetArray( "ChestType" )->InsertTuple( i, &cipType );
+        particles->GetPointData()->GetArray( "ChestType" )->InsertTuple( i, &cipType );
         }
       }
     }
@@ -281,14 +281,14 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
                                 std::map< unsigned short, std::string >* componentLabelToNameMap, double particleSize )  
 {
   unsigned int numberParticles         = particles->GetNumberOfPoints();
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
   unsigned short component;
   std::vector< unsigned short > componentVec;
 
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
-    component = static_cast< unsigned short >( *(particles->GetFieldData()->GetArray( "unmergedComponents" )->GetTuple(i)) );
+    component = static_cast< unsigned short >( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)) );
 
     bool addComponent = true;
 
@@ -319,11 +319,11 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
   
     std::vector< vtkFloatArray* > arrayVec;
 
-    for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+    for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
       {
       vtkFloatArray* array = vtkFloatArray::New();
-        array->SetNumberOfComponents( particles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-        array->SetName( particles->GetFieldData()->GetArray(i)->GetName() );
+        array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+        array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
       arrayVec.push_back( array );
       }
@@ -331,16 +331,16 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
     unsigned int inc = 0;
     for ( unsigned int p=0; p<numberParticles; p++ )
       {
-      component = static_cast< unsigned short >( *(particles->GetFieldData()->GetArray( "unmergedComponents" )->GetTuple(p)) );
+      component = static_cast< unsigned short >( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(p)) );
       float floatComponent = static_cast< float >( component );
 
       if ( component == componentVec[c] )
         {
         points->InsertNextPoint( particles->GetPoint(p) );
 
-        for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+        for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
           {
-          arrayVec[j]->InsertTuple( inc, particles->GetFieldData()->GetArray(j)->GetTuple(p) );
+          arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(p) );
           }
 
         inc++;
@@ -358,9 +358,9 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
     double b = 1;
     
     polyData->SetPoints( points );
-    for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+    for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
       {
-      polyData->GetFieldData()->AddArray( arrayVec[j] );
+      polyData->GetPointData()->AddArray( arrayVec[j] );
       }
 
     interactor->SetVesselParticlesAsCylinders( polyData, particleSize, name ); 
@@ -383,7 +383,7 @@ vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteracto
   ChestConventions conventions;
 
   unsigned int numberParticles         = particles->GetNumberOfPoints();
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
   double* actorColor = new double[3];
 
@@ -392,13 +392,13 @@ vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteracto
   
   std::vector< vtkFloatArray* > arrayVec;
 
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-      array->SetNumberOfComponents( particles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( particles->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
-      std::cout << particles->GetFieldData()->GetArray(i)->GetName() << std::endl;
+      std::cout << particles->GetPointData()->GetArray(i)->GetName() << std::endl;
 
     arrayVec.push_back( array );
     }
@@ -406,7 +406,7 @@ vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteracto
   unsigned int inc = 0;
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
-    unsigned short componentLabel = particles->GetFieldData()->GetArray( "unmergedComponents" )->GetTuple(i)[0];
+    unsigned short componentLabel = particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)[0];
     std::string    name           = (*componentLabelToNameMap)[componentLabel];
 
     if ( interactor->Exists( name ) )
@@ -416,17 +416,17 @@ vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteracto
       float cipRegion = static_cast< float >( UNDEFINEDREGION );
       float cipType   = static_cast< float >( conventions.GetChestTypeFromColor( actorColor ) );
       
-      particles->GetFieldData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
-      particles->GetFieldData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+      particles->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
+      particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
 
       //
       // TODO: Something fishy here. With this block in, the
       // interactor re-renders...
       //
       outPoints->InsertNextPoint( particles->GetPoint(i) );
-      for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+      for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
         {
-        arrayVec[j]->InsertTuple( inc, particles->GetFieldData()->GetArray(j)->GetTuple(i) );
+        arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(i) );
         }
 
       inc++;
@@ -434,9 +434,9 @@ vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteracto
     }
 
   outPolyData->SetPoints( outPoints );
-  for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
     {
-    outPolyData->GetFieldData()->AddArray( arrayVec[j] );
+    outPolyData->GetPointData()->AddArray( arrayVec[j] );
     }
   
   return outPolyData;

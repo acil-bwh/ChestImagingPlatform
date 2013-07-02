@@ -29,7 +29,7 @@
 #include "vtkDataObject.h"
 #include "vtkPoints.h"
 #include "vtkFloatArray.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 #include "vtkGraphLayoutView.h"
 #include "vtkGraphLayout.h"
 #include "vtkRenderWindow.h"
@@ -345,7 +345,7 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
   vtkSmartPointer< vtkPolyData > outputParticles = vtkPolyData::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
   this->NumberInputParticles    = inputParticles->GetNumberOfPoints();
-  this->NumberOfFieldDataArrays = inputParticles->GetFieldData()->GetNumberOfArrays();
+  this->NumberOfPointDataArrays = inputParticles->GetPointData()->GetNumberOfArrays();
 
   //
   // Initialized the airway generation assignments. Each particle
@@ -488,7 +488,7 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
     while ( mIt != this->ParticleIDToAirwayGenerationMap.end() )
       {	
   	unsigned char estState  = mIt->second;
-  	unsigned char trueState = inputParticles->GetFieldData()->GetArray( "ChestType" )->GetTuple( mIt->first )[0];
+  	unsigned char trueState = inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple( mIt->first )[0];
 
   	if ( estState == trueState )
   	  {
@@ -511,15 +511,15 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
 
   std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
 
-  for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
     {
     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-      array->SetNumberOfComponents( inputParticles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( inputParticles->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( inputParticles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( inputParticles->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
 
-    if ( strcmp( inputParticles->GetFieldData()->GetArray(i)->GetName(), "ChestType" ) == 0 )
+    if ( strcmp( inputParticles->GetPointData()->GetArray(i)->GetName(), "ChestType" ) == 0 )
       {
   	chestTypeArrayFound = true;
       }
@@ -550,7 +550,7 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
   	    }
   	  else
   	    {
-  	      arrayVec[k]->InsertTuple( i, inputParticles->GetFieldData()->GetArray(k)->GetTuple(i) );
+  	      arrayVec[k]->InsertTuple( i, inputParticles->GetPointData()->GetArray(k)->GetTuple(i) );
   	    }
   	}     
     }
@@ -558,7 +558,7 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
   outputParticles->SetPoints( outputPoints );
   for ( unsigned int j=0; j<arrayVec.size(); j++ )
     {
-    outputParticles->GetFieldData()->AddArray( arrayVec[j] );
+    outputParticles->GetPointData()->AddArray( arrayVec[j] );
     }
 
   return 1;
@@ -661,7 +661,7 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 	  counterMap[static_cast< float >( this->States[i] )]                 = 0;
 	}
 
-      float scale1 = inputParticles->GetFieldData()->GetArray( "scale" )->GetTuple( p )[0];
+      float scale1 = inputParticles->GetPointData()->GetArray( "scale" )->GetTuple( p )[0];
 
       float point1[3];
         point1[0] = inputParticles->GetPoint( p )[0];
@@ -669,17 +669,17 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 	point1[2] = inputParticles->GetPoint( p )[2];
 
       double particle1Hevec2[3];
-        particle1Hevec2[0] = inputParticles->GetFieldData()->GetArray( "hevec2" )->GetTuple( p )[0];
-	particle1Hevec2[1] = inputParticles->GetFieldData()->GetArray( "hevec2" )->GetTuple( p )[1];
-	particle1Hevec2[2] = inputParticles->GetFieldData()->GetArray( "hevec2" )->GetTuple( p )[2];
+        particle1Hevec2[0] = inputParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( p )[0];
+	particle1Hevec2[1] = inputParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( p )[1];
+	particle1Hevec2[2] = inputParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( p )[2];
 
       for ( unsigned int a=0; a<this->AirwayGenerationLabeledAtlases.size(); a++ )
 	{
 	  for ( unsigned int g=0; g<this->AirwayGenerationLabeledAtlases[a]->GetNumberOfPoints(); g++ )
 	    {
-	      state = this->AirwayGenerationLabeledAtlases[a]->GetFieldData()->GetArray( "ChestType" )->GetTuple( g )[0];
+	      state = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "ChestType" )->GetTuple( g )[0];
 	      
-	      float scale2 = this->AirwayGenerationLabeledAtlases[a]->GetFieldData()->GetArray( "scale" )->GetTuple( g )[0];
+	      float scale2 = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "scale" )->GetTuple( g )[0];
 	      
 	      float point2[3];
 	        point2[0] = this->AirwayGenerationLabeledAtlases[a]->GetPoint( g )[0];
@@ -694,9 +694,9 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 	      double distance = this->GetVectorMagnitude( connectingVec );
 
 	      double particle2Hevec2[3];
-  	        particle2Hevec2[0] = this->AirwayGenerationLabeledAtlases[a]->GetFieldData()->GetArray( "hevec2" )->GetTuple( g )[0];
-		particle2Hevec2[1] = this->AirwayGenerationLabeledAtlases[a]->GetFieldData()->GetArray( "hevec2" )->GetTuple( g )[1];
-		particle2Hevec2[2] = this->AirwayGenerationLabeledAtlases[a]->GetFieldData()->GetArray( "hevec2" )->GetTuple( g )[2];
+  	        particle2Hevec2[0] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[0];
+		particle2Hevec2[1] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[1];
+		particle2Hevec2[2] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[2];
 
 	      double angle1 =  this->GetAngleBetweenVectors( particle1Hevec2, connectingVec, true );
 	      double angle2 =  this->GetAngleBetweenVectors( particle2Hevec2, connectingVec, true );
@@ -738,7 +738,7 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 
 	  // //DEB
 	  // {
-	  //   if ( state == inputParticles->GetFieldData()->GetArray( "ChestType" )->GetTuple(p)[0] )
+	  //   if ( state == inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(p)[0] )
 	  //     {
 	  // 	probabilities[state] = 1.0;
 	  //     }
@@ -779,12 +779,12 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
       	      }
       	  }
 
-      	if ( best == inputParticles->GetFieldData()->GetArray( "ChestType" )->GetTuple( p )[0] )
+      	if ( best == inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple( p )[0] )
       	  {
       	    correct++;
       	  }
 
-	unsigned int row = inputParticles->GetFieldData()->GetArray( "ChestType" )->GetTuple( p )[0] - 38;
+	unsigned int row = inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple( p )[0] - 38;
 	unsigned int col = best -38;
 	confusionMatrix[row][col] += 1;
       }	
@@ -993,14 +993,14 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetEdgeWeigh
     }
 
   double particle1Hevec2[3];
-    particle1Hevec2[0] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID1 )[0];
-    particle1Hevec2[1] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID1 )[1];
-    particle1Hevec2[2] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID1 )[2];
+    particle1Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[0];
+    particle1Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[1];
+    particle1Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[2];
 
   double particle2Hevec2[3];
-    particle2Hevec2[0] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID2 )[0];
-    particle2Hevec2[1] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID2 )[1];
-    particle2Hevec2[2] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID2 )[2];
+    particle2Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[0];
+    particle2Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[1];
+    particle2Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[2];
 
   double angle1 =  this->GetAngleBetweenVectors( particle1Hevec2, connectingVec, true );
   double angle2 =  this->GetAngleBetweenVectors( particle2Hevec2, connectingVec, true );
@@ -1689,8 +1689,8 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransit
   //DEB
   bool printDEB = false;
   {
-    float fromState = particles->GetFieldData()->GetArray( "ChestType" )->GetTuple( sourceParticleID )[0];
-    float toState   = particles->GetFieldData()->GetArray( "ChestType" )->GetTuple( targetParticleID )[0];
+    float fromState = particles->GetPointData()->GetArray( "ChestType" )->GetTuple( sourceParticleID )[0];
+    float toState   = particles->GetPointData()->GetArray( "ChestType" )->GetTuple( targetParticleID )[0];
     
     if ( fromState == float(cip::AIRWAYGENERATION1) && toState == float(cip::AIRWAYGENERATION0) &&
 	 int(sourceState) == int(cip::AIRWAYGENERATION1) && int(targetState) == int(cip::AIRWAYGENERATION0) )
@@ -1712,19 +1712,19 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransit
 	  found = true;
 
 	  double sourceDirection[3];
-	  sourceDirection[0] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[0];
-	  sourceDirection[1] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[1];
-	  sourceDirection[2] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[2];
+	  sourceDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[0];
+	  sourceDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[1];
+	  sourceDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[2];
 	  
 	  double targetDirection[3];
-	  targetDirection[0] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[0];
-	  targetDirection[1] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[1];
-	  targetDirection[2] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[2];
+	  targetDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[0];
+	  targetDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[1];
+	  targetDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[2];
 	  
 	  double angle = this->GetAngleBetweenVectors( sourceDirection, targetDirection, true );
 	  
-	  double sourceScale =  particles->GetFieldData()->GetArray( "scale" )->GetTuple( sourceParticleID )[0];
-	  double targetScale =  particles->GetFieldData()->GetArray( "scale" )->GetTuple( targetParticleID )[0];
+	  double sourceScale =  particles->GetPointData()->GetArray( "scale" )->GetTuple( sourceParticleID )[0];
+	  double targetScale =  particles->GetPointData()->GetArray( "scale" )->GetTuple( targetParticleID )[0];
 	  
 	  double scaleDiff = targetScale-sourceScale;
 

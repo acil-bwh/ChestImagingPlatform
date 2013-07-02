@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
 import os
-
+import pdb
 #import subprocess
 #from subprocess import PIPE
 #from ReadNRRDsWriteVTKModule import ReadNRRDsWriteVTKModule
-from . import GenerateParticles
+from cip_python.GenerateParticles import GenerateParticles
 
 class GenerateAirwayParticles(GenerateParticles):
     def __init__( self ):
@@ -15,7 +15,6 @@ class GenerateAirwayParticles(GenerateParticles):
         self._minIntensity = -1100
 
     def Execute( self ):
-
         #Pre-processing
         if self._downSamplingRate > 1:
             downsampledVolume = os.path.join(self._temporaryDirectory,"ct-down.nrrd")
@@ -28,15 +27,18 @@ class GenerateAirwayParticles(GenerateParticles):
         else:
             downsampledVolume = self._inputFileName
 
+        print "2"
         deconvolvedVolume = os.path.join(self._temporaryDirectory,"ct-deconv.nrrd")
         self.Deconvolution(downsampledVolume,deconvolvedVolume)
-
+        print "finished deconvolution\n"
+        print "loc1\n"
         #Setting member variables that will not change
         self._inputVolume = deconvolvedVolume
+        print "loc2\n"
         
         #Temporate nrrd particles points
         outputParticles = os.path.join(self._temporaryDirectory, "pass%d.nrrd")
-
+        print "loc3\n"
         #Pass 1
         #Init params
         self._useStrength = False
@@ -55,9 +57,13 @@ class GenerateAirwayParticles(GenerateParticles):
         self._iterations = 10
 
         #Build parameters and run
+        print "resetting param groups\n"
         self.ResetParamGroups()
+        print "building param groups\n"
         self.BuildParamGroups()
+        print "Starting pass 1\n"
         self.ExecutePass(outputParticles % 1)
+        print "Finished pass 1\n"
 
         #Pass 2
         #Init params
@@ -78,7 +84,9 @@ class GenerateAirwayParticles(GenerateParticles):
         #Build parameters and run
         self.ResetParamGroups()
         self.BuildParamGroups()
+        print "starting pass 2\n"
         self.ExecutePass(outputParticles % 2)
+        print "finished pass 2\n"
 
         #Pass 3
         self._initializationMode = "Particles"
@@ -99,12 +107,17 @@ class GenerateAirwayParticles(GenerateParticles):
         #Build parameters and run
         self.ResetParamGroups()
         self.BuildParamGroups()
+        print "starting pass 3\n"
         self.ExecutePass(outputParticles % 3)
+        print "finished pass 3\n"
 
         #Probe quantities and save to VTK
+        print "about to probe\n"
         self.ProbeAllQuantities(self._inputVolume, outputParticles % 3)
+        print "finished probing\n"
+        print "about to save to vtk\n"
         self.SaveParticlesToVTK(outputParticles % 3)
-
+        print "finished saving\n"
 
 ########################################################
 # runairwaypipeline.sh

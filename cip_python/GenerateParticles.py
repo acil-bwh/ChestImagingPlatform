@@ -7,10 +7,11 @@
 # TODO: Create a separate class for probing points (post-processing unu calls)
 #------------------------------------------------------------------------------------
 
+import pdb
 import subprocess
 import os
 from subprocess import PIPE
-from ReadNRRDsWriteVTKModule import ReadNRRDsWriteVTKModule
+from cip_python.ReadNRRDsWriteVTK import ReadNRRDsWriteVTK
 
 class GenerateParticles:
     def __init__( self ):
@@ -65,6 +66,8 @@ class GenerateParticles:
         #Optimizer params
         #
         self._binningWidth = 1.2 #Binning width as mulitple of irad. Increase this value run into overflow of maximum number of bins.
+        self._populationControlPeriod = 5 #Population control period
+        self._noAdd = 0 #If enabled, it does not add points during population control
 
         #
         #Pre proc Parameters
@@ -117,11 +120,15 @@ class GenerateParticles:
         self._cleanTemporaryDirectory = tmp
 
     def SetVolParamGroup( self ):
+	   
         if self._singleScale == 0:
             self._volParams = " -vol " + self._inputVolume + ":scalar:0-" + str(self._scaleSamples) + "-" + str(self._maxScale) + "-o:V " \
-            +  self._inputVolume + ":scalar:0-" + str(self._scaleSamples) + "-" + str(self._maxScale) + "-on:VSN " + self._maskFileName + ":scalar:M"
+            +  self._inputVolume + ":scalar:0-" + str(self._scaleSamples) + "-" + str(self._maxScale) + "-on:VSN"
         else:
-            self._volParams = " -vol " +  self._inputVolume + ":scalar:V " + self._maskFileName + ":scalar:M -usa true"
+            self._volParams = " -vol " +  self._inputVolume + ":scalar:V -usa true"
+
+        if self._useMask == 1:
+	   self._volParams += " " + self._maskFileName + ":scalar:M"
 
     def SetInfoParamGrop( self ):
         if self._singleScale == 1:
@@ -129,27 +136,26 @@ class GenerateParticles:
         else:
             volTag = "VSN"
 
-        if self._useMask == 1:
-            maskVal = "0.5";
-        else:
-            maskVal = "-0.5";
-
         if self._featureType == "RidgeLine":
             self._infoParams = " -info  h-c:V:val:0:-1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 "
             self._infoParams += "sthr:" + volTag + ":heval1:" + str(self._seedThreshold) + ":-1 lthr:" + volTag + ":heval1:"
-            self._infoParams += str(self._liveThreshold) + ":-1 strn:" + volTag + ":heval1:0:-1 spthr:M:val:" + maskVal + ":1"
+            self._infoParams += str(self._liveThreshold) + ":-1 strn:" + volTag + ":heval1:0:-1"
         elif self._featureType == "ValleyLine":
             self._infoParams = " -info  h-c:V:val:0:1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 "
             self._infoParams += "sthr:" + volTag + ":heval1:" + str(self._seedThreshold) + ":1 lthr:" + volTag + ":heval1:"
-            self._infoParams += str(self._liveThreshold) + ":1 strn:" + volTag + ":heval1:0:1 spthr:M:val:" + maskVal + ":1"
+            self._infoParams += str(self._liveThreshold) + ":1 strn:" + volTag + ":heval1:0:1"
         elif self._featureType == "RidgeSurface":
             self._infoParams = " -info h-c:V:val:0:-1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec2 "
             self._infoParams += " sthr:" + volTag + ":heval2:" + str(self._seedThreshold) + ":-1 lthr:" + volTag + ":heval2:"
-            self._infoParams += str(self._liveThreshold) + ":-1 lthr2:" + volTag + ":hmode:" + str(self._modeThreshold) + ":-1 strn:" + volTag + ":heval2:0:-1 spthr:M:val:" + maskVal + ":1"
+            self._infoParams += str(self._liveThreshold) + ":-1 lthr2:" + volTag + ":hmode:" + str(self._modeThreshold) + ":-1 strn:" + volTag + ":heval2:0:-1"
         elif self._featureType == "ValleySurface":
             self._infoParams = " -info h-c:V:val:0:1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec0 "
             self._infoParams +=" sthr:" + volTag + ":heval0:" + str(self._seedThreshold) + ":1 lthr:" + volTag + ":heval0:"
-            self._infoParams += str(self._liveThreshold) + ":1 lthr2:" + volTag + ":hmode:" + str(self._modeThreshold) + ":1 strn:" + volTag + ":heval0:0:1 spthr:M:val:" + maskVal + ":1"
+            self._infoParams += str(self._liveThreshold) + ":1 lthr2:" + volTag + ":hmode:" + str(self._modeThreshold) + ":1 strn:" + volTag + ":heval0:0:1"
+
+        if self._useMask == 1:
+	    maskVal = "0.5";
+	    self._infoParams += " spthr:M:val:" + maskVal + ":1"
 
     def SetReconKernelParamsGroup(self):
         if self._reconKernelType == "Bspline3":
@@ -170,7 +176,9 @@ class GenerateParticles:
             self._reconInverseKernelParams = "-k c4hai"
 
     def SetOptimizerParamsGroup( self ):
-        self._optimizerParams = "-pcp 5 -edpcmin 0.1 -edmin 0.0000001 -eip 0.001 -ess 0.2 -oss 1.9 -step 1 -maxci 10 -rng 45 -bws "+ str(self._binningWidth)
+        self._optimizerParams = "-pcp "+ str(self._populationControlPeriod) + " -edpcmin 0.1 -edmin 0.0000001 -eip 0.001 -ess 0.2 -oss 1.9 -step 1 -maxci 10 -rng 45 -bws "+ str(self._binningWidth)
+        if  self._noAdd == 1:
+          self._optimizerParams += " -noadd"
 
     def SetEnergyParamsGroup( self ):
         self._energyParams = "-enr qwell:0.7 -ens bparab:10,0.7,-0.00 -enw butter:10,0.7"
@@ -245,10 +253,11 @@ class GenerateParticles:
             if os.path.exists(self._maskFileName) == False:
                 return False
 
-
         if self._singleScale == 1:
             tmpCommand = "unu resample -i " + self._inputVolume + " -s x1 x1 x1 -k dgauss:" + str(self._maxScale) + ",3 -t float -o " + self._inputVolume
-            subprocess( tmpCommand, shell=True)
+            #pdb.set_trace()
+            print tmpCommand
+            #subprocess( tmpCommand, shell=True)
 
         tmpCommand = "puller -sscp " + self._temporaryDirectory + " -cbst true " + self._volParams + " " + self._miscParams + " " + self._infoParams + " " + \
         self._energyParams + " " + self._initParams + " " + self._reconKernelParams + " " + self._optimizerParams + " -o " + output + " -maxi " + str(self._iterations)
@@ -256,14 +265,19 @@ class GenerateParticles:
         if self._verbose == 1:
             print tmpCommand #TODO: (remove this line)
 
-        subprocess.call( tmpCommand, shell=True )
+        #pdb.set_trace()
+        print tmpCommand
+        print "\n"
+        #subprocess.call( tmpCommand, shell=True )
 
         #Trick to add scale value
         if self._singleScale == 1:
             tmpCommand = "unu head " + output + " | grep size | awk '{split($0,a,\" \"); print a[3]}'"
+            pdb.set_trace()
             tmpNP = subprocess.Popen( tmpCommand, shell=True, stdout=PIPE, stderr=PIPE )
             NP = tmpNP.communicate()[0].rstrip('\n')
             tmpCommand = "echo \"0 0 0 " + str(self._maxScale) + "\" | unu pad -min 0 0 -max 3 " + NP + " -b mirror | unu 2op + - " + output + " -o " + output
+            pdb.set_trace()
             subprocess.call( tmpCommand, shell=True )
 
 
@@ -345,7 +359,7 @@ class GenerateParticles:
             print tmpCommand
             subprocess.call( tmpCommand, shell=True )
 
-        readerWriter = ReadNRRDsWriteVTKModule()
+        readerWriter = ReadNRRDsWriteVTK()
         readerWriter.SetCIPBuildDirectory( self._cipBuildDirectory )
         readerWriter.AddFileNameArrayNamePair( inputParticles,  "NA" )
         quantities=["val","heval0","heval1","heval2","hmode","hevec0","hevec1","hevec2","hess"]

@@ -42,7 +42,7 @@
 #include "vtkPolyData.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 #include "vtkFloatArray.h"
 
 
@@ -128,17 +128,17 @@ this program will create them and initialize entries to UNDEFINEDTYPE and UNDEFI
 
 void MergeParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< vtkPolyData > mergedParticles )
 {
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();;
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();;
 
   vtkPoints* points = vtkPoints::New();
 
   std::vector< vtkFloatArray* > arrayVec;
 
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( particles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( particles->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
     }
@@ -172,9 +172,9 @@ void MergeParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< 
       }
     if ( addPoint )
       {
-      for ( unsigned int k=0; k<numberOfFieldDataArrays; k++ )
+      for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
         {
-        mergedParticles->GetFieldData()->GetArray(k)->InsertNextTuple( particles->GetFieldData()->GetArray(k)->GetTuple(i) );
+        mergedParticles->GetPointData()->GetArray(k)->InsertNextTuple( particles->GetPointData()->GetArray(k)->GetTuple(i) );
         }
       mergedParticles->GetPoints()->InsertNextPoint( point1 );
       }
@@ -184,17 +184,17 @@ void MergeParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< 
 
 void CopyParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< vtkPolyData > mergedParticles )
 {
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();;
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();;
 
   vtkPoints* points = vtkPoints::New();
 
   std::vector< vtkFloatArray* > arrayVec;
 
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( particles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( particles->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
     }
@@ -211,18 +211,18 @@ void CopyParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< v
 
   for ( int i=0; i<particles->GetNumberOfPoints(); i++ )
     {   
-    for ( unsigned int k=0; k<numberOfFieldDataArrays; k++ )
+    for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
       {
-      arrayVec[k]->InsertTuple( inc, particles->GetFieldData()->GetArray(k)->GetTuple(i) );
+      arrayVec[k]->InsertTuple( inc, particles->GetPointData()->GetArray(k)->GetTuple(i) );
       }
     inc++;
     points->InsertNextPoint( particles->GetPoint(i) );
     }
 
   mergedParticles->SetPoints( points );
-  for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
     {
-    mergedParticles->GetFieldData()->AddArray( arrayVec[j] );
+    mergedParticles->GetPointData()->AddArray( arrayVec[j] );
     }
 }
 
@@ -236,14 +236,14 @@ void CopyParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< v
 void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > particles )
 {
   unsigned int numberParticles         = particles->GetNumberOfPoints();
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
   bool foundChestRegionArray = false;
   bool foundChestTypeArray   = false;
 
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
-    std::string name( particles->GetFieldData()->GetArray(i)->GetName() );
+    std::string name( particles->GetPointData()->GetArray(i)->GetName() );
 
     if ( name.compare( "ChestRegion" ) == 0 )
       {
@@ -261,7 +261,7 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
       chestRegionArray->SetNumberOfComponents( 1 );
       chestRegionArray->SetName( "ChestRegion" );
 
-    particles->GetFieldData()->AddArray( chestRegionArray );
+    particles->GetPointData()->AddArray( chestRegionArray );
     }
   if ( !foundChestTypeArray )
     {
@@ -269,7 +269,7 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
       chestTypeArray->SetNumberOfComponents( 1 );
       chestTypeArray->SetName( "ChestType" );
 
-    particles->GetFieldData()->AddArray( chestTypeArray );
+    particles->GetPointData()->AddArray( chestTypeArray );
     }
 
   float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
@@ -280,11 +280,11 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
       {
       if ( !foundChestRegionArray )
         {
-        particles->GetFieldData()->GetArray( "ChestRegion" )->InsertTuple( i, &cipRegion );
+        particles->GetPointData()->GetArray( "ChestRegion" )->InsertTuple( i, &cipRegion );
         }
       if ( !foundChestTypeArray )
         {
-        particles->GetFieldData()->GetArray( "ChestType" )->InsertTuple( i, &cipType );
+        particles->GetPointData()->GetArray( "ChestType" )->InsertTuple( i, &cipType );
         }
       }
     }
