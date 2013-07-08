@@ -108,40 +108,6 @@ ShortImageType::Pointer ReadCTFromFile( std::string fileName )
   return reader->GetOutput();
 }
 
-template <class T>
-int DoIt( int argc, char * argv[], T )
-{
-  PARSE_ARGS;
-
-  typedef    T InputPixelType;
-  typedef    T OutputPixelType;
-
-  typedef itk::Image<InputPixelType,  3> InputImageType;
-  typedef itk::Image<OutputPixelType, 3> OutputImageType;
-
-  typedef itk::ImageFileReader<InputImageType>  ReaderType;
-  typedef itk::ImageFileWriter<OutputImageType> WriterType;
-
-  typedef itk::SmoothingRecursiveGaussianImageFilter<
-    InputImageType, OutputImageType>  FilterType;
-
-  typename ReaderType::Pointer reader = ReaderType::New();
-
-  reader->SetFileName( inputVolume.c_str() );
-
-  typename FilterType::Pointer filter = FilterType::New();
-  filter->SetInput( reader->GetOutput() );
-  filter->SetSigma( sigma );
-
-  typename WriterType::Pointer writer = WriterType::New();
-  writer->SetFileName( outputVolume.c_str() );
-  writer->SetInput( filter->GetOutput() );
-  writer->SetUseCompression(1);
-  writer->Update();
-
-  return EXIT_SUCCESS;
-}
-
 } // end of anonymous namespace
 
 int main( int argc, char * argv[] )
