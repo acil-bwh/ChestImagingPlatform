@@ -14,23 +14,37 @@ from subprocess import PIPE
 from cip_python.ReadNRRDsWriteVTK import ReadNRRDsWriteVTK
 
 class GenerateParticles:
-    def __init__( self ):
+    """Base class for airway, vessel, and fissure particles classes.
+
+    Parameters
+    ----------
+    feature_type : string
+        Takes on one or four values: "RidgeLine" (for vessels), "ValleyLine"
+        (for airways), "RidgeSurface" (for fissure), "ValleySurface"
+    """
+    def __init__(self, feature_type):
+        assert feature_type == "RidgeLine" or feature_type == "ValleyLine" or \
+            feature_type == "RidgeSurface" or feature_type == "ValleySurface",
+        "Invalid feature type"
+        
+        self._feature_type = feature_type        
         self._reconInverseKernelParams     = ""
         self._initParams                   = ""
-        self._temporaryDirectory           = "."
-        self._inputFileName                = "NA"
+        self.tmp_dir                       = "."
+        self.in_file_name                = "NA"
         self._maskFileName                 = "NA"
         self._inputNRRDParticlesFileName   = "NA"
         self._particlesFileName            = "NA"
-        self._cipBuildDirectory            = ""
-        self._cleanTemporaryDirectory      = True
+
+        # If set to true, the temporary directory will be wiped clean
+        # after execution
+        self.clean_tmp_dir = False
 
         # Temporal filenames
-        self._inputVolume = self._inputFileName  #Volume name that is going to be used for scale-space particles. This volume is the result of any pre-processing
+        self._inputVolume = self.in_file_name  #Volume name that is going to be used for scale-space particles. This volume is the result of any pre-processing
         self._nrrdParticlesFileName    = "nrrdParticlesFileName.nrrd"  #Nrrd file to contain particle data.
 
-        # Particle system set up params
-        self._featureType        = "RidgeLine" #This is a RidgeLine (Vessel), ValleyLine (Airway), RidgeSurface (Fissure), ValleySurface
+        # Particle system set up param. 
         self._reconKernelType    = "C4"        #Options: Bspline3, Bspline5, Bspline7 and C4
         self._initializationMode = "Random"    #Options: Ramdom, Halton, Particles, PerVoxel
         self._singleScale        = 0           #Run at a single scale vs a full scale-space exploration
@@ -39,7 +53,7 @@ class GenerateParticles:
         self._scaleSamples       = 5          #TODO: Description
         self._iterations         = 50
 
-        self._verbose = 1
+        self._verbose                    = 1
 
         # Energy specific params
         self._irad  = 1.7
@@ -51,9 +65,9 @@ class GenerateParticles:
         self._useStrength = "true"
 
         # Init specific params
-        self._ppv = 1 #Points per voxel.
-        self._nss = 1 #Number of samples along scale axis
-        self._jit = 1 #Jittering to do for each point
+        self._ppv = 1 # Points per voxel.
+        self._nss = 1 # Number of samples along scale axis
+        self._jit = 1 # Jittering to do for each point
 
         # Optimizer params
         self._binningWidth = 1.2 #Binning width as mulitple of irad. Increase this value run into overflow of maximum number of bins.
@@ -82,9 +96,6 @@ class GenerateParticles:
     def SetFeatureTypeToRidgeLine( self ):
         self._featureType = "RidgeLine"
 
-    def SetInputFileName( self, inputFileName ):
-        self._inputFileName = inputFileName
-
     def SetInputNRRDParticles ( self, inputNRRDParticlesFileName):
         self._inputNRRDParticlesFileName = inputNRRDParticlesFileName
 
@@ -94,17 +105,10 @@ class GenerateParticles:
     def SetOutputFileName( self, particlesFileName ):
         self._particlesFileName = particlesFileName
 
-    def SetTemporaryDirectory( self, tempDir ):
-        self._temporaryDirectory = tempDir
-
     def SetInterParticleDistance( self, distance ):
         self._interParticleDistance = distance
 
-    def SetCleanTemporaryDirectory( self, tmp ):
-        self._cleanTemporaryDirectory = tmp
-
-    def SetVolParamGroup( self ):
-	   
+    def SetVolParamGroup( self ):	   
         if self._singleScale == 0:
             self._volParams = " -vol " + self._inputVolume + ":scalar:0-" + str(self._scaleSamples) + "-" + str(self._maxScale) + "-o:V " \
             +  self._inputVolume + ":scalar:0-" + str(self._scaleSamples) + "-" + str(self._maxScale) + "-on:VSN"
@@ -164,7 +168,7 @@ class GenerateParticles:
         if  self._noAdd == 1:
           self._optimizerParams += " -noadd"
 
-    def SetEnergyParamsGroup( self ):
+    def SetEnergyParamsGroup(self):
         self._energyParams = "-enr qwell:0.7 -ens bparab:10,0.7,-0.00 -enw butter:10,0.7"
         self._energyParams += " -efs " + str(self._useStrength)
         self._energyParams += " -int "+ self._interParticleEnergyType
@@ -174,7 +178,7 @@ class GenerateParticles:
         self._energyParams += " -beta " + str(self._beta)
         self._energyParams += " -gamma "+ str(self._gamma)
 
-    def SetInitParamsGroup( self ):
+    def SetInitParamsGroup(self):
         if self._initializationMode == "Random":
             self._initParams = "-np "+ str(self._numberParticles)
         elif self._initializationMode == "Halton":
@@ -184,10 +188,10 @@ class GenerateParticles:
         elif self._initializationMode == "PerVoxel":
             self._initParams = " -ppv " + str(self._ppv) + " -nss " + str(self._nss) + " -jit " + str(self._jit)
 
-    def SetMiscParamsGroup( self ):
+    def SetMiscParamsGroup(self):
         self._miscParams="-nave true -v "+str(self._verbose)+" -pbm 0"
 
-    def ResetParamGroups( self ):
+    def ResetParamGroups(self):
         self._infoParams = ""
         self._volParams  = ""
         self._reconKernelParams = ""
@@ -197,7 +201,7 @@ class GenerateParticles:
         self._initParams = ""
         self._miscParams = ""
 
-    def BuildParamGroups( self ):
+    def BuildParamGroups(self):
         self.SetInfoParamGrop()
         self.SetVolParamGroup()
         self.SetOptimizerParamsGroup()
@@ -206,29 +210,28 @@ class GenerateParticles:
         self.SetInitParamsGroup()
         self.SetMiscParamsGroup()
 
-    def Execute( self ):
+    def Execute(self):
         if self._downSamplingRate > 1:
-            downsampledVolume = os.path.join(self._temporaryDirectory,"ct-down.nrrd")
-            self.DownSampling(self._inputFileName,downsampledVolume,'cubic:0,0.5')
+            downsampledVolume = os.path.join(self.tmp_dir, "ct-down.nrrd")
+            self.DownSampling(self.in_file_name,downsampledVolume,'cubic:0,0.5')
             if self._useMask == 1:
-                downsampledMask = os.path.join(self._temporaryDirectory,"mask-down.nrrd")
+                downsampledMask = os.path.join(self.tmp_dir, "mask-down.nrrd")
                 self.DownSampling(self._maskFileName,downsampledMask,'cheap')
                 self._maskFileName = downsampledMask
         else:
-            downsampledVolume = self._inputFileName
+            downsampledVolume = self.in_file_name
 
-        deconvolvedVolume = os.path.join(self._temporaryDirectory,"ct-deconv.nrrd")
-        self.Deconvolution(downsampledVolume,deconvolvedVolume)
+        deconvolvedVolume = os.path.join(self.tmp_dir, "ct-deconv.nrrd")
+        self.deconvolve(downsampledVolume,deconvolvedVolume)
 
         self._inputVolume = deconvolvedVolume
         self.BuildParamGroups()
-        outputParticles=os.path.join(self._temporaryDirectory,self._nrrdParticlesFileName)
+        outputParticles=os.path.join(self.tmp_dir, self._nrrdParticlesFileName)
         self.ExecutePass(outputParticles)
         self.ProbeAllQuantities(deconvolvedVolume,outputParticles)
         self.SaveParticlesToVTK(outputParticles)
 
-    def ExecutePass( self, output ):
-
+    def ExecutePass(self, output):
         #Check inputs files are in place
         if os.path.exists(self._inputVolume) == False:
             return False
@@ -238,38 +241,43 @@ class GenerateParticles:
                 return False
 
         if self._singleScale == 1:
-            tmpCommand = "unu resample -i " + self._inputVolume + " -s x1 x1 x1 -k dgauss:" + str(self._maxScale) + ",3 -t float -o " + self._inputVolume
-            #pdb.set_trace()
-            print tmpCommand
-            #subprocess( tmpCommand, shell=True)
+            tmpCommand = "unu resample -i " + self._inputVolume + \
+                " -s x1 x1 x1 -k dgauss:" + str(self._maxScale) + \
+                ",3 -t float -o " + self._inputVolume
 
-        tmpCommand = "puller -sscp " + self._temporaryDirectory + " -cbst true " + self._volParams + " " + self._miscParams + " " + self._infoParams + " " + \
-        self._energyParams + " " + self._initParams + " " + self._reconKernelParams + " " + self._optimizerParams + " -o " + output + " -maxi " + str(self._iterations)
+            subprocess( tmpCommand, shell=True)
 
-        if self._verbose == 1:
-            print tmpCommand #TODO: (remove this line)
+        tmpCommand = "puller -sscp " + self.tmp_dir + \
+            " -cbst true " + self._volParams + " " + self._miscParams + " " + \
+            self._infoParams + " " +  self._energyParams + " " + \
+            self._initParams + " " + self._reconKernelParams + " " + \
+            self._optimizerParams + " -o " + output + " -maxi " + \
+            str(self._iterations)
 
-        #pdb.set_trace()
-        print tmpCommand
-        print "\n"
-        #subprocess.call( tmpCommand, shell=True )
+        subprocess.call( tmpCommand, shell=True )
 
-        #Trick to add scale value
+        # Trick to add scale value
         if self._singleScale == 1:
-            tmpCommand = "unu head " + output + " | grep size | awk '{split($0,a,\" \"); print a[3]}'"
-            pdb.set_trace()
-            tmpNP = subprocess.Popen( tmpCommand, shell=True, stdout=PIPE, stderr=PIPE )
+            tmpCommand = "unu head " + output + \
+                " | grep size | awk '{split($0,a,\" \"); print a[3]}'"
+
+            tmpNP = subprocess.Popen(tmpCommand, shell=True, stdout=PIPE,
+                                      stderr=PIPE)
             NP = tmpNP.communicate()[0].rstrip('\n')
-            tmpCommand = "echo \"0 0 0 " + str(self._maxScale) + "\" | unu pad -min 0 0 -max 3 " + NP + " -b mirror | unu 2op + - " + output + " -o " + output
-            pdb.set_trace()
+            tmpCommand = "echo \"0 0 0 " + str(self._maxScale) + \
+                "\" | unu pad -min 0 0 -max 3 " + NP + \
+                " -b mirror | unu 2op + - " + output + " -o " + output
+
             subprocess.call( tmpCommand, shell=True )
 
-
-    def probe_points( self, inputVolume,inputParticles, quantity, normalizedDerivatives=0 ):
-        output = os.path.join(self._temporaryDirectory,quantity+".nrrd")
+    def probe_points(self, inputVolume, inputParticles, quantity,
+                     normalizedDerivatives=0):
+        output = os.path.join(self.tmp_dir, quantity+".nrrd")
         if self._singleScale == 1:
-            tmpCommand = "unu crop -i " + inputParticles + "-min 0 0 -max 2 M | gprobe -i " + inputVolume + "-k scalar "
-            tmpCommand += self._reconKernelParams + "-pi - -q " + quantity + " -v 0 -o " + output
+            tmpCommand = "unu crop -i " + inputParticles + \
+                "-min 0 0 -max 2 M | gprobe -i " + inputVolume + "-k scalar "
+            tmpCommand += self._reconKernelParams + "-pi - -q " + \
+                quantity + " -v 0 -o " + output
         else:
             #tmpCommand = (
             #    "cd "+ self._temporaryDirectory + "; gprobe -i " + inputVolume +
@@ -285,7 +293,7 @@ class GenerateParticles:
                 "-ssn %(num_scales)d -sso -ssr 0 %(max_scale)03u "
                 "-ssf V-%%03u-%(scale_samples)03u.nrrd"
             ) % {
-                'temporary_directory': self._temporaryDirectory,
+                'temporary_directory': self.tmp_dir,
                 'input': inputVolume,
                 'kernel_params': self._reconKernelParams,
                 'input_particles': inputParticles,
@@ -304,30 +312,40 @@ class GenerateParticles:
         subprocess.call( tmpCommand, shell=True )
 
     def ProbeAllQuantities(self,inputVolume,inputParticles):
-        self.probe_points( inputVolume, inputParticles,"val" )
-        self.probe_points( inputVolume, inputParticles,"heval0",1 )
-        self.probe_points( inputVolume, inputParticles,"heval1",1 )
-        self.probe_points( inputVolume, inputParticles,"heval2",1 )
-        self.probe_points( inputVolume, inputParticles,"hmode",1 )
-        self.probe_points( inputVolume, inputParticles,"hevec0" )
-        self.probe_points( inputVolume, inputParticles,"hevec1" )
-        self.probe_points( inputVolume, inputParticles,"hevec2" )
-        self.probe_points( inputVolume, inputParticles,"hess" )
+        self.probe_points(inputVolume, inputParticles, "val" )
+        self.probe_points(inputVolume, inputParticles, "heval0", 1)
+        self.probe_points(inputVolume, inputParticles, "heval1", 1)
+        self.probe_points(inputVolume, inputParticles, "heval2", 1)
+        self.probe_points(inputVolume, inputParticles, "hmode", 1)
+        self.probe_points(inputVolume, inputParticles, "hevec0")
+        self.probe_points(inputVolume, inputParticles, "hevec1")
+        self.probe_points(inputVolume, inputParticles, "hevec2")
+        self.probe_points(inputVolume, inputParticles, "hess")
 
-    def Deconvolution(self,inputVol,outputVol):
-        tmpCommand = "unu 3op clamp " + str(self._minIntensity) + " " + inputVol + " " + str(self._maxIntensity)  + \
-                        " | unu resample -s x1 x1 x1 " + self._reconInverseKernelParams + " -t float -o " + outputVol
+    def deconvolve(self, inputVol, outputVol):
+        """
+        Parameters
+        ----------
+        in_vol : string
+
+        out_vol : string
+        
+        """
+        tmpCommand = "unu 3op clamp " + str(self._minIntensity) + " " + \
+            in_vol + " " + str(self._maxIntensity)  + \
+            " | unu resample -s x1 x1 x1 " + self._reconInverseKernelParams + \
+            " -t float -o " + out_vol
 
         if self._verbose == 1:
             print tmpCommand
 
         subprocess.call( tmpCommand, shell=True)
 
-    def DownSampling(self,inputVol,outputVol,kernel):
-    		
+    def DownSampling(self, inputVol, outputVol, kernel):    		
         tmpCommand = "unu resample -s x%(rate)f x%(rate)f x%(rate)f -k %(kernel)s -i "+ inputVol + " -o " + outputVol
+
         #MAYBE WE HAVE TO DOWNSAMPLE THE MASK
-        val=1.0/self._downSamplingRate
+        val = 1.0/self._downSamplingRate
         tmpCommand = tmpCommand %  {'rate':val,'kernel':kernel}
 
         if self._verbose == 1:
@@ -335,7 +353,7 @@ class GenerateParticles:
 
         subprocess.call( tmpCommand, shell=True)
 
-    def SaveParticlesToVTK(self,inputParticles):
+    def SaveParticlesToVTK(self, inputParticles):
          #Trick to multiply scale if we have down-sampled before saving to VTK
         if self._downSamplingRate > 1:
             tmpCommand = "unu crop -i %(output)s -min 3 0 -max 3 M | unu 2op x - %(rate)f | unu inset -i %(output)s -s - -min 3 0 -o %(output)s"
@@ -344,13 +362,15 @@ class GenerateParticles:
             subprocess.call( tmpCommand, shell=True )
 
         readerWriter = ReadNRRDsWriteVTK()
-        readerWriter.SetCIPBuildDirectory( self._cipBuildDirectory )
         readerWriter.AddFileNameArrayNamePair( inputParticles,  "NA" )
         quantities=["val","heval0","heval1","heval2","hmode","hevec0","hevec1","hevec2","hess"]
+
         ##VTK field names should be standardized to match teem tags
-        tags=["val","h0","h1","h2","hmode","hevec0","hevec1","hevec2","hess"]
+        tags = ["val", "h0", "h1", "h2", "hmode", "hevec0", \
+                "hevec1", "hevec2", "hess"]
+
         for ii in range(len(quantities)):
-            file = os.path.join(self._temporaryDirectory,"%s.nrrd" % quantities[ii])
+            file = os.path.join(self.tmp_dir,"%s.nrrd" % quantities[ii])
             readerWriter.AddFileNameArrayNamePair( file, tags[ii] )
 
         readerWriter.SetOutputFileName( self._particlesFileName )
@@ -359,5 +379,6 @@ class GenerateParticles:
     def CleanTemporaryDirecotry(self):
         if self._cleanTemporaryDirectory == True:
             print "Cleaning tempoarary directory..."
-            tmpCommand = "rm " + os.path.join(self._temporaryDirectory,"*")
+            tmpCommand = "rm " + os.path.join(self.tmp_dir, "*")
             subprocess.call( tmpCommand, shell=True )
+            
