@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Examples</category>
+  <title>RegisterLungAtlas</title>
+  <description><![CDATA[This program is used to register a lung atlas convex hull mesh to the bones (ribs) in CT image. It used the iterativeclosest point algorithm with an affine transform to perform the registration. The input CT image is thresholded at a specified level: all voxels (physical points) above the threshold are added to the target point set. We assume that the ribs will be the bony objects that the mesh points will attract to. The final transform is written to file for image resampling using other tools.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work was partially funded ...</acknowledgements>
+  <parameters>
+    <string>
+      <name>ctFileName</name>
+      <label>CT file name</label>
+      <channel>input</channel>
+      <flag>c</flag>
+      <longflag>--ct</longflag>
+      <description><![CDATA[CT file name]]></description>
+      <default>q</default>
+    </string>  
+    <string>
+      <name>convexHullMeshFileName</name>
+      <label>convex Hull Mesh FileName</label>
+      <channel>input</channel>
+      <flag>m</flag>
+      <longflag>--mesh</longflag>
+      <description><![CDATA[Convex hull mesh file name
+]]></description>
+      <default>q</default>
+    </string>  
+    <string>
+      <name>outputTransformFileName</name>
+      <label>output Transform FileName</label>
+      <channel>input</channel>
+      <flag>o</flag>
+      <longflag>--trans</longflag>
+      <description><![CDATA[Output transform file name]]></description>
+      <default>q</default>
+    </string>  
+    <integer>
+      <name>boneThreshold</name>
+      <longflag>bone</longflag>
+      <flag>b</flag>
+      <label>boneThreshold</label>
+      <channel>input</channel>
+      <description><![CDATA[Threshold value for bone. Any voxel having HU intensity greater than or equal to this value will be considered bone and will be added to the fixed point set. 
+]]></description>
+<default>600</default>
+   </integer>
+<integer>
+      <name>numberOfIterations </name>
+      <longflag>iterations</longflag>
+      <flag>i</flag>
+      <label>numberOfIterations</label>
+      <description><![CDATA[Number of iterations]]></description>
+<default>200</default>
+   </integer>
+  </parameters>
+</executable>
