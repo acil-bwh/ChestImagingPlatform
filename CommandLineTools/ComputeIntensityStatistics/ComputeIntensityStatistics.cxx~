@@ -87,13 +87,13 @@ command line.";
 
     TCLAP::ValueArg<std::string> labelMapFileNameArg ( "l", "labelMapFileName", labelMapFileNameDesc, true, labelMapFileName, "string", cl );
     TCLAP::ValueArg<std::string> ctFileNameArg ( "c", "ctFileName", ctFileNameDesc, true, ctFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outFileNameArg ( "o", "outFileName", outFileNameDesc, false, outFileName, "string", cl );
+    //TCLAP::ValueArg<std::string> outFileNameArg ( "o", "outFileName", outFileNameDesc, false, outFileName, "string", cl );
       
     cl.parse( argc, argv );
 
     labelMapFileName = labelMapFileNameArg.getValue();
     ctFileName       = ctFileNameArg.getValue();
-    outFileName      = outFileNameArg.getValue();
+    //outFileName      = outFileNameArg.getValue();
     }
   catch ( TCLAP::ArgException excp )
     {
@@ -262,46 +262,6 @@ command line.";
     ++mapIt;
     }
 
-  // Print the results to file if the user has specified an output
-  // file name
-  if (outFileName.compare("NA") != 0)
-    {
-    std::cout << "Writing results to file..." << std::endl;
-    
-    std::ofstream file(outFileName.c_str());
-
-    // First write the header
-    mapIt = labelToStatsMap.begin();
-    while ( mapIt != labelToStatsMap.end() )
-      {
-      std::string regionName = conventions.GetChestRegionNameFromValue( mapIt->first );
-      std::string typeName   = conventions.GetChestTypeNameFromValue( mapIt->first );
-      file << regionName << " " << typeName << " Mean,";
-      file << regionName << " " << typeName << " STD,";
-      file << regionName << " " << typeName << " Min,";
-      file << regionName << " " << typeName << " Max,";
-      file << regionName << " " << typeName << " Median,";
-
-      ++mapIt;
-      }
-
-    // Now write the stats themselves. We need a leading comma to
-    // account for the case name
-    file << ",";
-    mapIt = labelToStatsMap.begin();
-    while (mapIt != labelToStatsMap.end())
-      {
-      file << mapIt->second.mean   << ",";
-      file << mapIt->second.std    << ",";
-      file << mapIt->second.min    << ",";
-      file << mapIt->second.max    << ",";
-      file << mapIt->second.median << ",";
-
-      ++mapIt;
-      }
-    file << std::endl;
-    file.close();
-    }
 
   std::cout << "DONE." << std::endl;
 
