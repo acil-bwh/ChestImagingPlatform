@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Examples</category>
+  <title>GenerateMedianFilteredImage</title>
+  <description><![CDATA[Median Filter of a CT volume]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work was partially funded ...</acknowledgements>
+  <parameters>
+    <double>
+      <name>radiusValue</name>
+      <longflag>Radius</longflag>
+      <flag>r</flag>
+      <label>Radius</label>
+      <description><![CDATA[Median filter radius]]></description>
+      <default>1.0</default>
+    </double>
+<integer-vector>
+      <name>lowerClipValues</name>
+      <longflag>lowerClipValue</longflag>
+      <flag>l</flag>
+      <label>lowerClipValues</label>
+      <description><![CDATA[Lower clip value applied to input image before filtering. This flag should be followed by two values: the first value is the clip value and the second value is the replacement value (i.e., everything below the clip value will be assigned the replacement value)]]></description>
+<default>-1224,1024</default>
+    </integer-vector>
+<integer-vector>
+      <name>upperClipValues</name>
+      <longflag>upperClipValue</longflag>
+      <flag>u</flag>
+      <label>upperClipValue</label>
+      <description><![CDATA[Upper clip value applied to input image before filtering. This flag should be followed by two values: the first value is the clip value and the second value is the replacement value (i.e., everything below the clip value will be assigned the replacement value)]]></description>
+<default>1024,1024</default>
+    </integer-vector>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <string>
+      <name>ctFileName</name>
+      <label>Input Filename</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>--inputFile</longflag>
+      <description><![CDATA[Input CT file name]]></description>
+      <default>q</default>
+    </string>
+    <string>
+      <name>outputFileName</name>
+      <label>Output File</label>
+      <flag>o</flag>
+      <longflag>--outputFile</longflag>
+      <channel>output</channel>
+      <description><![CDATA[Output CT file name]]></description>
+      <default>q</default>
+    </string>
+    <directory>
+      <name>ctDir</name>
+      <flag>d</flag>
+      <longflag>--CTDirectory</longflag>
+      <label>CT Directory Data</label>
+      <channel>input</channel>
+      <description><![CDATA[Directory image series]]></description>
+      <default>q</default>
+    </directory>
+  </parameters>
+</executable>
