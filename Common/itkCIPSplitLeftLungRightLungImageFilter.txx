@@ -105,7 +105,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     // identify the slices that yield upper and lower regions that are
     // split
     //
-    unsinged int temp = (this->m_MaxForegroundSlice - this->m_MinForegroundSlice)/3;
+    unsigned int temp = (this->m_MaxForegroundSlice - this->m_MinForegroundSlice)/3;
     unsigned int lowerMiddleForegroundSlice = this->m_MinForegroundSlice + temp;
     unsigned int upperMiddleForegroundSlice = this->m_MaxForegroundSlice - temp;
 
