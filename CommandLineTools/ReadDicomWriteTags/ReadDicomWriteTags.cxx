@@ -147,7 +147,7 @@ and overwritten using the root directory";
     {
     TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 82 $" );
 
-    TCLAP::ValueArg<std::string>  rootDicomDirectoryArg ( "r", "root", rootDicomDirectoryDescription, true, rootDicomDirectory, "string", cl );
+    TCLAP::ValueArg<std::string>  rootDicomDirectoryArg ( "r", "root", rootDicomDirectoryDescription, false, rootDicomDirectory, "string", cl );
     TCLAP::ValueArg<std::string>  outputFileNameArg ( "o", "output", outputFileNameDescription, true, outputFileName, "string", cl );
     TCLAP::ValueArg<int>          seriesNumberArg ( "s", "series", seriesNumberDescription, false, seriesNumber, "int", cl );
     TCLAP::MultiArg<std::string>  directoryListArg ( "i", "dirList", directoryListDescription, false, "string", cl );
@@ -214,6 +214,7 @@ TAGS GetTagValues( std::string dicomDir )
 
     std::cout << "Reading dicom image..." << std::endl;
     Image2DReaderType::Pointer reader = Image2DReaderType::New();
+    std::cout << filenames[0] << std::endl;
       reader->SetFileName( filenames[0] );
       reader->SetImageIO( gdcmIO );
     try

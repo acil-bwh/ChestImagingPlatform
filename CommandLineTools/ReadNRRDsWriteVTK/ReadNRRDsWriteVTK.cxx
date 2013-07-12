@@ -20,7 +20,7 @@
  *     Array names corresponding to files immediately preceding invocation of
  *     this flag (specified with the -i or --inFileName flags). Array names
  *     follow conventinos laid out in the ACIL wiki for particles polydata
- *     field data arrays
+ *     point data arrays
  *
  *   -i \<string\>,  --inFileName \<string\>  (accepted multiple times)
  *     Specify an input NRRD file name followed by a string (using the -a or
@@ -97,7 +97,7 @@ the scale data will be placed in matrix with name 'scale'. 7xN files are assumed
 mask xx xy xz yy yz zz, so a matrix is constructed using the components in the following order: [1 2 3 2 4 5 3 5 6] \
 (zero-based indexing)";
   std::string arrayNameVecDesc = "Array names corresponding to files immediately preceding invocation of this flag (specified \
-with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata field \
+with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
 data arrays";
 
   //
@@ -190,7 +190,7 @@ data arrays";
         scale->InsertTuple( j, &sc );        
         }
 
-      polyData->GetFieldData()->AddArray( scale );
+      polyData->GetPointData()->AddArray( scale );
       }
 
     //
@@ -212,7 +212,7 @@ data arrays";
         array->InsertTuple( j, &value );        
         }
 
-      polyData->GetFieldData()->AddArray( array );
+      polyData->GetPointData()->AddArray( array );
       }
 
     //
@@ -243,7 +243,7 @@ data arrays";
         array->InsertTuple( j, vec );        
         }
 
-      polyData->GetFieldData()->AddArray( array );
+      polyData->GetPointData()->AddArray( array );
       }
 
     //
@@ -298,7 +298,7 @@ data arrays";
         array->InsertTuple( j, vec );        
         }
 
-      polyData->GetFieldData()->AddArray( array );
+      polyData->GetPointData()->AddArray( array );
       }
 
     //
@@ -353,7 +353,7 @@ data arrays";
         array->InsertTuple( j, vec );        
         }
 
-      polyData->GetFieldData()->AddArray( array );
+      polyData->GetPointData()->AddArray( array );
       }
     }
 

@@ -138,7 +138,7 @@ protected:
   double ParticleAngleThreshold;
 
   unsigned int MaximumComponentSize;
-  unsigned int NumberOfFieldDataArrays;
+  unsigned int NumberOfPointDataArrays;
   unsigned int ComponentSizeThreshold;
   unsigned int NumberInputParticles;
   unsigned int NumberOutputParticles;
