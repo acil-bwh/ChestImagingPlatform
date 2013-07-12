@@ -155,6 +155,7 @@ enum ChestType {
   CENTRILOBULAREMPHYSEMA,         //68
   PANLOBULAREMPHYSEMA,            //69
   SUBCUTANEOUSFAT,                //70
+  VISCERALFAT,                    //71
 };
 
 enum ReturnCode {
@@ -194,7 +195,7 @@ public:
   ChestConventions()
     {
       m_NumberOfEnumeratedChestRegions = 27;
-      m_NumberOfEnumeratedChestTypes   = 71;
+      m_NumberOfEnumeratedChestTypes   = 72;
 
       typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -346,6 +347,7 @@ public:
       ChestTypes.push_back( static_cast< unsigned char >( CENTRILOBULAREMPHYSEMA ) );
       ChestTypes.push_back( static_cast< unsigned char >( PANLOBULAREMPHYSEMA ) );
       ChestTypes.push_back( static_cast< unsigned char >( SUBCUTANEOUSFAT ) );
+      ChestTypes.push_back( static_cast< unsigned char >( VISCERALFAT ) );
 
       ChestRegionNames.push_back( "UNDEFINEDREGION" );
       ChestRegionNames.push_back( "WHOLELUNG" ); 
@@ -446,6 +448,7 @@ public:
       ChestTypeNames.push_back( "CENTRILOBULAREMPHYSEMA" );
       ChestTypeNames.push_back( "PANLOBULAREMPHYSEMA" );
       ChestTypeNames.push_back( "SUBCUTANEOUSFAT" );
+      ChestTypeNames.push_back( "VISCERALFAT" );
 
       //
       // Each type is associated with a color. This is generally
@@ -530,6 +533,7 @@ public:
       double* t070 = new double[3]; t070[0] = 0.00; t070[1] = 0.00; t070[2] = 0.70; ChestTypeColors.push_back( t070 ); //PANLOBULAREMPHYSEMA
 
       double* t071 = new double[3]; t071[0] = 0.59; t071[1] = 0.65; t071[2] = 0.20; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
+      double* t072 = new double[3]; t072[0] = 0.58; t072[1] = 0.65; t072[2] = 0.20; ChestTypeColors.push_back( t072 ); //VISCERALFAT
 
       //
       // Each region is associated with a color. This is generally
