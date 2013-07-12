@@ -270,6 +270,9 @@ command line.";
     
     std::ofstream file(outFileName.c_str());
 
+    // First write the name of label map
+    file << labelMapFileName << ",";
+
     // First write the header
     mapIt = labelToStatsMap.begin();
     while ( mapIt != labelToStatsMap.end() )
@@ -287,6 +290,7 @@ command line.";
 
     // Now write the stats themselves. We need a leading comma to
     // account for the case name
+    file << std::endl;
     file << ",";
     mapIt = labelToStatsMap.begin();
     while (mapIt != labelToStatsMap.end())
