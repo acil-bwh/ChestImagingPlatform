@@ -83,6 +83,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Pec Minor", 0, (Fl_Callback*)pectoralisMinorMenuItem_CB, (void*)(this));
       o->add("Pec Major", 0, (Fl_Callback*)pectoralisMajorMenuItem_CB, (void*)(this));
       o->add("Subcutaneous Fat", 0, (Fl_Callback*)subcutaneousFatMenuItem_CB, (void*)(this));
+      o->add("Visceral Fat", 0, (Fl_Callback*)visceralFatMenuItem_CB, (void*)(this));
       //o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
       //o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
       //o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
@@ -431,6 +432,12 @@ void PaintBrushAndEraserGUI::subcutaneousFatMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::SUBCUTANEOUSFAT );
 }
 
+void PaintBrushAndEraserGUI::visceralFatMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->visceralFatMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::visceralFatMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::VISCERALFAT );
+}
 
 void PaintBrushAndEraserGUI::anteriorScaleneMenuItem_CB( Fl_Widget* o, void* v ) {
   ((PaintBrushAndEraserGUI*)v)->anteriorScaleneMenuItem_CB_i();

@@ -121,6 +121,9 @@ private:
   static void subcutaneousFatMenuItem_CB( Fl_Widget* o, void* v );
   void subcutaneousFatMenuItem_CB_i();
 
+  static void visceralFatMenuItem_CB( Fl_Widget* o, void* v );
+  void visceralFatMenuItem_CB_i();
+
   static void anteriorScaleneMenuItem_CB( Fl_Widget* o, void* v );
   void anteriorScaleneMenuItem_CB_i();
 
