@@ -91,6 +91,9 @@ private:
   static void rightMenuItem_CB( Fl_Widget* o, void* v );
   void rightMenuItem_CB_i();
 
+  static void leftCostoPhrenicAngle_CB( Fl_Widget* o, void* v );
+  void leftCostoPhrenicAngle_CB_i();
+
   static void liverMenuItem_CB( Fl_Widget* o, void* v );
   void liverMenuItem_CB_i();
 
