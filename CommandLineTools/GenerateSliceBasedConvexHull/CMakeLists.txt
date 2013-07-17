@@ -12,7 +12,7 @@ ENDIF ( ITK_FOUND )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
 
-SET ( GenerateSliceBasedConvexHull_SOURCE GenerateSliceBasedConvexHull.CXX)
+SET ( GenerateSliceBasedConvexHull_SOURCE GenerateSliceBasedConvexHull.cxx)
 
 ADD_EXECUTABLE ( GenerateSliceBasedConvexHull ${GenerateSliceBasedConvexHull_SOURCE} )
 TARGET_LINK_LIBRARIES ( GenerateSliceBasedConvexHull ${ITK_LIBRARIES} )
