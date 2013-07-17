@@ -93,6 +93,7 @@ typedef itk::RegionOfInterestImageFilter< cip::LabelMapType, cip::LabelMapType >
 typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                    LabelMapIteratorType;
 typedef itk::ImageRegionIterator< cip::CTType >                                   CTImageIteratorType;
 typedef itk::ImageRegionIterator< cip::LabelMapType >                             LabelMapIteratorType2;
+typedef itk::KappaStatisticImageToImageMetric< ImageType, ImageType >             MetricType;
 
 struct REGIONTYPEPAIR
 {
