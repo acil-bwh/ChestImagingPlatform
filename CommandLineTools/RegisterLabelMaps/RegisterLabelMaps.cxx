@@ -1,81 +1,17 @@
 /** \file
 *  \ingroup commandLineTools 
 *  \details This program reads atlas lung images and generates a
-*  convex hull image corresponding to them. It is assumed that the
-*  atlas exists as two separate atlases: one for the left lung and
-*  one for the right. It is also assumed that the the maximum value
-*  in each corresponds to a probability of 1 and the value 0
-*  corresponds to a probability of 0.
-*
-*  The algorithm proceeds by reading in the left atlas and
-*  thresholding according to a specified probability threhold (a
-*  float-valued quantity ranging from 0 to 1). The right atlas is
-*  read in and similarly thresholded. The union of the two images is
-*  created, and the resulting image is downsampled for faster
-*  processing. After downsampling, the convex hull is created. The
-*  convex hull is represented as a binary image (0 = background, 1 =
-*  foreground). The convex hull is upsampled so that it has the same
-*  extent as the original image, and it is then written to file.
 *
 *  USAGE:
 *
-*  GenerateAtlasConvexHull.exe [-p \<float\>] [-s \<float\>]
-*                              [-d \<float\>] [-n \<int\>] 
-*                              [-o \<string\>] -r \<string\> -l \<string\>
-*                              [--] [--version] [-h]
-*
-* Where:
-*
-*   -p \<float\>,  --probability \<float\>
-*     Probability threshold in the interval [0,1] (default is 0.5).This
-*     parameter controls the level at which the atlas is thresholded prior
-*     to convex hull creation
-*
-*   -s \<float\>,  --sample \<float\>
-*     Down sample factor (default is 1)
-*
-*   -d \<float\>,  --degrees \<float\>
-*     Degrees resolution. This quanity relates to the accuracy of the
-*     finalconvex hull. Decreasing the degrees resolution increases
-*     accuracy. If this quantity changes, so should the number of rotations
-*     parameter(specified by the -nr flag). E.g. if number of rotations
-*     increases by a factor of two, degrees resolution should decrease by a
-*     factor of two(Default is 45.0 degrees)
-*
-*   -n \<int\>,  --numRotations \<int\>
-*     Number of rotations. This quanity relates to the accuracy of the
-*     finalconvex hull. Increasing the number of rotations increases
-*     accuracy. If this quantity changes, so should the resolution degrees
-*     parameter(specified by the -dr flag). E.g. if number of rotations
-*     increases by a factor of two, degrees resolution should decrease by a
-*     factor of two.
-*
-*   -o \<string\>,  --output \<string\>
-*     Output convex hull file name
-*
-*   -r \<string\>,  --rightAtlas \<string\>
-*     (required)  Right lung atlas file name
-*
-*   -l \<string\>,  --leftAtlas \<string\>
-*     (required)  Left lung atlas file name
-*
-*   --,  --ignore_rest
-*     Ignores the rest of the labeled arguments following this flag.
-*
-*   --version
-*     Displays version information and exits.
-*
-*   -h,  --help
-*     Displays usage information and exits.
-*
-*  $Date: 2012-09-05 17:02:14 -0400 (Wed, 05 Sep 2012) $
-*  $Revision: 232 $
-*  $Author: jross $
+*  $Date: $
+*  $Revision: $
+*  $Author:  $
 *
 */
 
 //
-//RegisterLabelMaps --regionVec 3 --outputTransform  -m D:\Postdoc\Data\Processed\lola11-04\lola11-04_oriented_leftLungRightLung.nrrd -f D:\Postdoc\Data\Processed\lola11-04\lola11-04_oriented_leftLungRightLung.nrrd --outputImage D:\Postdoc\Data\Processed\lola11-04\lola11-5to4reg_oriented_leftLungRightLung.nrrd
+//RegisterLabelMaps --regionVec 3 -m D:\Postdoc\Data\Processed\lola11-04\lola11-04_oriented_leftLungRightLung.nrrd -f D:\Postdoc\Data\Processed\lola11-04\lola11-04_oriented_leftLungRightLung.nrrd --outputImage D:\Postdoc\Data\Processed\lola11-04\lola11-5to4reg_oriented_leftLungRightLung.nrrd
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -88,7 +24,6 @@
 #include "itkKappaStatisticImageToImageMetric.h"
 #include "itkAffineTransform.h"
 #include "itkTransformFileWriter.h"
-//#include "itkLungConventions.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkIdentityTransform.h"
@@ -96,11 +31,6 @@
 #include "RegisterLabelMapsCLP.h"
 #include "cipConventions.h"
 
-//#include <tclap/CmdLine.h>
-#include "cipConventions.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
 #include "itkImageSeriesReader.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
@@ -109,10 +39,17 @@
 #include "itkImageRegionIterator.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
-
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xinclude.h>
+#include <libxml/xmlIO.h>
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
 
 namespace
 {
+         #define MY_ENCODING "ISO-8859-1"
+
 	typedef itk::Image< unsigned short, 3 >                                             ImageType;
 	typedef itk::ResampleImageFilter< ImageType, ImageType >                            ResampleFilterType;
 	typedef itk::ImageFileReader< ImageType >                                           ImageReaderType;
@@ -141,6 +78,14 @@ namespace
 		unsigned char type;
 	};
 
+        struct REGISTRATION_XML_DATA
+        {
+          char registrationID[256];
+          float similarityValue;
+          char transformationLink[256];
+          char sourceID[256];
+          char destID[256];
+        };
 
 	void WriteTransformFile( TransformType::Pointer transform, char* fileName )
 	{
@@ -283,6 +228,33 @@ namespace
 		return reader->GetOutput();
 	}
 
+
+void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA theXMLData)
+        {      
+
+             xmlDocPtr doc = NULL;       /* document pointer */
+             xmlNodePtr root_node = NULL, node = NULL, node1 = NULL;/* node pointers */
+             xmlDtdPtr dtd = NULL;       /* DTD pointer */
+             char buff[256];
+             int i, j;
+             //http://www.xmlsoft.org/examples/tree2.c
+    
+             doc = xmlNewDoc(BAD_CAST "1.0");
+             root_node = xmlNewNode(NULL, BAD_CAST "Registration");
+             xmlDocSetRootElement(doc, root_node);
+
+             dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "RegistrationOutput.dtd");
+
+             // xmlNewChild() creates a new node, which is "attached"
+             // as child node of root_node node. 
+     
+             xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (char)(theXMLData.similarityValue));
+
+             xmlSaveFormatFileEnc("testxmlout3.xml", doc, "UTF-8", 1);
+             xmlFreeDoc(doc);
+
+         }
+
 } //end namespace
 
 int main( int argc, char *argv[] )
@@ -295,9 +267,11 @@ int main( int argc, char *argv[] )
 
 	std::cout<<"parsing args"<<std::endl;
 	PARSE_ARGS;
-	ChestConventions conventions;
+	//ChestConventions conventions;
 	std::cout<<"args parsed"<<std::endl;
-	//Read in region and type pair
+
+
+ 	//Read in region and type pair
 	std::vector< REGIONTYPEPAIR > regionTypePairVec;
 	
 	for ( unsigned int i=0; i<regionVecArg.size(); i++ )
@@ -414,7 +388,7 @@ int main( int argc, char *argv[] )
 		++it;
 	}
 
-  LabelMapIteratorType itmoving( movingExtractor->GetOutput(), movingExtractor->GetOutput()->GetBufferedRegion() );
+        LabelMapIteratorType itmoving( movingExtractor->GetOutput(), movingExtractor->GetOutput()->GetBufferedRegion() );
 
 	itmoving.GoToBegin();
 	while ( !itmoving.IsAtEnd() )
@@ -490,8 +464,17 @@ int main( int argc, char *argv[] )
 	TransformType::Pointer finalTransform = TransformType::New();
 	finalTransform->SetParameters( finalParams );
 	finalTransform->SetCenter( transform->GetCenter() );
-
-	if ( strcmp(outputTransformFileName.c_str(), "q") != 0 )
+/*
+        struct REGISTRATION_XML_DATA
+        {
+          char registrationID[256];
+          float similarityValue;
+          char transformationLink[256];
+          char sourceID[256];
+          char destID[256];
+        }
+*/
+        if ( strcmp(outputTransformFileName.c_str(), "q") != 0 )
 	{
 		std::string infoFilename = outputTransformFileName;
 		int result = infoFilename.find_last_of('.');
@@ -499,21 +482,31 @@ int main( int argc, char *argv[] )
 		if (std::string::npos != result)
 			infoFilename.erase(result);
 		// append extension:
-		infoFilename.append("_header.txt");
-		std::ofstream infoFile( infoFilename.c_str() );
+		infoFilename.append("xml");
+                
+                REGISTRATION_XML_DATA labelMapRegistrationXMLData;
+                labelMapRegistrationXMLData.registrationID = "1";
+                labelMapRegistrationXMLData.similarityValue = bestValue;
+                labelMapRegistrationXMLData.transformationLink = outputTransformFileName.c_str();
+                
+		/*std::ofstream infoFile( infoFilename.c_str() );
 		infoFile<<"Transformation Filename: " <<outputTransformFileName.c_str()<<std::endl;
 		infoFile<<"Transformation: "<<std::endl;
 		infoFile<<"Similarity Metric: " <<std::endl;
 		infoFile<<"optimizer: "  <<std::endl;
 		infoFile<<"Number of iterations used: " <<numberOfIterations<<std::endl;
 		infoFile<<"Final metric value: " <<bestValue<<std::endl;
+                */
+                WriteRegistrationXML(infoFilename.c_str(), labelMapRegistrationXMLData);
+
 
 		std::cout << "Writing transform..." << std::endl;
 		itk::TransformFileWriter::Pointer transformWriter = itk::TransformFileWriter::New();
 		transformWriter->SetInput( finalTransform );
 		transformWriter->SetFileName( outputTransformFileName );
 		transformWriter->Update();
-	}
+                
+                }
 
 	if ( strcmp(outputImageFileName.c_str(), "q") != 0 )
 	{

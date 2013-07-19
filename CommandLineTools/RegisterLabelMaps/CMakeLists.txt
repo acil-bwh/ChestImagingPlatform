@@ -4,6 +4,7 @@ PROJECT(RegisterLabelMaps)
 
 set(MODULE_NAME RegisterLabelMaps)
 
+find_package(LibXml2 REQUIRED)
 
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
@@ -17,11 +18,13 @@ include(${SlicerExecutionModel_USE_FILE})
 
 set(MODULE_INCLUDE_DIRECTORIES
   ${CIP_INCLUDE_DIRECTORIES}
+  ${LIBXML2_INCLUDE_DIR}
   )
 
 set(MODULE_TARGET_LIBRARIES
   ${ITK_LIBRARIES}
   ${CIP_LIBRARIES}
+  ${LIBXML2_LIBRARIES}
   )
 
 set(MODULE_SRCS
@@ -39,3 +42,5 @@ SEMMacroBuildCLI(
   INSTALL_RUNTIME_DESTINATION     ${CMAKE_BINARY_DIR}
   EXECUTABLE_ONLY
   )
+
+#ADD_EXECUTABLE ( RegisterLabelMaps ${RegisterLabelMaps} )
