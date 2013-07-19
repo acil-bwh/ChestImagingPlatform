@@ -16,6 +16,7 @@
 #include "itkImage.h"
 #include <FL/Fl_File_Chooser.H>
 #include <iostream>
+#include <unistd.h>
 using namespace std;
 
 struct SESSIONDATA
@@ -969,14 +970,14 @@ void SaveSessionDataMenu_CB( Fl_Widget*, void* )
     LabelMapType::SizeType    size    = assistantInstance->GetGrayscaleImage()->GetBufferedRegion().GetSize();
     LabelMapType::SpacingType spacing = assistantInstance->GetGrayscaleImage()->GetSpacing();
     LabelMapType::PointType   origin  = assistantInstance->GetGrayscaleImage()->GetOrigin();
-
+    
     assistantInstance->InitializeLabelMapImage( size, spacing, origin );
 
     // Label the main window to indicate which image has been read
     acilAssistantMainWindow->label( sessionDataVec[0].caseName.c_str() );
 
     // Read the label map image
-    if ( (sessionInLabelMapFileNameVec[0]).compare( "NA" ) != 0 )
+    if ( (sessionDataVec[0].inLabelMapTmpDirAndFileNameHeader).compare( "NA" ) != 0 )
       {
       std::cout << "Reading label map image..." << std::endl;
       std::cout << sessionDataVec[0].inLabelMapFileNameHeader << std::endl;
