@@ -133,7 +133,7 @@ of the structure of interest should be assigned positive distance values";
   //
   // Instantiate ChestConventions for convenience
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Read the label map image

@@ -96,7 +96,7 @@ removing specified field data arrays.";
     reader->SetFileName( inParticlesFileName.c_str() );
     reader->Update();
 
-  unsigned int numberOfFieldDataArrays = reader->GetOutput()->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberOfPointDataArrays = reader->GetOutput()->GetPointData()->GetNumberOfArrays();
   unsigned int numberInputParticles    = reader->GetOutput()->GetNumberOfPoints();
 
   vtkPoints* points  = vtkPoints::New();
@@ -110,9 +110,9 @@ removing specified field data arrays.";
 
   std::cout << "Scouring..." << std::endl;
   unsigned int inc = 0;
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
-    std::string name( reader->GetOutput()->GetFieldData()->GetArray(i)->GetName() );
+    std::string name( reader->GetOutput()->GetPointData()->GetArray(i)->GetName() );
 
     //
     // Determine if this array is one that needs to be removed
@@ -130,8 +130,8 @@ removing specified field data arrays.";
     if ( !remove )
       {
       vtkFloatArray* array = vtkFloatArray::New();
-        array->SetNumberOfComponents( reader->GetOutput()->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-        array->SetName( reader->GetOutput()->GetFieldData()->GetArray(i)->GetName() );
+        array->SetNumberOfComponents( reader->GetOutput()->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+        array->SetName( reader->GetOutput()->GetPointData()->GetArray(i)->GetName() );
 
       arrayVec.push_back( array );
 
@@ -146,7 +146,7 @@ removing specified field data arrays.";
     points->InsertNextPoint( reader->GetOutput()->GetPoint(p) );
     for ( unsigned int k=0; k<arrayVec.size(); k++ )
       {
-      arrayVec[k]->InsertTuple( inc, reader->GetOutput()->GetFieldData()->GetArray(outArrayToInArrayMap[k])->GetTuple(p) );
+      arrayVec[k]->InsertTuple( inc, reader->GetOutput()->GetPointData()->GetArray(outArrayToInArrayMap[k])->GetTuple(p) );
       }
     inc++;
     }
@@ -155,7 +155,7 @@ removing specified field data arrays.";
     outParticles->SetPoints( points );
   for ( unsigned int k=0; k<arrayVec.size(); k++ )
     {
-    outParticles->GetFieldData()->AddArray( arrayVec[k] );
+    outParticles->GetPointData()->AddArray( arrayVec[k] );
     }
 
   std::cout << "Writing filtered particles ..." << std::endl;

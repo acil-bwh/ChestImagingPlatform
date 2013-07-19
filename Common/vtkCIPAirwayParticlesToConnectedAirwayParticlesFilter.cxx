@@ -19,7 +19,7 @@
 #include "vtkDataObject.h"
 #include "vtkPoints.h"
 #include "vtkFloatArray.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 //#include "vtkGraphLayoutView.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
@@ -72,7 +72,7 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
   unsigned int numberInputParticles = inputParticles->GetNumberOfPoints();
 
   this->NumberInputParticles    = inputParticles->GetNumberOfPoints();
-  this->NumberOfFieldDataArrays = inputParticles->GetFieldData()->GetNumberOfArrays();
+  this->NumberOfPointDataArrays = inputParticles->GetPointData()->GetNumberOfArrays();
 
   //
   // Initialize the data structure image that will make accessing a
@@ -206,11 +206,11 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
   // //
   // std::vector< vtkFloatArray* > arrayVec;
 
-  // for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+  // for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
   //   {
   //   vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-  //     array->SetNumberOfComponents( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-  //     array->SetName( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetName() );
+  //     array->SetNumberOfComponents( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+  //     array->SetName( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetName() );
 
   //   arrayVec.push_back( array );
   //   }
@@ -224,9 +224,9 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
 
   //   outputPoints->InsertNextPoint( this->InternalInputPolyData->GetPoint(particleID) );
         
-  //   for ( unsigned int k=0; k<this->NumberOfFieldDataArrays; k++ )
+  //   for ( unsigned int k=0; k<this->NumberOfPointDataArrays; k++ )
   //     {
-  //     arrayVec[k]->InsertTuple( inc, this->InternalInputPolyData->GetFieldData()->GetArray(k)->GetTuple(particleID) );
+  //     arrayVec[k]->InsertTuple( inc, this->InternalInputPolyData->GetPointData()->GetArray(k)->GetTuple(particleID) );
   //     }
     
   //   inc++;
@@ -238,9 +238,9 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
   //   compositeToPolyData->SetInput( this->CompositeGraph );
   //   compositeToPolyData->Update();
 
-  // for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+  // for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
   //   {
-  //   compositeToPolyData->GetOutput()->GetFieldData()->AddArray( arrayVec[j] );
+  //   compositeToPolyData->GetOutput()->GetPointData()->AddArray( arrayVec[j] );
   //   }
 
   // outputParticles->ShallowCopy( compositeToPolyData->GetOutput() );
@@ -262,7 +262,7 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
 //   unsigned int numberInputParticles = inputParticles->GetNumberOfPoints();
 
 //   this->NumberInputParticles    = inputParticles->GetNumberOfPoints();
-//   this->NumberOfFieldDataArrays = inputParticles->GetFieldData()->GetNumberOfArrays();
+//   this->NumberOfPointDataArrays = inputParticles->GetPointData()->GetNumberOfArrays();
 
 //   //
 //   // Initialize the data structure image that will make accessing a
@@ -486,11 +486,11 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
 
 //   std::vector< vtkFloatArray* > arrayVec;
 
-//   for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+//   for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
 //     {
 //     vtkFloatArray* array = vtkFloatArray::New();
-//       array->SetNumberOfComponents( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-//       array->SetName( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetName() );
+//       array->SetNumberOfComponents( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+//       array->SetName( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetName() );
 
 //     arrayVec.push_back( array );
 //     }
@@ -504,9 +504,9 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
 
 //     outputPoints->InsertNextPoint( this->InternalInputPolyData->GetPoint(particleID) );
         
-//     for ( unsigned int k=0; k<this->NumberOfFieldDataArrays; k++ )
+//     for ( unsigned int k=0; k<this->NumberOfPointDataArrays; k++ )
 //       {
-//       arrayVec[k]->InsertTuple( inc, this->InternalInputPolyData->GetFieldData()->GetArray(k)->GetTuple(particleID) );
+//       arrayVec[k]->InsertTuple( inc, this->InternalInputPolyData->GetPointData()->GetArray(k)->GetTuple(particleID) );
 //       }
     
 //     inc++;
@@ -518,9 +518,9 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
 //     compositeToPolyData->SetInput( this->CompositeGraph );
 //     compositeToPolyData->Update();
 
-//   for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+//   for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
 //     {
-//     compositeToPolyData->GetOutput()->GetFieldData()->AddArray( arrayVec[j] );
+//     compositeToPolyData->GetOutput()->GetPointData()->AddArray( arrayVec[j] );
 //     }
 
 //   outputParticles->ShallowCopy( compositeToPolyData->GetOutput() );
@@ -588,14 +588,14 @@ bool vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::GetEdgeWeight( unsig
     }
 
   double particle1Hevec2[3];
-    particle1Hevec2[0] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID1 )[0];
-    particle1Hevec2[1] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID1 )[1];
-    particle1Hevec2[2] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID1 )[2];
+    particle1Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[0];
+    particle1Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[1];
+    particle1Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[2];
 
   double particle2Hevec2[3];
-    particle2Hevec2[0] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID2 )[0];
-    particle2Hevec2[1] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID2 )[1];
-    particle2Hevec2[2] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleID2 )[2];
+    particle2Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[0];
+    particle2Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[1];
+    particle2Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[2];
 
   double angle1 =  this->GetAngleBetweenVectors( particle1Hevec2, connectingVec, true );
   double angle2 =  this->GetAngleBetweenVectors( particle2Hevec2, connectingVec, true );
@@ -731,11 +731,11 @@ bool vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::GetEdgeWeight( unsig
 
 //   std::vector< vtkFloatArray* > arrayVec;
 
-//   for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+//   for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
 //     {
 //     vtkFloatArray* array = vtkFloatArray::New();
-//       array->SetNumberOfComponents( particles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-//       array->SetName( particles->GetFieldData()->GetArray(i)->GetName() );
+//       array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+//       array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
 //     arrayVec.push_back( array );
 //     }
@@ -756,9 +756,9 @@ bool vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::GetEdgeWeight( unsig
 
 //           points->InsertNextPoint( particles->GetPoint(i) );
 
-//           for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+//           for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
 //             {
-//             arrayVec[j]->InsertTuple( inc, particles->GetFieldData()->GetArray(j)->GetTuple(i) );
+//             arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(i) );
 //             }
 
 //           inc++;    
@@ -772,9 +772,9 @@ bool vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::GetEdgeWeight( unsig
 //   this->NumberInternalInputParticles = inc;
 //   this->InternalInputPolyData->SetPoints( points );
 
-//   for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+//   for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
 //     {
-//     this->InternalInputPolyData->GetFieldData()->AddArray( arrayVec[j] ); 
+//     this->InternalInputPolyData->GetPointData()->AddArray( arrayVec[j] ); 
 //     }
 // }
 
@@ -925,14 +925,14 @@ bool vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::GetEdgeWeight( unsig
 //     }
 
 //   double particle1Hevec2[3];
-//     particle1Hevec2[0] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[0];
-//     particle1Hevec2[1] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[1];
-//     particle1Hevec2[2] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[2];
+//     particle1Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[0];
+//     particle1Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[1];
+//     particle1Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[2];
 
 //   double particle2Hevec2[3];
-//     particle2Hevec2[0] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[0];
-//     particle2Hevec2[1] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[1];
-//     particle2Hevec2[2] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[2];
+//     particle2Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[0];
+//     particle2Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[1];
+//     particle2Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[2];
 
 //   if ( this->GetAngleBetweenVectors( particle1Hevec2, connectingVec, true ) > this->ParticleAngleThreshold )
 //     {
@@ -1362,14 +1362,14 @@ void vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::ViewGraphs( std::vec
 //       if ( dist < minDist )
 //         {
 //         double particle1Hevec2[3];
-//         particle1Hevec2[0] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple(i)[0];
-//         particle1Hevec2[1] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple(i)[1];
-//         particle1Hevec2[2] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple(i)[2];
+//         particle1Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[0];
+//         particle1Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[1];
+//         particle1Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[2];
 
 //         double particle2Hevec2[3];
-//         particle2Hevec2[0] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple(j)[0];
-//         particle2Hevec2[1] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple(j)[1];
-//         particle2Hevec2[2] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple(j)[2];
+//         particle2Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple(j)[0];
+//         particle2Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple(j)[1];
+//         particle2Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple(j)[2];
 
 //         double connectingVec[3];
 //         connectingVec[0] = particle1Hevec2[0] - particle2Hevec2[0];

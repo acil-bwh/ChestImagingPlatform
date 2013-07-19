@@ -139,7 +139,7 @@ CIPOtsuLungCastImageFilter< TInputImage >
     {
     if ( rIt.Get() == lungHalf1Label || rIt.Get() == lungHalf2Label )
       {
-      mIt.Set( static_cast< unsigned short >( WHOLELUNG ) );
+      mIt.Set( static_cast< unsigned short >( cip::WHOLELUNG ) );
       }
     else 
       {

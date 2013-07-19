@@ -30,7 +30,7 @@
 #include "vtkPolyData.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 #include "vtkFloatArray.h"
 
 
@@ -138,17 +138,17 @@ int main( int argc, char *argv[] )
 void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< vtkPolyData > removeParticles,
                       vtkSmartPointer< vtkPolyData > cleanedParticles )
 {
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();;
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();;
 
   vtkPoints* points = vtkPoints::New();
 
   std::vector< vtkFloatArray* > arrayVec;
 
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( particles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( particles->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
     }
@@ -182,9 +182,9 @@ void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer<
       }
     if ( addPoint )
       {
-      for ( unsigned int k=0; k<numberOfFieldDataArrays; k++ )
+      for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
         {
-        arrayVec[k]->InsertTuple( inc, particles->GetFieldData()->GetArray(k)->GetTuple(i) );
+        arrayVec[k]->InsertTuple( inc, particles->GetPointData()->GetArray(k)->GetTuple(i) );
         }
       inc++;
       points->InsertNextPoint( particles->GetPoint(i) );
@@ -192,9 +192,9 @@ void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer<
     }
 
   cleanedParticles->SetPoints( points );
-  for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
     {
-    cleanedParticles->GetFieldData()->AddArray( arrayVec[j] );
+    cleanedParticles->GetPointData()->AddArray( arrayVec[j] );
     }
 }
 

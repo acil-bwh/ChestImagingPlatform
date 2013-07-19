@@ -7,27 +7,6 @@ ${CMAKE_SOURCE_DIR}/Utilities/ITK
 ${CMAKE_SOURCE_DIR}/Utilities/VTK
 )
 
-FIND_PACKAGE( VTK )
-IF ( VTK_FOUND )
-  INCLUDE (${VTK_USE_FILE})
-ELSE ( VTK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
-ENDIF (VTK_FOUND)
-
-FIND_PACKAGE( ITK )
-IF ( ITK_FOUND )
-  INCLUDE (${ITK_USE_FILE})
-ELSE ( ITK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
-ENDIF (ITK_FOUND)
-
-FIND_PACKAGE( Teem )
-IF ( Teem_FOUND )
-   INCLUDE (${Teem_USE_FILE})
-ELSE ( Teem_FOUND )
-   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
-ENDIF (Teem_FOUND)        
-
 SET ( CIPCommon_SRCS
   vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.cxx
   vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter.cxx

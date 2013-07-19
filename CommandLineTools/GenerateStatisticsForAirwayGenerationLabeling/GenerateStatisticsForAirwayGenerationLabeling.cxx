@@ -321,7 +321,7 @@ then normalizing.";
   //
   // Now compute and print the transition statistics
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
   for (unsigned int i=0; i<transitionVec.size(); i++)
     {
       std::cout << "---------------------------------" << std::endl;
@@ -564,7 +564,7 @@ void UpdateEmissionProbabilityData(vtkSmartPointer<vtkPolyData> refParticles, vt
 
 void PrintEmissionProbabilityData(std::map<unsigned char, std::vector<EMISSION> > emissionProbData)
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   std::map<unsigned char, std::vector<EMISSION> >::iterator mapIt = emissionProbData.begin();
 
@@ -631,7 +631,7 @@ void WriteEmissionProbabilityData(std::map<unsigned char, std::vector<EMISSION> 
 
   file << "ChestType, scaleDiffMean, scaleDiffSTD, distanceMean, distanceSTD, angleMean, angleSTD, numSamples" << std::endl;
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   std::map<unsigned char, std::vector<EMISSION> >::iterator mapIt = emissionProbData.begin();
 
@@ -708,7 +708,7 @@ void WriteTransitionProbabilityScaleAngleData(std::vector<TRANSITION> transition
 
   file << "fromChestType, toChestType, scaleDiffMean, scaleDiffSTD, angleMean, angleSTD, numSamples" << std::endl;
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
   for (unsigned int i=0; i<transitionVec.size(); i++)
     {
       unsigned int N = transitionVec[i].angles.size();

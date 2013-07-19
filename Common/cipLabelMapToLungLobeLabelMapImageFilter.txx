@@ -25,7 +25,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
   this->GetOutput()->Allocate();
   this->GetOutput()->FillBuffer( 0 );
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
   InputImageType::PointType   origin  = this->GetInput()->GetOrigin();

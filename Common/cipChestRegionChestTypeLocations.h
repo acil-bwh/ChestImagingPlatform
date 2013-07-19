@@ -70,7 +70,7 @@ public:
   void GetPolyDataFromChestTypeDesignation( vtkSmartPointer< vtkPolyData >, unsigned char );
 
 private:
-  ChestConventions Conventions;
+  cip::ChestConventions Conventions;
 
   std::vector< double* >        Locations;
   std::vector< unsigned char >  ChestRegions;

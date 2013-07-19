@@ -93,7 +93,7 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
   //
   // Instantiate conventions for later usage
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Read the label map
@@ -176,6 +176,7 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
     std::ofstream writer;
     writer.open ( outFileName.c_str() );  
   
+    writer << inFileName << ",";
     for ( mapIt = labelValueToCountsMap.begin(); mapIt != labelValueToCountsMap.end(); mapIt++ )
       {
       writer << conventions.GetChestRegionNameFromValue( (*mapIt).first ) << " "
@@ -183,10 +184,11 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
       }  
     writer << std::endl;
   
+    writer << ",";
     for ( mapIt = labelValueToCountsMap.begin(); mapIt != labelValueToCountsMap.end(); mapIt++ )
       {
       double area = spacing[0]*spacing[1]*static_cast< double >( (*mapIt).second );
-      writer<<area<<",";
+      writer << area << ",";
       }
     writer << std::endl;
   

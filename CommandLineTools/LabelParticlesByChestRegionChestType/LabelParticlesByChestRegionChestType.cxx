@@ -122,7 +122,7 @@ value will be determined from the label map";
   //
   // Instantiate ChestConventions for later use
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Read the particles
@@ -179,8 +179,8 @@ value will be determined from the label map";
 
       cipRegion  = static_cast< float >( conventions.GetChestRegionFromValue( labelValue ) );
 
-      particlesReader->GetOutput()->GetFieldData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
-      particlesReader->GetOutput()->GetFieldData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
+      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
       }
     }
   else
@@ -192,8 +192,8 @@ value will be determined from the label map";
     //
     for ( unsigned int i=0; i<particlesReader->GetOutput()->GetNumberOfPoints(); i++ )
       {
-      particlesReader->GetOutput()->GetFieldData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
-      particlesReader->GetOutput()->GetFieldData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
+      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
       }
     }
 
@@ -215,7 +215,7 @@ value will be determined from the label map";
 
 void InitializeParticleChestRegionChestTypeArrays( vtkSmartPointer< vtkPolyData > particles )
 {
-  unsigned int numberFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
   unsigned int numberParticles       = particles->GetNumberOfPoints();
 
   //
@@ -226,9 +226,9 @@ void InitializeParticleChestRegionChestTypeArrays( vtkSmartPointer< vtkPolyData 
   bool foundChestRegionArray = false;
   bool foundChestTypeArray   = false;
 
-  for ( unsigned int i=0; i<numberFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberPointDataArrays; i++ )
     {
-    std::string name( particles->GetFieldData()->GetArray(i)->GetName() );
+    std::string name( particles->GetPointData()->GetArray(i)->GetName() );
     if ( name.compare( "ChestType" ) == 0 )
       {
       foundChestTypeArray = true;
@@ -261,7 +261,7 @@ void InitializeParticleChestRegionChestTypeArrays( vtkSmartPointer< vtkPolyData 
     {
     if ( foundChestRegionArray )
       {
-      particles->GetFieldData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
+      particles->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
       }
     else
       {
@@ -270,7 +270,7 @@ void InitializeParticleChestRegionChestTypeArrays( vtkSmartPointer< vtkPolyData 
 
     if ( foundChestTypeArray )
       {
-      particles->GetFieldData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+      particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
       }
     else
       {
@@ -280,11 +280,11 @@ void InitializeParticleChestRegionChestTypeArrays( vtkSmartPointer< vtkPolyData 
 
   if ( !foundChestRegionArray )
     {
-    particles->GetFieldData()->AddArray( chestRegionArray );
+    particles->GetPointData()->AddArray( chestRegionArray );
     }
   if ( !foundChestTypeArray )
     {
-    particles->GetFieldData()->AddArray( chestTypeArray );
+    particles->GetPointData()->AddArray( chestTypeArray );
     }
 }
 

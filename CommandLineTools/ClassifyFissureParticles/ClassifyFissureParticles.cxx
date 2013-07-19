@@ -80,7 +80,7 @@
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
 #include "itkNumericTraits.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 #include "vtkPolyData.h"
 #include "cipNewtonOptimizer.h"
 #include "cipThinPlateSplineSurface.h"
@@ -349,9 +349,9 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
   position[1] = particles->GetPoint(whichParticle)[1];
   position[2] = particles->GetPoint(whichParticle)[2];
   
-  orientation[0] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple(whichParticle)[0];
-  orientation[1] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple(whichParticle)[1];
-  orientation[2] = particles->GetFieldData()->GetArray( "hevec2" )->GetTuple(whichParticle)[2];
+  orientation[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[0];
+  orientation[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[1];
+  orientation[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[2];
 
   particleToTPSMetric->SetParticle( position );
 
@@ -503,17 +503,17 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
 void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< unsigned int, PARTICLEINFO > particleToInfoMap, 
                           std::string fileName, unsigned char cipType )
 {
-  unsigned int numberOfFieldDataArrays = particles->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
   vtkPoints* outputPoints  = vtkPoints::New();
    
   std::vector< vtkFloatArray* > arrayVec;
 
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( particles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( particles->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
     }
@@ -525,9 +525,9 @@ void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< u
       {
       outputPoints->InsertNextPoint( particles->GetPoint(i) );
 
-      for ( unsigned int k=0; k<numberOfFieldDataArrays; k++ )
+      for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
         {
-        arrayVec[k]->InsertTuple( inc, particles->GetFieldData()->GetArray(k)->GetTuple(i) );
+        arrayVec[k]->InsertTuple( inc, particles->GetPointData()->GetArray(k)->GetTuple(i) );
         }        
       inc++;
       }
@@ -536,9 +536,9 @@ void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< u
   vtkSmartPointer< vtkPolyData > outputParticles = vtkSmartPointer< vtkPolyData >::New();
 
   outputParticles->SetPoints( outputPoints );
-  for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
     {
-    outputParticles->GetFieldData()->AddArray( arrayVec[j] );
+    outputParticles->GetPointData()->AddArray( arrayVec[j] );
     }
 
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
