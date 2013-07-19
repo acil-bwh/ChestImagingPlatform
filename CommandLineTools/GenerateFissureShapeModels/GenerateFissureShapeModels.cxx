@@ -720,7 +720,7 @@ void ResampleImage( ImageType::Pointer image, ImageType::Pointer subsampledROIIm
 TransformType::Pointer RegisterLungs( ImageType::Pointer fixedImage, ImageType::Pointer movingImage, 
                                       float maxStepLength, float minStepLength, float translationScale, int numberOfIterations )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
   
   unsigned short foregroundValue = conventions.GetValueFromChestRegionAndType( static_cast< unsigned char >( cip::WHOLELUNG ), 
 									       static_cast< unsigned char >( cip::UNDEFINEDTYPE) );

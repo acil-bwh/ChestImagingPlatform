@@ -61,29 +61,36 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
     }
     { Fl_Choice* o = chestRegionChoice = new Fl_Choice(103, 177, 269, 28, "Chest Region");
       o->down_box(FL_BORDER_BOX);
-      o->add("Undefined Region", 0, (Fl_Callback*)undefinedRegionMenuItem_CB, (void*)(this));
-      o->add("Left Lung", 0, (Fl_Callback*)leftLungMenuItem_CB, (void*)(this));
-      o->add("Right Lung", 0, (Fl_Callback*)rightLungMenuItem_CB, (void*)(this));
+      //o->add("Undefined Region", 0, (Fl_Callback*)undefinedRegionMenuItem_CB, (void*)(this));
+      //o->add("Left Lung", 0, (Fl_Callback*)leftLungMenuItem_CB, (void*)(this));
+      //o->add("Right Lung", 0, (Fl_Callback*)rightLungMenuItem_CB, (void*)(this));
       o->add("Right Upper Lobe", 0, (Fl_Callback*)rightUpperLobeMenuItem_CB, (void*)(this));
-      o->add("Right Middle Lobe", 0, (Fl_Callback*)rightMiddleLobeMenuItem_CB, (void*)(this));
+      //o->add("Right Middle Lobe", 0, (Fl_Callback*)rightMiddleLobeMenuItem_CB, (void*)(this));
       o->add("Right Lower Lobe", 0, (Fl_Callback*)rightLowerLobeMenuItem_CB, (void*)(this));
-      o->add("Left Upper Lobe", 0, (Fl_Callback*)leftUpperLobeMenuItem_CB, (void*)(this));
-      o->add("Left Lower Lobe", 0, (Fl_Callback*)leftLowerLobeMenuItem_CB, (void*)(this));
+      //o->add("Left Upper Lobe", 0, (Fl_Callback*)leftUpperLobeMenuItem_CB, (void*)(this));
+      //o->add("Left Lower Lobe", 0, (Fl_Callback*)leftLowerLobeMenuItem_CB, (void*)(this));
       o->add("Left", 0, (Fl_Callback*)leftMenuItem_CB, (void*)(this));
       o->add("Right", 0, (Fl_Callback*)rightMenuItem_CB, (void*)(this));
+      o->add("Liver", 0, (Fl_Callback*)liverMenuItem_CB, (void*)(this));
+      o->add("Spleen", 0, (Fl_Callback*)spleenMenuItem_CB, (void*)(this));
+      o->add("Left Costophrenic Angle", 0, (Fl_Callback*)leftCostoPhrenicAngle_CB, (void*)(this));
     }
     { Fl_Choice* o = chestTypeChoice = new Fl_Choice(103, 214, 269, 28, "Chest Type");
       o->down_box(FL_BORDER_BOX);
       o->add("Undefined Type", 0, (Fl_Callback*)undefinedTypeMenuItem_CB, (void*)(this));
-      o->add("Normal Parenchyma", 0, (Fl_Callback*)normalParenchymaMenuItem_CB, (void*)(this));
+      //o->add("Normal Parenchyma", 0, (Fl_Callback*)normalParenchymaMenuItem_CB, (void*)(this));
       o->add("Airway Generation 3", 0, (Fl_Callback*)airwayGeneration3MenuItem_CB, (void*)(this));
       o->add("Airway Generation 4", 0, (Fl_Callback*)airwayGeneration4MenuItem_CB, (void*)(this));
-      o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
-      o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
-      o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
-      o->add("Severe Centrilobular Emphysema", 0, (Fl_Callback*)severeCentrilobularMenuItem_CB, (void*)(this));
-      o->add("Paraseptal Emphysema", 0, (Fl_Callback*)paraseptalMenuItem_CB, (void*)(this));
-      o->add("Panlobular Emphysema", 0, (Fl_Callback*)panlobularMenuItem_CB, (void*)(this));
+      o->add("Pec Minor", 0, (Fl_Callback*)pectoralisMinorMenuItem_CB, (void*)(this));
+      o->add("Pec Major", 0, (Fl_Callback*)pectoralisMajorMenuItem_CB, (void*)(this));
+      o->add("Subcutaneous Fat", 0, (Fl_Callback*)subcutaneousFatMenuItem_CB, (void*)(this));
+      o->add("Visceral Fat", 0, (Fl_Callback*)visceralFatMenuItem_CB, (void*)(this));
+      //o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
+      //o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
+      //o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
+      //o->add("Severe Centrilobular Emphysema", 0, (Fl_Callback*)severeCentrilobularMenuItem_CB, (void*)(this));
+      //o->add("Paraseptal Emphysema", 0, (Fl_Callback*)paraseptalMenuItem_CB, (void*)(this));
+      //o->add("Panlobular Emphysema", 0, (Fl_Callback*)panlobularMenuItem_CB, (void*)(this));
     }
     o->end();
   }
@@ -350,6 +357,26 @@ void PaintBrushAndEraserGUI::rightMenuItem_CB_i() {
   this->m_ChestRegion = static_cast< unsigned char >( cip::RIGHT );
 }
 
+void PaintBrushAndEraserGUI::leftCostoPhrenicAngle_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->leftCostoPhrenicAngle_CB_i();
+}
+void PaintBrushAndEraserGUI::leftCostoPhrenicAngle_CB_i() {
+  this->m_ChestRegion = static_cast< unsigned char >( cip::LEFTCOSTOPHRENICANGLE );
+}
+
+void PaintBrushAndEraserGUI::liverMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->liverMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::liverMenuItem_CB_i() {
+  this->m_ChestRegion = static_cast< unsigned char >( cip::LIVER );
+}
+
+void PaintBrushAndEraserGUI::spleenMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->spleenMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::spleenMenuItem_CB_i() {
+  this->m_ChestRegion = static_cast< unsigned char >( cip::SPLEEN );
+}
 
 void PaintBrushAndEraserGUI::undefinedTypeMenuItem_CB( Fl_Widget* o, void* v ) {
   ((PaintBrushAndEraserGUI*)v)->undefinedTypeMenuItem_CB_i();
@@ -406,6 +433,19 @@ void PaintBrushAndEraserGUI::pectoralisMajorMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::PECTORALISMAJOR );
 }
 
+void PaintBrushAndEraserGUI::subcutaneousFatMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->subcutaneousFatMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::subcutaneousFatMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::SUBCUTANEOUSFAT );
+}
+
+void PaintBrushAndEraserGUI::visceralFatMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->visceralFatMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::visceralFatMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::VISCERALFAT );
+}
 
 void PaintBrushAndEraserGUI::anteriorScaleneMenuItem_CB( Fl_Widget* o, void* v ) {
   ((PaintBrushAndEraserGUI*)v)->anteriorScaleneMenuItem_CB_i();
@@ -453,6 +493,4 @@ void PaintBrushAndEraserGUI::severeCentrilobularMenuItem_CB( Fl_Widget* o, void*
 void PaintBrushAndEraserGUI::severeCentrilobularMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::SEVERECENTRILOBULAREMPHYSEMA );
 }
-
-
 

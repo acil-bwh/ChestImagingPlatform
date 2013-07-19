@@ -339,7 +339,7 @@ private:
   /* double       DataImageSpacing; */
   /* unsigned int SegmentCardinalityThreshold; */
   /* unsigned int TreeCardinalityThreshold;  */
-  unsigned int NumberOfFieldDataArrays;
+  unsigned int NumberOfPointDataArrays;
   unsigned int NumberInputParticles;
   /* unsigned int NumberInternalInputParticles; */
   /* unsigned int DataImageSize[3]; */

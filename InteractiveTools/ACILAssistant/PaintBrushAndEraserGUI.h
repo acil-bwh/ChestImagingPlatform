@@ -91,6 +91,15 @@ private:
   static void rightMenuItem_CB( Fl_Widget* o, void* v );
   void rightMenuItem_CB_i();
 
+  static void leftCostoPhrenicAngle_CB( Fl_Widget* o, void* v );
+  void leftCostoPhrenicAngle_CB_i();
+
+  static void liverMenuItem_CB( Fl_Widget* o, void* v );
+  void liverMenuItem_CB_i();
+
+  static void spleenMenuItem_CB( Fl_Widget* o, void* v );
+  void spleenMenuItem_CB_i();
+
   static void undefinedTypeMenuItem_CB( Fl_Widget* o, void* v );
   void undefinedTypeMenuItem_CB_i();
 
@@ -111,6 +120,12 @@ private:
 
   static void pectoralisMajorMenuItem_CB( Fl_Widget* o, void* v );
   void pectoralisMajorMenuItem_CB_i();
+
+  static void subcutaneousFatMenuItem_CB( Fl_Widget* o, void* v );
+  void subcutaneousFatMenuItem_CB_i();
+
+  static void visceralFatMenuItem_CB( Fl_Widget* o, void* v );
+  void visceralFatMenuItem_CB_i();
 
   static void anteriorScaleneMenuItem_CB( Fl_Widget* o, void* v );
   void anteriorScaleneMenuItem_CB_i();

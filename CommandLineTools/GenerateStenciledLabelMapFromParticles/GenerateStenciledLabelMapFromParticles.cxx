@@ -317,7 +317,7 @@ set to the inter-particle distance.";
 
   std::cout << "DONE." << std::endl;
 
-  return EXITSUCCESS;
+  return cip::EXITSUCCESS;
 }
 
 #endif

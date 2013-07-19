@@ -118,7 +118,7 @@ void cipParticleConnectedComponentFilter::SetInput( vtkPolyData* polyData )
 {
   this->InputPolyData           = polyData;
   this->NumberInputParticles    = this->InputPolyData->GetNumberOfPoints();
-  this->NumberOfFieldDataArrays = this->InputPolyData->GetFieldData()->GetNumberOfArrays();
+  this->NumberOfPointDataArrays = this->InputPolyData->GetPointData()->GetNumberOfArrays();
 
   if ( this->InterParticleSpacing != 0 )
     {
@@ -242,11 +242,11 @@ vtkPolyData* cipParticleConnectedComponentFilter::GetComponent( unsigned int com
   
   std::vector< vtkFloatArray* > arrayVec;
 
-  for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
     }
@@ -259,18 +259,18 @@ vtkPolyData* cipParticleConnectedComponentFilter::GetComponent( unsigned int com
       outputPoints->InsertNextPoint( this->InternalInputPolyData->GetPoint(i) );
       }
 
-    for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+    for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
       {
-      arrayVec[j]->InsertTuple( inc, this->InternalInputPolyData->GetFieldData()->GetArray(j)->GetTuple(i) );
+      arrayVec[j]->InsertTuple( inc, this->InternalInputPolyData->GetPointData()->GetArray(j)->GetTuple(i) );
       }
 
     inc++;
     }
 
   componentPolyData->SetPoints( outputPoints );
-  for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+  for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
     {
-    componentPolyData->GetFieldData()->AddArray( arrayVec[j] );    
+    componentPolyData->GetPointData()->AddArray( arrayVec[j] );    
     }
 
   return componentPolyData;
@@ -382,11 +382,11 @@ void cipParticleConnectedComponentFilter::InitializeDataStructureImageAndInterna
 
   std::vector< vtkFloatArray* > arrayVec;
 
-  for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( this->InputPolyData->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( this->InputPolyData->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( this->InputPolyData->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( this->InputPolyData->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
     }
@@ -403,9 +403,9 @@ void cipParticleConnectedComponentFilter::InitializeDataStructureImageAndInterna
 
       points->InsertNextPoint( this->InputPolyData->GetPoint(i) );
  
-      for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+      for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
         {
-        arrayVec[j]->InsertTuple( inc, this->InputPolyData->GetFieldData()->GetArray(j)->GetTuple(i) );
+        arrayVec[j]->InsertTuple( inc, this->InputPolyData->GetPointData()->GetArray(j)->GetTuple(i) );
         }
       inc++;    
       it.Set( inc ); // Ensures that image's voxel value points to new
@@ -418,9 +418,9 @@ void cipParticleConnectedComponentFilter::InitializeDataStructureImageAndInterna
   this->NumberInternalInputParticles = inc;
 
   this->InternalInputPolyData->SetPoints( points );
-  for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+  for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
     {
-    this->InternalInputPolyData->GetFieldData()->AddArray( arrayVec[j] ); 
+    this->InternalInputPolyData->GetPointData()->AddArray( arrayVec[j] ); 
     }
 }
 
@@ -520,11 +520,11 @@ void cipParticleConnectedComponentFilter::Update()
   vtkPoints* outputPoints  = vtkPoints::New();  
   std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
 
-  for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+  for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( this->InternalInputPolyData->GetFieldData()->GetArray(i)->GetName() );
+      array->SetNumberOfComponents( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetName() );
 
     arrayVec.push_back( array );
     }
@@ -543,9 +543,9 @@ void cipParticleConnectedComponentFilter::Update()
       {
       outputPoints->InsertNextPoint( this->InternalInputPolyData->GetPoint(i) );
 
-      for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+      for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
         {
-        arrayVec[j]->InsertTuple( inc, this->InternalInputPolyData->GetFieldData()->GetArray(j)->GetTuple(i) );
+        arrayVec[j]->InsertTuple( inc, this->InternalInputPolyData->GetPointData()->GetArray(j)->GetTuple(i) );
         }
 
       float temp = static_cast< float >( componentLabel );
@@ -558,9 +558,9 @@ void cipParticleConnectedComponentFilter::Update()
   this->NumberOutputParticles = inc;
 
   this->OutputPolyData->SetPoints( outputPoints );
-  for ( unsigned int j=0; j<this->NumberOfFieldDataArrays; j++ )
+  for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
     {
-    this->OutputPolyData->GetFieldData()->AddArray( arrayVec[j] );    
+    this->OutputPolyData->GetPointData()->AddArray( arrayVec[j] );    
     }
-  this->OutputPolyData->GetFieldData()->AddArray( unmergedComponentsArray );
+  this->OutputPolyData->GetPointData()->AddArray( unmergedComponentsArray );
 }

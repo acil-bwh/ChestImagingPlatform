@@ -42,7 +42,7 @@
 
 cipChestDataViewer::cipChestDataViewer()
 {
-  this->Conventions = new ChestConventions();
+  this->Conventions = new cip::ChestConventions();
 
   this->RenderWindow                 = vtkRenderWindow::New();
   this->Renderer                     = vtkRenderer::New();
@@ -289,8 +289,8 @@ void cipChestDataViewer::SetLeftObliqueThinPlateSplineSurface( cipThinPlateSplin
 {
   this->LeftObliqueThinPlateSplineSurface = tps;
 
-  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( OBLIQUEFISSURE ), 
-                              static_cast< unsigned char >( LEFTLUNG ), name );
+  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+                              static_cast< unsigned char >( cip::LEFTLUNG ), name );
 }
 
 
@@ -298,8 +298,8 @@ void cipChestDataViewer::SetRightObliqueThinPlateSplineSurface( cipThinPlateSpli
 {
   this->RightObliqueThinPlateSplineSurface = tps;
 
-  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( OBLIQUEFISSURE ), 
-                              static_cast< unsigned char >( RIGHTLUNG ), name );
+  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+                              static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
 
 
@@ -307,8 +307,8 @@ void cipChestDataViewer::SetRightHorizontalThinPlateSplineSurface( cipThinPlateS
 {
   this->RightHorizontalThinPlateSplineSurface = tps;
 
-  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( HORIZONTALFISSURE ), 
-                              static_cast< unsigned char >( RIGHTLUNG ), name );
+  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( cip::HORIZONTALFISSURE ), 
+                              static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
 
 
@@ -320,8 +320,8 @@ void cipChestDataViewer::SetLeftObliqueFissurePoints( const std::vector< double*
     }
  
   this->LeftObliqueThinPlateSplineSurface->SetSurfacePoints( pointsVec );
-  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( OBLIQUEFISSURE ), 
-                              static_cast< unsigned char >( LEFTLUNG ), name );
+  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+                              static_cast< unsigned char >( cip::LEFTLUNG ), name );
 }
 
 
@@ -333,8 +333,8 @@ void cipChestDataViewer::SetRightObliqueFissurePoints( const std::vector< double
     }
  
   this->RightObliqueThinPlateSplineSurface->SetSurfacePoints( pointsVec );
-  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( OBLIQUEFISSURE ), 
-                              static_cast< unsigned char >( RIGHTLUNG ), name );
+  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+                              static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
 
 
@@ -346,8 +346,8 @@ void cipChestDataViewer::SetRightHorizontalFissurePoints( const std::vector< dou
     }
  
   this->RightHorizontalThinPlateSplineSurface->SetSurfacePoints( pointsVec );
-  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( HORIZONTALFISSURE ), 
-                              static_cast< unsigned char >( RIGHTLUNG ), name );
+  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( cip::HORIZONTALFISSURE ), 
+                              static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
 
 
@@ -418,13 +418,13 @@ void cipChestDataViewer::SetPointsAsSpheres( vtkPolyData* polyData, double radiu
 
 void cipChestDataViewer::SetAirwayParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
-  this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( AIRWAY ), false );
+  this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), false );
 }
 
 
 void cipChestDataViewer::SetVesselParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
-  this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( VESSEL ), false );
+  this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::VESSEL ), false );
 }
 
 
@@ -436,11 +436,11 @@ void cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, double 
     polyData->GetPointData()->SetScalars( polyData->GetFieldData()->GetArray( "scale" ) );
     }
 
-  if ( particlesType == static_cast< unsigned char >( AIRWAY ) )
+  if ( particlesType == static_cast< unsigned char >( cip::AIRWAY ) )
     {
     polyData->GetPointData()->SetNormals( polyData->GetFieldData()->GetArray( "hevec2" ) );
     }
-  else if ( particlesType == static_cast< unsigned char >( VESSEL ) )
+  else if ( particlesType == static_cast< unsigned char >( cip::VESSEL ) )
     {
     polyData->GetPointData()->SetNormals( polyData->GetFieldData()->GetArray( "hevec0" ) );
     }
@@ -478,11 +478,11 @@ void cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, double 
   vtkActor* actor = vtkActor::New();
     actor->SetMapper( mapper );
 
-  if ( particlesType == static_cast< unsigned char >( AIRWAY ) )
+  if ( particlesType == static_cast< unsigned char >( cip::AIRWAY ) )
     {
     this->AirwayParticlesActorMap[actorName] = actor;
     }
-  else if ( particlesType == static_cast< unsigned char >( VESSEL ) )
+  else if ( particlesType == static_cast< unsigned char >( cip::VESSEL ) )
     {
     this->VesselParticlesActorMap[actorName] = actor;
     }
@@ -650,7 +650,7 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
     typedef itk::Image< unsigned int, 2 >                         DomainImageType;
     typedef itk::ImageRegionIteratorWithIndex< DomainImageType >  DomainIteratorType;
 
-    ChestConventions conventions;
+    cip::ChestConventions conventions;
 
     //
     // Create the domain image. This will be a 2D image that will be
@@ -690,20 +690,20 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
         unsigned short labelValue = this->LabelMapImage->GetPixel( index );
         unsigned char  lungRegion = conventions.GetChestRegionFromValue( labelValue );
 
-        if ( ((whichLung == LEFTLUNG) &&
-              (lungRegion == static_cast< unsigned char >( LEFTLUNG ) || 
-               lungRegion == static_cast< unsigned char >( LEFTUPPERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( LEFTMIDDLETHIRD ) || 
-               lungRegion == static_cast< unsigned char >( LEFTLOWERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( LEFTSUPERIORLOBE ) || 
-               lungRegion == static_cast< unsigned char >( LEFTINFERIORLOBE ))) ||
-             ((whichLung == RIGHTLUNG) &&
-              (lungRegion == static_cast< unsigned char >( RIGHTLUNG ) || 
-               lungRegion == static_cast< unsigned char >( RIGHTUPPERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( RIGHTMIDDLETHIRD ) || 
-               lungRegion == static_cast< unsigned char >( RIGHTLOWERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( RIGHTSUPERIORLOBE ) || 
-               lungRegion == static_cast< unsigned char >( RIGHTINFERIORLOBE ))) )
+        if ( ((whichLung == cip::LEFTLUNG) &&
+              (lungRegion == static_cast< unsigned char >( cip::LEFTLUNG ) || 
+               lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) || 
+               lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) || 
+               lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) || 
+               lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) || 
+               lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ))) ||
+             ((whichLung == cip::RIGHTLUNG) &&
+              (lungRegion == static_cast< unsigned char >( cip::RIGHTLUNG ) || 
+               lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) || 
+               lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) || 
+               lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) || 
+               lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) || 
+               lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ))) )
           {
           bool addPoint = true;
 

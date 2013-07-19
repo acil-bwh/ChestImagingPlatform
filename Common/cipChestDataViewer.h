@@ -180,7 +180,7 @@ protected:
   bool PlaneWidgetYShowing;
   bool PlaneWidgetZShowing;
 
-  ChestConventions* Conventions;
+  cip::ChestConventions* Conventions;
 
   vtkRenderWindowInteractor*           RenderWindowInteractor;
   vtkRenderer*                         Renderer;

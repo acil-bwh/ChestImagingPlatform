@@ -215,7 +215,7 @@ void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, floa
     erIt.GoToBegin();
     while ( !erIt.IsAtEnd() )
       {
-      if ( erIt.Get() == static_cast< unsigned short >( WHOLELUNG ) )
+      if ( erIt.Get() == static_cast< unsigned short >( cip::WHOLELUNG ) )
         {
         computeHull = true;
         
@@ -281,7 +281,7 @@ void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, floa
             scanIt.GoToBeginOfLine();
             while ( !scanIt.IsAtEndOfLine() )
               {
-              if ( (scanIt.Get() == static_cast< unsigned short >( WHOLELUNG ) ) && !fromLeft )
+              if ( (scanIt.Get() == static_cast< unsigned short >( cip::WHOLELUNG ) ) && !fromLeft )
                 {
                 fromLeft = true;
                 leftIndex = scanIt.GetIndex();        
@@ -298,7 +298,7 @@ void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, floa
             --scanIt;
             while ( !scanIt.IsAtReverseEndOfLine() )
               {
-              if ( (scanIt.Get() == static_cast< unsigned short >( WHOLELUNG )) && !fromRight )
+              if ( (scanIt.Get() == static_cast< unsigned short >( cip::WHOLELUNG )) && !fromRight )
                 {
                 fromRight = true;
                 rightIndex = scanIt.GetIndex();
@@ -314,7 +314,7 @@ void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, floa
                 {
                 if ( scanIt.Get() == 0 )
                   {
-                  scanIt.Set( static_cast< unsigned short >( WHOLELUNG ) );
+                  scanIt.Set( static_cast< unsigned short >( cip::WHOLELUNG ) );
                   continueToAdd = true;
                   }
                 ++scanIt;
@@ -334,7 +334,7 @@ void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, floa
             scanIt.GoToBeginOfLine();
             while ( !scanIt.IsAtEndOfLine() )
               {
-              if ( (scanIt.Get() == static_cast< unsigned short >( WHOLELUNG )) && !fromTop )
+              if ( (scanIt.Get() == static_cast< unsigned short >( cip::WHOLELUNG )) && !fromTop )
                 {
                 fromTop = true;
                 topIndex = scanIt.GetIndex();
@@ -351,7 +351,7 @@ void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, floa
             --scanIt;
             while ( !scanIt.IsAtReverseEndOfLine() )
               {
-              if ( (scanIt.Get() == static_cast< unsigned short >( WHOLELUNG )) && !fromBottom )
+              if ( (scanIt.Get() == static_cast< unsigned short >( cip::WHOLELUNG )) && !fromBottom )
                 {
                 fromBottom = true;
                 bottomIndex = scanIt.GetIndex();
@@ -367,7 +367,7 @@ void ReassignImageToConvexHull( ImageType::Pointer image, int numRotations, floa
                 {
                 if ( scanIt.Get() == 0 )
                   {
-                  scanIt.Set( static_cast< unsigned short >( WHOLELUNG ) );
+                  scanIt.Set( static_cast< unsigned short >( cip::WHOLELUNG ) );
                   continueToAdd = true;
                   }
                 ++scanIt;

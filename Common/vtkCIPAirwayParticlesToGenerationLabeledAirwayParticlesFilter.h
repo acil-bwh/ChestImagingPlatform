@@ -226,7 +226,7 @@ private:
   double       ParticleDistanceThreshold;
   double       KernelDensityEstimationROIRadius;
   double       NoiseProbability;
-  unsigned int NumberOfFieldDataArrays;
+  unsigned int NumberOfPointDataArrays;
   unsigned int NumberInputParticles;
   unsigned int NumberOfStates;
 };

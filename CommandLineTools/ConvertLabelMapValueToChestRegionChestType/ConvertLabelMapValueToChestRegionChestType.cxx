@@ -51,7 +51,7 @@ region and chest type";
     return cip::ARGUMENTPARSINGERROR;
     }
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   std::cout << "Chest Region:\t" << conventions.GetChestRegionNameFromValue( value ) << std::endl;
   std::cout << "Chest Value:\t"  << conventions.GetChestTypeNameFromValue( value ) << std::endl;

@@ -17,14 +17,45 @@
 #include <FL/Fl_File_Chooser.H>
 #include <iostream>
 using namespace std;
+
+struct SESSIONDATA
+{
+  std::string patientID;
+  std::string study;
+  std::string caseName;
+  std::string ctFileNameHeader;
+  std::string ctFileNameRaw;
+  std::string ctTmpDirAndFileNameHeader;
+  std::string ctTmpDirAndFileNameRaw;
+  std::string inLabelMapFileNameHeader;
+  std::string inLabelMapFileNameRaw;
+  std::string inLabelMapTmpDirAndFileNameHeader;
+  std::string inLabelMapTmpDirAndFileNameRaw;
+  std::string outLabelMapFileNameHeader;
+  std::string outLabelMapFileNameRaw;
+  std::string outLabelMapTmpDirAndFileNameHeader;
+  std::string outLabelMapTmpDirAndFileNameRaw;
+  std::string regionTypeIndicesFileName;
+  std::string regionTypeIndicesTmpDirAndFileName;
+  std::string studyTmpDir;
+  std::string patientTmpDir;
+  std::string caseTmpDir;
+};
+
 static std::vector< std::string > sessionGrayscaleFileNameVec;
 static std::vector< std::string > sessionInLabelMapFileNameVec;
 static std::vector< std::string > sessionOutLabelMapFileNameVec;
 static std::vector< std::string > sessionRegionTypeIndicesFileNameVec;
+static std::vector< SESSIONDATA > sessionDataVec;
 static bool grayscaleImageRead = false;
 static PaintBrushAndEraserGUI* paintBrushAndEraserInput;
 static bool labelMapImageRead = false;
 static ACILAssistantBase* assistantInstance;
+
+std::string exec(const char*);
+bool DoesRemoteFileExist(std::string study, std::string patientID, std::string caseName, std::string fileName);
+void CopySessionDataFromMAD( SESSIONDATA data );
+void CopySessionDataToMAD( SESSIONDATA data );
 
 Fl_Double_Window *acilAssistantMainWindow=(Fl_Double_Window *)0;
 
@@ -60,9 +91,7 @@ Fl_Menu_Item menu_Menu[] = {
 };
 
 GLSliceView< short, unsigned short > *sliceViewer=(GLSliceView< short, unsigned short > *)0;
-
 Fl_Scrollbar *sliceSlider=(Fl_Scrollbar *)0;
-
 Fl_Slider *opacitySlider=(Fl_Slider *)0;
 
 int main(int argc, char **argv) {
@@ -389,16 +418,14 @@ Fl_File_Chooser chooser(".", "*", Fl_File_Chooser::SINGLE, "Open");
 
 void SessionFile_CB( Fl_Widget*, void* ) {
   typedef itk::Image< short, 3 >                      GrayscaleImageType;
-typedef itk::ImageFileReader< GrayscaleImageType >  GrayscaleReaderType; 
-typedef itk::Image< unsigned short, 3 >             LabelMapType;
-typedef itk::ImageFileReader< LabelMapType >        LabelMapReaderType; 
+  typedef itk::ImageFileReader< GrayscaleImageType >  GrayscaleReaderType; 
+  typedef itk::Image< unsigned short, 3 >             LabelMapType;
+  typedef itk::ImageFileReader< LabelMapType >        LabelMapReaderType; 
 
-Fl_File_Chooser chooser(".", "*", Fl_File_Chooser::SINGLE, "Open");	                
-    chooser.show();
+  Fl_File_Chooser chooser(".", "*", Fl_File_Chooser::SINGLE, "Open");	                
+  chooser.show();
  
-  //-------
   // Block until user picks something
-  //
   while(chooser.shown())
     {
     Fl::wait(); 
@@ -415,120 +442,268 @@ Fl_File_Chooser chooser(".", "*", Fl_File_Chooser::SINGLE, "Open");
     char thirdLine[512];
     char fourthLine[512];
     
-    std::cout << "Reading session file..." << std::endl;
-    
+    std::cout << "Reading session file..." << std::endl;    
     std::ifstream sessionFile( chooser.value() );
     while ( !sessionFile.eof() )
       {
       sessionFile.getline( firstLine, 512 );
-      std::string grayscaleFileName( firstLine );   
-      
+      std::string grayscaleEntry( firstLine );   
+    
       sessionFile.getline( secondLine, 512 ); 
-      std::string inLabelMapFileName( secondLine );        
-      
+      std::string inLabelMapEntry( secondLine );        
+    
       sessionFile.getline( thirdLine, 512 );
-      std::string outLabelMapFileName( thirdLine );   
-      
+      std::string outLabelMapEntry( thirdLine );   
+    
       sessionFile.getline( fourthLine, 512 );  
-      std::string regionTypeIndicesFileName( fourthLine );   
-        
-      struct stat stFileInfo;             
+      std::string regionTypeIndicesEntry( fourthLine );
 
-      //
-      // Only add to session file data if the output mask and
-      // region-type indices file name do not already exist
-      //
-      if ( stat( firstLine, &stFileInfo ) == 0 &&
-           (stat( secondLine, &stFileInfo) == 0  || inLabelMapFileName.compare("NA") == 0) &&
-           (stat( thirdLine, &stFileInfo ) != 0  || outLabelMapFileName.compare("NA") == 0) &&
-           (stat( fourthLine, &stFileInfo ) != 0 || regionTypeIndicesFileName.compare("NA") == 0))
-        {          
-          sessionGrayscaleFileNameVec.push_back( grayscaleFileName );              
-          sessionInLabelMapFileNameVec.push_back( inLabelMapFileName );                  
-          sessionOutLabelMapFileNameVec.push_back( outLabelMapFileName );  
-          sessionRegionTypeIndicesFileNameVec.push_back( regionTypeIndicesFileName );
+      if (grayscaleEntry.length() > 0)
+        {
+        // Begin by parsing all the component strings that we'll need to
+        // copy data, check for file existince, etc.
+        std::string patientID;
+        std::string study;
+        std::string caseName;
+        std::string ctFileNameHeader;
+        std::string ctFileNameRaw;
+        std::string ctTmpDirAndFileNameHeader;
+        std::string ctTmpDirAndFileNameRaw;
+        std::string inLabelMapFileNameHeader;
+        std::string inLabelMapFileNameRaw;
+        std::string inLabelMapTmpDirAndFileNameHeader;
+        std::string inLabelMapTmpDirAndFileNameRaw;
+        std::string outLabelMapFileNameHeader;
+        std::string outLabelMapFileNameRaw;
+        std::string outLabelMapTmpDirAndFileNameHeader;
+        std::string outLabelMapTmpDirAndFileNameRaw;
+        std::string regionTypeIndicesFileName;
+        std::string regionTypeIndicesTmpDirAndFileName;
+        std::string studyTmpDir;
+        std::string patientTmpDir;
+        std::string caseTmpDir;
+
+        int patientIDStart = grayscaleEntry.find( '/', 0 );  
+        int patientIDStop  = grayscaleEntry.find( '/', patientIDStart + 1);
+        patientID = grayscaleEntry.substr( patientIDStart+1, patientIDStop - patientIDStart - 1);
+        
+        int caseNameStart  = grayscaleEntry.find_last_of('/');;
+        int extensionStart = grayscaleEntry.find( '.', 0 );  
+        caseName = grayscaleEntry.substr( caseNameStart + 1, extensionStart - caseNameStart - 1);
+
+        study = grayscaleEntry.substr(0, patientIDStart);
+
+        std::stringstream tmpStream1;
+        tmpStream1 << "/var/tmp/" << study << "/";
+        studyTmpDir = tmpStream1.str();
+
+        std::stringstream tmpStream2;
+        tmpStream2 << studyTmpDir << patientID << "/";
+        patientTmpDir = tmpStream2.str();
+
+        std::stringstream tmpStream3;
+        tmpStream3 << patientTmpDir << caseName << "/";
+        caseTmpDir = tmpStream3.str();
+      
+        std::stringstream stream1;
+        stream1 << caseName << ".nhdr";
+        ctFileNameHeader = stream1.str();
+        
+        std::stringstream stream2;
+        stream2 << caseName << ".raw.gz";
+        ctFileNameRaw = stream2.str();
+
+        std::stringstream stream3;
+        stream3 << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << ctFileNameHeader;
+        ctTmpDirAndFileNameHeader = stream3.str();
+
+        std::stringstream stream3a;
+        stream3a << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << ctFileNameRaw;
+        ctTmpDirAndFileNameRaw = stream3a.str();
+
+        if (inLabelMapEntry.compare("NA") == 0)
+          {
+          inLabelMapFileNameHeader          = "NA";
+          inLabelMapFileNameRaw             = "NA";
+          inLabelMapTmpDirAndFileNameHeader = "NA";
+          }
+        else
+          {
+          int extensionStop = inLabelMapEntry.find( '.', 0 ); 
+
+          std::string inLabelMapExtension = inLabelMapEntry.substr( extensionStart, extensionStop - extensionStart);
+
+          std::stringstream stream4;
+          stream4 << caseName << inLabelMapExtension << ".nhdr";
+          inLabelMapFileNameHeader = stream4.str();
+
+          std::stringstream stream5;
+          stream5 << caseName << inLabelMapExtension << ".raw.gz";
+          inLabelMapFileNameRaw = stream5.str();
+
+          std::stringstream stream6;
+          stream6 << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << inLabelMapFileNameHeader;
+          inLabelMapTmpDirAndFileNameHeader = stream6.str();
+
+          std::stringstream stream6a;
+          stream6a << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << inLabelMapFileNameRaw;
+          inLabelMapTmpDirAndFileNameRaw = stream6a.str();
         }
-      }    
-    }
-    
-    if ( sessionGrayscaleFileNameVec.size() > 0 )
-      {    
-        std::cout << "Reading grayscale image..." << std::endl;
-        std::cout << sessionGrayscaleFileNameVec[0] << std::endl;
-        GrayscaleReaderType::Pointer grayReader = GrayscaleReaderType::New();
-          grayReader->SetFileName( sessionGrayscaleFileNameVec[0] );
-        try
+
+        if (outLabelMapEntry.compare("NA") == 0)
           {
-          grayReader->Update();
+          outLabelMapFileNameHeader          = "NA";
+          outLabelMapFileNameRaw             = "NA";
+          outLabelMapTmpDirAndFileNameHeader = "NA";
           }
-        catch ( itk::ExceptionObject &excp )
+        else
           {
-          std::cerr << "Exception caught reading grayscale image:";
-          std::cerr << excp << std::endl;
+          int extensionStop = outLabelMapEntry.find( '.', 0 ); 
+
+          std::string outLabelMapExtension = outLabelMapEntry.substr( extensionStart, extensionStop - extensionStart);
+
+          std::stringstream stream4;
+          stream4 << caseName << outLabelMapExtension << ".nhdr";
+          outLabelMapFileNameHeader = stream4.str();
+
+          std::stringstream stream5;
+          stream5 << caseName << outLabelMapExtension << ".raw.gz";
+          outLabelMapFileNameRaw = stream5.str();
+
+          std::stringstream stream6;
+          stream6 << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << outLabelMapFileNameHeader;
+          outLabelMapTmpDirAndFileNameHeader = stream6.str();
+
+          std::stringstream stream6a;
+          stream6a << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << outLabelMapFileNameRaw;
+          outLabelMapTmpDirAndFileNameRaw = stream6a.str();
           }
+
+        if (regionTypeIndicesEntry.compare("NA") == 0)
+          {
+          regionTypeIndicesFileName          = "NA";
+          regionTypeIndicesTmpDirAndFileName = "NA";
+          }
+        else
+          {
+          int extensionStop = regionTypeIndicesEntry.find( '.', 0 ); 
+
+          std::string regionTypeIndicesExtension = regionTypeIndicesEntry.substr( extensionStart, extensionStop - extensionStart);
+
+          std::stringstream stream4;
+          stream4 << caseName << regionTypeIndicesExtension << ".csv";
+          regionTypeIndicesFileName = stream4.str();
+
+          std::stringstream stream6;
+          stream6 << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << regionTypeIndicesFileName;
+          regionTypeIndicesTmpDirAndFileName = stream6.str();
+          }
+
+        // Now that we have all the component strings, we can set up the
+        // files for the session. Only add to session file data if the
+        // output mask and region-type indices file name do not already
+        // exist. 
+        if ((inLabelMapFileNameHeader.compare("NA") == 0 || DoesRemoteFileExist(study, patientID, caseName, inLabelMapFileNameHeader)) &&
+            (outLabelMapFileNameHeader.compare("NA") == 0 || !DoesRemoteFileExist(study, patientID, caseName, outLabelMapFileNameHeader)) &&
+            (regionTypeIndicesFileName.compare("NA") == 0 || !DoesRemoteFileExist(study, patientID, caseName, regionTypeIndicesFileName)))
+          {
+          // If we're in here, it means we've identified a case that
+          // needs processing, so store
+          SESSIONDATA data;
+          data.patientID = patientID;
+          data.study = study;
+          data.caseName = caseName;
+          data.ctFileNameHeader = ctFileNameHeader;
+          data.ctFileNameRaw = ctFileNameRaw;
+          data.ctTmpDirAndFileNameHeader = ctTmpDirAndFileNameHeader;
+          data.ctTmpDirAndFileNameRaw = ctTmpDirAndFileNameRaw;
+          data.inLabelMapFileNameHeader = inLabelMapFileNameHeader;
+          data.inLabelMapFileNameRaw = inLabelMapFileNameRaw;
+          data.inLabelMapTmpDirAndFileNameHeader = inLabelMapTmpDirAndFileNameHeader;
+          data.inLabelMapTmpDirAndFileNameRaw = inLabelMapTmpDirAndFileNameRaw;
+          data.outLabelMapFileNameHeader = outLabelMapFileNameHeader;
+          data.outLabelMapFileNameRaw = outLabelMapFileNameRaw;
+          data.outLabelMapTmpDirAndFileNameHeader = outLabelMapTmpDirAndFileNameHeader;
+          data.outLabelMapTmpDirAndFileNameRaw = outLabelMapTmpDirAndFileNameRaw;
+          data.regionTypeIndicesFileName = regionTypeIndicesFileName;
+          data.regionTypeIndicesTmpDirAndFileName = regionTypeIndicesTmpDirAndFileName;
+          data.studyTmpDir = studyTmpDir;
+          data.patientTmpDir = patientTmpDir;
+          data.caseTmpDir = caseTmpDir;
           
-        std::cout << "DONE." << std::endl;    
-        grayscaleImageRead = true;    
+          sessionDataVec.push_back( data );
+          }     
+        }    
+      } 
+    }
+  
+  if ( sessionDataVec.size() > 0 )
+    {    
+    CopySessionDataFromMAD( sessionDataVec[0] );
 
-        assistantInstance->SetGrayscaleImage( grayReader->GetOutput() );	
-
-        LabelMapType::SizeType    size    = assistantInstance->GetGrayscaleImage()->GetBufferedRegion().GetSize();
-        LabelMapType::SpacingType spacing = assistantInstance->GetGrayscaleImage()->GetSpacing();
-        LabelMapType::PointType   origin  = assistantInstance->GetGrayscaleImage()->GetOrigin();
-
-        //-------
-        // Label the main window to indicate which image has been read
-        //    
-        unsigned int slashLoc = -1;
-    
-        do
-          {
-            slashLoc = sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 );
-          }
-        while ( sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 ) != std::string::npos );
-     
-        acilAssistantMainWindow->label( sessionGrayscaleFileNameVec[0].substr( slashLoc+1, sessionGrayscaleFileNameVec[0].size()-slashLoc-1 ).c_str() );
-
-	//-------
-	// Initialize the label maps
-	//
-        assistantInstance->InitializeLabelMapImage( size, spacing, origin );
-
-	//-------
-	// Read in the label map if necessary
-	//
-	if ( (sessionInLabelMapFileNameVec[0]).compare("NA") != 0 )
-	  {
-            std::cout << "Reading label map image..." << std::endl;
-            LabelMapReaderType::Pointer labelReader = LabelMapReaderType::New();
-              labelReader->SetFileName( sessionInLabelMapFileNameVec[0] );
-            try
-              {
-              labelReader->Update();
-              }
-            catch ( itk::ExceptionObject &excp )
-              {
-              std::cerr << "Exception caught reading label map file:";
-              std::cerr << excp << std::endl;
-              }
-
-            std::cout << "DONE." << std::endl;	
-            labelMapImageRead = true;
-            
-            assistantInstance->SetLabelMapImage( labelReader->GetOutput() );
-          }
-        
-        int numberOfSlices = grayReader->GetOutput()->GetBufferedRegion().GetSize()[2];
- 
-        sliceSlider->maximum( numberOfSlices-1 );        	
-       
-        InitializeViewer();                
-      }
-    else
+    std::cout << "Reading grayscale image..." << std::endl;
+    std::cout << sessionDataVec[0].ctFileNameHeader << std::endl;
+    GrayscaleReaderType::Pointer grayReader = GrayscaleReaderType::New();
+      grayReader->SetFileName( sessionDataVec[0].ctTmpDirAndFileNameHeader );
+    try
       {
-        std::cout << "Session has been completed or session file is empty." << std::endl;
+      grayReader->Update();
       }
+    catch ( itk::ExceptionObject &excp )
+      {
+      std::cerr << "Exception caught reading grayscale image:";
+      std::cerr << excp << std::endl;
+      }
+          
+    std::cout << "DONE." << std::endl;    
+    grayscaleImageRead = true;    
+
+    assistantInstance->SetGrayscaleImage( grayReader->GetOutput() );	
+
+    LabelMapType::SizeType    size    = assistantInstance->GetGrayscaleImage()->GetBufferedRegion().GetSize();
+    LabelMapType::SpacingType spacing = assistantInstance->GetGrayscaleImage()->GetSpacing();
+    LabelMapType::PointType   origin  = assistantInstance->GetGrayscaleImage()->GetOrigin();
+
+    // Label the main window to indicate which image has been read    
+    acilAssistantMainWindow->label( sessionDataVec[0].caseName.c_str() );
+
+    // Initialize the label maps
+    assistantInstance->InitializeLabelMapImage( size, spacing, origin );
+
+    // Read in the label map if necessary
+    if ( sessionDataVec[0].inLabelMapFileNameHeader.compare("NA") != 0 )
+      {
+      std::cout << "Reading label map image..." << std::endl;
+      LabelMapReaderType::Pointer labelReader = LabelMapReaderType::New();
+        labelReader->SetFileName( sessionDataVec[0].inLabelMapTmpDirAndFileNameHeader );
+      try
+        {
+        labelReader->Update();
+        }
+      catch ( itk::ExceptionObject &excp )
+        {
+        std::cerr << "Exception caught reading label map file:";
+        std::cerr << excp << std::endl;
+        }
+
+      std::cout << "DONE." << std::endl;	
+      labelMapImageRead = true;
+            
+      assistantInstance->SetLabelMapImage( labelReader->GetOutput() );
+      }
+    
+    int numberOfSlices = grayReader->GetOutput()->GetBufferedRegion().GetSize()[2];
+    
+    sliceSlider->maximum( numberOfSlices-1 );        	
+    
+    InitializeViewer();                
+    }
+  else
+    {
+    std::cout << "Session has been completed or session file is empty." << std::endl;
+    }
 }
+
 
 void opacitySlider_CB( Fl_Widget*, void* ) {
   UpdateViewer();
@@ -715,19 +890,19 @@ void SaveSessionDataMenu_CB( Fl_Widget*, void* )
   typedef itk::Image< short, 3 >                      GrayscaleImageType;
   typedef itk::ImageFileReader< LabelMapType >        LabelMapReaderType;
   typedef itk::ImageFileReader< GrayscaleImageType >  GrayscaleReaderType;
-
+  
   if ( !grayscaleImageRead )
     {
     std::cerr << "Nothing to save!" << std::endl;
     
     return;
     }
-
-  if ( (sessionOutLabelMapFileNameVec[0]).compare( "NA" ) != 0 )
+  
+  if ( sessionDataVec[0].outLabelMapTmpDirAndFileNameHeader.compare( "NA" ) != 0 )
     {
     std::cout << "Writing label map image..." << std::endl;
     WriterType::Pointer writer = WriterType::New();
-      writer->SetFileName( sessionOutLabelMapFileNameVec[0] );
+      writer->SetFileName( sessionDataVec[0].outLabelMapTmpDirAndFileNameHeader );
       writer->SetInput( assistantInstance->GetLabelMapImage() );
       writer->UseCompressionOn();
     try
@@ -739,46 +914,40 @@ void SaveSessionDataMenu_CB( Fl_Widget*, void* )
       std::cerr << "Exception caught writer label map image:";
       std::cerr << excp << std::endl;
       }
-        
+    
     std::cout << "DONE." << std::endl;
     }
-  
-  //
-  // Write the region and type indices to file
-  //
-  if ( (sessionRegionTypeIndicesFileNameVec[0]).compare( "NA" ) != 0 )
+     
+  // Write the region and type indices to file       
+  if ( sessionDataVec[0].regionTypeIndicesTmpDirAndFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing region and type indices..." << std::endl;
-    assistantInstance->WritePaintedRegionTypePoints( sessionRegionTypeIndicesFileNameVec[0] );
+    assistantInstance->WritePaintedRegionTypePoints( sessionDataVec[0].regionTypeIndicesTmpDirAndFileName );
     std::cout << "DONE." << std::endl;
     }
 
-  //
+  // Now copy the data to MAD 
+  CopySessionDataToMAD( sessionDataVec[0] );
+
   // Now that the label map has been saved, we want to load the group
   // of images for the next session block. First eliminate the file names
   // of the session block that was just processed
-  //
-  sessionGrayscaleFileNameVec.erase( sessionGrayscaleFileNameVec.begin() );              
-  sessionInLabelMapFileNameVec.erase( sessionInLabelMapFileNameVec.begin() );
-  sessionOutLabelMapFileNameVec.erase( sessionOutLabelMapFileNameVec.begin() );
-  sessionRegionTypeIndicesFileNameVec.erase( sessionRegionTypeIndicesFileNameVec.begin() );
+  sessionDataVec.erase( sessionDataVec.begin() );
 
-  //
   // Make sure the memory allocated for the images of the current session
   // block has been freed. Calling this method will also clear the stored
   // type indices that were recorded during painting
-  //
   assistantInstance->Clear();
 
-  if ( sessionGrayscaleFileNameVec.size() > 0 )
+  if ( sessionDataVec.size() > 0 )
     {
-    //
+    CopySessionDataFromMAD( sessionDataVec[0] );
+
     // Read the grayscale image
-    //
     std::cout << "Reading grayscale image..." << std::endl;
-    std::cout << sessionGrayscaleFileNameVec[0] << std::endl;
+    std::cout << sessionDataVec[0].ctFileNameHeader << std::endl;
     GrayscaleReaderType::Pointer grayscaleReader = GrayscaleReaderType::New();
-      grayscaleReader->SetFileName( sessionGrayscaleFileNameVec[0] );
+      grayscaleReader->SetFileName( sessionDataVec[0].ctTmpDirAndFileNameHeader );
     try
       {
       grayscaleReader->Update();
@@ -803,28 +972,16 @@ void SaveSessionDataMenu_CB( Fl_Widget*, void* )
 
     assistantInstance->InitializeLabelMapImage( size, spacing, origin );
 
-    //
     // Label the main window to indicate which image has been read
-    //    
-    unsigned int slashLoc = -1;
-    
-    do
-      {
-      slashLoc = sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 );
-      }
-    while ( sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 ) != std::string::npos );
-    
-    acilAssistantMainWindow->label( sessionGrayscaleFileNameVec[0].substr( slashLoc+1, sessionGrayscaleFileNameVec[0].size()-slashLoc-1 ).c_str() );
+    acilAssistantMainWindow->label( sessionDataVec[0].caseName.c_str() );
 
-    //
     // Read the label map image
-    //
     if ( (sessionInLabelMapFileNameVec[0]).compare( "NA" ) != 0 )
       {
       std::cout << "Reading label map image..." << std::endl;
-      std::cout << sessionInLabelMapFileNameVec[0] << std::endl;
+      std::cout << sessionDataVec[0].inLabelMapFileNameHeader << std::endl;
       LabelMapReaderType::Pointer labelMapReader = LabelMapReaderType::New();
-        labelMapReader->SetFileName( sessionInLabelMapFileNameVec[0] );
+        labelMapReader->SetFileName( sessionDataVec[0].inLabelMapTmpDirAndFileNameHeader );
       try
         {
         labelMapReader->Update();
@@ -840,15 +997,11 @@ void SaveSessionDataMenu_CB( Fl_Widget*, void* )
       std::cout << "DONE." << std::endl;
       }
     
-    //
     // Update the slice viewer with the new images
-    //
     sliceViewer->clear();
     InitializeViewer();
 
-    //
     // Make sure the paint brush points to the correct image
-    //
     paintBrushAndEraserInput->SetLabelMapImage( assistantInstance->GetLabelMapImage() );
     }
   else
@@ -889,3 +1042,416 @@ void SaveRegionTypePointsMenu_CB( Fl_Widget*, void* )
     std::cout << "DONE." << std::endl;
     }
 }
+
+
+std::string exec(const char* cmd) 
+{
+  FILE* pipe = popen(cmd, "r");
+  if (!pipe) return "ERROR";
+  char buffer[128];
+  std::string result = "";
+  while(!feof(pipe)) 
+    {
+    if(fgets(buffer, 128, pipe) != NULL)
+      result += buffer;
+    }
+  pclose(pipe);
+
+  return result;
+}
+
+bool DoesRemoteFileExist(std::string study, std::string patientID, std::string caseName, std::string fileName)
+{
+  std::stringstream stream;
+  stream << "ssh copd@mad.research.partners.org ls /mad/store-replicated/clients/copd/Processed/" << study << "/" << patientID << "/" << caseName << "/" << fileName;
+  std::string command = stream.str(); 
+
+  std::string status = exec(command.c_str());
+
+  if (status.length() > 0)
+    {
+    return true;
+    }
+
+  return false;
+}
+
+void CopySessionDataFromMAD( SESSIONDATA data )
+{
+  std::stringstream mkDirStream1;
+  mkDirStream1 << "mkdir " << data.studyTmpDir;
+  std::string mkStudyTmpDir = mkDirStream1.str();
+  system( mkStudyTmpDir.c_str() );
+
+  std::stringstream mkDirStream2;
+  mkDirStream2 << "mkdir " << data.patientTmpDir;
+  std::string mkPatientTmpDir = mkDirStream2.str();
+  system( mkPatientTmpDir.c_str() );
+
+  std::stringstream mkDirStream3;
+  mkDirStream3 << "mkdir " << data.caseTmpDir;
+  std::string mkCaseTmpDir = mkDirStream3.str();
+  system( mkCaseTmpDir.c_str() );
+
+  // Now copy over the CT data
+  std::stringstream headerStream;
+  headerStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.caseName << ".nhdr " << data.caseTmpDir;
+  std::string cpCTheader = headerStream.str();
+  system( cpCTheader.c_str() );
+
+  std::stringstream rawStream;
+  rawStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.caseName << ".raw.gz " << data.caseTmpDir;
+  std::string cpCTraw = rawStream.str();
+  system( cpCTraw.c_str() );
+
+  // Copy over the input label map if necessary
+  if (data.inLabelMapFileNameHeader.compare("NA") != 0)
+    {
+    std::stringstream headerStream2;
+    headerStream2 << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameHeader << " " << data.caseTmpDir;
+    std::string cpInLabelMapHeader = headerStream2.str();
+    system( cpInLabelMapHeader.c_str() );
+    
+    std::stringstream rawStream2;
+    rawStream2 << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameRaw << " " << data.caseTmpDir;
+    std::string cpInLabelMapRaw = rawStream2.str();
+    system( cpInLabelMapRaw.c_str() );
+    }
+}
+
+void CopySessionDataToMAD( SESSIONDATA data )
+{
+  // Copy over the input label map if necessary, and then delete
+  if (data.outLabelMapFileNameHeader.compare("NA") != 0)
+    {
+    std::stringstream headerStream;
+    headerStream << "scp " << data.outLabelMapTmpDirAndFileNameHeader << " copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
+    std::string cpOutLabelMapHeader = headerStream.str();
+    system( cpOutLabelMapHeader.c_str() );
+
+    std::stringstream rawStream;
+    rawStream << "scp " << data.outLabelMapTmpDirAndFileNameRaw << " copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
+    std::string cpOutLabelMapRaw = rawStream.str();
+    system( cpOutLabelMapRaw.c_str() );    
+
+    // Now delete
+    std::stringstream deleteHeaderStream;
+    deleteHeaderStream << "rm " << data.outLabelMapTmpDirAndFileNameHeader;
+    std::string deleteHeader = deleteHeaderStream.str();
+    system( deleteHeader.c_str() );
+
+    std::stringstream deleteRawStream;
+    deleteRawStream << "rm " << data.outLabelMapTmpDirAndFileNameRaw;
+    std::string deleteRaw = deleteRawStream.str();
+    system( deleteRaw.c_str() );
+    }
+
+  // Copy over the region and type points if necessary, and then delete
+  if (data.regionTypeIndicesFileName.compare("NA") != 0)
+    {
+    std::stringstream stream;
+    stream << "scp " << data.regionTypeIndicesTmpDirAndFileName << " copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
+    std::string cpRegionTypeIndices = stream.str();
+    system( cpRegionTypeIndices.c_str() );
+
+    // Now delete
+    std::stringstream deleteIndicesStream;
+    deleteIndicesStream << "rm " << data.regionTypeIndicesTmpDirAndFileName;
+    std::string deleteIndices = deleteIndicesStream.str();
+    system( deleteIndices.c_str() );
+    }
+  
+  // Delete the CT data that was copied over
+  std::stringstream deleteHeaderStream;
+  deleteHeaderStream << "rm " << data.ctTmpDirAndFileNameHeader;
+  std::string deleteHeader = deleteHeaderStream.str();
+  system( deleteHeader.c_str() );
+  
+  std::stringstream deleteRawStream;
+  deleteRawStream << "rm " << data.ctTmpDirAndFileNameRaw;
+  std::string deleteRaw = deleteRawStream.str();
+  system( deleteRaw.c_str() );
+
+  // Delete the input label map if necessary
+  if ( data.inLabelMapFileNameHeader.compare("NA") != 0 )
+    {
+    std::stringstream deleteHeaderStream2;
+    deleteHeaderStream2 << "rm " << data.inLabelMapTmpDirAndFileNameHeader;
+    std::string deleteHeader2 = deleteHeaderStream2.str();
+    system( deleteHeader2.c_str() );
+  
+    std::stringstream deleteRawStream2;
+    deleteRawStream2 << "rm " << data.inLabelMapTmpDirAndFileNameRaw;
+    std::string deleteRaw2 = deleteRawStream2.str();
+    system( deleteRaw2.c_str() );
+    }
+}
+
+
+// void SessionFile_CB( Fl_Widget*, void* ) {
+//   typedef itk::Image< short, 3 >                      GrayscaleImageType;
+//   typedef itk::ImageFileReader< GrayscaleImageType >  GrayscaleReaderType; 
+//   typedef itk::Image< unsigned short, 3 >             LabelMapType;
+//   typedef itk::ImageFileReader< LabelMapType >        LabelMapReaderType; 
+
+//   Fl_File_Chooser chooser(".", "*", Fl_File_Chooser::SINGLE, "Open");	                
+//   chooser.show();
+ 
+//   // Block until user picks something
+//   while(chooser.shown())
+//     {
+//     Fl::wait(); 
+//     }
+
+//   if ( chooser.value() == NULL )
+//     {   
+//     return; 
+//     }
+//   else
+//     {
+//     char firstLine[512];
+//     char secondLine[512];
+//     char thirdLine[512];
+//     char fourthLine[512];
+    
+//     std::cout << "Reading session file..." << std::endl;
+    
+//     std::ifstream sessionFile( chooser.value() );
+//     while ( !sessionFile.eof() )
+//       {
+//       sessionFile.getline( firstLine, 512 );
+//       std::string grayscaleFileName( firstLine );   
+      
+//       sessionFile.getline( secondLine, 512 ); 
+//       std::string inLabelMapFileName( secondLine );        
+      
+//       sessionFile.getline( thirdLine, 512 );
+//       std::string outLabelMapFileName( thirdLine );   
+      
+//       sessionFile.getline( fourthLine, 512 );  
+//       std::string regionTypeIndicesFileName( fourthLine );   
+        
+//       struct stat stFileInfo;             
+
+//       // Only add to session file data if the output mask and
+//       // region-type indices file name do not already exist
+//       if ( stat( firstLine, &stFileInfo ) == 0 &&
+//            (stat( secondLine, &stFileInfo) == 0  || inLabelMapFileName.compare("NA") == 0) &&
+//            (stat( thirdLine, &stFileInfo ) != 0  || outLabelMapFileName.compare("NA") == 0) &&
+//            (stat( fourthLine, &stFileInfo ) != 0 || regionTypeIndicesFileName.compare("NA") == 0))
+//         {          
+//         sessionGrayscaleFileNameVec.push_back( grayscaleFileName );              
+//         sessionInLabelMapFileNameVec.push_back( inLabelMapFileName );                  
+//         sessionOutLabelMapFileNameVec.push_back( outLabelMapFileName );  
+//         sessionRegionTypeIndicesFileNameVec.push_back( regionTypeIndicesFileName );
+//         }
+//       }    
+//     }
+    
+//   if ( sessionGrayscaleFileNameVec.size() > 0 )
+//     {    
+//     std::cout << "Reading grayscale image..." << std::endl;
+//     std::cout << sessionGrayscaleFileNameVec[0] << std::endl;
+//     GrayscaleReaderType::Pointer grayReader = GrayscaleReaderType::New();
+//       grayReader->SetFileName( sessionGrayscaleFileNameVec[0] );
+//     try
+//       {
+//       grayReader->Update();
+//       }
+//     catch ( itk::ExceptionObject &excp )
+//       {
+//       std::cerr << "Exception caught reading grayscale image:";
+//       std::cerr << excp << std::endl;
+//       }
+          
+//     std::cout << "DONE." << std::endl;    
+//     grayscaleImageRead = true;    
+
+//     assistantInstance->SetGrayscaleImage( grayReader->GetOutput() );	
+
+//     LabelMapType::SizeType    size    = assistantInstance->GetGrayscaleImage()->GetBufferedRegion().GetSize();
+//     LabelMapType::SpacingType spacing = assistantInstance->GetGrayscaleImage()->GetSpacing();
+//     LabelMapType::PointType   origin  = assistantInstance->GetGrayscaleImage()->GetOrigin();
+
+//     // Label the main window to indicate which image has been read
+//     unsigned int slashLoc = -1;
+    
+//     do
+//       {
+//       slashLoc = sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 );
+//       }
+//     while ( sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 ) != std::string::npos );
+    
+//     acilAssistantMainWindow->label( sessionGrayscaleFileNameVec[0].substr( slashLoc+1, sessionGrayscaleFileNameVec[0].size()-slashLoc-1 ).c_str() );
+
+//     // Initialize the label maps
+//     assistantInstance->InitializeLabelMapImage( size, spacing, origin );
+
+//     // Read in the label map if necessary
+//     if ( (sessionInLabelMapFileNameVec[0]).compare("NA") != 0 )
+//       {
+//       std::cout << "Reading label map image..." << std::endl;
+//       LabelMapReaderType::Pointer labelReader = LabelMapReaderType::New();
+//         labelReader->SetFileName( sessionInLabelMapFileNameVec[0] );
+//       try
+//         {
+//         labelReader->Update();
+//         }
+//       catch ( itk::ExceptionObject &excp )
+//         {
+//         std::cerr << "Exception caught reading label map file:";
+//         std::cerr << excp << std::endl;
+//         }
+
+//       std::cout << "DONE." << std::endl;	
+//       labelMapImageRead = true;
+            
+//       assistantInstance->SetLabelMapImage( labelReader->GetOutput() );
+//       }
+    
+//     int numberOfSlices = grayReader->GetOutput()->GetBufferedRegion().GetSize()[2];
+    
+//     sliceSlider->maximum( numberOfSlices-1 );        	
+    
+//     InitializeViewer();                
+//     }
+//   else
+//     {
+//     std::cout << "Session has been completed or session file is empty." << std::endl;
+//     }
+// }
+
+
+
+// void SaveSessionDataMenu_CB( Fl_Widget*, void* ) 
+// {
+//   typedef itk::Image< unsigned short, 3 >             LabelMapType;
+//   typedef itk::ImageFileWriter< LabelMapType >        WriterType; 
+//   typedef itk::Image< short, 3 >                      GrayscaleImageType;
+//   typedef itk::ImageFileReader< LabelMapType >        LabelMapReaderType;
+//   typedef itk::ImageFileReader< GrayscaleImageType >  GrayscaleReaderType;
+
+//   if ( !grayscaleImageRead )
+//     {
+//     std::cerr << "Nothing to save!" << std::endl;
+    
+//     return;
+//     }
+
+//   if ( (sessionOutLabelMapFileNameVec[0]).compare( "NA" ) != 0 )
+//     {
+//     std::cout << "Writing label map image..." << std::endl;
+//     WriterType::Pointer writer = WriterType::New();
+//       writer->SetFileName( sessionOutLabelMapFileNameVec[0] );
+//       writer->SetInput( assistantInstance->GetLabelMapImage() );
+//       writer->UseCompressionOn();
+//     try
+//       {
+//       writer->Update();
+//       }
+//     catch ( itk::ExceptionObject &excp )
+//       {
+//       std::cerr << "Exception caught writer label map image:";
+//       std::cerr << excp << std::endl;
+//       }
+        
+//     std::cout << "DONE." << std::endl;
+//     }
+  
+//   // Write the region and type indices to file
+//   if ( (sessionRegionTypeIndicesFileNameVec[0]).compare( "NA" ) != 0 )
+//     {
+//     std::cout << "Writing region and type indices..." << std::endl;
+//     assistantInstance->WritePaintedRegionTypePoints( sessionRegionTypeIndicesFileNameVec[0] );
+//     std::cout << "DONE." << std::endl;
+//     }
+
+//   // Now that the label map has been saved, we want to load the group
+//   // of images for the next session block. First eliminate the file names
+//   // of the session block that was just processed
+//   sessionGrayscaleFileNameVec.erase( sessionGrayscaleFileNameVec.begin() );              
+//   sessionInLabelMapFileNameVec.erase( sessionInLabelMapFileNameVec.begin() );
+//   sessionOutLabelMapFileNameVec.erase( sessionOutLabelMapFileNameVec.begin() );
+//   sessionRegionTypeIndicesFileNameVec.erase( sessionRegionTypeIndicesFileNameVec.begin() );
+
+//   // Make sure the memory allocated for the images of the current session
+//   // block has been freed. Calling this method will also clear the stored
+//   // type indices that were recorded during painting
+//   assistantInstance->Clear();
+
+//   if ( sessionGrayscaleFileNameVec.size() > 0 )
+//     {
+//     // Read the grayscale image
+//     std::cout << "Reading grayscale image..." << std::endl;
+//     std::cout << sessionGrayscaleFileNameVec[0] << std::endl;
+//     GrayscaleReaderType::Pointer grayscaleReader = GrayscaleReaderType::New();
+//       grayscaleReader->SetFileName( sessionGrayscaleFileNameVec[0] );
+//     try
+//       {
+//       grayscaleReader->Update();
+//       }
+//     catch ( itk::ExceptionObject &excp )
+//       {
+//       std::cerr << "Exception caught reading grayscale image:";
+//       std::cerr << excp << std::endl;
+//       }
+
+//     int numberOfSlices = grayscaleReader->GetOutput()->GetBufferedRegion().GetSize()[2];
+
+//     sliceSlider->maximum( numberOfSlices-1 );
+
+//     assistantInstance->SetGrayscaleImage( grayscaleReader->GetOutput() );
+    
+//     std::cout << "DONE." << std::endl;  	
+    
+//     LabelMapType::SizeType    size    = assistantInstance->GetGrayscaleImage()->GetBufferedRegion().GetSize();
+//     LabelMapType::SpacingType spacing = assistantInstance->GetGrayscaleImage()->GetSpacing();
+//     LabelMapType::PointType   origin  = assistantInstance->GetGrayscaleImage()->GetOrigin();
+
+//     assistantInstance->InitializeLabelMapImage( size, spacing, origin );
+
+//     // Label the main window to indicate which image has been read
+//     unsigned int slashLoc = -1;
+    
+//     do
+//       {
+//       slashLoc = sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 );
+//       }
+//     while ( sessionGrayscaleFileNameVec[0].find( "/", slashLoc+1 ) != std::string::npos );
+    
+//     acilAssistantMainWindow->label( sessionGrayscaleFileNameVec[0].substr( slashLoc+1, sessionGrayscaleFileNameVec[0].size()-slashLoc-1 ).c_str() );
+
+//     // Read the label map image
+//     if ( (sessionInLabelMapFileNameVec[0]).compare( "NA" ) != 0 )
+//       {
+//       std::cout << "Reading label map image..." << std::endl;
+//       std::cout << sessionInLabelMapFileNameVec[0] << std::endl;
+//       LabelMapReaderType::Pointer labelMapReader = LabelMapReaderType::New();
+//         labelMapReader->SetFileName( sessionInLabelMapFileNameVec[0] );
+//       try
+//         {
+//         labelMapReader->Update();
+//         }
+//       catch ( itk::ExceptionObject &excp )
+//         {
+//         std::cerr << "Exception caught reading label map image:";
+//         std::cerr << excp << std::endl;
+//         }
+
+//       assistantInstance->SetLabelMapImage( labelMapReader->GetOutput() );
+      
+//       std::cout << "DONE." << std::endl;
+//       }
+    
+//     // Update the slice viewer with the new images
+//     sliceViewer->clear();
+//     InitializeViewer();
+
+//     // Make sure the paint brush points to the correct image
+//     paintBrushAndEraserInput->SetLabelMapImage( assistantInstance->GetLabelMapImage() );
+//     }
+//   else
+//     {
+//     std::cout << "Session complete." << std::endl;
+//     }
+// }

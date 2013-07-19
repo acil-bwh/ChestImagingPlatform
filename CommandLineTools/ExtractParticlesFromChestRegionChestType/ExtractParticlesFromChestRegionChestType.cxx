@@ -205,7 +205,7 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 //     std::cerr << excp << std::endl;
 //     }
 
-//   unsigned int numberFieldDataArrays = inParticles->GetFieldData()->GetNumberOfArrays();
+//   unsigned int numberPointDataArrays = inParticles->GetPointData()->GetNumberOfArrays();
 //   unsigned int numberParticles       = inParticles->GetNumberOfPoints();
 
 //   vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();
@@ -220,18 +220,18 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 //   bool foundChestRegionArray = false;
 //   bool foundChestTypeArray   = false;
 
-//   for ( unsigned int i=0; i<numberFieldDataArrays; i++ )
+//   for ( unsigned int i=0; i<numberPointDataArrays; i++ )
 //     {
 //     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-//       array->SetNumberOfComponents( inParticles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-//       array->SetName( inParticles->GetFieldData()->GetArray(i)->GetName() );
+//       array->SetNumberOfComponents( inParticles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+//       array->SetName( inParticles->GetPointData()->GetArray(i)->GetName() );
 
 //     //
 //     // The input particles may not have the 'ChestType' or
 //     // 'ChestRegion' float arrays defined. If not, we want to define
 //     // and add them
 //     //
-//     std::string name( inParticles->GetFieldData()->GetArray(i)->GetName() );
+//     std::string name( inParticles->GetPointData()->GetArray(i)->GetName() );
 //     if ( name.compare( "ChestType" ) == 0 )
 //       {
 //       foundChestTypeArray = true;
@@ -256,7 +256,7 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 
 //     arrayVec.push_back( array );
 
-//     numberFieldDataArrays++;
+//     numberPointDataArrays++;
 //     }
 //   if ( !foundChestTypeArray )
 //     {
@@ -271,7 +271,7 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 
 //     arrayVec.push_back( array );
 
-//     numberFieldDataArrays++;
+//     numberPointDataArrays++;
 //     }
 
 //   unsigned int inc = 0;
@@ -297,7 +297,7 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 //       {
 //       outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
 
-//       for ( unsigned int j=0; j<numberFieldDataArrays; j++ )
+//       for ( unsigned int j=0; j<numberPointDataArrays; j++ )
 //         {
 //         //
 //         // We have to perform this check because we don't know if the
@@ -319,7 +319,7 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 //           }
 //         else
 //           {
-//           arrayVec[j]->InsertTuple( inc, inParticles->GetFieldData()->GetArray(j)->GetTuple(i) );
+//           arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
 //           }
 //         }
 
@@ -328,9 +328,9 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 //     }
   
 //   outParticles->SetPoints( outputPoints );
-//   for ( unsigned int j=0; j<numberFieldDataArrays; j++ )
+//   for ( unsigned int j=0; j<numberPointDataArrays; j++ )
 //     {
-//     outParticles->GetFieldData()->AddArray( arrayVec[j] );
+//     outParticles->GetPointData()->AddArray( arrayVec[j] );
 //     }
 // }
 
@@ -338,23 +338,13 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
 void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned char > cipRegions, std::vector< unsigned char > cipTypes, 
 							vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
 {
-  unsigned int numberFieldDataArrays = inParticles->GetFieldData()->GetNumberOfArrays();
   unsigned int numberPointDataArrays = inParticles->GetPointData()->GetNumberOfArrays();
   unsigned int numberParticles       = inParticles->GetNumberOfPoints();
 
   vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();
   
-  std::vector< vtkSmartPointer< vtkFloatArray > > fieldArrayVec;
   std::vector< vtkSmartPointer< vtkFloatArray > > pointArrayVec;
 
-  for ( unsigned int i=0; i<numberFieldDataArrays; i++ )
-    {
-    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-      array->SetNumberOfComponents( inParticles->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( inParticles->GetFieldData()->GetArray(i)->GetName() );
-
-    fieldArrayVec.push_back( array );
-    }
   for ( unsigned int i=0; i<numberPointDataArrays; i++ )
     {
     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
@@ -369,13 +359,13 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned ch
     {
       for ( unsigned int j=0; j<cipTypes.size(); j++ )
 	{
-	  if ( static_cast< int >( inParticles->GetFieldData()->GetArray( "ChestType" )->GetTuple(i)[0] ) == cipTypes[j] )
+	  if ( static_cast< int >( inParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0] ) == cipTypes[j] )
 	    {
 	      outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
 
-	      for ( unsigned int j=0; j<numberFieldDataArrays; j++ )
+	      for ( unsigned int j=0; j<numberPointDataArrays; j++ )
 		{
-		  fieldArrayVec[j]->InsertTuple( inc, inParticles->GetFieldData()->GetArray(j)->GetTuple(i) );
+		  pointArrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
 		}
 
 	      inc++;
@@ -384,10 +374,6 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned ch
     }
 
   outParticles->SetPoints( outputPoints );
-  for ( unsigned int j=0; j<numberFieldDataArrays; j++ )
-    {
-    outParticles->GetFieldData()->AddArray( fieldArrayVec[j] );
-    }
   for ( unsigned int j=0; j<numberPointDataArrays; j++ )
     {
     outParticles->GetPointData()->AddArray( pointArrayVec[j] );
