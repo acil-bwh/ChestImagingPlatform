@@ -286,7 +286,7 @@ InitializeViewer();
 }
 
 void InitializeViewer() {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
 //unsigned short obliqueFissureLabel         = conventions.GetValueFromLungRegionAndType( UNDEFINEDREGION, OBLIQUEFISSURE );
 //unsigned short horizontalFissureLabel      = conventions.GetValueFromLungRegionAndType( UNDEFINEDREGION, HORIZONTALFISSURE );
@@ -304,13 +304,13 @@ void InitializeViewer() {
 //unsigned short airwayGeneration0Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION0 );
 //unsigned short airwayGeneration1Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION1 );
 //unsigned short airwayGeneration2Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION2 );
-unsigned short airwayGeneration3Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION3 );
-unsigned short airwayGeneration4Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION4 );
-unsigned short airwayGeneration5Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION5 );
-unsigned short airwayGeneration6Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION6 );
-unsigned short airwayGeneration7Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION7 );
-unsigned short airwayGeneration8Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION8 );
-unsigned short expiratoryMalaciaLabel  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, EXPIRATORYMALACIA );
+unsigned short airwayGeneration3Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION3 );
+unsigned short airwayGeneration4Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION4 );
+unsigned short airwayGeneration5Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION5 );
+unsigned short airwayGeneration6Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION6 );
+unsigned short airwayGeneration7Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION7 );
+unsigned short airwayGeneration8Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION8 );
+unsigned short expiratoryMalaciaLabel  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::EXPIRATORYMALACIA );
 
 typedef itk::ColorTable< float > ColorTableType;
 

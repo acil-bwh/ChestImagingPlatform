@@ -537,7 +537,7 @@ flags, respectively. These flags should be invoked immediately after invoking th
     return cip::ARGUMENTPARSINGERROR;
     }
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
   
   cipChestDataViewer* viewer = new cipChestDataViewer();
 //     viewer.SetParticleGlyphThetaResolution(particleGlyphThetaResolution);
@@ -660,7 +660,7 @@ void GetPolyDataFromRegionTypePoints(vtkPolyData* polyData, std::vector<REGIONTY
 void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<std::string> fileNames, 
 				       std::string particlesType, std::string glyphType)
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   double scale   = 2.0;
   double opacity = 1.0;
@@ -827,7 +827,7 @@ void AddRegionTypePointsAsSpheresToViewer(cipChestDataViewer* viewer, std::strin
 					   std::vector<double> regionTypePointsGreen, std::vector<double> regionTypePointsBlue, 
 					   std::vector<double> regionTypePointsScale, std::vector<double>regionTypePointsOpacity)
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   cipChestRegionChestTypeLocationsIO regionTypeIO;
     regionTypeIO.SetFileName(regionTypePointsFileName);

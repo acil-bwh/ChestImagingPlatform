@@ -94,7 +94,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
     }
     o->end();
   }
-  this->m_PaletteSelection =  static_cast< unsigned char >( OBLIQUEFISSURE );
+  this->m_PaletteSelection =  static_cast< unsigned char >( cip::OBLIQUEFISSURE );
   this->m_LabelMapImage = LabelMapType::New();
   this->m_ChestRegion = static_cast< unsigned char >( cip::UNDEFINEDREGION );
   this->m_ChestType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
@@ -127,7 +127,7 @@ void PaintBrushAndEraserGUI::eraseButton_CB_i()
   unsigned char cipRegionSelection = this->GetChestRegion();
   unsigned char cipTypeSelection   = this->GetChestType();
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   typedef itk::ImageRegionIteratorWithIndex< LabelMapType > LabelMapIteratorType;
 

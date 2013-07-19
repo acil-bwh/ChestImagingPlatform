@@ -7,7 +7,7 @@
 #define _itkCIPSplitLeftLungRightLungImageFilter_txx
 
 #include "itkCIPSplitLeftLungRightLungImageFilter.h"
-
+#include <limits>
 
 namespace itk
 {
@@ -16,7 +16,7 @@ template< class TInputImage >
 CIPSplitLeftLungRightLungImageFilter< TInputImage >
 ::CIPSplitLeftLungRightLungImageFilter()
 {
-  this->m_MinForegroundSlice          = UINT_MAX;
+  this->m_MinForegroundSlice          = std::numeric_limits<unsigned int>::max();
   this->m_MaxForegroundSlice          = 0;
   this->m_ExponentialCoefficient      = 200;
   this->m_ExponentialTimeConstant     = -700;

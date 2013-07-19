@@ -151,7 +151,7 @@ void ACILAssistantBase::InitializeLabelMapImage( LabelMapType::SizeType size, La
 void ACILAssistantBase::PaintLabelMapSlice( LabelMapType::IndexType index, unsigned char cipType, unsigned char cipRegion, unsigned int radius, 
                                             short lowerThreshold, short upperThreshold, unsigned int orientation )
 {  
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   LabelMapType::IndexType tempIndex;
 
@@ -232,7 +232,7 @@ void ACILAssistantBase::PaintLabelMapSlice( LabelMapType::IndexType index, unsig
 void ACILAssistantBase::EraseLabelMapSlice( LabelMapType::IndexType index, unsigned char cipRegion, unsigned char cipType, unsigned int radius, 
                                             short lowerThreshold, short upperThreshold, bool eraseSelected, unsigned int orientation )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   LabelMapType::IndexType tempIndex;
 
@@ -370,41 +370,41 @@ bool ACILAssistantBase::LabelLungThirds()
 
       if ( static_cast< double >( voxelCount ) < static_cast< double >( totalVoxelCount )/3.0 )
         {
-        if ( it.Get() == static_cast< unsigned short >( LEFTLUNG ) )
+        if ( it.Get() == static_cast< unsigned short >( cip::LEFTLUNG ) )
           {
           foundLeftLung = true;
-          it.Set( static_cast< unsigned short >( LEFTLOWERTHIRD ) );
+          it.Set( static_cast< unsigned short >( cip::LEFTLOWERTHIRD ) );
           }
         else
           {
           foundRightLung = true;
-          it.Set( static_cast< unsigned short >( RIGHTLOWERTHIRD ) );
+          it.Set( static_cast< unsigned short >( cip::RIGHTLOWERTHIRD ) );
           }        
         }
       else if ( static_cast< double >( voxelCount ) < 2.0*static_cast< double >( totalVoxelCount )/3.0 )
         {
-        if ( it.Get() == static_cast< unsigned short >( LEFTLUNG ) )
+        if ( it.Get() == static_cast< unsigned short >( cip::LEFTLUNG ) )
           {
           foundLeftLung = true;
-          it.Set( static_cast< unsigned short >( LEFTMIDDLETHIRD ) );
+          it.Set( static_cast< unsigned short >( cip::LEFTMIDDLETHIRD ) );
           }
         else
           {
           foundRightLung = true;
-          it.Set( static_cast< unsigned short >( RIGHTMIDDLETHIRD ) );
+          it.Set( static_cast< unsigned short >( cip::RIGHTMIDDLETHIRD ) );
           }        
         }
       else
         {
-        if ( it.Get() == static_cast< unsigned short >( LEFTLUNG ) )
+        if ( it.Get() == static_cast< unsigned short >( cip::LEFTLUNG ) )
           {
           foundLeftLung = true;
-          it.Set( static_cast< unsigned short >( LEFTUPPERTHIRD ) );
+          it.Set( static_cast< unsigned short >( cip::LEFTUPPERTHIRD ) );
           }
         else
           {
           foundRightLung = true;
-          it.Set( static_cast< unsigned short >( RIGHTUPPERTHIRD ) );
+          it.Set( static_cast< unsigned short >( cip::RIGHTUPPERTHIRD ) );
           }        
         }
       }
@@ -423,7 +423,7 @@ bool ACILAssistantBase::LabelLungThirds()
 
 bool ACILAssistantBase::LabelLeftLungRightLung()
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // First set all types to 'UNDEFINEDTYPE'. This is necessary in the
@@ -539,11 +539,11 @@ bool ACILAssistantBase::LabelLeftLungRightLung()
     {
     if ( rIt.Get() == leftLungComponentLabel )
       {
-      mIt.Set( static_cast< unsigned short >( LEFTLUNG ) );
+      mIt.Set( static_cast< unsigned short >( cip::LEFTLUNG ) );
       }
     if ( rIt.Get() == rightLungComponentLabel )
       {
-      mIt.Set( static_cast< unsigned short >( RIGHTLUNG ) );
+      mIt.Set( static_cast< unsigned short >( cip::RIGHTLUNG ) );
       }
 
     ++rIt;
@@ -556,8 +556,8 @@ bool ACILAssistantBase::LabelLeftLungRightLung()
 
 bool ACILAssistantBase::CloseLeftLungRightLung()
 {
-  this->CloseLabelMap( this->LabelMap, static_cast< unsigned short >( LEFTLUNG ) );
-  this->CloseLabelMap( this->LabelMap, static_cast< unsigned short >( RIGHTLUNG ) );
+  this->CloseLabelMap( this->LabelMap, static_cast< unsigned short >( cip::LEFTLUNG ) );
+  this->CloseLabelMap( this->LabelMap, static_cast< unsigned short >( cip::RIGHTLUNG ) );
 
   return true;
 }
@@ -868,7 +868,7 @@ short ACILAssistantBase::GetGrayscaleImageIntensity( GrayscaleImageType::IndexTy
 
 void ACILAssistantBase::WritePaintedRegionTypePoints( std::string fileName )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   unsigned char cipRegion;
   unsigned char cipType;
