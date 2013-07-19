@@ -246,7 +246,7 @@ command line.";
   //
   // Now print the results
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   mapIt = labelToStatsMap.begin();
   while ( mapIt != labelToStatsMap.end() )

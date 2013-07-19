@@ -56,43 +56,43 @@ void cipVesselDataInteractor::UpdateVesselGenerationAndRender( vtkActor* actor, 
       {
       if ( generation == 0 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION0 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION0 ), color );
         }
       if ( generation == 1 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION1 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION1 ), color );
         }
       if ( generation == 2 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION2 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION2 ), color );
         }
       if ( generation == 3 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION3 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION3 ), color );
         }
       if ( generation == 4 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION4 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION4 ), color );
         }
       if ( generation == 5 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION5 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION5 ), color );
         }
       if ( generation == 6 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION6 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION6 ), color );
         }
       if ( generation == 7 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION7 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION7 ), color );
         }
       if ( generation == 8 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION8 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION8 ), color );
         }
       if ( generation == 9 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( VESSELGENERATION9 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION9 ), color );
         }
 
       actor->GetProperty()->SetColor( color[0], color[1], color[2] );

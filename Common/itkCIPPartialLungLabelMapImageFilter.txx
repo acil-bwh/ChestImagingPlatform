@@ -44,9 +44,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 
   typedef itk::ImageFileWriter< LabelMapType > WriterType;
 
-  //
   // Allocate space for the output image
-  //
   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
@@ -55,31 +53,17 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     outputPtr->Allocate();
     outputPtr->FillBuffer( 0 );
 
-    std::cout << this->m_MaxVolPercentAirway << std::endl;
-    std::cout << this->m_MinVolPercentAirway << std::endl;
   if ( this->m_HelperMask.IsNull() )
     {
-    //
     // Apply Otsu threshold
-    //
     this->ApplyOtsuThreshold();
     }
   else
     {
-    //
     // Apply the helper mask
-    //
     this->ApplyHelperMask();
     }
 
-  //std::cout << "---Writing Otsu image..." << std::endl;
-  //WriterType::Pointer writer1 = WriterType::New();
-  //writer1->SetInput( this->GetOutput(0) );
-  //writer1->SetFileName( "/spl/tmp/sila/otsu.nhdr" );
-  //writer1->UseCompressionOn();
-  //writer1->Update();
-
-  ///*
   //
   // We want to set the max airway volume to be a percentage of the
   // lung volume (lungs plus airways). Compute the volume of the lungs
@@ -100,25 +84,16 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     ++mIt;
     }
 
-  std::cout << "---Total volume:\t" << static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2] << std::endl;
-  std::cout << "---Percentage:\t" << this->m_MaxAirwayVolume/(static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2]) << std::endl;
-
   //this->m_MaxAirwayVolume = 0.04*static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2];
   //this->m_MinAirwayVolume = 0.025*static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2];
-  std::cout << this->m_MaxVolPercentAirway << std::endl;
-  std::cout << this->m_MinVolPercentAirway << std::endl;
 
   this->m_MaxAirwayVolume = this->m_MaxVolPercentAirway*static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2];
   this->m_MinAirwayVolume = this->m_MinVolPercentAirway*static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2];
 
-  std::cout << "---Max airway volume:\t" << this->m_MaxAirwayVolume << std::endl;
-  std::cout << "---Min airway volume:\t" << this->m_MinAirwayVolume << std::endl;
-  std::cout << "---percent max airway volume:\t" << this->m_MaxVolPercentAirway << std::endl;
-  std::cout << "---percent min airway volume:\t" << this->m_MinVolPercentAirway<< std::endl;
   //
   // Identify airways
   //
-  std::vector< OutputImageType::IndexType > airwaySeedVec = this->GetAirwaySeeds();
+  std::vector< cip::LabelMapType::IndexType > airwaySeedVec = this->GetAirwaySeeds();
 
   std::cout << "---Segmenting airways..." << std::endl;
   typename AirwaySegmentationType::Pointer airwaySegmenter = AirwaySegmentationType::New();
@@ -132,22 +107,8 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     }          
     airwaySegmenter->Update();
 
-  std::cout << "---Writing airway segmentation..." << std::endl;
-  //WriterType::Pointer writerAirway1 = WriterType::New();
-  //writerAirway1->SetInput( airwaySegmenter->GetOutput() );
-  //writerAirway1->SetFileName( "/spl/tmp/sila/airwaySegmenter.nhdr" );
-  //writerAirway1->UseCompressionOn();
-  //writerAirway1->Update();
-
 //   std::cout << "---Removing trachea and main bronchi..." << std::endl;
 //   this->RemoveTracheaAndMainBronchi();
-
-//   std::cout << "---Writing airway label map..." << std::endl;
-//   WriterType::Pointer writerAirway = WriterType::New();
-//   writerAirway->SetInput( this->m_AirwayLabelMap );
-//   writerAirway->SetFileName( "/projects/lmi/people/jross/tmp/airway.nhdr" );
-//   writerAirway->UseCompressionOn();
-//   writerAirway->Update();
 
   //
   // Collect / remove airway indices
@@ -204,14 +165,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     ++mIt;
     ++rIt;
     }
-  std::cout << "---remove small connected components done..." << std::endl;
-
-//   std::cout << "---Writing post-airway removal mask..." << std::endl;
-//   WriterType::Pointer writer1 = WriterType::New();
-//   writer1->SetInput( this->GetOutput() );
-//   writer1->SetFileName( "/projects/lmi/people/jross/tmp/postAirwayRemoval.nhdr" );
-//   writer1->UseCompressionOn();
-//   writer1->Update();
 
   //
   // The erosion step below has been added specifically for use with
@@ -244,27 +197,17 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       std::cerr << excp << std::endl;
       }
 
-//    std::cout << "---Labeling helper image..." << std::endl;
     leftRightLabeler->SetInput( eroder->GetOutput() );
     leftRightLabeler->LabelLeftAndRightLungsOn();
     leftRightLabeler->SetHeadFirst( this->m_HeadFirst );
     leftRightLabeler->SetSupine( this->m_Supine );
     leftRightLabeler->Update();
 
-//     std::cout << "---Writing first left-right labeler..." << std::endl;
-//     WriterType::Pointer writer2 = WriterType::New();
-//     writer2->SetInput( leftRightLabeler->GetOutput() );
-//     writer2->SetFileName( "/projects/lmi/people/jross/tmp/leftRightLabeled.nhdr" );
-//     writer2->UseCompressionOn();
-//     writer2->Update();
-
     LabelMapIteratorType lrIt( leftRightLabeler->GetOutput(), leftRightLabeler->GetOutput()->GetBufferedRegion() );
     LabelMapIteratorType hIt( this->m_HelperMask, this->m_HelperMask->GetBufferedRegion() ); 
 
     LabelMapType::IndexType index;
     unsigned short labelValue;
-
-//    std::cout << "---Filling output image will left / right labeled helper..." << std::endl;
 
     mIt.GoToBegin();
     lrIt.GoToBegin();
@@ -307,13 +250,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       }
     }
 
-//   std::cout << "---Writing relabeld expanded by helper..." << std::endl;
-//   WriterType::Pointer writer3 = WriterType::New();
-//   writer3->SetInput( this->GetOutput() );
-//   writer3->SetFileName( "/projects/lmi/people/jross/tmp/leftRightLabeledExpandedWithHelper.nhdr" );
-//   writer3->UseCompressionOn();
-//   writer3->Update();
-
   if ( this->m_HelperMask.IsNull() )
     {
     //
@@ -324,7 +260,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     leftRightLabeler->SetHeadFirst( this->m_HeadFirst );
     leftRightLabeler->SetSupine( this->m_Supine );
     leftRightLabeler->Update();
-    std::cout << "---Left right labeler step 1 finished..." << std::endl;
+
 //    LabelMapIteratorType mIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
     LabelMapIteratorType lrIt( leftRightLabeler->GetOutput(), leftRightLabeler->GetOutput()->GetBufferedRegion() );
 
@@ -340,14 +276,11 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     
     if ( !leftRightLabeler->GetLabelingSuccess() )
       {
-      std::cout << "---Left right labeler step 2 started..." << std::endl;
-      //
       // Threshold the input with a more conservative upper threshold value
-      // 
       typename BinaryThresholdType::Pointer thresholder = BinaryThresholdType::New();
         thresholder->SetInput( this->GetInput() );
         thresholder->SetOutsideValue( 0 );
-        thresholder->SetInsideValue( static_cast< unsigned short >( WHOLELUNG ) );
+        thresholder->SetInsideValue( static_cast< unsigned short >( cip::WHOLELUNG ) );
         thresholder->SetLowerThreshold( itk::NumericTraits< short >::min() );
 //      thresholder->SetUpperThreshold( -700 );
         thresholder->SetUpperThreshold( -800 );
@@ -415,33 +348,23 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       //
       // Perform conditional dilation
       //
-      std::cout << "---starting conditional dilation..." << std::endl;
       this->ConditionalDilation( this->m_OtsuThreshold );
-      std::cout << "---finishing conditional dilation..." << std::endl;
       }
     }
 
   //
   // Perform morphological closing on the left and right lungs
   //
-  std::cout << "---Starting morphological closing..." << std::endl;
   if ( leftRightLabeler->GetLabelingSuccess() )
     {
-    this->CloseLabelMap( static_cast< unsigned short >( LEFTLUNG ) );
-    this->CloseLabelMap( static_cast< unsigned short >( RIGHTLUNG ) );
+    this->CloseLabelMap( static_cast< unsigned short >( cip::LEFTLUNG ) );
+    this->CloseLabelMap( static_cast< unsigned short >( cip::RIGHTLUNG ) );
     }
   else
     {
-    this->CloseLabelMap( static_cast< unsigned short >( WHOLELUNG ) );
+    this->CloseLabelMap( static_cast< unsigned short >( cip::WHOLELUNG ) );
     }
 
-
-   std::cout << "---Writing output just before thirds labeling..." << std::endl;
-//   WriterType::Pointer writer4 = WriterType::New();
-//   writer4->SetInput( this->GetOutput() );
-//   writer4->SetFileName( "/projects/lmi/people/jross/tmp/preThirds.nhdr" );
-//   writer4->UseCompressionOn();
-//   writer4->Update();
 
   LungRegionLabelerType::Pointer lungRegionLabeler = LungRegionLabelerType::New();
     lungRegionLabeler->SetInput( this->GetOutput() );
@@ -452,16 +375,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 
   this->GraftOutput( lungRegionLabeler->GetOutput() );
 
-   std::cout << "---Writing output just after thirds labeling..." << std::endl;
-//   WriterType::Pointer writer5 = WriterType::New();
-//   writer5->SetInput( this->GetOutput() );
-//   writer5->SetFileName( "/projects/lmi/people/jross/tmp/postThirds.nhdr" );
-//   writer5->UseCompressionOn();
-//   writer5->Update();  
-
-  //
   // Add back the airways
-  //
   unsigned char  lungRegion;
   unsigned short labelValue;
 
@@ -476,8 +390,8 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     {
     if ( aIt.Get() != 0 )
       {
-      lungRegion = conventions.GetLungRegionFromValue( m2It.Get() );
-      labelValue = conventions.GetValueFromLungRegionAndType( lungRegion, static_cast< unsigned char >( AIRWAY ) );
+      lungRegion = conventions.GetChestRegionFromValue( m2It.Get() );
+      labelValue = conventions.GetValueFromChestRegionAndType( lungRegion, static_cast< unsigned char >( cip::AIRWAY ) );
 
       m2It.Set( labelValue );
       }
@@ -485,16 +399,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     ++aIt;
     ++m2It;
     }
-
-
-//   std::cout << "---Writing finale..." << std::endl;
-//   WriterType::Pointer writer6 = WriterType::New();
-//   writer6->SetInput( this->GetOutput() );
-//   writer6->SetFileName( "/projects/lmi/people/jross/tmp/finale.nhdr" );
-//   writer6->UseCompressionOn();
-//   writer6->Update();  
-
-
 }
 
 
@@ -544,15 +448,15 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
               if ( this->GetOutput()->GetPixel( tempIndex ) == 0 && this->GetInput()->GetPixel( tempIndex ) <= threshold 
                    && this->m_AirwayLabelMap->GetPixel( tempIndex ) == 0 )
                 {
-                if ( it.Get() == static_cast< unsigned short >( LEFTLUNG ) )
+                if ( it.Get() == static_cast< unsigned short >( cip::LEFTLUNG ) )
                   {
                   prevLeftIndicesVec.push_back( tempIndex );
                   }
-                if ( it.Get() == static_cast< unsigned short >( RIGHTLUNG ) )
+                if ( it.Get() == static_cast< unsigned short >( cip::RIGHTLUNG ) )
                   {
                   prevRightIndicesVec.push_back( tempIndex );
                   }
-                if ( it.Get() == static_cast< unsigned short >( WHOLELUNG ) )
+                if ( it.Get() == static_cast< unsigned short >( cip::WHOLELUNG ) )
                   {
                   prevWholeIndicesVec.push_back( tempIndex );
                   }
@@ -572,7 +476,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 
     for ( unsigned int i=0; i<prevRightIndicesVec.size(); i++ )
       {
-      this->GetOutput()->SetPixel( prevRightIndicesVec[i], static_cast< unsigned short >( RIGHTLUNG ) );
+      this->GetOutput()->SetPixel( prevRightIndicesVec[i], static_cast< unsigned short >( cip::RIGHTLUNG ) );
 
       for ( int x=-1; x<=1; x++ )
         {
@@ -588,10 +492,10 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
             
             if ( this->GetOutput()->GetBufferedRegion().IsInside( tempIndex ) )
               {
-              if ( (this->GetOutput()->GetPixel( tempIndex ) == 0 || this->GetOutput()->GetPixel( tempIndex ) == static_cast< unsigned short >( WHOLELUNG ))
+              if ( (this->GetOutput()->GetPixel( tempIndex ) == 0 || this->GetOutput()->GetPixel( tempIndex ) == static_cast< unsigned short >( cip::WHOLELUNG ))
                    && this->GetInput()->GetPixel( tempIndex ) <= threshold && this->m_AirwayLabelMap->GetPixel( tempIndex ) == 0 )
                 {
-                if ( this->GetOutput()->GetPixel( prevRightIndicesVec[i] ) == static_cast< unsigned short >( RIGHTLUNG ) && 
+                if ( this->GetOutput()->GetPixel( prevRightIndicesVec[i] ) == static_cast< unsigned short >( cip::RIGHTLUNG ) && 
                      tracker->GetPixel( tempIndex ) == 0 )
                   {
                   currRightIndicesVec.push_back( tempIndex );
@@ -612,7 +516,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     
     for ( unsigned int i=0; i<prevLeftIndicesVec.size(); i++ )
       {
-      this->GetOutput()->SetPixel( prevLeftIndicesVec[i], static_cast< unsigned short >( LEFTLUNG ) );
+      this->GetOutput()->SetPixel( prevLeftIndicesVec[i], static_cast< unsigned short >( cip::LEFTLUNG ) );
       
       for ( int x=-1; x<=1; x++ )
         {
@@ -628,10 +532,10 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
             
             if ( this->GetOutput()->GetBufferedRegion().IsInside( tempIndex ) )
               {
-              if ( (this->GetOutput()->GetPixel( tempIndex ) == 0 || this->GetOutput()->GetPixel( tempIndex ) == static_cast< unsigned short >( WHOLELUNG ))
+              if ( (this->GetOutput()->GetPixel( tempIndex ) == 0 || this->GetOutput()->GetPixel( tempIndex ) == static_cast< unsigned short >( cip::WHOLELUNG ))
                    && this->GetInput()->GetPixel( tempIndex ) <= threshold && this->m_AirwayLabelMap->GetPixel( tempIndex ) == 0 )
                 {
-                if ( this->GetOutput()->GetPixel( prevLeftIndicesVec[i] ) == static_cast< unsigned short >( LEFTLUNG ) &&
+                if ( this->GetOutput()->GetPixel( prevLeftIndicesVec[i] ) == static_cast< unsigned short >( cip::LEFTLUNG ) &&
                      tracker->GetPixel( tempIndex ) == 0 )
                   {
                   currLeftIndicesVec.push_back( tempIndex );
@@ -652,7 +556,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     
     for ( unsigned int i=0; i<prevWholeIndicesVec.size(); i++ )
       {
-      this->GetOutput()->SetPixel( prevWholeIndicesVec[i], static_cast< unsigned short >( WHOLELUNG ) );
+      this->GetOutput()->SetPixel( prevWholeIndicesVec[i], static_cast< unsigned short >( cip::WHOLELUNG ) );
       
       for ( int x=-1; x<=1; x++ )
         {
@@ -671,7 +575,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
               if ( this->GetOutput()->GetPixel( tempIndex ) == 0 && this->GetInput()->GetPixel( tempIndex ) <= threshold 
                    && this->m_AirwayLabelMap->GetPixel( tempIndex ) == 0 )
                 {
-                if ( this->GetOutput()->GetPixel( prevWholeIndicesVec[i] ) == static_cast< unsigned short >( WHOLELUNG ) &&
+                if ( this->GetOutput()->GetPixel( prevWholeIndicesVec[i] ) == static_cast< unsigned short >( cip::WHOLELUNG ) &&
                      tracker->GetPixel( tempIndex ) == 0 )
                   {
                   currWholeIndicesVec.push_back( tempIndex );
@@ -731,8 +635,8 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   // slices to be zero (provided that the output image is also zero at
   // those locations).
   //
-  OutputImageType::IndexType index;
-  OutputImageType::SizeType  size = this->GetOutput()->GetBufferedRegion().GetSize();
+  cip::LabelMapType::IndexType index;
+  cip::LabelMapType::SizeType  size = this->GetOutput()->GetBufferedRegion().GetSize();
 
   for ( unsigned int x=0; x<size[0]; x++ )
     {
@@ -800,7 +704,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   
 //  this->m_AirwayLabelMap = airwayLabelMap;
 
- unsigned short airwayLabel = conventions.GetValueFromLungRegionAndType( static_cast< unsigned char >( UNDEFINEDREGION ), static_cast< unsigned char >( AIRWAY ) );
+ unsigned short airwayLabel = conventions.GetValueFromChestRegionAndType( static_cast< unsigned char >( cip::UNDEFINEDREGION ), static_cast< unsigned char >( cip::AIRWAY ) );
 
   this->m_AirwayLabelMap->SetRegions( this->GetInput()->GetBufferedRegion().GetSize() );
   this->m_AirwayLabelMap->Allocate();
@@ -894,7 +798,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 template < class TInputImage >
 void
 CIPPartialLungLabelMapImageFilter< TInputImage >
-::AddAirwaySegmentationSeed( OutputImageType::IndexType index )
+::AddAirwaySegmentationSeed( cip::LabelMapType::IndexType index )
 {
   this->m_AirwaySegmentationSeedVec.push_back( index );
 }
@@ -903,7 +807,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 template < class TInputImage >
 void
 CIPPartialLungLabelMapImageFilter< TInputImage >
-::SetAirwayLabelMap( OutputImageType::Pointer airwayLabelMap )
+::SetAirwayLabelMap( cip::LabelMapType::Pointer airwayLabelMap )
 {
   this->m_AirwayLabelMap = airwayLabelMap;
 }
@@ -912,7 +816,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 template < class TInputImage >
 void
 CIPPartialLungLabelMapImageFilter< TInputImage >
-::SetHelperMask( OutputImageType::Pointer helperMask )
+::SetHelperMask( cip::LabelMapType::Pointer helperMask )
 {
   this->m_HelperMask = helperMask;
 }
@@ -976,14 +880,14 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 
   // sila
   // If the Otsu Threshold cannot find the right threshold, then threshold using the fixed LungThreshold
-  OutputImageType::Pointer temp_output = OutputImageType::New();
+  cip::LabelMapType::Pointer temp_output = cip::LabelMapType::New();
   if ( otsuThreshold->GetThreshold() <= this->m_ManualThreshold-this->m_StdLungThreshold ||  otsuThreshold->GetThreshold() >= this->m_ManualThreshold+this->m_StdLungThreshold )
      {
 	  typename BinaryThresholdType::Pointer binaryThreshold = BinaryThresholdType::New();
 	  binaryThreshold->SetInput(this->GetInput() );
 	  binaryThreshold->SetLowerThreshold(-3000);
 	  binaryThreshold->SetUpperThreshold(this->m_ManualThreshold);
-	  std::cout << "m_ManualThreshold: " << this->m_ManualThreshold << "\n";
+
 	  binaryThreshold->Update();
 	  temp_output = binaryThreshold->GetOutput();
 	  this->m_OtsuThreshold = this->m_ManualThreshold;
@@ -991,22 +895,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   else
 	  temp_output = otsuThreshold->GetOutput();
 
-   //std::cout << "---Writing Binary Thresh image..." << std::endl;
-   //typedef itk::ImageFileWriter< OutputImageType > WriterType;
-   //WriterType::Pointer writer12 = WriterType::New();
-   //writer12->SetInput( temp_output );
-   //writer12->SetFileName( "/spl/tmp/sila/binarythresh.nhdr" );
-   //writer12->UseCompressionOn();
-   //writer12->Update();
 
-
-
-  //Debug: Fixing Otsu
-  //this->m_OtsuThreshold=-400;
-
-  //Print out
-  std::cout << "---Lung Threshold..." << std::endl;
-  std::cout <<  this->m_ManualThreshold  << std::endl;
   int ctXDim = (this->GetInput()->GetBufferedRegion().GetSize())[0];
   int ctYDim = (this->GetInput()->GetBufferedRegion().GetSize())[1];
 
@@ -1048,12 +937,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 
   int lowerXBound = static_cast< int >( 0.20*static_cast< double >( ctXDim ) );
   int upperXBound = static_cast< int >( 0.80*static_cast< double >( ctXDim ) );
-
-
-  std::cout <<  lowerXBound  << std::endl;
-  std::cout <<  upperXBound  << std::endl;
-  std::cout <<  lowerYBound  << std::endl;
-  std::cout <<  upperYBound  << std::endl;
 
   int middleX =  static_cast< int >( 0.5*static_cast< double >( ctXDim ) );
 
@@ -1110,7 +993,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     {
     if ( rIt.Get() == lungHalf1Label || rIt.Get() == lungHalf2Label )
       {
-      mIt.Set( WHOLELUNG );
+      mIt.Set( cip::WHOLELUNG );
       }
     else 
       {
@@ -1195,8 +1078,8 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   double area = spacing[0]*spacing[1];
   double areaThreshold = 500; // Set heuristically (units of mm)
 
-  unsigned short airwayLabel = conventions.GetValueFromLungRegionAndType( static_cast< unsigned char >( UNDEFINEDREGION ), 
-                                                                          static_cast< unsigned char >( AIRWAY ) );
+  unsigned short airwayLabel = conventions.GetValueFromChestRegionAndType( static_cast< unsigned char >( cip::UNDEFINEDREGION ), 
+                                                                           static_cast< unsigned char >( cip::AIRWAY ) );
 
   //
   // DEBUG: Applying otsu threshold here for helper assisted segmentation.
@@ -1207,7 +1090,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 
   // sila
   // If the Otsu Threshold cannot find the right threshold, then threshold using the fixed LungThreshold
-   OutputImageType::Pointer temp_output = OutputImageType::New();
+   cip::LabelMapType::Pointer temp_output = cip::LabelMapType::New();
   if ( otsuThreshold->GetThreshold() <= this->m_ManualThreshold-this->m_StdLungThreshold ||  otsuThreshold->GetThreshold() >= this->m_ManualThreshold+this->m_StdLungThreshold )
      {
        typename BinaryThresholdType::Pointer binaryThreshold = BinaryThresholdType::New();
@@ -1220,13 +1103,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       }
   else
      temp_output = otsuThreshold->GetOutput();
-
-//   std::cout << "---Writing otsu..." << std::endl;
-//   WriterType::Pointer writer = WriterType::New();
-//   writer->SetInput( otsuThreshold->GetOutput() );
-//   writer->SetFileName( "/projects/lmi/people/jross/tmp/otsu.nhdr" );
-//   writer->UseCompressionOn();
-//   writer->Update();
 
   //
   // Erode the current mask with a 5x5x5 structuring element. This
@@ -1241,15 +1117,9 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 //    erode3D->SetInput( this->GetOutput() );
     erode3D->SetInput( temp_output);
     erode3D->SetKernel( structuringElement3D );
-    erode3D->SetErodeValue( static_cast< unsigned short >( WHOLELUNG ) );
+    erode3D->SetErodeValue( static_cast< unsigned short >( cip::WHOLELUNG ) );
     erode3D->Update();
 
-//   std::cout << "---Writing erode3D..." << std::endl;
-//   WriterType::Pointer writer2 = WriterType::New();
-//   writer2->SetInput( erode3D->GetOutput() );
-//   writer2->SetFileName( "/projects/lmi/people/jross/tmp/erode3D.nhdr" );
-//   writer2->UseCompressionOn();
-//   writer2->Update();
 
   //
   // Go slice by slice, run connected components, relabel, and then
@@ -1309,13 +1179,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       }
     }
 
-//   std::cout << "---Writing airway pre-dilation..." << std::endl;
-//   WriterType::Pointer writer4 = WriterType::New();
-//   writer4->SetInput( this->m_AirwayLabelMap );
-//   writer4->SetFileName( "/projects/lmi/people/jross/tmp/airwayPreDilation.nhdr" );
-//   writer4->UseCompressionOn();
-//   writer4->Update();
-
   //
   // Dilate in 3D the structures we accumlated in the last step. This
   // serves to recover the erosion operation we did initially.
@@ -1333,7 +1196,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   LabelMapIteratorType dIt( dilate3D->GetOutput(), dilate3D->GetOutput()->GetBufferedRegion() );
   std::vector< LabelMapType::IndexType > indicesVec;
 
-//  std::cout << "---Performing conditional dilation..." << std::endl;
   for ( unsigned int i=0; i<2; i++ )
     {
 
@@ -1375,13 +1237,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       }
     indicesVec.clear();
     }
-
-//   std::cout << "---Writing dilate3D..." << std::endl;
-//   WriterType::Pointer writer3 = WriterType::New();
-//   writer3->SetInput( dilate3D->GetOutput() );
-//   writer3->SetFileName( "/projects/lmi/people/jross/tmp/dilate3D.nhdr" );
-//   writer3->UseCompressionOn();
-//   writer3->Update();
 
   // 
   // Run connected components followed by relabeling on the dilated
@@ -1450,7 +1305,7 @@ std::vector< itk::Image< unsigned short, 3 >::IndexType >
 CIPPartialLungLabelMapImageFilter< TInputImage >
 ::GetAirwaySeeds()
 {
-  std::vector< OutputImageType::IndexType > seedVec;
+  std::vector< cip::LabelMapType::IndexType > seedVec;
 
   LabelMapType::SizeType    size    = this->GetOutput()->GetBufferedRegion().GetSize();
   LabelMapType::SpacingType spacing = this->GetOutput()->GetSpacing();

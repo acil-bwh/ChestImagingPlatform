@@ -129,8 +129,8 @@ protected:
   typedef itk::BinaryDilateImageFilter< LabelMapType, LabelMapType, Element3DType >              Dilate3DType;
   typedef itk::BinaryThresholdImageFilter< LabelMapSliceType, LabelMapSliceType >                Threshold2DType;
   typedef itk::BinaryErodeImageFilter< LabelMapType, LabelMapType, Element3DType >               Erode3DType;
-  typedef itk::AutoThresholdAirwaySegmentationImageFilter< InputImageType >                      AirwaySegmentationType;
-  typedef itk::ExtractLungLabelMapImageFilter                                                    ExtractLabelMapType;
+  typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType >                   AirwaySegmentationType;
+  typedef itk::CIPExtractChestLabelMapImageFilter                                                ExtractLabelMapType;
 
   CIPWholeLungVesselAndAirwaySegmentationImageFilter();
   virtual ~CIPWholeLungVesselAndAirwaySegmentationImageFilter() {}

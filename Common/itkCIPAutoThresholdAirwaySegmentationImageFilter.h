@@ -118,9 +118,9 @@ private:
   std::vector< OutputImageType::IndexType > m_SeedVec;
 
   cip::ChestConventions  m_LungConventions;
-  double           m_MinAirwayVolume;
-  double           m_MaxAirwayVolume;
-  double           m_MaxAirwayVolumeIncreaseRate;
+  double                 m_MinAirwayVolume;
+  double                 m_MaxAirwayVolume;
+  double                 m_MaxAirwayVolumeIncreaseRate;
 };
   
 } // end namespace itk

@@ -286,7 +286,7 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetNormalTra
 														     double scaleDiffMean, double scaleDiffVariance,
 														     double angleMean, double angleVariance )
 {
-  ChestConventions conventionsDEB;
+  cip::ChestConventions conventionsDEB;
   std::cout << "---------------------------" << std::endl;
   std::cout << "Setting:\t" << conventionsDEB.GetChestTypeName( sourceState ) << "\t to:\t";
   std::cout << conventionsDEB.GetChestTypeName( targetState ) << std::endl;
@@ -478,7 +478,7 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
   // DEB: investigate the final assigments
   //
   {
-    ChestConventions conventions;
+    cip::ChestConventions conventions;
 
     std::map< unsigned int, unsigned char >::iterator mIt = this->ParticleIDToAirwayGenerationMap.begin();
 
@@ -1075,7 +1075,7 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
 												 vtkSmartPointer< vtkMutableDirectedGraph > trellisGraph,
 												 vtkSmartPointer< vtkPolyData > particles )
 {
-  ChestConventions conventionsDEB;
+  cip::ChestConventions conventionsDEB;
 
   const double PI = 3.141592653589793238462;
 
@@ -1684,7 +1684,7 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransit
 												unsigned char sourceState, unsigned int targetState,
 												vtkSmartPointer< vtkPolyData > particles ) 
 {
-  ChestConventions conventionsDEB;
+  cip::ChestConventions conventionsDEB;
 
   //DEB
   bool printDEB = false;

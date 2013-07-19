@@ -93,7 +93,7 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
   //
   // Instantiate conventions for later usage
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Read the label map

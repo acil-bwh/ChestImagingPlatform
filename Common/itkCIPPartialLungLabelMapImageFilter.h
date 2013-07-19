@@ -24,6 +24,7 @@
 #include "itkCIPSplitLeftLungRightLungImageFilter.h"
 #include "itkCIPLabelLungRegionsImageFilter.h"
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"
+#include "itkCIPSplitLeftLungRightLungImageFilter.h"
 #include "itkOtsuThresholdImageFilter.h"
 #include "itkConnectedComponentImageFilter.h"
 #include "itkRelabelComponentImageFilter.h"
@@ -49,7 +50,7 @@ namespace itk
  */
 template <class TInputImage>
 class ITK_EXPORT CIPPartialLungLabelMapImageFilter :
-    public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
+  public ImageToImageFilter< TInputImage, cip::LabelMapType >
 {
 public:
   /** Extract dimension from input and output image. */
@@ -58,11 +59,11 @@ public:
 
   /** Convenient typedefs for simplifying declarations. */
   typedef TInputImage                       InputImageType;
-  typedef itk::Image< unsigned short, 3 >   OutputImageType;
+  //  typedef itk::Image< unsigned short, 3 >   cip::LabelMapType;
 
   /** Standard class typedefs. */
   typedef CIPPartialLungLabelMapImageFilter                         Self;
-  typedef ImageToImageFilter< InputImageType, OutputImageType >  Superclass;
+  typedef ImageToImageFilter< InputImageType, cip::LabelMapType >  Superclass;
   typedef SmartPointer< Self >                                   Pointer;
   typedef SmartPointer< const Self >                             ConstPointer;
 
@@ -75,9 +76,9 @@ public:
   /** Image typedef support. */
   typedef unsigned short                               LabelMapPixelType;
   typedef typename InputImageType::PixelType           InputPixelType;
-  typedef typename OutputImageType::PixelType          OutputPixelType;
+  typedef typename cip::LabelMapType::PixelType          OutputPixelType;
   typedef typename InputImageType::RegionType          InputImageRegionType;
-  typedef typename OutputImageType::RegionType         OutputImageRegionType;
+  typedef typename cip::LabelMapType::RegionType         OutputImageRegionType;
   typedef typename InputImageType::SizeType            InputSizeType;
 
   /** Reasonable airway segmentations have been empiracally found to
@@ -175,12 +176,12 @@ public:
   /** If the user specifies an airway label map, it will be used in
    * in the overall segmentation. If no airway label map is specified,
    * one will be automatically determined. */
-  void SetAirwayLabelMap( OutputImageType::Pointer );
+  void SetAirwayLabelMap( cip::LabelMapType::Pointer );
 
   /** This method allows a user to specify seeds to be used during the
    * airway segmentation process. If no seeds are specified, the
    * filter will attempt to find them automatically */
-  void AddAirwaySegmentationSeed( OutputImageType::IndexType );
+  void AddAirwaySegmentationSeed( cip::LabelMapType::IndexType );
 
   /** Set the neighborhood defining the structuring element for
    *  morphological closing (3 dimensions) */
@@ -193,7 +194,7 @@ public:
    *  assumed to be foreground as well. Passing a helper mask is
    *  optional and is intended to be used for recovering failure modes
    */
-  void SetHelperMask( OutputImageType::Pointer );
+  void SetHelperMask( cip::LabelMapType::Pointer );
 
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
@@ -202,12 +203,12 @@ protected:
   typedef typename itk::Image< LabelMapPixelType, 2 >                                 LabelMapSliceType;
   typedef itk::ImageRegionIteratorWithIndex< LabelMapSliceType >                      LabelMapSliceIteratorType;
   typedef itk::Image< LabelMapPixelType, 3 >                                          LabelMapType;
-  typedef itk::WholeLungVesselAndAirwaySegmentationImageFilter< InputImageType >      WholeLungVesselAndAirwayType;
-  typedef itk::SplitLeftAndRightLungsImageFilter< InputImageType >                    SplitterType;
-  typedef itk::LabelLungRegionsImageFilter                                            LungRegionLabelerType;
-  typedef itk::AutoThresholdAirwaySegmentationImageFilter< InputImageType >           AirwaySegmentationType;
-  typedef itk::OtsuThresholdImageFilter< InputImageType, OutputImageType >            OtsuThresholdType;
-  typedef itk::BinaryThresholdImageFilter< InputImageType, OutputImageType >          BinaryThresholdType;
+  typedef itk::CIPWholeLungVesselAndAirwaySegmentationImageFilter< InputImageType >      WholeLungVesselAndAirwayType;
+  typedef itk::CIPSplitLeftLungRightLungImageFilter< InputImageType >                    SplitterType;
+  typedef itk::CIPLabelLungRegionsImageFilter                                            LungRegionLabelerType;
+  typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType >           AirwaySegmentationType;
+  typedef itk::OtsuThresholdImageFilter< InputImageType, cip::LabelMapType >            OtsuThresholdType;
+  typedef itk::BinaryThresholdImageFilter< InputImageType, cip::LabelMapType >          BinaryThresholdType;
   typedef itk::ConnectedComponentImageFilter< LabelMapSliceType, LabelMapSliceType >  ConnectedComponent2DType;
   typedef itk::ConnectedComponentImageFilter< LabelMapType, ComponentImageType >      ConnectedComponent3DType;
   typedef itk::RelabelComponentImageFilter< LabelMapSliceType, LabelMapSliceType >    Relabel2DType;
@@ -233,15 +234,15 @@ protected:
   void ExpandLungRegionInSlice( LabelMapType::Pointer, LabelMapType::IndexType, unsigned char, short );
   void ExpandLeftRight( LabelMapType::IndexType, short, unsigned short, unsigned int );
   void ConditionalDilation( short );
-  std::vector< OutputImageType::IndexType > GetAirwaySeeds();
+  std::vector< cip::LabelMapType::IndexType > GetAirwaySeeds();
 
 
 private:
   CIPPartialLungLabelMapImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  std::vector< OutputImageType::IndexType > m_AirwaySegmentationSeedVec;
-  std::vector< OutputImageType::IndexType > m_AirwayIndicesVec;
+  std::vector< cip::LabelMapType::IndexType > m_AirwaySegmentationSeedVec;
+  std::vector< cip::LabelMapType::IndexType > m_AirwayIndicesVec;
 
   LabelMapType::Pointer m_AirwayLabelMap;
   LabelMapType::Pointer m_HelperMask;

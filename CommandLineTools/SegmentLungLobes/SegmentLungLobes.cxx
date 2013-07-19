@@ -158,7 +158,7 @@ ONLY lung regions that are assumed to be labeled.";
   //
   // Instatiate ChestConventions for general convenience later
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Define the vectors of physical points needed for creating the TPS

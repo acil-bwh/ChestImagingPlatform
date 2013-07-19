@@ -162,7 +162,7 @@ of the structure of interest should be assigned positive distance values";
   //
   // Instantiate ChestConventions for convenience
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Read the label map image
@@ -183,10 +183,10 @@ of the structure of interest should be assigned positive distance values";
     }
 
   LabelMapExtractorType::Pointer extractLabelMap = LabelMapExtractorType::New();
-  extractLabelMap->SetInput(reader->GetOutput());
-  extractLabelMap->SetChestRegion(cipRegion);
-  extractLabelMap->SetChestType(cipType);
-  extractLabelMap->Update();
+    extractLabelMap->SetInput(reader->GetOutput());
+    extractLabelMap->SetChestRegion(cipRegion);
+    extractLabelMap->SetChestType(cipType);
+    extractLabelMap->Update();
   
   //
   // Isolate the chest region / type of interest

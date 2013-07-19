@@ -58,10 +58,10 @@ public:
   typedef Image< unsigned short, 3 >   OutputImageType;
 
   /** Standard class typedefs. */
-  typedef CIPLabelLungRegionsImageFilter                            Self;
-  typedef ImageToImageFilter< InputImageType, OutputImageType >  Superclass;
-  typedef SmartPointer< Self >                                   Pointer;
-  typedef SmartPointer< const Self >                             ConstPointer;
+  typedef CIPLabelLungRegionsImageFilter                          Self;
+  typedef ImageToImageFilter< InputImageType, OutputImageType >   Superclass;
+  typedef SmartPointer< Self >                                    Pointer;
+  typedef SmartPointer< const Self >                              ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -139,13 +139,13 @@ private:
   CIPLabelLungRegionsImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  ChestConventions  m_LungConventions;
-  bool             m_HeadFirst;
-  bool             m_Supine;
-  bool             m_LabelLungThirds;
-  bool             m_LabelLeftAndRightLungs;
-  bool             m_LabelingSuccess;
-  int              m_NumberLungVoxels;
+  cip::ChestConventions m_LungConventions;
+  bool                  m_HeadFirst;
+  bool                  m_Supine;
+  bool                  m_LabelLungThirds;
+  bool                  m_LabelLeftAndRightLungs;
+  bool                  m_LabelingSuccess;
+  int                   m_NumberLungVoxels;
 };
   
 } // end namespace itk

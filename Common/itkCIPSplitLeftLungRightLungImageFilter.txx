@@ -31,7 +31,7 @@ void
 CIPSplitLeftLungRightLungImageFilter< TInputImage >
 ::GenerateData()
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
@@ -114,10 +114,6 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     // lower third
     //
     
-
-
-
-
 
 
 
@@ -394,6 +390,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
 //       previousMaxY = 0;
 //       }
 //     }
+}      
 }
 
 

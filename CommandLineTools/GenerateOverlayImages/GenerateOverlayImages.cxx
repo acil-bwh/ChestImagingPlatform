@@ -265,7 +265,7 @@ void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer 
 		      std::vector<OverlayType::Pointer>* overlayVec, double opacity, std::string slicePlane, 
 		      short window, short level, unsigned char cipRegion, unsigned char cipType)
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   cip::LabelMapType::RegionType boundingBox;
   if (cipRegion == (unsigned char)(cip::UNDEFINEDREGION) && cipType == (unsigned char)(cip::UNDEFINEDTYPE))
@@ -430,7 +430,7 @@ double GetWindowLeveledValue(short ctValue, short window, short level)
 //
 RGBPixelType GetOverlayPixelValue(double windowLeveledValue, unsigned short labelValue, double opacity)
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   unsigned char cipRegion = conventions.GetChestRegionFromValue(labelValue);
   unsigned char cipType = conventions.GetChestTypeFromValue(labelValue);
@@ -438,7 +438,7 @@ RGBPixelType GetOverlayPixelValue(double windowLeveledValue, unsigned short labe
   double* color = new double[3];
   conventions.GetColorFromChestRegionChestType(cipRegion, cipType, color);
 
-  if (cipRegion == (unsigned char)(UNDEFINEDREGION) && cipType == (unsigned char)(UNDEFINEDTYPE))
+  if (cipRegion == (unsigned char)(cip::UNDEFINEDREGION) && cipType == (unsigned char)(cip::UNDEFINEDTYPE))
     {
     opacity = 0.0;
     }

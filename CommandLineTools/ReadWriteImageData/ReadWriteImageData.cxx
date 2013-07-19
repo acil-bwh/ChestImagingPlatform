@@ -92,7 +92,7 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
   if (inLabelMapFileName.compare("NA") != 0)
     {
     std::cout << "Reading label map..." << std::endl;
-    LabelMapReaderType::Pointer labelMapReader = LabelMapReaderType::New();
+    cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
       labelMapReader->SetFileName(inLabelMapFileName);
     try
       {
@@ -107,7 +107,7 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
     if (outLabelMapFileName.compare("NA") != 0)
       {
       std::cout << "Writing label map..." << std::endl;
-      LabelMapWriterType::Pointer labelMapWriter = LabelMapWriterType::New();
+      cip::LabelMapWriterType::Pointer labelMapWriter = cip::LabelMapWriterType::New();
         labelMapWriter->SetFileName(outLabelMapFileName);
 	labelMapWriter->SetInput(labelMapReader->GetOutput());
 	labelMapWriter->UseCompressionOn();
@@ -126,7 +126,7 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
   if (inCTFileName.compare("NA") != 0)
     {
     std::cout << "Reading CT..." << std::endl;
-    CTReaderType::Pointer ctReader = CTReaderType::New();
+    cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
       ctReader->SetFileName(inCTFileName);
     try
       {
@@ -141,7 +141,7 @@ or CT images. It is useful for renaming (obviating the need to need to manually 
     if (outCTFileName.compare("NA") != 0)
       {
       std::cout << "Writing CT..." << std::endl;
-      CTWriterType::Pointer ctWriter = CTWriterType::New();
+      cip::CTWriterType::Pointer ctWriter = cip::CTWriterType::New();
         ctWriter->SetFileName(outCTFileName);
 	ctWriter->SetInput(ctReader->GetOutput());
 	ctWriter->UseCompressionOn();

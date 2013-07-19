@@ -280,8 +280,8 @@ the -r flag so that overlay images and non overlay images can be compared";
   std::vector< OverlayType::Pointer > leftCTVec;
 
   std::vector< unsigned int > leftLungRegions;
-    leftLungRegions.push_back( LEFTSUPERIORLOBE );
-    leftLungRegions.push_back( LEFTINFERIORLOBE );
+    leftLungRegions.push_back( cip::LEFTSUPERIORLOBE );
+    leftLungRegions.push_back( cip::LEFTINFERIORLOBE );
 
   if ( leftLungLobeFileNameVec.size() > 0 && ctFileName.compare( "NA" ) != 0 )
     {
@@ -305,9 +305,9 @@ the -r flag so that overlay images and non overlay images can be compared";
   std::vector< OverlayType::Pointer > rightCTVec;
 
   std::vector< unsigned int > rightLungRegions;
-    rightLungRegions.push_back( RIGHTSUPERIORLOBE );
-    rightLungRegions.push_back( RIGHTMIDDLELOBE );
-    rightLungRegions.push_back( RIGHTINFERIORLOBE );
+    rightLungRegions.push_back( cip::RIGHTSUPERIORLOBE );
+    rightLungRegions.push_back( cip::RIGHTMIDDLELOBE );
+    rightLungRegions.push_back( cip::RIGHTINFERIORLOBE );
 
   if ( rightLungLobeFileNameVec.size() > 0 && ctFileName.compare( "NA" ) != 0 )
     {
@@ -482,7 +482,7 @@ void GenerateLungLobeOverlayImages( cip::LabelMapType::Pointer labelMap, cip::CT
   unsigned int xMin   = size[0];
   unsigned int xMax   = 0;
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
   bool checkMinMax;
 
   //
@@ -621,37 +621,37 @@ double GetWindowLeveledValue( short ctValue )
 //
 RGBPixelType GetOverlayPixelValue( double windowLeveledValue, unsigned short labelValue, double opacity )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   unsigned char lungRegion = conventions.GetChestRegionFromValue( labelValue );
 
   unsigned char redChannel, greenChannel, blueChannel;
 
-  if ( lungRegion == static_cast< unsigned char >( LEFTSUPERIORLOBE ) )
+  if ( lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) )
     {
     redChannel   = 255;
     greenChannel = 0;
     blueChannel  = 0;
     }
-  else if ( lungRegion == static_cast< unsigned char >( LEFTINFERIORLOBE ) )
+  else if ( lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) )
     {
     redChannel   = 0;
     greenChannel = 255;
     blueChannel  = 0;
     }
-  else if ( lungRegion == static_cast< unsigned char >( RIGHTSUPERIORLOBE ) )
+  else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) )
     {
     redChannel   = 0;
     greenChannel = 255;
     blueChannel  = 255;
     }
-  else if ( lungRegion == static_cast< unsigned char >( RIGHTMIDDLELOBE ) )
+  else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) )
     {
     redChannel   = 255;
     greenChannel = 0;
     blueChannel  = 255;
     }
-  else if ( lungRegion == static_cast< unsigned char >( RIGHTINFERIORLOBE ) )
+  else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) )
     {
     redChannel   = 0;
     greenChannel = 0;
@@ -685,7 +685,7 @@ void GetAirwayProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionIm
     projectionSize[0] = labelMapSize[0];
     projectionSize[1] = labelMapSize[2];
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   unsigned char region, type;
     
@@ -703,11 +703,11 @@ void GetAirwayProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionIm
         {
         type = conventions.GetChestTypeFromValue( it.Get() );
 
-        if ( type == AIRWAY )
+        if ( type == cip::AIRWAY )
           {
           region = conventions.GetChestRegionFromValue( it.Get() );
                 
-          if ( region == UNDEFINEDREGION )
+          if ( region == cip::UNDEFINEDREGION )
             {
             projectionImage->SetPixel( projectionIndex, 255 );
             }
@@ -725,7 +725,7 @@ void GetLungProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImag
 {
   ProjectionImageType::IndexType projectionIndex;
     
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
     
   cip::LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
 
@@ -749,27 +749,27 @@ void GetLungProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImag
         {
         region = conventions.GetChestRegionFromValue( it.Get() );
 
-        if ( region == LEFTUPPERTHIRD || region == WHOLELUNG || region == LEFTLUNG )
+        if ( region == cip::LEFTUPPERTHIRD || region == cip::WHOLELUNG || region == cip::LEFTLUNG )
           { 
           projectionImage->SetPixel( projectionIndex, 1*36 );
           }
-        else if ( region == LEFTMIDDLETHIRD )
+        else if ( region == cip::LEFTMIDDLETHIRD )
           { 
           projectionImage->SetPixel( projectionIndex, 2*36 );
           }
-        else if ( region == LEFTLOWERTHIRD )
+        else if ( region == cip::LEFTLOWERTHIRD )
           { 
           projectionImage->SetPixel( projectionIndex, 3*36 );
           }
-        else if ( region == RIGHTUPPERTHIRD )
+        else if ( region == cip::RIGHTUPPERTHIRD )
           { 
           projectionImage->SetPixel( projectionIndex, 4*36 );
           }
-        else if ( region == RIGHTMIDDLETHIRD )
+        else if ( region == cip::RIGHTMIDDLETHIRD )
           { 
           projectionImage->SetPixel( projectionIndex, 5*36 );
           }
-        else if ( region == RIGHTLOWERTHIRD || region == RIGHTLUNG)
+        else if ( region == cip::RIGHTLOWERTHIRD || region == cip::RIGHTLUNG)
           { 
           projectionImage->SetPixel( projectionIndex, 6*36 );
           }

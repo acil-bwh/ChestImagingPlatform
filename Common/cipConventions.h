@@ -177,9 +177,6 @@ enum ReturnCode {
   GENERATEDISTANCEMAPFAILURE,
 };
 
-} // namespace cip
-
-using namespace cip;
 /**
  *  The following class will define the hierarchy among the various
  *  regions defined in 'ChestRegion' above.  If a new region is added
@@ -962,5 +959,7 @@ private:
   unsigned char m_NumberOfEnumeratedChestRegions;
   unsigned char m_NumberOfEnumeratedChestTypes;
 };
+
+} // namespace cip
 
 #endif

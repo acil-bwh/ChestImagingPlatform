@@ -43,7 +43,7 @@ to the command line a list of the chest-region chest-type pairs that are present
     return cip::ARGUMENTPARSINGERROR;
     }
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   std::cout << "Reading label map..." << std::endl;
   cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
