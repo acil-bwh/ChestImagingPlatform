@@ -27,6 +27,34 @@
       <description><![CDATA[moving Image FileName]]></description>
       <default>q</default>
     </string>   
+    <string>
+      <name>movingImageID</name>
+      <label>moving Image subject ID</label>
+      <channel>input</channel>
+      <flag>s</flag>
+      <longflag>--movingImageID</longflag>
+      <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
+      <default>q</default>
+    </string>   
+    <string>
+      <name>fixedImageID</name>
+      <label>Fixed Image subject ID</label>
+      <channel>input</channel>
+      <flag>u</flag>
+      <longflag>--fixedImageID</longflag>
+      <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
+      <default>q</default>
+    </string> 
+    <string>
+      <name>registrationID</name>
+      <label>registration ID ID</label>
+      <channel>input</channel>
+      <flag>v</flag>
+      <longflag>--registrationID</longflag>
+      <default>NA</default>
+      <description><![CDATA[unique Id for the registration process.]]></description>
+    </string> 
+
     <float>
       <name>downsampleFactor</name>
       <label>downsample Factor</label>
