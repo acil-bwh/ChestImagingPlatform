@@ -2,7 +2,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( RegisterLungAtlas )
 
-<<<<<<< HEAD
 set(MODULE_NAME RegisterLungAtlas)
 
 find_package(SlicerExecutionModel REQUIRED)
@@ -58,12 +57,10 @@ SEMMacroBuildCLI(
 
 
 
-=======
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
 
 SET ( RegisterLungAtlas_SOURCE RegisterLungAtlas.cxx )
 
-ADD_EXECUTABLE ( RegisterLungAtlas ${RegisterLungAtlas_SOURCE} )
+#ADD_EXECUTABLE ( RegisterLungAtlas ${RegisterLungAtlas_SOURCE} )
 TARGET_LINK_LIBRARIES ( RegisterLungAtlas ${VTK_LIBRARIES} ${ITK_LIBRARIES} )
->>>>>>> origin/master
