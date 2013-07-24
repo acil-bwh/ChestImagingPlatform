@@ -74,7 +74,7 @@ enum ChestRegion {
   RIGHT,                  //24
   LIVER,                  //25
   SPLEEN,                 //26
-  LEFTCOSTOPHRENICANGLE,  //27
+  ABDOMEN,                //27
 };
 
 
@@ -273,7 +273,7 @@ public:
       ChestRegions.push_back( static_cast< unsigned char >( RIGHT ) );
       ChestRegions.push_back( static_cast< unsigned char >( LIVER ) );
       ChestRegions.push_back( static_cast< unsigned char >( SPLEEN ) );
-      ChestRegions.push_back( static_cast< unsigned char >( LEFTCOSTOPHRENICANGLE ) );
+      ChestRegions.push_back( static_cast< unsigned char >( ABDOMEN ) );
 
       ChestTypes.push_back( static_cast< unsigned char >( UNDEFINEDTYPE ) );
       ChestTypes.push_back( static_cast< unsigned char >( NORMALPARENCHYMA ) );
@@ -375,7 +375,7 @@ public:
       ChestRegionNames.push_back( "RIGHT" );
       ChestRegionNames.push_back( "LIVER" );
       ChestRegionNames.push_back( "SPLEEN" );
-      ChestRegionNames.push_back( "LEFTCOSTOPHRENICANGLE" );
+      ChestRegionNames.push_back( "ABDOMEN" );
 
       ChestTypeNames.push_back( "UNDEFINEDTYPE" );
       ChestTypeNames.push_back( "NORMALPARENCHYMA" );
@@ -567,7 +567,7 @@ public:
       double* r025 = new double[3]; r025[0] = 0.74; r025[1] = 0.34; r025[2] = 0.14; ChestRegionColors.push_back( r025 ); //RIGHT
       double* r026 = new double[3]; r026[0] = 0.66; r026[1] = 0.36; r026[2] = 0.40; ChestRegionColors.push_back( r026 ); //LIVER
       double* r027 = new double[3]; r027[0] = 1.00; r027[1] = 1.00; r027[2] = 0.01; ChestRegionColors.push_back( r027 ); //SPLEEN
-      double* r028 = new double[3]; r028[0] = 1.00; r028[1] = 0.50; r028[2] = 0.01; ChestRegionColors.push_back( r028 ); //LEFTCOSTOPHRENICANGLE
+      double* r028 = new double[3]; r028[0] = 1.00; r028[1] = 0.50; r028[2] = 0.01; ChestRegionColors.push_back( r028 ); //ABDOMEN
     }
   unsigned char GetNumberOfEnumeratedChestRegions() const
     {
