@@ -56,6 +56,7 @@
 #include <libxml/xmlIO.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
+#include <uuid/uuid.h>
 
 namespace
 {
@@ -91,7 +92,7 @@ struct REGIONTYPEPAIR
 
 struct REGISTRATION_XML_DATA
 {
-  const char *registrationID;
+  std::string registrationID;
   float similarityValue;
   const char *transformationLink;
   std::string sourceID;
@@ -136,16 +137,11 @@ cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
 
 void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA &theXMLData)
 {      
-  std::cout<<"in writeRegistrationxml"<<std::endl;
+  std::cout<<"Writing registration XML file"<<std::endl;
   xmlDocPtr doc = NULL;       /* document pointer */
   xmlNodePtr root_node = NULL, node = NULL, node1 = NULL;/* node pointers */
   xmlDtdPtr dtd = NULL;       /* DTD pointer */
-  char buff[256];
-  int i, j;
-  //http://www.xmlsoft.org/examples/tree2.c
-  std::cout<<"sourceID="<<theXMLData.sourceID.c_str()<<std::endl;
-  std::cout<<"destID="<<theXMLData.destID<<std::endl;
-std::cout<<"regID="<<theXMLData.registrationID<<std::endl;
+
   doc = xmlNewDoc(BAD_CAST "1.0");
   root_node = xmlNewNode(NULL, BAD_CAST "Registration");
   xmlDocSetRootElement(doc, root_node);
@@ -153,25 +149,27 @@ std::cout<<"regID="<<theXMLData.registrationID<<std::endl;
   dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "RegistrationOutput_v1.dtd");
 
   //ID: attribute
-  
-  xmlNewProp(root_node, BAD_CAST "Registration ID", BAD_CAST (theXMLData.registrationID));
+  uuid_t registration_id;
+  char uuid_string[37];
+  uuid_generate(registration_id);
+  uuid_unparse(registration_id, uuid_string);
+  std::string temp_string(uuid_string);;
+  theXMLData.registrationID.assign(temp_string);
+  xmlNewProp(root_node, BAD_CAST "Registration ID", BAD_CAST (theXMLData.registrationID.c_str()));
+ 
   // xmlNewChild() creates a new node, which is "attached"
   // as child node of root_node node. 
   std::ostringstream similaritString;
-  std::string tempsource;
-  //tempsource.assign(theXMLData.sourceID);
+  //std::string tempsource;
   similaritString <<theXMLData.similarityValue;
   xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
 
   xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST (theXMLData.transformationLink));
   xmlNewChild(root_node, NULL, BAD_CAST "sourceID", BAD_CAST (theXMLData.sourceID.c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "destID", BAD_CAST (theXMLData.destID.c_str()));
- 
-  std::cout<<"translink="<<theXMLData.transformationLink<<std::endl;
-  std::cout<<"save file:"<<file<<std::endl;
+   
   xmlSaveFormatFileEnc(file, doc, "UTF-8", 1);
   xmlFreeDoc(doc);
-
 
 }
 
@@ -260,8 +258,6 @@ int main( int argc, char *argv[] )
   std::cout << "Subsampling moving image..." << std::endl;
   // ResampleImage(movingLabelMap, subSampledMovingImage, downsampleFactor );
   subSampledMovingImage=cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
-  std::cout<<"region vec size="<<regionVec.size()<<std::endl;
-
 
   // Extract fixed Image region that we want
   std::cout << "Extracting region and type..." << std::endl;
@@ -337,7 +333,6 @@ int main( int argc, char *argv[] )
   initializer->MomentsOn();
   initializer->InitializeTransform();
 
-  std::cout<<"initialized transform"<<std::endl;
   OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
   optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;   optimizerScales[2] =  1.0;
   optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;   optimizerScales[5] =  1.0;
