@@ -10,17 +10,9 @@
  *
  */
 
-//
-//RegisterLabelMaps --regionVec 3 -m
-//D:\Postdoc\Data\Processed\lola11-04\lola11-04_oriented_leftLungRightLung.nrrd
-//-f
-//D:\Postdoc\Data\Processed\lola11-04\lola11-04_oriented_leftLungRightLung.nrrd
-//--outputImage
-//D:\Postdoc\Data\Processed\lola11-04\lola11-5to4reg_oriented_leftLungRightLung.nrrd
+// ./RegisterLabelMaps --regionVec 1 -m /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/11622T/11622T_INSP_STD_HAR_COPD/11622T_INSP_STD_HAR_COPD_leftLungRightLung.nhdr -f /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/10393Z/10393Z_INSP_STD_HAR_COPD/10393Z_INSP_STD_HAR_COPD_leftLungRightLung.nhdr --outputImage /projects/lmi/people/rharmo/projects/dataInfo/testoutput.nrrd --outputTransform output_transform_file -d 12
 
-//http://www.xmlsoft.org/examples/tree2.c
 
-//./RegisterLabelMaps --regionVec 3  -m "/net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/LOLA2011/lola11-04/lola11-04_oriented_leftLungRightLung.nhdr" -f "/net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/LOLA2011/lola11-04/lola11-04_oriented_leftLungRightLung.nhdr" --outputImage "/projects/lmi/people/rharmo/projects/dataInfo/MC20123082_INSP_B65s_L1_to_MC20123082_INSP_B65s_L1.nrrd" --movingImageID "moveID" --fixedImageID "fixedID"  --outputTransform "test.xfm" -v i98
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -56,7 +48,7 @@
 #include <libxml/xmlIO.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
-#include <uuid/uuid.h>
+//#include <uuid/uuid.h>
 
 namespace
 {
@@ -149,13 +141,28 @@ void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA &theXMLData)
   dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "RegistrationOutput_v1.dtd");
 
   //ID: attribute
-  uuid_t registration_id;
+  /* uuid not working on cluster
+    uuid_t registration_id;
   char uuid_string[37];
   uuid_generate(registration_id);
   uuid_unparse(registration_id, uuid_string);
   std::string temp_string(uuid_string);;
   theXMLData.registrationID.assign(temp_string);
-  xmlNewProp(root_node, BAD_CAST "Registration ID", BAD_CAST (theXMLData.registrationID.c_str()));
+  */ 
+
+  time_t timer;
+  time(&timer);
+  std::stringstream tempStream;
+  tempStream<<timer;
+  theXMLData.registrationID.assign("Registration");
+  theXMLData.registrationID.append(tempStream.str());
+  theXMLData.registrationID.append("_");
+  theXMLData.registrationID.append(theXMLData.sourceID.c_str());
+  theXMLData.registrationID.append("_to_");
+  theXMLData.registrationID.append(theXMLData.destID.c_str());
+ 
+
+ xmlNewProp(root_node, BAD_CAST "Registration ID", BAD_CAST (theXMLData.registrationID.c_str()));
  
   // xmlNewChild() creates a new node, which is "attached"
   // as child node of root_node node. 
@@ -163,7 +170,6 @@ void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA &theXMLData)
   //std::string tempsource;
   similaritString <<theXMLData.similarityValue;
   xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
-
   xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST (theXMLData.transformationLink));
   xmlNewChild(root_node, NULL, BAD_CAST "sourceID", BAD_CAST (theXMLData.sourceID.c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "destID", BAD_CAST (theXMLData.destID.c_str()));
@@ -396,7 +402,6 @@ int main( int argc, char *argv[] )
     infoFilename.append(".xml");
                 
     REGISTRATION_XML_DATA labelMapRegistrationXMLData;
-    labelMapRegistrationXMLData.registrationID = registrationID.c_str();
     labelMapRegistrationXMLData.similarityValue = (float)(bestValue);
     labelMapRegistrationXMLData.transformationLink = outputTransformFileName.c_str();              
                 
