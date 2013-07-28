@@ -191,7 +191,7 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
 
-  std::cout<< "agrs parsed"<<std::endl;
+  std::cout<< "agrs parsed, new"<<std::endl;
 
   //Read in region and type pair
   std::vector< REGIONTYPEPAIR > regionTypePairVec;
@@ -407,18 +407,31 @@ int main( int argc, char *argv[] )
                 
     //if the patient IDs are specified  as args, use them,
     //otherwise, extract from patient path
+
+    std::cout<<"moving imageid="<<movingImageID.c_str()<<std::endl;
     if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
       labelMapRegistrationXMLData.sourceID.assign(movingImageID);/// =movingImageID.c_str();
     else
-      {       
-      int pos=0;
-      int next=0;
-      std::string tempSourceID;
-      for (int i = 0; i < 9;i++)
-        {
-        pos= next+1;
-        next = movingImageFileName.find("/", next+1);
-        }               
+      {   
+	std::cout<<"not =q"<<std::endl;
+	//first find length of path
+	int pathLength = 0;
+	int next=1;
+	while(next>=1)
+	  {
+	    next = movingImageFileName.find("/", next+1);    
+	    pathLength++;
+	  }
+	pos=0;
+	next=0;
+	std::cout<<"pathlength ="<<pathLength<<std::endl;
+	std::string tempSourceID;
+	for (int i = 0; i < (pathLength-1);i++)
+	  {
+	    std::cout<<"here"<<std::endl;
+	    pos= next+1;
+	    next = movingImageFileName.find("/", next+1);
+	  }               
       labelMapRegistrationXMLData.sourceID.assign(movingImageFileName.c_str());// =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
       labelMapRegistrationXMLData.sourceID.erase(next,labelMapRegistrationXMLData.sourceID.length()-1);
       labelMapRegistrationXMLData.sourceID.erase(0, pos);
