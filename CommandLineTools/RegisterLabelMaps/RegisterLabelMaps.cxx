@@ -86,7 +86,7 @@ struct REGISTRATION_XML_DATA
 {
   std::string registrationID;
   float similarityValue;
-  const char *transformationLink;
+  std::string transformationLink;
   std::string sourceID;
   std::string destID;
 };
@@ -170,7 +170,7 @@ void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA &theXMLData)
   //std::string tempsource;
   similaritString <<theXMLData.similarityValue;
   xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
-  xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST (theXMLData.transformationLink));
+  xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST (theXMLData.transformationLink.c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "sourceID", BAD_CAST (theXMLData.sourceID.c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "destID", BAD_CAST (theXMLData.destID.c_str()));
    
@@ -367,7 +367,8 @@ int main( int argc, char *argv[] )
   registration->SetInitialTransformParameters( transform->GetParameters() );
   try 
     { 
-    registration->StartRegistration(); 
+      //   registration->StartRegistration();    
+      registration->Update();
     } 
   catch( itk::ExceptionObject &excp ) 
     { 
@@ -403,36 +404,33 @@ int main( int argc, char *argv[] )
                 
     REGISTRATION_XML_DATA labelMapRegistrationXMLData;
     labelMapRegistrationXMLData.similarityValue = (float)(bestValue);
-    labelMapRegistrationXMLData.transformationLink = outputTransformFileName.c_str();              
-                
+                 
     //if the patient IDs are specified  as args, use them,
     //otherwise, extract from patient path
 
-    std::cout<<"moving imageid="<<movingImageID.c_str()<<std::endl;
+    int pathLength = 0, pos=0, next=0;   
+
     if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
-      labelMapRegistrationXMLData.sourceID.assign(movingImageID);/// =movingImageID.c_str();
+      labelMapRegistrationXMLData.sourceID.assign(movingImageID);
     else
-      {   
+      {       
 	std::cout<<"not =q"<<std::endl;
 	//first find length of path
-	int pathLength = 0;
-	int next=1;
+	next=1;
 	while(next>=1)
 	  {
 	    next = movingImageFileName.find("/", next+1);    
 	    pathLength++;
 	  }
 	pos=0;
-	next=0;
-	std::cout<<"pathlength ="<<pathLength<<std::endl;
+
 	std::string tempSourceID;
 	for (int i = 0; i < (pathLength-1);i++)
 	  {
-	    std::cout<<"here"<<std::endl;
 	    pos= next+1;
 	    next = movingImageFileName.find("/", next+1);
 	  }               
-      labelMapRegistrationXMLData.sourceID.assign(movingImageFileName.c_str());// =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
+      labelMapRegistrationXMLData.sourceID.assign(movingImageFileName.c_str());
       labelMapRegistrationXMLData.sourceID.erase(next,labelMapRegistrationXMLData.sourceID.length()-1);
       labelMapRegistrationXMLData.sourceID.erase(0, pos);
       }
@@ -442,9 +440,9 @@ int main( int argc, char *argv[] )
       labelMapRegistrationXMLData.destID =fixedImageID.c_str();
     else
       { 
-      int pos=0;
-      int next=0;
-      for (int i = 0; i < 9;i++)
+      pos=0;
+      next=0;
+      for (int i = 0; i < (pathLength-1);i++)
         { 
         pos = next+1;
         next = fixedImageFileName.find('/', next+1);  
@@ -455,7 +453,18 @@ int main( int argc, char *argv[] )
 
       }	
 
-    WriteRegistrationXML(infoFilename.c_str(), labelMapRegistrationXMLData);
+    //remove path from output transformation file before storing in xml
+    std::cout<<"outputtransform filename ="<<outputTransformFileName.c_str()<<std::endl;
+      pos=0;
+      next=0;
+      for (int i = 0; i < (pathLength);i++)
+        { 
+        pos = next+1;
+        next = outputTransformFileName.find('/', next+1);  
+        }
+      labelMapRegistrationXMLData.transformationLink.assign(outputTransformFileName.c_str());
+      labelMapRegistrationXMLData.transformationLink.erase(0,pos);
+      WriteRegistrationXML(infoFilename.c_str(), labelMapRegistrationXMLData);
 
    
 
