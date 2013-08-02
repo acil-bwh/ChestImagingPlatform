@@ -419,6 +419,10 @@ int main( int argc, char *argv[] )
 	    pathLength++;
 	  }
 	pos=0;
+<<<<<<< HEAD
+=======
+	next=0;
+>>>>>>> STYLE: remove some debugging code
 
 	std::string tempSourceID;
 	for (int i = 0; i < (pathLength-1);i++)
