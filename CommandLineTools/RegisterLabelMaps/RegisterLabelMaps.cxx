@@ -410,6 +410,7 @@ int main( int argc, char *argv[] )
     if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
       labelMapRegistrationXMLData.sourceID.assign(movingImageID);
     else
+
       {       
 	//first find length of path
 	next=1;
