@@ -189,7 +189,7 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
 
-  std::cout<< "agrs parsed"<<std::endl;
+  std::cout<< "agrs parsed, new"<<std::endl;
 
   //Read in region and type pair
   std::vector< REGIONTYPEPAIR > regionTypePairVec;
@@ -404,7 +404,9 @@ int main( int argc, char *argv[] )
     labelMapRegistrationXMLData.similarityMeasure.assign(similarity_type);
     //if the patient IDs are specified  as args, use them,
     //otherwise, extract from patient path
+
     int pathLength = 0, pos=0, next=0;   
+
     if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
       labelMapRegistrationXMLData.sourceID.assign(movingImageID);
     else
@@ -418,6 +420,7 @@ int main( int argc, char *argv[] )
 	  }
 	pos=0;
 	next=0;
+
 	std::string tempSourceID;
 	for (int i = 0; i < (pathLength-1);i++)
 	  {
