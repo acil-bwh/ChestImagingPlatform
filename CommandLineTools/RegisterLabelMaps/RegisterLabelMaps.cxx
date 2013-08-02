@@ -1,18 +1,15 @@
 /** \file
  *  \ingroup commandLineTools 
- *  \details This program reads atlas lung images and generates a
+ *  \details This program registers 2 label maps, source and target, and 
+ * a transformation file as well as the transformed image 
  *
- *  USAGE:
+ *  USAGE: ./RegisterLabelMaps --regionVec 1 -m /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/11622T/11622T_INSP_STD_HAR_COPD/11622T_INSP_STD_HAR_COPD_leftLungRightLung.nhdr -f /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/10393Z/10393Z_INSP_STD_HAR_COPD/10393Z_INSP_STD_HAR_COPD_leftLungRightLung.nhdr --outputImage /projects/lmi/people/rharmo/projects/dataInfo/testoutput.nrrd --outputTransform output_transform_file -d 12
  *
  *  $Date: $
  *  $Revision: $
  *  $Author:  $
  *
  */
-
-// ./RegisterLabelMaps --regionVec 1 -m /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/11622T/11622T_INSP_STD_HAR_COPD/11622T_INSP_STD_HAR_COPD_leftLungRightLung.nhdr -f /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/10393Z/10393Z_INSP_STD_HAR_COPD/10393Z_INSP_STD_HAR_COPD_leftLungRightLung.nhdr --outputImage /projects/lmi/people/rharmo/projects/dataInfo/testoutput.nrrd --outputTransform output_transform_file -d 12
-
-
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -89,6 +86,7 @@ struct REGISTRATION_XML_DATA
   std::string transformationLink;
   std::string sourceID;
   std::string destID;
+  std::string similarityMeasure;
 };
 
 void WriteTransformFile( TransformType::Pointer transform, char* fileName )
@@ -131,7 +129,7 @@ void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA &theXMLData)
 {      
   std::cout<<"Writing registration XML file"<<std::endl;
   xmlDocPtr doc = NULL;       /* document pointer */
-  xmlNodePtr root_node = NULL, node = NULL, node1 = NULL;/* node pointers */
+  xmlNodePtr root_node = NULL; /* Node pointers */
   xmlDtdPtr dtd = NULL;       /* DTD pointer */
 
   doc = xmlNewDoc(BAD_CAST "1.0");
@@ -162,18 +160,18 @@ void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA &theXMLData)
   theXMLData.registrationID.append(theXMLData.destID.c_str());
  
 
- xmlNewProp(root_node, BAD_CAST "Registration ID", BAD_CAST (theXMLData.registrationID.c_str()));
+ xmlNewProp(root_node, BAD_CAST "Registration_ID", BAD_CAST (theXMLData.registrationID.c_str()));
  
   // xmlNewChild() creates a new node, which is "attached"
   // as child node of root_node node. 
   std::ostringstream similaritString;
   //std::string tempsource;
   similaritString <<theXMLData.similarityValue;
-  xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST (theXMLData.transformationLink.c_str()));
-  xmlNewChild(root_node, NULL, BAD_CAST "sourceID", BAD_CAST (theXMLData.sourceID.c_str()));
-  xmlNewChild(root_node, NULL, BAD_CAST "destID", BAD_CAST (theXMLData.destID.c_str()));
-   
+  xmlNewChild(root_node, NULL, BAD_CAST "movingID", BAD_CAST (theXMLData.sourceID.c_str()));
+  xmlNewChild(root_node, NULL, BAD_CAST "fixedID", BAD_CAST (theXMLData.destID.c_str()));
+  xmlNewChild(root_node, NULL, BAD_CAST "SimilarityMeasure", BAD_CAST (theXMLData.similarityMeasure.c_str()));
+  xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
   xmlSaveFormatFileEnc(file, doc, "UTF-8", 1);
   xmlFreeDoc(doc);
 
@@ -262,7 +260,6 @@ int main( int argc, char *argv[] )
     }
 
   std::cout << "Subsampling moving image..." << std::endl;
-  // ResampleImage(movingLabelMap, subSampledMovingImage, downsampleFactor );
   subSampledMovingImage=cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
 
   // Extract fixed Image region that we want
@@ -276,7 +273,7 @@ int main( int argc, char *argv[] )
   for ( unsigned int i=0; i<regionVec.size(); i++ )
     { 
     fixedExtractor->SetChestRegion(regionVec[i]);
-    movingExtractor->SetChestRegion(regionVec[i]);//tatic_cast<unsigned char > (cip::WHOLELUNG));// regionVec[0]);
+    movingExtractor->SetChestRegion(regionVec[i]);
     }
   if (typeVec.size()>0)
     {
@@ -307,7 +304,6 @@ int main( int argc, char *argv[] )
     if ( it.Get() != 0 )
       {
       it.Set( 1 );
-      // std::cout<<"euqal one"<<std::endl;
       }
      ++it;
         }
@@ -320,16 +316,16 @@ int main( int argc, char *argv[] )
     if ( itmoving.Get() != 0 )
       {
       itmoving.Set( 1 );
-      //std::cout<<"moving equal one"<<std::endl;
       }
 
     ++itmoving;
          }
 
   MetricType::Pointer metric = MetricType::New(); 
-  metric->ComplementOn();
+  metric->ComplementOn(); //because we are minimizing as opposed to maximizing
   metric->SetForegroundValue( 1);
-
+ 
+  
   TransformType::Pointer transform = TransformType::New();
   std::cout<<"initializing transform"<<std::endl;
   InitializerType::Pointer initializer = InitializerType::New();
@@ -367,8 +363,8 @@ int main( int argc, char *argv[] )
   registration->SetInitialTransformParameters( transform->GetParameters() );
   try 
     { 
-      //   registration->StartRegistration();    
-      registration->Update();
+      registration->StartRegistration();    
+      //registration->Update(); for ITKv4
     } 
   catch( itk::ExceptionObject &excp ) 
     { 
@@ -404,7 +400,8 @@ int main( int argc, char *argv[] )
                 
     REGISTRATION_XML_DATA labelMapRegistrationXMLData;
     labelMapRegistrationXMLData.similarityValue = (float)(bestValue);
-                 
+    const char *similarity_type = metric->GetNameOfClass();    
+    labelMapRegistrationXMLData.similarityMeasure.assign(similarity_type);
     //if the patient IDs are specified  as args, use them,
     //otherwise, extract from patient path
     int pathLength = 0, pos=0, next=0;   
@@ -412,7 +409,6 @@ int main( int argc, char *argv[] )
       labelMapRegistrationXMLData.sourceID.assign(movingImageID);
     else
       {       
-	std::cout<<"not =q"<<std::endl;
 	//first find length of path
 	next=1;
 	while(next>=1)

@@ -89,7 +89,7 @@
       <flag>n</flag>
       <longflag>--numberOfIterations</longflag>
       <description><![CDATA[Number of iterations. ]]></description>
-      <default>1</default>
+      <default>20</default>
     </integer>   
     <float>
       <name>translationScale</name>
