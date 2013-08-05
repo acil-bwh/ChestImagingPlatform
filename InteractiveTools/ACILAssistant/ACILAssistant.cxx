@@ -91,23 +91,24 @@ Fl_Menu_Item menu_Menu[] = {
  {0,0,0,0,0,0,0,0,0}
 };
 
-GLSliceView< short, unsigned short > *sliceViewer=(GLSliceView< short, unsigned short > *)0;
+itk::GLSliceView< short, unsigned short > *sliceViewer=(itk::GLSliceView< short, unsigned short > *)0;
 Fl_Scrollbar *sliceSlider=(Fl_Scrollbar *)0;
 Fl_Slider *opacitySlider=(Fl_Slider *)0;
+
 
 int main(int argc, char **argv) {
   Fl_Double_Window* w;
   assistantInstance = new ACILAssistantBase();
   paintBrushAndEraserInput = new PaintBrushAndEraserGUI();
-paintBrushAndEraserInput->SetUpdateViewerFunction( &UpdateViewer );
-paintBrushAndEraserInput->SetPaintedIndices( assistantInstance->GetPaintedIndices() );
-  { Fl_Double_Window* o = acilAssistantMainWindow = new Fl_Double_Window(640, 630, "ACIL Assistant");
+  paintBrushAndEraserInput->SetUpdateViewerFunction( &UpdateViewer );
+  paintBrushAndEraserInput->SetPaintedIndices( assistantInstance->GetPaintedIndices() );
+  { Fl_Double_Window* o = acilAssistantMainWindow = new Fl_Double_Window(640, 630, "ACIL Assistant"); 
     w = o;
     o->color((Fl_Color)185);
     { Fl_Menu_Bar* o = new Fl_Menu_Bar(0, 0, 830, 20, "Menu Bar");
       o->menu(menu_Menu);
     }
-    { GLSliceView< short, unsigned short >* o = sliceViewer = new GLSliceView< short, unsigned short >(0, 20, 620, 590, "label");
+    { itk::GLSliceView< short, unsigned short >* o = sliceViewer = new itk::GLSliceView< short, unsigned short >(0, 20, 620, 590, "label");
       o->box(FL_NO_BOX);
       o->color((Fl_Color)48);
       o->selection_color((Fl_Color)48);
@@ -365,7 +366,7 @@ UpdateViewer();
 
 void LabelMapImage_CB( Fl_Widget*, void* ) {
   if ( !grayscaleImageRead )
-{
+    {
   std::cerr << "Must first read a grayscale image!" << std::endl;
   
   return;
@@ -1189,6 +1190,8 @@ void CopySessionDataToMAD( SESSIONDATA data )
 }
 
 
+
+//-------------------------------------------------
 // void SessionFile_CB( Fl_Widget*, void* ) {
 //   typedef itk::Image< short, 3 >                      GrayscaleImageType;
 //   typedef itk::ImageFileReader< GrayscaleImageType >  GrayscaleReaderType; 

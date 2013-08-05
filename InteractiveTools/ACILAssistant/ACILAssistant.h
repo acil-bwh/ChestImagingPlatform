@@ -20,7 +20,7 @@ extern void muscleMenu_CB(Fl_Menu_*, void*);
 extern void leftLungRightLungMenu_CB(Fl_Menu_*, void*);
 extern void lungLobesMenu_CB(Fl_Menu_*, void*);
 #include "GLSliceView.h"
-extern GLSliceView< short, unsigned short > *sliceViewer;
+extern itk::GLSliceView< short, unsigned short > *sliceViewer;
 #include <FL/Fl_Scrollbar.H>
 extern void sliceSlider_CB(Fl_Scrollbar*, void*);
 extern Fl_Scrollbar *sliceSlider;
