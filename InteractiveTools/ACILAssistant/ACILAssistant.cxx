@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include "PaintBrushAndEraserGUI.h"
+#include "RegionGrowingGUI.h"
 #include "ACILAssistantBase.h"
 #include "itkImageFileReader.h"
 #include "itkImageRegionIteratorWithIndex.h"
@@ -50,6 +51,7 @@ static std::vector< std::string > sessionRegionTypeIndicesFileNameVec;
 static std::vector< SESSIONDATA > sessionDataVec;
 static bool grayscaleImageRead = false;
 static PaintBrushAndEraserGUI* paintBrushAndEraserInput;
+static RegionGrowingGUI* regionGrowingInput;
 static bool labelMapImageRead = false;
 static ACILAssistantBase* assistantInstance;
 
@@ -81,6 +83,7 @@ Fl_Menu_Item menu_Menu[] = {
  {"Segmentation", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Left Lung Right Lung", 0,  (Fl_Callback*)leftLungRightLungMenu_CB, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Lung Lobes", 0,  (Fl_Callback*)lungLobesMenu_CB, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Region Growing", 0,  (Fl_Callback*)regionGrowingMenu_CB, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
 
  {"Window-Level", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -99,6 +102,9 @@ Fl_Slider *opacitySlider=(Fl_Slider *)0;
 int main(int argc, char **argv) {
   Fl_Double_Window* w;
   assistantInstance = new ACILAssistantBase();
+
+  regionGrowingInput = new RegionGrowingGUI();
+
   paintBrushAndEraserInput = new PaintBrushAndEraserGUI();
   paintBrushAndEraserInput->SetUpdateViewerFunction( &UpdateViewer );
   paintBrushAndEraserInput->SetPaintedIndices( assistantInstance->GetPaintedIndices() );
@@ -712,6 +718,7 @@ void opacitySlider_CB( Fl_Widget*, void* ) {
 }
 
 void paintBrushAndEraserMenu_CB( Fl_Widget*, void* ) {
+  regionGrowingInput->regionGrowingWindow->hide();
   paintBrushAndEraserInput->paintBrushAndEraserWindow->show();
 }
 
@@ -771,70 +778,95 @@ void muscleMenu_CB( Fl_Widget*, void* )
   UpdateViewer();
 }
 
-void lungLobesMenu_CB( Fl_Widget*, void* ) {
+
+void regionGrowingMenu_CB( Fl_Widget*, void* ) 
+{
+  paintBrushAndEraserInput->paintBrushAndEraserWindow->hide();
+  regionGrowingInput->regionGrowingWindow->show();
+}
+
+
+void lungLobesMenu_CB( Fl_Widget*, void* ) 
+{
   if ( !grayscaleImageRead )
-{
-  std::cout << "Must first read a grayscale image!" << std::endl;
+    {
+      std::cout << "Must first read a grayscale image!" << std::endl;
   
-  return;
-}
+      return;
+    }
 
-if ( !labelMapImageRead )
-{
-  std::cout << "Must first read a label map image!" << std::endl;
+  if ( !labelMapImageRead )
+    {
+      std::cout << "Must first read a label map image!" << std::endl;
+      
+      return;
+    }
+
+  std::cout << "Segmenting lung lobes..." << std::endl;
+  if ( !assistantInstance->SegmentLungLobes() )
+    {
+      std::cout << "Fissures have not been properly identified." << std::endl;
   
-  return;
-}
+      return;
+    }
 
-std::cout << "Segmenting lung lobes..." << std::endl;
-if ( !assistantInstance->SegmentLungLobes() )
-{
-  std::cout << "Fissures have not been properly identified." << std::endl;
-  
-  return;
-}
+  std::cout << "DONE." << std::endl;
 
-std::cout << "DONE." << std::endl;
-
-UpdateViewer();
+  UpdateViewer();
 }
 
 void Quit_CB( Fl_Widget*, void* ) {
   exit(0);
 }
 
-void clickSelect_CB( float x, float y, float z, float value ) {
-  if ( grayscaleImageRead )
-{ 
-   ACILAssistantBase::GrayscaleImageType::IndexType index;
+void clickSelect_CB( float x, float y, float z, float value ) 
+{
+  ACILAssistantBase::GrayscaleImageType::IndexType index;
 
   index[0] = static_cast< unsigned int >( x );
   index[1] = static_cast< unsigned int >( y );
   index[2] = static_cast< unsigned int >( z );
 
-  if ( paintBrushAndEraserInput->paintBrushAndEraserWindow->visible() )
-    {
-      unsigned int  radius           = paintBrushAndEraserInput->GetToolRadius();
-      unsigned char cipType          = paintBrushAndEraserInput->GetChestType(); 	
-      unsigned char cipRegion        = paintBrushAndEraserInput->GetChestRegion(); 	
-      short         lowerThreshold   = paintBrushAndEraserInput->GetToolLowerThreshold();
-      short         upperThreshold   = paintBrushAndEraserInput->GetToolUpperThreshold();
+  if ( grayscaleImageRead )
+    { 
+      if ( Fl::event_state(FL_SHIFT) )
+	{
+	  if ( regionGrowingInput->regionGrowingWindow->visible() )
+	    {
+	      short minThreshold = regionGrowingInput->GetMinThreshold();
+	      short maxThreshold = regionGrowingInput->GetMaxThreshold();
+	      unsigned int radius = regionGrowingInput->GetROIRadius();
+	      unsigned char cipRegion = regionGrowingInput->GetChestRegion();
+	      unsigned char cipType = regionGrowingInput->GetChestType();
 
-      unsigned int orientation = sliceViewer->orientation();
+	      std::cout << "Applying connected threshold segmentation over ROI..." << std::endl;
+	      assistantInstance->ConnectedThreshold( index, minThreshold, maxThreshold, radius, cipRegion, cipType );
+	    }
+	}
 
-      if ( paintBrushAndEraserInput->GetPaintBrushSelected() )
-        {  
-        assistantInstance->PaintLabelMapSlice( index, cipType, cipRegion, radius, lowerThreshold, upperThreshold, orientation ); 
-        }
-      else if ( paintBrushAndEraserInput->GetEraserSelected() )
-        {  
-        assistantInstance->EraseLabelMapSlice( index, cipRegion, cipType, radius, lowerThreshold, upperThreshold, 
-                                               paintBrushAndEraserInput->GetEraseSelectedSelected(), orientation );
-        }
-   
-      UpdateViewer();	
+      if ( paintBrushAndEraserInput->paintBrushAndEraserWindow->visible() )
+	{
+	  unsigned int  radius           = paintBrushAndEraserInput->GetToolRadius();
+	  unsigned char cipType          = paintBrushAndEraserInput->GetChestType(); 	
+	  unsigned char cipRegion        = paintBrushAndEraserInput->GetChestRegion(); 	
+	  short         lowerThreshold   = paintBrushAndEraserInput->GetToolLowerThreshold();
+	  short         upperThreshold   = paintBrushAndEraserInput->GetToolUpperThreshold();
+
+	  unsigned int orientation = sliceViewer->orientation();
+	  
+	  if ( paintBrushAndEraserInput->GetPaintBrushSelected() )
+	    {  
+	      assistantInstance->PaintLabelMapSlice( index, cipType, cipRegion, radius, lowerThreshold, upperThreshold, orientation ); 
+	    }
+	  else if ( paintBrushAndEraserInput->GetEraserSelected() )
+	    {  
+	      assistantInstance->EraseLabelMapSlice( index, cipRegion, cipType, radius, lowerThreshold, upperThreshold, 
+						     paintBrushAndEraserInput->GetEraseSelectedSelected(), orientation );
+	    }
+	}
+
+      UpdateViewer();
     }
-}
 }
 
 void SaveLabelMapImageMenu_CB( Fl_Widget*, void* ) {

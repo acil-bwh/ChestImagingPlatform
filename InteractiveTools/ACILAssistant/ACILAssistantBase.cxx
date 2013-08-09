@@ -24,6 +24,8 @@
 #include "vtkImageData.h"
 //#include "cipChestRegionChestTypeLocations.h"
 #include "cipChestRegionChestTypeLocationsIO.h"
+#include "itkConnectedThresholdImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
 
 
 ACILAssistantBase::ACILAssistantBase()
@@ -858,6 +860,123 @@ bool ACILAssistantBase::SegmentLungLobes()
 void ACILAssistantBase::Clear()
 {
   this->PaintedIndices.clear();
+}
+
+void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index, short minThreshold, short maxThreshold, 
+					    unsigned int roiRadius, unsigned char cipRegion, unsigned char cipType )
+{
+  cip::ChestConventions conventions;
+
+  unsigned short labelValue = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
+
+  typedef itk::ConnectedThresholdImageFilter< GrayscaleImageType, LabelMapType > ConnectedThresholdType;
+  typedef itk::RegionOfInterestImageFilter< GrayscaleImageType, GrayscaleImageType > RegionOfInterestType;
+
+  GrayscaleImageType::SizeType size = this->GrayscaleImage->GetBufferedRegion().GetSize();
+
+  double tmpStart[3];
+    tmpStart[0] = double(index[0]) - double(roiRadius);
+    tmpStart[1] = double(index[1]) - double(roiRadius);
+    tmpStart[2] = double(index[2]) - double(roiRadius);
+
+  double tmpEnd[3];
+    tmpEnd[0] = double(index[0]) + double(roiRadius);  
+    tmpEnd[1] = double(index[1]) + double(roiRadius);  
+    tmpEnd[2] = double(index[2]) + double(roiRadius);  
+
+  GrayscaleImageType::IndexType roiStart;
+  if ( tmpStart[0] >= 0.0 )
+    {
+      roiStart[0] = (unsigned int)tmpStart[0];
+    }
+  else
+    {
+      roiStart[0] = 0;
+    }
+  if ( tmpStart[1] >= 0.0 )
+    {
+      roiStart[1] = (unsigned int)tmpStart[1];
+    }
+  else
+    {
+      roiStart[1] = 0;
+    }
+  if ( tmpStart[2] >= 0.0 )
+    {
+      roiStart[2] = (unsigned int)tmpStart[2];
+    }
+  else
+    {
+      roiStart[2] = 0;
+    }
+
+  GrayscaleImageType::IndexType roiEnd;
+  if ( tmpEnd[0] < size[0] )
+    {
+      roiEnd[0] = (unsigned int)tmpEnd[0];
+    }
+  else
+    {
+      roiEnd[0] = size[0];
+    }
+  if ( tmpEnd[1] < size[1] )
+    {
+      roiEnd[1] = (unsigned int)tmpEnd[1];
+    }
+  else
+    {
+      roiEnd[1] = size[1];
+    }
+  if ( tmpEnd[2] < size[2] )
+    {
+      roiEnd[2] = (unsigned int)tmpEnd[2];
+    }
+  else
+    {
+      roiEnd[2] = size[2];
+    }
+
+  GrayscaleImageType::SizeType roiSize;
+    roiSize[0] = roiEnd[0] - roiStart[0] + 1;
+    roiSize[1] = roiEnd[1] - roiStart[1] + 1;
+    roiSize[2] = roiEnd[2] - roiStart[2] + 1;
+
+  GrayscaleImageType::IndexType roiSeed;
+    roiSeed[0] = roiSize[0]/2;
+    roiSeed[1] = roiSize[1]/2;
+    roiSeed[2] = roiSize[2]/2;
+
+  GrayscaleImageType::RegionType roi;
+    roi.SetSize( roiSize );
+    roi.SetIndex( roiStart );
+
+  RegionOfInterestType::Pointer roiFilter = RegionOfInterestType::New();
+    roiFilter->SetInput( this->GrayscaleImage );
+    roiFilter->SetRegionOfInterest( roi );
+
+  ConnectedThresholdType::Pointer segmenter = ConnectedThresholdType::New();
+    segmenter->SetInput( roiFilter->GetOutput() );
+    segmenter->AddSeed( roiSeed );
+    segmenter->SetReplaceValue( labelValue );
+    segmenter->SetLower( minThreshold );
+    segmenter->SetUpper( maxThreshold );
+    segmenter->Update();
+
+  LabelMapIteratorType sIt( segmenter->GetOutput(), segmenter->GetOutput()->GetBufferedRegion() );
+  LabelMapIteratorType lIt( this->LabelMap, roi );
+
+  sIt.GoToBegin();
+  lIt.GoToBegin();
+  while ( !lIt.IsAtEnd() )
+    {
+      if ( lIt.Get() == 0 )
+	{
+	  lIt.Set( sIt.Get() );
+	}
+      
+      ++sIt;
+      ++lIt;
+    }
 }
 
 short ACILAssistantBase::GetGrayscaleImageIntensity( GrayscaleImageType::IndexType index )

@@ -48,6 +48,8 @@ public:
 
   double GetAirwayness( GrayscaleImageType::IndexType, double );
 
+  void ConnectedThreshold( GrayscaleImageType::IndexType, short, short, unsigned int, unsigned char, unsigned char );
+
   void Clear();
 
   std::vector< LabelMapType::IndexType >* GetPaintedIndices()
