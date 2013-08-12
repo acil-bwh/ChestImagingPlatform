@@ -829,6 +829,10 @@ void clickSelect_CB( float x, float y, float z, float value )
 
   if ( grayscaleImageRead )
     { 
+      if ( Fl::event_state(FL_META) && regionGrowingInput->regionGrowingWindow->visible() )
+	{
+	  assistantInstance->UndoSegmentation();
+	}
       if ( Fl::event_state(FL_SHIFT) )
 	{
 	  if ( regionGrowingInput->regionGrowingWindow->visible() )
@@ -839,7 +843,6 @@ void clickSelect_CB( float x, float y, float z, float value )
 	      unsigned char cipRegion = regionGrowingInput->GetChestRegion();
 	      unsigned char cipType = regionGrowingInput->GetChestType();
 
-	      std::cout << "Applying connected threshold segmentation over ROI..." << std::endl;
 	      assistantInstance->ConnectedThreshold( index, minThreshold, maxThreshold, radius, cipRegion, cipType );
 	    }
 	}

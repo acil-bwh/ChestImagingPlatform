@@ -865,6 +865,11 @@ void ACILAssistantBase::Clear()
 void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index, short minThreshold, short maxThreshold, 
 					    unsigned int roiRadius, unsigned char cipRegion, unsigned char cipType )
 {
+  // Before we begin, we must clear any previously stored segmentation indices
+  // in order to record the ones we're about to paint. This will be useful
+  // for undoing segmentations.
+  this->PreSegmentationIndices.clear();
+
   cip::ChestConventions conventions;
 
   unsigned short labelValue = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
@@ -971,6 +976,14 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
     {
       if ( lIt.Get() == 0 )
 	{
+	  // First record the index we are about to label in order
+	  // to undo the segmentation later if need be
+	  if ( sIt.Get() != 0 )
+	    {
+	      this->PreSegmentationIndices.push_back( lIt.GetIndex() );
+	    }
+
+	  // Now set the label
 	  lIt.Set( sIt.Get() );
 	}
       
@@ -978,6 +991,14 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
       ++lIt;
     }
 }
+
+void ACILAssistantBase::UndoSegmentation()
+{
+  for ( unsigned int i=0; i<this->PreSegmentationIndices.size(); i++ )
+    {
+      this->LabelMap->SetPixel( this->PreSegmentationIndices[i], 0 );
+    }
+} 
 
 short ACILAssistantBase::GetGrayscaleImageIntensity( GrayscaleImageType::IndexType index )
 {
