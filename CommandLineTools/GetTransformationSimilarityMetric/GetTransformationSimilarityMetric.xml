@@ -9,6 +9,17 @@
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
   <acknowledgements>This work was partially funded ...</acknowledgements>
   <parameters>
+
+    <string>
+      <name>similarityMetric</name>
+      <label>Similarity Metric</label>
+      <channel>input</channel>
+      <flag>v</flag>
+      <longflag>--SimilarityMetric</longflag>
+      <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual information), NMI (for normalized mutual information), and mean squares (msqr), NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
+      <default>MI</default>
+    </string>
+
     <string>
       <name>fixedLabelmapFileName</name>
       <label>fixed LabelMap FileName</label>
@@ -17,8 +28,9 @@
       <longflag>--fixedLabelMapFileName</longflag>
       <description><![CDATA[fixed Image File Name]]></description>
       <default>q</default>
-    </string>   
-    <string>
+    </string> 
+
+   <string>
       <name>movingLabelmapFileName</name>
       <label>moving LabelMap FileName</label>
       <channel>input</channel>
@@ -27,20 +39,21 @@
       <description><![CDATA[moving LabelMap FileName]]></description>
       <default>q</default>
     </string>
-    <string>
+
+   <string>
       <name>fixedCTFileName</name>
       <label>fixed CT FileName</label>
       <channel>input</channel>
       <flag>g</flag>
       <longflag>--fixedCTFileName</longflag>
       <description><![CDATA[fixed CT File Name]]></description>
-      <default>d</default>
+      <default>e</default>
     </string>   
     <string>
       <name>movingCTFileName</name>
       <label>moving CT FileName</label>
       <channel>input</channel>
-      <flag>d</flag>
+      <flag>a</flag>
       <longflag>--movingCTFileName</longflag>
       <description><![CDATA[moving CT FileName]]></description>
       <default>e</default>
@@ -71,26 +84,10 @@
       <longflag>--degrees</longflag>
       <description><![CDATA[downsampleFactor]]></description>
       <default>1.0</default>
-    </float>    
-    <string>
-      <name>inputTransformFileName</name>
-      <label>input Transform FileName</label>
-      <channel>input</channel>
-      <flag>q</flag>
-      <longflag>--inputTransform</longflag>
-      <description><![CDATA[Input transform file name]]></description>
-      <default>q</default>
-    </string>   
-<integer-vector>
-      <name>regionVecArg</name>
-      <longflag>regionVec</longflag>
-      <flag>r</flag>
-      <label>regionVec</label>
-      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
+    </float>  
 <integer-vector>
       <name>typeVecArg</name>
-      <longflag>typeVec</longflag>
+      <longflag>--typeVec</longflag>
       <flag>c</flag>
       <label>typeVec</label>
       <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
@@ -98,8 +95,8 @@
 
 <integer-vector>
       <name>typePairVecArg</name>
-      <longflag>typePairVec</longflag>
-      <flag>a</flag>
+      <longflag>--typePairVec</longflag>
+      <flag>w</flag>
       <label>typePairVec</label>
       <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag]]></description>
 </integer-vector>
@@ -111,6 +108,27 @@
       <label>regionPairVec</label>
       <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
 </integer-vector>
+
+
+    <string>
+      <name>inputTransformFileName</name>
+      <label>input Transform FileName</label>
+      <channel>input</channel>
+      <flag>q</flag>
+      <longflag>--inputTransform</longflag>
+      <description><![CDATA[Input transform file name]]></description>
+      <default>q</default>
+    </string>   
+<integer-vector>
+      <name>regionVecArg</name>
+      <longflag>--regionVec</longflag>
+      <flag>r</flag>
+      <label>regionVec</label>
+      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
+</integer-vector>
+
+ 
+
 
   </parameters>
 </executable>
