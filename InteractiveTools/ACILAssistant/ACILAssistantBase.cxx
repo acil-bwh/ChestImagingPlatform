@@ -865,11 +865,6 @@ void ACILAssistantBase::Clear()
 void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index, short minThreshold, short maxThreshold, 
 					    unsigned int roiRadius, unsigned char cipRegion, unsigned char cipType )
 {
-  // Before we begin, we must clear any previously stored segmentation indices
-  // in order to record the ones we're about to paint. This will be useful
-  // for undoing segmentations.
-  this->PreSegmentationIndices.clear();
-
   cip::ChestConventions conventions;
 
   unsigned short labelValue = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
@@ -922,7 +917,7 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
     }
   else
     {
-      roiEnd[0] = size[0];
+      roiEnd[0] = size[0] - 1;
     }
   if ( tmpEnd[1] < size[1] )
     {
@@ -930,7 +925,7 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
     }
   else
     {
-      roiEnd[1] = size[1];
+      roiEnd[1] = size[1] - 1;
     }
   if ( tmpEnd[2] < size[2] )
     {
@@ -938,7 +933,7 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
     }
   else
     {
-      roiEnd[2] = size[2];
+      roiEnd[2] = size[2] - 1;
     }
 
   GrayscaleImageType::SizeType roiSize;
@@ -947,9 +942,9 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
     roiSize[2] = roiEnd[2] - roiStart[2] + 1;
 
   GrayscaleImageType::IndexType roiSeed;
-    roiSeed[0] = roiSize[0]/2;
-    roiSeed[1] = roiSize[1]/2;
-    roiSeed[2] = roiSize[2]/2;
+    roiSeed[0] = roiRadius - roiStart[0] + (unsigned int)tmpStart[0];
+    roiSeed[1] = roiRadius - roiStart[1] + (unsigned int)tmpStart[1];
+    roiSeed[2] = roiRadius - roiStart[2] + (unsigned int)tmpStart[2];
 
   GrayscaleImageType::RegionType roi;
     roi.SetSize( roiSize );
@@ -967,6 +962,8 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
     segmenter->SetUpper( maxThreshold );
     segmenter->Update();
 
+  std::vector< LabelMapType::IndexType > tmpIndices;
+
   LabelMapIteratorType sIt( segmenter->GetOutput(), segmenter->GetOutput()->GetBufferedRegion() );
   LabelMapIteratorType lIt( this->LabelMap, roi );
 
@@ -980,7 +977,7 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
 	  // to undo the segmentation later if need be
 	  if ( sIt.Get() != 0 )
 	    {
-	      this->PreSegmentationIndices.push_back( lIt.GetIndex() );
+	      tmpIndices.push_back( lIt.GetIndex() );
 	    }
 
 	  // Now set the label
@@ -990,14 +987,20 @@ void ACILAssistantBase::ConnectedThreshold( GrayscaleImageType::IndexType index,
       ++sIt;
       ++lIt;
     }
+
+  this->PreSegmentationIndices.push_back( tmpIndices );
 }
 
 void ACILAssistantBase::UndoSegmentation()
 {
-  for ( unsigned int i=0; i<this->PreSegmentationIndices.size(); i++ )
+  unsigned int lastIndex = this->PreSegmentationIndices.size() - 1;
+
+  for ( unsigned int i=0; i<this->PreSegmentationIndices[lastIndex].size(); i++ )
     {
-      this->LabelMap->SetPixel( this->PreSegmentationIndices[i], 0 );
+      this->LabelMap->SetPixel( this->PreSegmentationIndices[lastIndex][i], 0 );
     }
+  this->PreSegmentationIndices[lastIndex].clear();
+  this->PreSegmentationIndices.erase( this->PreSegmentationIndices.end() );
 } 
 
 short ACILAssistantBase::GetGrayscaleImageIntensity( GrayscaleImageType::IndexType index )

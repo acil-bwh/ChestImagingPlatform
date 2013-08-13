@@ -105,7 +105,7 @@ private:
 
   // The following will be used to record the set of label map indices that were 
   // unlabeled prior to segmentation. This is useful for undoing botched segmentations
-  std::vector< LabelMapType::IndexType > PreSegmentationIndices;
+  std::vector< std::vector< LabelMapType::IndexType > > PreSegmentationIndices;
 
   void ConnectPipelines( ExportType::Pointer, vtkImageImport* );
 };
