@@ -146,7 +146,6 @@ int main( int argc, char *argv[] )
   //
   if (isInvertTransformation == true)
     {
-      std::cout<<"inverting transform"<<std::endl;
        transform->GetInverse( transform );
     }
   
