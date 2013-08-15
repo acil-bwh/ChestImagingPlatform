@@ -89,7 +89,6 @@ int main( int argc, char *argv[] )
 
 	PARSE_ARGS;
   
-  
   //
   // Read the destination image information for spacing, origin, and
   // size information (neede for the resampling process).
@@ -143,6 +142,14 @@ int main( int argc, char *argv[] )
   TransformType::Pointer transform = GetTransformFromFile( transformFileName );
 
   //
+  // Invert the transformation if specified by command like argument
+  //
+  if (isInvertTransformation == true)
+    {
+       transform->GetInverse( transform );
+    }
+  
+  //
   // Resample the label map
   //
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
@@ -189,5 +196,5 @@ int main( int argc, char *argv[] )
 
   std::cout << "DONE." << std::endl;
 
-  return EXITSUCCESS;
+  return cip::EXITSUCCESS;
 }
