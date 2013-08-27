@@ -82,59 +82,59 @@ class AirwayParticles(ChestParticles):
         self.build_params()
         print "Starting pass 1\n"
         self.execute_pass(out_particles % 1)
-        ##print "Finished pass 1\n"
+        print "Finished pass 1\n"
 
-        ###Pass 2
-        ###Init params
-        ##self._init_mode = "Particles"
-        ##self._in_particles_file_name = out_particles % 1
-        ##self._use_mask = 0
+        # Pass 2
+        # Init params
+        self._init_mode = "Particles"
+        self._in_particles_file_name = out_particles % 1
+        self._use_mask = 0
 
-        ###Energy
-        ##self._inter_particle_energy_type = "add"
-        ##self._alpha = 0
-        ##self._beta = 0.5
-        ##self._irad = 1.15
-        ##self._srad = 4
-        ##self._use_strength = True
+        # Energy
+        self._inter_particle_energy_type = "add"
+        self._alpha = 0
+        self._beta = 0.5
+        self._irad = 1.15
+        self._srad = 4
+        self._use_strength = True
 
-        ##self._iterations = 20
+        self._iterations = 20
 
-        ###Build parameters and run
-        ##self.reset_params()
-        ##self.build_params()
-        ##print "starting pass 2\n"
-        ##self.execute_pass(out_particles % 2)
-        ##print "finished pass 2\n"
+        # Build parameters and run
+        self.reset_params()
+        self.build_params()
+        print "starting pass 2\n"
+        self.execute_pass(out_particles % 2)
+        print "finished pass 2\n"
 
-        ###Pass 3
-        ##self._init_mode = "Particles"
-        ##self._in_particles_file_name = out_particles % 2
-        ##self._use_mask = 0
+        # Pass 3
+        self._init_mode = "Particles"
+        self._in_particles_file_name = out_particles % 2
+        self._use_mask = 0
 
-        ###Energy
-        ##self._inter_particle_energy_type = "add"
-        ##self._alpha = 0.5
-        ##self._beta = 0.5
-        ##self._gamma = 0.000002
-        ##self._irad = 1.15
-        ##self._srad = 4
-        ##self._use_strength = True
+        # Energy
+        self._inter_particle_energy_type = "add"
+        self._alpha = 0.5
+        self._beta = 0.5
+        self._gamma = 0.000002
+        self._irad = 1.15
+        self._srad = 4
+        self._use_strength = True
 
-        ##self._iterations = 50
+        self._iterations = 50
 
-        ###Build parameters and run
-        ##self.reset_params()
-        ##self.build_params()
-        ##print "starting pass 3\n"
-        ##self.execute_pass(out_particles % 3)
-        ##print "finished pass 3\n"
+        # Build parameters and run
+        self.reset_params()
+        self.build_params()
+        print "starting pass 3\n"
+        self.execute_pass(out_particles % 3)
+        print "finished pass 3\n"
 
-        ###Probe quantities and save to VTK
-        ##print "about to probe\n"
-        ##self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
-        ##print "finished probing\n"
-        ##print "about to save to vtk\n"
-        ##self.save_vtk(out_particles % 3)
-        ##print "finished saving\#####n"
+        # Probe quantities and save to VTK
+        print "about to probe\n"
+        self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
+        print "finished probing\n"
+        print "about to save to vtk\n"
+        self.save_vtk(out_particles % 3)
+        print "finished saving\#####n"
 

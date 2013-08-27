@@ -291,7 +291,7 @@ class ChestParticles:
                 " -s x1 x1 x1 -k dgauss:" + str(self._max_scale) + \
                 ",3 -t float -o " + self._tmp_in_file_name
 
-            subprocess( tmp_command, shell=True)
+            subprocess.call( tmp_command, shell=True)
 
         tmp_command = "puller -sscp " + self._tmp_dir + \
             " -cbst true " + self._volParams + " " + self._miscParams + " " + \
@@ -308,7 +308,7 @@ class ChestParticles:
             tmp_command = "unu head " + output + \
                 " | grep size | awk '{split($0,a,\" \"); print a[3]}'"
 
-            tmpNP = subprocess.Popen(tmp_command, shell=True, stdout=PIPE,
+            tmpNP = subprocess.call(tmp_command, shell=True, stdout=PIPE,
                                       stderr=PIPE)
             NP = tmpNP.communicate()[0].rstrip('\n')
             tmp_command = "echo \"0 0 0 " + str(self._max_scale) + \
