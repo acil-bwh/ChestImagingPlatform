@@ -680,180 +680,176 @@ void ACILAssistantBase::CloseLabelMap( LabelMapType::Pointer labelMap, unsigned 
 
 bool ACILAssistantBase::SegmentLungLobes()
 {
-  return false;
+  cip::ChestConventions conventions;
 
-//   ChestConventions conventions;
+  // First we'll populate the fissure index vecs. We'll also
+  // perform a check to see if there are multiple range values (z
+  // indices) mapped to the same domain values (x and y indices). This
+  // would violate the function assumption and muck up the TPS
+  // computations. If we find that there are multiple range values,
+  // we simply won't include any beyond the first (we'll arbitrarily
+  // keep the first range value for a given location in the domain).
+  std::vector< LabelMapType::IndexType > leftObliqueIndicesVec;
+  std::vector< LabelMapType::IndexType > rightObliqueIndicesVec;
+  std::vector< LabelMapType::IndexType > rightHorizontalIndicesVec;
 
-//   //
-//   // First we'll populate the fissure index vecs. We'll also
-//   // perform a check to see if there are multiple range values (z
-//   // indices) mapped to the same domain values (x and y indices). This
-//   // would violate the function assumption and muck up the TPS
-//   // computations. If we find that there are multiple range values,
-//   // we simply won't include any beyond the first (we'll arbitrarily
-//   // keep the first range value for a given location in the domain).
-//   //
-//   std::vector< LabelMapType::IndexType > leftObliqueIndicesVec;
-//   std::vector< LabelMapType::IndexType > rightObliqueIndicesVec;
-//   std::vector< LabelMapType::IndexType > rightHorizontalIndicesVec;
+  LabelMapType::IndexType index;
 
-//   LabelMapType::IndexType index;
+  for ( unsigned int i=0; i<this->PaintedIndices.size(); i++ )
+    {
+    index = this->PaintedIndices[i];
 
-//   for ( unsigned int i=0; i<(this->PaintedTypeIndices[OBLIQUEFISSURE]).size(); i++ )
-//     {
-//     index = (this->PaintedTypeIndices[OBLIQUEFISSURE])[i];
+    unsigned short labelValue = this->LabelMap->GetPixel( index );
+    unsigned char cipType = conventions.GetChestTypeFromValue( labelValue );
 
-//     unsigned short labelValue = this->LabelMap->GetPixel( index );
+    if ( cipType == (unsigned char)(cip::OBLIQUEFISSURE) || cipType == (unsigned char)(cip::HORIZONTALFISSURE) )
+      {
+      unsigned char cipRegion = conventions.GetChestRegionFromValue( labelValue );
+      
+      // We are dealing with a fissure. Now check to see whether it's a left oblique fissure
+      if ( (cipRegion == (unsigned char)( cip::LEFTLUNG ) || cipRegion == (unsigned char)( cip::LEFTSUPERIORLOBE ) || 
+	    cipRegion == (unsigned char)( cip::LEFTINFERIORLOBE ) || cipRegion == (unsigned char)( cip::LEFTUPPERTHIRD ) ||
+	    cipRegion == (unsigned char)( cip::LEFTMIDDLETHIRD ) || cipRegion == (unsigned char)( cip::LEFTLOWERTHIRD )) &&
+	   cipType == (unsigned char)(cip::OBLIQUEFISSURE) )
+	{
+	bool domainLocationAlreadyExists = false;
 
-//     unsigned char currentRegion = conventions.GetChestRegionFromValue( labelValue );
+	for ( unsigned int i=0; i<leftObliqueIndicesVec.size(); i++ )
+	  {
+	    if ( index[0] == (leftObliqueIndicesVec[i])[0] && index[1] == (leftObliqueIndicesVec[i])[1] )
+	      {
+	      domainLocationAlreadyExists = true;
 
-//     if ( currentRegion == static_cast< unsigned char >( LEFTLUNG ) || currentRegion == static_cast< unsigned char >( LEFTSUPERIORLOBE ) || 
-//          currentRegion == static_cast< unsigned char >( LEFTINFERIORLOBE ) || currentRegion == static_cast< unsigned char >( LEFTUPPERTHIRD ) ||
-//          currentRegion == static_cast< unsigned char >( LEFTMIDDLETHIRD ) || currentRegion == static_cast< unsigned char >( LEFTLOWERTHIRD ) )
-//       {
-//       bool domainLocationAlreadyExists = false;
+	      break;
+	      }
+	  }
 
-//       for ( unsigned int i=0; i<leftObliqueIndicesVec.size(); i++ )
-//         {
-//         if ( index[0] == (leftObliqueIndicesVec[i])[0] && index[1] == (leftObliqueIndicesVec[i])[1] )
-//           {
-//           domainLocationAlreadyExists = true;
+	if ( !domainLocationAlreadyExists )
+	  {
+	  leftObliqueIndicesVec.push_back( index );
+	  }
+	}
 
-//           break;
-//           }
-//         }
+      // Now see if it's a right oblique fissure
+      if ( (cipRegion == (unsigned char)( cip::RIGHTLUNG ) || cipRegion == (unsigned char)( cip::RIGHTSUPERIORLOBE ) ||
+	    cipRegion == (unsigned char)( cip::RIGHTMIDDLELOBE ) || cipRegion == (unsigned char)( cip::RIGHTINFERIORLOBE ) ||
+	    cipRegion == (unsigned char)( cip::RIGHTUPPERTHIRD ) || cipRegion == (unsigned char)( cip::RIGHTMIDDLETHIRD ) ||
+	    cipRegion == (unsigned char)( cip::RIGHTLOWERTHIRD )) &&
+	   cipType == (unsigned char)(cip::OBLIQUEFISSURE))
+	{
+	bool domainLocationAlreadyExists = false;
 
-//       if ( !domainLocationAlreadyExists )
-//         {
-//         leftObliqueIndicesVec.push_back( index );
-//         }
-//       }
-//     if ( currentRegion == static_cast< unsigned char >( RIGHTLUNG ) || currentRegion == static_cast< unsigned char >( RIGHTSUPERIORLOBE ) ||
-//          currentRegion == static_cast< unsigned char >( RIGHTMIDDLELOBE ) || currentRegion == static_cast< unsigned char >( RIGHTINFERIORLOBE ) ||
-//          currentRegion == static_cast< unsigned char >( RIGHTUPPERTHIRD ) || currentRegion == static_cast< unsigned char >( RIGHTMIDDLETHIRD ) ||
-//          currentRegion == static_cast< unsigned char >( RIGHTLOWERTHIRD ) )
-//       {
-//       bool domainLocationAlreadyExists = false;
+	for ( unsigned int i=0; i<rightObliqueIndicesVec.size(); i++ )
+	  {
+	    if ( index[0] == (rightObliqueIndicesVec[i])[0] && index[1] == (rightObliqueIndicesVec[i])[1] )
+	      {
+	      domainLocationAlreadyExists = true;
 
-//       for ( unsigned int i=0; i<rightObliqueIndicesVec.size(); i++ )
-//         {
-//         if ( index[0] == (rightObliqueIndicesVec[i])[0] && index[1] == (rightObliqueIndicesVec[i])[1] )
-//           {
-//           domainLocationAlreadyExists = true;
+	      break;
+	      }
+	  }
 
-//           break;
-//           }
-//         }
+	if ( !domainLocationAlreadyExists )
+	  {
+	  rightObliqueIndicesVec.push_back( index );
+	  }
+	}
+      
+      // Finally, see if it's a right horizontal fissure
+      if ( (cipRegion == (unsigned char)( cip::RIGHTLUNG ) || cipRegion == (unsigned char)( cip::RIGHTSUPERIORLOBE ) ||
+	   cipRegion == (unsigned char)( cip::RIGHTMIDDLELOBE ) || cipRegion == (unsigned char)( cip::RIGHTINFERIORLOBE ) ||
+	   cipRegion == (unsigned char)( cip::RIGHTUPPERTHIRD ) || cipRegion == (unsigned char)( cip::RIGHTMIDDLETHIRD ) ||
+	   cipRegion == (unsigned char)( cip::RIGHTLOWERTHIRD )) &&
+	   cipType == (unsigned char)(cip::HORIZONTALFISSURE))
+	{
+	bool domainLocationAlreadyExists = false;
 
-//       if ( !domainLocationAlreadyExists )
-//         {
-//         rightObliqueIndicesVec.push_back( index );
-//         }
-//       }
-//     }
+	for ( unsigned int i=0; i<rightHorizontalIndicesVec.size(); i++ )
+	  {
+	    if ( index[0] == (rightHorizontalIndicesVec[i])[0] && index[1] == (rightHorizontalIndicesVec[i])[1] )
+	      {
+	      domainLocationAlreadyExists = true;
 
-//   for ( unsigned int i=0; i<(this->PaintedTypeIndices[HORIZONTALFISSURE]).size(); i++ )
-//     {
-//     index = (this->PaintedTypeIndices[HORIZONTALFISSURE])[i];
+	      break;
+	      }
+	  }
 
-//     unsigned short labelValue = this->LabelMap->GetPixel( index );
+	if ( !domainLocationAlreadyExists )
+	  {
+	  rightHorizontalIndicesVec.push_back( index );
+	  }
+	}
+      }
+    }
 
-//     unsigned char currentRegion = conventions.GetChestRegionFromValue( labelValue );
+  if ( rightHorizontalIndicesVec.size() == 0 && rightObliqueIndicesVec.size() == 0 && leftObliqueIndicesVec.size() == 0 )
+    {
+    return false;
+    }
+  if ( (rightHorizontalIndicesVec.size() == 0 && rightObliqueIndicesVec.size() != 0) ||
+       (rightHorizontalIndicesVec.size() != 0 && rightObliqueIndicesVec.size() == 0) )
+    {
+    return false;
+    }
 
-//     if ( currentRegion == static_cast< unsigned char >( RIGHTLUNG ) || currentRegion == static_cast< unsigned char >( RIGHTSUPERIORLOBE ) ||
-//          currentRegion == static_cast< unsigned char >( RIGHTMIDDLELOBE ) || currentRegion == static_cast< unsigned char >( RIGHTINFERIORLOBE ) ||
-//          currentRegion == static_cast< unsigned char >( RIGHTUPPERTHIRD ) || currentRegion == static_cast< unsigned char >( RIGHTMIDDLETHIRD ) ||
-//          currentRegion == static_cast< unsigned char >( RIGHTLOWERTHIRD ) )
-//       {
-//       bool domainLocationAlreadyExists = false;
+  // // Perform a test to see if the current label map is
+  // // "leftLungRightLung" or not
+  // bool leftLungRightLung = true;
 
-//       for ( unsigned int i=0; i<rightHorizontalIndicesVec.size(); i++ )
-//         {
-//         if ( index[0] == (rightHorizontalIndicesVec[i])[0] && index[1] == (rightHorizontalIndicesVec[i])[1] )
-//           {
-//           domainLocationAlreadyExists = true;
+  // unsigned short leftLungLabel  = conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::LEFTLUNG), (unsigned char)(cip::UNDEFINEDTYPE) );
+  // unsigned short rightLungLabel = conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::RIGHTLUNG), (unsigned char)(cip::UNDEFINEDTYPE) );
 
-//           break;
-//           }
-//         }
+  LabelMapIteratorType lIt( this->LabelMap, this->LabelMap->GetBufferedRegion() );
 
-//       if ( !domainLocationAlreadyExists )
-//         {
-//         rightHorizontalIndicesVec.push_back( index );
-//         }
-//       }
-//     }
+  // lIt.GoToBegin();
+  // while ( !lIt.IsAtEnd() )
+  //   {
+  //   if ( lIt.Get() > 0 )
+  //     {
+  //     if ( lIt.Get() != leftLungLabel || lIt.Get() != rightLungLabel )
+  //       {
+  //       unsigned char cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
 
-//   if ( rightHorizontalIndicesVec.size() == 0 && rightObliqueIndicesVec.size() == 0 && leftObliqueIndicesVec.size() == 0 )
-//     {
-//     return false;
-//     }
-//   if ( (rightHorizontalIndicesVec.size() == 0 && rightObliqueIndicesVec.size() != 0) ||
-//        (rightHorizontalIndicesVec.size() != 0 && rightObliqueIndicesVec.size() == 0) )
-//     {
-//     return false;
-//     }
+  //       if ( cipRegion != (unsigned char)( cip::LEFTLUNG ) && cipRegion != (unsigned char)( cip::RIGHTLUNG ) )
+  //         {
+  //         leftLungRightLung = false;
 
-//   //
-//   // Perform a test to see if the current label map is
-//   // "leftLungRightLung" or not
-//   //
-//   bool leftLungRightLung = true;
+  //         break;
+  //         }
+  //       }
+  //     }
 
-//   unsigned short leftLungLabel  = conventions.GetValueFromChestRegionAndType( LEFTLUNG, UNDEFINEDTYPE );
-//   unsigned short rightLungLabel = conventions.GetValueFromChestRegionAndType( RIGHTLUNG, UNDEFINEDTYPE );
+  //   ++lIt;
+  //   }
 
-//   LabelMapIteratorType lIt( this->LabelMap, this->LabelMap->GetBufferedRegion() );
+  typedef cipLabelMapToLungLobeLabelMapImageFilter LobeSegmentationType;
 
-//   lIt.GoToBegin();
-//   while ( !lIt.IsAtEnd() )
-//     {
-//     if ( lIt.Get() > 0 )
-//       {
-//       if ( lIt.Get() != leftLungLabel || lIt.Get() != rightLungLabel )
-//         {
-//         unsigned char currentRegion = conventions.GetChestRegionFromValue( lIt.Get() );
+  LobeSegmentationType::Pointer lobeSegmenter = LobeSegmentationType::New();
+    lobeSegmenter->SetInput( this->LabelMap );
+  if ( rightHorizontalIndicesVec.size() > 0 && rightObliqueIndicesVec.size() > 0 )
+    {
+    lobeSegmenter->SetRightHorizontalFissureIndices( rightHorizontalIndicesVec );
+    lobeSegmenter->SetRightObliqueFissureIndices( rightObliqueIndicesVec );
+    }
+  if ( leftObliqueIndicesVec.size() > 0 )
+    {
+    lobeSegmenter->SetLeftObliqueFissureIndices( leftObliqueIndicesVec );
+    }
+    lobeSegmenter->Update();
 
-//         if ( currentRegion != static_cast< unsigned char >( LEFTLUNG ) && currentRegion != static_cast< unsigned char >( RIGHTLUNG ) )
-//           {
-//           leftLungRightLung = false;
+  LabelMapIteratorType sIt( lobeSegmenter->GetOutput(), lobeSegmenter->GetOutput()->GetBufferedRegion() );
 
-//           break;
-//           }
-//         }
-//       }
+  lIt.GoToBegin();
+  sIt.GoToBegin();
+  while ( !lIt.IsAtEnd() )
+    {
+    lIt.Set( sIt.Get() );
 
-//     ++lIt;
-//     }
+    ++lIt;
+    ++sIt;
+    }
 
-//   typedef cipLabelMapToLungLobeLabelMapImageFilter LobeSegmentationType;
-
-//   LobeSegmentationType::Pointer lobeSegmenter = LobeSegmentationType::New();
-//     lobeSegmenter->SetInput( this->LabelMap );
-//   if ( rightHorizontalIndicesVec.size() > 0 && rightObliqueIndicesVec.size() > 0 )
-//     {
-//     lobeSegmenter->SetRightHorizontalFissureIndices( rightHorizontalIndicesVec );
-//     lobeSegmenter->SetRightObliqueFissureIndices( rightObliqueIndicesVec );
-//     }
-//   if ( leftObliqueIndicesVec.size() > 0 )
-//     {
-//     lobeSegmenter->SetLeftObliqueFissureIndices( leftObliqueIndicesVec );
-//     }
-//     lobeSegmenter->Update();
-
-//   LabelMapIteratorType sIt( lobeSegmenter->GetOutput(), lobeSegmenter->GetOutput()->GetBufferedRegion() );
-
-//   lIt.GoToBegin();
-//   sIt.GoToBegin();
-//   while ( !lIt.IsAtEnd() )
-//     {
-//     lIt.Set( sIt.Get() );
-
-//     ++lIt;
-//     ++sIt;
-//     }
-
-//   return true;
+  return true;
 }
 
 

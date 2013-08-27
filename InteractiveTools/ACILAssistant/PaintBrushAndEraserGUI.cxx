@@ -62,8 +62,8 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
     { Fl_Choice* o = chestRegionChoice = new Fl_Choice(103, 177, 269, 28, "Chest Region");
       o->down_box(FL_BORDER_BOX);
       //o->add("Undefined Region", 0, (Fl_Callback*)undefinedRegionMenuItem_CB, (void*)(this));
-      //o->add("Left Lung", 0, (Fl_Callback*)leftLungMenuItem_CB, (void*)(this));
-      //o->add("Right Lung", 0, (Fl_Callback*)rightLungMenuItem_CB, (void*)(this));
+      o->add("Left Lung", 0, (Fl_Callback*)leftLungMenuItem_CB, (void*)(this));
+      o->add("Right Lung", 0, (Fl_Callback*)rightLungMenuItem_CB, (void*)(this));
       o->add("Right Upper Lobe", 0, (Fl_Callback*)rightUpperLobeMenuItem_CB, (void*)(this));
       //o->add("Right Middle Lobe", 0, (Fl_Callback*)rightMiddleLobeMenuItem_CB, (void*)(this));
       o->add("Right Lower Lobe", 0, (Fl_Callback*)rightLowerLobeMenuItem_CB, (void*)(this));
@@ -85,6 +85,8 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Pec Major", 0, (Fl_Callback*)pectoralisMajorMenuItem_CB, (void*)(this));
       o->add("Subcutaneous Fat", 0, (Fl_Callback*)subcutaneousFatMenuItem_CB, (void*)(this));
       o->add("Visceral Fat", 0, (Fl_Callback*)visceralFatMenuItem_CB, (void*)(this));
+      o->add("Oblique Fissure", 0, (Fl_Callback*)obliqueFissureMenuItem_CB, (void*)(this));
+      o->add("Horizontal Fissure", 0, (Fl_Callback*)horizontalFissureMenuItem_CB, (void*)(this));
       //o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
       //o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
       //o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
@@ -445,6 +447,20 @@ void PaintBrushAndEraserGUI::visceralFatMenuItem_CB( Fl_Widget* o, void* v ) {
 }
 void PaintBrushAndEraserGUI::visceralFatMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::VISCERALFAT );
+}
+
+void PaintBrushAndEraserGUI::obliqueFissureMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->obliqueFissureMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::obliqueFissureMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
+}
+
+void PaintBrushAndEraserGUI::horizontalFissureMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->horizontalFissureMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::horizontalFissureMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::HORIZONTALFISSURE );
 }
 
 void PaintBrushAndEraserGUI::anteriorScaleneMenuItem_CB( Fl_Widget* o, void* v ) {

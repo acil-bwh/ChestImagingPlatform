@@ -127,6 +127,12 @@ private:
   static void visceralFatMenuItem_CB( Fl_Widget* o, void* v );
   void visceralFatMenuItem_CB_i();
 
+  static void obliqueFissureMenuItem_CB( Fl_Widget* o, void* v );
+  void obliqueFissureMenuItem_CB_i();
+
+  static void horizontalFissureMenuItem_CB( Fl_Widget* o, void* v );
+  void horizontalFissureMenuItem_CB_i();
+
   static void anteriorScaleneMenuItem_CB( Fl_Widget* o, void* v );
   void anteriorScaleneMenuItem_CB_i();
 
