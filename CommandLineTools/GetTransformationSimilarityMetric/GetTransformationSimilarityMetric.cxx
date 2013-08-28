@@ -268,7 +268,13 @@ int main( int argc, char *argv[] )
   
 
   //Read in moving image label map from file and subsample
+    typedef itk::ImageMaskSpatialObject< 3 >   MaskType;
+  MaskType::Pointer  spatialObjectMask = MaskType::New();
+
   cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
+  typedef itk::Image<unsigned short, 3> blahType;
+  blahType::Pointer blahImage = blahType::New();
+    spatialObjectMask->SetImage( blahImage );
   cip::LabelMapType::Pointer subSampledMovingImage = cip::LabelMapType::New();
   if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
@@ -385,8 +391,6 @@ int main( int argc, char *argv[] )
     }
 
   //Set mask  object
-    typedef itk::ImageMaskSpatialObject< 3 >   MaskType;
-  MaskType::Pointer  spatialObjectMask = MaskType::New();
 
 
 
@@ -414,7 +418,7 @@ int main( int argc, char *argv[] )
 
       }
   
-  //  spatialObjectMask->SetImage( const_cast <UnsignedShortImageType, 3> * (movingLabelMap));
+    spatialObjectMask->SetImage(  movingLabelMap);
  // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
   //Read in the transform file
   TransformType::Pointer transform = TransformType::New();
