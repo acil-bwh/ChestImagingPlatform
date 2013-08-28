@@ -11,318 +11,365 @@ import pdb
 import subprocess
 import os
 from subprocess import PIPE
-from cip_python.ReadNRRDsWriteVTK import ReadNRRDsWriteVTK
+from cip_python.read_nrrds_write_vtk import ReadNRRDsWriteVTK
 
-class GenerateParticles:
+class ChestParticles:
     """Base class for airway, vessel, and fissure particles classes.
 
     Parameters
     ----------
     feature_type : string
-        Takes on one or four values: "RidgeLine" (for vessels), "ValleyLine"
-        (for airways), "RidgeSurface" (for fissure), "ValleySurface"
+        Takes on one or four values: "ridge_line" (for vessels), "valley_line"
+        (for airways), "ridge_surface" (for fissure), "valley_surface"
+
+    in_file_name : string
+        File name of input volume
+
+    out_particles_file_name : string
+        File name of the output particles
+
+    tmp_dir : string
+        Name of temporary directory in which to store intermediate files
+
+    mask_file_name : string (optional)
+        File name of mask within which to execute particles
     """
-    def __init__(self, feature_type):
-        assert feature_type == "RidgeLine" or feature_type == "ValleyLine" or \
-            feature_type == "RidgeSurface" or feature_type == "ValleySurface",
-        "Invalid feature type"
+    def __init__(self, feature_type, in_file_name, out_particles_file_name,
+        tmp_dir, mask_file_name=None):
+        
+        assert feature_type == "ridge_line" or feature_type == "valley_line" \
+            or feature_type == "ridge_surface" or feature_type == \
+            "valley_surface", "Invalid feature type"
         
         self._feature_type = feature_type        
-        self._reconInverseKernelParams     = ""
-        self._initParams                   = ""
-        self.tmp_dir                       = "."
-        self.in_file_name                = "NA"
-        self._maskFileName                 = "NA"
-        self._inputNRRDParticlesFileName   = "NA"
-        self._particlesFileName            = "NA"
+        self._inverse_kernel_params = ""
+        self._init_params = ""
+        self._tmp_dir = tmp_dir
+        self._in_file_name = in_file_name
+        self._mask_file_name = mask_file_name
+        self._in_particles_file_name = "NA"
+        self._out_particles_file_name = out_particles_file_name
 
         # If set to true, the temporary directory will be wiped clean
         # after execution
         self.clean_tmp_dir = False
 
-        # Temporal filenames
-        self._inputVolume = self.in_file_name  #Volume name that is going to be used for scale-space particles. This volume is the result of any pre-processing
-        self._nrrdParticlesFileName    = "nrrdParticlesFileName.nrrd"  #Nrrd file to contain particle data.
+        # Temporal filenames:
+        # -------------------
+        # Volume name that is going to be used for scale-space particles.
+        # This volume is the result of any pre-processing
+        self._tmp_in_file_name = self._in_file_name
+        # Nrrd file to contain particle data.
+        self._tmp_particles_file_name  = "nrrdParticlesFileName.nrrd"  
 
-        # Particle system set up param. 
-        self._reconKernelType    = "C4"        #Options: Bspline3, Bspline5, Bspline7 and C4
-        self._initializationMode = "Random"    #Options: Ramdom, Halton, Particles, PerVoxel
-        self._singleScale        = 0           #Run at a single scale vs a full scale-space exploration
-        self._useMask            = 1
-        self._maxScale           = 6           #TODO: Description
-        self._scaleSamples       = 5          #TODO: Description
-        self._iterations         = 50
+        # Particle system setup params:
+        # -----------------------------
+        # Options: Bspline3, Bspline5, Bspline7 and C4:
+        self._recon_kernel_type    = "C4"
+        # Options: Ramdom, Halton, Particles, PerVoxel:
+        self._init_mode = "Random"
+        # Run at a single scale vs a full scale-space exploration:
+        self._single_scale = 0 
+        self._use_mask = 1
+        self._max_scale = 6
+        self._scale_samples = 5
+        self._iterations = 50
 
-        self._verbose                    = 1
+        self._verbose = 1
 
-        # Energy specific params
+        # Energy specific params:
+        # -----------------------
         self._irad  = 1.7
         self._srad  = 1.2
         self._alpha = 0.5
         self._beta  = 0.5
         self._gamma = 1
-        self._interParticleEnergyType = "justr" #Options: justr, add
-        self._useStrength = "true"
+        # Options: justr, add:
+        self._inter_particle_energy_type = "justr" 
+        self._use_strength = "true"
 
         # Init specific params
         self._ppv = 1 # Points per voxel.
         self._nss = 1 # Number of samples along scale axis
         self._jit = 1 # Jittering to do for each point
 
-        # Optimizer params
-        self._binningWidth = 1.2 #Binning width as mulitple of irad. Increase this value run into overflow of maximum number of bins.
-        self._populationControlPeriod = 5 #Population control period
-        self._noAdd = 0 #If enabled, it does not add points during population control
+        # Optimizer params:
+        # -----------------
+        # Binning width as mulitple of irad. Increase this value run into
+        # overflow of maximum number of bins.
+        self._binning_width = 1.2
+        # Population control period
+        self._population_control_period = 5
+        # If enabled, it does not add points during population control
+        self._no_add = 0 
 
-        # Pre proc Parameters
-        self._maxIntensity     =  400  #Limit the uppe range of the input image
-        self._minIntensity     = -1024 #Limit the lowerc range of the input image
-        self._downSamplingRate =  1    #Downsampling factor to enable multiresolution particles
+        # Pre proc Parameters:
+        # --------------------
+        # Limit the uppe range of the input image
+        self._max_intensity =  400
+        # Limit the lower range of the input image
+        self._minIntensity = -1024
+        # Downsampling factor to enable multiresolution particles
+        self._down_sample_rate = 1    
 
         # Basic contrast Parameters
-        self._liveThreshold  = -150 #Threshold on feature strength
-        self._seedThreshold  = -100 #Threshold on feature strengh
-        self._modeThreshold  = -0.5 #Threshold on mode of the hessian
+        # -------------------------
+        self._live_thresh = -150 # Threshold on feature strength
+        self._seed_thresh = -100 # Threshold on feature strengh
+        self._mode_thresh = -0.5 # Threshold on mode of the hessian
 
-    def SetFeatureTypeToValleySurface( self ):
-        self._featureType = "ValleySurface"
-
-    def SetFeatureTypeToRidgeSurface( self ):
-        self._featureType = "RidgeSurface"
-
-    def SetFeatureTypeToValleyLine( self ):
-        self._featureType = "ValleyLine"
-
-    def SetFeatureTypeToRidgeLine( self ):
-        self._featureType = "RidgeLine"
-
-    def SetInputNRRDParticles ( self, inputNRRDParticlesFileName):
-        self._inputNRRDParticlesFileName = inputNRRDParticlesFileName
-
-    def SetMaskFileName( self, maskFileName ):
-        self._maskFileName = maskFileName
-
-    def SetOutputFileName( self, particlesFileName ):
-        self._particlesFileName = particlesFileName
-
-    def SetInterParticleDistance( self, distance ):
-        self._interParticleDistance = distance
-
-    def SetVolParamGroup( self ):	   
-        if self._singleScale == 0:
-            self._volParams = " -vol " + self._inputVolume + ":scalar:0-" + str(self._scaleSamples) + "-" + str(self._maxScale) + "-o:V " \
-            +  self._inputVolume + ":scalar:0-" + str(self._scaleSamples) + "-" + str(self._maxScale) + "-on:VSN"
+    def set_vol_params( self ):	   
+        if self._single_scale == 0:
+            self._volParams = " -vol " + self._tmp_in_file_name + \
+                ":scalar:0-" + str(self._scale_samples) + "-" + \
+                str(self._max_scale) + "-o:V " + self._tmp_in_file_name + \
+                ":scalar:0-" + str(self._scale_samples) + "-" + \
+                str(self._max_scale) + "-on:VSN"
         else:
-            self._volParams = " -vol " +  self._inputVolume + ":scalar:V -usa true"
+            self._volParams = " -vol " + self._tmp_in_file_name + \
+                ":scalar:V -usa true"
 
-        if self._useMask == 1:
-	   self._volParams += " " + self._maskFileName + ":scalar:M"
+        if self._use_mask == 1:
+	   self._volParams += " " + self._mask_file_name + ":scalar:M"
 
-    def SetInfoParamGrop( self ):
-        if self._singleScale == 1:
+    def set_info_params( self ):
+        if self._single_scale == 1:
             volTag = "V"
         else:
             volTag = "VSN"
 
-        if self._featureType == "RidgeLine":
-            self._infoParams = " -info  h-c:V:val:0:-1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 "
-            self._infoParams += "sthr:" + volTag + ":heval1:" + str(self._seedThreshold) + ":-1 lthr:" + volTag + ":heval1:"
-            self._infoParams += str(self._liveThreshold) + ":-1 strn:" + volTag + ":heval1:0:-1"
-        elif self._featureType == "ValleyLine":
-            self._infoParams = " -info  h-c:V:val:0:1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 "
-            self._infoParams += "sthr:" + volTag + ":heval1:" + str(self._seedThreshold) + ":1 lthr:" + volTag + ":heval1:"
-            self._infoParams += str(self._liveThreshold) + ":1 strn:" + volTag + ":heval1:0:1"
-        elif self._featureType == "RidgeSurface":
-            self._infoParams = " -info h-c:V:val:0:-1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec2 "
-            self._infoParams += " sthr:" + volTag + ":heval2:" + str(self._seedThreshold) + ":-1 lthr:" + volTag + ":heval2:"
-            self._infoParams += str(self._liveThreshold) + ":-1 lthr2:" + volTag + ":hmode:" + str(self._modeThreshold) + ":-1 strn:" + volTag + ":heval2:0:-1"
-        elif self._featureType == "ValleySurface":
-            self._infoParams = " -info h-c:V:val:0:1  hgvec:V:gvec  hhess:V:hess tan1:V:hevec0 "
-            self._infoParams +=" sthr:" + volTag + ":heval0:" + str(self._seedThreshold) + ":1 lthr:" + volTag + ":heval0:"
-            self._infoParams += str(self._liveThreshold) + ":1 lthr2:" + volTag + ":hmode:" + str(self._modeThreshold) + ":1 strn:" + volTag + ":heval0:0:1"
+        if self._feature_type == "ridge_line":
+            self._info_params = \
+                " -info  h-c:V:val:0:-1  hgvec:V:gvec \
+                hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 "
+            self._info_params += \
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + \
+                ":-1 lthr:" + volTag + ":heval1:"
+            self._info_params += \
+                str(self._live_thresh) + ":-1 strn:" + \
+                volTag + ":heval1:0:-1"
+        elif self._feature_type == "valley_line":
+            self._info_params = \
+                " -info  h-c:V:val:0:1  hgvec:V:gvec \
+                hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 "
+            self._info_params += \
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + \
+                ":1 lthr:" + volTag + ":heval1:"
+            self._info_params += str(self._live_thresh) + ":1 strn:" + \
+                volTag + ":heval1:0:1"
+        elif self._feature_type == "ridge_surface":
+            self._info_params = " -info h-c:V:val:0:-1 hgvec:V:gvec \
+            hhess:V:hess tan1:V:hevec2 "
+            self._info_params += " sthr:" + volTag + ":heval2:" + \
+                str(self._seed_thresh) + ":-1 lthr:" + volTag + ":heval2:"
+            self._info_params += str(self._live_thresh) + ":-1 lthr2:" + \
+                volTag + ":hmode:" + str(self._mode_thresh) + ":-1 strn:" + \
+                volTag + ":heval2:0:-1"
+        elif self._feature_type == "valley_surface":
+            self._info_params = " -info h-c:V:val:0:1 hgvec:V:gvec \
+            hhess:V:hess tan1:V:hevec0 "
+            self._info_params +=" sthr:" + volTag + ":heval0:" + \
+                str(self._seed_thresh) + ":1 lthr:" + volTag + ":heval0:"
+            self._info_params += str(self._live_thresh) + ":1 lthr2:" + \
+                volTag + ":hmode:" + str(self._mode_thresh) + \
+                ":1 strn:" + volTag + ":heval0:0:1"
 
-        if self._useMask == 1:
+        if self._use_mask == 1:
 	    maskVal = "0.5";
-	    self._infoParams += " spthr:M:val:" + maskVal + ":1"
+	    self._info_params += " spthr:M:val:" + maskVal + ":1"
 
-    def SetReconKernelParamsGroup(self):
-        if self._reconKernelType == "Bspline3":
-            #self._reconKernelParams="-k00 cubic:1,0 -k11 cubicd:1,0 -k22 cubicdd:1,0 -kssr hermite"
-            self._reconKernelParams= "-k00 bspl3 -k11 bspl3d -k22 bspl3dd -kssr hermite"
-            self._reconInverseKernelParams = "-k bspl3ai"
-        elif self._reconKernelType == "Bspline5":
-            self._reconKernelParams="-k00 bspl5 -k11 bspl5d -k22 bspl5dd -kssr hermite"
-            self._reconInverseKernelParams = "-k bspl5ai"
-        elif self._reconKernelType == "Bspline7":
-            self._reconKernelParams="-k00 bspl7 -k11 bspl7d -k22 bspl7dd -kssr hermite"
-            self._reconInverseKernelParams = "-k bspl7ai"
-        elif self._reconKernelType == "C4":
-            self._reconKernelParams="-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
-            self._reconInverseKernelParams = "-k c4hai"
+    def set_kernel_params(self):
+        if self._recon_kernel_type == "Bspline3":
+            #self._reconKernelParams = "-k00 cubic:1,0 -k11 \
+            #cubicd:1,0 -k22 cubicdd:1,0 -kssr hermite"
+            self._reconKernelParams = \
+                "-k00 bspl3 -k11 bspl3d -k22 bspl3dd -kssr hermite"
+            self._inverse_kernel_params = "-k bspl3ai"
+        elif self._recon_kernel_type == "Bspline5":
+            self._reconKernelParams = \
+                "-k00 bspl5 -k11 bspl5d -k22 bspl5dd -kssr hermite"
+            self._inverse_kernel_params = "-k bspl5ai"
+        elif self._recon_kernel_type == "Bspline7":
+            self._reconKernelParams = \
+                "-k00 bspl7 -k11 bspl7d -k22 bspl7dd -kssr hermite"
+            self._inverse_kernel_params = "-k bspl7ai"
+        elif self._recon_kernel_type == "C4":
+            self._reconKernelParams = \
+                "-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
+            self._inverse_kernel_params = "-k c4hai"
         else:
-            self._reconKernelParams="-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
-            self._reconInverseKernelParams = "-k c4hai"
+            self._reconKernelParams = \
+                "-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
+            self._inverse_kernel_params = "-k c4hai"
 
-    def SetOptimizerParamsGroup( self ):
-        self._optimizerParams = "-pcp "+ str(self._populationControlPeriod) + " -edpcmin 0.1 -edmin 0.0000001 -eip 0.001 -ess 0.2 -oss 1.9 -step 1 -maxci 10 -rng 45 -bws "+ str(self._binningWidth)
-        if  self._noAdd == 1:
+    def set_optimizer_params( self ):
+        self._optimizerParams = \
+            "-pcp "+ str(self._population_control_period) + " -edpcmin 0.1 \
+            -edmin 0.0000001 -eip 0.001 -ess 0.2 -oss 1.9 -step 1 -maxci 10 \
+            -rng 45 -bws "+ str(self._binning_width)
+        
+        if self._no_add == 1:
           self._optimizerParams += " -noadd"
 
-    def SetEnergyParamsGroup(self):
-        self._energyParams = "-enr qwell:0.7 -ens bparab:10,0.7,-0.00 -enw butter:10,0.7"
-        self._energyParams += " -efs " + str(self._useStrength)
-        self._energyParams += " -int "+ self._interParticleEnergyType
+    def set_energy_params(self):
+        self._energyParams = \
+            "-enr qwell:0.7 -ens bparab:10,0.7,-0.00 -enw butter:10,0.7"
+        self._energyParams += " -efs " + str(self._use_strength)
+        self._energyParams += " -int "+ self._inter_particle_energy_type
         self._energyParams += " -irad "+ str(self._irad)
         self._energyParams += " -srad "+ str(self._srad)
         self._energyParams += " -alpha " + str(self._alpha)
         self._energyParams += " -beta " + str(self._beta)
         self._energyParams += " -gamma "+ str(self._gamma)
 
-    def SetInitParamsGroup(self):
-        if self._initializationMode == "Random":
-            self._initParams = "-np "+ str(self._numberParticles)
-        elif self._initializationMode == "Halton":
-            self._initParams = "-np "+ str(self._numberParticles) + "-halton"
-        elif self._initializationMode == "Particles":
-            self._initParams = "-pi "+ self._inputNRRDParticlesFileName
-        elif self._initializationMode == "PerVoxel":
-            self._initParams = " -ppv " + str(self._ppv) + " -nss " + str(self._nss) + " -jit " + str(self._jit)
+    def set_init_params(self):
+        if self._init_mode == "Random":
+            self._init_params = "-np "+ str(self._numberParticles)
+        elif self._init_mode == "Halton":
+            self._init_params = "-np "+ str(self._numberParticles) + "-halton"
+        elif self._init_mode == "Particles":
+            self._init_params = "-pi "+ self._in_particles_file_name
+        elif self._init_mode == "PerVoxel":
+            self._init_params = " -ppv " + str(self._ppv) + " -nss " + \
+                str(self._nss) + " -jit " + str(self._jit)
 
-    def SetMiscParamsGroup(self):
+    def set_misc_params(self):
         self._miscParams="-nave true -v "+str(self._verbose)+" -pbm 0"
 
-    def ResetParamGroups(self):
-        self._infoParams = ""
+    def reset_params(self):
+        self._info_params = ""
         self._volParams  = ""
         self._reconKernelParams = ""
-        self._reconInverseKernelParams = ""
+        self._inverse_kernel_params = ""
         self._optimizerParams = ""
         self._energyParams = ""
-        self._initParams = ""
+        self._init_params = ""
         self._miscParams = ""
 
-    def BuildParamGroups(self):
-        self.SetInfoParamGrop()
-        self.SetVolParamGroup()
-        self.SetOptimizerParamsGroup()
-        self.SetEnergyParamsGroup()
-        self.SetReconKernelParamsGroup()
-        self.SetInitParamsGroup()
-        self.SetMiscParamsGroup()
+    def build_params(self):
+        self.set_info_params()
+        self.set_vol_params()
+        self.set_optimizer_params()
+        self.set_energy_params()
+        self.set_kernel_params()
+        self.set_init_params()
+        self.set_misc_params()
 
-    def Execute(self):
-        if self._downSamplingRate > 1:
-            downsampledVolume = os.path.join(self.tmp_dir, "ct-down.nrrd")
-            self.DownSampling(self.in_file_name,downsampledVolume,'cubic:0,0.5')
-            if self._useMask == 1:
-                downsampledMask = os.path.join(self.tmp_dir, "mask-down.nrrd")
-                self.DownSampling(self._maskFileName,downsampledMask,'cheap')
-                self._maskFileName = downsampledMask
+    def execute(self):
+        if self._down_sample_rate > 1:
+            downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
+            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5')
+            if self._use_mask == 1:
+                downsampledMask = os.path.join(self._tmp_dir, "mask-down.nrrd")
+                self.down_sample(self._mask_file_name,downsampledMask,'cheap')
+                self._mask_file_name = downsampledMask
         else:
-            downsampledVolume = self.in_file_name
+            downsampledVolume = self._in_file_name
 
-        deconvolvedVolume = os.path.join(self.tmp_dir, "ct-deconv.nrrd")
+        deconvolvedVolume = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampledVolume,deconvolvedVolume)
 
-        self._inputVolume = deconvolvedVolume
-        self.BuildParamGroups()
-        outputParticles=os.path.join(self.tmp_dir, self._nrrdParticlesFileName)
-        self.ExecutePass(outputParticles)
-        self.ProbeAllQuantities(deconvolvedVolume,outputParticles)
-        self.SaveParticlesToVTK(outputParticles)
+        self._tmp_in_file_name = deconvolvedVolume
+        self.build_params()
+        outputParticles=os.path.join(self._tmp_dir, \
+                                     self._tmp_particles_file_name)
+        self.execute_pass(outputParticles)
+        self.probe_quantities(deconvolvedVolume,outputParticles)
+        self.save_vtk(outputParticles)
 
-    def ExecutePass(self, output):
+    def execute_pass(self, output):
         #Check inputs files are in place
-        if os.path.exists(self._inputVolume) == False:
+        if os.path.exists(self._tmp_in_file_name) == False:
             return False
 
-        if self._useMask==1:
-            if os.path.exists(self._maskFileName) == False:
+        if self._use_mask==1:
+            if os.path.exists(self._mask_file_name) == False:
                 return False
 
-        if self._singleScale == 1:
-            tmpCommand = "unu resample -i " + self._inputVolume + \
-                " -s x1 x1 x1 -k dgauss:" + str(self._maxScale) + \
-                ",3 -t float -o " + self._inputVolume
+        if self._single_scale == 1:
+            tmp_command = "unu resample -i " + self._tmp_in_file_name + \
+                " -s x1 x1 x1 -k dgauss:" + str(self._max_scale) + \
+                ",3 -t float -o " + self._tmp_in_file_name
 
-            subprocess( tmpCommand, shell=True)
+            subprocess.call( tmp_command, shell=True)
 
-        tmpCommand = "puller -sscp " + self.tmp_dir + \
+        tmp_command = "puller -sscp " + self._tmp_dir + \
             " -cbst true " + self._volParams + " " + self._miscParams + " " + \
-            self._infoParams + " " +  self._energyParams + " " + \
-            self._initParams + " " + self._reconKernelParams + " " + \
+            self._info_params + " " +  self._energyParams + " " + \
+            self._init_params + " " + self._reconKernelParams + " " + \
             self._optimizerParams + " -o " + output + " -maxi " + \
             str(self._iterations)
 
-        subprocess.call( tmpCommand, shell=True )
+        print tmp_command
+        subprocess.call( tmp_command, shell=True )
 
         # Trick to add scale value
-        if self._singleScale == 1:
-            tmpCommand = "unu head " + output + \
+        if self._single_scale == 1:
+            tmp_command = "unu head " + output + \
                 " | grep size | awk '{split($0,a,\" \"); print a[3]}'"
 
-            tmpNP = subprocess.Popen(tmpCommand, shell=True, stdout=PIPE,
+            tmpNP = subprocess.call(tmp_command, shell=True, stdout=PIPE,
                                       stderr=PIPE)
             NP = tmpNP.communicate()[0].rstrip('\n')
-            tmpCommand = "echo \"0 0 0 " + str(self._maxScale) + \
+            tmp_command = "echo \"0 0 0 " + str(self._max_scale) + \
                 "\" | unu pad -min 0 0 -max 3 " + NP + \
                 " -b mirror | unu 2op + - " + output + " -o " + output
 
-            subprocess.call( tmpCommand, shell=True )
+            subprocess.call( tmp_command, shell=True )
 
-    def probe_points(self, inputVolume, inputParticles, quantity,
+    def probe_points(self, in_volume, inputParticles, quantity,
                      normalizedDerivatives=0):
-        output = os.path.join(self.tmp_dir, quantity+".nrrd")
-        if self._singleScale == 1:
-            tmpCommand = "unu crop -i " + inputParticles + \
-                "-min 0 0 -max 2 M | gprobe -i " + inputVolume + "-k scalar "
-            tmpCommand += self._reconKernelParams + "-pi - -q " + \
+        output = os.path.join(self._tmp_dir, quantity+".nrrd")
+        if self._single_scale == 1:
+            tmp_command = "unu crop -i " + inputParticles + \
+                "-min 0 0 -max 2 M | gprobe -i " + in_volume + "-k scalar "
+            tmp_command += self._reconKernelParams + "-pi - -q " + \
                 quantity + " -v 0 -o " + output
         else:
-            #tmpCommand = (
-            #    "cd "+ self._temporaryDirectory + "; gprobe -i " + inputVolume +
+            #tmp_command = (
+            #    "cd "+ self._temporaryDirectory + "; gprobe -i " + in_volume +
             #    "-k scalar " + self._reconKernelParams + "-pi " + inputParticles +
             #    "-q " + quantity + "-v 0 -o " + output +
-            #    "-sso -ssr 0 %03u" % self._maxScale + "-ssf V-%03u-"
-            #    + "%03u" % self._scaleSamples +".nrrd"
+            #    "-sso -ssr 0 %03u" % self._max_scale + "-ssf V-%03u-"
+            #    + "%03u" % self._scale_samples +".nrrd"
             #)
-            tmpCommand = (
+            tmp_command = (
                 "cd %(temporary_directory)s; gprobe -i %(input)s "
                 "-k scalar %(kernel_params)s -pi %(input_particles)s "
                 "-q %(qty)s -v 0 -o %(output)s "
                 "-ssn %(num_scales)d -sso -ssr 0 %(max_scale)03u "
                 "-ssf V-%%03u-%(scale_samples)03u.nrrd"
             ) % {
-                'temporary_directory': self.tmp_dir,
-                'input': inputVolume,
+                'temporary_directory': self._tmp_dir,
+                'input': in_volume,
                 'kernel_params': self._reconKernelParams,
                 'input_particles': inputParticles,
                 'qty': quantity,
                 'output': output,
-                'num_scales': self._scaleSamples,
-                'max_scale': self._maxScale,
-                'scale_samples': self._scaleSamples
+                'num_scales': self._scale_samples,
+                'max_scale': self._max_scale,
+                'scale_samples': self._scale_samples
             }
 
             if normalizedDerivatives == 1:
-                tmpCommand += " -ssnd"
+                tmp_command += " -ssnd"
         if self._verbose == 1:
-            print tmpCommand
+            print tmp_command
 
-        subprocess.call( tmpCommand, shell=True )
+        subprocess.call( tmp_command, shell=True )
 
-    def ProbeAllQuantities(self,inputVolume,inputParticles):
-        self.probe_points(inputVolume, inputParticles, "val" )
-        self.probe_points(inputVolume, inputParticles, "heval0", 1)
-        self.probe_points(inputVolume, inputParticles, "heval1", 1)
-        self.probe_points(inputVolume, inputParticles, "heval2", 1)
-        self.probe_points(inputVolume, inputParticles, "hmode", 1)
-        self.probe_points(inputVolume, inputParticles, "hevec0")
-        self.probe_points(inputVolume, inputParticles, "hevec1")
-        self.probe_points(inputVolume, inputParticles, "hevec2")
-        self.probe_points(inputVolume, inputParticles, "hess")
+    def probe_quantities(self, in_volume, in_particles):
+        self.probe_points(in_volume, in_particles, "val" )
+        self.probe_points(in_volume, in_particles, "heval0", 1)
+        self.probe_points(in_volume, in_particles, "heval1", 1)
+        self.probe_points(in_volume, in_particles, "heval2", 1)
+        self.probe_points(in_volume, in_particles, "hmode", 1)
+        self.probe_points(in_volume, in_particles, "hevec0")
+        self.probe_points(in_volume, in_particles, "hevec1")
+        self.probe_points(in_volume, in_particles, "hevec2")
+        self.probe_points(in_volume, in_particles, "hess")
 
-    def deconvolve(self, inputVol, outputVol):
+    def deconvolve(self, in_vol, out_vol):
         """
         Parameters
         ----------
@@ -331,54 +378,60 @@ class GenerateParticles:
         out_vol : string
         
         """
-        tmpCommand = "unu 3op clamp " + str(self._minIntensity) + " " + \
-            in_vol + " " + str(self._maxIntensity)  + \
-            " | unu resample -s x1 x1 x1 " + self._reconInverseKernelParams + \
+        tmp_command = "unu 3op clamp " + str(self._minIntensity) + " " + \
+            in_vol + " " + str(self._max_intensity)  + \
+            " | unu resample -s x1 x1 x1 " + self._inverse_kernel_params + \
             " -t float -o " + out_vol
 
         if self._verbose == 1:
-            print tmpCommand
+            print tmp_command
 
-        subprocess.call( tmpCommand, shell=True)
+        subprocess.call( tmp_command, shell=True)
 
-    def DownSampling(self, inputVol, outputVol, kernel):    		
-        tmpCommand = "unu resample -s x%(rate)f x%(rate)f x%(rate)f -k %(kernel)s -i "+ inputVol + " -o " + outputVol
+    def down_sample(self, inputVol, outputVol, kernel):    		
+        tmp_command = \
+            "unu resample -s x%(rate)f x%(rate)f x%(rate)f -k %(kernel)s -i " \
+            + inputVol + " -o " + outputVol
 
         #MAYBE WE HAVE TO DOWNSAMPLE THE MASK
-        val = 1.0/self._downSamplingRate
-        tmpCommand = tmpCommand %  {'rate':val,'kernel':kernel}
+        val = 1.0/self._down_sample_rate
+        tmp_command = tmp_command %  {'rate':val,'kernel':kernel}
 
         if self._verbose == 1:
-            print tmpCommand
+            print tmp_command
 
-        subprocess.call( tmpCommand, shell=True)
+        subprocess.call( tmp_command, shell=True)
 
-    def SaveParticlesToVTK(self, inputParticles):
+    def save_vtk(self, in_particles):
          #Trick to multiply scale if we have down-sampled before saving to VTK
-        if self._downSamplingRate > 1:
-            tmpCommand = "unu crop -i %(output)s -min 3 0 -max 3 M | unu 2op x - %(rate)f | unu inset -i %(output)s -s - -min 3 0 -o %(output)s"
-            tmpCommand = tmpCommand % {'output':inputParticles, 'rate':self._downSamplingRate}
-            print tmpCommand
-            subprocess.call( tmpCommand, shell=True )
+        if self._down_sample_rate > 1:
+            tmp_command = "unu crop -i %(output)s -min 3 0 -max 3 M | \
+            unu 2op x - %(rate)f | unu inset -i %(output)s -s - \
+            -min 3 0 -o %(output)s"
 
-        readerWriter = ReadNRRDsWriteVTK()
-        readerWriter.AddFileNameArrayNamePair( inputParticles,  "NA" )
-        quantities=["val","heval0","heval1","heval2","hmode","hevec0","hevec1","hevec2","hess"]
+            tmp_command = tmp_command % {'output':in_particles, \
+                                       'rate':self._down_sample_rate}
+            print tmp_command
+            subprocess.call( tmp_command, shell=True )
 
-        ##VTK field names should be standardized to match teem tags
+        reader_writer = ReadNRRDsWriteVTK(self._out_particles_file_name)
+        reader_writer.add_file_name_array_name_pair(in_particles, "NA")
+        quantities = ["val", "heval0", "heval1", "heval2", "hmode", "hevec0",\
+                    "hevec1", "hevec2", "hess"]
+
+        # VTK field names should be standardized to match teem tags
         tags = ["val", "h0", "h1", "h2", "hmode", "hevec0", \
                 "hevec1", "hevec2", "hess"]
 
         for ii in range(len(quantities)):
-            file = os.path.join(self.tmp_dir,"%s.nrrd" % quantities[ii])
-            readerWriter.AddFileNameArrayNamePair( file, tags[ii] )
+            file = os.path.join(self._tmp_dir,"%s.nrrd" % quantities[ii])
+            reader_writer.add_file_name_array_name_pair( file, tags[ii] )
 
-        readerWriter.SetOutputFileName( self._particlesFileName )
-        readerWriter.Execute()
+        reader_writer.execute()
 
-    def CleanTemporaryDirecotry(self):
+    def clean_tmp_dir(self):
         if self._cleanTemporaryDirectory == True:
             print "Cleaning tempoarary directory..."
-            tmpCommand = "rm " + os.path.join(self.tmp_dir, "*")
-            subprocess.call( tmpCommand, shell=True )
+            tmp_command = "rm " + os.path.join(self._tmp_dir, "*")
+            subprocess.call( tmp_command, shell=True )
             

@@ -47,33 +47,34 @@ typedef itk::ImageFileWriter< CTType >        CTWriterType;
  *  'ChestRegionNames'. Also update 'ChestRegionColors' appropriately.
  */
 enum ChestRegion { 
-  UNDEFINEDREGION,     //0
-  WHOLELUNG,           //1
-  RIGHTLUNG,           //2
-  LEFTLUNG,            //3
-  RIGHTSUPERIORLOBE,   //4
-  RIGHTMIDDLELOBE,     //5
-  RIGHTINFERIORLOBE,   //6
-  LEFTSUPERIORLOBE,    //7
-  LEFTINFERIORLOBE,    //8
-  LEFTUPPERTHIRD,      //9
-  LEFTMIDDLETHIRD,     //10
-  LEFTLOWERTHIRD,      //11
-  RIGHTUPPERTHIRD,     //12
-  RIGHTMIDDLETHIRD,    //13
-  RIGHTLOWERTHIRD,     //14
-  MEDIASTINUM,         //15
-  WHOLEHEART,          //16
-  AORTA,               //17
-  PULMONARYARTERY,     //18
-  PULMONARYVEIN,       //19
-  UPPERTHIRD,          //20
-  MIDDLETHIRD,         //21
-  LOWERTHIRD,          //22
-  LEFT,                //23
-  RIGHT,               //24
-  LIVER,               //25
-  SPLEEN,              //26
+  UNDEFINEDREGION,        //0
+  WHOLELUNG,              //1
+  RIGHTLUNG,              //2
+  LEFTLUNG,               //3
+  RIGHTSUPERIORLOBE,      //4
+  RIGHTMIDDLELOBE,        //5
+  RIGHTINFERIORLOBE,      //6
+  LEFTSUPERIORLOBE,       //7
+  LEFTINFERIORLOBE,       //8
+  LEFTUPPERTHIRD,         //9
+  LEFTMIDDLETHIRD,        //10
+  LEFTLOWERTHIRD,         //11
+  RIGHTUPPERTHIRD,        //12
+  RIGHTMIDDLETHIRD,       //13
+  RIGHTLOWERTHIRD,        //14
+  MEDIASTINUM,            //15
+  WHOLEHEART,             //16
+  AORTA,                  //17
+  PULMONARYARTERY,        //18
+  PULMONARYVEIN,          //19
+  UPPERTHIRD,             //20
+  MIDDLETHIRD,            //21
+  LOWERTHIRD,             //22
+  LEFT,                   //23
+  RIGHT,                  //24
+  LIVER,                  //25
+  SPLEEN,                 //26
+  ABDOMEN,                //27
 };
 
 
@@ -155,6 +156,7 @@ enum ChestType {
   CENTRILOBULAREMPHYSEMA,         //68
   PANLOBULAREMPHYSEMA,            //69
   SUBCUTANEOUSFAT,                //70
+  VISCERALFAT,                    //71
 };
 
 enum ReturnCode {
@@ -175,9 +177,6 @@ enum ReturnCode {
   GENERATEDISTANCEMAPFAILURE,
 };
 
-} // namespace cip
-
-using namespace cip;
 /**
  *  The following class will define the hierarchy among the various
  *  regions defined in 'ChestRegion' above.  If a new region is added
@@ -193,8 +192,8 @@ public:
   ~ChestConventions(){};
   ChestConventions()
     {
-      m_NumberOfEnumeratedChestRegions = 27;
-      m_NumberOfEnumeratedChestTypes   = 71;
+      m_NumberOfEnumeratedChestRegions = 28;
+      m_NumberOfEnumeratedChestTypes   = 72;
 
       typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -274,6 +273,7 @@ public:
       ChestRegions.push_back( static_cast< unsigned char >( RIGHT ) );
       ChestRegions.push_back( static_cast< unsigned char >( LIVER ) );
       ChestRegions.push_back( static_cast< unsigned char >( SPLEEN ) );
+      ChestRegions.push_back( static_cast< unsigned char >( ABDOMEN ) );
 
       ChestTypes.push_back( static_cast< unsigned char >( UNDEFINEDTYPE ) );
       ChestTypes.push_back( static_cast< unsigned char >( NORMALPARENCHYMA ) );
@@ -346,6 +346,7 @@ public:
       ChestTypes.push_back( static_cast< unsigned char >( CENTRILOBULAREMPHYSEMA ) );
       ChestTypes.push_back( static_cast< unsigned char >( PANLOBULAREMPHYSEMA ) );
       ChestTypes.push_back( static_cast< unsigned char >( SUBCUTANEOUSFAT ) );
+      ChestTypes.push_back( static_cast< unsigned char >( VISCERALFAT ) );
 
       ChestRegionNames.push_back( "UNDEFINEDREGION" );
       ChestRegionNames.push_back( "WHOLELUNG" ); 
@@ -374,6 +375,7 @@ public:
       ChestRegionNames.push_back( "RIGHT" );
       ChestRegionNames.push_back( "LIVER" );
       ChestRegionNames.push_back( "SPLEEN" );
+      ChestRegionNames.push_back( "ABDOMEN" );
 
       ChestTypeNames.push_back( "UNDEFINEDTYPE" );
       ChestTypeNames.push_back( "NORMALPARENCHYMA" );
@@ -446,6 +448,7 @@ public:
       ChestTypeNames.push_back( "CENTRILOBULAREMPHYSEMA" );
       ChestTypeNames.push_back( "PANLOBULAREMPHYSEMA" );
       ChestTypeNames.push_back( "SUBCUTANEOUSFAT" );
+      ChestTypeNames.push_back( "VISCERALFAT" );
 
       //
       // Each type is associated with a color. This is generally
@@ -530,6 +533,7 @@ public:
       double* t070 = new double[3]; t070[0] = 0.00; t070[1] = 0.00; t070[2] = 0.70; ChestTypeColors.push_back( t070 ); //PANLOBULAREMPHYSEMA
 
       double* t071 = new double[3]; t071[0] = 0.59; t071[1] = 0.65; t071[2] = 0.20; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
+      double* t072 = new double[3]; t072[0] = 0.58; t072[1] = 0.65; t072[2] = 0.20; ChestTypeColors.push_back( t072 ); //VISCERALFAT
 
       //
       // Each region is associated with a color. This is generally
@@ -563,6 +567,7 @@ public:
       double* r025 = new double[3]; r025[0] = 0.74; r025[1] = 0.34; r025[2] = 0.14; ChestRegionColors.push_back( r025 ); //RIGHT
       double* r026 = new double[3]; r026[0] = 0.66; r026[1] = 0.36; r026[2] = 0.40; ChestRegionColors.push_back( r026 ); //LIVER
       double* r027 = new double[3]; r027[0] = 1.00; r027[1] = 1.00; r027[2] = 0.01; ChestRegionColors.push_back( r027 ); //SPLEEN
+      double* r028 = new double[3]; r028[0] = 1.00; r028[1] = 0.50; r028[2] = 0.01; ChestRegionColors.push_back( r028 ); //ABDOMEN
     }
   unsigned char GetNumberOfEnumeratedChestRegions() const
     {
@@ -954,5 +959,7 @@ private:
   unsigned char m_NumberOfEnumeratedChestRegions;
   unsigned char m_NumberOfEnumeratedChestTypes;
 };
+
+} // namespace cip
 
 #endif

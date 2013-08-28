@@ -380,7 +380,7 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
 vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles, 
                                                           std::map< unsigned short, std::string >* componentLabelToNameMap )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   unsigned int numberParticles         = particles->GetNumberOfPoints();
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
@@ -413,7 +413,7 @@ vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteracto
       {
       interactor->GetActorColor( name, actorColor ); 
       
-      float cipRegion = static_cast< float >( UNDEFINEDREGION );
+      float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
       float cipType   = static_cast< float >( conventions.GetChestTypeFromColor( actorColor ) );
       
       particles->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );

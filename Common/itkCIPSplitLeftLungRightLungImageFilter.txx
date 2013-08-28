@@ -7,7 +7,7 @@
 #define _itkCIPSplitLeftLungRightLungImageFilter_txx
 
 #include "itkCIPSplitLeftLungRightLungImageFilter.h"
-
+#include <limits>
 
 namespace itk
 {
@@ -16,7 +16,7 @@ template< class TInputImage >
 CIPSplitLeftLungRightLungImageFilter< TInputImage >
 ::CIPSplitLeftLungRightLungImageFilter()
 {
-  this->m_MinForegroundSlice          = UINT_MAX;
+  this->m_MinForegroundSlice          = std::numeric_limits<unsigned int>::max();
   this->m_MaxForegroundSlice          = 0;
   this->m_ExponentialCoefficient      = 200;
   this->m_ExponentialTimeConstant     = -700;
@@ -31,7 +31,7 @@ void
 CIPSplitLeftLungRightLungImageFilter< TInputImage >
 ::GenerateData()
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
@@ -105,7 +105,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     // identify the slices that yield upper and lower regions that are
     // split
     //
-    unsinged int temp = (this->m_MaxForegroundSlice - this->m_MinForegroundSlice)/3;
+    unsigned int temp = (this->m_MaxForegroundSlice - this->m_MinForegroundSlice)/3;
     unsigned int lowerMiddleForegroundSlice = this->m_MinForegroundSlice + temp;
     unsigned int upperMiddleForegroundSlice = this->m_MaxForegroundSlice - temp;
 
@@ -114,10 +114,6 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     // lower third
     //
     
-
-
-
-
 
 
 
@@ -394,6 +390,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
 //       previousMaxY = 0;
 //       }
 //     }
+}      
 }
 
 

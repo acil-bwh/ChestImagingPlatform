@@ -132,7 +132,7 @@ performed regardless of whether the other operations have requested.";
     }
 
   // Instantiate ChestConventions for general usage
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   std::cout << "Reading label map..." << std::endl;
   cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();

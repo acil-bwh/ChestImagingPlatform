@@ -48,6 +48,10 @@ public:
 
   double GetAirwayness( GrayscaleImageType::IndexType, double );
 
+  void ConnectedThreshold( GrayscaleImageType::IndexType, short, short, unsigned int, unsigned char, unsigned char );
+
+  void UndoSegmentation();
+
   void Clear();
 
   std::vector< LabelMapType::IndexType >* GetPaintedIndices()
@@ -98,6 +102,10 @@ private:
   void CloseLabelMap( LabelMapType::Pointer, unsigned short );
 
   std::vector< LabelMapType::IndexType > PaintedIndices;
+
+  // The following will be used to record the set of label map indices that were 
+  // unlabeled prior to segmentation. This is useful for undoing botched segmentations
+  std::vector< std::vector< LabelMapType::IndexType > > PreSegmentationIndices;
 
   void ConnectPipelines( ExportType::Pointer, vtkImageImport* );
 };

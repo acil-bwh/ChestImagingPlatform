@@ -123,7 +123,7 @@ private:
   std::map< unsigned char, unsigned char >    m_RegionMap;
   std::map< unsigned char, unsigned char >    m_RegionMapForRegionTypePairs;
   std::map< unsigned short, unsigned short >  m_ValueToValueMap;
-  ChestConventions                            m_ChestConventions;
+  cip::ChestConventions                       m_ChestConventions;
   
 };
   

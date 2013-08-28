@@ -62,8 +62,8 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
     { Fl_Choice* o = chestRegionChoice = new Fl_Choice(103, 177, 269, 28, "Chest Region");
       o->down_box(FL_BORDER_BOX);
       //o->add("Undefined Region", 0, (Fl_Callback*)undefinedRegionMenuItem_CB, (void*)(this));
-      //o->add("Left Lung", 0, (Fl_Callback*)leftLungMenuItem_CB, (void*)(this));
-      //o->add("Right Lung", 0, (Fl_Callback*)rightLungMenuItem_CB, (void*)(this));
+      o->add("Left Lung", 0, (Fl_Callback*)leftLungMenuItem_CB, (void*)(this));
+      o->add("Right Lung", 0, (Fl_Callback*)rightLungMenuItem_CB, (void*)(this));
       o->add("Right Upper Lobe", 0, (Fl_Callback*)rightUpperLobeMenuItem_CB, (void*)(this));
       //o->add("Right Middle Lobe", 0, (Fl_Callback*)rightMiddleLobeMenuItem_CB, (void*)(this));
       o->add("Right Lower Lobe", 0, (Fl_Callback*)rightLowerLobeMenuItem_CB, (void*)(this));
@@ -73,6 +73,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Right", 0, (Fl_Callback*)rightMenuItem_CB, (void*)(this));
       o->add("Liver", 0, (Fl_Callback*)liverMenuItem_CB, (void*)(this));
       o->add("Spleen", 0, (Fl_Callback*)spleenMenuItem_CB, (void*)(this));
+      o->add("Abdomen", 0, (Fl_Callback*)abdomen_CB, (void*)(this));
     }
     { Fl_Choice* o = chestTypeChoice = new Fl_Choice(103, 214, 269, 28, "Chest Type");
       o->down_box(FL_BORDER_BOX);
@@ -83,6 +84,9 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Pec Minor", 0, (Fl_Callback*)pectoralisMinorMenuItem_CB, (void*)(this));
       o->add("Pec Major", 0, (Fl_Callback*)pectoralisMajorMenuItem_CB, (void*)(this));
       o->add("Subcutaneous Fat", 0, (Fl_Callback*)subcutaneousFatMenuItem_CB, (void*)(this));
+      o->add("Visceral Fat", 0, (Fl_Callback*)visceralFatMenuItem_CB, (void*)(this));
+      o->add("Oblique Fissure", 0, (Fl_Callback*)obliqueFissureMenuItem_CB, (void*)(this));
+      o->add("Horizontal Fissure", 0, (Fl_Callback*)horizontalFissureMenuItem_CB, (void*)(this));
       //o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
       //o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
       //o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
@@ -92,7 +96,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
     }
     o->end();
   }
-  this->m_PaletteSelection =  static_cast< unsigned char >( OBLIQUEFISSURE );
+  this->m_PaletteSelection =  static_cast< unsigned char >( cip::OBLIQUEFISSURE );
   this->m_LabelMapImage = LabelMapType::New();
   this->m_ChestRegion = static_cast< unsigned char >( cip::UNDEFINEDREGION );
   this->m_ChestType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
@@ -125,7 +129,7 @@ void PaintBrushAndEraserGUI::eraseButton_CB_i()
   unsigned char cipRegionSelection = this->GetChestRegion();
   unsigned char cipTypeSelection   = this->GetChestType();
 
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   typedef itk::ImageRegionIteratorWithIndex< LabelMapType > LabelMapIteratorType;
 
@@ -355,6 +359,13 @@ void PaintBrushAndEraserGUI::rightMenuItem_CB_i() {
   this->m_ChestRegion = static_cast< unsigned char >( cip::RIGHT );
 }
 
+void PaintBrushAndEraserGUI::abdomen_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->abdomen_CB_i();
+}
+void PaintBrushAndEraserGUI::abdomen_CB_i() {
+  this->m_ChestRegion = static_cast< unsigned char >( cip::ABDOMEN );
+}
+
 void PaintBrushAndEraserGUI::liverMenuItem_CB( Fl_Widget* o, void* v ) {
   ((PaintBrushAndEraserGUI*)v)->liverMenuItem_CB_i();
 }
@@ -431,6 +442,26 @@ void PaintBrushAndEraserGUI::subcutaneousFatMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::SUBCUTANEOUSFAT );
 }
 
+void PaintBrushAndEraserGUI::visceralFatMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->visceralFatMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::visceralFatMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::VISCERALFAT );
+}
+
+void PaintBrushAndEraserGUI::obliqueFissureMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->obliqueFissureMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::obliqueFissureMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
+}
+
+void PaintBrushAndEraserGUI::horizontalFissureMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->horizontalFissureMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::horizontalFissureMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::HORIZONTALFISSURE );
+}
 
 void PaintBrushAndEraserGUI::anteriorScaleneMenuItem_CB( Fl_Widget* o, void* v ) {
   ((PaintBrushAndEraserGUI*)v)->anteriorScaleneMenuItem_CB_i();

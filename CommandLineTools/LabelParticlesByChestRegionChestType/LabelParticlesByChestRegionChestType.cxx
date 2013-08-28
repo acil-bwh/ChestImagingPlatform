@@ -122,7 +122,7 @@ value will be determined from the label map";
   //
   // Instantiate ChestConventions for later use
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Read the particles

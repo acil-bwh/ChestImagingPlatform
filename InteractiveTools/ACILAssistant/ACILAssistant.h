@@ -19,8 +19,9 @@ extern void lungMenu_CB(Fl_Menu_*, void*);
 extern void muscleMenu_CB(Fl_Menu_*, void*);
 extern void leftLungRightLungMenu_CB(Fl_Menu_*, void*);
 extern void lungLobesMenu_CB(Fl_Menu_*, void*);
+extern void regionGrowingMenu_CB(Fl_Menu_*, void*);
 #include "GLSliceView.h"
-extern GLSliceView< short, unsigned short > *sliceViewer;
+extern itk::GLSliceView< short, unsigned short > *sliceViewer;
 #include <FL/Fl_Scrollbar.H>
 extern void sliceSlider_CB(Fl_Scrollbar*, void*);
 extern Fl_Scrollbar *sliceSlider;
@@ -41,6 +42,7 @@ void lungMenu_CB( Fl_Widget*, void* );
 void muscleMenu_CB( Fl_Widget*, void* );
 void leftLungRightLungMenu_CB( Fl_Widget*, void* );
 void lungLobesMenu_CB( Fl_Widget*, void* );
+void regionGrowingMenu_CB( Fl_Widget*, void* );
 void Quit_CB( Fl_Widget*, void* );
 void clickSelect_CB( float x, float y, float z, float value );
 void SaveLabelMapImageMenu_CB( Fl_Widget*, void* );

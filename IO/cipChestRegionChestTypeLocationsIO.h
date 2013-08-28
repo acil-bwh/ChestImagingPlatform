@@ -59,8 +59,8 @@ public:
   void SetInput( cipChestRegionChestTypeLocations* const );
 
 private:
-  ChestConventions Conventions;
-  std::string      FileName;
+  cip::ChestConventions  Conventions;
+  std::string            FileName;
 
   cipChestRegionChestTypeLocations* RegionTypeLocations;
 };

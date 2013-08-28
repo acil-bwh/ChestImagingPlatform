@@ -155,7 +155,7 @@ Additionally, full surface discrepancy measures will also be computed.";
   //
   // Instantiate conventions for general use
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   //
   // Compute and print Dice scores if label map file names have been specified
@@ -672,7 +672,7 @@ void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, 
 					      cipThinPlateSplineSurface* roGTTPS, cipThinPlateSplineSurface* rhGTTPS, cipThinPlateSplineSurface* loGTTPS, 
 					      cip::LabelMapType::Pointer labelMap )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   cip::LabelMapType::SizeType    size    = labelMap->GetBufferedRegion().GetSize();
   cip::LabelMapType::SpacingType spacing = labelMap->GetSpacing();

@@ -10,20 +10,6 @@ INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities/ITK )
 
-FIND_PACKAGE ( VTK )
-IF ( VTK_FOUND )
-  INCLUDE(${VTK_USE_FILE})
-ELSE ( VTK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
-ENDIF ( VTK_FOUND )
-
-FIND_PACKAGE ( ITK )
-IF ( ITK_FOUND )
-  INCLUDE(${ITK_USE_FILE})
-ELSE ( ITK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
-ENDIF ( ITK_FOUND )
-
 SET ( LabelAirwayParticlesByGeneration_SOURCE LabelAirwayParticlesByGeneration.cxx )
 
 ADD_EXECUTABLE ( LabelAirwayParticlesByGeneration ${LabelAirwayParticlesByGeneration_SOURCE}  )

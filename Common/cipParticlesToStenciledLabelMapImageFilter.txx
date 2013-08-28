@@ -58,7 +58,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
   // Set the label that will be used for the foreground value in the
   // output image
   //
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
   unsigned short foregroundLabel = 
     conventions.GetValueFromChestRegionAndType( static_cast< unsigned char >( cip::UNDEFINEDREGION ), 
                                                 static_cast< unsigned char >( this->ChestParticleType ) );

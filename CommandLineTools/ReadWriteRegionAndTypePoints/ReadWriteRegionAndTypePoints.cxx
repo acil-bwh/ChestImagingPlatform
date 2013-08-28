@@ -140,7 +140,7 @@ csv and vtk file formats.";
 //
 bool ReadVTKWriteCSV(std::string vtkFileName, std::string csvFileName)
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   std::cout << "Reading polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > reader = vtkPolyDataReader::New();

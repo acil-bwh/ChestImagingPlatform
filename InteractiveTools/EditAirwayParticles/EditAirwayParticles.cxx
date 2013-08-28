@@ -398,7 +398,7 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
 void AddComponentsToInteractor( cipAirwayDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles, std::string whichLung, 
                                 std::map< unsigned short, std::string >* componentLabelToNameMap, double particleSize )  
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   unsigned int numberParticles         = particles->GetNumberOfPoints();
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
@@ -509,7 +509,7 @@ void AddComponentsToInteractor( cipAirwayDataInteractor* interactor, vtkSmartPoi
 vtkSmartPointer< vtkPolyData > GetLabeledAirwayParticles( cipAirwayDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles, 
                                                           std::map< unsigned short, std::string >* componentLabelToNameMap )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   unsigned int numberParticles         = particles->GetNumberOfPoints();
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
@@ -540,7 +540,7 @@ vtkSmartPointer< vtkPolyData > GetLabeledAirwayParticles( cipAirwayDataInteracto
       {
       interactor->GetActorColor( name, actorColor ); 
       
-      float cipRegion = static_cast< float >( UNDEFINEDREGION );
+      float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
       float cipType   = static_cast< float >( conventions.GetChestTypeFromColor( actorColor ) );
       
       particles->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
@@ -576,7 +576,7 @@ void AddRegionTypePointsAsSpheresToInteractor( cipAirwayDataInteractor* interact
 					       std::vector< double > regionTypePointsGreen, std::vector< double > regionTypePointsBlue, 
 					       std::vector< double > regionTypePointsScale, std::vector< double > regionTypePointsOpacity )
 {
-  ChestConventions conventions;
+  cip::ChestConventions conventions;
 
   cipChestRegionChestTypeLocationsIO regionTypeIO;
     regionTypeIO.SetFileName( regionTypePointsFileName );

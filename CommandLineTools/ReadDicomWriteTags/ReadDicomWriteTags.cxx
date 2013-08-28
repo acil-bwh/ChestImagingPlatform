@@ -106,6 +106,12 @@ struct TAGS
   std::string acquisitionTime;
   std::string patientPosition;
 
+  //Rola additions
+  std::string  studyInstanceUID;
+  std::string  seriesInstanceUID;
+  std::string  acquisitionDate;
+  std::string  seriesDate;
+  std::string  modality;
   int validTags;
 };
 
@@ -274,6 +280,13 @@ TAGS GetTagValues( std::string dicomDir )
     std::string acquisitionTimeID              = "0008|0032";
     std::string patientPositionID              = "0018|5100";
 
+    //new additions
+    std::string  studyInstanceUIDID            = "0020|000d";
+    std::string  seriesInstanceUIDID           = "0020|000e";
+    std::string  acquisitionDateID             = "0008|0022";
+    std::string  seriesDateID                  = "0008|0021";
+    std::string  modalityID                    = "0008|0060";
+
     tagValues.patientName              = GetTagValue( patientNameEntryID, dictionary );
     tagValues.patientID                = GetTagValue( patientIDEntryID, dictionary );
     tagValues.studyDate                = GetTagValue( studyDateEntryID, dictionary );
@@ -315,6 +328,15 @@ TAGS GetTagValues( std::string dicomDir )
     tagValues.studyTime                = GetTagValue( studyTimeID, dictionary );
     tagValues.acquisitionTime          = GetTagValue( acquisitionTimeID, dictionary );
     tagValues.patientPosition          = GetTagValue( patientPositionID, dictionary );
+
+    //new additions
+    tagValues.studyInstanceUID         = GetTagValue( studyInstanceUIDID, dictionary );
+    tagValues.seriesInstanceUID        = GetTagValue( seriesInstanceUIDID, dictionary );
+    tagValues.acquisitionDate          = GetTagValue( acquisitionDateID, dictionary );
+    tagValues.seriesDate               = GetTagValue( seriesDateID, dictionary );
+    tagValues.modality                 = GetTagValue( modalityID, dictionary );
+
+
     }
 
   return tagValues;
@@ -346,17 +368,24 @@ std::string GetTagValue( std::string entryID, const DictionaryType & dictionary 
   // Replace commas and new-lines with spaces
   //
   unsigned int commaLocation = tagValue.find( ',' );
+
+//First check if comma exists
+if (commaLocation <tagValue.length())
+{ 
   if ( commaLocation != std::string::npos )
     {
-    tagValue.replace( commaLocation, 1, " " );
+      tagValue.replace( commaLocation, 1, " " );
     }
 
   unsigned int newlineLocation = tagValue.find( '\n' );
   if ( newlineLocation != std::string::npos )
     {
-    tagValue.replace( newlineLocation, 1, " " );
+     if (newlineLocation<tagValue.length())
+     {
+       tagValue.replace( newlineLocation, 1, " " );
+     }
     }
-
+}
   return tagValue;
 }
 
@@ -372,8 +401,8 @@ void WriteTagsToFile( std::string outputFileName, std::vector< std::string > dir
   csvFile << "gantryDetectorTilt,tableHeight,exposure,focalSpots,imagePositionPatient,sliceLocation,pixelSpacing,";
   csvFile << "rescaleIntercept,rescaleSlope, protocolName, acquisitionData,";
   csvFile << "studyID,seriesDescription,seriesTime,patientBirthDate,filterType,stationName,studyTime,acquisitionTime,";
-  csvFile << "patientPosition" << std::endl;
-
+  csvFile << "patientPosition,studyInstanceUID,seriesInstanceUID,acquisitionDate,seriesDate,modality" << std::endl;
+  
   for ( unsigned int i=0; i<directoryList.size(); i++ )
     {
     csvFile << directoryList[i] << ",";
@@ -421,7 +450,15 @@ void WriteTagsToFile( std::string outputFileName, std::vector< std::string > dir
       csvFile << tagsVec[i].stationName << ",";
       csvFile << tagsVec[i].studyTime << ",";
       csvFile << tagsVec[i].acquisitionTime << ",";
-      csvFile << tagsVec[i].patientPosition << std::endl;
+      csvFile << tagsVec[i].patientPosition << ",";
+     // csvFile << tagsVec[i].patientPosition << std::endl;
+      
+      //additions
+      csvFile << tagsVec[i].studyInstanceUID<<"," ;
+      csvFile << tagsVec[i].seriesInstanceUID << ",";
+      csvFile << tagsVec[i].acquisitionDate << ",";
+      csvFile << tagsVec[i].seriesDate <<","; 
+      csvFile << tagsVec[i].modality <<std::endl; 
       }
     else
       {
@@ -456,6 +493,14 @@ void WriteTagsToFile( std::string outputFileName, std::vector< std::string > dir
       csvFile << "NA" << ",";
       csvFile << "NA" << ",";
       csvFile << "NA" << ",";
+      //5 additions
+      csvFile << "NA" << ",";
+      csvFile << "NA" << ",";
+      csvFile << "NA" << ",";
+      csvFile << "NA" << ",";
+      csvFile << "NA" << ",";
+
+      //from before
       csvFile << "NA" << std::endl;
       }
     }
