@@ -71,34 +71,7 @@ namespace
 {
 #define MY_ENCODING "ISO-8859-1"
 
-<<<<<<< HEAD
-typedef itk::Image< unsigned short, 3 >                                             UnsignedShortImageType;
-typedef itk::Image< short, 3 >                                                      ShortImageType;
-typedef itk::ImageFileReader< ShortImageType >                                      ShortReaderType;
-typedef itk::ImageFileReader< UnsignedShortImageType >                              ImageReaderType;
-typedef itk::RegularStepGradientDescentOptimizer                                    OptimizerType;
-typedef itk::ImageRegistrationMethod< ShortImageType, ShortImageType >                        RegistrationType;
-typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType, double >           InterpolatorType;
-typedef itk::AffineTransform<double, 3 >                                            TransformType;
-typedef itk::CenteredTransformInitializer< TransformType, ShortImageType, ShortImageType >    InitializerType;
-typedef OptimizerType::ScalesType                                                   OptimizerScalesType;
-typedef itk::ImageRegionIteratorWithIndex< UnsignedShortImageType >                              IteratorType;
-typedef itk::ImageRegionIteratorWithIndex< ShortImageType >                              CTIteratorType;
-typedef itk::RegionOfInterestImageFilter< ShortImageType, ShortImageType >                    RegionOfInterestType;
-typedef itk::ResampleImageFilter< ShortImageType, ShortImageType >                            ResampleType;
-typedef itk::IdentityTransform< double, 3 >                                         IdentityType;
-typedef itk::CIPExtractChestLabelMapImageFilter                                     LabelMapExtractorType;
-typedef itk::ImageSeriesReader< cip::CTType >                                       CTSeriesReaderType;
-typedef itk::GDCMImageIO                                                            ImageIOType;
-typedef itk::GDCMSeriesFileNames                                                    NamesGeneratorType;
-typedef itk::ImageFileReader< cip::CTType >                                         CTFileReaderType;
-typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                      LabelMapIteratorType;
-typedef itk::MutualInformationImageToImageMetric<ShortImageType, ShortImageType >            MIMetricType;
-typedef itk::NormalizedMutualInformationHistogramImageToImageMetric< ShortImageType, ShortImageType >            NMIMetricType;
-typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >  msqrMetricType;
-typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  > ncMetricType;
-  typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  > gdMetricType;
-=======
+
 typedef itk::Image< unsigned short, 3 >                                                                UnsignedShortImageType;
 typedef itk::Image< short, 3 >                                                                         ShortImageType;
 typedef itk::ImageFileReader< ShortImageType >                                                         ShortReaderType;
@@ -126,7 +99,6 @@ typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >  
 typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  >                 ncMetricType;
 typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
 typedef itk::CompositeTransform< double, 3 > CompositeTransformType;
->>>>>>> ENH: changed GetTransformationSimilarityMetric to take in as arg multiple transformation files and concatenate them prior to computing the similarity metric
 
 struct REGIONTYPEPAIR
 {
@@ -303,9 +275,11 @@ int main( int argc, char *argv[] )
   MaskType::Pointer  spatialObjectMask = MaskType::New();
 
   cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
+
   //typedef itk::Image<unsigned short, 3> blahType;
   //blahType::Pointer blahImage = blahType::New();
     //spatialObjectMask->SetImage( blahImage );
+
   cip::LabelMapType::Pointer subSampledMovingImage = cip::LabelMapType::New();
   if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
@@ -466,7 +440,6 @@ int main( int argc, char *argv[] )
     }
 
   transform->SetAllTransformsToOptimizeOn();		
-
 
   //test identity
 
