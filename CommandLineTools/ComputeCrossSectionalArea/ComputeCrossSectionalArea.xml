@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Examples</category>
+  <title>GenerateMedianFilteredImage</title>
+  <description><![CDATA[This program can be used to compute cross sectional areas \
+of structures in the input label map image. The cross-sectional area is computed with \
+respect to the axial plane. The algorithm proceeds by tallying all voxels of various types \
+in the label map. The tally for each entity is then multiplied by the in-plane (axial) \
+spacing value to give the cross sectional areas. Quantities are printed to std out.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work was partially funded ...</acknowledgements>
+
+  <parameters>
+
+    <string>
+      <name>inFileName</name>
+      <label>Input Filename</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>--inputFile</longflag>
+      <description><![CDATA[e]]></description>
+      <default>q</default>
+    </string>
+
+    <string>
+      <name>outFileName</name>
+      <label>Output File</label>
+      <flag>o</flag>
+      <longflag>--outputFile</longflag>
+      <channel>output</channel>
+      <description><![CDATA[Output CSV file]]></description>
+      <default>q</default>
+    </string>
+   
+  </parameters>
+</executable>
