@@ -31,8 +31,8 @@ have incorrectly labeled chest regions and relables them properly.";
     {
     TCLAP::CmdLine cl( programDesc, ' ', "$Revision$" );
 
-    TCLAP::ValueArg<std::string> inFileNameArg( "", "in", inFileNameDesc, true, inFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outFileNameArg( "", "out", outFileNameDesc, true, outFileName, "string", cl );
+    TCLAP::ValueArg<std::string> inFileNameArg( "i", "", inFileNameDesc, true, inFileName, "string", cl );
+    TCLAP::ValueArg<std::string> outFileNameArg( "o", "", outFileNameDesc, true, outFileName, "string", cl );
 
     cl.parse( argc, argv );
 
@@ -66,84 +66,27 @@ have incorrectly labeled chest regions and relables them properly.";
     std::cerr << excp << std::endl;
     }
 
-  cip::LabelMapReaderType::SizeType size = reader->GetOutput()->GetBufferedRegion().GetSize();
-
   // Use the following map to create a mapping between the old label value
   // and the new label value
   std::map< unsigned short, unsigned short > relabelMapper;
 
-  // Identify the new labels associated with the input (incorrect)
+  // TODO: Identify the new labels associated with the input (incorrect)
   // labels, and store them in 'relabelMapper'. Use the class methods
   // for 'ChestConventions' in cip::Conventions to help with this
-  unsigned int mostRightPecMinor = size[0];
-  unsigned int mostRightPecMajor = size[0];
-  unsigned int mostLeftPecMinor = 0;
-  unsigned int mostLeftPecMajor = 0;
 
-  // Determine what mislabeled regions are associated with the actual,
-  // correct regions
+  // Now relabel the input label map
   IteratorType it( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
   
   it.GoToBegin();
   while ( !it.IsAtEnd() )
     {
-    if ( it.Get() != 0 )
-      {
-      unsigned char cipType   = conventions.GetChestTypeFromValue( it.Get() );
+      if ( it.Get() != 0 )
+	{
+	  unsigned short newValue = relabelMapper[it.Get()];
+	  it.Set(newValue);
+	}
 
-      if ( cipType == (unsigned char)(cip::PECTORALISMINOR) )
-        {
-        if ( it.GetIndex()[0] < mostRightPecMinor )
-          {
-          mostRightPecMinor = it.GetIndex()[0];
-          relabelMapper[it.Get()] = rightMinorLabel;
-          }
-
-        if ( it.GetIndex()[0] > mostLeftPecMinor )
-          {
-          mostLeftPecMinor = it.GetIndex()[0];
-          relabelMapper[it.Get()] = leftMinorLabel;
-          }
-        }
-      if ( cipType == (unsigned char)(cip::PECTORALISMAJOR) )
-        {
-        if ( it.GetIndex()[0] < mostRightPecMajor )
-          {
-          mostRightPecMajor = it.GetIndex()[0];
-          relabelMapper[it.Get()] = rightMajorLabel;
-          }
-
-        if ( it.GetIndex()[0] > mostLeftPecMajor )
-          {
-          mostLeftPecMajor = it.GetIndex()[0];
-          relabelMapper[it.Get()] = leftMajorLabel;
-          }
-        }
-
-      it.GetIndex();
-      }
-
-    ++it;
-    }
-
-
-  // Now relabel the input label map
-  it.GoToBegin();
-  while ( !it.IsAtEnd() )
-    {
-    if ( it.Get() != 0 )
-      {
-      unsigned char cipType   = conventions.GetChestTypeFromValue( it.Get() );
-      if ( cipType == (unsigned char)(cip::PECTORALISMINOR) || cipType == (unsigned char)(cip::PECTORALISMAJOR) )
-        {
-        unsigned short newValue = relabelMapper[it.Get()];
-        //std::cout << "Setting to:\t" << newValue << std::endl;
-        //std::cout << "Slice:\t" << it.GetIndex()[2] << std::endl;
-        it.Set(newValue);
-        }
-      }
-    
-    ++it;
+      ++it;
     }
 
   std::cout << "Writing label map..." << std::endl;
