@@ -21,16 +21,16 @@ class AirwayParticles(ChestParticles):
     mask_file_name : string (optional)
         File name of mask within which to execute particles
     """
-    def __init__(self, in_file_name, out_particles_file_name, \
+    def __init__(self, in_file_name, out_particles_file_name,
                  tmp_dir, mask_file_name=None):
-        ChestParticles.__init__(self, feature_type="valley_line", \
-                            in_file_name=in_file_name, \
-                            out_particles_file_name=out_particles_file_name, \
+        ChestParticles.__init__(self, feature_type="valley_line",
+                            in_file_name=in_file_name,
+                            out_particles_file_name=out_particles_file_name,
                             tmp_dir=tmp_dir, mask_file_name=mask_file_name)
         self._max_intensity = -600
         self._min_intensity = -1100
 
-    def execute( self ):
+    def execute(self):
         #Pre-processing
         if self._down_sample_rate > 1:
             downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")

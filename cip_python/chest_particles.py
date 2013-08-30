@@ -118,7 +118,7 @@ class ChestParticles:
         self._seed_thresh = -100 # Threshold on feature strengh
         self._mode_thresh = -0.5 # Threshold on mode of the hessian
 
-    def set_vol_params( self ):	   
+    def set_vol_params(self):	   
         if self._single_scale == 0:
             self._volParams = " -vol " + self._tmp_in_file_name + \
                 ":scalar:0-" + str(self._scale_samples) + "-" + \
@@ -132,50 +132,50 @@ class ChestParticles:
         if self._use_mask == 1:
 	   self._volParams += " " + self._mask_file_name + ":scalar:M"
 
-    def set_info_params( self ):
+    def set_info_params(self):
         if self._single_scale == 1:
             volTag = "V"
         else:
             volTag = "VSN"
 
         if self._feature_type == "ridge_line":
-            self._info_params = \
-                " -info  h-c:V:val:0:-1  hgvec:V:gvec \
-                hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 "
-            self._info_params += \
-                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + \
-                ":-1 lthr:" + volTag + ":heval1:"
-            self._info_params += \
-                str(self._live_thresh) + ":-1 strn:" + \
-                volTag + ":heval1:0:-1"
+            self._info_params = (
+                " -info  h-c:V:val:0:-1  hgvec:V:gvec 
+                hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 ")
+            self._info_params += (
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
+                ":-1 lthr:" + volTag + ":heval1:")
+            self._info_params += (
+                str(self._live_thresh) + ":-1 strn:" + 
+                volTag + ":heval1:0:-1")
         elif self._feature_type == "valley_line":
-            self._info_params = \
-                " -info  h-c:V:val:0:1  hgvec:V:gvec \
-                hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 "
-            self._info_params += \
-                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + \
-                ":1 lthr:" + volTag + ":heval1:"
-            self._info_params += str(self._live_thresh) + ":1 strn:" + \
-                volTag + ":heval1:0:1"
+            self._info_params = (
+                " -info  h-c:V:val:0:1  hgvec:V:gvec 
+                hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 ")
+            self._info_params += (
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
+                ":1 lthr:" + volTag + ":heval1:")
+            self._info_params += (str(self._live_thresh) + ":1 strn:" + 
+                volTag + ":heval1:0:1")
         elif self._feature_type == "ridge_surface":
-            self._info_params = " -info h-c:V:val:0:-1 hgvec:V:gvec \
-            hhess:V:hess tan1:V:hevec2 "
-            self._info_params += " sthr:" + volTag + ":heval2:" + \
-                str(self._seed_thresh) + ":-1 lthr:" + volTag + ":heval2:"
-            self._info_params += str(self._live_thresh) + ":-1 lthr2:" + \
-                volTag + ":hmode:" + str(self._mode_thresh) + ":-1 strn:" + \
-                volTag + ":heval2:0:-1"
+            self._info_params = (" -info h-c:V:val:0:-1 hgvec:V:gvec 
+            hhess:V:hess tan1:V:hevec2 ")
+            self._info_params += (" sthr:" + volTag + ":heval2:" + 
+                str(self._seed_thresh) + ":-1 lthr:" + volTag + ":heval2:")
+            self._info_params += (str(self._live_thresh) + ":-1 lthr2:" + 
+                volTag + ":hmode:" + str(self._mode_thresh) + ":-1 strn:" + 
+                volTag + ":heval2:0:-1")
         elif self._feature_type == "valley_surface":
-            self._info_params = " -info h-c:V:val:0:1 hgvec:V:gvec \
-            hhess:V:hess tan1:V:hevec0 "
-            self._info_params +=" sthr:" + volTag + ":heval0:" + \
-                str(self._seed_thresh) + ":1 lthr:" + volTag + ":heval0:"
-            self._info_params += str(self._live_thresh) + ":1 lthr2:" + \
-                volTag + ":hmode:" + str(self._mode_thresh) + \
-                ":1 strn:" + volTag + ":heval0:0:1"
+            self._info_params = (" -info h-c:V:val:0:1 hgvec:V:gvec 
+            hhess:V:hess tan1:V:hevec0 ")
+            self._info_params += (" sthr:" + volTag + ":heval0:" + 
+                str(self._seed_thresh) + ":1 lthr:" + volTag + ":heval0:")
+            self._info_params += (str(self._live_thresh) + ":1 lthr2:" + 
+                volTag + ":hmode:" + str(self._mode_thresh) + 
+                ":1 strn:" + volTag + ":heval0:0:1")
 
         if self._use_mask == 1:
-	    maskVal = "0.5";
+	    maskVal = "0.5"
 	    self._info_params += " spthr:M:val:" + maskVal + ":1"
 
     def set_kernel_params(self):
@@ -202,7 +202,7 @@ class ChestParticles:
                 "-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
             self._inverse_kernel_params = "-k c4hai"
 
-    def set_optimizer_params( self ):
+    def set_optimizer_params(self):
         self._optimizerParams = \
             "-pcp "+ str(self._population_control_period) + " -edpcmin 0.1 \
             -edmin 0.0000001 -eip 0.001 -ess 0.2 -oss 1.9 -step 1 -maxci 10 \
