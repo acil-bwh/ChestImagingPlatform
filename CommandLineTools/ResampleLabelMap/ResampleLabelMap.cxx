@@ -76,7 +76,7 @@ TransformType::Pointer GetTransformFromFile( std::string fileName )
 
   TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() ); 
 
-  transform->GetInverse( transform );
+ // transform->GetInverse( transform ); //Not sure about what this is doing here
 
   return transform;
 }
@@ -89,7 +89,6 @@ int main( int argc, char *argv[] )
 
 	PARSE_ARGS;
   
-  
   //
   // Read the destination image information for spacing, origin, and
   // size information (neede for the resampling process).
@@ -97,7 +96,7 @@ int main( int argc, char *argv[] )
   cip::LabelMapType::SpacingType spacing;
   cip::LabelMapType::SizeType    size;
   cip::LabelMapType::PointType   origin;
-  {
+  
   std::cout << "Reading destination information..." << std::endl;
   cip::LabelMapReaderType::Pointer destinationReader = cip::LabelMapReaderType::New();
     destinationReader->SetFileName( destinationFileName );
@@ -114,9 +113,9 @@ int main( int argc, char *argv[] )
     }
 
   spacing = destinationReader->GetOutput()->GetSpacing();
-  size    = destinationReader->GetOutput()->GetBufferedRegion().GetSize();
+  size    = destinationReader->GetOutput()->GetLargestPossibleRegion().GetSize();
   origin  = destinationReader->GetOutput()->GetOrigin();
-  }
+  
 
   //
   // Read the label map image
@@ -143,6 +142,15 @@ int main( int argc, char *argv[] )
   TransformType::Pointer transform = GetTransformFromFile( transformFileName );
 
   //
+  // Invert the transformation if specified by command like argument
+  //
+  if (isInvertTransformation == true)
+    {
+      std::cout<<"inverting transform"<<std::endl;
+       transform->GetInverse( transform );
+    }
+  
+  //
   // Resample the label map
   //
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
@@ -155,6 +163,7 @@ int main( int argc, char *argv[] )
     resampler->SetSize( size );
     resampler->SetOutputSpacing( spacing );
     resampler->SetOutputOrigin( origin );
+    resampler->SetOutputDirection( destinationReader->GetOutput()->GetDirection() );
   try
     {
     resampler->Update();
@@ -189,5 +198,5 @@ int main( int argc, char *argv[] )
 
   std::cout << "DONE." << std::endl;
 
-  return EXITSUCCESS;
+  return cip::EXITSUCCESS;
 }

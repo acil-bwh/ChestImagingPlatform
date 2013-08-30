@@ -38,13 +38,13 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageRegionIterator.h"
 #include <iostream>
 #include <fstream>
+#include "ComputeCrossSectionalAreaCLP.h"
 
 typedef itk::Image< unsigned short, 3 >       ImageType;
 typedef itk::ImageFileReader< ImageType >     ReaderType;
@@ -52,43 +52,8 @@ typedef itk::ImageRegionIterator< ImageType > IteratorType;
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::string inFileName  = "NA";
-  std::string outFileName = "NA";
 
-  //
-  // Argument descriptions for user help
-  //
-  std::string programDesc = "This program can be used to compute cross sectional areas \
-of structures in the input label map image. The cross-sectional area is computed with \
-respect to the axial plane. The algorithm proceeds by tallying all voxels of various types \
-in the label map. The tally for each entity is then multiplied by the in-plane (axial) \
-spacing value to give the cross sectional areas. Quantities are printed to std out";
-  std::string inFileNameDesc = "Input label map file name";
-  std::string outFileNameDesc = "Output CSV file";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 309 $" );
-
-    TCLAP::ValueArg<std::string> inFileNameArg ( "i", "inFileName", inFileNameDesc, true, inFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outFileNameArg ( "o", "outFileName", outFileNameDesc, false, outFileName, "string", cl );
-      
-    cl.parse( argc, argv );
-
-    inFileName  = inFileNameArg.getValue();
-    outFileName = outFileNameArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  PARSE_ARGS;
 
   //
   // Instantiate conventions for later usage
