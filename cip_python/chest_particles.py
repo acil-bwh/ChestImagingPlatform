@@ -33,9 +33,15 @@ class ChestParticles:
 
     mask_file_name : string (optional)
         File name of mask within which to execute particles
+
+    max_scale : float (optional)
+        The maximum scale to consider in scale space (default is 6.0)
+
+    scale_samples : int (optional)
+        Default is 5.
     """
     def __init__(self, feature_type, in_file_name, out_particles_file_name,
-        tmp_dir, mask_file_name=None):
+        tmp_dir, mask_file_name=None, max_scale=6.0, scale_samples=5):
         
         assert feature_type == "ridge_line" or feature_type == "valley_line" \
             or feature_type == "ridge_surface" or feature_type == \
@@ -50,11 +56,16 @@ class ChestParticles:
         self._in_particles_file_name = "NA"
         self._out_particles_file_name = out_particles_file_name
 
+        # The following takes on values 'DiscreteGaussian' or
+        # 'ContinuousGaussian' and controls the way in which spatial smoothing
+        # is done.
+        self._blurring_kernel_type = "DiscreteGaussian"
+
         # If set to true, the temporary directory will be wiped clean
         # after execution
         self.clean_tmp_dir = False
 
-        # Temporal filenames:
+        # Temp filenames:
         # -------------------
         # Volume name that is going to be used for scale-space particles.
         # This volume is the result of any pre-processing
@@ -71,8 +82,8 @@ class ChestParticles:
         # Run at a single scale vs a full scale-space exploration:
         self._single_scale = 0 
         self._use_mask = 1
-        self._max_scale = 6
-        self._scale_samples = 5
+        self._max_scale = max_scale
+        self._scale_samples = scale_samples
         self._iterations = 50
 
         self._verbose = 1
@@ -140,7 +151,7 @@ class ChestParticles:
 
         if self._feature_type == "ridge_line":
             self._info_params = (
-                " -info  h-c:V:val:0:-1  hgvec:V:gvec 
+                " -info  h-c:V:val:0:-1 hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 ")
             self._info_params += (
                 "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
@@ -150,7 +161,7 @@ class ChestParticles:
                 volTag + ":heval1:0:-1")
         elif self._feature_type == "valley_line":
             self._info_params = (
-                " -info  h-c:V:val:0:1  hgvec:V:gvec 
+                " -info  h-c:V:val:0:1  hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 ")
             self._info_params += (
                 "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
@@ -158,7 +169,7 @@ class ChestParticles:
             self._info_params += (str(self._live_thresh) + ":1 strn:" + 
                 volTag + ":heval1:0:1")
         elif self._feature_type == "ridge_surface":
-            self._info_params = (" -info h-c:V:val:0:-1 hgvec:V:gvec 
+            self._info_params = (" -info h-c:V:val:0:-1 hgvec:V:gvec \
             hhess:V:hess tan1:V:hevec2 ")
             self._info_params += (" sthr:" + volTag + ":heval2:" + 
                 str(self._seed_thresh) + ":-1 lthr:" + volTag + ":heval2:")
@@ -166,7 +177,7 @@ class ChestParticles:
                 volTag + ":hmode:" + str(self._mode_thresh) + ":-1 strn:" + 
                 volTag + ":heval2:0:-1")
         elif self._feature_type == "valley_surface":
-            self._info_params = (" -info h-c:V:val:0:1 hgvec:V:gvec 
+            self._info_params = (" -info h-c:V:val:0:1 hgvec:V:gvec \
             hhess:V:hess tan1:V:hevec0 ")
             self._info_params += (" sthr:" + volTag + ":heval0:" + 
                 str(self._seed_thresh) + ":1 lthr:" + volTag + ":heval0:")
@@ -201,6 +212,12 @@ class ChestParticles:
             self._reconKernelParams = \
                 "-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
             self._inverse_kernel_params = "-k c4hai"
+            
+        if self._blurring_kernel_type == "DiscreteGaussian":
+            self._reconKernelParams = self._reconKernelParams + " -kssb ds:1,5"
+        elif self._blurring_kernel_type == "ContinuousGaussian":
+            self._reconKernelParams = self._reconKernelParams + \
+                " -kssb gauss:1,5"
 
     def set_optimizer_params(self):
         self._optimizerParams = \

@@ -1,5 +1,12 @@
 #!/usr/bin/python
 
+# TODO: Investigate live_thresh and seed_thresh (ranges specified below)
+# TODO: Consider using mask throughout all passes if you're passing an
+#       airway mask in
+# TODO: Investigate alpha and beta settings -- esp. for pass three. In some
+#       passes they are irrelevant.
+# TODO: Try setting max_intensity to -400 instead of -600
+
 import os
 import pdb
 from cip_python.chest_particles import ChestParticles
@@ -20,15 +27,31 @@ class AirwayParticles(ChestParticles):
 
     mask_file_name : string (optional)
         File name of mask within which to execute particles
+
+    max_scale : float (optional)
+        The maximum scale to consider in scale space (default is 6.0)
+
+    live_thresh : float (optional)
+        Default is 50. Possible interval to explore: [30, 150]
+
+    seed_thresh : float (optional)
+        Default is 40. Possible interval to explore: [30, 200]
+
+    scale_samples : int (optional)
+        Default is 5.    
     """
-    def __init__(self, in_file_name, out_particles_file_name,
-                 tmp_dir, mask_file_name=None):
+    def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
+                 mask_file_name=None, max_scale=6., live_thresh=50.,
+                 seed_thresh=40., scale_samples=5):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
-                            tmp_dir=tmp_dir, mask_file_name=mask_file_name)
-        self._max_intensity = -600
+                            tmp_dir=tmp_dir, mask_file_name=mask_file_name,
+                            max_scale=max_scale, scale_samples=scale_samples)
+        self._max_intensity = -600 # -400?
         self._min_intensity = -1100
+        self._live_thresh = live_thresh
+        self._seed_thresh = seed_thresh        
 
     def execute(self):
         #Pre-processing
@@ -66,12 +89,10 @@ class AirwayParticles(ChestParticles):
         self._ppv = 1
         self._nss = 2
 
-        self._live_thresh = 50
-        self._seed_thresh = 40 # Threshold on strengh feature
-
         # Energy
+        # Radial energy function (psi_1 in the paper)
         self._inter_particle_enery_type = "uni"
-        self._beta  = 0.7
+        self._beta  = 0.7 # Irrelevant for pass 1
         self._alpha = 1.0
         self._iterations = 10
 
@@ -88,11 +109,16 @@ class AirwayParticles(ChestParticles):
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
-        self._use_mask = 0
+        self._use_mask = 1 #TODO: was 0
 
         # Energy
+        # Radial energy function (psi_2 in the paper).
+        # Addition of 2 components: scale and space
         self._inter_particle_energy_type = "add"
         self._alpha = 0
+
+        # Controls blending in scale and space with respect to
+        # function psi_2
         self._beta = 0.5
         self._irad = 1.15
         self._srad = 4
@@ -110,7 +136,7 @@ class AirwayParticles(ChestParticles):
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
-        self._use_mask = 0
+        self._use_mask = 1 # TODO: was 0
 
         # Energy
         self._inter_particle_energy_type = "add"
