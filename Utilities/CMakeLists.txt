@@ -4,6 +4,8 @@ PROJECT( CIPUtilities )
 
 SET ( CIPUtilities_SRCS
   ${CMAKE_SOURCE_DIR}/Utilities/VTK/vtkSuperquadricTensorGlyphFilter.cxx
+  ${CMAKE_SOURCE_DIR}/Utilities/VTK/vtkGlyph3DWithScaling.cxx
+
 )
 
 set( LIB_NAME CIPUtilities )
