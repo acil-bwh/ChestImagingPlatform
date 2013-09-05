@@ -2,10 +2,9 @@
 
 # TODO: Investigate live_thresh and seed_thresh (ranges specified below)
 # TODO: Consider using mask throughout all passes if you're passing an
-#       airway mask in
+#       airway mask in (tried this -- does not seem to have an effect. Bug?)
 # TODO: Investigate alpha and beta settings -- esp. for pass three. In some
 #       passes they are irrelevant.
-# TODO: Try setting max_intensity to -400 instead of -600
 
 import os
 import pdb
@@ -29,7 +28,12 @@ class AirwayParticles(ChestParticles):
         File name of mask within which to execute particles
 
     max_scale : float (optional)
-        The maximum scale to consider in scale space (default is 6.0)
+        The maximum scale to consider in scale space (default is 6.0). If
+        larger structures are desired, it's advised to downsample the input
+        image using the 'down_sample_rate' parameter and not to simply increase
+        'max_scale'. For example, to capture a structure that is best
+        represented at a scale of 12, keep 'max_scale' at 6 and downsample by
+        2. The scale of the output particles is handled properly.    
 
     live_thresh : float (optional)
         Default is 50. Possible interval to explore: [30, 150]
@@ -38,17 +42,29 @@ class AirwayParticles(ChestParticles):
         Default is 40. Possible interval to explore: [30, 200]
 
     scale_samples : int (optional)
-        Default is 5.    
+        The number of pre-blurrings performed on the input image. These
+        pre-blurrings are saved to the specified temp directory and used for
+        interpolation across scale. The scale at which a given blurring is
+        performed is also a function of the 'max_scale' parameter. Note that
+        blurrings are not performed uniformly on the interval [0, max_scale].
+        Instead, more blurrings are performed at the low end in order to better
+        capture smaller structures. Default value is 5.
+
+    down_sample_rate : int (optional)
+        The amount by which the input image will be downsampled prior to
+        running particles. Default is 1 (no downsampling).
+
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, max_scale=6., live_thresh=50.,
-                 seed_thresh=40., scale_samples=5):
+                 seed_thresh=40., scale_samples=5, down_sample_rate=1):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
                             tmp_dir=tmp_dir, mask_file_name=mask_file_name,
-                            max_scale=max_scale, scale_samples=scale_samples)
-        self._max_intensity = -600 # -400?
+                            max_scale=max_scale, scale_samples=scale_samples,
+                            down_sample_rate=down_sample_rate)
+        self._max_intensity = -400
         self._min_intensity = -1100
         self._live_thresh = live_thresh
         self._seed_thresh = seed_thresh        

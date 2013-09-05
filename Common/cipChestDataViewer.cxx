@@ -38,7 +38,7 @@
 #include "vtkVectorText.h"
 #include "vtkFollower.h"
 #include "vtkLinearExtrusionFilter.h"
-
+#include "vtkGlyph3DWithScaling.h"
 
 cipChestDataViewer::cipChestDataViewer()
 {
@@ -421,6 +421,59 @@ void cipChestDataViewer::SetAirwayParticlesAsCylinders( vtkPolyData* polyData, d
   this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), false );
 }
 
+void cipChestDataViewer::SetAirwayParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName )
+{
+  this->SetParticlesAsDiscs( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), true );
+}
+
+void cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName,
+					      unsigned char particlesType, bool scaleGlyphsByParticlesScale )
+{
+  polyData->GetPointData()->SetScalars( polyData->GetPointData()->GetArray( "scale" ) );
+
+  if ( particlesType == static_cast< unsigned char >( cip::AIRWAY ) )
+    {
+    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec2" ) );
+    }
+
+  vtkCylinderSource* cylinderSource = vtkCylinderSource::New();
+    cylinderSource->SetHeight( 0.25 );
+    cylinderSource->SetRadius( 1.0 );
+    cylinderSource->SetCenter( 0, 0, 0 );
+    cylinderSource->SetResolution( 10 );
+    cylinderSource->CappingOn();
+
+  vtkTransform* cylinderRotator = vtkTransform::New(); 
+    cylinderRotator->RotateZ( 90 );
+
+  vtkTransformPolyDataFilter* polyFilter = vtkTransformPolyDataFilter::New();
+    polyFilter->SetInput( cylinderSource->GetOutput() );
+    polyFilter->SetTransform( cylinderRotator );
+    polyFilter->Update();
+
+  vtkGlyph3DWithScaling* glyph = vtkGlyph3DWithScaling::New();
+    glyph->SetInput( polyData );
+    glyph->SetSource( polyFilter->GetOutput() );
+    glyph->SetVectorModeToUseNormal();
+    glyph->SetScaleModeToScaleByScalar();
+    glyph->ScalingXOff();
+    glyph->ScalingYOn();
+    glyph->ScalingZOn(); 
+    // #glyph SetScaleModeToDataScalingOff
+    glyph->SetScaleFactor( scaleFactor );
+    glyph->Update();
+
+  vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+    mapper->SetInput( glyph->GetOutput() );
+    mapper->ScalarVisibilityOff();
+
+  vtkActor* actor = vtkActor::New();
+    actor->SetMapper( mapper );
+
+  this->AirwayParticlesActorMap[actorName] = actor;
+  this->ActorMap[actorName] = actor;
+  this->Renderer->AddActor( this->ActorMap[actorName] );
+}
 
 void cipChestDataViewer::SetVesselParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
@@ -446,8 +499,8 @@ void cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, double 
     }
 
   vtkCylinderSource* cylinderSource = vtkCylinderSource::New();
-    cylinderSource->SetHeight( 1.6 );
-    cylinderSource->SetRadius( 0.4 );
+    cylinderSource->SetHeight( 20 );
+    cylinderSource->SetRadius( 2 );
     cylinderSource->SetCenter( 0, 0, 0 );
     cylinderSource->SetResolution( 10 );
     cylinderSource->CappingOn();

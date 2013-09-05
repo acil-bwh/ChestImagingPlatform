@@ -84,6 +84,9 @@ public:
   void SetVesselParticlesAsCylinders( vtkPolyData*, double, std::string );
   void SetPointsAsSpheres( vtkPolyData*, double, std::string );
 
+  void SetAirwayParticlesAsDiscs( vtkPolyData*, double, std::string );
+  void SetParticlesAsDiscs( vtkPolyData*, double, std::string, unsigned char, bool );
+
   void SetPolyData( vtkPolyData*, std::string );
 
   void SetLeftObliqueThinPlateSplineSurface( cipThinPlateSplineSurface*, std::string );

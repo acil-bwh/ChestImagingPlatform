@@ -106,10 +106,15 @@ int main(int argc, char *argv[])
   std::vector<std::string> airwayParticlesFileNames;
   std::vector<std::string> airwayScaledCylindersFileNames;
   std::vector<std::string> airwayScaledSpheresFileNames;
+  std::vector<std::string> airwayScaledDiscsFileNames;
   // Airway cylinder colors:
   std::vector<double> airwayCylindersRed;
   std::vector<double> airwayCylindersGreen;
   std::vector<double> airwayCylindersBlue;
+  // Airway scaled discs colors:
+  std::vector<double> airwayScaledDiscsRed;
+  std::vector<double> airwayScaledDiscsGreen;
+  std::vector<double> airwayScaledDiscsBlue;
   // Airway sphere colors:
   std::vector<double> airwaySpheresRed;
   std::vector<double> airwaySpheresGreen;
@@ -132,12 +137,14 @@ int main(int argc, char *argv[])
   std::vector<double> airwayParticlesOpacity;
   std::vector<double> airwayScaledCylindersOpacity;
   std::vector<double> airwayScaledSpheresOpacity;
+  std::vector<double> airwayScaledDiscsOpacity;
   // Airway glyph size
   std::vector<double> airwayCylindersSize;
   std::vector<double> airwaySpheresSize;
   std::vector<double> airwayParticlesSize;
   std::vector<double> airwayScaledCylindersSize;
   std::vector<double> airwayScaledSpheresSize;
+  std::vector<double> airwayScaledDiscsSize;
 
   // Vessel particles file names options:
   std::vector<std::string> vesselCylindersFileNames;
@@ -212,6 +219,9 @@ flags, respectively. These flags should be invoked immediately after invoking th
   std::string airwayScaledCylindersFileNamesDesc = "Airway particles file name to be rendered as scaled cylinders. You \
 must also specify the color, opacity, and size of the glyphs with the --ascr, --ascg, --ascb, --asco, and --ascs \
 flags, respectively. These flags should be invoked immediately after invoking the --asCy flag.";
+  std::string airwayScaledDiscsFileNamesDesc = "Airway particles file name to be rendered as scaled discs. You \
+must also specify the color, opacity, and size of the glyphs with the --asdr, --asdg, --asdb, --asdo, and --asds \
+flags, respectively. These flags should be invoked immediately after invoking the --asd flag.";
   std::string airwayScaledSpheresFileNamesDesc = "Airway particles file name to be rendered as scaled spheres. You \
 must also specify the color, opacity, and size of the glyphs with the --assr, --assg, --assb, --asso, and --asss \
 flags, respectively. These flags should be invoked immediately after invoking the --asSph flag.";
@@ -231,6 +241,10 @@ flags, respectively. These flags should be invoked immediately after invoking th
   std::string airwayScaledCylindersRedDesc   = "Red channel for airway scaled cylinders in interval [0,1]. See notes for --asCy flag";
   std::string airwayScaledCylindersGreenDesc = "Green channel for airway scaled cylinders in interval [0,1]. See notes for --asCy flag";
   std::string airwayScaledCylindersBlueDesc  = "Blue channel for airway scaled cylinders in interval [0,1]. See notes for --asCy flag";
+  // Airway scaled discs color descriptions:
+  std::string airwayScaledDiscsRedDesc   = "Red channel for airway scaled discs in interval [0,1]. See notes for --asd flag";
+  std::string airwayScaledDiscsGreenDesc = "Green channel for airway scaled discs in interval [0,1]. See notes for --asd flag";
+  std::string airwayScaledDiscsBlueDesc  = "Blue channel for airway scaled discs in interval [0,1]. See notes for --asd flag";
   // Airway scaled sphere color descriptions:
   std::string airwayScaledSpheresRedDesc   = "Red channel for airway scaled spheres in interval [0,1]. See notes for --asSp flag";
   std::string airwayScaledSpheresGreenDesc = "Green channel for airway scaled spheres in interval [0,1]. See notes for --asSp flag";
@@ -241,12 +255,14 @@ flags, respectively. These flags should be invoked immediately after invoking th
   std::string airwayParticlesOpacityDesc       = "Airway particles opacity in interval [0,1]. See notes for --aPart flag";
   std::string airwayScaledCylindersOpacityDesc = "Airway scaled cylinders opacity in interval [0,1]. See notes for --asCy flag";
   std::string airwayScaledSpheresOpacityDesc   = "Airway scaled spheres opacity in interval [0,1]. See notes for --asSp flag";
+  std::string airwayScaledDiscsOpacityDesc     = "Airway scaled discs opacity in interval [0,1]. See notes for --asd flag";
   // Airway glyph size descriptions:
   std::string airwayCylindersSizeDesc       = "Airway cylinder size. See notes for --aCy flag";
   std::string airwaySpheresSizeDesc         = "Airway spheres size. See notes for --aSp flag";
   std::string airwayParticlesSizeDesc       = "Airway particles size. See notes for --aPart flag";
   std::string airwayScaledCylindersSizeDesc = "Airway scaled cylinder size. See notes for --asCy flag";
   std::string airwayScaledSpheresSizeDesc   = "Airway scaled spheres size. See notes for --asSp flag";
+  std::string airwayScaledDiscsSizeDesc     = "Airway scaled discs size. See notes for --asd flag";
 
   // Vessel particles file names option descriptions 
   std::string vesselCylindersFileNamesDesc = "Vessel particles file name to be rendered as cylinders. You \
@@ -296,12 +312,19 @@ flags, respectively. These flags should be invoked immediately after invoking th
     TCLAP::MultiArg<std::string> airwayScaledCylindersFileNamesArg("", "asCy", airwayScaledCylindersFileNamesDesc, false, "string", cl);
     TCLAP::MultiArg<std::string> airwayScaledSpheresFileNamesArg("", "asSp", airwayScaledSpheresFileNamesDesc, false, "string", cl);
     TCLAP::MultiArg<std::string> airwayCylindersPresetsFileNamesArg("", "aCyPre", airwayCylindersPresetsFileNamesDesc, false, "string", cl);
+    TCLAP::MultiArg<std::string> airwayScaledDiscsFileNamesArg("", "asd", airwayScaledDiscsFileNamesDesc, false, "string", cl);
     // Airway particles colors, opacity and size
     TCLAP::MultiArg<double> airwayParticlesRedArg("", "apr", airwayParticlesRedDesc, false, "double", cl);
     TCLAP::MultiArg<double> airwayParticlesGreenArg("", "apg", airwayParticlesGreenDesc, false, "double", cl);
     TCLAP::MultiArg<double> airwayParticlesBlueArg("", "apb", airwayParticlesBlueDesc, false, "double", cl);
     TCLAP::MultiArg<double> airwayParticlesOpacityArg("", "apo", airwayParticlesOpacityDesc, false, "double", cl);
-    TCLAP::MultiArg<double> airwayParticlesSizeArg("", "aps", airwayParticlesSizeDesc, false, "double", cl);    
+    TCLAP::MultiArg<double> airwayParticlesSizeArg("", "aps", airwayParticlesSizeDesc, false, "double", cl);   
+
+    TCLAP::MultiArg<double> airwayScaledDiscsRedArg("", "asdr", airwayScaledDiscsRedDesc, false, "double", cl);
+    TCLAP::MultiArg<double> airwayScaledDiscsGreenArg("", "asdg", airwayScaledDiscsGreenDesc, false, "double", cl);
+    TCLAP::MultiArg<double> airwayScaledDiscsBlueArg("", "asdb", airwayScaledDiscsBlueDesc, false, "double", cl);
+    TCLAP::MultiArg<double> airwayScaledDiscsOpacityArg("", "asdo", airwayScaledDiscsOpacityDesc, false, "double", cl);
+    TCLAP::MultiArg<double> airwayScaledDiscsSizeArg("", "asds", airwayScaledDiscsSizeDesc, false, "double", cl);   
 
     TCLAP::MultiArg<double> airwayCylindersRedArg("", "acr", airwayCylindersRedDesc, false, "double", cl);
     TCLAP::MultiArg<double> airwayCylindersGreenArg("", "acg", airwayCylindersGreenDesc, false, "double", cl);
@@ -406,6 +429,10 @@ flags, respectively. These flags should be invoked immediately after invoking th
       {
       airwayScaledCylindersFileNames.push_back(airwayScaledCylindersFileNamesArg.getValue()[i]);
       }
+    for (unsigned int i=0; i<airwayScaledDiscsFileNamesArg.getValue().size(); i++)
+      {
+      airwayScaledDiscsFileNames.push_back(airwayScaledDiscsFileNamesArg.getValue()[i]);
+      }
     for (unsigned int i=0; i<airwayScaledSpheresFileNamesArg.getValue().size(); i++)
       {
       airwayScaledSpheresFileNames.push_back(airwayScaledSpheresFileNamesArg.getValue()[i]);
@@ -453,6 +480,28 @@ flags, respectively. These flags should be invoked immediately after invoking th
     for (unsigned int i=0; i<airwayCylindersSizeArg.getValue().size(); i++)
       {
       airwayCylindersSize.push_back(airwayCylindersSizeArg.getValue()[i]);
+      }
+
+    // Airway scaled discs color, opacity and size
+    for (unsigned int i=0; i<airwayScaledDiscsRedArg.getValue().size(); i++)
+      {
+      airwayScaledDiscsRed.push_back(airwayScaledDiscsRedArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<airwayScaledDiscsGreenArg.getValue().size(); i++)
+      {
+      airwayScaledDiscsGreen.push_back(airwayScaledDiscsGreenArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<airwayScaledDiscsBlueArg.getValue().size(); i++)
+      {
+      airwayScaledDiscsBlue.push_back(airwayScaledDiscsBlueArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<airwayScaledDiscsOpacityArg.getValue().size(); i++)
+      {
+      airwayScaledDiscsOpacity.push_back(airwayScaledDiscsOpacityArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<airwayScaledDiscsSizeArg.getValue().size(); i++)
+      {
+      airwayScaledDiscsSize.push_back(airwayScaledDiscsSizeArg.getValue()[i]);
       }
 
     // Model file names:
@@ -540,8 +589,6 @@ flags, respectively. These flags should be invoked immediately after invoking th
   cip::ChestConventions conventions;
   
   cipChestDataViewer* viewer = new cipChestDataViewer();
-//     viewer.SetParticleGlyphThetaResolution(particleGlyphThetaResolution);
-//     viewer.SetParticlePhiThetaResolution(particleGlyphPhiResolution);
     viewer->SetBackgroundColor(bgRed, bgGreen, bgBlue);
 
   if (ctFileName.compare("NA") != 0)
@@ -576,6 +623,11 @@ flags, respectively. These flags should be invoked immediately after invoking th
     {
     AddParticlesToViewer(viewer, airwayCylindersFileNames, airwayCylindersRed, airwayCylindersGreen, airwayCylindersBlue,
                          airwayCylindersOpacity, airwayCylindersSize, "airwayCylinders", "cylinder");
+    }
+  if (airwayScaledDiscsFileNames.size()> 0)
+    {
+    AddParticlesToViewer(viewer, airwayScaledDiscsFileNames, airwayScaledDiscsRed, airwayScaledDiscsGreen, airwayScaledDiscsBlue,
+                         airwayScaledDiscsOpacity, airwayScaledDiscsSize, "airwayParticles", "scaledDiscs");
     }
   if (vesselCylindersFileNames.size()> 0)
     {
@@ -809,6 +861,10 @@ void AddParticlesToViewer(cipChestDataViewer* viewer, std::vector<std::string> f
 	if (glyphType.compare("cylinder") == 0)
 	  {
 	    viewer->SetAirwayParticlesAsCylinders(reader->GetOutput(), scale[i], name);
+	  }
+	else if (glyphType.compare("scaledDiscs") == 0)
+	  {
+	    viewer->SetAirwayParticlesAsDiscs(reader->GetOutput(), scale[i], name);
 	  }
 	else
 	  {

@@ -35,13 +35,30 @@ class ChestParticles:
         File name of mask within which to execute particles
 
     max_scale : float (optional)
-        The maximum scale to consider in scale space (default is 6.0)
+        The maximum scale to consider in scale space (default is 6.0). If
+        larger structures are desired, it's advised to downsample the input
+        image using the 'down_sample_rate' parameter and not to simply increase
+        'max_scale'. For example, to capture a structure that is best
+        represented at a scale of 12, keep 'max_scale' at 6 and downsample by
+        2. The scale of the output particles is handled properly.
 
     scale_samples : int (optional)
-        Default is 5.
+        The number of pre-blurrings performed on the input image. These
+        pre-blurrings are saved to the specified temp directory and used for
+        interpolation across scale. The scale at which a given blurring is
+        performed is also a function of the 'max_scale' parameter. Note that
+        blurrings are not performed uniformly on the interval [0, max_scale].
+        Instead, more blurrings are performed at the low end in order to better
+        capture smaller structures. Default value is 5.
+
+    down_sample_rate : int (optional)
+        The amount by which the input image will be downsampled prior to
+        running particles. Default is 1 (no downsampling).
+
     """
     def __init__(self, feature_type, in_file_name, out_particles_file_name,
-        tmp_dir, mask_file_name=None, max_scale=6.0, scale_samples=5):
+        tmp_dir, mask_file_name=None, max_scale=6.0, scale_samples=5,
+        down_sample_rate=1):
         
         assert feature_type == "ridge_line" or feature_type == "valley_line" \
             or feature_type == "ridge_surface" or feature_type == \
@@ -121,7 +138,7 @@ class ChestParticles:
         # Limit the lower range of the input image
         self._minIntensity = -1024
         # Downsampling factor to enable multiresolution particles
-        self._down_sample_rate = 1    
+        self._down_sample_rate = down_sample_rate
 
         # Basic contrast Parameters
         # -------------------------
