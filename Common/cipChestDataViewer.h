@@ -80,7 +80,7 @@ public:
   void SetVesselParticles( vtkPolyData*, double, std::string );
   void SetFissureParticles( vtkPolyData*, double, std::string );
 
-  void SetAirwayParticlesAsCylinders( vtkPolyData*, double, std::string );
+  vtkActor* SetAirwayParticlesAsCylinders( vtkPolyData*, double, std::string );
   void SetVesselParticlesAsCylinders( vtkPolyData*, double, std::string );
   void SetPointsAsSpheres( vtkPolyData*, double, std::string );
 

@@ -416,9 +416,9 @@ void cipChestDataViewer::SetPointsAsSpheres( vtkPolyData* polyData, double radiu
 }
 
 
-void cipChestDataViewer::SetAirwayParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName )
+vtkActor* cipChestDataViewer::SetAirwayParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
-  this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), false );
+  return this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), false );
 }
 
 void cipChestDataViewer::SetAirwayParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName )
@@ -481,8 +481,8 @@ void cipChestDataViewer::SetVesselParticlesAsCylinders( vtkPolyData* polyData, d
 }
 
 
-void cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName,
-                                                  unsigned char particlesType, bool scaleGlyphsByParticlesScale )
+vtkActor* cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName,
+                                                       unsigned char particlesType, bool scaleGlyphsByParticlesScale )
 {
   if ( scaleGlyphsByParticlesScale )
     {
