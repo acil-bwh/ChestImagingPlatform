@@ -308,22 +308,30 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
   std::cout << "Asserting ChestRegion and ChestType array existence..." << std::endl;
   AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
 
-  std::cout << "Adding components to interactor..." << std::endl;
-  AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "airwayParticles", &componentLabelToNameMap, particleSize );
+  // Now add the particles. They will be used to create a minimum
+  // spanning tree, and this tree will be used in order to label
+  // particles between specified root and intermediate nodes /
+  // particles 
+  std::cout << "Adding particles to interactor for minimum spanning tree representation..." << std::endl;
+  interactor.SetAirwayParticlesAsMinimumSpanningTree( particlesReader->GetOutput() );
+
+
+//   std::cout << "Adding components to interactor..." << std::endl;
+//   AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "airwayParticles", &componentLabelToNameMap, particleSize );
 
   std::cout << "Rendering..." << std::endl;  
   interactor.Render();
 
-  vtkSmartPointer< vtkPolyData > outParticles = vtkSmartPointer< vtkPolyData >::New();
+//   vtkSmartPointer< vtkPolyData > outParticles = vtkSmartPointer< vtkPolyData >::New();
 
-  std::cout << "Retrieving labeled particles..." << std::endl;
-  outParticles = GetLabeledAirwayParticles( &interactor, particlesReader->GetOutput(), &componentLabelToNameMap ); 
+//   std::cout << "Retrieving labeled particles..." << std::endl;
+//   outParticles = GetLabeledAirwayParticles( &interactor, particlesReader->GetOutput(), &componentLabelToNameMap ); 
 
-  std::cout << "Writing labeled particles..." << std::endl;
-  vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
-    writer->SetFileName( genParticlesFileName.c_str() );
-    writer->SetInput( outParticles );
-    writer->Write();  
+//   std::cout << "Writing labeled particles..." << std::endl;
+//   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
+//     writer->SetFileName( genParticlesFileName.c_str() );
+//     writer->SetInput( outParticles );
+//     writer->Write();  
 
   std::cout << "DONE." << std::endl;
 
