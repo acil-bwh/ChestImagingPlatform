@@ -166,7 +166,7 @@ private:
 protected:
   typedef itk::VTKImageExport< GrayscaleImageType >  ExportType;
 
-  void SetParticlesAsCylinders( vtkPolyData*, double, std::string, unsigned char, bool );
+  vtkActor* SetParticlesAsCylinders( vtkPolyData*, double, std::string, unsigned char, bool );
 
   void ConnectPipelines( ExportType::Pointer, vtkImageImport* );
 

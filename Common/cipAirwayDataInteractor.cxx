@@ -66,7 +66,7 @@ void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
     if ( this->AirwayBranchCode.length() == 0 )
       {
       std::cout << "Setting airway branch to trachea..." << std::endl;
-      this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION0 ), this->ActorColor );
+      this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::TRACHEA ), this->ActorColor );
       }
     return;
     }    
@@ -78,13 +78,13 @@ void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
     {
     std::cout << "Setting airway branch to left main bronchi..." << std::endl;
     //TODO: Need to create LMB in conventions
-    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION1 ), this->ActorColor );
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::MAINBRONCHUS ), this->ActorColor );
     }
   if ( this->AirwayBranchCode.compare( "IMB" ) == 0 )
     {
     std::cout << "Setting airway branch to left main bronchi..." << std::endl;
     //TODO: Need to create RMB in conventions
-    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION1 ), this->ActorColor );
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::MAINBRONCHUS ), this->ActorColor );
     }
 }
 
@@ -130,15 +130,15 @@ void cipAirwayDataInteractor::UpdateAirwayGenerationAndRender( vtkActor* actor, 
       {
       if ( generation == 0 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION0 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::TRACHEA ), color );
         }
       if ( generation == 1 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION1 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::MAINBRONCHUS ), color );
         }
       if ( generation == 2 )
         {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION2 ), color );
+        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::UPPERLOBEBRONCHUS ), color );
         }
       if ( generation == 3 )
         {

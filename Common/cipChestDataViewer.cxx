@@ -541,6 +541,8 @@ vtkActor* cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, do
     }
   this->ActorMap[actorName] = actor;
   this->Renderer->AddActor( this->ActorMap[actorName] );
+
+  return actor;
 }
 
 
