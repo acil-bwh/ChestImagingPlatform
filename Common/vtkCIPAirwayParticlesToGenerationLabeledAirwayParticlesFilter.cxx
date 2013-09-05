@@ -63,9 +63,9 @@ vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::vtkCIPAirwayParti
   this->NumberOfStates                          = 10;//12; //11 airway generations, 1 noise
 
   //  this->States.push_back( static_cast< unsigned char >( cip::UNDEFINEDTYPE ) );
-  this->States.push_back( static_cast< unsigned char >( cip::AIRWAYGENERATION0 ) );
-  this->States.push_back( static_cast< unsigned char >( cip::AIRWAYGENERATION1 ) );
-  this->States.push_back( static_cast< unsigned char >( cip::AIRWAYGENERATION2 ) );
+  this->States.push_back( static_cast< unsigned char >( cip::TRACHEA ) );
+  this->States.push_back( static_cast< unsigned char >( cip::MAINBRONCHUS ) );
+  this->States.push_back( static_cast< unsigned char >( cip::UPPERLOBEBRONCHUS ) );
   this->States.push_back( static_cast< unsigned char >( cip::AIRWAYGENERATION3 ) );
   this->States.push_back( static_cast< unsigned char >( cip::AIRWAYGENERATION4 ) );
   this->States.push_back( static_cast< unsigned char >( cip::AIRWAYGENERATION5 ) );
@@ -108,33 +108,33 @@ vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::vtkCIPAirwayParti
   //
   for ( unsigned int i=0; i<this->BranchingTransitionProbabilities.size(); i++ )
     {
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION1) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION0) )
+      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::MAINBRONCHUS) &&
+	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::TRACHEA) )
 	{
 	  this->BranchingTransitionProbabilities[i].probability = 0.9999999;
 	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION1) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION1) )
+      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::MAINBRONCHUS) &&
+	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::MAINBRONCHUS) )
 	{
 	  this->BranchingTransitionProbabilities[i].probability = 0.0000001;
 	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION2) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION1) )
+      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::UPPERLOBEBRONCHUS) &&
+	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::MAINBRONCHUS) )
 	{
 	  this->BranchingTransitionProbabilities[i].probability = 0.9999999;
 	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION2) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION2) )
+      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::UPPERLOBEBRONCHUS) &&
+	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
 	{
 	  this->BranchingTransitionProbabilities[i].probability = 0.0000001;
 	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION2) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION0) )
+      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::UPPERLOBEBRONCHUS) &&
+	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::TRACHEA) )
 	{
 	  this->BranchingTransitionProbabilities[i].probability = 0.0;
 	}
       if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION3) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION2) )
+	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
 	{
 	  this->BranchingTransitionProbabilities[i].probability = 0.8;
 	}
@@ -144,7 +144,7 @@ vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::vtkCIPAirwayParti
 	  this->BranchingTransitionProbabilities[i].probability = 0.2;
 	}
       if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION4) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION2) )
+	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
 	{
 	  this->BranchingTransitionProbabilities[i].probability = 0.1;
 	}
@@ -1692,8 +1692,8 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransit
     float fromState = particles->GetPointData()->GetArray( "ChestType" )->GetTuple( sourceParticleID )[0];
     float toState   = particles->GetPointData()->GetArray( "ChestType" )->GetTuple( targetParticleID )[0];
     
-    if ( fromState == float(cip::AIRWAYGENERATION1) && toState == float(cip::AIRWAYGENERATION0) &&
-	 int(sourceState) == int(cip::AIRWAYGENERATION1) && int(targetState) == int(cip::AIRWAYGENERATION0) )
+    if ( fromState == float(cip::MAINBRONCHUS) && toState == float(cip::TRACHEA) &&
+	 int(sourceState) == int(cip::MAINBRONCHUS) && int(targetState) == int(cip::TRACHEA) )
       {
 	printDEB = true;
       }

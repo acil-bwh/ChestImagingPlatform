@@ -83,6 +83,9 @@ enum ChestRegion {
  *  update the ChestTypes below (in the class constructor). 
  *  Also need to update m_NumberOfEnumeratedChestTypes member variable
  *  and the 'ChestTypeNames' as well as 'ChestTypeColors'
+ *
+ *  Some notes about the types below. Segmental bronchi are considered 
+ *  generation 3, sub-segmental are considered generation 4, etc.
  */
 enum ChestType { 
   UNDEFINEDTYPE,                  //0 
@@ -123,9 +126,9 @@ enum ChestType {
   CYST,                           //35
   ATELECTASIS,                    //36
   HONEYCOMBING,                   //37
-  AIRWAYGENERATION0,              //38
-  AIRWAYGENERATION1,              //39
-  AIRWAYGENERATION2,              //40
+  TRACHEA,                        //38
+  MAINBRONCHUS,                   //39
+  UPPERLOBEBRONCHUS,              //40
   AIRWAYGENERATION3,              //41
   AIRWAYGENERATION4,              //42
   AIRWAYGENERATION5,              //43
@@ -157,6 +160,11 @@ enum ChestType {
   PANLOBULAREMPHYSEMA,            //69
   SUBCUTANEOUSFAT,                //70
   VISCERALFAT,                    //71
+  INTERMEDIATEBRONCHUS,           //72
+  LOWERLOBEBRONCHUS,              //73
+  SUPERIORDIVISIONBRONCHUS,       //74
+  LINGULARBRONCHUS,               //75
+  MIDDLELOBEBRONCHUS,             //76
 };
 
 enum ReturnCode {
@@ -193,7 +201,7 @@ public:
   ChestConventions()
     {
       m_NumberOfEnumeratedChestRegions = 28;
-      m_NumberOfEnumeratedChestTypes   = 72;
+      m_NumberOfEnumeratedChestTypes   = 77;
 
       typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -313,9 +321,9 @@ public:
       ChestTypes.push_back( static_cast< unsigned char >( CYST ) );
       ChestTypes.push_back( static_cast< unsigned char >( ATELECTASIS ) );
       ChestTypes.push_back( static_cast< unsigned char >( HONEYCOMBING ) );
-      ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION0 ) );
-      ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION1 ) );
-      ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION2 ) );
+      ChestTypes.push_back( static_cast< unsigned char >( TRACHEA ) );
+      ChestTypes.push_back( static_cast< unsigned char >( MAINBRONCHUS ) );
+      ChestTypes.push_back( static_cast< unsigned char >( UPPERLOBEBRONCHUS ) );
       ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION3 ) );
       ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION4 ) );
       ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION5 ) );
@@ -347,6 +355,11 @@ public:
       ChestTypes.push_back( static_cast< unsigned char >( PANLOBULAREMPHYSEMA ) );
       ChestTypes.push_back( static_cast< unsigned char >( SUBCUTANEOUSFAT ) );
       ChestTypes.push_back( static_cast< unsigned char >( VISCERALFAT ) );
+      ChestTypes.push_back( static_cast< unsigned char >( INTERMEDIATEBRONCHUS ) );
+      ChestTypes.push_back( static_cast< unsigned char >( LOWERLOBEBRONCHUS ) );
+      ChestTypes.push_back( static_cast< unsigned char >( SUPERIORDIVISIONBRONCHUS ) );
+      ChestTypes.push_back( static_cast< unsigned char >( LINGULARBRONCHUS ) );
+      ChestTypes.push_back( static_cast< unsigned char >( MIDDLELOBEBRONCHUS ) );
 
       ChestRegionNames.push_back( "UNDEFINEDREGION" );
       ChestRegionNames.push_back( "WHOLELUNG" ); 
@@ -415,9 +428,9 @@ public:
       ChestTypeNames.push_back( "CYST" );
       ChestTypeNames.push_back( "ATELECTASIS" );
       ChestTypeNames.push_back( "HONEYCOMBING" );
-      ChestTypeNames.push_back( "AIRWAYGENERATION0" );
-      ChestTypeNames.push_back( "AIRWAYGENERATION1" );
-      ChestTypeNames.push_back( "AIRWAYGENERATION2" );
+      ChestTypeNames.push_back( "TRACHEA" );
+      ChestTypeNames.push_back( "MAINBRONCHUS" );
+      ChestTypeNames.push_back( "UPPERLOBEBRONCHUS" );
       ChestTypeNames.push_back( "AIRWAYGENERATION3" );
       ChestTypeNames.push_back( "AIRWAYGENERATION4" );
       ChestTypeNames.push_back( "AIRWAYGENERATION5" );
@@ -449,6 +462,11 @@ public:
       ChestTypeNames.push_back( "PANLOBULAREMPHYSEMA" );
       ChestTypeNames.push_back( "SUBCUTANEOUSFAT" );
       ChestTypeNames.push_back( "VISCERALFAT" );
+      ChestTypeNames.push_back( "INTERMEDIATEBRONCHUS" );
+      ChestTypeNames.push_back( "LOWERLOBEBRONCHUS" );
+      ChestTypeNames.push_back( "SUPERIORDIVISIONBRONCHUS" );
+      ChestTypeNames.push_back( "LINGULARBRONCHUS" );
+      ChestTypeNames.push_back( "MIDDLELOBEBRONCHUS" );
 
       //
       // Each type is associated with a color. This is generally
@@ -496,9 +514,9 @@ public:
       double* t038 = new double[3]; t038[0] = 0.63; t038[1] = 0.63; t038[2] = 0.63; ChestTypeColors.push_back( t038 ); //HONEYCOMBING
       // The airway generation colors are identical to the vessel generation colors except that 0.01 has been
       // added to the red channel value to make these colors unique
-      double* t039 = new double[3]; t039[0] = 0.01; t039[1] = 0.00; t039[2] = 0.00; ChestTypeColors.push_back( t039 ); //AIRWAYGENERATION0
-      double* t040 = new double[3]; t040[0] = 0.01; t040[1] = 1.00; t040[2] = 0.00; ChestTypeColors.push_back( t040 ); //AIRWAYGENERATION1
-      double* t041 = new double[3]; t041[0] = 0.01; t041[1] = 1.00; t041[2] = 1.00; ChestTypeColors.push_back( t041 ); //AIRWAYGENERATION2
+      double* t039 = new double[3]; t039[0] = 0.01; t039[1] = 0.00; t039[2] = 0.00; ChestTypeColors.push_back( t039 ); //TRACHEA
+      double* t040 = new double[3]; t040[0] = 0.01; t040[1] = 1.00; t040[2] = 0.00; ChestTypeColors.push_back( t040 ); //MAINBRONCHUS
+      double* t041 = new double[3]; t041[0] = 0.01; t041[1] = 1.00; t041[2] = 1.00; ChestTypeColors.push_back( t041 ); //UPPERLOBEBRONCHUS
       double* t042 = new double[3]; t042[0] = 1.00; t042[1] = 1.00; t042[2] = 0.01; ChestTypeColors.push_back( t042 ); //AIRWAYGENERATION3
       double* t043 = new double[3]; t043[0] = 1.00; t043[1] = 0.01; t043[2] = 1.00; ChestTypeColors.push_back( t043 ); //AIRWAYGENERATION4
       double* t044 = new double[3]; t044[0] = 0.51; t044[1] = 1.00; t044[2] = 0.00; ChestTypeColors.push_back( t044 ); //AIRWAYGENERATION5
@@ -534,6 +552,12 @@ public:
 
       double* t071 = new double[3]; t071[0] = 0.59; t071[1] = 0.65; t071[2] = 0.20; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
       double* t072 = new double[3]; t072[0] = 0.58; t072[1] = 0.65; t072[2] = 0.20; ChestTypeColors.push_back( t072 ); //VISCERALFAT
+
+      double* t073 = new double[3]; t073[0] = 0.58; t073[1] = 0.65; t073[2] = 0.21; ChestTypeColors.push_back( t073 ); //INTERMEDIATEBRONCHUS
+      double* t074 = new double[3]; t074[0] = 0.58; t074[1] = 0.65; t074[2] = 0.22; ChestTypeColors.push_back( t074 ); //LOWERLOBEBRONCHUS
+      double* t075 = new double[3]; t075[0] = 0.58; t075[1] = 0.65; t075[2] = 0.23; ChestTypeColors.push_back( t075 ); //SUPERIORDIVISIONBRONCHUS
+      double* t076 = new double[3]; t076[0] = 0.58; t076[1] = 0.65; t076[2] = 0.24; ChestTypeColors.push_back( t076 ); //LINGULARBRONCHUS
+      double* t077 = new double[3]; t077[0] = 0.58; t077[1] = 0.65; t077[2] = 0.25; ChestTypeColors.push_back( t077 ); //MIDDLELOBEBRONCHUS
 
       //
       // Each region is associated with a color. This is generally
