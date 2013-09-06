@@ -260,6 +260,8 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
     return cip::ARGUMENTPARSINGERROR;
     }
 
+  cip::ChestConventions conventions;
+
   cipAirwayDataInteractor interactor;               
   
   if ( ctFileName.compare( "NA" ) != 0 )
@@ -315,7 +317,6 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
   std::cout << "Adding particles to interactor for minimum spanning tree representation..." << std::endl;
   interactor.SetAirwayParticlesAsMinimumSpanningTree( particlesReader->GetOutput() );
 
-
 //   std::cout << "Adding components to interactor..." << std::endl;
 //   AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "airwayParticles", &componentLabelToNameMap, particleSize );
 
@@ -327,11 +328,12 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
 //   std::cout << "Retrieving labeled particles..." << std::endl;
 //   outParticles = GetLabeledAirwayParticles( &interactor, particlesReader->GetOutput(), &componentLabelToNameMap ); 
 
-//   std::cout << "Writing labeled particles..." << std::endl;
-//   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
-//     writer->SetFileName( genParticlesFileName.c_str() );
-//     writer->SetInput( outParticles );
-//     writer->Write();  
+  std::cout << "Writing labeled particles..." << std::endl;
+  vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
+    writer->SetFileName( genParticlesFileName.c_str() );
+    writer->SetInput( particlesReader->GetOutput() );
+    //writer->SetFileTypeToASCII();
+    writer->Write();  
 
   std::cout << "DONE." << std::endl;
 

@@ -60,12 +60,15 @@ private:
   vtkCallbackCommand* InteractorCallbackCommand;
   UndoState m_UndoState;      
   vtkSmartPointer< vtkMutableUndirectedGraph > MinimumSpanningTree;
+  vtkSmartPointer< vtkPolyData > AirwayParticles;
   unsigned int NumberInputParticles;
   unsigned int NumberOfPointDataArrays;
   unsigned int MinimumSpanningTreeRootNode;
   unsigned int MinimumSpanningTreeIntermediateNode;
   double ParticleDistanceThreshold;
   double EdgeWeightAngleSigma;
+  unsigned char SelectedChestRegion;
+  unsigned char SelectedChestType;
 
   double* ActorColor;
   std::string AirwayBranchCode;

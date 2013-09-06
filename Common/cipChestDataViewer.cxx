@@ -421,13 +421,13 @@ vtkActor* cipChestDataViewer::SetAirwayParticlesAsCylinders( vtkPolyData* polyDa
   return this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), false );
 }
 
-void cipChestDataViewer::SetAirwayParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName )
+vtkActor* cipChestDataViewer::SetAirwayParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
-  this->SetParticlesAsDiscs( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), true );
+  return this->SetParticlesAsDiscs( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::AIRWAY ), true );
 }
 
-void cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName,
-					      unsigned char particlesType, bool scaleGlyphsByParticlesScale )
+vtkActor* cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName,
+                                                   unsigned char particlesType, bool scaleGlyphsByParticlesScale )
 {
   polyData->GetPointData()->SetScalars( polyData->GetPointData()->GetArray( "scale" ) );
 
@@ -473,6 +473,8 @@ void cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData* polyData, double scal
   this->AirwayParticlesActorMap[actorName] = actor;
   this->ActorMap[actorName] = actor;
   this->Renderer->AddActor( this->ActorMap[actorName] );
+
+  return actor;
 }
 
 void cipChestDataViewer::SetVesselParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName )

@@ -515,8 +515,8 @@ public:
       // The airway generation colors are identical to the vessel generation colors except that 0.01 has been
       // added to the red channel value to make these colors unique
       double* t039 = new double[3]; t039[0] = 0.01; t039[1] = 0.00; t039[2] = 0.00; ChestTypeColors.push_back( t039 ); //TRACHEA
-      double* t040 = new double[3]; t040[0] = 0.01; t040[1] = 1.00; t040[2] = 0.00; ChestTypeColors.push_back( t040 ); //MAINBRONCHUS
-      double* t041 = new double[3]; t041[0] = 0.01; t041[1] = 1.00; t041[2] = 1.00; ChestTypeColors.push_back( t041 ); //UPPERLOBEBRONCHUS
+      double* t040 = new double[3]; t040[0] = 0.55; t040[1] = 0.27; t040[2] = 0.07; ChestTypeColors.push_back( t040 ); //MAINBRONCHUS
+      double* t041 = new double[3]; t041[0] = 1.00; t041[1] = 0.65; t041[2] = 0.00; ChestTypeColors.push_back( t041 ); //UPPERLOBEBRONCHUS
       double* t042 = new double[3]; t042[0] = 1.00; t042[1] = 1.00; t042[2] = 0.01; ChestTypeColors.push_back( t042 ); //AIRWAYGENERATION3
       double* t043 = new double[3]; t043[0] = 1.00; t043[1] = 0.01; t043[2] = 1.00; ChestTypeColors.push_back( t043 ); //AIRWAYGENERATION4
       double* t044 = new double[3]; t044[0] = 0.51; t044[1] = 1.00; t044[2] = 0.00; ChestTypeColors.push_back( t044 ); //AIRWAYGENERATION5
@@ -553,11 +553,11 @@ public:
       double* t071 = new double[3]; t071[0] = 0.59; t071[1] = 0.65; t071[2] = 0.20; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
       double* t072 = new double[3]; t072[0] = 0.58; t072[1] = 0.65; t072[2] = 0.20; ChestTypeColors.push_back( t072 ); //VISCERALFAT
 
-      double* t073 = new double[3]; t073[0] = 0.58; t073[1] = 0.65; t073[2] = 0.21; ChestTypeColors.push_back( t073 ); //INTERMEDIATEBRONCHUS
-      double* t074 = new double[3]; t074[0] = 0.58; t074[1] = 0.65; t074[2] = 0.22; ChestTypeColors.push_back( t074 ); //LOWERLOBEBRONCHUS
-      double* t075 = new double[3]; t075[0] = 0.58; t075[1] = 0.65; t075[2] = 0.23; ChestTypeColors.push_back( t075 ); //SUPERIORDIVISIONBRONCHUS
-      double* t076 = new double[3]; t076[0] = 0.58; t076[1] = 0.65; t076[2] = 0.24; ChestTypeColors.push_back( t076 ); //LINGULARBRONCHUS
-      double* t077 = new double[3]; t077[0] = 0.58; t077[1] = 0.65; t077[2] = 0.25; ChestTypeColors.push_back( t077 ); //MIDDLELOBEBRONCHUS
+      double* t073 = new double[3]; t073[0] = 0.85; t073[1] = 0.75; t073[2] = 0.85; ChestTypeColors.push_back( t073 ); //INTERMEDIATEBRONCHUS
+      double* t074 = new double[3]; t074[0] = 1.00; t074[1] = 0.02; t074[2] = 0.00; ChestTypeColors.push_back( t074 ); //LOWERLOBEBRONCHUS
+      double* t075 = new double[3]; t075[0] = 0.98; t075[1] = 0.50; t075[2] = 0.45; ChestTypeColors.push_back( t075 ); //SUPERIORDIVISIONBRONCHUS
+      double* t076 = new double[3]; t076[0] = 0.00; t076[1] = 0.03; t076[2] = 1.00; ChestTypeColors.push_back( t076 ); //LINGULARBRONCHUS
+      double* t077 = new double[3]; t077[0] = 0.25; t077[1] = 0.88; t077[2] = 0.82; ChestTypeColors.push_back( t077 ); //MIDDLELOBEBRONCHUS
 
       //
       // Each region is associated with a color. This is generally

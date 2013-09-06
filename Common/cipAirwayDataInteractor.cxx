@@ -40,6 +40,9 @@ cipAirwayDataInteractor::cipAirwayDataInteractor()
   this->RenderWindowInteractor->RemoveObserver( this->ViewerCallbackCommand );
   this->RenderWindowInteractor->AddObserver( vtkCommand::KeyPressEvent, this->InteractorCallbackCommand );
 
+  this->SelectedChestRegion = (unsigned char)(cip::UNDEFINEDREGION);
+  this->SelectedChestType   = (unsigned char)(cip::UNDEFINEDTYPE);
+
   this->NumberInputParticles      = 0;
   this->NumberOfPointDataArrays   = 0;
   this->EdgeWeightAngleSigma      = 1.0;
@@ -66,6 +69,8 @@ void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
     if ( this->AirwayBranchCode.length() == 0 )
       {
       std::cout << "Setting airway branch to trachea..." << std::endl;
+      this->SelectedChestRegion = (unsigned char)(cip::UNDEFINEDREGION);
+      this->SelectedChestType   = (unsigned char)(cip::TRACHEA);
       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::TRACHEA ), this->ActorColor );
       }
     return;
@@ -77,14 +82,114 @@ void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
   if ( this->AirwayBranchCode.compare( "LMB" ) == 0 )
     {
     std::cout << "Setting airway branch to left main bronchi..." << std::endl;
-    //TODO: Need to create LMB in conventions
-    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::MAINBRONCHUS ), this->ActorColor );
+    this->Conventions->GetChestTypeColor( (unsigned char)(cip::MAINBRONCHUS), this->ActorColor );
+    this->SelectedChestRegion = (unsigned char)(cip::LEFT);
+    this->SelectedChestType   = (unsigned char)(cip::MAINBRONCHUS);
     }
   if ( this->AirwayBranchCode.compare( "IMB" ) == 0 )
     {
-    std::cout << "Setting airway branch to left main bronchi..." << std::endl;
-    //TODO: Need to create RMB in conventions
+    std::cout << "Setting airway branch to right main bronchi..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHT);
+    this->SelectedChestType   = (unsigned char)(cip::MAINBRONCHUS);
     this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::MAINBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "IIB" ) == 0 )
+    {
+    std::cout << "Setting airway branch to intermediate bronchus (right lung)..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::INTERMEDIATEBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::INTERMEDIATEBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "LLB" ) == 0 )
+    {
+    std::cout << "Setting airway branch to left lower lobe bronchus..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::LEFTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::LOWERLOBEBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::LOWERLOBEBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "ILB" ) == 0 )
+    {
+    std::cout << "Setting airway branch to right lower lobe bronchus..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::LOWERLOBEBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::LOWERLOBEBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "SD" ) == 0 )
+    {
+    std::cout << "Setting airway branch to superior division bronchus (left lung)..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::LEFTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::SUPERIORDIVISIONBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::SUPERIORDIVISIONBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "LB" ) == 0 )
+    {
+    std::cout << "Setting airway branch to lingular bronchus (left lung)..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::LEFTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::LINGULARBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::LINGULARBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "ML" ) == 0 )
+    {
+    std::cout << "Setting airway branch to middle lobe bronchus (right lung)..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::MIDDLELOBEBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::MIDDLELOBEBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "LUB" ) == 0 )
+    {
+    std::cout << "Setting airway branch to left upper lobe bronchus..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::LEFTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::UPPERLOBEBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::UPPERLOBEBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "IUB" ) == 0 )
+    {
+    std::cout << "Setting airway branch to right upper lobe bronchus..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::UPPERLOBEBRONCHUS);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::UPPERLOBEBRONCHUS ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "L#" ) == 0 )
+    {
+    std::cout << "Setting airway branch to left lung generation 3..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::LEFTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::AIRWAYGENERATION3);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION3 ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "L$" ) == 0 )
+    {
+    std::cout << "Setting airway branch to left lung generation 4..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::LEFTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::AIRWAYGENERATION4);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION4 ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "L%" ) == 0 )
+    {
+    std::cout << "Setting airway branch to left lung generation 5..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::LEFTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::AIRWAYGENERATION5);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION5 ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "I#" ) == 0 )
+    {
+    std::cout << "Setting airway branch to right lung generation 3..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::AIRWAYGENERATION3);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION3 ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "I$" ) == 0 )
+    {
+    std::cout << "Setting airway branch to right lung generation 4..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::AIRWAYGENERATION4);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION4 ), this->ActorColor );
+    }
+  if ( this->AirwayBranchCode.compare( "I%" ) == 0 )
+    {
+    std::cout << "Setting airway branch to right lung generation 5..." << std::endl;
+    this->SelectedChestRegion = (unsigned char)(cip::RIGHTLUNG);
+    this->SelectedChestType   = (unsigned char)(cip::AIRWAYGENERATION5);
+    this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION5 ), this->ActorColor );
     }
 }
 
@@ -106,7 +211,14 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
 
  for ( unsigned int i=0; i<idList->GetNumberOfIds(); i++ )
    {
-   this->ParticleIDToActorMap[idList->GetId(i) ]->GetProperty()->SetColor( this->ActorColor[0], this->ActorColor[1], this->ActorColor[2] );
+   if ( this->AirwayParticles->GetPointData()->GetArray("ChestType")->GetTuple(idList->GetId(i))[0] == float(cip::UNDEFINEDTYPE) )
+     {
+     float tmpRegion = (float)(this->SelectedChestRegion);
+     float tmpType   = (float)(this->SelectedChestType);
+     this->ParticleIDToActorMap[idList->GetId(i)]->GetProperty()->SetColor( this->ActorColor[0], this->ActorColor[1], this->ActorColor[2] );
+     this->AirwayParticles->GetPointData()->GetArray("ChestRegion")->SetTuple(idList->GetId(i), &tmpRegion );
+     this->AirwayParticles->GetPointData()->GetArray("ChestType")->SetTuple(idList->GetId(i), &tmpType );
+     }
    }
 
  this->RenderWindow->Render();
@@ -213,6 +325,8 @@ void cipAirwayDataInteractor::RemoveActorAndRender( vtkActor* actor )
 
 void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartPointer< vtkPolyData > particles )
 {
+  this->AirwayParticles = particles;
+
   this->NumberInputParticles    = particles->GetNumberOfPoints();
   this->NumberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
@@ -252,10 +366,10 @@ void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartP
       tmpPolyData->GetPointData()->AddArray( arrayVec[j] );
       }
 
-    vtkActor* actor = this->SetAirwayParticlesAsCylinders( tmpPolyData, particleSize, name );
+    vtkActor* actor = this->SetAirwayParticlesAsDiscs( tmpPolyData, particleSize, name );
       this->SetActorColor( name, 1.0, 1.0, 1.0 );
       this->SetActorOpacity( name, 1.0 );
-
+      
     this->ActorToParticleIDMap[actor] = p;
     this->ParticleIDToActorMap[p]     = actor;
     }
@@ -269,8 +383,7 @@ void cipAirwayDataInteractor::InitializeMinimumSpanningTree( vtkSmartPointer< vt
   std::map< unsigned int, unsigned int > particleIDToNodeIDMap;
   std::map< unsigned int, unsigned int > nodeIDToParticleIDMap;
 
-  vtkSmartPointer< vtkMutableUndirectedGraph > weightedGraph =  
-    vtkSmartPointer< vtkMutableUndirectedGraph >::New();
+  vtkSmartPointer< vtkMutableUndirectedGraph > weightedGraph = vtkSmartPointer< vtkMutableUndirectedGraph >::New();
 
   for ( unsigned int i=0; i<this->NumberInputParticles; i++ )
     {
@@ -286,23 +399,21 @@ void cipAirwayDataInteractor::InitializeMinimumSpanningTree( vtkSmartPointer< vt
 
   for ( unsigned int i=0; i<this->NumberInputParticles; i++ )
     {
-      for ( unsigned int j=i+1; j<this->NumberInputParticles; j++ )
-	{
-	  double weight;
-	  
-	  if ( this->GetEdgeWeight( i, j, particles, &weight ) )
-	    {
-	      weightedGraph->AddEdge( particleIDToNodeIDMap[i], particleIDToNodeIDMap[j] );
-	      edgeWeights->InsertNextValue( weight );
-	    }
-	}
+    for ( unsigned int j=i+1; j<this->NumberInputParticles; j++ )
+      {
+      double weight;
+      
+      if ( this->GetEdgeWeight( i, j, particles, &weight ) )
+        {
+        weightedGraph->AddEdge( particleIDToNodeIDMap[i], particleIDToNodeIDMap[j] );
+        edgeWeights->InsertNextValue( weight );
+        }
+      }
     }
-
   weightedGraph->GetEdgeData()->AddArray( edgeWeights );
   weightedGraph->SetPoints( particles->GetPoints() );
 
-  vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree > minimumSpanningTreeFilter = 
-    vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree >::New();
+  vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree > minimumSpanningTreeFilter = vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree >::New();
     minimumSpanningTreeFilter->SetInput( weightedGraph );
     minimumSpanningTreeFilter->SetEdgeWeightArrayName( "Weights" );
     minimumSpanningTreeFilter->Update();
@@ -375,15 +486,16 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
   cipAirwayDataInteractor* dataInteractor = reinterpret_cast< cipAirwayDataInteractor* >( clientData );
 
   char pressedKey = dataInteractor->GetRenderWindowInteractor()->GetKeyCode(); 
+  std::cout << pressedKey << std::endl;
 
   if ( pressedKey == 'T' || pressedKey == 'I' || pressedKey == 'M' || pressedKey == 'B' ||
-       pressedKey == 'C' || pressedKey == 'L' )
+       pressedKey == 'C' || pressedKey == 'L' || pressedKey == 'S' || pressedKey == 'D' ||
+       pressedKey == 'M' || pressedKey == 'U' || pressedKey == '$' || pressedKey == '%' ||
+       pressedKey == '#' )
     {
     dataInteractor->UpdateAirwayBranchCode( pressedKey );
     }
-
-  std::cout << pressedKey << std::endl;
-  if ( pressedKey == 'k' )
+  else if ( pressedKey == 'k' )
     {
     int* clickPos = dataInteractor->GetRenderWindowInteractor()->GetEventPosition();
 
@@ -400,7 +512,7 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       }
     }
 
-  if ( pressedKey == '!' || pressedKey == '@' || pressedKey == '#' || pressedKey == '$' || pressedKey == '%' || 
+  else if ( pressedKey == '!' || pressedKey == '@' || pressedKey == '#' || pressedKey == '$' || pressedKey == '%' || 
        pressedKey == '^' || pressedKey == '&' || pressedKey == '*' || pressedKey == '(' || pressedKey == ')' ||
        pressedKey == 'o' || pressedKey == 'm' )
     {
