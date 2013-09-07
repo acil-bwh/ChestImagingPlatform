@@ -71,7 +71,6 @@ namespace
 {
 #define MY_ENCODING "ISO-8859-1"
 
-
 typedef itk::Image< unsigned short, 3 >                                                                UnsignedShortImageType;
 typedef itk::Image< short, 3 >                                                                         ShortImageType;
 typedef itk::ImageFileReader< ShortImageType >                                                         ShortReaderType;
@@ -99,6 +98,7 @@ typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >  
 typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  >                 ncMetricType;
 typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
 typedef itk::CompositeTransform< double, 3 > CompositeTransformType;
+
 
 struct REGIONTYPEPAIR
 {
@@ -427,7 +427,10 @@ int main( int argc, char *argv[] )
   
   //  spatialObjectMask->SetImage(  movingLabelMap);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ENH: changed GetTransformationSimilarityMetric to take in as arg multiple transformation files and concatenate them prior to computing the similarity metric
   // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
 
   //parse transform arg  and join transforms together
@@ -584,7 +587,7 @@ std::endl;
       ctSimilarityXMLData.regionAndTypeUsed.append(", ");
       }
     }
-  
+
   ctSimilarityXMLData.similarityValue = (float)(mutualInformationValue);
   
   ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
