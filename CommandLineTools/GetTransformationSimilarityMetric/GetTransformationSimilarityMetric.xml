@@ -110,15 +110,17 @@
 </integer-vector>
 
 
-    <string>
+   <string-vector>
       <name>inputTransformFileName</name>
-      <label>input Transform FileName</label>
+      <label>input Transform FileNames</label>
       <channel>input</channel>
       <flag>q</flag>
       <longflag>--inputTransform</longflag>
-      <description><![CDATA[Input transform file name]]></description>
+      <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
       <default>q</default>
-    </string>   
+    </string-vector>   
+
+
 <integer-vector>
       <name>regionVecArg</name>
       <longflag>--regionVec</longflag>
@@ -128,7 +130,15 @@
 </integer-vector>
 
  
-
+    <string>
+      <name>outputXMLFileName</name>
+      <label>output XML File</label>
+      <channel>input</channel>
+      <flag>e</flag>
+      <longflag>--outputXMLFile</longflag>
+      <description><![CDATA[The name of the output xml file. If not specified, it will be automatically assigned as moving-to-fixed.xml ]]></description>
+      <default>q</default>
+    </string> 
 
   </parameters>
 </executable>

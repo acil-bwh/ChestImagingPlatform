@@ -65,6 +65,7 @@
 #include "itkGradientDifferenceImageToImageMetric.h"
 #include "itkNormalizedCorrelationImageToImageMetric.h"
 #include <itkSubsample.h>
+#include <itkCompositeTransform.h>
 
 namespace
 {
@@ -95,7 +96,8 @@ typedef itk::MutualInformationImageToImageMetric<ShortImageType, ShortImageType 
 typedef itk::NormalizedMutualInformationHistogramImageToImageMetric< ShortImageType, ShortImageType >  NMIMetricType;
 typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >                         msqrMetricType;
 typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  >                 ncMetricType;
-  typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
+typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
+typedef itk::CompositeTransform< double, 3 > CompositeTransformType;
 
 struct REGIONTYPEPAIR
 {
@@ -408,15 +410,27 @@ int main( int argc, char *argv[] )
   
   //  spatialObjectMask->SetImage(  movingLabelMap);
   // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
-  //Read in the transform file
-  TransformType::Pointer transform = TransformType::New();
-  ReadTransformFromFile(transform, inputTransformFileName.c_str() );
+
+  //parse transform arg  and join transforms together
+  
+   // TransformType::Pointer transform = TransformType::New();
+   //last transform applied first, so make last transform 
+  CompositeTransformType::Pointer transform = CompositeTransformType::New();
+  for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
+    { 
+       TransformType::Pointer transformTemp = TransformType::New();
+       ReadTransformFromFile(transformTemp, inputTransformFileName[i].c_str() );
+       transform->AddTransform(transformTemp);
+    }
+
+  transform->SetAllTransformsToOptimizeOn();		
+
   //test identity
   
   std::cout<<"initializing transform"<<std::endl;
   
   InitializerType::Pointer initializer = InitializerType::New();
-  initializer->SetTransform( transform ); 
+  // initializer->SetMovingInitialTransform( transform ); 
   initializer->SetFixedImage(  ctFixedImage );
   initializer->SetMovingImage( ctMovingImage );
   initializer->MomentsOn();
@@ -560,9 +574,9 @@ int main( int argc, char *argv[] )
   ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
   
   std::cout<<"getting transfo filename"<<std::endl;
-  if ( strcmp(inputTransformFileName.c_str(), "q") != 0 )
+  if ( strcmp(inputTransformFileName[0].c_str(), "q") != 0 )
     {
-      std::string infoFilename = inputTransformFileName;
+      std::string infoFilename = inputTransformFileName[0];
       int result = infoFilename.find_last_of('.');
       if (std::string::npos != result)
 	{
@@ -571,6 +585,10 @@ int main( int argc, char *argv[] )
       // append extension:
       infoFilename.append("_measures.xml");
       
+      if ( strcmp(outputXMLFileName.c_str(), "q") != 0 )  
+	{
+	  infoFilename.assign(outputXMLFileName.c_str());
+	}
       int pathLength = 0, pos=0, next=0;   
       
       if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
@@ -620,15 +638,15 @@ int main( int argc, char *argv[] )
 	}	
 	    
       //remove path from output transformation file before storing in xml
-      std::cout<<"outputtransform filename ="<<inputTransformFileName.c_str()<<std::endl;
+      std::cout<<"outputtransform filename ="<<inputTransformFileName[0].c_str()<<std::endl;
       pos=0;
       next=0;
       for (int i = 0; i < (pathLength);i++)
 	{ 
 	  pos = next+1;
-	  next = inputTransformFileName.find('/', next+1);  
+	  next = inputTransformFileName[0].find('/', next+1);  
 	}
-      ctSimilarityXMLData.transformationLink.assign(inputTransformFileName.c_str());
+      ctSimilarityXMLData.transformationLink.assign(inputTransformFileName[0].c_str());
       ctSimilarityXMLData.transformationLink.erase(0,pos);
       std::cout<<"saving output to: "<<infoFilename.c_str()<<std::endl;
       WriteMeasuresXML(infoFilename.c_str(), ctSimilarityXMLData);      
