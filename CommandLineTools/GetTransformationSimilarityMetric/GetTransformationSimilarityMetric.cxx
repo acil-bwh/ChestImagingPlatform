@@ -65,11 +65,13 @@
 #include "itkGradientDifferenceImageToImageMetric.h"
 #include "itkNormalizedCorrelationImageToImageMetric.h"
 #include <itkSubsample.h>
+#include <itkCompositeTransform.h>
 
 namespace
 {
 #define MY_ENCODING "ISO-8859-1"
 
+<<<<<<< HEAD
 typedef itk::Image< unsigned short, 3 >                                             UnsignedShortImageType;
 typedef itk::Image< short, 3 >                                                      ShortImageType;
 typedef itk::ImageFileReader< ShortImageType >                                      ShortReaderType;
@@ -96,6 +98,35 @@ typedef itk::NormalizedMutualInformationHistogramImageToImageMetric< ShortImageT
 typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >  msqrMetricType;
 typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  > ncMetricType;
   typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  > gdMetricType;
+=======
+typedef itk::Image< unsigned short, 3 >                                                                UnsignedShortImageType;
+typedef itk::Image< short, 3 >                                                                         ShortImageType;
+typedef itk::ImageFileReader< ShortImageType >                                                         ShortReaderType;
+typedef itk::ImageFileReader< UnsignedShortImageType >                                                 ImageReaderType;
+typedef itk::RegularStepGradientDescentOptimizer                                                       OptimizerType;
+typedef itk::ImageRegistrationMethod< ShortImageType, ShortImageType >                                 RegistrationType;
+typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType, double >                         InterpolatorType;
+typedef itk::AffineTransform<double, 3 >                                                               TransformType;
+typedef itk::CenteredTransformInitializer< TransformType, ShortImageType, ShortImageType >             InitializerType;
+typedef OptimizerType::ScalesType                                                                      OptimizerScalesType;
+typedef itk::ImageRegionIteratorWithIndex< UnsignedShortImageType >                                    IteratorType;
+typedef itk::ImageRegionIteratorWithIndex< ShortImageType >                                            CTIteratorType;
+typedef itk::RegionOfInterestImageFilter< ShortImageType, ShortImageType >                             RegionOfInterestType;
+typedef itk::ResampleImageFilter< ShortImageType, ShortImageType >                                     ResampleType;
+typedef itk::IdentityTransform< double, 3 >                                                            IdentityType;
+typedef itk::CIPExtractChestLabelMapImageFilter                                                        LabelMapExtractorType;
+typedef itk::ImageSeriesReader< cip::CTType >                                                          CTSeriesReaderType;
+typedef itk::GDCMImageIO                                                                               ImageIOType;
+typedef itk::GDCMSeriesFileNames                                                                       NamesGeneratorType;
+typedef itk::ImageFileReader< cip::CTType >                                                            CTFileReaderType;
+typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                                         LabelMapIteratorType;
+typedef itk::MutualInformationImageToImageMetric<ShortImageType, ShortImageType >                      MIMetricType;
+typedef itk::NormalizedMutualInformationHistogramImageToImageMetric< ShortImageType, ShortImageType >  NMIMetricType;
+typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >                         msqrMetricType;
+typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  >                 ncMetricType;
+typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
+typedef itk::CompositeTransform< double, 3 > CompositeTransformType;
+>>>>>>> ENH: changed GetTransformationSimilarityMetric to take in as arg multiple transformation files and concatenate them prior to computing the similarity metric
 
 struct REGIONTYPEPAIR
 {
@@ -419,16 +450,30 @@ int main( int argc, char *argv[] )
       }
   
   //  spatialObjectMask->SetImage(  movingLabelMap);
- // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
-  //Read in the transform file
-  TransformType::Pointer transform = TransformType::New();
-  ReadTransformFromFile(transform, inputTransformFileName.c_str() );
+
+  // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
+
+  //parse transform arg  and join transforms together
+  
+   // TransformType::Pointer transform = TransformType::New();
+   //last transform applied first, so make last transform 
+  CompositeTransformType::Pointer transform = CompositeTransformType::New();
+  for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
+    { 
+       TransformType::Pointer transformTemp = TransformType::New();
+       ReadTransformFromFile(transformTemp, inputTransformFileName[i].c_str() );
+       transform->AddTransform(transformTemp);
+    }
+
+  transform->SetAllTransformsToOptimizeOn();		
+
+
   //test identity
 
   std::cout<<"initializing transform"<<std::endl;
 
   InitializerType::Pointer initializer = InitializerType::New();
-  initializer->SetTransform( transform ); 
+  // initializer->SetMovingInitialTransform( transform ); 
   initializer->SetFixedImage(  ctFixedImage );
   initializer->SetMovingImage( ctMovingImage );
   initializer->MomentsOn();
@@ -563,80 +608,86 @@ std::endl;
       ctSimilarityXMLData.regionAndTypeUsed.append(", ");
       }
     }
-
-         
-    ctSimilarityXMLData.similarityValue = (float)(mutualInformationValue);
-
-    ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
-
-    std::cout<<"getting transfo filename"<<std::endl;
-  if ( strcmp(inputTransformFileName.c_str(), "q") != 0 )
+  
+  ctSimilarityXMLData.similarityValue = (float)(mutualInformationValue);
+  
+  ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
+  
+  std::cout<<"getting transfo filename"<<std::endl;
+  if ( strcmp(inputTransformFileName[0].c_str(), "q") != 0 )
     {
-    std::string infoFilename = inputTransformFileName;
-    int result = infoFilename.find_last_of('.');
-    if (std::string::npos != result)
-      infoFilename.erase(result);
-    // append extension:
-    infoFilename.append("_measures.xml");
-                
-
- 
-    int pathLength = 0, pos=0, next=0;   
-
-    if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
-      ctSimilarityXMLData.sourceID.assign(movingImageID);
-    else
-
-      {       
-	//first find length of path
-	next=1;
-	while(next>=1)
-	  {
-	    next = movingCTFileName.find("/", next+1);    
-	    pathLength++;
-	  }
-	pos=0;
-	next=0;
-
-	std::string tempSourceID;
-	for (int i = 0; i < (pathLength-1);i++)
-	  {
-	    pos= next+1;
-	    next = movingCTFileName.find("/", next+1);
-	  }               
-      ctSimilarityXMLData.sourceID.assign(movingCTFileName.c_str());
-      ctSimilarityXMLData.sourceID.erase(next,ctSimilarityXMLData.sourceID.length()-1);
-      ctSimilarityXMLData.sourceID.erase(0, pos);
-      }
-    
-     std::cout<<"in middle of savinge"<<std::endl;
-    if ( strcmp(fixedImageID.c_str(), "q") != 0 ) 
-      ctSimilarityXMLData.destID =fixedImageID.c_str();
-    else
-      { 
-      pos=0;
-      next=0;
-      for (int i = 0; i < (pathLength-1);i++)
-        { 
-        pos = next+1;
-        next = fixedCTFileName.find('/', next+1);  
-        }
-      ctSimilarityXMLData.destID.assign(fixedCTFileName.c_str());// =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
-      ctSimilarityXMLData.destID.erase(next,ctSimilarityXMLData.destID.length()-1);
-      ctSimilarityXMLData.destID.erase(0, pos);
-
-      }	
-
-    //remove path from output transformation file before storing in xml
-    std::cout<<"outputtransform filename ="<<inputTransformFileName.c_str()<<std::endl;
+      std::string infoFilename = inputTransformFileName[0];
+      int result = infoFilename.find_last_of('.');
+      if (std::string::npos != result)
+	{
+	  infoFilename.erase(result);
+	}
+      // append extension:
+      infoFilename.append("_measures.xml");
+      
+      if ( strcmp(outputXMLFileName.c_str(), "q") != 0 )  
+	{
+	  infoFilename.assign(outputXMLFileName.c_str());
+	}
+      int pathLength = 0, pos=0, next=0;   
+      
+      if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
+	{
+	  ctSimilarityXMLData.sourceID.assign(movingImageID);
+	}
+      else
+	{       
+	  //first find length of path
+	  next=1;
+	  while(next>=1)
+	    {
+	      next = movingCTFileName.find("/", next+1);    
+	      pathLength++;
+	    }
+	  pos=0;
+	  next=0;
+	  
+	  std::string tempSourceID;
+	  for (int i = 0; i < (pathLength-1);i++)
+	    {
+	      pos= next+1;
+	      next = movingCTFileName.find("/", next+1);
+	    }               
+	  ctSimilarityXMLData.sourceID.assign(movingCTFileName.c_str());
+	  ctSimilarityXMLData.sourceID.erase(next,ctSimilarityXMLData.sourceID.length()-1);
+	  ctSimilarityXMLData.sourceID.erase(0, pos);
+	}
+      
+      std::cout<<"in middle of savinge"<<std::endl;
+      if ( strcmp(fixedImageID.c_str(), "q") != 0 ) 
+	{
+	  ctSimilarityXMLData.destID =fixedImageID.c_str();
+	}
+      else
+	{ 
+	  pos=0;
+	  next=0;
+	  for (int i = 0; i < (pathLength-1);i++)
+	    { 
+	      pos = next+1;
+	      next = fixedCTFileName.find('/', next+1);  
+	    }
+	  ctSimilarityXMLData.destID.assign(fixedCTFileName.c_str());// =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
+	  ctSimilarityXMLData.destID.erase(next,ctSimilarityXMLData.destID.length()-1);
+	  ctSimilarityXMLData.destID.erase(0, pos );
+	}	
+	    
+      //remove path from output transformation file before storing in xml
+      std::cout<<"outputtransform filename ="<<inputTransformFileName[0].c_str()<<std::endl;
       pos=0;
       next=0;
       for (int i = 0; i < (pathLength);i++)
-        { 
-        pos = next+1;
-        next = inputTransformFileName.find('/', next+1);  
-        }
-      ctSimilarityXMLData.transformationLink.assign(inputTransformFileName.c_str());
+	{ 
+	  pos = next+1;
+	  next = inputTransformFileName[0].find('/', next+1);  
+	}
+      ctSimilarityXMLData.transformationLink.assign(inputTransformFileName[0].c_str());
+
       ctSimilarityXMLData.transformationLink.erase(0,pos);
       std::cout<<"saving output to: "<<infoFilename.c_str()<<std::endl;
       WriteMeasuresXML(infoFilename.c_str(), ctSimilarityXMLData);
