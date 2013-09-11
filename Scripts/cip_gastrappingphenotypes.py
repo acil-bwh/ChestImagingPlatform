@@ -77,7 +77,7 @@ regions=[(5,7),(5,5),(6,6),(7,7)]
 regions_labels=['Global','Upper','Middle','Lower']
 
 #Define phenotypes labels
-phenos_labels=['fSAD','RM%','Jac']
+phenos_labels=['fSAD','RMperc','Jac']
 phenos=dict()
 
 # Compute Gas Trapping metrics based on Galban's paper
@@ -159,7 +159,7 @@ for ii,rr in enumerate(regions_labels):
 
 for ii,rr in enumerate(regions_labels):
   for jj,statsL in enumerate(['Mean','Std','Kurtosis','Skewness']):
-    title.append(rr + " " + phenos_labels[1] + " " + statsL)
+    title.append(rr + " " + phenos_labels[2] + " " + statsL)
     data.append(phenos[phenos_labels[2]][ii][jj])
 
 ff=open(out_filename, 'wb')
