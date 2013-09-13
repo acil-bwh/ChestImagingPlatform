@@ -74,16 +74,17 @@ class AirwayParticles(ChestParticles):
         if self._down_sample_rate > 1:
             downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
             self.down_sample(self._in_file_name, downsampled_vol, \
-                             "cubic:0,0.5")
+                             "cubic:0,0.5",self._down_sample_rate)
             if self._use_mask == 1:
             	downsampled_mask = os.path.join(self._tmp_dir, \
                                                 "mask-down.nrrd")
             	self.down_sample(self._mask_file_name, \
-                                 downsampled_mask, "cheap")
-            	self._mask_file_name = downsampled_mask
+                                 downsampled_mask, "cheap",self._down_sample_rate)
+            	self._tmp_mask_file_name = downsampled_mask
             
         else:
             downsampled_vol = self._in_file_name
+            self._tmp_mask_file_name = self._mask_file_name
 
         print "2"
         deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
@@ -176,6 +177,9 @@ class AirwayParticles(ChestParticles):
         print "about to probe\n"
         self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
         print "finished probing\n"
+        #Adjust scale if down-sampling was performed
+        if self._down_sample_rate > 1:
+            self.adjust_scale(out_particles % 3)
         print "about to save to vtk\n"
         self.save_vtk(out_particles % 3)
         print "finished saving\#####n"
