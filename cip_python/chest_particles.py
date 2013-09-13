@@ -87,6 +87,7 @@ class ChestParticles:
         # Volume name that is going to be used for scale-space particles.
         # This volume is the result of any pre-processing
         self._tmp_in_file_name = self._in_file_name
+        self._tmp_mask_file_name = self._mask_file_name
         # Nrrd file to contain particle data.
         self._tmp_particles_file_name  = "nrrdParticlesFileName.nrrd"  
 
@@ -158,7 +159,7 @@ class ChestParticles:
                 ":scalar:V -usa true"
 
         if self._use_mask == 1:
-	   self._volParams += " " + self._mask_file_name + ":scalar:M"
+            self._volParams += " " + self._tmp_mask_file_name + ":scalar:M"
 
     def set_info_params(self):
         if self._single_scale == 1:
@@ -268,7 +269,11 @@ class ChestParticles:
                 str(self._nss) + " -jit " + str(self._jit)
 
     def set_misc_params(self):
-        self._miscParams="-nave true -v "+str(self._verbose)+" -pbm 0"
+        if self._verbose == 0:
+            verbose = 0
+        else:
+            verbose = self._verbose -1
+        self._miscParams="-nave true -v "+str(verbose)+" -pbm 0"
 
     def reset_params(self):
         self._info_params = ""
@@ -292,13 +297,14 @@ class ChestParticles:
     def execute(self):
         if self._down_sample_rate > 1:
             downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
-            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5')
+            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5',self.down_sample_rate)
             if self._use_mask == 1:
                 downsampledMask = os.path.join(self._tmp_dir, "mask-down.nrrd")
-                self.down_sample(self._mask_file_name,downsampledMask,'cheap')
-                self._mask_file_name = downsampledMask
+                self.down_sample(self._mask_file_name,downsampledMask,'cheap',self.down_sample_rate)
+                self._tmp_mask_file_name = downsampledMask
         else:
             downsampledVolume = self._in_file_name
+            self._tmp_mask_file_name = self._mask_file_name
 
         deconvolvedVolume = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampledVolume,deconvolvedVolume)
@@ -309,6 +315,10 @@ class ChestParticles:
                                      self._tmp_particles_file_name)
         self.execute_pass(outputParticles)
         self.probe_quantities(deconvolvedVolume,outputParticles)
+        #Adjust scale if down-sampling was performed
+        if self._down_sample_rate > 1:
+                self.adjust_scale(outputParticles)
+        #Save NRRD data to VTK
         self.save_vtk(outputParticles)
 
     def execute_pass(self, output):
@@ -317,7 +327,7 @@ class ChestParticles:
             return False
 
         if self._use_mask==1:
-            if os.path.exists(self._mask_file_name) == False:
+            if os.path.exists(self._tmp_mask_file_name) == False:
                 return False
 
         if self._single_scale == 1:
@@ -333,8 +343,8 @@ class ChestParticles:
             self._init_params + " " + self._reconKernelParams + " " + \
             self._optimizerParams + " -o " + output + " -maxi " + \
             str(self._iterations)
-
-        print tmp_command
+        if self._verbose > 0:
+                print tmp_command
         subprocess.call( tmp_command, shell=True )
 
         # Trick to add scale value
@@ -387,7 +397,7 @@ class ChestParticles:
 
             if normalizedDerivatives == 1:
                 tmp_command += " -ssnd"
-        if self._verbose == 1:
+        if self._verbose > 0:
             print tmp_command
 
         subprocess.call( tmp_command, shell=True )
@@ -417,37 +427,38 @@ class ChestParticles:
             " | unu resample -s x1 x1 x1 " + self._inverse_kernel_params + \
             " -t float -o " + out_vol
 
-        if self._verbose == 1:
+        if self._verbose > 0:
             print tmp_command
 
         subprocess.call( tmp_command, shell=True)
 
-    def down_sample(self, inputVol, outputVol, kernel):    		
+    def down_sample(self, inputVol, outputVol, kernel,down_rate):
         tmp_command = \
             "unu resample -s x%(rate)f x%(rate)f x%(rate)f -k %(kernel)s -i " \
             + inputVol + " -o " + outputVol
 
         #MAYBE WE HAVE TO DOWNSAMPLE THE MASK
-        val = 1.0/self._down_sample_rate
+        val = 1.0/down_rate
         tmp_command = tmp_command %  {'rate':val,'kernel':kernel}
 
-        if self._verbose == 1:
+        if self._verbose > 0:
             print tmp_command
 
         subprocess.call( tmp_command, shell=True)
 
-    def save_vtk(self, in_particles):
-         #Trick to multiply scale if we have down-sampled before saving to VTK
+    def adjust_scale(self, in_particles):
+        #Trick to multiply scale if we have down-sampled before saving to VTK
         if self._down_sample_rate > 1:
             tmp_command = "unu crop -i %(output)s -min 3 0 -max 3 M | \
             unu 2op x - %(rate)f | unu inset -i %(output)s -s - \
             -min 3 0 -o %(output)s"
-
+            
             tmp_command = tmp_command % {'output':in_particles, \
-                                       'rate':self._down_sample_rate}
+                'rate':self._down_sample_rate}
             print tmp_command
             subprocess.call( tmp_command, shell=True )
-
+    
+    def save_vtk(self, in_particles):
         reader_writer = ReadNRRDsWriteVTK(self._out_particles_file_name)
         reader_writer.add_file_name_array_name_pair(in_particles, "NA")
         quantities = ["val", "heval0", "heval1", "heval2", "hmode", "hevec0",\
@@ -468,4 +479,28 @@ class ChestParticles:
             print "Cleaning tempoarary directory..."
             tmp_command = "rm " + os.path.join(self._tmp_dir, "*")
             subprocess.call( tmp_command, shell=True )
-            
+
+    def merge_particles(self,input_list,output_merged):
+        particles = str()
+        for input_particles in input_list:
+            particles = particles + " " + str(input_particles)
+        tmp_command = "unu join -a 1 -i " + particles + " -o "+ output_merged
+        subprocess.call( tmp_command, shell=True )
+
+    def differential_mask (self, current_down_rate,previous_down_rate,output_mask):
+        if self._use_mask == 1:
+            downsampled_mask_prev = os.path.join(self._tmp_dir, \
+                                         "mask-down-previous.nrrd")
+            #Down-sampling previous level
+            self.down_sample(self._mask_file_name, \
+                     downsampled_mask_prev, "cheap",previous_down_rate)
+            #Up-sampling previous level
+            self.down_sample(downsampled_mask_prev, \
+                     downsampled_mask_prev, "cheap",1.0/previous_down_rate)
+            #Down-sampling current level    
+            self.down_sample(self._mask_file_name, \
+                     output_mask, "cheap",current_down_rate)
+            tmp_command="unu 2op - %(current)s %(previous)s | unu 1op abs -i - | unu 2op gt - 0 -o %(out)s"
+            tmp_command= tmp_command % {'current':output_mask,'previous':downsampled_mask_prev,'out':output_mask}
+
+            subprocess.call( tmp_command, shell=True)
