@@ -45,8 +45,8 @@ bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
   // Evaluate whether or not the two particls are sufficiently of the
   // same scale
   //
-  double scale1 = this->InternalInputPolyData->GetFieldData()->GetArray( "scale" )->GetTuple( particleIndex1 )[0];
-  double scale2 = this->InternalInputPolyData->GetFieldData()->GetArray( "scale" )->GetTuple( particleIndex2 )[0];
+  double scale1 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex1 )[0];
+  double scale2 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex2 )[0];
 
   double maxScale;  (scale1>scale2) ? (maxScale = scale1) : (maxScale = scale2);
 
@@ -74,14 +74,14 @@ bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
     connectingVec[2] = point1[2] - point2[2];
 
   double particle1Hevec2[3];
-    particle1Hevec2[0] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[0];
-    particle1Hevec2[1] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[1];
-    particle1Hevec2[2] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[2];
+    particle1Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[0];
+    particle1Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[1];
+    particle1Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[2];
 
   double particle2Hevec2[3];
-    particle2Hevec2[0] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[0];
-    particle2Hevec2[1] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[1];
-    particle2Hevec2[2] = this->InternalInputPolyData->GetFieldData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[2];
+    particle2Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[0];
+    particle2Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[1];
+    particle2Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[2];
 
   if ( this->GetVectorMagnitude( connectingVec ) > this->ParticleDistanceThreshold )
     {
