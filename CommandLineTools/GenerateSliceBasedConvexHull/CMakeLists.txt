@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-PROJECT( GenerateSliceBasedConvexHull)
 
+PROJECT( GenerateSliceBasedConvexHull)
 
 FIND_PACKAGE ( ITK )
 IF ( ITK_FOUND )
@@ -13,7 +13,9 @@ ENDIF ( ITK_FOUND )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
 
-SET ( GenerateSliceBasedConvexHull_SOURCE GenerateSliceBasedConvexHull)
 
-ADD_EXECUTABLE ( GenerateSliceBasedConvexHull${GenerateSliceBasedConvexHull_SOURCE} )
-TARGET_LINK_LIBRARIES ( GenerateSliceBasedConvexHull${ITK_LIBRARIES} )
+SET ( GenerateSliceBasedConvexHull_SOURCE GenerateSliceBasedConvexHull.cxx)
+
+ADD_EXECUTABLE ( GenerateSliceBasedConvexHull ${GenerateSliceBasedConvexHull_SOURCE} )
+TARGET_LINK_LIBRARIES ( GenerateSliceBasedConvexHull ${ITK_LIBRARIES} )
+

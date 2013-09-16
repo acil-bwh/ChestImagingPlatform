@@ -140,7 +140,7 @@ void ReadTransformFromFile( TransformType::Pointer transform, const char* fileNa
 
   transform = static_cast<TransformType*>((*it).GetPointer());
   transform->Print(std::cout);
- 
+
 }
 
 
@@ -188,10 +188,13 @@ void WriteMeasuresXML(const char *file, SIMILARITY_XML_DATA &theXMLData)
   xmlNodePtr root_node = NULL; /* Node pointers */
   xmlDtdPtr dtd = NULL;       /* DTD pointer */
     
-    xmlNodePtr transfo_node[5];
+
+  xmlNodePtr transfo_node[5];
     
-    for(int i = 0; i< 5; i++)
+  for(int i = 0; i< 5; i++)
         transfo_node[i]= NULL;
+
+
 
   doc = xmlNewDoc(BAD_CAST "1.0");
   root_node = xmlNewNode(NULL, BAD_CAST "Inter_Subject_Measure");
@@ -243,12 +246,12 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
 
-
   std::cout<< "agrs parsed, new 2"<<similarityMetric.c_str()<<std::endl;
   
   //Read in region and type pair
   std::vector< REGIONTYPEPAIR > regionTypePairVec;
   /*	
+
   for ( unsigned int i=0; i<regionVecArg.size(); i++ )
     {
     regionVec.push_back(regionVecArg[i]);
@@ -259,6 +262,7 @@ int main( int argc, char *argv[] )
     }
   if (regionPairVec.size() == typePairVecArg.size())
     {
+
     for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
       {
       REGIONTYPEPAIR regionTypePairTemp;
@@ -271,6 +275,7 @@ int main( int argc, char *argv[] )
       } 
     }
   */
+
   //Read in fixed image label map from file and subsample
   cip::LabelMapType::Pointer fixedLabelMap = cip::LabelMapType::New();
   cip::LabelMapType::Pointer subSampledFixedImage = cip::LabelMapType::New();
@@ -297,11 +302,9 @@ int main( int argc, char *argv[] )
 
   cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
 
-
   //typedef itk::Image<unsigned short, 3> blahType;
   //blahType::Pointer blahImage = blahType::New();
     //spatialObjectMask->SetImage( blahImage );
-
 
   cip::LabelMapType::Pointer subSampledMovingImage = cip::LabelMapType::New();
   if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
@@ -380,6 +383,7 @@ int main( int argc, char *argv[] )
     movingLabelMap=cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
     }
   */
+
   /*
   std::cout << "Isolating region and type of interest..." << std::endl;
   LabelMapIteratorType it( fixedExtractor->GetOutput(), fixedExtractor->GetOutput()->GetBufferedRegion() );
@@ -406,6 +410,7 @@ int main( int argc, char *argv[] )
   itmoving.GoToBegin();
   while ( !itmoving.IsAtEnd() )
     {
+
     if ( itmoving.Get() != 0 )
       {
 	itmovingct.Set( itmovingct.Get() );
@@ -419,7 +424,6 @@ int main( int argc, char *argv[] )
     }
   */
   //Set mask  object
-
 
 
 
@@ -447,6 +451,7 @@ int main( int argc, char *argv[] )
       }
   
   //  spatialObjectMask->SetImage(  movingLabelMap);
+
   // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
 
   //parse transform arg  and join transforms together
@@ -477,13 +482,17 @@ int main( int argc, char *argv[] )
 
   std::cout<<"initializing transform"<<std::endl;
   /*
+
   InitializerType::Pointer initializer = InitializerType::New();
   // initializer->SetMovingInitialTransform( transform ); 
   initializer->SetFixedImage(  ctFixedImage );
   initializer->SetMovingImage( ctMovingImage );
   initializer->MomentsOn();
   initializer->InitializeTransform();
+
   */
+
+
   OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
   optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;   optimizerScales[2] =  1.0;
   optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;   optimizerScales[5] =  1.0;
@@ -491,6 +500,7 @@ int main( int argc, char *argv[] )
   optimizerScales[9]  =  0.001;
   optimizerScales[10] =  0.001;
   optimizerScales[11] =  0.001;
+
 
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
   std::cout<<"initializing optimizer"<<std::endl;
@@ -500,11 +510,13 @@ int main( int argc, char *argv[] )
   optimizer->SetMinimumStepLength( 0 );
   optimizer->SetNumberOfIterations( 1 );
 
+
   RegistrationType::Pointer registration = RegistrationType::New();
   registration->SetOptimizer( optimizer );
   registration->SetInterpolator( interpolator );
   registration->SetTransform( transform );
   registration->SetFixedImage( ctFixedImage);
+
     registration->SetMovingImage(ctMovingImage ); 
   //registration->SetFixedImageRegion(
   //	 fixedExtractor->GetOutput()->GetBufferedRegion() );
@@ -521,6 +533,7 @@ int main( int argc, char *argv[] )
       histogramSize[0] = 20;
       histogramSize[1] = 20;
       metric->SetHistogramSize( histogramSize );
+
        if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	        metric->SetFixedImageMask( spatialObjectMask );
       registration->SetMetric( metric );
@@ -610,6 +623,7 @@ std::endl;
     }
   if (regionPairVec.size() == typePairVecArg.size())
     {
+
     for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
       {
       std::ostringstream regionArgs;
@@ -633,7 +647,7 @@ std::endl;
       if (std::string::npos != result)
 	{
 	  infoFilename.erase(result);
-        
+
 	}
       // append extension:
       infoFilename.append("_measures.xml");
@@ -647,6 +661,7 @@ std::endl;
       if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
 	{
 	  ctSimilarityXMLData.movingID.assign(movingImageID);
+
 	}
       else
 	{       
@@ -666,6 +681,7 @@ std::endl;
 	      pos= next+1;
 	      next = movingCTFileName.find("/", next+1);
 	    }               
+
 	  ctSimilarityXMLData.movingID.assign(movingCTFileName.c_str());
 	  ctSimilarityXMLData.movingID.erase(next,ctSimilarityXMLData.movingID.length()-1);
 	  ctSimilarityXMLData.movingID.erase(0, pos);
@@ -674,9 +690,11 @@ std::endl;
       std::cout<<"in middle of savinge"<<std::endl;
       if ( strcmp(fixedImageID.c_str(), "q") != 0 ) 
 	{
+
 	  ctSimilarityXMLData.fixedID =fixedImageID.c_str();
 	}
     else
+
 	{ 
 	  pos=0;
 	  next=0;
@@ -685,6 +703,7 @@ std::endl;
 	      pos = next+1;
 	      next = fixedCTFileName.find('/', next+1);  
 	    }
+
 	  ctSimilarityXMLData.fixedID.assign(fixedCTFileName.c_str());// =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
 	  ctSimilarityXMLData.fixedID.erase(next,ctSimilarityXMLData.fixedID.length()-1);
 	  ctSimilarityXMLData.fixedID.erase(0, pos );
@@ -721,5 +740,5 @@ std::endl;
   std::cout << "DONE." << std::endl;
  
   return 0;
-}
 
+}

@@ -124,7 +124,6 @@ int main( int argc, char *argv[] )
                        "$Revision: 232 $" );
 
     TCLAP::ValueArg< std::string > maskFileNameArg ( "m", "maskFile", "Mask file name", true, maskFileName, "string", cl );
-
     TCLAP::ValueArg< std::string > outputFileNameArg ( "o", "output", "Output convex hull file name", false, outputFileName, "string", cl );
     TCLAP::ValueArg< int >         numRotationsArg ( "n", "numRotations", "Number of rotations. This quanity relates to the accuracy of the final\
 convex hull. Increasing the number of rotations increases accuracy. If this quantity changes, so should the resolution degrees parameter\
