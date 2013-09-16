@@ -8,6 +8,7 @@
 
 import os
 import pdb
+from optparse import OptionParser
 from cip_python.chest_particles import ChestParticles
 
 class MultiResAirwayParticles(ChestParticles):
@@ -55,8 +56,8 @@ class MultiResAirwayParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6., live_thresh=50.,
-                 seed_thresh=40., scale_samples=5, multi_res_levels=2):
+                 mask_file_name=None, max_scale=6., live_thresh=45.,
+                 seed_thresh=45., scale_samples=5, multi_res_levels=2):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
@@ -68,9 +69,7 @@ class MultiResAirwayParticles(ChestParticles):
         self._live_thresh = live_thresh
         self._seed_thresh = seed_thresh
      
-    def execute(self):
-      
-      
+    def execute(self):            
         #Compute Resolution Pyramid
         max_scale_per_level = self._max_scale / 2**(self._multi_res_levels-1)
         max_scale = self._max_scale
@@ -238,3 +237,48 @@ class MultiResAirwayParticles(ChestParticles):
         self.adjust_scale(out_particles % (3,level))
         
         return out_particles % (3,level)
+
+if __name__ == "__main__":
+    desc = """Produces a scatter plot of the input data and edges indicating\
+        constraints between data indices."""
+    
+    parser = OptionParser(description=desc)
+    parser.add_option('--ct_file', 
+                      help='The CT file on which to run particles',
+                      dest='ct_file', metavar='<string>',
+                      default=None)
+    parser.add_option('--out_file', 
+                      help='The output particles file name (with .vtk \
+                      extension)', dest='out_file', metavar='<string>',
+                      default=None)
+    parser.add_option('--mask_file', 
+                      help='Mask file name. Particles execution will be \
+                      restricted to the region in this mask',
+                      dest='mask_file', metavar='<string>', default=None)
+    parser.add_option('--tmp_dir', 
+                      help='The temporary directory in which to store \
+                      intermediate files', dest='tmp_dir', metavar='<string>',
+                      default='/var/tmp/')
+    parser.add_option('--live_thresh',  help='The live threshold',
+                      dest='live_thresh', metavar='<float>', default=45.)
+    parser.add_option('--seed_thresh',  help='The seed threshold',
+                      dest='seed_thresh', metavar='<float>', default=45.)
+    parser.add_option('--max_scale',  help='Max scale to consider',
+                      dest='max_scale', metavar='<float>', default=10.)
+    parser.add_option('--levels',  help='Number of resolution levels to use',
+                      dest='levels', metavar='<int>', default=2)            
+
+    (options, args) = parser.parse_args()
+
+    if options.ct_file is None:
+        raise ValueError("Must specify a CT file")
+    if options.out_file is None:
+        raise ValueError("Must specify an output file")
+
+    particles = MultiResAirwayParticles(options.ct_file, options.out_file,
+                                        options.tmp_dir, options.mask_file,
+                                        live_thresh=options.live_thresh,
+                                        seed_thresh=options.seed_thresh,
+                                        max_scale=options.max_scale,
+                                        multi_res_levels=options.levels)
+    particles.execute()
