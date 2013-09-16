@@ -26,17 +26,6 @@ set(MODULE_TARGET_LIBRARIES
 set(MODULE_SRCS
   )
 
-SET ( VTK_LIBS
-vtkIO 
-vtkCommon 
-vtkImaging 
-vtkFiltering 
-vtkGraphics 
-vtkRendering 
-vtkWidgets 
-vtkHybrid
-)
-
 SEMMacroBuildCLI(
   NAME ${MODULE_NAME}
   TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
@@ -45,3 +34,4 @@ SEMMacroBuildCLI(
   RUNTIME_OUTPUT_DIRECTORY        "${CMAKE_BINARY_DIR}/bin"
   EXECUTABLE_ONLY
   )
+
