@@ -368,7 +368,7 @@ movingExtractor->GetOutput()->GetBufferedRegion() );
          }
 
   MetricType::Pointer metric = MetricType::New();
-  metric->ComplementOn(); //because we are minimizing as opposed to maximizing
+   //because we are minimizing as opposed to maximizing
   metric->SetForegroundValue( 1);
 
 

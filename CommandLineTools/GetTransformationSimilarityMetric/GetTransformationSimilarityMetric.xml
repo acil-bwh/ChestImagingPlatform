@@ -109,6 +109,14 @@
       <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
 </integer-vector>
 
+    <boolean>
+      <name>isInvertTransform</name>
+      <label>Invert Transformation</label>
+      <channel>input</channel>
+      <longflag>--invertTransformation</longflag>
+      <description><![CDATA[Uses the inverse transformation if set to True. Default: False.]]></description>
+      <default>false</default>
+    </boolean> 
 
    <string-vector>
       <name>inputTransformFileName</name>
@@ -119,16 +127,6 @@
       <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
       <default>q</default>
     </string-vector>   
-
-
-<integer-vector>
-      <name>regionVecArg</name>
-      <longflag>--regionVec</longflag>
-      <flag>r</flag>
-      <label>regionVec</label>
-      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
-
  
     <string>
       <name>outputXMLFileName</name>
@@ -139,6 +137,14 @@
       <description><![CDATA[The name of the output xml file. If not specified, it will be automatically assigned as moving-to-fixed.xml ]]></description>
       <default>q</default>
     </string> 
+
+<integer-vector>
+      <name>regionVecArg</name>
+      <longflag>--regionVec</longflag>
+      <flag>r</flag>
+      <label>regionVec</label>
+      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
+</integer-vector>
 
   </parameters>
 </executable>

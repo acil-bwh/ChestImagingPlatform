@@ -1,0 +1,9 @@
+<!ELEMENT Inter_Subject_Measure+ (SimilarityValue,SimilarityMeasure,transformation+, movingID, fixedID)>
+<!ELEMENT fixedID (#PCDATA) #REQUIRED>
+<!ELEMENT movingID (#PCDATA) #REQUIRED>
+<!ELEMENT transformation+ (transformation_file,transformation,transformation_isInverse)>
+<!ELEMENT transformation_file xlink:href CDATA #REQUIRED> 
+<!ELEMENT transformation_order (#PCDATA) #REQUIRED> 
+<!ELEMENT transformation_isInverse (#PCDATA) #REQUIRED> 
+<!ELEMENT SimilarityMeasure (#PCDATA) #REQUIRED>
+<!ELEMENT SimilarityValue (#PCDATA) #REQUIRED>
