@@ -360,62 +360,61 @@ int main( int argc, char *argv[] )
     itmoving.GoToBegin();
     while ( !itmoving.IsAtEnd() )
     {
-        if ( itmoving.Get() != 0 )
-        {
-            itmoving.Set( 1 );
-        }
-        
-        ++itmoving;
-    }
-    
-    MetricType::Pointer metric = MetricType::New();
-    metric->ComplementOn(); //because we are minimizing as opposed to
-    maximizing
-    metric->SetForegroundValue( 1);
-    
-    
-    TransformType::Pointer transform = TransformType::New();
-    std::cout<<"initializing transform"<<std::endl;
-    InitializerType::Pointer initializer = InitializerType::New();
-    initializer->SetTransform( transform );
-    initializer->SetFixedImage(  fixedExtractor->GetOutput() );
-    initializer->SetMovingImage( movingExtractor->GetOutput() );
-    initializer->MomentsOn();
-    initializer->InitializeTransform();
-    
-    OptimizerScalesType optimizerScales( transform->GetNumberOfParameters()
-                                        );
-    optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;
-    optimizerScales[2] =  1.0;
-    optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;
-    optimizerScales[5] =  1.0;
-    optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;
-    optimizerScales[8] =  1.0;
-    optimizerScales[9]  =  translationScale;
-    optimizerScales[10] =  translationScale;
-    optimizerScales[11] =  translationScale;
-    
-    OptimizerType::Pointer optimizer = OptimizerType::New();
-    optimizer->SetScales( optimizerScales );
-    optimizer->SetMaximumStepLength( maxStepLength );
-    optimizer->SetMinimumStepLength( minStepLength );
-    optimizer->SetNumberOfIterations( numberOfIterations );
-    
-    InterpolatorType::Pointer interpolator = InterpolatorType::New();
-    
-    std::cout << "Starting registration..." << std::endl;
-    RegistrationType::Pointer registration = RegistrationType::New();
-    registration->SetMetric( metric );
-    registration->SetOptimizer( optimizer );
-    registration->SetInterpolator( interpolator );
-    registration->SetTransform( transform );
-    registration->SetFixedImage( fixedExtractor->GetOutput() );
-    registration->SetMovingImage( movingExtractor->GetOutput() );
-    registration->SetFixedImageRegion(
-                                      fixedExtractor->GetOutput()->GetBufferedRegion() );
-    registration->SetInitialTransformParameters( transform->GetParameters()
-                                                );
-    try
+    if ( itmoving.Get() != 0 )
+      {
+      itmoving.Set( 1 );
+      }
+
+    ++itmoving;
+         }
+
+  MetricType::Pointer metric = MetricType::New();
+   //because we are minimizing as opposed to maximizing
+  metric->SetForegroundValue( 1);
+
+
+  TransformType::Pointer transform = TransformType::New();
+  std::cout<<"initializing transform"<<std::endl;
+  InitializerType::Pointer initializer = InitializerType::New();
+  initializer->SetTransform( transform );
+  initializer->SetFixedImage(  fixedExtractor->GetOutput() );
+  initializer->SetMovingImage( movingExtractor->GetOutput() );
+  initializer->MomentsOn();
+  initializer->InitializeTransform();
+
+  OptimizerScalesType optimizerScales( transform->GetNumberOfParameters()
+);
+  optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;
+optimizerScales[2] =  1.0;
+  optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;
+optimizerScales[5] =  1.0;
+  optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;
+optimizerScales[8] =  1.0;
+  optimizerScales[9]  =  translationScale;
+  optimizerScales[10] =  translationScale;
+  optimizerScales[11] =  translationScale;
+
+  OptimizerType::Pointer optimizer = OptimizerType::New();
+  optimizer->SetScales( optimizerScales );
+  optimizer->SetMaximumStepLength( maxStepLength );
+  optimizer->SetMinimumStepLength( minStepLength );
+  optimizer->SetNumberOfIterations( numberOfIterations );
+
+  InterpolatorType::Pointer interpolator = InterpolatorType::New();
+
+  std::cout << "Starting registration..." << std::endl;
+  RegistrationType::Pointer registration = RegistrationType::New();
+  registration->SetMetric( metric );
+  registration->SetOptimizer( optimizer );
+  registration->SetInterpolator( interpolator );
+  registration->SetTransform( transform );
+  registration->SetFixedImage( fixedExtractor->GetOutput() );
+  registration->SetMovingImage( movingExtractor->GetOutput() );
+  registration->SetFixedImageRegion(
+fixedExtractor->GetOutput()->GetBufferedRegion() );
+  registration->SetInitialTransformParameters( transform->GetParameters()
+);
+  try
     {
         registration->StartRegistration();
         //registration->Update(); for ITKv4
