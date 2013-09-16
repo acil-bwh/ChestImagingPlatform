@@ -56,7 +56,7 @@ class MultiResAirwayParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6., live_thresh=45.,
+                 mask_file_name=None, max_scale=8., live_thresh=45.,
                  seed_thresh=45., scale_samples=5, multi_res_levels=2):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
