@@ -360,61 +360,61 @@ int main( int argc, char *argv[] )
     itmoving.GoToBegin();
     while ( !itmoving.IsAtEnd() )
     {
-    if ( itmoving.Get() != 0 )
-      {
-      itmoving.Set( 1 );
-      }
-
-    ++itmoving;
-         }
-
-  MetricType::Pointer metric = MetricType::New();
-   //because we are minimizing as opposed to maximizing
-  metric->SetForegroundValue( 1);
-
-
-  TransformType::Pointer transform = TransformType::New();
-  std::cout<<"initializing transform"<<std::endl;
-  InitializerType::Pointer initializer = InitializerType::New();
-  initializer->SetTransform( transform );
-  initializer->SetFixedImage(  fixedExtractor->GetOutput() );
-  initializer->SetMovingImage( movingExtractor->GetOutput() );
-  initializer->MomentsOn();
-  initializer->InitializeTransform();
-
-  OptimizerScalesType optimizerScales( transform->GetNumberOfParameters()
-);
-  optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;
-optimizerScales[2] =  1.0;
-  optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;
-optimizerScales[5] =  1.0;
-  optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;
-optimizerScales[8] =  1.0;
-  optimizerScales[9]  =  translationScale;
-  optimizerScales[10] =  translationScale;
-  optimizerScales[11] =  translationScale;
-
-  OptimizerType::Pointer optimizer = OptimizerType::New();
-  optimizer->SetScales( optimizerScales );
-  optimizer->SetMaximumStepLength( maxStepLength );
-  optimizer->SetMinimumStepLength( minStepLength );
-  optimizer->SetNumberOfIterations( numberOfIterations );
-
-  InterpolatorType::Pointer interpolator = InterpolatorType::New();
-
-  std::cout << "Starting registration..." << std::endl;
-  RegistrationType::Pointer registration = RegistrationType::New();
-  registration->SetMetric( metric );
-  registration->SetOptimizer( optimizer );
-  registration->SetInterpolator( interpolator );
-  registration->SetTransform( transform );
-  registration->SetFixedImage( fixedExtractor->GetOutput() );
-  registration->SetMovingImage( movingExtractor->GetOutput() );
-  registration->SetFixedImageRegion(
-fixedExtractor->GetOutput()->GetBufferedRegion() );
-  registration->SetInitialTransformParameters( transform->GetParameters()
-);
-  try
+        if ( itmoving.Get() != 0 )
+        {
+            itmoving.Set( 1 );
+        }
+        
+        ++itmoving;
+    }
+    
+    MetricType::Pointer metric = MetricType::New();
+    //because we are minimizing as opposed to maximizing
+    metric->SetForegroundValue( 1);
+    
+    
+    TransformType::Pointer transform = TransformType::New();
+    std::cout<<"initializing transform"<<std::endl;
+    InitializerType::Pointer initializer = InitializerType::New();
+    initializer->SetTransform( transform );
+    initializer->SetFixedImage(  fixedExtractor->GetOutput() );
+    initializer->SetMovingImage( movingExtractor->GetOutput() );
+    initializer->MomentsOn();
+    initializer->InitializeTransform();
+    
+    OptimizerScalesType optimizerScales( transform->GetNumberOfParameters()
+                                        );
+    optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;
+    optimizerScales[2] =  1.0;
+    optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;
+    optimizerScales[5] =  1.0;
+    optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;
+    optimizerScales[8] =  1.0;
+    optimizerScales[9]  =  translationScale;
+    optimizerScales[10] =  translationScale;
+    optimizerScales[11] =  translationScale;
+    
+    OptimizerType::Pointer optimizer = OptimizerType::New();
+    optimizer->SetScales( optimizerScales );
+    optimizer->SetMaximumStepLength( maxStepLength );
+    optimizer->SetMinimumStepLength( minStepLength );
+    optimizer->SetNumberOfIterations( numberOfIterations );
+    
+    InterpolatorType::Pointer interpolator = InterpolatorType::New();
+    
+    std::cout << "Starting registration..." << std::endl;
+    RegistrationType::Pointer registration = RegistrationType::New();
+    registration->SetMetric( metric );
+    registration->SetOptimizer( optimizer );
+    registration->SetInterpolator( interpolator );
+    registration->SetTransform( transform );
+    registration->SetFixedImage( fixedExtractor->GetOutput() );
+    registration->SetMovingImage( movingExtractor->GetOutput() );
+    registration->SetFixedImageRegion(
+                                      fixedExtractor->GetOutput()->GetBufferedRegion() );
+    registration->SetInitialTransformParameters( transform->GetParameters()
+                                                );
+    try
     {
         registration->StartRegistration();
         //registration->Update(); for ITKv4
@@ -429,16 +429,13 @@ fixedExtractor->GetOutput()->GetBufferedRegion() );
     //get all params to output to file
     numberOfIterations = optimizer->GetCurrentIteration();
     
-    //  The value of the image metric corresponding to the last set of
-    parameters
+    //  The value of the image metric corresponding to the last set of parameters
     //  can be obtained with the \code{GetValue()} method of the optimizer.
     
     const double bestValue = optimizer->GetValue();
     
-    std::cout<<"similarity output = "<< optimizer->GetValue() <<" best value
-    = " <<bestValue<<std::endl;
-    OptimizerType::ParametersType finalParams =
-    registration->GetLastTransformParameters();
+    std::cout<<"similarity output = "<< optimizer->GetValue() <<" best value= " <<bestValue<<std::endl;
+    OptimizerType::ParametersType finalParams = registration->GetLastTransformParameters();
     
     TransformType::Pointer finalTransform = TransformType::New();
     finalTransform->SetParameters( finalParams );
@@ -449,8 +446,7 @@ fixedExtractor->GetOutput()->GetBufferedRegion() );
     {
         std::string infoFilename = outputTransformFileName;
         int result = infoFilename.find_last_of('.');
-        // Does new_filename.erase(std::string::npos) working here in place of
-        this following test?
+        // Does new_filename.erase(std::string::npos) working here in place ofthis following test?
         if (std::string::npos != result)
             infoFilename.erase(result);
         // append extension:
@@ -506,8 +502,7 @@ fixedExtractor->GetOutput()->GetBufferedRegion() );
                 next = fixedImageFileName.find('/', next+1);
             }
             
-            labelMapRegistrationXMLData.destID.assign(fixedImageFileName.c_str());//
-            =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
+            labelMapRegistrationXMLData.destID.assign(fixedImageFileName.c_str());//=tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
             
             labelMapRegistrationXMLData.destID.erase(next,labelMapRegistrationXMLData.destID.length()-1);
             labelMapRegistrationXMLData.destID.erase(0, pos);
@@ -515,8 +510,7 @@ fixedExtractor->GetOutput()->GetBufferedRegion() );
         }
         
         //remove path from output transformation file before storing in xml
-        std::cout<<"outputtransform filename
-        ="<<outputTransformFileName.c_str()<<std::endl;
+        std::cout<<"outputtransform filename="<<outputTransformFileName.c_str()<<std::endl;
         pos=0;
         next=0;
         for (int i = 0; i < (pathLength);i++)
@@ -562,13 +556,11 @@ fixedExtractor->GetOutput()->GetBufferedRegion() );
         ImageType::Pointer upsampledImage = ImageType::New();
         
         std::cout << "Upsampling to original size..." << std::endl;
-        //ResampleImage( resample->GetOutput(), upsampledImage,
-        1.0/downsampleFactor );
+        //ResampleImage( resample->GetOutput(), upsampledImage,1.0/downsampleFactor );
         upsampledImage=cip::UpsampleLabelMap(downsampleFactor,
                                              resample->GetOutput());
         ImageWriterType::Pointer writer = ImageWriterType::New();
         writer->SetInput(upsampledImage);// movingExtractor->GetOutput()
-        );//upsampledImage );
         writer->SetFileName( outputImageFileName );
         writer->UseCompressionOn();
         try
