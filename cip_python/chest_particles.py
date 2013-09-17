@@ -80,7 +80,7 @@ class ChestParticles:
 
         # If set to true, the temporary directory will be wiped clean
         # after execution
-        self.clean_tmp_dir = False
+        self._clean_tmp_dir = False
 
         # Temp filenames:
         # -------------------
@@ -146,6 +146,7 @@ class ChestParticles:
         self._live_thresh = -150 # Threshold on feature strength
         self._seed_thresh = -100 # Threshold on feature strengh
         self._mode_thresh = -0.5 # Threshold on mode of the hessian
+        self._use_mode_thresh = False #Use mode threshold
 
     def set_vol_params(self):	   
         if self._single_scale == 0:
@@ -172,20 +173,25 @@ class ChestParticles:
                 " -info  h-c:V:val:0:-1 hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 ")
             self._info_params += (
-                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
-                ":-1 lthr:" + volTag + ":heval1:")
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + ":-1 "
+                "lthr:" + volTag + ":heval1:" + str(self._live_thresh) + ":-1 ")
             self._info_params += (
-                str(self._live_thresh) + ":-1 strn:" + 
-                volTag + ":heval1:0:-1")
+                 "strn:" + volTag + ":heval1:0:-1 ")
+            if self._use_mode_thresh == True:
+                self._info_params += (
+                "lthr2:" + volTag + ":hmode:" + str(self._mode_thresh) + ":1 ")
         elif self._feature_type == "valley_line":
             self._info_params = (
                 " -info  h-c:V:val:0:1  hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 ")
             self._info_params += (
-                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
-                ":1 lthr:" + volTag + ":heval1:")
-            self._info_params += (str(self._live_thresh) + ":1 strn:" + 
-                volTag + ":heval1:0:1")
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + ":1 "
+                "lthr:" + volTag + ":heval1:"+str(self._live_thresh) + ":1 ")
+            self._info_params += (
+                "strn:" + volTag + ":heval1:0:1 ")
+            if self._use_mode_thresh == True:
+                self._info_params += (
+                    "lthr2:" + volTag + ":hmode:" + str(self._mode_thresh) + ":-1 ")
         elif self._feature_type == "ridge_surface":
             self._info_params = (" -info h-c:V:val:0:-1 hgvec:V:gvec \
             hhess:V:hess tan1:V:hevec2 ")
@@ -193,7 +199,8 @@ class ChestParticles:
                 str(self._seed_thresh) + ":-1 lthr:" + volTag + ":heval2:")
             self._info_params += (str(self._live_thresh) + ":-1 lthr2:" + 
                 volTag + ":hmode:" + str(self._mode_thresh) + ":-1 strn:" + 
-                volTag + ":heval2:0:-1")
+                volTag + ":heval2:0:-1 ")
+            #Here we don't give an option for mode thresh. Always active
         elif self._feature_type == "valley_surface":
             self._info_params = (" -info h-c:V:val:0:1 hgvec:V:gvec \
             hhess:V:hess tan1:V:hevec0 ")
@@ -201,11 +208,12 @@ class ChestParticles:
                 str(self._seed_thresh) + ":1 lthr:" + volTag + ":heval0:")
             self._info_params += (str(self._live_thresh) + ":1 lthr2:" + 
                 volTag + ":hmode:" + str(self._mode_thresh) + 
-                ":1 strn:" + volTag + ":heval0:0:1")
+                ":1 strn:" + volTag + ":heval0:0:1 ")
+            #Here we don't give an option for mode thresh. Always active
 
         if self._use_mask == 1:
-	    maskVal = "0.5"
-	    self._info_params += " spthr:M:val:" + maskVal + ":1"
+            maskVal = "0.5"
+            self._info_params += " spthr:M:val:" + maskVal + ":1"
 
     def set_kernel_params(self):
         if self._recon_kernel_type == "Bspline3":
@@ -320,6 +328,9 @@ class ChestParticles:
                 self.adjust_scale(outputParticles)
         #Save NRRD data to VTK
         self.save_vtk(outputParticles)
+
+        #Clean tmp Directory
+        self.clean_tmp_dir()
 
     def execute_pass(self, output):
         #Check inputs files are in place
@@ -475,9 +486,9 @@ class ChestParticles:
         reader_writer.execute()
 
     def clean_tmp_dir(self):
-        if self._cleanTemporaryDirectory == True:
+        if self._clean_tmp_dir == True:
             print "Cleaning tempoarary directory..."
-            tmp_command = "rm " + os.path.join(self._tmp_dir, "*")
+            tmp_command = "/bin/rm " + os.path.join(self._tmp_dir, "*")
             subprocess.call( tmp_command, shell=True )
 
     def merge_particles(self,input_list,output_merged):
