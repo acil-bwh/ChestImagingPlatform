@@ -322,7 +322,7 @@ int main( int argc, char *argv[] )
     std::cerr <<"Error: No lung label map specified"<< std::endl;
     return cip::EXITFAILURE;
     }
-
+/*
   // Extract fixed Image region that we want
   std::cout << "Extracting region and type..." << std::endl;
   LabelMapExtractorType::Pointer fixedExtractor = LabelMapExtractorType::New();
@@ -355,7 +355,8 @@ int main( int argc, char *argv[] )
 
   fixedExtractor->Update();
   movingExtractor->Update();
-  
+  */
+    
     //Read the CT images
   ShortImageType::Pointer ctFixedImage = ShortImageType::New();
   ctFixedImage = ReadCTFromFile( fixedCTFileName );
@@ -431,7 +432,7 @@ int main( int argc, char *argv[] )
   typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
   MaskReaderType::Pointer  maskReader = MaskReaderType::New();
   
-  if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+  /*if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
     {
       maskReader->SetFileName(fixedLabelmapFileName.c_str() );
 
@@ -448,7 +449,7 @@ int main( int argc, char *argv[] )
       spatialObjectMask->SetImage(maskReader->GetOutput());
       //Subsample(spatialObjectMask,downsampleFactor);
 
-      }
+      }*/
   
   //  spatialObjectMask->SetImage(  movingLabelMap);
 
