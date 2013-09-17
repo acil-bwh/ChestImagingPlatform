@@ -193,6 +193,28 @@ void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
     }
 }
 
+void cipAirwayDataInteractor::UndoAndRender()
+{
+  unsigned int lastModification = this->LabeledParticleIDs.size() - 1;
+
+  float tmpRegion = float(cip::UNDEFINEDREGION);
+  float tmpType   = float(cip::UNDEFINEDTYPE);
+
+  for ( unsigned int i=0; i<this->LabeledParticleIDs[lastModification].size(); i++ )
+    {
+    unsigned int id = this->LabeledParticleIDs[lastModification][i];
+    this->AirwayParticles->GetPointData()->GetArray("ChestType")->SetTuple( id, &tmpType );
+    this->AirwayParticles->GetPointData()->GetArray("ChestRegion")->SetTuple( id, &tmpRegion );
+
+    this->ParticleIDToActorMap[id]->GetProperty()->SetColor( 1.0, 1.0, 1.0 );
+    }
+
+  this->LabeledParticleIDs[lastModification].clear();
+  this->LabeledParticleIDs.erase( this->LabeledParticleIDs.end() );
+
+  this->RenderWindow->Render();
+}
+
 void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
 {
   this->MinimumSpanningTreeIntermediateNode = this->ActorToParticleIDMap[actor];  
@@ -209,6 +231,10 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
 
  vtkIdList* idList = dijkstra->GetIdList();
 
+ // The following will store particle IDs that are being
+ // labeled. We'll need this in case we want to undo the labeling.
+ std::vector< unsigned int > labeledIDs;
+
  for ( unsigned int i=0; i<idList->GetNumberOfIds(); i++ )
    {
    if ( this->AirwayParticles->GetPointData()->GetArray("ChestType")->GetTuple(idList->GetId(i))[0] == float(cip::UNDEFINEDTYPE) )
@@ -218,8 +244,11 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
      this->ParticleIDToActorMap[idList->GetId(i)]->GetProperty()->SetColor( this->ActorColor[0], this->ActorColor[1], this->ActorColor[2] );
      this->AirwayParticles->GetPointData()->GetArray("ChestRegion")->SetTuple(idList->GetId(i), &tmpRegion );
      this->AirwayParticles->GetPointData()->GetArray("ChestType")->SetTuple(idList->GetId(i), &tmpType );
+     labeledIDs.push_back(idList->GetId(i));
      }
    }
+
+ this->LabeledParticleIDs.push_back( labeledIDs );
 
  this->RenderWindow->Render();
 }
@@ -511,7 +540,10 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       dataInteractor->RemoveActorAndRender( actor );
       }
     }
-
+  else if ( pressedKey == 'u' )
+    {
+    dataInteractor->UndoAndRender();
+    }
   else if ( pressedKey == '!' || pressedKey == '@' || pressedKey == '#' || pressedKey == '$' || pressedKey == '%' || 
        pressedKey == '^' || pressedKey == '&' || pressedKey == '*' || pressedKey == '(' || pressedKey == ')' ||
        pressedKey == 'o' || pressedKey == 'm' )

@@ -42,6 +42,7 @@ public:
   void SetRootNode( vtkActor* );
   void SetIntermediateNode( vtkActor* );
   void UpdateAirwayBranchCode( char );
+  void UndoAndRender();
 
   /** Set airway particles poly data. Once read in, a minimum
    *  spanning tree representation will be created. This
@@ -69,6 +70,7 @@ private:
   double EdgeWeightAngleSigma;
   unsigned char SelectedChestRegion;
   unsigned char SelectedChestType;
+  std::vector< std::vector< unsigned int > > LabeledParticleIDs;
 
   double* ActorColor;
   std::string AirwayBranchCode;
