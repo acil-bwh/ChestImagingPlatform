@@ -314,11 +314,11 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
   // spanning tree, and this tree will be used in order to label
   // particles between specified root and intermediate nodes /
   // particles 
-  std::cout << "Adding particles to interactor for minimum spanning tree representation..." << std::endl;
-  interactor.SetAirwayParticlesAsMinimumSpanningTree( particlesReader->GetOutput() );
+  //std::cout << "Adding particles to interactor for minimum spanning tree representation..." << std::endl;
+  //interactor.SetAirwayParticlesAsMinimumSpanningTree( particlesReader->GetOutput() );
 
-//   std::cout << "Adding components to interactor..." << std::endl;
-//   AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "airwayParticles", &componentLabelToNameMap, particleSize );
+  std::cout << "Adding components to interactor..." << std::endl;
+  AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "airwayParticles", &componentLabelToNameMap, particleSize );
 
   std::cout << "Rendering..." << std::endl;  
   interactor.Render();
@@ -502,7 +502,7 @@ void AddComponentsToInteractor( cipAirwayDataInteractor* interactor, vtkSmartPoi
       polyData->GetPointData()->AddArray( arrayVec[j] );
       }
 
-    interactor->SetAirwayParticlesAsCylinders( polyData, particleSize, name ); 
+    interactor->SetAirwayParticlesAsDiscs( polyData, particleSize, name ); 
     interactor->SetActorColor( name, r, g, b );
     interactor->SetActorOpacity( name, 1 );
 
