@@ -68,16 +68,10 @@
 #include "vtkFloatArray.h"
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
 #include "cipConventions.h"
+#include "cipHelper.h"
 
-
-typedef itk::Image< unsigned short, 3 >      ImageType;
-typedef itk::ImageFileReader< ImageType >    ReaderType;
-
-
-void GetOutputParticlesUsingLabelMap( std::string, unsigned char, unsigned char, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
+void GetOutputParticlesUsingLabelMap( std::string, std::vector< unsigned char >, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned char >, std::vector< unsigned char >, 
 							vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 
@@ -92,9 +86,7 @@ int main( int argc, char *argv[] )
   std::vector< unsigned char > cipRegions;
   std::vector< unsigned char > cipTypes;
 
-  //
   // Program and argument descriptions for user help
-  //
   std::string programDescription = "This program allows you to extract particles from an input particles data set using either\
 an input label map or the particles themselves. Many particles datasets contain a 'ChestType' and 'ChestRegion' data field.\
 The values of these fields can be used to isolate particles of interest. Alternatively, a label map can be specified, and only\
@@ -108,13 +100,10 @@ region or type specified with the '-r' and '-t' flags, respectively";
   std::string inParticlesFileNameDescription  = "Input particles file name";
   std::string outParticlesFileNameDescription = "Output particles file name";
   std::string cipRegionsDescription            = "Chest regions from which to extract particles";
-  std::string cipTypesDescription              = "Chest types for which to extract particles. If specifying a label map this flag should\
-be used to indicate the type of particles in the input file for output array labeling purposes (if no value is specified\
-UNDEFINEDTYPE will be set as the particle ChestType field value";
+  std::string cipTypesDescription              = "Chest types for which to extract particles. If specifying a label map this flag \
+is not relevent.";
 
-  //
   // Parse the input arguments
-  //
   try
     {
     TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 383 $" );
@@ -122,14 +111,19 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
     TCLAP::ValueArg<std::string> labelMapFileNameArg( "l", "labelMap", labelMapFileNameDescription, false, labelMapFileName, "string", cl );
     TCLAP::ValueArg<std::string> inParticlesFileNameArg( "i", "inParticles", inParticlesFileNameDescription, true, inParticlesFileName, "string", cl );
     TCLAP::ValueArg<std::string> outParticlesFileNameArg( "o", "outParticles", outParticlesFileNameDescription, true, outParticlesFileName, "string", cl );
-    TCLAP::MultiArg<int> cipRegionsArg( "r", "region", cipRegionsDescription, false, "int", cl );
-    TCLAP::MultiArg<int> cipTypesArg( "t", "type", cipTypesDescription, false, "int", cl );
+    TCLAP::MultiArg<unsigned char> cipRegionsArg( "r", "region", cipRegionsDescription, false, "unsigned char", cl );
+    TCLAP::MultiArg<unsigned char> cipTypesArg( "t", "type", cipTypesDescription, false, "unsigned char", cl );
 
     cl.parse( argc, argv );
 
     labelMapFileName     = labelMapFileNameArg.getValue();
     inParticlesFileName  = inParticlesFileNameArg.getValue();
     outParticlesFileName = outParticlesFileNameArg.getValue();
+
+    if ( cipRegionsArg.getValue().size() == 0 )
+      {
+	cipRegions.push_back( (unsigned char)(cip::UNDEFINEDREGION) );
+      }
     for ( unsigned int i=0; i<cipRegionsArg.getValue().size(); i++ )
       {
 	cipRegions.push_back( (unsigned char)(cipRegionsArg.getValue()[i]) );
@@ -152,18 +146,12 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
     particlesReader->SetFileName( inParticlesFileName.c_str() );
     particlesReader->Update();    
 
+  // First make sure that the particles have 'ChestRegion' and 'ChestType' arrays
+  cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
+
   if ( labelMapFileName.compare( "NA" ) != 0 )
     {
-    // unsigned char tmpType;
-    // if ( cipType == -1 )
-    //   {
-    //   tmpType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
-    //   }
-    // else 
-    //   {
-    //   tmpType = static_cast< unsigned char >( cipType );
-    //   }
-    // GetOutputParticlesUsingLabelMap( labelMapFileName, static_cast< unsigned char >( cipRegion ), tmpType, particlesReader->GetOutput(), outParticles );
+    GetOutputParticlesUsingLabelMap( labelMapFileName, cipRegions, particlesReader->GetOutput(), outParticles );
     }
   else 
     {
@@ -181,158 +169,93 @@ UNDEFINEDTYPE will be set as the particle ChestType field value";
   return 0;
 }
 
+// A) If no region is specified, all particles falling within the foreground 
+// region will be retained. The particles' ChestRegion and ChestType array values
+// will be preserved. 
+// B) If a region is specified, all particles falling inside the specified label
+// map's region will be retained. The particles' ChestType array is preserved, but
+// the ChestRegion is overwritten with the specified desired region 
+void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< unsigned char > cipRegions, 
+				      vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
+{
+  cip::ChestConventions conventions;
 
-//
-// Note that only the 'cipRegion' is used to isolate the
-// particles. The 'cipType' is used here only to fill in information
-// (in the 'ChestType' array) in the output.
-//
-// void GetOutputParticlesUsingLabelMap( std::string fileName, unsigned char cipRegion, unsigned char cipType, vtkSmartPointer< vtkPolyData > inParticles, 
-//                                       vtkSmartPointer< vtkPolyData > outParticles )
-// {
-//   ChestConventions conventions;
+  std::cout << "Reading label map..." << std::endl;
+  cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
+    labelMapReader->SetFileName( fileName );
+  try
+    {
+    labelMapReader->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught reading label map:";
+    std::cerr << excp << std::endl;
+    }
 
-//   std::cout << "Reading label map..." << std::endl;
-//   ReaderType::Pointer labelMapReader = ReaderType::New();
-//     labelMapReader->SetFileName( fileName );
-//   try
-//     {
-//     labelMapReader->Update();
-//     }
-//   catch ( itk::ExceptionObject &excp )
-//     {
-//     std::cerr << "Exception caught reading label map:";
-//     std::cerr << excp << std::endl;
-//     }
+  unsigned int numberPointDataArrays = inParticles->GetPointData()->GetNumberOfArrays();
+  unsigned int numberParticles       = inParticles->GetNumberOfPoints();
 
-//   unsigned int numberPointDataArrays = inParticles->GetPointData()->GetNumberOfArrays();
-//   unsigned int numberParticles       = inParticles->GetNumberOfPoints();
-
-//   vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();
+  vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();
   
-//   std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
+  std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
 
-//   //
-//   // The input particles may or may not have 'ChestType' and
-//   // 'ChestRegion' data arrays. As we loop through the input, we will
-//   // check their existence
-//   //
-//   bool foundChestRegionArray = false;
-//   bool foundChestTypeArray   = false;
+  for ( unsigned int i=0; i<numberPointDataArrays; i++ )
+    {
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+      array->SetNumberOfComponents( inParticles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( inParticles->GetPointData()->GetArray(i)->GetName() );
 
-//   for ( unsigned int i=0; i<numberPointDataArrays; i++ )
-//     {
-//     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-//       array->SetNumberOfComponents( inParticles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
-//       array->SetName( inParticles->GetPointData()->GetArray(i)->GetName() );
+    arrayVec.push_back( array );
+    }
 
-//     //
-//     // The input particles may not have the 'ChestType' or
-//     // 'ChestRegion' float arrays defined. If not, we want to define
-//     // and add them
-//     //
-//     std::string name( inParticles->GetPointData()->GetArray(i)->GetName() );
-//     if ( name.compare( "ChestType" ) == 0 )
-//       {
-//       foundChestTypeArray = true;
-//       }
-//     if ( name.compare( "ChestRegion" ) == 0 )
-//       {
-//       foundChestRegionArray = true;
-//       }
+  unsigned int inc = 0;
+  cip::LabelMapType::PointType point;
+  cip::LabelMapType::IndexType index;
 
-//     arrayVec.push_back( array );
-//     }
-//   if ( !foundChestRegionArray )
-//     {
-//     //
-//     // The 'ChestRegion' data array was not found in the input, so add
-//     // it here. Note that we have to increment the number of field
-//     // data arrays for processing below
-//     //
-//     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-//       array->SetNumberOfComponents( 1 );
-//       array->SetName( "ChestRegion" );
-
-//     arrayVec.push_back( array );
-
-//     numberPointDataArrays++;
-//     }
-//   if ( !foundChestTypeArray )
-//     {
-//     //
-//     // The 'ChestType' data array was not found in the input, so add
-//     // it here. Note that we have to increment the number of field
-//     // data arrays for processing below
-//     //
-//     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-//       array->SetNumberOfComponents( 1 );
-//       array->SetName( "ChestType" );
-
-//     arrayVec.push_back( array );
-
-//     numberPointDataArrays++;
-//     }
-
-//   unsigned int inc = 0;
-//   ImageType::PointType point;
-//   ImageType::IndexType index;
-
-//   for ( unsigned int i=0; i<numberParticles; i++ )
-//     {
-//     point[0] = inParticles->GetPoint(i)[0];
-//     point[1] = inParticles->GetPoint(i)[1];
-//     point[2] = inParticles->GetPoint(i)[2];
+  for ( unsigned int i=0; i<numberParticles; i++ )
+    {
+    point[0] = inParticles->GetPoint(i)[0];
+    point[1] = inParticles->GetPoint(i)[1];
+    point[2] = inParticles->GetPoint(i)[2];
     
-//     labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );    
+    labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );    
 
-//     unsigned short labelValue   = labelMapReader->GetOutput()->GetPixel( index );
-//     unsigned char  labelRegion  = conventions.GetChestRegionFromValue( labelValue );
+    unsigned short labelValue   = labelMapReader->GetOutput()->GetPixel( index );
+    unsigned char  labelRegion  = conventions.GetChestRegionFromValue( labelValue );
+    
+    if ( labelValue > 0 )
+      {       
+	for ( unsigned int k=0; k<cipRegions.size(); k++ )
+	  {
+	    unsigned char cipRegion = cipRegions[k];
 
-//     //
-//     // If the label map chest region is a subordinate of the requested
-//     // chest region, then add this particle to the output
-//     //
-//     if ( conventions.CheckSubordinateSuperiorChestRegionRelationship( labelRegion, cipRegion ) )
-//       {
-//       outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
+	    // If the label map chest region is a subordinate of the requested
+	    // chest region, then add this particle to the output    
+	    if ( cipRegion == (unsigned char)(cip::UNDEFINEDREGION ) || 
+		 conventions.CheckSubordinateSuperiorChestRegionRelationship( labelRegion, cipRegion ) )
+	      {
+		outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
+		
+		for ( unsigned int j=0; j<numberPointDataArrays; j++ )
+		  {
+		    arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );        
+		  }
+	    
+		inc++;
 
-//       for ( unsigned int j=0; j<numberPointDataArrays; j++ )
-//         {
-//         //
-//         // We have to perform this check because we don't know if the
-//         // input has chest region and/or chest type arrays
-//         //
-//         std::string arrayName( arrayVec[j]->GetName() );
-
-//         if ( arrayName.compare( "ChestRegion" ) == 0 )
-//           {
-//           float tmp = static_cast< float >( cipRegion );
-          
-//           arrayVec[j]->InsertTuple( inc, &tmp );
-//           }
-//         else if ( arrayName.compare( "ChestType" ) == 0 )
-//           {
-//           float tmp = static_cast< float >( cipType );
-
-//           arrayVec[j]->InsertTuple( inc, &tmp );
-//           }
-//         else
-//           {
-//           arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
-//           }
-//         }
-
-//       inc++;
-//       }
-//     }
+		break;
+	      }
+	  }
+      }
+    }
   
-//   outParticles->SetPoints( outputPoints );
-//   for ( unsigned int j=0; j<numberPointDataArrays; j++ )
-//     {
-//     outParticles->GetPointData()->AddArray( arrayVec[j] );
-//     }
-// }
+  outParticles->SetPoints( outputPoints );
+  for ( unsigned int j=0; j<numberPointDataArrays; j++ )
+    {
+    outParticles->GetPointData()->AddArray( arrayVec[j] );
+    }
+}
 
 
 void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned char > cipRegions, std::vector< unsigned char > cipTypes, 
