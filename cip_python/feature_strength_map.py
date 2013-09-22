@@ -31,7 +31,7 @@ class FeatureStrengthMap:
 
     """
     
-    def __init__( self, feature_type="ridge_line",
+    def __init__( self, feature_type,
                  in_file_name,out_file_name,
                  tmp_dir):
         
@@ -99,9 +99,9 @@ class FeatureStrengthMap:
     def execute( self ):
         if self._downSamplingRate > 1:
             downsampledVolume = os.path.join(self._tmp_dir,"ct-down.nrrd")
-            self.down_sample(self._inputFileName,downsampledVolume)
+            self.down_sample(self._input_file_name,downsampledVolume)
         else:
-            downsampledVolume = self._inputFileName
+            downsampledVolume = self._input_file_name
 
         deconvolvedVolume = os.path.join(self._tmp_dir,"ct-deconv.nrrd")
         self.deconvolution(downsampledVolume,deconvolvedVolume)
@@ -135,12 +135,12 @@ class FeatureStrengthMap:
         clampRange = clampRange % self._max_feature_strength
 
         tmpCommand = "unu join -i %(input)s -incr -a 0 -sp 1 | unu 3op clamp %(clamp_range)s | unu project -m %(operator)s -a 0 -o %(output)s"
-        tmpCommand = tmpCommand % {'input':responseFiles,'output':self._outputFileName,'operator':operator,'clamp_range':clampRange}
+        tmpCommand = tmpCommand % {'input':responseFiles,'output':self._output_file_name,'operator':operator,'clamp_range':clampRange}
         subprocess.call( tmpCommand, shell=True )
 
         #Trick to fix space directions: project wipes out this information
         tmpCommand = "unu 2op gt %(input)s -3000 | unu 2op x - %(output)s -w 0 -o %(output)s -t float"
-        tmpCommand = tmpCommand % {'input':self._inputFileName,'output':self._outputFileName}
+        tmpCommand = tmpCommand % {'input':self._input_file_name,'output':self._output_file_name}
         subprocess.call( tmpCommand, shell=True )
 
         self.clean_tmp_dir()
@@ -169,7 +169,7 @@ class FeatureStrengthMap:
                         'qty': featureStrength,
                         'output': outputVolume,
                         'num_scales': self._scale_samples,
-                        'max_scale': self._max_Scale,
+                        'max_scale': self._max_scale,
                         'scale_samples': self._scale_samples,
                         'probe_scale': probe_scale
                                 }
