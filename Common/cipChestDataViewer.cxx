@@ -226,12 +226,12 @@ void cipChestDataViewer::SetGrayscaleImage( GrayscaleImageType::Pointer grayscal
 }
 
 
-void cipChestDataViewer::SetPolyData( vtkPolyData* polyData, std::string name )
+vtkSmartPointer< vtkActor > cipChestDataViewer::SetPolyData( vtkPolyData* polyData, std::string name )
 {
   vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
     mapper->SetInput( polyData );
 
-  vtkActor* actor = vtkActor::New();
+  vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
     actor->SetMapper( mapper );
     actor->GetProperty()->SetColor( 0, 0, 0 );
     actor->GetProperty()->SetOpacity( 1.0 );
@@ -240,6 +240,8 @@ void cipChestDataViewer::SetPolyData( vtkPolyData* polyData, std::string name )
   this->Renderer->AddActor( this->ActorMap[name] );
 
   mapper->Delete();
+
+  return actor;
 }
 
 

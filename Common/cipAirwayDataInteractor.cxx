@@ -29,14 +29,12 @@ cipAirwayDataInteractor::cipAirwayDataInteractor()
   this->InteractorCallbackCommand->SetCallback( InteractorKeyCallback );
   this->InteractorCallbackCommand->SetClientData( (void*)this );
 
-  //
   // cipAirwayDataInteractor inherits from cipChestDataViewer. The
   // cipChestDataViewer constructor is called before the
   // cipAirwayDataInteractor constructor, and in the parent constructor,
   // the ViewerCallbackCommand is set. We want to remove it and set
   // the InteractorCallbackCommand in order for the key bindings
   // specific to interaction can take effect
-  //
   this->RenderWindowInteractor->RemoveObserver( this->ViewerCallbackCommand );
   this->RenderWindowInteractor->AddObserver( vtkCommand::KeyPressEvent, this->InteractorCallbackCommand );
 
@@ -49,6 +47,10 @@ cipAirwayDataInteractor::cipAirwayDataInteractor()
   this->ParticleDistanceThreshold = 20.0;
   this->AirwayBranchCode          = "";
   this->ActorColor                = new double[3];
+
+  this->AirwayModelActor = vtkSmartPointer< vtkActor >::New();
+  this->AirwayModel = vtkSmartPointer< vtkPolyData >::New();
+  this->AirwayModelShowing = false;
 }
 
 void cipAirwayDataInteractor::SetRootNode( vtkActor* actor )
@@ -76,7 +78,7 @@ void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
     return;
     }    
 
-  this->AirwayBranchCode.append( &c );
+  this->AirwayBranchCode.append( 1, c );
   
   std::cout << "Code:\t" << this->AirwayBranchCode << std::endl;
   if ( this->AirwayBranchCode.compare( "LMB" ) == 0 )
@@ -324,6 +326,37 @@ void cipAirwayDataInteractor::UpdateAirwayGenerationAndRender( vtkActor* actor, 
   this->RenderWindow->Render();
 }
 
+void cipAirwayDataInteractor::SetAirwayModel( vtkSmartPointer< vtkPolyData > model )
+{
+  this->AirwayModel = model;
+  this->AirwayModelActor = this->SetPolyData( model, "airwayModel" );
+  this->SetActorColor( "airwayModel", 1.0, 1.0, 1.0 );
+  this->SetActorOpacity( "airwayModel", 0.3 );
+
+  this->AirwayModelShowing = true;
+}
+
+void cipAirwayDataInteractor::ShowAirwayModel()
+{
+  if ( !this->AirwayModelShowing )
+    {
+      this->AirwayModelShowing = true;
+
+      this->Renderer->AddActor( this->AirwayModelActor);
+      this->RenderWindow->Render();
+    }
+}
+
+void cipAirwayDataInteractor::HideAirwayModel()
+{
+  if ( this->AirwayModelShowing )
+    {
+      this->AirwayModelShowing = false;
+
+      this->Renderer->RemoveActor( this->AirwayModelActor );
+      this->RenderWindow->Render();
+    }
+}
 
 void cipAirwayDataInteractor::UndoUpdateAndRender()
 {
@@ -352,7 +385,8 @@ void cipAirwayDataInteractor::RemoveActorAndRender( vtkActor* actor )
 }
 
 
-void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartPointer< vtkPolyData > particles )
+void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartPointer< vtkPolyData > particles, 
+								       double particleSize )
 {
   this->AirwayParticles = particles;
 
@@ -364,7 +398,6 @@ void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartP
 
   // Now we want to loop over all particles and create an individual
   // actor for each.
-  double particleSize = 1.0;
 
   for ( unsigned int p = 0; p < this->NumberInputParticles; p++ )
     {
@@ -540,6 +573,14 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       dataInteractor->RemoveActorAndRender( actor );
       }
     }
+  else if ( pressedKey == 's' )
+    {
+      dataInteractor->ShowAirwayModel();
+    }
+  else if ( pressedKey == 'h' )
+    {
+      dataInteractor->HideAirwayModel();
+    }
   else if ( pressedKey == 'u' )
     {
     dataInteractor->UndoAndRender();
@@ -644,11 +685,6 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       {
       dataInteractor->SetPlaneWidgetZShowing( true );
       }
-    }
-  
-  if ( pressedKey == 'u' )
-    {
-    dataInteractor->UndoUpdateAndRender();  
-    }
+    }  
 }
 

@@ -26,5 +26,10 @@ ${CMAKE_SOURCE_DIR}/IO
 
 SET ( EditAirwayParticles_SOURCE EditAirwayParticles.cxx )
 
-ADD_EXECUTABLE ( EditAirwayParticles ${EditAirwayParticles_SOURCE})
+IF ( APPLE )
+   ADD_EXECUTABLE ( EditAirwayParticles  MACOSX_BUNDLE ${EditAirwayParticles_SOURCE})
+ELSE ( APPLE )
+   ADD_EXECUTABLE ( EditAirwayParticles  ${EditAirwayParticles_SOURCE})
+ENDIF ( APPLE )
+
 TARGET_LINK_LIBRARIES ( EditAirwayParticles ${ITK_LIBRARIES} ${VTK_LIBRARIES} CIPUtilities CIPCommon CIPIO )
