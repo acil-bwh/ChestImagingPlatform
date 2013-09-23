@@ -322,7 +322,7 @@ class ChestParticles:
         outputParticles=os.path.join(self._tmp_dir, \
                                      self._tmp_particles_file_name)
         self.execute_pass(outputParticles)
-        self.probe_quantities(deconvolvedVolume,outputParticles)
+        self.probe_quantities(self._tmp_in_file_name,outputParticles)
         #Adjust scale if down-sampling was performed
         if self._down_sample_rate > 1:
                 self.adjust_scale(outputParticles)
@@ -389,13 +389,12 @@ class ChestParticles:
             #    + "%03u" % self._scale_samples +".nrrd"
             #)
             tmp_command = (
-                "cd %(temporary_directory)s; gprobe -i %(input)s "
+                "gprobe -i %(input)s "
                 "-k scalar %(kernel_params)s -pi %(input_particles)s "
                 "-q %(qty)s -v 0 -o %(output)s "
                 "-ssn %(num_scales)d -sso -ssr 0 %(max_scale)03u "
                 "-ssf V-%%03u-%(scale_samples)03u.nrrd"
             ) % {
-                'temporary_directory': self._tmp_dir,
                 'input': in_volume,
                 'kernel_params': self._reconKernelParams,
                 'input_particles': inputParticles,
