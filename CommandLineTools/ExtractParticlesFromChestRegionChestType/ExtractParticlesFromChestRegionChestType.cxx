@@ -111,8 +111,8 @@ is not relevent.";
     TCLAP::ValueArg<std::string> labelMapFileNameArg( "l", "labelMap", labelMapFileNameDescription, false, labelMapFileName, "string", cl );
     TCLAP::ValueArg<std::string> inParticlesFileNameArg( "i", "inParticles", inParticlesFileNameDescription, true, inParticlesFileName, "string", cl );
     TCLAP::ValueArg<std::string> outParticlesFileNameArg( "o", "outParticles", outParticlesFileNameDescription, true, outParticlesFileName, "string", cl );
-    TCLAP::MultiArg<unsigned char> cipRegionsArg( "r", "region", cipRegionsDescription, false, "unsigned char", cl );
-    TCLAP::MultiArg<unsigned char> cipTypesArg( "t", "type", cipTypesDescription, false, "unsigned char", cl );
+    TCLAP::MultiArg<int>         cipRegionsArg( "r", "region", cipRegionsDescription, false, "int", cl );
+    TCLAP::MultiArg<int>         cipTypesArg( "t", "type", cipTypesDescription, false, "int", cl );
 
     cl.parse( argc, argv );
 

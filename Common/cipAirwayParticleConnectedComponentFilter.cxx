@@ -41,10 +41,8 @@ double cipAirwayParticleConnectedComponentFilter::GetScaleRatioThreshold()
 
 bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( unsigned int particleIndex1, unsigned int particleIndex2 )
 {
-  //
   // Evaluate whether or not the two particls are sufficiently of the
   // same scale
-  //
   double scale1 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex1 )[0];
   double scale2 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex2 )[0];
 
@@ -55,9 +53,7 @@ bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
       return false;
     }
 
-  //
   // Determine the vector connecting the two particles
-  //
   double point1[3];
     point1[0] = this->InternalInputPolyData->GetPoint( particleIndex1 )[0];
     point1[1] = this->InternalInputPolyData->GetPoint( particleIndex1 )[1];

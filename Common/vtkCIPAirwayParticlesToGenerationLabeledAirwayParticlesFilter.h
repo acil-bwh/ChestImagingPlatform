@@ -85,6 +85,13 @@ public:
    *  to be used in the Gaussian-kernel density estimation. */
   void SetScaleStandardDeviation( unsigned char, double );
 
+  /** Set the particle of the tree root node if known. Setting this variable
+   *  explicitly makes it unnecessary to search for which leaf node is the
+   *  most probable root node. Assumes a single connected tree. The particle
+   *  root node is most typically the trachea "leaf" node.
+   */
+  void SetParticleRootNodeID( unsigned int );
+
   /** For each airway generation, specify the distance standard deviation
    *  to be used in the Gaussian-kernel density estimation. */
   void SetDistanceStandardDeviation( unsigned char, double );
@@ -104,6 +111,18 @@ public:
   /** For each airway generation, specify the angle mean
    *  to be used in the Gaussian-kernel density estimation. */
   void SetAngleMean( unsigned char, double );
+
+  /** The airway label assignment algorithm works in one of two modes: KDE or
+   *  HMTM. If the mode is set to HMTM (Hidden Markov Tree Model), the complete
+   *  probabilistic model will be applied. By default this is set to true. */
+  void SetModeToHMTM();
+
+  /** The airway label assignment algorithm works in one of two modes: KDE or
+   *  HMTM. If the mode is set to KDE (kernel density estimation), airway label 
+   *  assignments are made using KDE based classification. This is equivalent to
+   *  only considering the emission probabilities used in the complete HMTM. By
+   *  default this is set to false. */
+  void SetModeToKDE();
 
   /** By default, all transitions from one state to another are set to 0.0
    *  (i.e. they are impossible). However, if the following method is called 
@@ -192,7 +211,7 @@ private:
   void AddStateNodesToTrellisGraph( vtkSmartPointer< vtkMutableDirectedGraph >, std::vector< vtkIdType >, vtkIdType,
 				    SUBGRAPH*, std::map< unsigned int, bool >* );
   void UpdateAirwayGenerationAssignments( std::map< unsigned int, unsigned char >* );
-  void UpdateTrellisGraphWithViterbiStep( vtkIdType, vtkSmartPointer< vtkMutableDirectedGraph > );
+  bool UpdateTrellisGraphWithViterbiStep( vtkIdType, vtkSmartPointer< vtkMutableDirectedGraph > );
   void BackTrack( vtkIdType, vtkSmartPointer< vtkMutableDirectedGraph >, std::map< unsigned int, unsigned char >*, double* );
 
   void ViewPolyData( vtkSmartPointer< vtkMutableUndirectedGraph > );
@@ -221,8 +240,46 @@ private:
   std::vector< TRANSITIONPROBABILITYPARAMETERS >             NormalTransitionProbabilityParameters;
   std::vector< TRANSITIONPROBABILITY >                       TransitionProbabilities;
   std::vector< TRANSITIONPROBABILITY >                       BranchingTransitionProbabilities;
+  std::vector< TRANSITIONPROBABILITY >                       TransitionProbabilityPriors;
   std::vector< vtkSmartPointer< vtkPolyData > >              AirwayGenerationLabeledAtlases;
 
+  // For computation of the emissision probabilities, we use kernel density estimation.
+  // Specifically, we use exponential distributions for both distance and angle, and
+  // we use a Gaussian for scale. The parameters for these distributions are defined
+  // below and set in the constructor. The values chosen are based on training data.
+  double EmissionDistanceLambda;
+  double EmissionScaleMu;
+  double EmissionScaleSigma;
+  double EmissionAngleLambda;
+
+  // The likelihoods used for computing transition probabilities depend on whether the
+  // "transition" in question is a "same state" "transition" or a different state
+  // transition. For same state transitions, we model the scale difference term as a 
+  // gaussian. For the angle term, we use an exponential distribution.
+  double SameTransitionScaleMu;
+  double SameTransitionScaleSigma;
+  double SameTransitionAngleLambda;
+
+  // The "different state" transition distributions are more complicated. For the scale
+  // difference distribution, we use a two component GMM. For the angle difference 
+  // distribution, we use a piece-wise linear function (an increasing linear function
+  // for part -- up to 20 degrees -- of the domain and a decreasing linear component 
+  // for the remainder of the domain -- from 20 to 90 degrees).
+  double DiffTransitionScaleMu1;
+  double DiffTransitionScaleSigma1;
+  double DiffTransitionScaleWeight1;
+  double DiffTransitionScaleMu2;
+  double DiffTransitionScaleSigma2;
+  double DiffTransitionScaleWeight2;
+  double DiffTransitionAngleSlope1;
+  double DiffTransitionAngleSlope2;
+  double DiffTransitionAngleIntercept1;
+  double DiffTransitionAngleIntercept2;
+
+  bool FoundNaN; //DEB
+
+  bool         HMTMMode;
+  int          ParticleRootNodeID;
   double       ParticleDistanceThreshold;
   double       KernelDensityEstimationROIRadius;
   double       NoiseProbability;

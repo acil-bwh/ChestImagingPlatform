@@ -459,11 +459,9 @@ void AddComponentsToInteractor( cipAirwayDataInteractor* interactor, vtkSmartPoi
     {
     component = static_cast< unsigned short >( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)) );
 
-    //
     // The input particles may already be labeled. Get the ChestType
     // recorded for thie component. By default we will color according
     // to this type
-    //
     unsigned char cipType = static_cast< unsigned char >( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) );
 
     bool addComponent = true;
@@ -484,10 +482,8 @@ void AddComponentsToInteractor( cipAirwayDataInteractor* interactor, vtkSmartPoi
       }
     }
 
-  //
   // Now create the different poly data for the different components
   // and add them to the editor
-  //
   for ( unsigned int c=0; c<componentVec.size(); c++ )
     {
     vtkPolyData* polyData = vtkPolyData::New();

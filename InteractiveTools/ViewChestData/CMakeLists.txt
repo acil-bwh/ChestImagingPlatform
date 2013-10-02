@@ -26,5 +26,10 @@ ${CMAKE_SOURCE_DIR}/IO
 
 SET ( ViewChestData_SOURCE ViewChestData.cxx )
 
-ADD_EXECUTABLE ( ViewChestData ${ViewChestData_SOURCE})
+IF ( APPLE )
+   ADD_EXECUTABLE ( ViewChestData  MACOSX_BUNDLE ${ViewChestData_SOURCE})
+ELSE ( APPLE )
+   ADD_EXECUTABLE ( ViewChestData ${ViewChestData_SOURCE})
+ENDIF ( APPLE )
+
 TARGET_LINK_LIBRARIES ( ViewChestData ${ITK_LIBRARIES} ${VTK_LIBRARIES} CIPCommon CIPUtilities CIPIO )
