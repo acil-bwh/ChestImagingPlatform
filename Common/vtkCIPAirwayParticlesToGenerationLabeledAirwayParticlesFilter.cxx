@@ -8,40 +8,22 @@
 
 #include "vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.h"
 
-#include "vtkGlyphSource2D.h"
-#include "vtkSimple2DLayoutStrategy.h"
 #include "cipConventions.h"
 #include "vtkMath.h"
 #include "vtkIdTypeArray.h"
 #include "vtkSelectionNode.h"
-#include "vtkPolyDataWriter.h"
 #include "vtkIndent.h"
 #include "vtkExtractSelectedGraph.h"
-#include "vtkSelection.h"
-#include "vtkProperty.h" 
-#include "vtkDataSetAttributes.h"
 #include "vtkObjectFactory.h"
 #include "vtkDoubleArray.h"
-#include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkInformationVector.h"
 #include "vtkInformation.h"
-#include "vtkInteractorStyleTrackballCamera.h"
 #include "vtkDataObject.h"
 #include "vtkPoints.h"
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
-#include "vtkGraphLayoutView.h"
-#include "vtkGraphLayout.h"
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
 #include "vtkBoostKruskalMinimumSpanningTree.h"
-#include "vtkRenderer.h"
-#include "vtkPolyDataMapper.h"
 #include "vtkVertexListIterator.h"
-#include "vtkActor.h"
-#include "vtkGraphToPolyData.h"
-#include "vtkSphereSource.h"
-#include "vtkGlyph3D.h"
 #include "vtkMutableUndirectedGraph.h"
 #include "vtkBoostConnectedComponents.h"
 #include "vtkUnsignedIntArray.h"
@@ -58,8 +40,6 @@ vtkStandardNewMacro( vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilt
  
 vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter()
 {
-  this->FoundNaN = false; //DEB
-
   this->EdgeWeightAngleSigma                    = 1.0;
   this->NoiseProbability                        = DBL_MIN; //TODO: How best to handle noise?
   this->KernelDensityEstimationROIRadius        = DBL_MAX;
@@ -132,12 +112,10 @@ vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::vtkCIPAirwayParti
 	    }
 	  
 	  this->TransitionProbabilities.push_back( transProb );
-	  this->BranchingTransitionProbabilities.push_back( transProb );
 
-	  // As of ISBI 2014, we're introducing an alternative way to encode transition probabilities. Here,
-	  // we're using transition probability priors learned from training data, which, when multipiplied
-	  // by the probability of scale difference and angle given the transition is proportional to the probability
-	  // of the transition given scale difference and angle
+	  // Use transition probability priors learned from training data, which, when multipiplied
+	  // by the probability of scale difference and angle given the transition is proportional 
+	  // to the probability of the transition given scale difference and angle
 	  transProb.probability = 0.0;
 	  this->TransitionProbabilityPriors.push_back( transProb );
 	}
@@ -278,144 +256,6 @@ vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::vtkCIPAirwayParti
 	}
     }        
 
-  // Initialize the branching transition probabilities. These are probabilities
-  // that are used whenever a branch point is detected.
-  for ( unsigned int i=0; i<this->BranchingTransitionProbabilities.size(); i++ )
-    {
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::MAINBRONCHUS) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::TRACHEA) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.9999999;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::MAINBRONCHUS) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::MAINBRONCHUS) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.0000001;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::UPPERLOBEBRONCHUS) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::MAINBRONCHUS) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.9999999;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::UPPERLOBEBRONCHUS) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.0000001;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::UPPERLOBEBRONCHUS) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::TRACHEA) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.0;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION3) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.8;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION3) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION3) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.2;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION4) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION4) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION3) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.8;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION4) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION4) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION5) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION3) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION5) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION4) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.8;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION5) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION5) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION6) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION4) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION6) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION5) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.8;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION6) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION6) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION7) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION5) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION7) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION6) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.8;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION7) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION7) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION8) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION6) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION8) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION7) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.8;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION8) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION8) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION9) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION8) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.9;
-	}
-      if ( this->BranchingTransitionProbabilities[i].sourceState == (unsigned char)(cip::AIRWAYGENERATION9) &&
-	   this->BranchingTransitionProbabilities[i].targetState == (unsigned char)(cip::AIRWAYGENERATION9) )
-	{
-	  this->BranchingTransitionProbabilities[i].probability = 0.1;
-	}
-    }
-
-  // Note that we loop from i=1 because noise (cip::UNDEFINTEDTYPE) is treated
-  // as having a uniform distribution
-  for ( unsigned int i=0; i<this->NumberOfStates; i++ )
-    {
-      this->ScaleStandardDeviationsMap[static_cast< float >( this->States[i] )]     = 1.0;
-      this->DistanceStandardDeviationsMap[static_cast< float >( this->States[i] )]  = 1.0;
-      this->AngleStandardDeviationsMap[static_cast< float >( this->States[i] )]     = 1.0;
-      this->ScaleMeansMap[static_cast< float >( this->States[i] )]                  = 0.0;
-      this->DistanceMeansMap[static_cast< float >( this->States[i] )]               = 0.0;
-      this->AngleMeansMap[static_cast< float >( this->States[i] )]                  = 0.0;
-    }
-
   this->SetNumberOfInputPorts( 1 );
   this->SetNumberOfOutputPorts( 1 );
 }
@@ -438,85 +278,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetModeToKDE
 {
   this->HMTMMode = false;
 }
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetTransitionProbability( unsigned char sourceState, unsigned char targetState, 
-											      double probability )
-{
-  bool found = false;
-  for ( unsigned int i=0; i<this->TransitionProbabilities.size(); i++ )
-    {
-      if ( this->TransitionProbabilities[i].sourceState == sourceState &&
-	   this->TransitionProbabilities[i].targetState == targetState )
-	{
-	  this->TransitionProbabilities[i].probability = probability;
-	  
-	  found = true;
-	}
-    }
-  
-  if ( !found )
-    {
-      TRANSITIONPROBABILITY transProb;
-        transProb.sourceState = sourceState;
-	transProb.targetState = targetState;
-	transProb.probability = probability;
-
-      this->TransitionProbabilities.push_back( transProb );
-    }
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetNormalTransitionProbabilityMeansAndVariances( unsigned char sourceState, unsigned char targetState, 
-														     double scaleDiffMean, double scaleDiffVariance,
-														     double angleMean, double angleVariance )
-{
-  cip::ChestConventions conventionsDEB;
-  std::cout << "---------------------------" << std::endl;
-  std::cout << "Setting:\t" << conventionsDEB.GetChestTypeName( sourceState ) << "\t to:\t";
-  std::cout << conventionsDEB.GetChestTypeName( targetState ) << std::endl;
-
-  bool found = false;
-  for ( unsigned int i=0; i<this->NormalTransitionProbabilityParameters.size(); i++ )
-    {
-      if ( this->NormalTransitionProbabilityParameters[i].sourceState == sourceState &&
-	   this->NormalTransitionProbabilityParameters[i].targetState == targetState )
-	{
-	  std::cout << "Found" << std::endl;
-	  this->NormalTransitionProbabilityParameters[i].scaleDifferenceMean     = scaleDiffMean;
-	  this->NormalTransitionProbabilityParameters[i].scaleDifferenceVariance = scaleDiffVariance;
-	  this->NormalTransitionProbabilityParameters[i].angleMean               = angleMean;
-	  this->NormalTransitionProbabilityParameters[i].angleVariance           = angleVariance;
-
-	  std::cout << this->NormalTransitionProbabilityParameters[i].scaleDifferenceMean << std::endl;
-	  std::cout << this->NormalTransitionProbabilityParameters[i].scaleDifferenceVariance << std::endl;
-	  std::cout << this->NormalTransitionProbabilityParameters[i].angleMean << std::endl;
-	  std::cout << this->NormalTransitionProbabilityParameters[i].angleVariance << std::endl;
-	  
-	  found = true;
-	}
-    }
-  
-  if ( !found )
-    {
-      std::cout << "Not found" << std::endl;
-
-      TRANSITIONPROBABILITYPARAMETERS params;
-        params.sourceState              = sourceState;
-	params.targetState              = targetState;
-	params.scaleDifferenceMean      = scaleDiffMean;
-	params.scaleDifferenceVariance  = scaleDiffVariance;
-	params.angleMean                = angleMean;
-	params.angleVariance            = angleVariance;
-
-	std::cout << params.scaleDifferenceMean << std::endl;
-	std::cout << params.scaleDifferenceVariance << std::endl;
-	std::cout << params.angleMean << std::endl;
-	std::cout << params.angleVariance << std::endl;
-
-      this->NormalTransitionProbabilityParameters.push_back( params );
-    }
-}
-
  
 int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(vtkInformation *vtkNotUsed(request),
 									       vtkInformationVector **inputVector,
@@ -569,7 +330,6 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
       // acts as the most probable root node (based on the greatest likelihood)
       // will be considered the true root node for that subtree, and the 
       // corresponding generation labels will be used.
-
       for ( unsigned int i=0; i<this->Subgraphs.size(); i++ )
 	{
 	  // If the root node is known and specified, use it. Otherwise, find the leaf node most likely
@@ -593,9 +353,7 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
 
 	      if ( rootNodeFound )
 		{
-		  std::cout << "Found root node!" << std::endl;
-		  vtkIdType rootNodeID = this->Subgraphs[i].particleIDToNodeIDMap[this->ParticleRootNodeID];
-		  
+		  vtkIdType rootNodeID = this->Subgraphs[i].particleIDToNodeIDMap[this->ParticleRootNodeID];		  
 		  vtkSmartPointer< vtkMutableDirectedGraph > trellisGraph = vtkSmartPointer< vtkMutableDirectedGraph >::New();
 		  
 		  std::cout << "---Getting trellis graph from subgraph..." << std::endl;
@@ -620,59 +378,31 @@ int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::RequestData(v
 	    }
 	  else if ( !rootNodeFound )
 	    {
-	      // double maxScore = -DBL_MAX;     
-	      // for ( unsigned int j=0; j<this->Subgraphs[i].leafNodeIDs.size(); j++ )
-	      //   {
-	      //     vtkSmartPointer< vtkMutableDirectedGraph > trellisGraph = vtkSmartPointer< vtkMutableDirectedGraph >::New();
+	      double maxScore = -DBL_MAX;     
+	      for ( unsigned int j=0; j<this->Subgraphs[i].leafNodeIDs.size(); j++ )
+	        {
+	          vtkSmartPointer< vtkMutableDirectedGraph > trellisGraph = vtkSmartPointer< vtkMutableDirectedGraph >::New();
 	      
-	      //     //std::cout << "---Getting trellis graph from subgraph..." << std::endl;
-	      //     this->GetTrellisGraphFromSubgraph( &this->Subgraphs[i], this->Subgraphs[i].leafNodeIDs[j], trellisGraph, inputParticles );
-	      //     //this->ViewGraph( trellisGraph );
-	      //     //std::cout << "---DONE." << std::endl;
+	          std::cout << "---Getting trellis graph from subgraph..." << std::endl;
+	          this->GetTrellisGraphFromSubgraph( &this->Subgraphs[i], this->Subgraphs[i].leafNodeIDs[j], trellisGraph, inputParticles );
+	          std::cout << "---DONE." << std::endl;
 	      
-	      //     // If the labeling that the following function call determines is best so 
-	      //     // far, record the labels in 'this->ParticleIDToGenerationLabel'
-	      //     std::map< unsigned int, unsigned char > tmpParticleIDToGenerationLabelMap;
+	          // If the labeling that the following function call determines is best so 
+	          // far, record the labels in 'this->ParticleIDToGenerationLabel'
+	          std::map< unsigned int, unsigned char > tmpParticleIDToGenerationLabelMap;
 	      
-	      //     std::cout << "---Computing generation labels from trellis graph..." << std::endl;
-	      //     double score = this->ComputeGenerationLabelsFromTrellisGraph( trellisGraph, &tmpParticleIDToGenerationLabelMap );
-	      //     std::cout << "---DONE." << std::endl;
-	      //     //std::cout << "Score:\t" << score << std::endl;
-	      //     if ( score > maxScore )
-	      // 	{
-	      // 	  maxScore = score;
-	      
-	      // 	  this->UpdateAirwayGenerationAssignments( &tmpParticleIDToGenerationLabelMap );
-	      // 	}
-	      //   }
+	          std::cout << "---Computing generation labels from trellis graph..." << std::endl;
+	          double score = this->ComputeGenerationLabelsFromTrellisGraph( trellisGraph, &tmpParticleIDToGenerationLabelMap );
+	          std::cout << "---DONE." << std::endl;
+
+	          if ( score > maxScore )
+		    {
+		      maxScore = score;		      
+		      this->UpdateAirwayGenerationAssignments( &tmpParticleIDToGenerationLabelMap );
+		    }
+	        }
 	    }
-	}
-      
-      // // DEB: investigate the final assigments
-      {
-	cip::ChestConventions conventions;
-	
-	std::map< unsigned int, unsigned char >::iterator mIt = this->ParticleIDToAirwayGenerationMap.begin();
-
-	unsigned int total   = 0;
-	unsigned int correct = 0;
-	
-	while ( mIt != this->ParticleIDToAirwayGenerationMap.end() )
-	  {	
-	    unsigned char estState  = mIt->second;
-	    unsigned char trueState = inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple( mIt->first )[0];
-	    
-	    if ( estState == trueState )
-	      {
-		correct++;
-	      }
-	    total++;
-
-	    mIt++;
-	  }
-	
-	std::cout << "Accuracy:\t" << static_cast< double >( correct )/static_cast< double >( total ) << std::endl;
-      }
+	}      
     }
 
   // At this point, 'ParticleIDToAirwayGenerationMap' should be up to date, either by applying KDE based
@@ -733,63 +463,11 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeAi
     }
 }
 
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetScaleStandardDeviation( unsigned char cipType, double std )
-{
-  this->ScaleStandardDeviationsMap[static_cast< float >( cipType )] = std;
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetDistanceStandardDeviation( unsigned char cipType, double std )
-{
-  this->DistanceStandardDeviationsMap[static_cast< float >( cipType )] = std;
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetAngleStandardDeviation( unsigned char cipType, double std )
-{
-  this->AngleStandardDeviationsMap[static_cast< float >( cipType )] = std;
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetScaleMean( unsigned char cipType, double mean )
-{
-  this->ScaleMeansMap[static_cast< float >( cipType )] = mean;
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetDistanceMean( unsigned char cipType, double mean )
-{
-  this->DistanceMeansMap[static_cast< float >( cipType )] = mean;
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::SetAngleMean( unsigned char cipType, double mean )
-{
-  this->AngleMeansMap[static_cast< float >( cipType )] = mean;
-}
-
-
 void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEmissionProbabilites( vtkSmartPointer< vtkPolyData > inputParticles )
 {
   const double PI = 3.141592653589793238462;
   float  state;
   double mean, std, tmp; //Used for Kernel density estimation computation
-  unsigned int correct = 0; //DEB
-
-  //DEB
-  std::vector< std::vector< unsigned int > > confusionMatrix;
-  {
-    for ( unsigned int i=0; i<this->NumberOfStates; i++ )
-      {
-  	std::vector< unsigned int > tmp;
-  	for ( unsigned int j=0; j<this->NumberOfStates; j++ )
-  	  {
-  	    tmp.push_back( 0 );
-  	  }
-  	confusionMatrix.push_back(tmp);
-      }
-  }
 
   // For every particle in the unlabeled dataset, we'll compute the kernel
   // density estimated probability that it belongs to each airway generation 
@@ -840,14 +518,14 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 		connectingVec[1] = point1[1] - point2[1];
 		connectingVec[2] = point1[2] - point2[2];
 
-	      double distance = this->GetVectorMagnitude( connectingVec );
+	      double distance = cip::GetVectorMagnitude( connectingVec );
 
 	      double particle2Hevec2[3];
   	        particle2Hevec2[0] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[0];
 		particle2Hevec2[1] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[1];
 		particle2Hevec2[2] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[2];
 
-	      double angle =  this->GetAngleBetweenVectors( particle1Hevec2, particle2Hevec2, true );
+	      double angle =  cip::GetAngleBetweenVectors( particle1Hevec2, particle2Hevec2, true );
 
 	      // Compute the kernel density estimation contribution. Note that it is the
 	      // product of Guassians (for scale, position, and direction)
@@ -878,18 +556,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
       	    {
       	      probabilities[state] = probabilityAccumulatorMap[state]/static_cast< double >( counterMap[state] );	 
       	    }
-
-	  // //DEB
-	  // {
-	  //   if ( state == inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(p)[0] )
-	  //     {
-	  // 	probabilities[state] = 1.0;
-	  //     }
-	  //   else
-	  //     {
-	  // 	probabilities[state] = 1e-20;
-	  //     }
-	  // }
       	}
       
       // Now normalize the probabilities so that they sum to one
@@ -905,62 +571,20 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 
       this->ParticleIDToEmissionProbabilitiesMap[p] = probabilities;
 
-      //DEB
-      {
-      	double maxProb = 0.0;
-      	unsigned int best;
-      	//std::cout << "-------------------------" << std::endl;
-      	for ( unsigned int i=0; i<this->NumberOfStates; i++ )
-      	  {
-      	    //  std::cout << probabilities[this->States[i]] << "\t";
-      	    if ( probabilities[this->States[i]] > maxProb )
-      	      {
-      		maxProb = probabilities[this->States[i]];
-      		best = this->States[i];
-      	      }
-      	  }
-
-	// Fill this map here in case the user wants to assign generation labels based only
-	// on KDE-based classification
-	this->ParticleIDToAirwayGenerationMap[p] = (unsigned char)(best);
-      	if ( best == inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple( p )[0] )
-      	  {
-      	    correct++;
-      	  }
-
-	unsigned int trueStateIndex  = 0;
-	unsigned int guessStateIndex = 0;
-	for ( unsigned int i=0; i<this->NumberOfStates; i++ )
-	  {
-	    if ( int(this->States[i]) == int(inputParticles->GetPointData()->GetArray( "ChestType" )->GetTuple( p )[0]) )
-	      {
-		trueStateIndex = i;
-	      }
-	    if ( this->States[i] == best )
-	      {
-		guessStateIndex = i;
-	      }
-	  }
-
-      	confusionMatrix[trueStateIndex][guessStateIndex] += 1;
-      }	
-
+      // Now update 'ParticleIDToAirwayGenerationMap' in case the user wants to assign 
+      // generation labels based only on KDE-based classification      
+      double maxProb = 0.0;
+      unsigned int best;
+      for ( unsigned int i=0; i<this->NumberOfStates; i++ )
+	{
+	  if ( probabilities[this->States[i]] > maxProb )
+	    {
+	      maxProb = probabilities[this->States[i]];
+	      best = this->States[i];
+	    }
+	}
+      this->ParticleIDToAirwayGenerationMap[p] = (unsigned char)(best);
     }
-
-  //DEB
-  {
-    std::cout << "----------------- Confusion Matrix -----------------------" << std::endl;
-    for ( unsigned int i=0; i<this->NumberOfStates; i++ )
-      {
-  	for ( unsigned int j=0; j<this->NumberOfStates; j++ )
-  	  {
-  	    std::cout << confusionMatrix[i][j] << "\t";
-  	  }
-  	std::cout << std::endl;
-      }
-  }
-
-  std::cout << "accuracy:\t" << static_cast< double >( correct )/static_cast< double >( this->NumberInputParticles ) << std::endl;
 }
 
 
@@ -1127,7 +751,7 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetEdgeWeigh
     connectingVec[1] = point1[1] - point2[1];
     connectingVec[2] = point1[2] - point2[2];
 
-  double connectorMagnitude = this->GetVectorMagnitude( connectingVec );
+  double connectorMagnitude = cip::GetVectorMagnitude( connectingVec );
 
   if ( connectorMagnitude > this->ParticleDistanceThreshold )
     {
@@ -1144,8 +768,8 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetEdgeWeigh
     particle2Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[1];
     particle2Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[2];
 
-  double angle1 =  this->GetAngleBetweenVectors( particle1Hevec2, connectingVec, true );
-  double angle2 =  this->GetAngleBetweenVectors( particle2Hevec2, connectingVec, true );
+  double angle1 =  cip::GetAngleBetweenVectors( particle1Hevec2, connectingVec, true );
+  double angle2 =  cip::GetAngleBetweenVectors( particle2Hevec2, connectingVec, true );
 
   if ( angle1 < angle2 )
     {
@@ -1157,44 +781,6 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetEdgeWeigh
     }
 
   return true;
-}
-
-
-double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetVectorMagnitude( double vector[3] )
-{
-  double magnitude = sqrt( pow( vector[0], 2 ) + pow( vector[1], 2 ) + pow( vector[2], 2 ) );
-
-  return magnitude;
-}
-
-
-double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetAngleBetweenVectors( double vec1[3], double vec2[3], bool returnDegrees )
-{
-  double vec1Mag = this->GetVectorMagnitude( vec1 );
-  double vec2Mag = this->GetVectorMagnitude( vec2 );
-
-  double arg = (vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2])/(vec1Mag*vec2Mag);
-
-  if ( abs( arg ) > 1.0 )
-    {
-    arg = 1.0;
-    }
-
-  double angle = acos( arg );
-
-  if ( !returnDegrees )
-    {
-    return angle;
-    }
-
-  double angleInDegrees = (180.0/3.14159265358979323846)*angle;
-
-  if ( angleInDegrees > 90.0 )
-    {
-    angleInDegrees = 180.0 - angleInDegrees;
-    }
-
-  return angleInDegrees;
 }
 
 
@@ -1215,8 +801,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
 												 vtkSmartPointer< vtkMutableDirectedGraph > trellisGraph,
 												 vtkSmartPointer< vtkPolyData > particles )
 {
-  cip::ChestConventions conventionsDEB;
-
   const double PI = 3.141592653589793238462;
 
   // For every node in the subgraph, we'll want 'N' nodes in the trellis
@@ -1250,16 +834,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
     bestEdgeArray->SetNumberOfComponents( 1 );
     bestEdgeArray->SetName( "bestEdgeArray" );
 
-  // When we perform the forward search as part of the Viterbi algorithm,
-  // we need to keep track of whether a node has been "passed through"
-  // already. This needs to managed because several paths flowing 
-  // through leaf nodes to the root node may pass through the same node.
-  // The weight of that node must be set according to whether it has
-  // already been passed through 
-  // vtkSmartPointer< vtkUnsignedCharArray > visitedInForwardSearchArray = vtkSmartPointer< vtkUnsignedCharArray >::New();
-  //   visitedInForwardSearchArray->SetNumberOfComponents( 1 );
-  //   visitedInForwardSearchArray->SetName( "visitedInForwardSearchArray" );
-
   vtkSmartPointer< vtkUnsignedIntArray > particleIDArray = vtkSmartPointer< vtkUnsignedIntArray >::New();
     particleIDArray->SetNumberOfComponents( 1 );
     particleIDArray->SetName( "particleIDArray" );
@@ -1290,7 +864,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
   trellisGraph->GetVertexData()->AddArray( particleIDArray );
   trellisGraph->GetVertexData()->AddArray( stateArray );
   trellisGraph->GetVertexData()->AddArray( accumulatedWeightArray );
-  //trellisGraph->GetVertexData()->AddArray( visitedInForwardSearchArray );
   trellisGraph->GetVertexData()->AddArray( upToDateForForwardSearchArray );
   trellisGraph->GetEdgeData()->AddArray( bestEdgeArray );
   trellisGraph->GetEdgeData()->AddArray( edgeWeightArray );
@@ -1316,7 +889,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
       trellisGraph->GetVertexData()->GetArray( "particleIDArray" )->InsertTuple( id, &tmpParticleID );
       trellisGraph->GetVertexData()->GetArray( "stateArray" )->InsertTuple( id, &tmpState );
       trellisGraph->GetVertexData()->GetArray( "accumulatedWeightArray" )->InsertTuple( id, &tmpWeight );
-      //trellisGraph->GetVertexData()->GetArray( "visitedInForwardSearchArray" )->InsertTuple( id, &tmpVisited );
       trellisGraph->GetVertexData()->GetArray( "upToDateForForwardSearchArray" )->InsertTuple( id, &tmpUpToDate );
 
       graphNodeVisited[leafNodeID] = true;
@@ -1354,33 +926,9 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
       unsigned char sourceState = static_cast< unsigned char >( trellisGraph->GetVertexData()->GetArray( "stateArray" )->GetTuple( edge.Source )[0] );
       unsigned char targetState = static_cast< unsigned char >( trellisGraph->GetVertexData()->GetArray( "stateArray" )->GetTuple( edge.Target )[0] );
 
-      // Get the probability to assign to the edge
-      double probability;
-      
-      // If the target node in 'graph' has more than two edges emanating from it,
-      // then we are dealing with a branching, and we should use the branching
-      // probabilities at this location.
-      // DEB ISBI 2014: Try computing transition probs without regard to whether a "branch
-      // point" has been detected for simplification.
+      // Get the probability to assign to the edge     
       vtkIdType targetGraphNodeID = graph->particleIDToNodeIDMap[targetParticleID];
-      //if ( graph->undirectedGraph->GetDegree( targetGraphNodeID ) > 2 )
-      if ( false )
-	{
-	  for ( unsigned int i=0; i<this->BranchingTransitionProbabilities.size(); i++ )
-	    {
-	      if ( this->BranchingTransitionProbabilities[i].sourceState == sourceState &&
-		   this->BranchingTransitionProbabilities[i].targetState == targetState )
-		{
-		  probability = this->BranchingTransitionProbabilities[i].probability;
-		  break;
-		}
-	    }
-	}
-      else
-	{	  
-	  probability = this->GetTransitionProbability( sourceParticleID, targetParticleID, sourceState, targetState, particles );
-	}
-
+      double probability = this->GetTransitionProbability( sourceParticleID, targetParticleID, sourceState, targetState, particles );
       trellisGraph->GetEdgeData()->GetArray( "edgeWeightArray" )->InsertTuple( edge.Id, &probability );
     }
 
@@ -1425,20 +973,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
 	      newWeight = trellisGraph->GetEdgeData()->GetArray( "edgeWeightArray" )->GetTuple( edge.Id )[0]/accum;
 	    }
 
-	  // DEB: Get the edge's source particle ID
-	  float sourceParticleID_DEB = trellisGraph->GetVertexData()->GetArray( "particleIDArray" )->GetTuple( stateNodeID )[0]; // DEB
-	  // DEB: Get the edge's target particle ID
-	  float targetParticleID_DEB = trellisGraph->GetVertexData()->GetArray( "particleIDArray" )->GetTuple( edge.Target )[0];
-	  // DEB: Get the edge's source state
-	  unsigned char sourceState_DEB = static_cast< unsigned char >( trellisGraph->GetVertexData()->GetArray( "stateArray" )->GetTuple( stateNodeID )[0] );
-	  // DEB: Get the edge's target state
-	  unsigned char targetState_DEB = static_cast< unsigned char >( trellisGraph->GetVertexData()->GetArray( "stateArray" )->GetTuple( edge.Target )[0] );
-
-	  // std::cout << "From: " << sourceParticleID_DEB << " To: " << targetParticleID_DEB;
-	  // std::cout << " Source State: " << conventionsDEB.GetChestTypeName( sourceState_DEB );
-	  // std::cout << " Target State: " << conventionsDEB.GetChestTypeName( targetState_DEB );
-	  // std::cout << " Probability: " << newWeight << std::endl;
-
 	  trellisGraph->GetEdgeData()->GetArray( "edgeWeightArray" )->SetTuple( edge.Id, &newWeight );
 	}
     }
@@ -1447,8 +981,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTrellisGr
 double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::ComputeGenerationLabelsFromTrellisGraph( vtkSmartPointer< vtkMutableDirectedGraph > trellisGraph, 
 													       std::map< unsigned int, unsigned char >* particleIDToGenerationLabel )
 {
-  cip::ChestConventions conventionsDEB;
-
   // Loop through all nodes and collect node IDs for those that have
   // no parents. This is the set of non-root leaf nodes, and it's where we
   // begin the forward search
@@ -1461,11 +993,6 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::ComputeGen
       vtkIdType nodeID = vIt->Next();
       if ( this->IsNonRootLeafNode( nodeID, trellisGraph ) )
   	{
-  	  // //DEB
-  	  if ( nodeID == 7 )
-  	    {
-  	      std::cout << "Should not occur!" << std::endl;
-  	    }
   	  nodeVec.push_back( nodeID );
 
   	  // The "accumulatedWeight" at these root nodes will just be the log of the
@@ -1485,15 +1012,11 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::ComputeGen
   	    {
   	      weight = log( emissionProbability );
   	    }
-  	  // //std::cout << "Particle ID: " << particleID << " State: " << conventionsDEB.GetChestTypeName( state ) << " Weight: " << weight << std::endl;
 
   	  trellisGraph->GetVertexData()->GetArray( "accumulatedWeightArray" )->SetTuple( nodeID, &weight );
-  	  // //trellisGraph->GetVertexData()->GetArray( "visitedInForwardSearchArray" )->SetTuple( nodeID, &visited );
   	  trellisGraph->GetVertexData()->GetArray( "upToDateForForwardSearchArray" )->SetTuple( nodeID, &upToDate );
   	}
     }
-
-  // DEB Seems Ok to this point
 
   // Now get all nodes pointed to by the leaf nodes
   std::list< vtkIdType > nodeList;
@@ -1649,7 +1172,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::BackTrack( v
 	    {
 	      *score += log( edgeProbability );
 	    }
-	  //std::cout << "---Score after edge prob update:\t" << *score << std::endl;
 	  this->BackTrack( edge.Source, trellisGraph, particleIDToGenerationLabel, score );
 	}
     }
@@ -1661,7 +1183,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::BackTrack( v
 // greatest weight. This function does this update at a single state node location.
 bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::UpdateTrellisGraphWithViterbiStep( vtkIdType nodeID, vtkSmartPointer< vtkMutableDirectedGraph > graph )
 {
-  //  std::cout << "1" << std::endl;
   // First check that the source node for every incoming edge into the query node
   // is up to date. If any one of them is not, do nothing and return false (we will
   // come back to this node later when all the nodes on which it depends are up to
@@ -1676,11 +1197,10 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::UpdateTrelli
 
       if ( upToDate == 0.0 )
 	{
-	  //std::cout << "waiting..." << std::endl;
 	  return false;
 	}
     }
-  //  std::cout << "2" << std::endl;
+
   // Get all edges incoming. We want to consider the weight we will
   // incur by "choosing" a given edge: that weight is the sum of the
   // ln transition probability associated with the edge and the weight
@@ -1747,7 +1267,7 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::UpdateTrelli
 	  bestEdgeMap[particleID] = edge.Id;
 	}
     }
-  //  std::cout << "3" << std::endl;
+
   // At this point we have identified the best weights and edges. We 
   // now want to update the current node's weight, which is the sum 
   // of the ln of the emission probability and the weights we found above
@@ -1758,13 +1278,13 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::UpdateTrelli
   double weightAccumulator = 0.0;
   if ( emissionProbability < 1e-200 )
     {
-      weightAccumulator = -1e100;//-DBL_MAX;
+      weightAccumulator = -1e100;
     }
   else
     {
       weightAccumulator = log( emissionProbability );
     }
-  //  std::cout << "4" << std::endl;
+
   std::map< float, double >::iterator wIt = weightMap.begin();
   while ( wIt != weightMap.end() )
     {
@@ -1772,7 +1292,6 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::UpdateTrelli
       wIt++;
     }
   
-  //std::cout << "weightAccumulator:\t" << weightAccumulator << std::endl;
   graph->GetVertexData()->GetArray( "accumulatedWeightArray" )->SetTuple( nodeID, &weightAccumulator );
   
   // Mark the "best" edges as being the best. This will be used in the back-tracking stage later.
@@ -1785,11 +1304,11 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::UpdateTrelli
       
       bIt++;
     }  
-  //  std::cout << "5" << std::endl;
+
   // Lastly, mark this node as being up to date
   double upToDate = 1.0;
   graph->GetVertexData()->GetArray( "upToDateForForwardSearchArray" )->SetTuple( nodeID, &upToDate );
-  //  std::cout << "6" << std::endl;
+
   return true;
 }
 
@@ -1808,24 +1327,6 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::IsNonRootLea
 
   return nonRootLeafNode;
 }
-
-
-unsigned int vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetStateIndex( unsigned char state )
-{
-  unsigned int index;
-
-  for ( unsigned int i=0; i<this->NumberOfStates; i++ )
-    {
-      if ( this->States[i] == state )
-	{
-	  index = i;
-	  break;
-	}
-    }
-
-  return index;
-}
-
 
 double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransitionProbability( unsigned int sourceParticleID, unsigned int targetParticleID,
 												unsigned char sourceState, unsigned int targetState,
@@ -1856,7 +1357,7 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransit
   targetDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[1];
   targetDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[2];
 	  
-  double angle = this->GetAngleBetweenVectors( sourceDirection, targetDirection, true );
+  double angle = cip::GetAngleBetweenVectors( sourceDirection, targetDirection, true );
 	  
   double scaleDiff = particles->GetPointData()->GetArray( "scale" )->GetTuple( sourceParticleID )[0] -
     particles->GetPointData()->GetArray( "scale" )->GetTuple( targetParticleID )[0];
@@ -1895,120 +1396,6 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransit
   return tmp;
 }
 
-// double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransitionProbability( unsigned int sourceParticleID, unsigned int targetParticleID,
-// 												unsigned char sourceState, unsigned int targetState,
-// 												vtkSmartPointer< vtkPolyData > particles ) 
-// {
-//   cip::ChestConventions conventionsDEB;
-
-//   //DEB
-//   bool printDEB = false;
-//   {
-//     float fromState = particles->GetPointData()->GetArray( "ChestType" )->GetTuple( sourceParticleID )[0];
-//     float toState   = particles->GetPointData()->GetArray( "ChestType" )->GetTuple( targetParticleID )[0];
-    
-//     if ( fromState == float(cip::MAINBRONCHUS) && toState == float(cip::TRACHEA) &&
-// 	 int(sourceState) == int(cip::MAINBRONCHUS) && int(targetState) == int(cip::TRACHEA) )
-//       {
-// 	printDEB = true;
-//       }
-//   }
-
-//   const double PI = 3.141592653589793238462;
-
-//   double probability;
-
-//   bool found = false;
-//   for ( unsigned int i=0; i<this->NormalTransitionProbabilityParameters.size(); i++ )
-//     {
-//       if ( this->NormalTransitionProbabilityParameters[i].sourceState == sourceState &&
-// 	   this->NormalTransitionProbabilityParameters[i].targetState == targetState )
-// 	{
-// 	  found = true;
-
-// 	  double sourceDirection[3];
-// 	  sourceDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[0];
-// 	  sourceDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[1];
-// 	  sourceDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[2];
-	  
-// 	  double targetDirection[3];
-// 	  targetDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[0];
-// 	  targetDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[1];
-// 	  targetDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[2];
-	  
-// 	  double angle = this->GetAngleBetweenVectors( sourceDirection, targetDirection, true );
-	  
-// 	  double sourceScale =  particles->GetPointData()->GetArray( "scale" )->GetTuple( sourceParticleID )[0];
-// 	  double targetScale =  particles->GetPointData()->GetArray( "scale" )->GetTuple( targetParticleID )[0];
-	  
-// 	  double scaleDiff = targetScale-sourceScale;
-
-// 	  if ( printDEB )
-// 	    {
-// 	      std::cout << "angle:\t" << angle << std::endl;
-// 	      std::cout << "sourceScale:\t" << sourceScale << std::endl;
-// 	      std::cout << "targetScale:\t" << targetScale << std::endl;
-// 	    }
-	  
-// 	  double meanSc  = this->NormalTransitionProbabilityParameters[i].scaleDifferenceMean;
-// 	  if ( printDEB )
-// 	    {
-// 	      std::cout << "meanSc:\t" << meanSc << std::endl;
-// 	    }
-// 	  double stdSc   = sqrt( this->NormalTransitionProbabilityParameters[i].scaleDifferenceVariance );
-// 	  if ( printDEB )
-// 	    {
-// 	      std::cout << "stdSc:\t" << meanSc << std::endl;
-// 	    }
-// 	  double meanAng = this->NormalTransitionProbabilityParameters[i].angleMean;
-// 	  if ( printDEB )
-// 	    {
-// 	      std::cout << "meanAng:\t" << meanAng << std::endl;
-// 	    }
-// 	  double stdAng  = sqrt( this->NormalTransitionProbabilityParameters[i].angleVariance );
-// 	  if ( printDEB )
-// 	    {
-// 	      std::cout << "stdAng:\t" << stdAng << std::endl;
-// 	    }
-// 	  double N1 = 1.0/(sqrt(2.0*PI)*stdSc)*exp(-0.5*pow((scaleDiff-meanSc)/stdSc,2.0));
-// 	  double N2 = 1.0/(sqrt(2.0*PI)*stdAng)*exp(-0.5*pow((angle-meanAng)/stdAng,2.0));
-// 	  if ( printDEB )
-// 	    {
-// 	      std::cout << "N1:\t" << N1 << std::endl;
-// 	      std::cout << "N2:\t" << N1 << std::endl;
-// 	    }
-
-// 	  probability = N1*N2;
-
-// 	  break;
-// 	}
-//     }
-
-//   if ( !found )
-//     {
-//       if ( printDEB )
-// 	{
-// 	  std::cout << "----------------------------" << std::endl;
-// 	  std::cout << "Not found??" << std::endl;
-// 	  std::cout << conventionsDEB.GetChestTypeName(sourceState) << std::endl;
-// 	  std::cout << conventionsDEB.GetChestTypeName(targetState) << std::endl;
-// 	  std::cout << "----------------------------" << std::endl;
-// 	}
-//       for ( unsigned int i=0; i<this->TransitionProbabilities.size(); i++ )
-// 	{
-// 	  if ( this->TransitionProbabilities[i].sourceState == sourceState &&
-// 	       this->TransitionProbabilities[i].targetState == targetState )
-// 	    {
-// 	      probability = this->TransitionProbabilities[i].probability;
-
-// 	      break;
-// 	    }
-// 	}
-//     }
-
-//   return probability;
-// }
-
 void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::AddStateNodesToTrellisGraph( vtkSmartPointer< vtkMutableDirectedGraph > trellisGraph, 
 												 std::vector< vtkIdType > trellisNodeIDGroup, vtkIdType subgraphID,
 												 SUBGRAPH* graph, std::map< unsigned int, bool >* graphNodeVisited )
@@ -2031,15 +1418,12 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::AddStateNode
       trellisGraph->GetVertexData()->GetArray( "stateArray" )->InsertTuple( id, &tmpState );
       trellisGraph->GetVertexData()->GetArray( "accumulatedWeightArray" )->InsertTuple( id, &tmpWeight );     
       trellisGraph->GetVertexData()->GetArray( "upToDateForForwardSearchArray" )->InsertTuple( id, &tmpUpToDate ); 
-      //trellisGraph->GetVertexData()->GetArray( "visitedInForwardSearchArray" )->InsertTuple( id, &tmpVisited );      
 
       (*graphNodeVisited)[subgraphID] = true;
     }
 
-  //
   // Now create directed edges from all newly created nodes to the 
   // nodes in the group passed to this function
-  //
   for ( unsigned int i=0; i<this->NumberOfStates; i++ )
     {
       vtkIdType pID = tmpTrellisNodeIDGroup[i];
@@ -2047,7 +1431,6 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::AddStateNode
       for ( unsigned int j=0; j<this->NumberOfStates; j++ )
 	{
 	  vtkIdType cID = trellisNodeIDGroup[j];
-
 	  vtkEdgeType edge = trellisGraph->AddEdge( pID, cID );
 
 	  float best = 0;
@@ -2055,12 +1438,10 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::AddStateNode
 	}
     }
 
-  //
   // Now loop over all the edges emanating from this node. If
   // a node in the subgraph hasn't been visited, it is a child
   // node of the current node and needs to be "expanded" in
   // the trellis graph
-  //
   vtkSmartPointer< vtkOutEdgeIterator > eIt = vtkSmartPointer< vtkOutEdgeIterator >::New();
   graph->undirectedGraph->GetOutEdges( subgraphID, eIt );
 
@@ -2084,140 +1465,4 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::UpdateAirway
 
       ++mIt;
     }
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::ViewGraph( vtkSmartPointer<vtkMutableUndirectedGraph> graph )
-{ 
-  vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
-    renderWindow->SetSize(600, 300);
-
-  vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-
-  vtkSmartPointer< vtkGraphLayoutView > graphLayoutView = vtkSmartPointer<vtkGraphLayoutView>::New();
-    graphLayoutView->AddRepresentationFromInput( graph );
-    graphLayoutView->SetRenderWindow (renderWindow );
-    graphLayoutView->SetInteractor( renderWindowInteractor );
-    graphLayoutView->SetEdgeLabelVisibility( true );
-    graphLayoutView->SetEdgeLabelArrayName( "Weights" );
-    graphLayoutView->ResetCamera();
-    graphLayoutView->Render();
-
-  renderWindowInteractor->Start();
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::ViewGraph( vtkSmartPointer<vtkMutableDirectedGraph> graph )
-{ 
-  vtkSmartPointer< vtkSimple2DLayoutStrategy > strategy = vtkSmartPointer< vtkSimple2DLayoutStrategy >::New();
- 
-  vtkSmartPointer< vtkGraphLayout > layout =  vtkSmartPointer< vtkGraphLayout >::New();
-    layout->SetInput( graph );
-    layout->SetLayoutStrategy( strategy );
-  
-  vtkSmartPointer< vtkGraphToPolyData > graphToPoly = vtkSmartPointer< vtkGraphToPolyData >::New();
-    graphToPoly->SetInputConnection( layout->GetOutputPort() );
-    graphToPoly->EdgeGlyphOutputOn();
-    graphToPoly->SetEdgeGlyphPosition(0.98);
- 
-  vtkSmartPointer< vtkGlyphSource2D > arrowSource = vtkSmartPointer< vtkGlyphSource2D >::New();
-    arrowSource->SetGlyphTypeToEdgeArrow();
-    arrowSource->SetScale(0.1);
-    arrowSource->Update();
- 
-  vtkSmartPointer< vtkGlyph3D > arrowGlyph = vtkSmartPointer< vtkGlyph3D >::New();
-    arrowGlyph->SetInputConnection( 0, graphToPoly->GetOutputPort(1) );
-    arrowGlyph->SetInputConnection( 1, arrowSource->GetOutputPort()) ;
- 
-  vtkSmartPointer< vtkPolyDataMapper > arrowMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-    arrowMapper->SetInputConnection(arrowGlyph->GetOutputPort());
-
-  vtkSmartPointer< vtkActor > arrowActor =  vtkSmartPointer< vtkActor >::New();
-    arrowActor->SetMapper(arrowMapper);
-
-  vtkSmartPointer< vtkGraphLayoutView > graphLayoutView = vtkSmartPointer< vtkGraphLayoutView >::New();
-    graphLayoutView->SetLayoutStrategyToPassThrough();
-    graphLayoutView->SetEdgeLayoutStrategyToPassThrough(); 
-    graphLayoutView->AddRepresentationFromInputConnection( layout->GetOutputPort() );
-    graphLayoutView->GetRenderer()->AddActor( arrowActor ); 
-    graphLayoutView->ResetCamera();
-    graphLayoutView->Render();
-    graphLayoutView->GetInteractor()->Start();
-}
-
-
-void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::ViewPolyData( vtkSmartPointer< vtkMutableUndirectedGraph > graph )
-{
-  // vtkIndent indent;
-  // polyData->PrintSelf( std::cout, indent );
-
-  vtkSmartPointer< vtkGraphToPolyData > graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
-    graphToPolyData->SetInput( graph );
-    graphToPolyData->Update();
-
-  // vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
-  // writer->SetInput( graphToPolyData->GetOutput() );
-  // writer->SetFileName( "/Users/jross/tmp/test.vtk" );
-  // writer->Write();
-
-  vtkSmartPointer< vtkRenderer > renderer = vtkSmartPointer< vtkRenderer >::New();
-    renderer->SetBackground( 1, 1, 1 ); 
-
-  vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-  mapper->SetInputConnection( graphToPolyData->GetOutputPort() );
- 
-  vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
-    actor->SetMapper( mapper );
-    actor->GetProperty()->SetColor( 0, 0, 0 );
-
-  renderer->AddActor( actor );
-
-  vtkSmartPointer< vtkRenderWindow > renderWindow = vtkSmartPointer< vtkRenderWindow >::New();
-    renderWindow->AddRenderer( renderer );
-
-  vtkSmartPointer< vtkInteractorStyleTrackballCamera > trackball = vtkSmartPointer< vtkInteractorStyleTrackballCamera >::New();
-
-  vtkSmartPointer< vtkRenderWindowInteractor > renderWindowInteractor = vtkSmartPointer< vtkRenderWindowInteractor >::New();
-    renderWindowInteractor->SetRenderWindow( renderWindow );
-    renderWindowInteractor->SetInteractorStyle( trackball );
-
-  //
-  // Set up the nodes to be rendered
-  //
-  vtkSmartPointer< vtkSphereSource > sphereSource = vtkSmartPointer< vtkSphereSource >::New();
-    sphereSource->SetRadius( 0.2 );
-    sphereSource->SetCenter( 0, 0, 0 );
-
-//   vtkSmartPointer< vtkPoints > leafPoints = vtkSmartPointer< vtkPoints >::New();
-//   for ( unsigned int i=0; i<this->SubGraphLeafParticleIDs.size(); i++ )
-//     {
-//     unsigned int leafParticleID  = this->SubGraphLeafParticleIDs[i];
-
-//     double leafPoint[3];
-//     leafPoint[0] = this->InternalInputPolyData->GetPoint( leafParticleID )[0];
-//     leafPoint[1] = this->InternalInputPolyData->GetPoint( leafParticleID )[1];
-//     leafPoint[2] = this->InternalInputPolyData->GetPoint( leafParticleID )[2];
-
-//     leafPoints->InsertNextPoint( leafPoint[0], leafPoint[1], leafPoint[2] );
-//     }
-
-  vtkSmartPointer< vtkPolyData > nodesPoly = vtkSmartPointer< vtkPolyData >::New();
-    nodesPoly->SetPoints( graph->GetPoints() );
-
-  vtkSmartPointer< vtkGlyph3D > nodesGlyph = vtkSmartPointer< vtkGlyph3D >::New();
-    nodesGlyph->SetInput( nodesPoly );
-    nodesGlyph->SetSource( sphereSource->GetOutput() );
-    nodesGlyph->Update();
-
-  vtkSmartPointer< vtkPolyDataMapper > nodesMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-    nodesMapper->SetInput( nodesGlyph->GetOutput() );
-
-  vtkSmartPointer<vtkActor> nodesActor = vtkSmartPointer<vtkActor>::New();
-    nodesActor->SetMapper( nodesMapper );
-    nodesActor->GetProperty()->SetColor( 1, 0, 0 );
-
-  renderer->AddActor( nodesActor );
-
-  renderWindow->Render();
-  renderWindowInteractor->Start();
 }
