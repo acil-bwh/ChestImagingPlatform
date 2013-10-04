@@ -31,10 +31,8 @@ CIPExtractChestLabelMapImageFilter
   this->GetOutput()->Allocate();
   this->GetOutput()->FillBuffer( 0 );
 
-  //
   // Now assign the regions and types in the output image based on the
   // mapping we determined in 'InitializeMaps'
-  //
   OutputIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
   InputIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
 
@@ -59,67 +57,8 @@ void
 CIPExtractChestLabelMapImageFilter
 ::InitializeMaps()
 {
-  typedef std::pair< unsigned char, unsigned char > UCHAR_PAIR;
-
-  //
-  // Create the mappings for each region to one of the regions that
-  // the user has specified. Note that m_RegionVec will at least
-  // contain UNDEFINEDREGION
-  //
-  for ( unsigned int i=0; i<this->m_ChestConventions.GetNumberOfEnumeratedChestRegions(); i++ )
-    {
-    unsigned char cipRegion = this->m_ChestConventions.GetChestRegion( i );
-    
-    bool regionMapped = false;
-
-    for ( unsigned int j=0; j<this->m_RegionVec.size(); j++ )
-      {
-      if ( this->m_ChestConventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, this->m_RegionVec[j] ) )
-        {
-        this->m_RegionMap.insert( UCHAR_PAIR( cipRegion, this->m_RegionVec[j] ) );
-        
-        regionMapped = true;
-        }
-      }
-    if ( !regionMapped )
-      {
-      this->m_RegionMap.insert( UCHAR_PAIR( cipRegion, cip::UNDEFINEDREGION ) );
-      }
-    }
-
-  //
-  // Create the mappings for each region to one of the regions that
-  // the user has specified as a region-type pair. Note that
-  // m_RegionAndTypeVec will at least contain the UNDEFINEDREGION,
-  // UNDEFINEDTYPE pair
-  //
-  for ( unsigned int i=0; i<this->m_ChestConventions.GetNumberOfEnumeratedChestRegions(); i++ )
-    {
-    unsigned char cipRegion = this->m_ChestConventions.GetChestRegion( i );
-
-    bool regionMapped = false;
-
-    for ( unsigned int j=0; j<this->m_RegionAndTypeVec.size(); j++ )
-      {
-      if ( this->m_ChestConventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, this->m_RegionAndTypeVec[j].lungRegionValue ) )
-        {
-        this->m_RegionMapForRegionTypePairs.insert( UCHAR_PAIR( cipRegion, this->m_RegionAndTypeVec[j].lungRegionValue ) );
-
-        regionMapped = true;
-        }
-      }
-    if ( !regionMapped )
-      {
-      this->m_RegionMapForRegionTypePairs.insert( UCHAR_PAIR( cipRegion, cip::UNDEFINEDREGION ) );
-      }
-    }
-
-  //
-  // Iterate through the input image and create a list of all values.
-  // Sort and unique this list and then compute a mapping of the
-  // values to the appropriate region/type pairs.  Using this map will
-  // greatly speed computation later.
-  //
+  // First collect the values in the label map. We will then figure out
+  // how to map them to output values based on the user requests
   std::list< unsigned short > valueList;
   valueList.push_back( 0 );
 
@@ -135,61 +74,57 @@ CIPExtractChestLabelMapImageFilter
 
     ++iIt;
     }
-
   valueList.unique();
   valueList.sort();
   valueList.unique();
 
+  // Now for each of the requests, we need to figure out how to map
+  // each of the values in the input label map. Precedence will be as follows:
+  // types, regions, region-type pairs. In other words, if the user requests
+  // both LEFTLUNG and AIRWAY (not as a pair), then an AIRWAY voxel in the
+  // LEFTLUNG will be mapped to LEFTLUNG in the output. If the user additionally
+  // requests the AIRWAY, LEFTLUNG pair, then the entire voxel will be preserved.
   std::list< unsigned short >::iterator listIt;
   listIt = valueList.begin();
 
-  for ( unsigned int i=0; i<valueList.size(); i++, listIt++ )
+  while ( listIt != valueList.end() )
     {
     unsigned char inputType   = this->m_ChestConventions.GetChestTypeFromValue( *listIt );
     unsigned char inputRegion = this->m_ChestConventions.GetChestRegionFromValue( *listIt );
 
-    REGIONANDTYPE mappedRegionAndType;
-      mappedRegionAndType.lungRegionValue = 0;
-      mappedRegionAndType.lungTypeValue   = 0;
-
-    //
-    // Set the mapped region
-    //
-    mappedRegionAndType.lungRegionValue = this->m_RegionMap[ inputRegion ];
-
-    //
-    // Set the mapped type 
-    //
-    for ( unsigned int j=0; j<this->m_TypeVec.size(); j++ )
+    for ( unsigned int i=0; i<this->m_TypeVec.size(); i++ )
       {
-      if ( static_cast< int >( inputType ) == static_cast< int >( this->m_TypeVec[j] ) )
-        {      
-        mappedRegionAndType.lungTypeValue = this->m_TypeVec[j];
-        }
+	if ( inputType == this->m_TypeVec[i] )
+	  {
+	    this->m_ValueToValueMap[*listIt] = 
+	      this->m_ChestConventions.GetValueFromChestRegionAndType( (unsigned char)(cip::UNDEFINEDREGION), this->m_TypeVec[i] );
+	    break;
+	  }
       }
 
-    //
-    // If there is a type/region pair, it will take precedence for the
-    // mapping
-    //
-    unsigned char mappedRegionForRegionTypePairs = this->m_RegionMapForRegionTypePairs[ inputRegion ];
-
-    if ( inputType != cip::UNDEFINEDTYPE && inputRegion != cip::UNDEFINEDREGION )
+    for ( unsigned int i=0; i<this->m_RegionVec.size(); i++ )
       {
-      for ( unsigned int i=0; i<this->m_RegionAndTypeVec.size(); i++ )
-        {
-        if ( inputType == this->m_RegionAndTypeVec[i].lungTypeValue && mappedRegionForRegionTypePairs == this->m_RegionAndTypeVec[i].lungRegionValue )
-          {
-          mappedRegionAndType.lungTypeValue   = inputType;
-          mappedRegionAndType.lungRegionValue = mappedRegionForRegionTypePairs;
-          }
-        }
+	if ( this->m_ChestConventions.CheckSubordinateSuperiorChestRegionRelationship( inputRegion, this->m_RegionVec[i] ) )
+	  {
+	    this->m_ValueToValueMap[*listIt] = 
+	      this->m_ChestConventions.GetValueFromChestRegionAndType(this->m_RegionVec[i], (unsigned char)(cip::UNDEFINEDTYPE) );
+	    break;
+	  }
       }
 
-    unsigned short mappedValue = this->m_ChestConventions.GetValueFromChestRegionAndType( mappedRegionAndType.lungRegionValue, 
-                                                                                         mappedRegionAndType.lungTypeValue );
+    for ( unsigned int i=0; i<this->m_RegionAndTypeVec.size(); i++ )
+      {
+	if ( this->m_ChestConventions.CheckSubordinateSuperiorChestRegionRelationship(inputRegion, this->m_RegionAndTypeVec[i].lungRegionValue) &&
+	     inputType == this->m_RegionAndTypeVec[i].lungTypeValue )
+	  {
+	    this->m_ValueToValueMap[*listIt] = 
+	      this->m_ChestConventions.GetValueFromChestRegionAndType( this->m_RegionAndTypeVec[i].lungRegionValue, 
+								       this->m_RegionAndTypeVec[i].lungTypeValue );
+	    break;
+	  }
+      }
 
-    this->m_ValueToValueMap.insert( std::pair< unsigned short, unsigned short >( *listIt, mappedValue ) );
+    listIt++;
     }
 }
 
