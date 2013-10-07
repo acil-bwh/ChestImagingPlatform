@@ -9,13 +9,9 @@ find_package(LibXml2 REQUIRED)
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
 
-
  FIND_PACKAGE( ITK REQUIRED )
-
  FIND_PACKAGE( VTK REQUIRED )
-
  FIND_PACKAGE( CIP REQUIRED )
- 
  #FIND_PACKAGE (UUID REQUIRED)
 
  INCLUDE( ${CIP_USE_FILE} )

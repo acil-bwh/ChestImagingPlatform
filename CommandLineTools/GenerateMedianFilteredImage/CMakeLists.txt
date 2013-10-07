@@ -1,20 +1,16 @@
 cmake_minimum_required(VERSION 2.6.0)
 
+PROJECT ( GenerateMedianFilteredImage )
 
-project(GenerateMedianFilteredImage)
+SET ( MODULE_NAME GenerateMedianFilteredImage )
 
-set(MODULE_NAME GenerateMedianFilteredImage)
+FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
+INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
 
-find_package(SlicerExecutionModel REQUIRED)
-include(${SlicerExecutionModel_USE_FILE})
+FIND_PACKAGE( ITK REQUIRED )
+FIND_PACKAGE( CIP REQUIRED )
 
-
- FIND_PACKAGE( ITK REQUIRED )
-
- FIND_PACKAGE( CIP REQUIRED )
-
- INCLUDE( ${CIP_USE_FILE} )
-
+#INCLUDE( ${CIP_USE_FILE} )
 
 set(MODULE_INCLUDE_DIRECTORIES
   ${CIP_INCLUDE_DIRECTORIES}
@@ -25,7 +21,8 @@ set(MODULE_TARGET_LIBRARIES
   ${CIP_LIBRARIES}
   )
 
-set(MODULE_SRCS
+SET( MODULE_SRCS
+  GenerateMedianFilteredImage.cxx
   )
 
 SEMMacroBuildCLI(
@@ -33,6 +30,6 @@ SEMMacroBuildCLI(
   TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
   INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
   ADDITIONAL_SRCS ${MODULE_SRCS}
-  RUNTIME_OUTPUT_DIRECTORY        "${CMAKE_BINARY_DIR}/bin"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   EXECUTABLE_ONLY
   )

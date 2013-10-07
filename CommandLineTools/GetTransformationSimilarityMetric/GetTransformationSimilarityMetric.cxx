@@ -464,9 +464,9 @@ int main( int argc, char *argv[] )
     for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
       { std::cout<<"adding tx: "<<i<<std::endl;
      TransformType::Pointer transformTemp = TransformType::New();
-     ReadTransformFromFile(transformTemp, inputTransformFileName[i].c_str() );
+     ReadTransformFromFile(transformTemp, (inputTransformFileName[i]).c_str() );
        // Invert the transformation if specified by command like argument. Only inverting the first transformation
-     //bool isInvertTransformation = true;
+     bool isInvertTransformation = true;
      if((i==0)&& (isInvertTransform == true))
 	 {
 	   std::cout<<"inverting transform"<<std::endl;

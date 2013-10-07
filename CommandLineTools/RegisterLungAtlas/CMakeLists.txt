@@ -8,9 +8,7 @@ find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
 
 FIND_PACKAGE( CIP REQUIRED )
-
 FIND_PACKAGE( ITK REQUIRED )
-
 FIND_PACKAGE ( VTK REQUIRED)
 
 set(MODULE_INCLUDE_DIRECTORIES
