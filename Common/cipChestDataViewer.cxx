@@ -226,12 +226,12 @@ void cipChestDataViewer::SetGrayscaleImage( GrayscaleImageType::Pointer grayscal
 }
 
 
-void cipChestDataViewer::SetPolyData( vtkPolyData* polyData, std::string name )
+vtkSmartPointer< vtkActor > cipChestDataViewer::SetPolyData( vtkPolyData* polyData, std::string name )
 {
   vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
     mapper->SetInput( polyData );
 
-  vtkActor* actor = vtkActor::New();
+  vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
     actor->SetMapper( mapper );
     actor->GetProperty()->SetColor( 0, 0, 0 );
     actor->GetProperty()->SetOpacity( 1.0 );
@@ -240,6 +240,8 @@ void cipChestDataViewer::SetPolyData( vtkPolyData* polyData, std::string name )
   this->Renderer->AddActor( this->ActorMap[name] );
 
   mapper->Delete();
+
+  return actor;
 }
 
 
@@ -373,7 +375,6 @@ bool cipChestDataViewer::Exists( std::string name )
   return false;
 }
 
-
 void cipChestDataViewer::SetAirwayParticles( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
   this->SetParticles( polyData, scaleFactor, actorName, false );
@@ -437,10 +438,10 @@ vtkActor* cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData* polyData, double
     }
 
   vtkCylinderSource* cylinderSource = vtkCylinderSource::New();
-    cylinderSource->SetHeight( 0.25 );
+  cylinderSource->SetHeight( 0.4 ); //25
     cylinderSource->SetRadius( 1.0 );
     cylinderSource->SetCenter( 0, 0, 0 );
-    cylinderSource->SetResolution( 10 );
+    cylinderSource->SetResolution( 20 );
     cylinderSource->CappingOn();
 
   vtkTransform* cylinderRotator = vtkTransform::New(); 
@@ -488,16 +489,16 @@ vtkActor* cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, do
 {
   if ( scaleGlyphsByParticlesScale )
     {
-    polyData->GetPointData()->SetScalars( polyData->GetFieldData()->GetArray( "scale" ) );
+    polyData->GetPointData()->SetScalars( polyData->GetPointData()->GetArray( "scale" ) );
     }
 
   if ( particlesType == static_cast< unsigned char >( cip::AIRWAY ) )
     {
-    polyData->GetPointData()->SetNormals( polyData->GetFieldData()->GetArray( "hevec2" ) );
+    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec2" ) );
     }
   else if ( particlesType == static_cast< unsigned char >( cip::VESSEL ) )
     {
-    polyData->GetPointData()->SetNormals( polyData->GetFieldData()->GetArray( "hevec0" ) );
+    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec0" ) );
     }
 
   vtkCylinderSource* cylinderSource = vtkCylinderSource::New();
@@ -552,15 +553,15 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
 {
   unsigned int numberOfParticles = polyData->GetNumberOfPoints();
 
-  vtkFloatArray* vecs0 = vtkFloatArray::SafeDownCast( polyData->GetFieldData()->GetArray( "hevec0" ) );
-  vtkFloatArray* vecs1 = vtkFloatArray::SafeDownCast( polyData->GetFieldData()->GetArray( "hevec1" ) );
-  vtkFloatArray* vecs2 = vtkFloatArray::SafeDownCast( polyData->GetFieldData()->GetArray( "hevec2" ) );
+  vtkFloatArray* vecs0 = vtkFloatArray::SafeDownCast( polyData->GetPointData()->GetArray( "hevec0" ) );
+  vtkFloatArray* vecs1 = vtkFloatArray::SafeDownCast( polyData->GetPointData()->GetArray( "hevec1" ) );
+  vtkFloatArray* vecs2 = vtkFloatArray::SafeDownCast( polyData->GetPointData()->GetArray( "hevec2" ) );
 
-  vtkFloatArray* vals0 = vtkFloatArray::SafeDownCast( polyData->GetFieldData()->GetArray( "h0" ) );
-  vtkFloatArray* vals1 = vtkFloatArray::SafeDownCast( polyData->GetFieldData()->GetArray( "h1" ) );
-  vtkFloatArray* vals2 = vtkFloatArray::SafeDownCast( polyData->GetFieldData()->GetArray( "h2" ) );
+  vtkFloatArray* vals0 = vtkFloatArray::SafeDownCast( polyData->GetPointData()->GetArray( "h0" ) );
+  vtkFloatArray* vals1 = vtkFloatArray::SafeDownCast( polyData->GetPointData()->GetArray( "h1" ) );
+  vtkFloatArray* vals2 = vtkFloatArray::SafeDownCast( polyData->GetPointData()->GetArray( "h2" ) );
 
-  vtkFloatArray* scaleArray = vtkFloatArray::SafeDownCast( polyData->GetFieldData()->GetArray( "scale" ) );
+  vtkFloatArray* scaleArray = vtkFloatArray::SafeDownCast( polyData->GetPointData()->GetArray( "scale" ) );
 
   vtkDoubleArray *dbar = vtkDoubleArray::New();
     dbar->SetNumberOfTuples( numberOfParticles );

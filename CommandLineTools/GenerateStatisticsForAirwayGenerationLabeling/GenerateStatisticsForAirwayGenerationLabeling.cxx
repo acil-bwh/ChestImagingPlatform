@@ -50,7 +50,7 @@
 #include "vtkPolyData.h"
 #include "cipConventions.h"
 #include "cipHelper.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 #include "vtkFloatArray.h"
 #include "vtkMutableUndirectedGraph.h"
 #include "vtkDoubleArray.h"
@@ -86,19 +86,22 @@ void PrintEmissionProbabilityData(std::map<unsigned char, std::vector<EMISSION> 
 void WriteEmissionProbabilityData(std::map<unsigned char, std::vector<EMISSION> >, std::string);
 void WriteTransitionProbabilityScaleAngleData(std::vector<TRANSITION>, std::string);
 void WriteTransitionProbabilities(std::vector<TRANSITION>, std::string);
+bool IsTransitionPermitted( unsigned char, unsigned char );
+void WriteTransitionDataISBI( std::vector<TRANSITION> transitionVec );
+void WriteEmissionDataISBI( std::map<unsigned char, std::vector<EMISSION> > emissionProbData );
 
 int main(int argc, char *argv[])
 {
   //
   // Begin by defining the arguments to be passed
   //
-  std::vector<std::string> inParticlesFileNames;
+  std::vector<std::string>   inParticlesFileNames;
   std::string                refParticlesFileName           = "NA";
   std::string                emissionProbsFileName          = "NA";
   std::string                transitionProbsFileName        = "NA";
   std::string                normTransProbsMeanVarFileName  = "NA";
   std::string                transProbsFileName             = "NA";
-  double                     particleDistanceThreshold      = 5.0;
+  double                     particleDistanceThreshold      = 20.0;
   double                     edgeWeightAngleSigma           = 1.0;
   double                     emissionProbDistThresh         = 20.0;
 
@@ -149,7 +152,7 @@ then normalizing.";
     TCLAP::CmdLine cl(programDesc, ' ', "$Revision: 383 $");
 
     TCLAP::MultiArg<std::string>  inParticlesFileNamesArg("i", "input", inParticlesFileNamesDesc, true, "string", cl);
-    TCLAP::ValueArg<std::string>  refParticlesFileNameArg ("r", "ref", refParticlesFileNameDesc, true, refParticlesFileName, "string", cl);
+    TCLAP::ValueArg<std::string>  refParticlesFileNameArg ("r", "ref", refParticlesFileNameDesc, false, refParticlesFileName, "string", cl);
     TCLAP::ValueArg<std::string>  emissionProbsFileNameArg ("e", "", emissionProbsFileNameDesc, false, emissionProbsFileName, "string", cl);
     TCLAP::ValueArg<std::string>  normTransProbsMeanVarFileNameArg("", "ntp", normTransProbsMeanVarFileNameDesc, false, normTransProbsMeanVarFileName, "string", cl);
     TCLAP::ValueArg<std::string>  transProbsFileNameArg("", "tp", transProbsFileNameDesc, false, normTransProbsMeanVarFileName, "string", cl);
@@ -177,9 +180,7 @@ then normalizing.";
 
   std::vector<TRANSITION> transitionVec;
 
-  //
   // Read the reference particle dataset if specified
-  //
   vtkSmartPointer<vtkPolyDataReader> refReader = vtkSmartPointer<vtkPolyDataReader>::New();
   if (refParticlesFileName.compare("NA") != 0)
     {
@@ -188,15 +189,11 @@ then normalizing.";
       refReader->Update();
     }
 
-  //
   // This container will collect all the data needed to compute statistics for 
   // the emission probabilities
-  //
   std::map<unsigned char, std::vector<EMISSION> > emissionProbData;
 
-  //
   // Read the particles to which generation labels are to be assigned
-  //
   for (unsigned int i=0; i<inParticlesFileNames.size(); i++)
     {
       std::cout << "Reading airway particles..." << std::endl;
@@ -204,10 +201,8 @@ then normalizing.";
         particlesReader->SetFileName(inParticlesFileNames[i].c_str());
         particlesReader->Update();
 
-      // 
       // If a reference particle dataset has been specified, update the data
       // needed to compute the conditional probabilities
-      //	
       if (refParticlesFileName.compare("NA") != 0)
 	{
 	  std::cout << "Updating emission probability data..." << std::endl;
@@ -215,182 +210,170 @@ then normalizing.";
 					 emissionProbDistThresh, &emissionProbData);
 	}
 
-      //
-      // Construct the minimum spanning tree 
-      //
-      std::cout << "Getting minimum spanning tree..." << std::endl;
-      vtkSmartPointer<vtkMutableUndirectedGraph> minimumSpanningTree = 
-      	GetMinimumSpanningTree(particlesReader->GetOutput(), particleDistanceThreshold, edgeWeightAngleSigma);
+      // // Construct the minimum spanning tree 
+      // std::cout << "Getting minimum spanning tree..." << std::endl;
+      // vtkSmartPointer<vtkMutableUndirectedGraph> minimumSpanningTree = 
+      // 	GetMinimumSpanningTree(particlesReader->GetOutput(), particleDistanceThreshold, edgeWeightAngleSigma);
 
-      //
-      // Create a mapping between min spanning tree node IDs and the 
-      // particle IDs
-      //
-      std::map<unsigned int, unsigned int> nodeIDToParticleIDMap;
-      std::map<unsigned int, unsigned int> particleIDToNodeIDMap;
-      for (unsigned int j=0; j<minimumSpanningTree->GetPoints()->GetNumberOfPoints(); j++)
-      	{
-      	  for (unsigned int k=0; k<particlesReader->GetOutput()->GetNumberOfPoints(); k++)
-      	    {
-      	      if (particlesReader->GetOutput()->GetPoint(k)[0] == minimumSpanningTree->GetPoint(j)[0] &&
-      		   particlesReader->GetOutput()->GetPoint(k)[1] == minimumSpanningTree->GetPoint(j)[1] &&
-      		   particlesReader->GetOutput()->GetPoint(k)[2] == minimumSpanningTree->GetPoint(j)[2])
-      		{
-      		  nodeIDToParticleIDMap[j] = k;
-      		  particleIDToNodeIDMap[k] = j;
+      // // Create a mapping between min spanning tree node IDs and the 
+      // // particle IDs
+      // std::map<unsigned int, unsigned int> nodeIDToParticleIDMap;
+      // std::map<unsigned int, unsigned int> particleIDToNodeIDMap;
+      // for (unsigned int j=0; j<minimumSpanningTree->GetPoints()->GetNumberOfPoints(); j++)
+      // 	{
+      // 	  for (unsigned int k=0; k<particlesReader->GetOutput()->GetNumberOfPoints(); k++)
+      // 	    {
+      // 	      if (particlesReader->GetOutput()->GetPoint(k)[0] == minimumSpanningTree->GetPoint(j)[0] &&
+      // 		   particlesReader->GetOutput()->GetPoint(k)[1] == minimumSpanningTree->GetPoint(j)[1] &&
+      // 		   particlesReader->GetOutput()->GetPoint(k)[2] == minimumSpanningTree->GetPoint(j)[2])
+      // 		{
+      // 		  nodeIDToParticleIDMap[j] = k;
+      // 		  particleIDToNodeIDMap[k] = j;
 
-      		  break;
-      		}
-      	    }
-      	}
+      // 		  break;
+      // 		}
+      // 	    }
+      // 	}
 
-      // 
-      // Iteratve over the edges in the minimum spanning tree and 
-      // gather the scale differences and angles between states
-      //
-      vtkSmartPointer<vtkEdgeListIterator> edgeIt = vtkSmartPointer<vtkEdgeListIterator>::New();
-      minimumSpanningTree->GetEdges(edgeIt);
+      // // Iteratve over the edges in the minimum spanning tree and 
+      // // gather the scale differences and angles between states
+      // vtkSmartPointer<vtkEdgeListIterator> edgeIt = vtkSmartPointer<vtkEdgeListIterator>::New();
+      // minimumSpanningTree->GetEdges(edgeIt);
 
-      while (edgeIt->HasNext())
-	{
-	  vtkEdgeType edge = edgeIt->Next();
+      // while (edgeIt->HasNext())
+      // 	{
+      // 	  vtkEdgeType edge = edgeIt->Next();
 	  
-	  unsigned int p1ID = nodeIDToParticleIDMap[edge.Source];
-	  unsigned int p2ID = nodeIDToParticleIDMap[edge.Target];
+      // 	  unsigned int p1ID = nodeIDToParticleIDMap[edge.Source];
+      // 	  unsigned int p2ID = nodeIDToParticleIDMap[edge.Target];
 
-	  float state1 = particlesReader->GetOutput()->GetFieldData()->GetArray("ChestType")->GetTuple(p1ID)[0];
-	  float state2 = particlesReader->GetOutput()->GetFieldData()->GetArray("ChestType")->GetTuple(p2ID)[0];
+      // 	  float state1 = particlesReader->GetOutput()->GetPointData()->GetArray("ChestType")->GetTuple(p1ID)[0];
+      // 	  float state2 = particlesReader->GetOutput()->GetPointData()->GetArray("ChestType")->GetTuple(p2ID)[0];
 
-	  float scale1 = particlesReader->GetOutput()->GetFieldData()->GetArray("scale")->GetTuple(p1ID)[0];
-	  float scale2 = particlesReader->GetOutput()->GetFieldData()->GetArray("scale")->GetTuple(p2ID)[0];
+      // 	  float scale1 = particlesReader->GetOutput()->GetPointData()->GetArray("scale")->GetTuple(p1ID)[0];
+      // 	  float scale2 = particlesReader->GetOutput()->GetPointData()->GetArray("scale")->GetTuple(p2ID)[0];
 
-	  double direction1[3];
-  	    direction1[0] = particlesReader->GetOutput()->GetFieldData()->GetArray("hevec2")->GetTuple(p1ID)[0];
-	    direction1[1] = particlesReader->GetOutput()->GetFieldData()->GetArray("hevec2")->GetTuple(p1ID)[1];
-	    direction1[2] = particlesReader->GetOutput()->GetFieldData()->GetArray("hevec2")->GetTuple(p1ID)[2];
+      // 	  double direction1[3];
+      // 	    direction1[0] = particlesReader->GetOutput()->GetPointData()->GetArray("hevec2")->GetTuple(p1ID)[0];
+      // 	    direction1[1] = particlesReader->GetOutput()->GetPointData()->GetArray("hevec2")->GetTuple(p1ID)[1];
+      // 	    direction1[2] = particlesReader->GetOutput()->GetPointData()->GetArray("hevec2")->GetTuple(p1ID)[2];
 
-	  double direction2[3];
-	    direction2[0] = particlesReader->GetOutput()->GetFieldData()->GetArray("hevec2")->GetTuple(p2ID)[0];
-	    direction2[1] = particlesReader->GetOutput()->GetFieldData()->GetArray("hevec2")->GetTuple(p2ID)[1];
-	    direction2[2] = particlesReader->GetOutput()->GetFieldData()->GetArray("hevec2")->GetTuple(p2ID)[2];
+      // 	  double direction2[3];
+      // 	    direction2[0] = particlesReader->GetOutput()->GetPointData()->GetArray("hevec2")->GetTuple(p2ID)[0];
+      // 	    direction2[1] = particlesReader->GetOutput()->GetPointData()->GetArray("hevec2")->GetTuple(p2ID)[1];
+      // 	    direction2[2] = particlesReader->GetOutput()->GetPointData()->GetArray("hevec2")->GetTuple(p2ID)[2];
 
-	  double scaleDifference;
-	  unsigned char fromState, toState;
-	  if (state1> state2 && state1 != 0 && state2 != 0)
-	    {
-	      scaleDifference = scale2 - scale1;
-	      fromState = static_cast<unsigned char>(state1);
-	      toState   = static_cast<unsigned char>(state2);
-	    }
-	  else
-	    {
-	      scaleDifference = scale1 - scale2;
-	      fromState = static_cast<unsigned char>(state2);
-	      toState   = static_cast<unsigned char>(state1);
-	    }
+      // 	  double scaleDifference;
+      // 	  unsigned char fromState, toState;
+      // 	  if ( IsTransitionPermitted( (unsigned char)(state1), (unsigned char)(state2) ) )
+      // 	    {
+      // 	      scaleDifference = scale2 - scale1;
+      // 	      fromState = static_cast<unsigned char>(state1);
+      // 	      toState   = static_cast<unsigned char>(state2);
+      // 	    }
+      // 	  else
+      // 	    {
+      // 	      scaleDifference = scale1 - scale2;
+      // 	      fromState = static_cast<unsigned char>(state2);
+      // 	      toState   = static_cast<unsigned char>(state1);
+      // 	    }
 
-	  double angle = cip::GetAngleBetweenVectors(direction1, direction2, true);
+      // 	  double angle = cip::GetAngleBetweenVectors(direction1, direction2, true);
 
-	  //
-	  // Now add this data to our current set of transition
-	  // data containers
-	  //
-	  bool found = false;
-	  for (unsigned int e=0; e<transitionVec.size(); e++)
-	    {
-	      if (transitionVec[e].from == fromState && transitionVec[e].to == toState)
-		{
-		  found = true;
-		  transitionVec[e].angles.push_back(angle);
-		  transitionVec[e].scaleDifferences.push_back(scaleDifference);
-		  break;
-		}
-	    }
-	  if (!found)
-	    {
-	      TRANSITION trans;
-	      trans.from = fromState;
-	      trans.to   = toState;
-	      trans.angles.push_back(angle);
-	      trans.scaleDifferences.push_back(scaleDifference);
-	      transitionVec.push_back(trans);
-	    }
-	}
+      // 	  // Now add this data to our current set of transition
+      // 	  // data containers
+      // 	  bool found = false;
+      // 	  for (unsigned int e=0; e<transitionVec.size(); e++)
+      // 	    {
+      // 	      if (transitionVec[e].from == fromState && transitionVec[e].to == toState)
+      // 		{
+      // 		  found = true;
+      // 		  transitionVec[e].angles.push_back(angle);
+      // 		  transitionVec[e].scaleDifferences.push_back(scaleDifference);
+      // 		  break;
+      // 		}
+      // 	    }
+      // 	  if (!found)
+      // 	    {
+      // 	      TRANSITION trans;
+      // 	      trans.from = fromState;
+      // 	      trans.to   = toState;
+      // 	      trans.angles.push_back(angle);
+      // 	      trans.scaleDifferences.push_back(scaleDifference);
+      // 	      transitionVec.push_back(trans);
+      // 	    }
+      // 	}
     }      
 
-  //
+  std::cout << "Writing emission data..." << std::endl;
+  WriteEmissionDataISBI( emissionProbData );
+
+  // std::cout << "Writing transition data..." << std::endl;
+  // WriteTransitionDataISBI( transitionVec );
+
   // Now compute and print the transition statistics
-  //
-  cip::ChestConventions conventions;
-  for (unsigned int i=0; i<transitionVec.size(); i++)
-    {
-      std::cout << "---------------------------------" << std::endl;
-      unsigned int N = transitionVec[i].angles.size();
+  // cip::ChestConventions conventions;
+  // for (unsigned int i=0; i<transitionVec.size(); i++)
+  //   {
+  //     std::cout << "---------------------------------" << std::endl;
+  //     unsigned int N = transitionVec[i].angles.size();
       
-      double scaleAccum = 0.0;
-      double angleAccum = 0.0;
-      for (unsigned int j=0; j<N; j++)
-  	{
-  	  scaleAccum += transitionVec[i].scaleDifferences[j];
-  	  angleAccum += transitionVec[i].angles[j];
-  	}
+  //     double scaleAccum = 0.0;
+  //     double angleAccum = 0.0;
+  //     for (unsigned int j=0; j<N; j++)
+  // 	{
+  // 	  scaleAccum += transitionVec[i].scaleDifferences[j];
+  // 	  angleAccum += transitionVec[i].angles[j];
+  // 	}
 
-      double scaleDiffMean = scaleAccum/static_cast<double>(N);
-      double angleMean     = angleAccum/static_cast<double>(N);
+  //     double scaleDiffMean = scaleAccum/static_cast<double>(N);
+  //     double angleMean     = angleAccum/static_cast<double>(N);
 
-      scaleAccum = 0.0;
-      angleAccum = 0.0;
-      for (unsigned int j=0; j<N; j++)
-  	{
-  	  scaleAccum += pow(transitionVec[i].scaleDifferences[j] - scaleDiffMean, 2.0);
-  	  angleAccum += pow(transitionVec[i].angles[j] - angleMean, 2.0);
-  	}
+  //     scaleAccum = 0.0;
+  //     angleAccum = 0.0;
+  //     for (unsigned int j=0; j<N; j++)
+  // 	{
+  // 	  scaleAccum += pow(transitionVec[i].scaleDifferences[j] - scaleDiffMean, 2.0);
+  // 	  angleAccum += pow(transitionVec[i].angles[j] - angleMean, 2.0);
+  // 	}
       
-      double scaleDiffSTD = sqrt(scaleAccum/static_cast<double>(N));
-      double angleSTD     = sqrt(angleAccum/static_cast<double>(N));
+  //     double scaleDiffSTD = sqrt(scaleAccum/static_cast<double>(N));
+  //     double angleSTD     = sqrt(angleAccum/static_cast<double>(N));
 
-      std::cout << "From:\t" << conventions.GetChestTypeName(static_cast<unsigned char>(transitionVec[i].from)) << "\t";
-      std::cout << "To:\t"   << conventions.GetChestTypeName(static_cast<unsigned char>(transitionVec[i].to))   << std::endl;
-      std::cout << "Scale Difference Mean:\t" << scaleDiffMean << " +/- " << scaleDiffSTD << std::endl;
-      std::cout << "Angles Mean:\t" << angleMean << " +/- " << angleSTD << std::endl;
-      std::cout << "Number of Occurrences:\t" << N << std::endl;
-    }
+  //     std::cout << "From:\t" << conventions.GetChestTypeName(static_cast<unsigned char>(transitionVec[i].from)) << "\t";
+  //     std::cout << "To:\t"   << conventions.GetChestTypeName(static_cast<unsigned char>(transitionVec[i].to))   << std::endl;
+  //     std::cout << "Scale Difference Mean:\t" << scaleDiffMean << " +/- " << scaleDiffSTD << std::endl;
+  //     std::cout << "Angles Mean:\t" << angleMean << " +/- " << angleSTD << std::endl;
+  //     std::cout << "Number of Occurrences:\t" << N << std::endl;
+  //   }
 
-  //
-  // Print emission probability stats if needed
-  //
-  if (refParticlesFileName.compare("NA") != 0)
-    {
-      PrintEmissionProbabilityData(emissionProbData);
-    }
+  // // Print emission probability stats if needed
+  // if (refParticlesFileName.compare("NA") != 0)
+  //   {
+  //     PrintEmissionProbabilityData(emissionProbData);
+  //   }
 
-  //
-  // Write emission probability stats to file if needed
-  //
-  if (emissionProbsFileName.compare("NA") != 0)
-    {
-      std::cout << "Writing emission probability stats..." << std::endl;
-      WriteEmissionProbabilityData(emissionProbData, emissionProbsFileName);
-    }
+  // // Write emission probability stats to file if needed
+  // if (emissionProbsFileName.compare("NA") != 0)
+  //   {
+  //     std::cout << "Writing emission probability stats..." << std::endl;
+  //     WriteEmissionProbabilityData(emissionProbData, emissionProbsFileName);
+  //   }
 
-  //
-  // Write transition probability scale and angle stats 
-  // to file if needed
-  //
-  if (normTransProbsMeanVarFileName.compare("NA") != 0)
-    {
-      std::cout << "Writing transition probability scale and angle stats..." << std::endl;
-      WriteTransitionProbabilityScaleAngleData(transitionVec, normTransProbsMeanVarFileName);
-    }
+  // // Write transition probability scale and angle stats 
+  // // to file if needed
+  // if (normTransProbsMeanVarFileName.compare("NA") != 0)
+  //   {
+  //     std::cout << "Writing transition probability scale and angle stats..." << std::endl;
+  //     WriteTransitionProbabilityScaleAngleData(transitionVec, normTransProbsMeanVarFileName);
+  //   }
 
-  //
-  // Write the transition probabilities to file if needed
-  //
-  if (transProbsFileName.compare("NA") != 0)
-    {
-      std::cout << "Writing transition probabilities..." << std::endl;
-      WriteTransitionProbabilities(transitionVec, transProbsFileName);
-    }
+  // // Write the transition probabilities to file if needed
+  // if (transProbsFileName.compare("NA") != 0)
+  //   {
+  //     std::cout << "Writing transition probabilities..." << std::endl;
+  //     WriteTransitionProbabilities(transitionVec, transProbsFileName);
+  //   }
 
   std::cout << "DONE." << std::endl;
 
@@ -403,10 +386,8 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointe
 {
   unsigned int numberParticles = particles->GetNumberOfPoints();
 
-  //
   // Now create the weighted graph that will be passed to the minimum 
   // spanning tree filter
-  // 
   std::map<unsigned int, unsigned int> particleIDToNodeIDMap;
   std::map<unsigned int, unsigned int> nodeIDToParticleIDMap;
 
@@ -486,25 +467,25 @@ bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartP
     }
 
   double particle1Hevec2[3];
-    particle1Hevec2[0] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID1)[0];
-    particle1Hevec2[1] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID1)[1];
-    particle1Hevec2[2] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID1)[2];
+    particle1Hevec2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[0];
+    particle1Hevec2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[1];
+    particle1Hevec2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[2];
 
   double particle2Hevec2[3];
-    particle2Hevec2[0] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID2)[0];
-    particle2Hevec2[1] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID2)[1];
-    particle2Hevec2[2] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(particleID2)[2];
+    particle2Hevec2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[0];
+    particle2Hevec2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[1];
+    particle2Hevec2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[2];
 
   double angle1 =  cip::GetAngleBetweenVectors(particle1Hevec2, connectingVec, true);
   double angle2 =  cip::GetAngleBetweenVectors(particle2Hevec2, connectingVec, true);
 
   if (angle1 <angle2)
     {
-      *weight = connectorMagnitude*(1.0 + exp(-pow((90.0 - angle1)/edgeWeightAngleSigma, 2)));
+      *weight = connectorMagnitude*(1.0 + 1.1*exp(-pow((90.0 - angle1)/edgeWeightAngleSigma, 2)));
     }
   else
     {
-      *weight = connectorMagnitude*(1.0 + exp(-pow((90.0 - angle2)/edgeWeightAngleSigma, 2)));
+      *weight = connectorMagnitude*(1.0 + 1.1*exp(-pow((90.0 - angle2)/edgeWeightAngleSigma, 2)));
     }
 
   return true;
@@ -518,11 +499,11 @@ void UpdateEmissionProbabilityData(vtkSmartPointer<vtkPolyData> refParticles, vt
 
   for (unsigned int i=0; i<numRefParticles; i++)
     {
-      float refParticleType = refParticles->GetFieldData()->GetArray("ChestType")->GetTuple(i)[0];
+      float refParticleType = refParticles->GetPointData()->GetArray("ChestType")->GetTuple(i)[0];
 
       for (unsigned int j=0; j<numParticles; j++)
 	{
-	  float particleType = particles->GetFieldData()->GetArray("ChestType")->GetTuple(j)[0];
+	  float particleType = particles->GetPointData()->GetArray("ChestType")->GetTuple(j)[0];
 	  if (refParticleType == particleType)
 	    {	      
 	      double* vec = new double[3];
@@ -533,18 +514,18 @@ void UpdateEmissionProbabilityData(vtkSmartPointer<vtkPolyData> refParticles, vt
 	      double dist = cip::GetVectorMagnitude(vec);
 	      if (dist <= epsilon)
 		{		  
-		  float scale1 = refParticles->GetFieldData()->GetArray("scale")->GetTuple(i)[0];
-		  float scale2 = particles->GetFieldData()->GetArray("scale")->GetTuple(j)[0];
+		  float scale1 = refParticles->GetPointData()->GetArray("scale")->GetTuple(i)[0];
+		  float scale2 = particles->GetPointData()->GetArray("scale")->GetTuple(j)[0];
 
 		  double direction1[3];
-   		    direction1[0] = refParticles->GetFieldData()->GetArray("hevec2")->GetTuple(i)[0];
-		    direction1[1] = refParticles->GetFieldData()->GetArray("hevec2")->GetTuple(i)[1];
-		    direction1[2] = refParticles->GetFieldData()->GetArray("hevec2")->GetTuple(i)[2];
+   		    direction1[0] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[0];
+		    direction1[1] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[1];
+		    direction1[2] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[2];
 
 		  double direction2[3];
-		    direction2[0] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(j)[0];
-		    direction2[1] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(j)[1];
-		    direction2[2] = particles->GetFieldData()->GetArray("hevec2")->GetTuple(j)[2];
+		    direction2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[0];
+		    direction2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[1];
+		    direction2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[2];
 
 		  EMISSION emissionData;
   		    emissionData.distance = dist;
@@ -798,5 +779,165 @@ void WriteTransitionProbabilities(std::vector<TRANSITION> transitionVec, std::st
   
   file.close();
 }
+
+void WriteEmissionDataISBI( std::map<unsigned char, std::vector<EMISSION> > emissionProbData )
+{
+  cip::ChestConventions conventions;
+
+  std::map<unsigned char, std::vector<EMISSION> >::iterator mapIt;
+
+  mapIt = emissionProbData.begin();
+  while ( mapIt != emissionProbData.end() )
+    {
+      std::string fileName = "/Users/jross/Documents/ConferencesAndJournals/ISBI/2014/AirwayGenerationLabeling/Emissions/";
+      fileName.append( conventions.GetChestTypeName(mapIt->first) );
+      fileName.append(".csv");
+      std::ofstream file( fileName.c_str() );
+
+      for ( unsigned int i=0; i<mapIt->second.size(); i++ )
+	{
+	  file << mapIt->second[i].distance << ",";
+	  file << mapIt->second[i].scaleDiff << ",";
+	  file << mapIt->second[i].angle << std::endl;
+	}
+
+      file.close();
+
+      mapIt++;
+    }
+}
+
+// This function was written for the ISBI 2014 effort. It takes all the accumulated transition data
+// and writes to file. Each transition is written to its own file: the first column is the scale
+// difference, and the second column is the angle. These data files are meant to be read and analyzed
+// externally in order to create suitable parametric representations of the probability densities
+void WriteTransitionDataISBI( std::vector<TRANSITION> transitionVec )
+{
+  cip::ChestConventions conventions;
+  for (unsigned int i=0; i<transitionVec.size(); i++)
+    {
+      std::cout << "---------------------------------" << std::endl;
+      unsigned int N = transitionVec[i].angles.size();
+      std::cout << N << std::endl;
+
+      std::string transitionFileName = "/Users/jross/Documents/ConferencesAndJournals/ISBI/2014/AirwayGenerationLabeling/Transitions/";
+      transitionFileName.append(conventions.GetChestTypeName(static_cast<unsigned char>(transitionVec[i].from)));
+      transitionFileName.append("_to_");
+      transitionFileName.append(conventions.GetChestTypeName(static_cast<unsigned char>(transitionVec[i].to)));
+      transitionFileName.append(".csv");
+      std::cout << transitionFileName << std::endl;
+
+      std::ofstream file( transitionFileName.c_str() );
+      file << N << std::endl;
+      for (unsigned int j=0; j<N; j++)
+      	{
+	  file << transitionVec[i].scaleDifferences[j] << ",";
+      	  file << transitionVec[i].angles[j] << std::endl;
+      	}
+
+      file.close();
+    }
+}
+
+bool IsTransitionPermitted( unsigned char fromState, unsigned char toState )
+{
+  if ( fromState == toState )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION5) &&
+	    toState == (unsigned char)(cip::AIRWAYGENERATION4) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION4) &&
+	    toState == (unsigned char)(cip::AIRWAYGENERATION3) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION3) &&
+	    toState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION3) &&
+	    toState == (unsigned char)(cip::INTERMEDIATEBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION3) &&
+	    toState == (unsigned char)(cip::MIDDLELOBEBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION3) &&
+	    toState == (unsigned char)(cip::LOWERLOBEBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION3) &&
+	    toState == (unsigned char)(cip::SUPERIORDIVISIONBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::AIRWAYGENERATION3) &&
+	    toState == (unsigned char)(cip::LINGULARBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::UPPERLOBEBRONCHUS) &&
+	    toState == (unsigned char)(cip::MAINBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::INTERMEDIATEBRONCHUS) &&
+	    toState == (unsigned char)(cip::MAINBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::MIDDLELOBEBRONCHUS) &&
+	    toState == (unsigned char)(cip::LOWERLOBEBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::LOWERLOBEBRONCHUS) &&
+	    toState == (unsigned char)(cip::INTERMEDIATEBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::LOWERLOBEBRONCHUS) &&
+	    toState == (unsigned char)(cip::MAINBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::MAINBRONCHUS) &&
+	    toState == (unsigned char)(cip::TRACHEA) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::SUPERIORDIVISIONBRONCHUS) &&
+	    toState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
+    {
+      return true;
+    }
+  else if ( fromState == (unsigned char)(cip::LINGULARBRONCHUS) &&
+	    toState == (unsigned char)(cip::UPPERLOBEBRONCHUS) )
+    {
+      return true;
+    }
+
+  return false;
+}
+// AIRWAYGENERATION5
+// AIRWAYGENERATION4
+// AIRWAYGENERATION3
+// UPPERLOBEBRONCHUS
+// INTERMEDIATEBRONCHUS
+// MIDDLELOBEBRONCHUS
+// LOWERLOBEBRONCHUS
+// MAINBRONCHUS
+// SUPERIORDIVISIONBRONCHUS
+// LINGULARBRONCHUS
+// TRACHEA
 
 #endif

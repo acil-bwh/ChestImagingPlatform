@@ -94,6 +94,9 @@ private:
   static void abdomen_CB( Fl_Widget* o, void* v );
   void abdomen_CB_i();
 
+  static void aorta_CB( Fl_Widget* o, void* v );
+  void aorta_CB_i();
+
   static void liverMenuItem_CB( Fl_Widget* o, void* v );
   void liverMenuItem_CB_i();
 

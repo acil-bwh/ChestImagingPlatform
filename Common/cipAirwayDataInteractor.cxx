@@ -29,14 +29,12 @@ cipAirwayDataInteractor::cipAirwayDataInteractor()
   this->InteractorCallbackCommand->SetCallback( InteractorKeyCallback );
   this->InteractorCallbackCommand->SetClientData( (void*)this );
 
-  //
   // cipAirwayDataInteractor inherits from cipChestDataViewer. The
   // cipChestDataViewer constructor is called before the
   // cipAirwayDataInteractor constructor, and in the parent constructor,
   // the ViewerCallbackCommand is set. We want to remove it and set
   // the InteractorCallbackCommand in order for the key bindings
   // specific to interaction can take effect
-  //
   this->RenderWindowInteractor->RemoveObserver( this->ViewerCallbackCommand );
   this->RenderWindowInteractor->AddObserver( vtkCommand::KeyPressEvent, this->InteractorCallbackCommand );
 
@@ -49,11 +47,19 @@ cipAirwayDataInteractor::cipAirwayDataInteractor()
   this->ParticleDistanceThreshold = 20.0;
   this->AirwayBranchCode          = "";
   this->ActorColor                = new double[3];
+
+  this->AirwayModelActor = vtkSmartPointer< vtkActor >::New();
+  this->AirwayModel = vtkSmartPointer< vtkPolyData >::New();
+  this->AirwayModelShowing = false;
 }
 
 void cipAirwayDataInteractor::SetRootNode( vtkActor* actor )
 {
   this->MinimumSpanningTreeRootNode = this->ActorToParticleIDMap[actor];
+  std::cout << "Root node particle ID:\t" << this->MinimumSpanningTreeRootNode << std::endl;
+  std::cout << this->AirwayParticles->GetPoint(this->MinimumSpanningTreeRootNode)[0] << "\t";
+  std::cout << this->AirwayParticles->GetPoint(this->MinimumSpanningTreeRootNode)[1] << "\t";
+  std::cout << this->AirwayParticles->GetPoint(this->MinimumSpanningTreeRootNode)[2] << std::endl;
 }
 
 void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
@@ -76,7 +82,7 @@ void cipAirwayDataInteractor::UpdateAirwayBranchCode( char c )
     return;
     }    
 
-  this->AirwayBranchCode.append( &c );
+  this->AirwayBranchCode.append( 1, c );
   
   std::cout << "Code:\t" << this->AirwayBranchCode << std::endl;
   if ( this->AirwayBranchCode.compare( "LMB" ) == 0 )
@@ -235,6 +241,7 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
  // labeled. We'll need this in case we want to undo the labeling.
  std::vector< unsigned int > labeledIDs;
 
+ double* refVec = new double[3];
  for ( unsigned int i=0; i<idList->GetNumberOfIds(); i++ )
    {
    if ( this->AirwayParticles->GetPointData()->GetArray("ChestType")->GetTuple(idList->GetId(i))[0] == float(cip::UNDEFINEDTYPE) )
@@ -245,6 +252,25 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
      this->AirwayParticles->GetPointData()->GetArray("ChestRegion")->SetTuple(idList->GetId(i), &tmpRegion );
      this->AirwayParticles->GetPointData()->GetArray("ChestType")->SetTuple(idList->GetId(i), &tmpType );
      labeledIDs.push_back(idList->GetId(i));
+
+     // Re-orient the particle's minor eigenvector. This is necessary for other algorithms
+     // (specifically, some particles registration algorithms) which require that all the 
+     // particles be oriented in a consistent manner -- in this case, all minor eigenvectors
+     // will point from leaf node to root node.     
+     if ( i < idList->GetNumberOfIds() - 1 )
+       {
+	 refVec[0] = this->AirwayParticles->GetPoint(idList->GetId(i+1))[0] - this->AirwayParticles->GetPoint(idList->GetId(i))[0];
+	 refVec[1] = this->AirwayParticles->GetPoint(idList->GetId(i+1))[1] - this->AirwayParticles->GetPoint(idList->GetId(i))[1];
+	 refVec[2] = this->AirwayParticles->GetPoint(idList->GetId(i+1))[2] - this->AirwayParticles->GetPoint(idList->GetId(i))[2];
+       }
+     else
+       {
+	 refVec[0] = this->AirwayParticles->GetPoint(idList->GetId(i))[0] - this->AirwayParticles->GetPoint(idList->GetId(i-1))[0];
+	 refVec[1] = this->AirwayParticles->GetPoint(idList->GetId(i))[1] - this->AirwayParticles->GetPoint(idList->GetId(i-1))[1];
+	 refVec[2] = this->AirwayParticles->GetPoint(idList->GetId(i))[2] - this->AirwayParticles->GetPoint(idList->GetId(i-1))[2];
+       }
+
+     this->OrientParticle( idList->GetId(i), refVec );
      }
    }
 
@@ -253,6 +279,26 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
  this->RenderWindow->Render();
 }
 
+// This function re-orients a particle's minor eigenvector so that it is more parallel than
+// anti-parallel to the specified reference vector. This function is used during the labeling
+// process to ensure that all labeled particles have minor eigenvectors oriented in a consistent
+// way, which is necessary for some registration routines that take as input the labeled
+// particles datasets.
+void cipAirwayDataInteractor::OrientParticle( unsigned int particleID, double* refVec )
+{
+  double angle = cip::GetAngleBetweenVectors( this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID ),
+					      refVec, false );
+
+  float* hevec2 = new float[3];
+  if ( angle > vnl_math::pi/2.0 )
+    {
+      hevec2[0] = -this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[0];
+      hevec2[1] = -this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[1];
+      hevec2[2] = -this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[2];
+
+      this->AirwayParticles->GetPointData()->GetArray("hevec2")->SetTuple( particleID, hevec2 );
+    }
+}
 
 void cipAirwayDataInteractor::UpdateAirwayGenerationAndRender( vtkActor* actor, int generation )
 {
@@ -324,6 +370,37 @@ void cipAirwayDataInteractor::UpdateAirwayGenerationAndRender( vtkActor* actor, 
   this->RenderWindow->Render();
 }
 
+void cipAirwayDataInteractor::SetAirwayModel( vtkSmartPointer< vtkPolyData > model )
+{
+  this->AirwayModel = model;
+  this->AirwayModelActor = this->SetPolyData( model, "airwayModel" );
+  this->SetActorColor( "airwayModel", 1.0, 1.0, 1.0 );
+  this->SetActorOpacity( "airwayModel", 0.3 );
+
+  this->AirwayModelShowing = true;
+}
+
+void cipAirwayDataInteractor::ShowAirwayModel()
+{
+  if ( !this->AirwayModelShowing )
+    {
+      this->AirwayModelShowing = true;
+
+      this->Renderer->AddActor( this->AirwayModelActor);
+      this->RenderWindow->Render();
+    }
+}
+
+void cipAirwayDataInteractor::HideAirwayModel()
+{
+  if ( this->AirwayModelShowing )
+    {
+      this->AirwayModelShowing = false;
+
+      this->Renderer->RemoveActor( this->AirwayModelActor );
+      this->RenderWindow->Render();
+    }
+}
 
 void cipAirwayDataInteractor::UndoUpdateAndRender()
 {
@@ -352,7 +429,8 @@ void cipAirwayDataInteractor::RemoveActorAndRender( vtkActor* actor )
 }
 
 
-void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartPointer< vtkPolyData > particles )
+void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartPointer< vtkPolyData > particles, 
+								       double particleSize )
 {
   this->AirwayParticles = particles;
 
@@ -364,7 +442,6 @@ void cipAirwayDataInteractor::SetAirwayParticlesAsMinimumSpanningTree( vtkSmartP
 
   // Now we want to loop over all particles and create an individual
   // actor for each.
-  double particleSize = 1.0;
 
   for ( unsigned int p = 0; p < this->NumberInputParticles; p++ )
     {
@@ -499,11 +576,13 @@ bool cipAirwayDataInteractor::GetEdgeWeight( unsigned int particleID1, unsigned 
 
   if ( angle1 < angle2 )
     {
-      *weight = connectorMagnitude*(1.0 + exp(-pow( (90.0 - angle1)/this->EdgeWeightAngleSigma, 2 )));
+      //*weight = 2.0*(10.0/15.0)*connectorMagnitude + (10.0/45.0)*angle1;
+      *weight = connectorMagnitude*(1.0 + 1.1*exp(-pow( (90.0 - angle1)/this->EdgeWeightAngleSigma, 2 )));
     }
   else
     {
-      *weight = connectorMagnitude*(1.0 + exp(-pow( (90.0 - angle2)/this->EdgeWeightAngleSigma, 2 )));
+      //*weight = 2.0*(10.0/15.0)*connectorMagnitude + (10.0/45.0)*angle2;
+      *weight = connectorMagnitude*(1.0 + 1.1*exp(-pow( (90.0 - angle2)/this->EdgeWeightAngleSigma, 2 )));
     }
 
   return true;
@@ -539,6 +618,14 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       {
       dataInteractor->RemoveActorAndRender( actor );
       }
+    }
+  else if ( pressedKey == 's' )
+    {
+      dataInteractor->ShowAirwayModel();
+    }
+  else if ( pressedKey == 'h' )
+    {
+      dataInteractor->HideAirwayModel();
     }
   else if ( pressedKey == 'u' )
     {
@@ -644,11 +731,6 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       {
       dataInteractor->SetPlaneWidgetZShowing( true );
       }
-    }
-  
-  if ( pressedKey == 'u' )
-    {
-    dataInteractor->UndoUpdateAndRender();  
-    }
+    }  
 }
 

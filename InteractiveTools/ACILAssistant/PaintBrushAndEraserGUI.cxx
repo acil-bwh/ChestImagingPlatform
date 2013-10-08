@@ -74,6 +74,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Liver", 0, (Fl_Callback*)liverMenuItem_CB, (void*)(this));
       o->add("Spleen", 0, (Fl_Callback*)spleenMenuItem_CB, (void*)(this));
       o->add("Abdomen", 0, (Fl_Callback*)abdomen_CB, (void*)(this));
+      o->add("Aorta", 0, (Fl_Callback*)aorta_CB, (void*)(this));
     }
     { Fl_Choice* o = chestTypeChoice = new Fl_Choice(103, 214, 269, 28, "Chest Type");
       o->down_box(FL_BORDER_BOX);
@@ -364,6 +365,13 @@ void PaintBrushAndEraserGUI::abdomen_CB( Fl_Widget* o, void* v ) {
 }
 void PaintBrushAndEraserGUI::abdomen_CB_i() {
   this->m_ChestRegion = static_cast< unsigned char >( cip::ABDOMEN );
+}
+
+void PaintBrushAndEraserGUI::aorta_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->aorta_CB_i();
+}
+void PaintBrushAndEraserGUI::aorta_CB_i() {
+  this->m_ChestRegion = static_cast< unsigned char >( cip::AORTA );
 }
 
 void PaintBrushAndEraserGUI::liverMenuItem_CB( Fl_Widget* o, void* v ) {

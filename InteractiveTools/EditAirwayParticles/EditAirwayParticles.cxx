@@ -126,11 +126,10 @@ void AddRegionTypePointsAsSpheresToInteractor( cipAirwayDataInteractor*, std::st
 
 int main( int argc, char *argv[] )
 {
-  //
   // Begin by defining the arguments to be passed. 
-  //
   std::string  inParticlesFileName     = "NA";
   std::string  genParticlesFileName    = "NA";
+  std::string  airwayModelFileName     = "NA";
   std::string  ctFileName              = "NA";
   double       particleSize            = 1.0;
   // Arguments for optional region-type points file input
@@ -142,10 +141,10 @@ int main( int argc, char *argv[] )
   std::vector< double > regionTypePointsBlue;
   std::vector< double > regionTypePointsOpacity;
   std::vector< double > regionTypePointsScale;
+  bool prune;
+  bool label;
 
-  //
   // Input descriptions for user convenience
-  //
   std::string programDesc = "This program can be used to label airway particles \
 according to generation. The user simply needs to mouse \
 over the particle component of interest and hit the 0-9 keys. This will label \
@@ -159,6 +158,8 @@ labels have been assigned.";
   std::string inParticlesFileNameDesc     = "Input particles file name";
   std::string genParticlesFileNameDesc    = "Output particles file name corresponding to labeled generations";
   std::string ctFileNameDesc              = "Input CT file name";
+  std::string airwayModelFileNameDesc     = "Airway model to render semi-transparently over particles for reference. The \
+model can be toggled on and off within the editor.";
   std::string particleSizeDesc            = "Particle size scale factor";
   // Descriptions for region-type points file input
   std::string regionTypePointsFileNameDesc = "Region and type points file name. This should be used with the -r, and -t \
@@ -181,10 +182,12 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
 rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen, --rtpBlue, and --rtpSc flags.";
   std::string regionTypePointsScaleDesc   = "Use when specifying a region-type file name to specify the red channel when \
 rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen, --rtpBlue, and --rtpOp flags.";
+  std::string pruneDesc   = "Set this flag to indicated that the editor should be used in prune mode, which allows \
+the user to remove particles with the k key";
+  std::string labelDesc   = "Set this flag to indicated that the editor should be used in label mode, which allows \
+the user to label groups of particles according to their airway generation.";
 
-  //
   // Parse the input arguments
-  //
   try
     {
     TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 370 $" );
@@ -192,7 +195,10 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
     TCLAP::ValueArg<std::string> inParticlesFileNameArg( "i", "in", inParticlesFileNameDesc, true, inParticlesFileName, "string", cl );
     TCLAP::ValueArg<std::string> genParticlesFileNameArg( "g", "generation", genParticlesFileNameDesc, false, genParticlesFileName, "string", cl );
     TCLAP::ValueArg<std::string> ctFileNameArg( "c", "ct", ctFileNameDesc, false, ctFileName, "string", cl );
+    TCLAP::ValueArg<std::string> airwayModelFileNameArg( "m", "model", airwayModelFileNameDesc, false, airwayModelFileName, "string", cl );
     TCLAP::ValueArg<double>      particleSizeArg( "s", "pSize", particleSizeDesc, false, particleSize, "double", cl );
+    TCLAP::SwitchArg             pruneArg( "", "prune", pruneDesc, cl, false );
+    TCLAP::SwitchArg             labelArg( "", "label", labelDesc, cl, false );
     // Region-type args:
     TCLAP::ValueArg<std::string>   regionTypePointsFileNameArg( "", "rtp", regionTypePointsFileNameDesc, false, regionTypePointsFileName, "string", cl );
     TCLAP::MultiArg<unsigned int>  regionTypePointsRegionsArg( "r", "rtpRegion", regionTypePointsRegionsDesc, false, "unsigned char", cl );
@@ -205,9 +211,19 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
 
     cl.parse( argc, argv );
 
+    if ( pruneArg.isSet() )
+      {
+      prune = true;
+      }
+    if ( labelArg.isSet() )
+      {
+      label = true;
+      }
+
     inParticlesFileName     = inParticlesFileNameArg.getValue();
     genParticlesFileName    = genParticlesFileNameArg.getValue();
     ctFileName              = ctFileNameArg.getValue();
+    airwayModelFileName     = airwayModelFileNameArg.getValue();
     particleSize            = particleSizeArg.getValue();
     // Region-type points
     regionTypePointsFileName = regionTypePointsFileNameArg.getValue();
@@ -282,7 +298,16 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
       }
 
     interactor.SetGrayscaleImage( ctReader->GetOutput() );
-    }    
+    }  
+  if ( airwayModelFileName.compare( "NA" ) != 0 )
+    {
+    std::cout << "Reading airway model..." << std::endl;
+    vtkSmartPointer< vtkPolyDataReader > modelReader = vtkSmartPointer< vtkPolyDataReader >::New();
+      modelReader->SetFileName( airwayModelFileName.c_str() );
+      modelReader->Update();    
+
+    interactor.SetAirwayModel( modelReader->GetOutput() );
+    }      
   if ( regionTypePointsFileName.compare( "NA" ) != 0 )
     {
       AddRegionTypePointsAsSpheresToInteractor( &interactor, regionTypePointsFileName, regionTypePointsRegions, regionTypePointsTypes, 
@@ -310,30 +335,45 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
   std::cout << "Asserting ChestRegion and ChestType array existence..." << std::endl;
   AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
 
-  // Now add the particles. They will be used to create a minimum
-  // spanning tree, and this tree will be used in order to label
-  // particles between specified root and intermediate nodes /
-  // particles 
-  //std::cout << "Adding particles to interactor for minimum spanning tree representation..." << std::endl;
-  //interactor.SetAirwayParticlesAsMinimumSpanningTree( particlesReader->GetOutput() );
+  if ( label )
+    {
+      // Now add the particles. They will be used to create a minimum
+      // spanning tree, and this tree will be used in order to label
+      // particles between specified root and intermediate nodes /
+      // particles 
+      std::cout << "Adding particles to interactor for minimum spanning tree representation..." << std::endl;
+      interactor.SetAirwayParticlesAsMinimumSpanningTree( particlesReader->GetOutput(), particleSize );
 
-  std::cout << "Adding components to interactor..." << std::endl;
-  AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "airwayParticles", &componentLabelToNameMap, particleSize );
+      std::cout << "Rendering..." << std::endl;  
+      interactor.Render();
 
-  std::cout << "Rendering..." << std::endl;  
-  interactor.Render();
+      std::cout << "Writing labeled particles..." << std::endl;
+      vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
+        writer->SetFileName( genParticlesFileName.c_str() );
+	writer->SetInput( particlesReader->GetOutput() );
+	//writer->SetFileTypeToASCII();
+	writer->Write();  
+    }
+  else if ( prune )
+    {
+      std::cout << "Adding components to interactor..." << std::endl;
+      AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "airwayParticles", &componentLabelToNameMap, particleSize );
 
-//   vtkSmartPointer< vtkPolyData > outParticles = vtkSmartPointer< vtkPolyData >::New();
+      std::cout << "Rendering..." << std::endl;  
+      interactor.Render();
 
-//   std::cout << "Retrieving labeled particles..." << std::endl;
-//   outParticles = GetLabeledAirwayParticles( &interactor, particlesReader->GetOutput(), &componentLabelToNameMap ); 
+      vtkSmartPointer< vtkPolyData > outParticles = vtkSmartPointer< vtkPolyData >::New();
 
-  std::cout << "Writing labeled particles..." << std::endl;
-  vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
-    writer->SetFileName( genParticlesFileName.c_str() );
-    writer->SetInput( particlesReader->GetOutput() );
-    //writer->SetFileTypeToASCII();
-    writer->Write();  
+      std::cout << "Retrieving labeled particles..." << std::endl;
+      outParticles = GetLabeledAirwayParticles( &interactor, particlesReader->GetOutput(), &componentLabelToNameMap ); 
+
+      std::cout << "Writing labeled particles..." << std::endl;
+      vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
+        writer->SetFileName( genParticlesFileName.c_str() );
+	writer->SetInput( outParticles );
+	//writer->SetFileTypeToASCII();
+	writer->Write();  
+    }
 
   std::cout << "DONE." << std::endl;
 
@@ -341,12 +381,10 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
 }
 
 
-//
 // This function is used to verify that the input particles have
 // 'ChestRegion' and 'ChestType' arrays. If the particles don't have
 // these arrays, they are assigned with default entries
 // 'UNDEFINEDREGION' and 'UNDEFINEDTYPE'
-//
 void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > particles )
 {
   unsigned int numberParticles         = particles->GetNumberOfPoints();
@@ -421,11 +459,9 @@ void AddComponentsToInteractor( cipAirwayDataInteractor* interactor, vtkSmartPoi
     {
     component = static_cast< unsigned short >( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)) );
 
-    //
     // The input particles may already be labeled. Get the ChestType
     // recorded for thie component. By default we will color according
     // to this type
-    //
     unsigned char cipType = static_cast< unsigned char >( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) );
 
     bool addComponent = true;
@@ -446,10 +482,8 @@ void AddComponentsToInteractor( cipAirwayDataInteractor* interactor, vtkSmartPoi
       }
     }
 
-  //
   // Now create the different poly data for the different components
   // and add them to the editor
-  //
   for ( unsigned int c=0; c<componentVec.size(); c++ )
     {
     vtkPolyData* polyData = vtkPolyData::New();

@@ -469,7 +469,7 @@ void cipParticleConnectedComponentFilter::QueryNeighborhood( ImageType::IndexTyp
 
             bool connected = this->EvaluateParticleConnectedness( particleIndex, neighborParticleIndex );
 
-            if ( connected && (*currentComponentSize <= this->MaximumComponentSize) )
+            if ( connected && (*currentComponentSize < this->MaximumComponentSize) )
               {
               this->QueryNeighborhood( neighborIndex, componentLabel, currentComponentSize );
               }
@@ -500,7 +500,6 @@ void cipParticleConnectedComponentFilter::Update()
       {
       unsigned int componentSize = 0;
       this->QueryNeighborhood( it.GetIndex(), componentLabel, &componentSize );
-
       componentLabel++;
       }
     
@@ -508,15 +507,11 @@ void cipParticleConnectedComponentFilter::Update()
     }
   this->LargestComponentLabel = componentLabel-1;
 
-  //
   // Now update component sizes
-  //
   this->ComputeComponentSizes();
 
-  //
   // At this point, we have a set of connected components, and we are
   // ready to create the output particles data
-  //
   vtkPoints* outputPoints  = vtkPoints::New();  
   std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
 
@@ -539,7 +534,7 @@ void cipParticleConnectedComponentFilter::Update()
     componentLabel = this->ParticleToComponentMap[i];
 
     if ( (this->SelectedComponent != 0 && this->ParticleToComponentMap[i] == this->SelectedComponent) ||
-         (this->SelectedComponent == 0 && this->ComponentSizeMap[componentLabel] >this->ComponentSizeThreshold) )
+         (this->SelectedComponent == 0 && this->ComponentSizeMap[componentLabel] >=this->ComponentSizeThreshold) )
       {
       outputPoints->InsertNextPoint( this->InternalInputPolyData->GetPoint(i) );
 
