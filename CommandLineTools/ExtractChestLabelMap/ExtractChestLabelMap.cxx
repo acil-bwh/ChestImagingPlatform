@@ -150,58 +150,57 @@ int main( int argc, char *argv[] )
     return cip::LABELMAPREADFAILURE;
     }
 
-  // std::cout << "Extracting..." << std::endl;
-  // LabelMapExtractorType::Pointer extractor = LabelMapExtractorType::New();
-  //   extractor->SetInput( reader->GetOutput() );
-  // for ( unsigned int i=0; i<regionVec.size(); i++ )
-  //   {
-  //   extractor->SetChestRegion( regionVec[i] );
-  //   }
-  // for ( unsigned int i=0; i<typeVec.size(); i++ )
-  //   {
-  //   extractor->SetChestType( typeVec[i] );
-  //   }
-  // for ( unsigned int i=0; i<regionPairVec.size(); i++ )
-  //   {
-  //   extractor->SetRegionAndType( regionPairVec[i], typePairVec[i] );
-  //   }
-  //   extractor->Update();
+  std::cout << "Extracting..." << std::endl;
+  LabelMapExtractorType::Pointer extractor = LabelMapExtractorType::New();
+    extractor->SetInput( reader->GetOutput() );
+  for ( unsigned int i=0; i<regionVec.size(); i++ )
+    {
+    extractor->SetChestRegion( (unsigned char)(regionVec[i]) );
+    }
+  for ( unsigned int i=0; i<typeVec.size(); i++ )
+    {
+    extractor->SetChestType( (unsigned char)(typeVec[i]) );
+    }
+  for ( unsigned int i=0; i<regionPairVec.size(); i++ )
+    {
+    extractor->SetRegionAndType( (unsigned char)(regionPairVec[i]), (unsigned char)(typePairVec[i]) );
+    }
+    extractor->Update();
 
-  // IteratorType eIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
-  // IteratorType rIt( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
+  IteratorType eIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
+  IteratorType rIt( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
 
-  // eIt.GoToBegin();
-  // rIt.GoToBegin();
-  // while ( !rIt.IsAtEnd() )
-  //   {
-  //     rIt.Set( eIt.Get() );
+  eIt.GoToBegin();
+  rIt.GoToBegin();
+  while ( !rIt.IsAtEnd() )
+    {
+      rIt.Set( eIt.Get() );
 
-  //     ++eIt;
-  //     ++rIt;
-  //   }
+      ++eIt;
+      ++rIt;
+    }
 
-  // std::cout << "Writing..." << std::endl;
-  // cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-  // //    writer->SetInput( extractor->GetOutput() );
-  //   writer->SetInput( reader->GetOutput() );
-  //   writer->SetFileName( outFileName );
-  //   writer->UseCompressionOn();
-  // try
-  //   {
-  //   writer->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught writing label map:";
-  //   std::cerr << excp << std::endl;
+  std::cout << "Writing..." << std::endl;
+  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+  //    writer->SetInput( extractor->GetOutput() );
+    writer->SetInput( reader->GetOutput() );
+    writer->SetFileName( outFileName );
+    writer->UseCompressionOn();
+  try
+    {
+    writer->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught writing label map:";
+    std::cerr << excp << std::endl;
 
-  //   return cip::LABELMAPWRITEFAILURE;
-  //   }
+    return cip::LABELMAPWRITEFAILURE;
+    }
 
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
-
 }
 
 #endif
