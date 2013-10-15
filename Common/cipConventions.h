@@ -168,8 +168,8 @@ enum ChestType {
 };
 
 enum ReturnCode {
-  HELP,
   EXITSUCCESS,
+  HELP,
   EXITFAILURE,
   RESAMPLEFAILURE,
   NRRDREADFAILURE,
