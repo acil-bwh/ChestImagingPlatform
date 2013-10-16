@@ -514,7 +514,7 @@ public:
       double* t038 = new double[3]; t038[0] = 0.63; t038[1] = 0.63; t038[2] = 0.63; ChestTypeColors.push_back( t038 ); //HONEYCOMBING
       // The airway generation colors are identical to the vessel generation colors except that 0.01 has been
       // added to the red channel value to make these colors unique
-      double* t039 = new double[3]; t039[0] = 0.01; t039[1] = 0.00; t039[2] = 0.00; ChestTypeColors.push_back( t039 ); //TRACHEA
+      double* t039 = new double[3]; t039[0] = 0.51; t039[1] = 0.50; t039[2] = 0.50; ChestTypeColors.push_back( t039 ); //TRACHEA
       double* t040 = new double[3]; t040[0] = 0.55; t040[1] = 0.27; t040[2] = 0.07; ChestTypeColors.push_back( t040 ); //MAINBRONCHUS
       double* t041 = new double[3]; t041[0] = 1.00; t041[1] = 0.65; t041[2] = 0.00; ChestTypeColors.push_back( t041 ); //UPPERLOBEBRONCHUS
       double* t042 = new double[3]; t042[0] = 1.00; t042[1] = 1.00; t042[2] = 0.01; ChestTypeColors.push_back( t042 ); //AIRWAYGENERATION3

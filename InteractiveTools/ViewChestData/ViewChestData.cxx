@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
   // Airway particles file names options:
   std::vector<std::string> airwayCylindersFileNames;
   std::vector<std::string> airwayCylindersPresetsFileNames;
+  std::vector<std::string> airwayDiscsPresetsFileNames;
   std::vector<std::string> airwaySpheresFileNames;
   std::vector<std::string> airwayParticlesFileNames;
   std::vector<std::string> airwayScaledCylindersFileNames;
@@ -165,9 +166,7 @@ int main(int argc, char *argv[])
   std::vector<double>      fissureParticlesOpacity;
   std::vector<double>      fissureParticlesSize;
 
-  //
   // Input descriptions for user convenience
-  //
   std::string programDesc = "This program...";
 
   std::string ctFileNameDesc               = "CT file name (single, 3D volume)";
@@ -209,6 +208,8 @@ models by following the specification of each file name with entries for the --m
 must also specify the color, opacity, and size of the glyphs with the --acr, --acg, --acb, --aco, and --acs \
 flags, respectively. These flags should be invoked immediately after invoking the --aCy flag.";
   std::string airwayCylindersPresetsFileNamesDesc = "Airway particles file name to be rendered as cylinders using \
+color, size, and opacity presets. Colors are chosen based on the 'ChestType' array values.";
+  std::string airwayDiscsPresetsFileNamesDesc = "Airway particles file name to be rendered as scaled discs using \
 color, size, and opacity presets. Colors are chosen based on the 'ChestType' array values.";
   std::string airwaySpheresFileNamesDesc = "Airway particles file name to be rendered as spheres. You \
 must also specify the color, opacity, and size of the glyphs with the --asr, --asg, --asb, --aso, and --ass \
@@ -287,9 +288,7 @@ flags, respectively. These flags should be invoked immediately after invoking th
   std::string fissureParticlesOpacityDesc    = "Opacity for fissure particles in interval [0,1]. See notes for --fPart flag";
   std::string fissureParticlesSizeDesc       = "Fissure particle size. See notes for --fPart flag";
 
-  //
   // Parse the input arguments
-  //
   try
     {
     TCLAP::CmdLine cl(programDesc, ' ', "$Revision: 399 $");
@@ -312,6 +311,7 @@ flags, respectively. These flags should be invoked immediately after invoking th
     TCLAP::MultiArg<std::string> airwayScaledCylindersFileNamesArg("", "asCy", airwayScaledCylindersFileNamesDesc, false, "string", cl);
     TCLAP::MultiArg<std::string> airwayScaledSpheresFileNamesArg("", "asSp", airwayScaledSpheresFileNamesDesc, false, "string", cl);
     TCLAP::MultiArg<std::string> airwayCylindersPresetsFileNamesArg("", "aCyPre", airwayCylindersPresetsFileNamesDesc, false, "string", cl);
+    TCLAP::MultiArg<std::string> airwayDiscsPresetsFileNamesArg("", "aDiPre", airwayDiscsPresetsFileNamesDesc, false, "string", cl);
     TCLAP::MultiArg<std::string> airwayScaledDiscsFileNamesArg("", "asd", airwayScaledDiscsFileNamesDesc, false, "string", cl);
     // Airway particles colors, opacity and size
     TCLAP::MultiArg<double> airwayParticlesRedArg("", "apr", airwayParticlesRedDesc, false, "double", cl);
@@ -416,6 +416,10 @@ flags, respectively. These flags should be invoked immediately after invoking th
     for (unsigned int i=0; i<airwayCylindersPresetsFileNamesArg.getValue().size(); i++)
       {
       airwayCylindersPresetsFileNames.push_back(airwayCylindersPresetsFileNamesArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<airwayDiscsPresetsFileNamesArg.getValue().size(); i++)
+      {
+      airwayDiscsPresetsFileNames.push_back(airwayDiscsPresetsFileNamesArg.getValue()[i]);
       }
     for (unsigned int i=0; i<airwaySpheresFileNamesArg.getValue().size(); i++)
       {
@@ -619,6 +623,10 @@ flags, respectively. These flags should be invoked immediately after invoking th
     {
     AddParticlesToViewerUsingPresets(viewer, airwayCylindersPresetsFileNames, "airwayCylinders", "cylinder");
     }
+  if (airwayDiscsPresetsFileNames.size()> 0)
+    {
+    AddParticlesToViewerUsingPresets(viewer, airwayDiscsPresetsFileNames, "airwayDiscs", "disc");
+    }
   if (airwayCylindersFileNames.size()> 0)
     {
     AddParticlesToViewer(viewer, airwayCylindersFileNames, airwayCylindersRed, airwayCylindersGreen, airwayCylindersBlue,
@@ -714,7 +722,7 @@ void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<st
 {
   cip::ChestConventions conventions;
 
-  double scale   = 2.0;
+  double scale   = 1.0;
   double opacity = 1.0;
 
   for (unsigned int i=0; i<fileNames.size(); i++)
@@ -727,7 +735,7 @@ void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<st
       std::list<unsigned char> cipTypeList;
       for (unsigned int j=0; j<reader->GetOutput()->GetNumberOfPoints(); j++)
 	{
-	  cipTypeList.push_back(static_cast<unsigned char>(reader->GetOutput()->GetFieldData()->GetArray("ChestType")->GetTuple(j)[0]));
+	  cipTypeList.push_back(static_cast<unsigned char>(reader->GetOutput()->GetPointData()->GetArray("ChestType")->GetTuple(j)[0]));
 	}
       cipTypeList.unique();
       cipTypeList.sort();
@@ -750,7 +758,15 @@ void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<st
 	  double* color = new double[3];
 	  conventions.GetChestTypeColor(*listIt, color);
 
-	  viewer->SetAirwayParticlesAsCylinders(tmpParticles, scale, name);
+	  if ( glyphType.compare( "cylinder" ) == 0 )
+	    {
+	      viewer->SetAirwayParticlesAsCylinders(tmpParticles, scale, name);
+	    }
+	  else
+	    {
+	      viewer->SetAirwayParticlesAsDiscs( tmpParticles, scale, name );
+	    }
+
 	  viewer->SetActorColor(name, color[0], color[1], color[2]);
 	  viewer->SetActorOpacity(name, opacity);
 
@@ -764,11 +780,11 @@ vtkSmartPointer<vtkPolyData> GetChestTypeParticlesPolyData(vtkSmartPointer<vtkPo
 {
   std::vector< vtkSmartPointer<vtkFloatArray> > arrayVec;
 
-  for (int i=0; i<inParticles->GetFieldData()->GetNumberOfArrays(); i++)
+  for (int i=0; i<inParticles->GetPointData()->GetNumberOfArrays(); i++)
     {
       vtkSmartPointer<vtkFloatArray> array = vtkSmartPointer<vtkFloatArray>::New();
-        array->SetNumberOfComponents(inParticles->GetFieldData()->GetArray(i)->GetNumberOfComponents());
-	array->SetName(inParticles->GetFieldData()->GetArray(i)->GetName());
+        array->SetNumberOfComponents(inParticles->GetPointData()->GetArray(i)->GetNumberOfComponents());
+	array->SetName(inParticles->GetPointData()->GetArray(i)->GetName());
       
       arrayVec.push_back(array);
     }
@@ -780,7 +796,7 @@ vtkSmartPointer<vtkPolyData> GetChestTypeParticlesPolyData(vtkSmartPointer<vtkPo
   for (unsigned int i=0; i<inParticles->GetNumberOfPoints(); i++)
     {
       unsigned char tmpType = 
-	static_cast<unsigned char>(inParticles->GetFieldData()->GetArray("ChestType")->GetTuple(i)[0]);
+	static_cast<unsigned char>(inParticles->GetPointData()->GetArray("ChestType")->GetTuple(i)[0]);
 
       if (tmpType == cipType)
 	{
@@ -788,7 +804,7 @@ vtkSmartPointer<vtkPolyData> GetChestTypeParticlesPolyData(vtkSmartPointer<vtkPo
 
 	  for (unsigned int k=0; k<arrayVec.size(); k++)
 	    {	  
-	      arrayVec[k]->InsertTuple(inc, inParticles->GetFieldData()->GetArray(k)->GetTuple(i));
+	      arrayVec[k]->InsertTuple(inc, inParticles->GetPointData()->GetArray(k)->GetTuple(i));
 	    }     
 
 	  inc++;
@@ -798,7 +814,7 @@ vtkSmartPointer<vtkPolyData> GetChestTypeParticlesPolyData(vtkSmartPointer<vtkPo
   outParticles->SetPoints(outPoints);
   for (unsigned int j=0; j<arrayVec.size(); j++)
     {
-      outParticles->GetFieldData()->AddArray(arrayVec[j]);
+      outParticles->GetPointData()->AddArray(arrayVec[j]);
     }
 
   return outParticles;

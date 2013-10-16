@@ -37,7 +37,7 @@
 #include "vtkImageData.h"
 #include "vtkCallbackCommand.h"
 #include "cipConventions.h"
-
+#include "vtkSmartPointer.h"
 
 void ViewerKeyCallback( vtkObject*, unsigned long, void*, void* );
 
@@ -87,7 +87,7 @@ public:
   vtkActor* SetAirwayParticlesAsDiscs( vtkPolyData*, double, std::string );
   vtkActor* SetParticlesAsDiscs( vtkPolyData*, double, std::string, unsigned char, bool );
 
-  void SetPolyData( vtkPolyData*, std::string );
+  vtkSmartPointer< vtkActor > SetPolyData( vtkPolyData*, std::string );
 
   void SetLeftObliqueThinPlateSplineSurface( cipThinPlateSplineSurface*, std::string );
   void SetRightObliqueThinPlateSplineSurface( cipThinPlateSplineSurface*, std::string );

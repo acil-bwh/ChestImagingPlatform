@@ -16,6 +16,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkMutableDirectedGraph.h"
 #include "vtkMutableUndirectedGraph.h" 
+#include "vtkPolyData.h"
 
 namespace cip {
   /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and 
@@ -84,6 +85,10 @@ namespace cip {
   cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
 										       unsigned char region, unsigned char type,
 										       unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ);
+  /** This function is used to verify that the specified particles have 'ChestRegion' and 'ChestType' arrays. 
+      If the particles don't have these arrays, they are assigned with default entries UNDEFINEDREGION and 
+      UNDEFINEDTYPE */
+  void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > );
 }  
 
 #endif

@@ -10,8 +10,8 @@ import os
 import pdb
 from cip_python.chest_particles import ChestParticles
 
-class AirwayParticles(ChestParticles):
-    """Class for airway-specific particles sampling
+class VesselParticles(ChestParticles):
+    """Class for vessel-specific particles sampling
 
     Paramters
     ---------
@@ -56,18 +56,20 @@ class AirwayParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6., live_thresh=50.,
-                 seed_thresh=40., scale_samples=5, down_sample_rate=1):
-        ChestParticles.__init__(self, feature_type="valley_line",
+                 mask_file_name=None, max_scale=6., live_thresh=-100.,
+                 seed_thresh=-80., scale_samples=6, down_sample_rate=1):
+        ChestParticles.__init__(self, feature_type="ridge_line",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
                             tmp_dir=tmp_dir, mask_file_name=mask_file_name,
                             max_scale=max_scale, scale_samples=scale_samples,
                             down_sample_rate=down_sample_rate)
-        self._max_intensity = -400
-        self._min_intensity = -1100
+        self._max_intensity = 400
+        self._min_intensity = -900
         self._live_thresh = live_thresh
-        self._seed_thresh = seed_thresh        
+        self._seed_thresh = seed_thresh
+        self._mode_thresh = -0.5
+        self._population_control_period = 6
 
     def execute(self):
         #Pre-processing
@@ -104,13 +106,15 @@ class AirwayParticles(ChestParticles):
         self._inter_particle_energy_type = "uni"
         self._init_mode = "PerVoxel"
         self._ppv = 1
-        self._nss = 2
+        self._nss = 3
 
         # Energy
         # Radial energy function (psi_1 in the paper)
         self._inter_particle_enery_type = "uni"
         self._beta  = 0.7 # Irrelevant for pass 1
         self._alpha = 1.0
+        self._irad = 1.7
+        self._srad = 1.2
         self._iterations = 10
 
         #Build parameters and run
@@ -126,7 +130,7 @@ class AirwayParticles(ChestParticles):
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
-        self._use_mask = 1 #TODO: was 0
+        self._use_mask = 0 #TODO: was 0
 
         # Energy
         # Radial energy function (psi_2 in the paper).
@@ -138,7 +142,7 @@ class AirwayParticles(ChestParticles):
         # function psi_2
         self._beta = 0.5
         self._irad = 1.15
-        self._srad = 4
+        self._srad = 2
         self._use_strength = True
 
         self._iterations = 20
@@ -153,17 +157,17 @@ class AirwayParticles(ChestParticles):
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
-        self._use_mask = 1 # TODO: was 0
+        self._use_mask = 0 # TODO: was 0
 
         # Energy
         self._inter_particle_energy_type = "add"
-        self._alpha = 0.5
-        self._beta = 0.5
-        self._gamma = 0.000002
+        self._alpha = 0.25
+        self._beta = 0.25
+        self._gamma = 0.002
         self._irad = 1.15
         self._srad = 4
         self._use_strength = True
-
+        self._use_mode_th = True
         self._iterations = 50
 
         # Build parameters and run
@@ -184,3 +188,5 @@ class AirwayParticles(ChestParticles):
         self.save_vtk(out_particles % 3)
         print "finished saving\#####n"
 
+        #Clean tmp Directory
+        self.clean_tmp_dir()

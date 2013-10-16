@@ -26,13 +26,14 @@
 #include "vtkInteractorStyleTrackballCamera.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkSphereSource.h"
-#include "vtkPolyData.h"
 #include "vtkGlyph3D.h"
 #include "vtkGraphLayout.h"
 #include "vtkGraphLayoutView.h"
 #include "vtkProperty.h"
 #include "vtkSimple2DLayoutStrategy.h"
 #include "vtkGlyphSource2D.h"
+#include "vtkPointData.h"
+#include "vtkFloatArray.h"
 
 //
 // Code modified from //http://www.itk.org/Wiki/ITK/Examples/ImageProcessing/Upsampling
@@ -653,6 +654,63 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
 
     ++dIt;
     ++lIt;
+    }
+}
+
+void cip::AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > particles )
+{
+  unsigned int numberParticles         = particles->GetNumberOfPoints();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
+
+  bool foundChestRegionArray = false;
+  bool foundChestTypeArray   = false;
+
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
+    {
+    std::string name( particles->GetPointData()->GetArray(i)->GetName() );
+
+    if ( name.compare( "ChestRegion" ) == 0 )
+      {
+      foundChestRegionArray = true;
+      }
+    if ( name.compare( "ChestType" ) == 0 )
+      {
+      foundChestTypeArray = true;
+      }
+    }  
+
+  if ( !foundChestRegionArray )
+    {
+    vtkSmartPointer< vtkFloatArray > chestRegionArray = vtkSmartPointer< vtkFloatArray >::New();
+      chestRegionArray->SetNumberOfComponents( 1 );
+      chestRegionArray->SetName( "ChestRegion" );
+
+    particles->GetPointData()->AddArray( chestRegionArray );
+    }
+  if ( !foundChestTypeArray )
+    {
+    vtkSmartPointer< vtkFloatArray > chestTypeArray = vtkSmartPointer< vtkFloatArray >::New();
+      chestTypeArray->SetNumberOfComponents( 1 );
+      chestTypeArray->SetName( "ChestType" );
+
+    particles->GetPointData()->AddArray( chestTypeArray );
+    }
+
+  float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
+  float cipType   = static_cast< float >( cip::UNDEFINEDTYPE );
+  if ( !foundChestRegionArray || !foundChestTypeArray )
+    {
+    for ( unsigned int i=0; i<numberParticles; i++ )
+      {
+      if ( !foundChestRegionArray )
+        {
+        particles->GetPointData()->GetArray( "ChestRegion" )->InsertTuple( i, &cipRegion );
+        }
+      if ( !foundChestTypeArray )
+        {
+        particles->GetPointData()->GetArray( "ChestType" )->InsertTuple( i, &cipType );
+        }
+      }
     }
 }
 

@@ -80,13 +80,14 @@ class ChestParticles:
 
         # If set to true, the temporary directory will be wiped clean
         # after execution
-        self.clean_tmp_dir = False
+        self._clean_tmp_dir = False
 
         # Temp filenames:
         # -------------------
         # Volume name that is going to be used for scale-space particles.
         # This volume is the result of any pre-processing
         self._tmp_in_file_name = self._in_file_name
+        self._tmp_mask_file_name = self._mask_file_name
         # Nrrd file to contain particle data.
         self._tmp_particles_file_name  = "nrrdParticlesFileName.nrrd"  
 
@@ -145,6 +146,7 @@ class ChestParticles:
         self._live_thresh = -150 # Threshold on feature strength
         self._seed_thresh = -100 # Threshold on feature strengh
         self._mode_thresh = -0.5 # Threshold on mode of the hessian
+        self._use_mode_thresh = False #Use mode threshold
 
     def set_vol_params(self):	   
         if self._single_scale == 0:
@@ -158,7 +160,7 @@ class ChestParticles:
                 ":scalar:V -usa true"
 
         if self._use_mask == 1:
-	   self._volParams += " " + self._mask_file_name + ":scalar:M"
+            self._volParams += " " + self._tmp_mask_file_name + ":scalar:M"
 
     def set_info_params(self):
         if self._single_scale == 1:
@@ -171,20 +173,25 @@ class ChestParticles:
                 " -info  h-c:V:val:0:-1 hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 ")
             self._info_params += (
-                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
-                ":-1 lthr:" + volTag + ":heval1:")
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + ":-1 "
+                "lthr:" + volTag + ":heval1:" + str(self._live_thresh) + ":-1 ")
             self._info_params += (
-                str(self._live_thresh) + ":-1 strn:" + 
-                volTag + ":heval1:0:-1")
+                 "strn:" + volTag + ":heval1:0:-1 ")
+            if self._use_mode_thresh == True:
+                self._info_params += (
+                "lthr2:" + volTag + ":hmode:" + str(self._mode_thresh) + ":1 ")
         elif self._feature_type == "valley_line":
             self._info_params = (
                 " -info  h-c:V:val:0:1  hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 ")
             self._info_params += (
-                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + 
-                ":1 lthr:" + volTag + ":heval1:")
-            self._info_params += (str(self._live_thresh) + ":1 strn:" + 
-                volTag + ":heval1:0:1")
+                "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + ":1 "
+                "lthr:" + volTag + ":heval1:"+str(self._live_thresh) + ":1 ")
+            self._info_params += (
+                "strn:" + volTag + ":heval1:0:1 ")
+            if self._use_mode_thresh == True:
+                self._info_params += (
+                    "lthr2:" + volTag + ":hmode:" + str(self._mode_thresh) + ":-1 ")
         elif self._feature_type == "ridge_surface":
             self._info_params = (" -info h-c:V:val:0:-1 hgvec:V:gvec \
             hhess:V:hess tan1:V:hevec2 ")
@@ -192,7 +199,8 @@ class ChestParticles:
                 str(self._seed_thresh) + ":-1 lthr:" + volTag + ":heval2:")
             self._info_params += (str(self._live_thresh) + ":-1 lthr2:" + 
                 volTag + ":hmode:" + str(self._mode_thresh) + ":-1 strn:" + 
-                volTag + ":heval2:0:-1")
+                volTag + ":heval2:0:-1 ")
+            #Here we don't give an option for mode thresh. Always active
         elif self._feature_type == "valley_surface":
             self._info_params = (" -info h-c:V:val:0:1 hgvec:V:gvec \
             hhess:V:hess tan1:V:hevec0 ")
@@ -200,11 +208,12 @@ class ChestParticles:
                 str(self._seed_thresh) + ":1 lthr:" + volTag + ":heval0:")
             self._info_params += (str(self._live_thresh) + ":1 lthr2:" + 
                 volTag + ":hmode:" + str(self._mode_thresh) + 
-                ":1 strn:" + volTag + ":heval0:0:1")
+                ":1 strn:" + volTag + ":heval0:0:1 ")
+            #Here we don't give an option for mode thresh. Always active
 
         if self._use_mask == 1:
-	    maskVal = "0.5"
-	    self._info_params += " spthr:M:val:" + maskVal + ":1"
+            maskVal = "0.5"
+            self._info_params += " spthr:M:val:" + maskVal + ":1"
 
     def set_kernel_params(self):
         if self._recon_kernel_type == "Bspline3":
@@ -268,7 +277,11 @@ class ChestParticles:
                 str(self._nss) + " -jit " + str(self._jit)
 
     def set_misc_params(self):
-        self._miscParams="-nave true -v "+str(self._verbose)+" -pbm 0"
+        if self._verbose == 0:
+            verbose = 0
+        else:
+            verbose = self._verbose -1
+        self._miscParams="-nave true -v "+str(verbose)+" -pbm 0"
 
     def reset_params(self):
         self._info_params = ""
@@ -292,13 +305,14 @@ class ChestParticles:
     def execute(self):
         if self._down_sample_rate > 1:
             downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
-            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5')
+            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5',self.down_sample_rate)
             if self._use_mask == 1:
                 downsampledMask = os.path.join(self._tmp_dir, "mask-down.nrrd")
-                self.down_sample(self._mask_file_name,downsampledMask,'cheap')
-                self._mask_file_name = downsampledMask
+                self.down_sample(self._mask_file_name,downsampledMask,'cheap',self.down_sample_rate)
+                self._tmp_mask_file_name = downsampledMask
         else:
             downsampledVolume = self._in_file_name
+            self._tmp_mask_file_name = self._mask_file_name
 
         deconvolvedVolume = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampledVolume,deconvolvedVolume)
@@ -308,8 +322,15 @@ class ChestParticles:
         outputParticles=os.path.join(self._tmp_dir, \
                                      self._tmp_particles_file_name)
         self.execute_pass(outputParticles)
-        self.probe_quantities(deconvolvedVolume,outputParticles)
+        self.probe_quantities(self._tmp_in_file_name,outputParticles)
+        #Adjust scale if down-sampling was performed
+        if self._down_sample_rate > 1:
+                self.adjust_scale(outputParticles)
+        #Save NRRD data to VTK
         self.save_vtk(outputParticles)
+
+        #Clean tmp Directory
+        self.clean_tmp_dir()
 
     def execute_pass(self, output):
         #Check inputs files are in place
@@ -317,7 +338,7 @@ class ChestParticles:
             return False
 
         if self._use_mask==1:
-            if os.path.exists(self._mask_file_name) == False:
+            if os.path.exists(self._tmp_mask_file_name) == False:
                 return False
 
         if self._single_scale == 1:
@@ -333,8 +354,8 @@ class ChestParticles:
             self._init_params + " " + self._reconKernelParams + " " + \
             self._optimizerParams + " -o " + output + " -maxi " + \
             str(self._iterations)
-
-        print tmp_command
+        if self._verbose > 0:
+                print tmp_command
         subprocess.call( tmp_command, shell=True )
 
         # Trick to add scale value
@@ -368,13 +389,12 @@ class ChestParticles:
             #    + "%03u" % self._scale_samples +".nrrd"
             #)
             tmp_command = (
-                "cd %(temporary_directory)s; gprobe -i %(input)s "
+                "gprobe -i %(input)s "
                 "-k scalar %(kernel_params)s -pi %(input_particles)s "
                 "-q %(qty)s -v 0 -o %(output)s "
                 "-ssn %(num_scales)d -sso -ssr 0 %(max_scale)03u "
                 "-ssf V-%%03u-%(scale_samples)03u.nrrd"
             ) % {
-                'temporary_directory': self._tmp_dir,
                 'input': in_volume,
                 'kernel_params': self._reconKernelParams,
                 'input_particles': inputParticles,
@@ -387,7 +407,7 @@ class ChestParticles:
 
             if normalizedDerivatives == 1:
                 tmp_command += " -ssnd"
-        if self._verbose == 1:
+        if self._verbose > 0:
             print tmp_command
 
         subprocess.call( tmp_command, shell=True )
@@ -417,37 +437,38 @@ class ChestParticles:
             " | unu resample -s x1 x1 x1 " + self._inverse_kernel_params + \
             " -t float -o " + out_vol
 
-        if self._verbose == 1:
+        if self._verbose > 0:
             print tmp_command
 
         subprocess.call( tmp_command, shell=True)
 
-    def down_sample(self, inputVol, outputVol, kernel):    		
+    def down_sample(self, inputVol, outputVol, kernel,down_rate):
         tmp_command = \
             "unu resample -s x%(rate)f x%(rate)f x%(rate)f -k %(kernel)s -i " \
             + inputVol + " -o " + outputVol
 
         #MAYBE WE HAVE TO DOWNSAMPLE THE MASK
-        val = 1.0/self._down_sample_rate
+        val = 1.0/down_rate
         tmp_command = tmp_command %  {'rate':val,'kernel':kernel}
 
-        if self._verbose == 1:
+        if self._verbose > 0:
             print tmp_command
 
         subprocess.call( tmp_command, shell=True)
 
-    def save_vtk(self, in_particles):
-         #Trick to multiply scale if we have down-sampled before saving to VTK
+    def adjust_scale(self, in_particles):
+        #Trick to multiply scale if we have down-sampled before saving to VTK
         if self._down_sample_rate > 1:
             tmp_command = "unu crop -i %(output)s -min 3 0 -max 3 M | \
             unu 2op x - %(rate)f | unu inset -i %(output)s -s - \
             -min 3 0 -o %(output)s"
-
+            
             tmp_command = tmp_command % {'output':in_particles, \
-                                       'rate':self._down_sample_rate}
+                'rate':self._down_sample_rate}
             print tmp_command
             subprocess.call( tmp_command, shell=True )
-
+    
+    def save_vtk(self, in_particles):
         reader_writer = ReadNRRDsWriteVTK(self._out_particles_file_name)
         reader_writer.add_file_name_array_name_pair(in_particles, "NA")
         quantities = ["val", "heval0", "heval1", "heval2", "hmode", "hevec0",\
@@ -464,8 +485,32 @@ class ChestParticles:
         reader_writer.execute()
 
     def clean_tmp_dir(self):
-        if self._cleanTemporaryDirectory == True:
+        if self._clean_tmp_dir == True:
             print "Cleaning tempoarary directory..."
-            tmp_command = "rm " + os.path.join(self._tmp_dir, "*")
+            tmp_command = "/bin/rm " + os.path.join(self._tmp_dir, "*")
             subprocess.call( tmp_command, shell=True )
-            
+
+    def merge_particles(self,input_list,output_merged):
+        particles = str()
+        for input_particles in input_list:
+            particles = particles + " " + str(input_particles)
+        tmp_command = "unu join -a 1 -i " + particles + " -o "+ output_merged
+        subprocess.call( tmp_command, shell=True )
+
+    def differential_mask (self, current_down_rate,previous_down_rate,output_mask):
+        if self._use_mask == 1:
+            downsampled_mask_prev = os.path.join(self._tmp_dir, \
+                                         "mask-down-previous.nrrd")
+            #Down-sampling previous level
+            self.down_sample(self._mask_file_name, \
+                     downsampled_mask_prev, "cheap",previous_down_rate)
+            #Up-sampling previous level
+            self.down_sample(downsampled_mask_prev, \
+                     downsampled_mask_prev, "cheap",1.0/previous_down_rate)
+            #Down-sampling current level    
+            self.down_sample(self._mask_file_name, \
+                     output_mask, "cheap",current_down_rate)
+            tmp_command="unu 2op - %(current)s %(previous)s | unu 1op abs -i - | unu 2op gt - 0 -o %(out)s"
+            tmp_command= tmp_command % {'current':output_mask,'previous':downsampled_mask_prev,'out':output_mask}
+
+            subprocess.call( tmp_command, shell=True)
