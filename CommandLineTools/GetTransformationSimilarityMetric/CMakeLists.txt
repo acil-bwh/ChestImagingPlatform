@@ -14,7 +14,7 @@ include(${SlicerExecutionModel_USE_FILE})
  FIND_PACKAGE( CIP REQUIRED )
  #FIND_PACKAGE (UUID REQUIRED)
 
- INCLUDE( ${CIP_USE_FILE} )
+# INCLUDE( ${CIP_USE_FILE} )
 
  set (UUID_LIBS -luuid)
  
