@@ -236,507 +236,507 @@ void WriteMeasuresXML(const char *file, SIMILARITY_XML_DATA &theXMLData)
 
 int main( int argc, char *argv[] )
 {
-  // std::vector< unsigned char >  regionVec;
-  // std::vector< unsigned char >  typeVec;
-  // std::vector< unsigned char >  regionPairVec;
-  // std::vector< unsigned char >  typePairVec;
-  // const char* similarity_type;
+   std::vector< unsigned char >  regionVec;
+   std::vector< unsigned char >  typeVec;
+   std::vector< unsigned char >  regionPairVec;
+   std::vector< unsigned char >  typePairVec;
+   const char* similarity_type;
   
   // std::cout<< "about to parse args"<<std::endl;
 
   PARSE_ARGS;
 
-//   std::cout<< "agrs parsed, new 2"<<similarityMetric.c_str()<<std::endl;
+  std::cout<< "agrs parsed, new 2"<<similarityMetric.c_str()<<std::endl;
   
-//   //Read in region and type pair
-//   std::vector< REGIONTYPEPAIR > regionTypePairVec;
-//   /*	
+  //Read in region and type pair
+  std::vector< REGIONTYPEPAIR > regionTypePairVec;
+  /*	
 
-//   for ( unsigned int i=0; i<regionVecArg.size(); i++ )
-//     {
-//     regionVec.push_back(regionVecArg[i]);
-//     }
-//   for ( unsigned int i=0; i<typeVecArg.size(); i++ )
-//     {
-//     typeVec.push_back( typeVecArg[i] );
-//     }
-//   if (regionPairVec.size() == typePairVecArg.size())
-//     {
+  for ( unsigned int i=0; i<regionVecArg.size(); i++ )
+    {
+    regionVec.push_back(regionVecArg[i]);
+    }
+  for ( unsigned int i=0; i<typeVecArg.size(); i++ )
+    {
+    typeVec.push_back( typeVecArg[i] );
+    }
+  if (regionPairVec.size() == typePairVecArg.size())
+    {
 
-//     for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
-//       {
-//       REGIONTYPEPAIR regionTypePairTemp;
+    for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
+      {
+      REGIONTYPEPAIR regionTypePairTemp;
 
-//       regionTypePairTemp.region = regionPairVecArg[i];
-//       argc--; argv++;
-//       regionTypePairTemp.type   = typePairVecArg[i];
+      regionTypePairTemp.region = regionPairVecArg[i];
+      argc--; argv++;
+      regionTypePairTemp.type   = typePairVecArg[i];
 
-//       regionTypePairVec.push_back( regionTypePairTemp );
-//       } 
-//     }
-//   */
+      regionTypePairVec.push_back( regionTypePairTemp );
+      } 
+    }
+  */
 
-//   //Read in fixed image label map from file and subsample
-//   cip::LabelMapType::Pointer fixedLabelMap = cip::LabelMapType::New();
-//   cip::LabelMapType::Pointer subSampledFixedImage = cip::LabelMapType::New();
-//   if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-//     {
-//     std::cout << "Reading label map from file..." << std::endl;
-//     fixedLabelMap = ReadLabelMapFromFile( fixedLabelmapFileName );
+  //Read in fixed image label map from file and subsample
+  cip::LabelMapType::Pointer fixedLabelMap = cip::LabelMapType::New();
+  cip::LabelMapType::Pointer subSampledFixedImage = cip::LabelMapType::New();
+  if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+    {
+    std::cout << "Reading label map from file..." << std::endl;
+    fixedLabelMap = ReadLabelMapFromFile( fixedLabelmapFileName );
 
-//     if (fixedLabelMap.GetPointer() == NULL)
-//       {
-//       return cip::LABELMAPREADFAILURE;
-//       }
-//     }
-//   else
-//     {
-//     std::cerr <<"Error: No lung label map specified"<< std::endl;
-//     return cip::EXITFAILURE;
-//     }
+    if (fixedLabelMap.GetPointer() == NULL)
+      {
+      return cip::LABELMAPREADFAILURE;
+      }
+    }
+  else
+    {
+    std::cerr <<"Error: No lung label map specified"<< std::endl;
+    return cip::EXITFAILURE;
+    }
   
 
-//   //Read in moving image label map from file and subsample
-//     typedef itk::ImageMaskSpatialObject< 3 >   MaskType;
-//   MaskType::Pointer  spatialObjectMask = MaskType::New();
+  //Read in moving image label map from file and subsample
+    typedef itk::ImageMaskSpatialObject< 3 >   MaskType;
+  MaskType::Pointer  spatialObjectMask = MaskType::New();
 
-//   cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
+  cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
 
-//   //typedef itk::Image<unsigned short, 3> blahType;
-//   //blahType::Pointer blahImage = blahType::New();
-//     //spatialObjectMask->SetImage( blahImage );
+  //typedef itk::Image<unsigned short, 3> blahType;
+  //blahType::Pointer blahImage = blahType::New();
+    //spatialObjectMask->SetImage( blahImage );
 
-//   cip::LabelMapType::Pointer subSampledMovingImage = cip::LabelMapType::New();
-//   if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
-//     {
-//     std::cout << "Reading label map from file..." << std::endl;
-//     movingLabelMap = ReadLabelMapFromFile( movingLabelmapFileName );
+  cip::LabelMapType::Pointer subSampledMovingImage = cip::LabelMapType::New();
+  if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
+    {
+    std::cout << "Reading label map from file..." << std::endl;
+    movingLabelMap = ReadLabelMapFromFile( movingLabelmapFileName );
 
-//     if (movingLabelMap.GetPointer() == NULL)
-//       {
-//       return cip::LABELMAPREADFAILURE;
-//       }
-//     }
-//   else
-//     {
-//     std::cerr <<"Error: No lung label map specified"<< std::endl;
-//     return cip::EXITFAILURE;
-//     }
-// /*
-//   // Extract fixed Image region that we want
-//   std::cout << "Extracting region and type..." << std::endl;
-//   LabelMapExtractorType::Pointer fixedExtractor = LabelMapExtractorType::New();
-//   fixedExtractor->SetInput( fixedLabelMap );
+    if (movingLabelMap.GetPointer() == NULL)
+      {
+      return cip::LABELMAPREADFAILURE;
+      }
+    }
+  else
+    {
+    std::cerr <<"Error: No lung label map specified"<< std::endl;
+    return cip::EXITFAILURE;
+    }
+/*
+  // Extract fixed Image region that we want
+  std::cout << "Extracting region and type..." << std::endl;
+  LabelMapExtractorType::Pointer fixedExtractor = LabelMapExtractorType::New();
+  fixedExtractor->SetInput( fixedLabelMap );
 
-//   LabelMapExtractorType::Pointer movingExtractor = LabelMapExtractorType::New();
-//   movingExtractor->SetInput( movingLabelMap );
+  LabelMapExtractorType::Pointer movingExtractor = LabelMapExtractorType::New();
+  movingExtractor->SetInput( movingLabelMap );
 
-//   for ( unsigned int i=0; i<regionVec.size(); i++ )
-//     { 
-//     fixedExtractor->SetChestRegion(regionVec[i]);
-//     movingExtractor->SetChestRegion(regionVec[i]);
-//     }
-//   if (typeVec.size()>0)
-//     {
-//     for ( unsigned int i=0; i<typeVec.size(); i++ )
-//       {
-//       fixedExtractor->SetChestType( typeVec[i] );
-//       movingExtractor->SetChestType( typeVec[i] );
-//       }
-//     }
-//   if (regionTypePairVec.size()>0)
-//     {
-//     for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
-//       {
-//       fixedExtractor->SetRegionAndType( regionTypePairVec[i].region, regionTypePairVec[i].type );
-//       movingExtractor->SetRegionAndType( regionTypePairVec[i].region, regionTypePairVec[i].type );
-//       }
-//       }
+  for ( unsigned int i=0; i<regionVec.size(); i++ )
+    { 
+    fixedExtractor->SetChestRegion(regionVec[i]);
+    movingExtractor->SetChestRegion(regionVec[i]);
+    }
+  if (typeVec.size()>0)
+    {
+    for ( unsigned int i=0; i<typeVec.size(); i++ )
+      {
+      fixedExtractor->SetChestType( typeVec[i] );
+      movingExtractor->SetChestType( typeVec[i] );
+      }
+    }
+  if (regionTypePairVec.size()>0)
+    {
+    for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
+      {
+      fixedExtractor->SetRegionAndType( regionTypePairVec[i].region, regionTypePairVec[i].type );
+      movingExtractor->SetRegionAndType( regionTypePairVec[i].region, regionTypePairVec[i].type );
+      }
+      }
 
-//   fixedExtractor->Update();
-//   movingExtractor->Update();
-//   */
+  fixedExtractor->Update();
+  movingExtractor->Update();
+  */
     
-//     //Read the CT images
-//   ShortImageType::Pointer ctFixedImage = ShortImageType::New();
-//   ctFixedImage = ReadCTFromFile( fixedCTFileName );
-//   if (ctFixedImage.GetPointer() == NULL)
-//       {
-//         return cip::NRRDREADFAILURE;
-//       }
+    //Read the CT images
+  ShortImageType::Pointer ctFixedImage = ShortImageType::New();
+  ctFixedImage = ReadCTFromFile( fixedCTFileName );
+  if (ctFixedImage.GetPointer() == NULL)
+      {
+        return cip::NRRDREADFAILURE;
+      }
 
 
 
-//   ShortImageType::Pointer ctMovingImage = ShortImageType::New();
-//   ShortImageType::Pointer ctMovingImageDown = ShortImageType::New();
-//   ctMovingImage = ReadCTFromFile( movingCTFileName);
-//   if (ctMovingImage.GetPointer() == NULL)
-//       {
-//         return cip::NRRDREADFAILURE;
-//       }
+  ShortImageType::Pointer ctMovingImage = ShortImageType::New();
+  ShortImageType::Pointer ctMovingImageDown = ShortImageType::New();
+  ctMovingImage = ReadCTFromFile( movingCTFileName);
+  if (ctMovingImage.GetPointer() == NULL)
+      {
+        return cip::NRRDREADFAILURE;
+      }
 
-//   /*
-//   if(downsampleFactor > 1.0)
-//     {
-//     ctMovingImage=cip::DownsampleCT(downsampleFactor,ctMovingImage);
-//     ctFixedImage=cip::DownsampleCT(downsampleFactor,ctFixedImage);
-//     fixedLabelMap=cip::DownsampleLabelMap(downsampleFactor,fixedLabelMap);
-//     movingLabelMap=cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
-//     }
-//   */
+  /*
+  if(downsampleFactor > 1.0)
+    {
+    ctMovingImage=cip::DownsampleCT(downsampleFactor,ctMovingImage);
+    ctFixedImage=cip::DownsampleCT(downsampleFactor,ctFixedImage);
+    fixedLabelMap=cip::DownsampleLabelMap(downsampleFactor,fixedLabelMap);
+    movingLabelMap=cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
+    }
+  */
 
-//   /*
-//   std::cout << "Isolating region and type of interest..." << std::endl;
-//   LabelMapIteratorType it( fixedExtractor->GetOutput(), fixedExtractor->GetOutput()->GetBufferedRegion() );
-//   CTIteratorType itct( ctFixedImage, ctFixedImage->GetBufferedRegion() );
+  /*
+  std::cout << "Isolating region and type of interest..." << std::endl;
+  LabelMapIteratorType it( fixedExtractor->GetOutput(), fixedExtractor->GetOutput()->GetBufferedRegion() );
+  CTIteratorType itct( ctFixedImage, ctFixedImage->GetBufferedRegion() );
 
-//   it.GoToBegin();
-//   while ( !it.IsAtEnd() )
-//     {
-//     if ( it.Get() != 0 )
-//       {
-// 	itct.Set( itct.Get() );
-//       }
-//     else
-//       {
-// 	itct.Set(0 );
-//       }
-//      ++it;
-//      ++itct;
-//         }
+  it.GoToBegin();
+  while ( !it.IsAtEnd() )
+    {
+    if ( it.Get() != 0 )
+      {
+	itct.Set( itct.Get() );
+      }
+    else
+      {
+	itct.Set(0 );
+      }
+     ++it;
+     ++itct;
+        }
 
-//   std::cout<<"same for moving"<<std::endl;
-//   LabelMapIteratorType itmoving( movingExtractor->GetOutput(), movingExtractor->GetOutput()->GetBufferedRegion() );
-//   CTIteratorType itmovingct( ctMovingImage, ctMovingImage->GetBufferedRegion() );
-//   itmoving.GoToBegin();
-//   while ( !itmoving.IsAtEnd() )
-//     {
+  std::cout<<"same for moving"<<std::endl;
+  LabelMapIteratorType itmoving( movingExtractor->GetOutput(), movingExtractor->GetOutput()->GetBufferedRegion() );
+  CTIteratorType itmovingct( ctMovingImage, ctMovingImage->GetBufferedRegion() );
+  itmoving.GoToBegin();
+  while ( !itmoving.IsAtEnd() )
+    {
 
-//     if ( itmoving.Get() != 0 )
-//       {
-// 	itmovingct.Set( itmovingct.Get() );
-//       }
-//     else
-//       {
-// 	itmovingct.Set(0 );
-//       }
-//      ++itmoving;
-//      ++itmovingct;
-//     }
-//   */
-//   //Set mask  object
+    if ( itmoving.Get() != 0 )
+      {
+	itmovingct.Set( itmovingct.Get() );
+      }
+    else
+      {
+	itmovingct.Set(0 );
+      }
+     ++itmoving;
+     ++itmovingct;
+    }
+  */
+  //Set mask  object
 
 
 
-//   typedef itk::Image< unsigned char, 3 >   ImageMaskType;
-//   typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
-//   MaskReaderType::Pointer  maskReader = MaskReaderType::New();
+  typedef itk::Image< unsigned char, 3 >   ImageMaskType;
+  typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
+  MaskReaderType::Pointer  maskReader = MaskReaderType::New();
   
-//   /*if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-//     {
-//       maskReader->SetFileName(fixedLabelmapFileName.c_str() );
+  /*if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+    {
+      maskReader->SetFileName(fixedLabelmapFileName.c_str() );
 
-//       try
-// 	{
-// 	  maskReader->Update();
-// 	}
-//       catch( itk::ExceptionObject & err )
-// 	{
-// 	  std::cerr << "ExceptionObject caught !" << std::endl;
-// 	  std::cerr << err << std::endl;
-// 	  return EXIT_FAILURE;
-// 	}
-//       spatialObjectMask->SetImage(maskReader->GetOutput());
-//       //Subsample(spatialObjectMask,downsampleFactor);
+      try
+	{
+	  maskReader->Update();
+	}
+      catch( itk::ExceptionObject & err )
+	{
+	  std::cerr << "ExceptionObject caught !" << std::endl;
+	  std::cerr << err << std::endl;
+	  return EXIT_FAILURE;
+	}
+      spatialObjectMask->SetImage(maskReader->GetOutput());
+      //Subsample(spatialObjectMask,downsampleFactor);
 
-//       }*/
+      }*/
   
-//   //  spatialObjectMask->SetImage(  movingLabelMap);
+  //  spatialObjectMask->SetImage(  movingLabelMap);
 
-//   // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
+  // spatialObjectMask->SetImage( const_cast <UnsignedShortImageType *> (movingExtractor->GetOutput()));
 
-//   //parse transform arg  and join transforms together
+  //parse transform arg  and join transforms together
   
-//    // TransformType::Pointer transform = TransformType::New();
-//    //last transform applied first, so make last transform 
-//   CompositeTransformType::Pointer transform = CompositeTransformType::New();
-//    TransformType::Pointer transformTemp2 = TransformType::New();
-//     for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
-//       { std::cout<<"adding tx: "<<i<<std::endl;
-//      TransformType::Pointer transformTemp = TransformType::New();
-//      ReadTransformFromFile(transformTemp, (inputTransformFileName[i]).c_str() );
-//        // Invert the transformation if specified by command like argument. Only inverting the first transformation
-//      bool isInvertTransformation = true;
-//      if((i==0)&& (isInvertTransform == true))
-// 	 {
-// 	   std::cout<<"inverting transform"<<std::endl;
-// 	   transformTemp->GetInverse( transformTemp );
-// 	 }
-//      // ReadTransformFromFile(transformTemp2, inputTransformFileName[i].c_str() );
-//      transform->AddTransform(transformTemp);
-//        }
+   // TransformType::Pointer transform = TransformType::New();
+   //last transform applied first, so make last transform 
+  CompositeTransformType::Pointer transform = CompositeTransformType::New();
+   TransformType::Pointer transformTemp2 = TransformType::New();
+    for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
+      { std::cout<<"adding tx: "<<i<<std::endl;
+     TransformType::Pointer transformTemp = TransformType::New();
+     ReadTransformFromFile(transformTemp, (inputTransformFileName[i]).c_str() );
+       // Invert the transformation if specified by command like argument. Only inverting the first transformation
+     bool isInvertTransformation = true;
+     if((i==0)&& (isInvertTransform == true))
+	 {
+	   std::cout<<"inverting transform"<<std::endl;
+	   transformTemp->GetInverse( transformTemp );
+	 }
+     // ReadTransformFromFile(transformTemp2, inputTransformFileName[i].c_str() );
+     transform->AddTransform(transformTemp);
+       }
 
-//        transform->SetAllTransformsToOptimizeOn();		
-
-
-//   //test identity
-
-//   std::cout<<"initializing transform"<<std::endl;
-//   /*
-
-//   InitializerType::Pointer initializer = InitializerType::New();
-//   // initializer->SetMovingInitialTransform( transform ); 
-//   initializer->SetFixedImage(  ctFixedImage );
-//   initializer->SetMovingImage( ctMovingImage );
-//   initializer->MomentsOn();
-//   initializer->InitializeTransform();
-
-//   */
+       transform->SetAllTransformsToOptimizeOn();		
 
 
-//   OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
-//   optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;   optimizerScales[2] =  1.0;
-//   optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;   optimizerScales[5] =  1.0;
-//   optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;   optimizerScales[8] =  1.0;
-//   optimizerScales[9]  =  0.001;
-//   optimizerScales[10] =  0.001;
-//   optimizerScales[11] =  0.001;
+  //test identity
+
+  std::cout<<"initializing transform"<<std::endl;
+  /*
+
+  InitializerType::Pointer initializer = InitializerType::New();
+  // initializer->SetMovingInitialTransform( transform ); 
+  initializer->SetFixedImage(  ctFixedImage );
+  initializer->SetMovingImage( ctMovingImage );
+  initializer->MomentsOn();
+  initializer->InitializeTransform();
+
+  */
 
 
-//   InterpolatorType::Pointer interpolator = InterpolatorType::New();
-//   std::cout<<"initializing optimizer"<<std::endl;
-//   OptimizerType::Pointer optimizer = OptimizerType::New();
-//   //optimizer->SetScales( optimizerScales );
-//   optimizer->SetMaximumStepLength( 0 );
-//   optimizer->SetMinimumStepLength( 0 );
-//   optimizer->SetNumberOfIterations( 1 );
+  OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
+  optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;   optimizerScales[2] =  1.0;
+  optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;   optimizerScales[5] =  1.0;
+  optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;   optimizerScales[8] =  1.0;
+  optimizerScales[9]  =  0.001;
+  optimizerScales[10] =  0.001;
+  optimizerScales[11] =  0.001;
 
 
-//   RegistrationType::Pointer registration = RegistrationType::New();
-//   registration->SetOptimizer( optimizer );
-//   registration->SetInterpolator( interpolator );
-//   registration->SetTransform( transform );
-//   registration->SetFixedImage( ctFixedImage);
-
-//     registration->SetMovingImage(ctMovingImage ); 
-//   //registration->SetFixedImageRegion(
-//   //	 fixedExtractor->GetOutput()->GetBufferedRegion() );
-//   registration->SetInitialTransformParameters( transform->GetParameters());
+  InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  std::cout<<"initializing optimizer"<<std::endl;
+  OptimizerType::Pointer optimizer = OptimizerType::New();
+  //optimizer->SetScales( optimizerScales );
+  optimizer->SetMaximumStepLength( 0 );
+  optimizer->SetMinimumStepLength( 0 );
+  optimizer->SetNumberOfIterations( 1 );
 
 
-//   std::cout<<"initializing metric"<<std::endl;
+  RegistrationType::Pointer registration = RegistrationType::New();
+  registration->SetOptimizer( optimizer );
+  registration->SetInterpolator( interpolator );
+  registration->SetTransform( transform );
+  registration->SetFixedImage( ctFixedImage);
+
+    registration->SetMovingImage(ctMovingImage ); 
+  //registration->SetFixedImageRegion(
+  //	 fixedExtractor->GetOutput()->GetBufferedRegion() );
+  registration->SetInitialTransformParameters( transform->GetParameters());
+
+
+  std::cout<<"initializing metric"<<std::endl;
  
-//     if (similarityMetric =="NMI")
-//     {
-//       NMIMetricType::Pointer metric = NMIMetricType::New();
-//       NMIMetricType::HistogramType::SizeType histogramSize;
-//       histogramSize.SetSize(2);
-//       histogramSize[0] = 20;
-//       histogramSize[1] = 20;
-//       metric->SetHistogramSize( histogramSize );
+    if (similarityMetric =="NMI")
+    {
+      NMIMetricType::Pointer metric = NMIMetricType::New();
+      NMIMetricType::HistogramType::SizeType histogramSize;
+      histogramSize.SetSize(2);
+      histogramSize[0] = 20;
+      histogramSize[1] = 20;
+      metric->SetHistogramSize( histogramSize );
 
-//        if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-// 	        metric->SetFixedImageMask( spatialObjectMask );
-//       registration->SetMetric( metric );
+       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	        metric->SetFixedImageMask( spatialObjectMask );
+      registration->SetMetric( metric );
      
-//     }
-//     else if (similarityMetric =="msqr")
-//       {
-// 	msqrMetricType::Pointer metric = msqrMetricType::New();
-//        if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-// 	        metric->SetFixedImageMask( spatialObjectMask );
-//         registration->SetMetric( metric );
-//        std::cout<<"msqr metric selected"<<std::endl;
-//       }
-//     else if (similarityMetric =="nc")
-//       {
-// 	ncMetricType::Pointer metric = ncMetricType::New();
-//        if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-// 	        metric->SetFixedImageMask( spatialObjectMask );
-//         registration->SetMetric( metric );
-//        std::cout<<"nc metric selected"<<std::endl;
-//       }
-//     else if (similarityMetric =="gd")
-//       {
-// 	gdMetricType::Pointer metric = gdMetricType::New();
-//        if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-// 	        metric->SetFixedImageMask( spatialObjectMask );
-//         registration->SetMetric( metric );
-//        std::cout<<"gd metric selected"<<std::endl;
-//       }
-//    else //MI is default
-//      {
+    }
+    else if (similarityMetric =="msqr")
+      {
+	msqrMetricType::Pointer metric = msqrMetricType::New();
+       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	        metric->SetFixedImageMask( spatialObjectMask );
+        registration->SetMetric( metric );
+       std::cout<<"msqr metric selected"<<std::endl;
+      }
+    else if (similarityMetric =="nc")
+      {
+	ncMetricType::Pointer metric = ncMetricType::New();
+       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	        metric->SetFixedImageMask( spatialObjectMask );
+        registration->SetMetric( metric );
+       std::cout<<"nc metric selected"<<std::endl;
+      }
+    else if (similarityMetric =="gd")
+      {
+	gdMetricType::Pointer metric = gdMetricType::New();
+       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	        metric->SetFixedImageMask( spatialObjectMask );
+        registration->SetMetric( metric );
+       std::cout<<"gd metric selected"<<std::endl;
+      }
+   else //MI is default
+     {
      
-//       MIMetricType::Pointer metric = MIMetricType::New();
-//       //metric->SetFixedImageStandardDeviation( 2.5 );
-//       //metric->SetMovingImageStandardDeviation( 2.5 ); //check documentation
+      MIMetricType::Pointer metric = MIMetricType::New();
+      //metric->SetFixedImageStandardDeviation( 2.5 );
+      //metric->SetMovingImageStandardDeviation( 2.5 ); //check documentation
 
-//       metric->SetFixedImageStandardDeviation( 13.5 );
-//       metric->SetMovingImageStandardDeviation( 13.5 );
-//       // if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-//       //	        metric->SetFixedImageMask( spatialObjectMask );
-//        registration->SetMetric( metric );
+      metric->SetFixedImageStandardDeviation( 13.5 );
+      metric->SetMovingImageStandardDeviation( 13.5 );
+      // if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+      //	        metric->SetFixedImageMask( spatialObjectMask );
+       registration->SetMetric( metric );
        	
-//      }
+     }
  
-//  std::cout << "Starting registration for mutual information calculation..." << std::endl;
-//     similarity_type = registration->GetMetric()->GetNameOfClass();
+ std::cout << "Starting registration for mutual information calculation..." << std::endl;
+    similarity_type = registration->GetMetric()->GetNameOfClass();
  
-//    std::cout << "Similarity metric used"<<similarity_type<<std::endl;
+   std::cout << "Similarity metric used"<<similarity_type<<std::endl;
 
 
  
-//   try
-//     {
-//       registration->StartRegistration();
-//     }
-//   catch( itk::ExceptionObject &excp )
-//     {
-//     std::cerr << "ExceptionObject caught while executing registration" <<
-// std::endl;
-//     std::cerr << excp << std::endl;
-//     }
+  try
+    {
+      registration->StartRegistration();
+    }
+  catch( itk::ExceptionObject &excp )
+    {
+    std::cerr << "ExceptionObject caught while executing registration" <<
+std::endl;
+    std::cerr << excp << std::endl;
+    }
 
 
-//   //The following is just for debugging purposes, to see that the transformation has not changed
-//   OptimizerType::ParametersType finalParams = registration->GetLastTransformParameters();
-//   //get the Mutual information value between the registered CT images
-//   int numberOfIterations2 = optimizer->GetCurrentIteration();
-//   const double mutualInformationValue = optimizer->GetValue();
-//   std::cout<<"number mutual iteration = "<<numberOfIterations2<<"  MI="<<mutualInformationValue<<std::endl;
+  //The following is just for debugging purposes, to see that the transformation has not changed
+  OptimizerType::ParametersType finalParams = registration->GetLastTransformParameters();
+  //get the Mutual information value between the registered CT images
+  int numberOfIterations2 = optimizer->GetCurrentIteration();
+  const double mutualInformationValue = optimizer->GetValue();
+  std::cout<<"number mutual iteration = "<<numberOfIterations2<<"  MI="<<mutualInformationValue<<std::endl;
 
   
-//   SIMILARITY_XML_DATA ctSimilarityXMLData;
-//   ctSimilarityXMLData.regionAndTypeUsed.assign("");
-//   /*for ( unsigned int i=0; i<regionVecArg.size(); i++ )
-//     {
-//       std::ostringstream regionArgs;
-//       regionArgs <<regionVecArg[i];
-//       ctSimilarityXMLData.regionAndTypeUsed.append(regionArgs.str().c_str());
-//       ctSimilarityXMLData.regionAndTypeUsed.append(", ");
-//     }
-//   for ( unsigned int i=0; i<typeVecArg.size(); i++ )
-//     {
-//       std::ostringstream regionArgs;
-//       regionArgs <<regionVecArg[i];
-//       ctSimilarityXMLData.regionAndTypeUsed.append(regionArgs.str().c_str());
-//       ctSimilarityXMLData.regionAndTypeUsed.append(", ");
-//     }
-//   if (regionPairVec.size() == typePairVecArg.size())
-//     {
+  SIMILARITY_XML_DATA ctSimilarityXMLData;
+  ctSimilarityXMLData.regionAndTypeUsed.assign("");
+  /*for ( unsigned int i=0; i<regionVecArg.size(); i++ )
+    {
+      std::ostringstream regionArgs;
+      regionArgs <<regionVecArg[i];
+      ctSimilarityXMLData.regionAndTypeUsed.append(regionArgs.str().c_str());
+      ctSimilarityXMLData.regionAndTypeUsed.append(", ");
+    }
+  for ( unsigned int i=0; i<typeVecArg.size(); i++ )
+    {
+      std::ostringstream regionArgs;
+      regionArgs <<regionVecArg[i];
+      ctSimilarityXMLData.regionAndTypeUsed.append(regionArgs.str().c_str());
+      ctSimilarityXMLData.regionAndTypeUsed.append(", ");
+    }
+  if (regionPairVec.size() == typePairVecArg.size())
+    {
 
-//     for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
-//       {
-//       std::ostringstream regionArgs;
-//       regionArgs <<regionVecArg[i];
-//       ctSimilarityXMLData.regionAndTypeUsed.append(regionArgs.str().c_str());
-//       ctSimilarityXMLData.regionAndTypeUsed.append(", ");
-//       }
-//     }
+    for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
+      {
+      std::ostringstream regionArgs;
+      regionArgs <<regionVecArg[i];
+      ctSimilarityXMLData.regionAndTypeUsed.append(regionArgs.str().c_str());
+      ctSimilarityXMLData.regionAndTypeUsed.append(", ");
+      }
+    }
   
-//   */
+  */
 
-//   ctSimilarityXMLData.similarityValue = (float)(mutualInformationValue);
+  ctSimilarityXMLData.similarityValue = (float)(mutualInformationValue);
   
-//   ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
+  ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
   
-//   std::cout<<"getting transfo filename"<<std::endl;
-//   if ( strcmp(inputTransformFileName[0].c_str(), "q") != 0 )
-//     {
-//       std::string infoFilename = inputTransformFileName[0];
-//       int result = infoFilename.find_last_of('.');
-//       if (std::string::npos != result)
-// 	{
-// 	  infoFilename.erase(result);
+  std::cout<<"getting transfo filename"<<std::endl;
+  if ( strcmp(inputTransformFileName[0].c_str(), "q") != 0 )
+    {
+      std::string infoFilename = inputTransformFileName[0];
+      int result = infoFilename.find_last_of('.');
+      if (std::string::npos != result)
+	{
+	  infoFilename.erase(result);
 
-// 	}
-//       // append extension:
-//       infoFilename.append("_measures.xml");
+	}
+      // append extension:
+      infoFilename.append("_measures.xml");
       
-//       if ( strcmp(outputXMLFileName.c_str(), "q") != 0 )  
-// 	{
-// 	  infoFilename.assign(outputXMLFileName.c_str());
-// 	}
-//       int pathLength = 0, pos=0, next=0;   
+      if ( strcmp(outputXMLFileName.c_str(), "q") != 0 )  
+	{
+	  infoFilename.assign(outputXMLFileName.c_str());
+	}
+      int pathLength = 0, pos=0, next=0;   
       
-//       if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
-// 	{
-// 	  ctSimilarityXMLData.movingID.assign(movingImageID);
+      if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
+	{
+	  ctSimilarityXMLData.movingID.assign(movingImageID);
 
-// 	}
-//       else
-// 	{       
-// 	  //first find length of path
-// 	  next=1;
-// 	  while(next>=1)
-// 	    {
-// 	      next = movingCTFileName.find("/", next+1);    
-// 	      pathLength++;
-// 	    }
-// 	  pos=0;
-// 	  next=0;
+	}
+      else
+	{       
+	  //first find length of path
+	  next=1;
+	  while(next>=1)
+	    {
+	      next = movingCTFileName.find("/", next+1);    
+	      pathLength++;
+	    }
+	  pos=0;
+	  next=0;
 	  
-// 	  std::string tempSourceID;
-// 	  for (int i = 0; i < (pathLength-1);i++)
-// 	    {
-// 	      pos= next+1;
-// 	      next = movingCTFileName.find("/", next+1);
-// 	    }               
+	  std::string tempSourceID;
+	  for (int i = 0; i < (pathLength-1);i++)
+	    {
+	      pos= next+1;
+	      next = movingCTFileName.find("/", next+1);
+	    }               
 
-// 	  ctSimilarityXMLData.movingID.assign(movingCTFileName.c_str());
-// 	  ctSimilarityXMLData.movingID.erase(next,ctSimilarityXMLData.movingID.length()-1);
-// 	  ctSimilarityXMLData.movingID.erase(0, pos);
-// 	}
+	  ctSimilarityXMLData.movingID.assign(movingCTFileName.c_str());
+	  ctSimilarityXMLData.movingID.erase(next,ctSimilarityXMLData.movingID.length()-1);
+	  ctSimilarityXMLData.movingID.erase(0, pos);
+	}
       
-//       std::cout<<"in middle of savinge"<<std::endl;
-//       if ( strcmp(fixedImageID.c_str(), "q") != 0 ) 
-// 	{
+      std::cout<<"in middle of savinge"<<std::endl;
+      if ( strcmp(fixedImageID.c_str(), "q") != 0 ) 
+	{
 
-// 	  ctSimilarityXMLData.fixedID =fixedImageID.c_str();
-// 	}
-//     else
+	  ctSimilarityXMLData.fixedID =fixedImageID.c_str();
+	}
+    else
 
-// 	{ 
-// 	  pos=0;
-// 	  next=0;
-// 	  for (int i = 0; i < (pathLength-1);i++)
-// 	    { 
-// 	      pos = next+1;
-// 	      next = fixedCTFileName.find('/', next+1);  
-// 	    }
+	{ 
+	  pos=0;
+	  next=0;
+	  for (int i = 0; i < (pathLength-1);i++)
+	    { 
+	      pos = next+1;
+	      next = fixedCTFileName.find('/', next+1);  
+	    }
 
-// 	  ctSimilarityXMLData.fixedID.assign(fixedCTFileName.c_str());// =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
-// 	  ctSimilarityXMLData.fixedID.erase(next,ctSimilarityXMLData.fixedID.length()-1);
-// 	  ctSimilarityXMLData.fixedID.erase(0, pos );
-//         }	
+	  ctSimilarityXMLData.fixedID.assign(fixedCTFileName.c_str());// =tempSourceID.c_str();//movingImageFileName.substr(pos, next-1).c_str();
+	  ctSimilarityXMLData.fixedID.erase(next,ctSimilarityXMLData.fixedID.length()-1);
+	  ctSimilarityXMLData.fixedID.erase(0, pos );
+        }	
 	    
-//       //remove path from output transformation file before storing in xml
-//       //For each transformation
-//       for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
-//       { 
-//           std::cout<<"outputtransform filename ="<<inputTransformFileName[i].c_str()<<std::endl;
-//           pos=0;
-//           next=0;
-//           for (int i = 0; i < (pathLength);i++)
-//           {
-//             pos = next+1;
-//               next = inputTransformFileName[0].find('/', next+1);
-//           }
-//           ctSimilarityXMLData.transformationLink[i].assign(inputTransformFileName[i].c_str());
-//           ctSimilarityXMLData.transformation_order[i]= i;
-//           if((i==0)&& (isInvertTransform == true))
-//               ctSimilarityXMLData.transformation_isInverse[i].assign("True");
-//           else
-//               ctSimilarityXMLData.transformation_isInverse[i].assign("False");
-//           ctSimilarityXMLData.transformationLink[i].erase(0,pos);
-//       }
+      //remove path from output transformation file before storing in xml
+      //For each transformation
+      for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
+      { 
+          std::cout<<"outputtransform filename ="<<inputTransformFileName[i].c_str()<<std::endl;
+          pos=0;
+          next=0;
+          for (int i = 0; i < (pathLength);i++)
+          {
+            pos = next+1;
+              next = inputTransformFileName[0].find('/', next+1);
+          }
+          ctSimilarityXMLData.transformationLink[i].assign(inputTransformFileName[i].c_str());
+          ctSimilarityXMLData.transformation_order[i]= i;
+          if((i==0)&& (isInvertTransform == true))
+              ctSimilarityXMLData.transformation_isInverse[i].assign("True");
+          else
+              ctSimilarityXMLData.transformation_isInverse[i].assign("False");
+          ctSimilarityXMLData.transformationLink[i].erase(0,pos);
+      }
 
       
       
-//       std::cout<<"saving output to: "<<infoFilename.c_str()<<std::endl;
-//       WriteMeasuresXML(infoFilename.c_str(), ctSimilarityXMLData);
+      std::cout<<"saving output to: "<<infoFilename.c_str()<<std::endl;
+      WriteMeasuresXML(infoFilename.c_str(), ctSimilarityXMLData);
 
-//     }
+    }
   
   std::cout << "DONE." << std::endl;
  
