@@ -9,39 +9,39 @@
   <acknowledgements>This work was partially funded ...</acknowledgements>
 
   <parameters>
-    <string-vector>
+    <integer-vector>
       <name>regionVec</name>
       <label>Chest Regions</label>
       <channel>input</channel>
       <flag>r</flag>
       <longflag>--regions</longflag>
       <description><![CDATA[Specify a chest you want to extract]]></description>
-    </string-vector>  
+    </integer-vector>  
 
-    <string-vector>
+    <integer-vector>
       <name>typeVec</name>
       <label>Chest Types</label>
       <channel>input</channel>
       <flag>t</flag>
       <longflag>--types</longflag>
       <description><![CDATA[Specify a chest type you want to extract]]></description>
-    </string-vector>  
+    </integer-vector>  
 
-    <string-vector>
+    <integer-vector>
       <name>regionPairVec</name>
       <label>Chest Region-Type Pair Region</label>
       <channel>input</channel>
       <longflag>--regionPair</longflag>
       <description><![CDATA[Specify a region in a region-type pair you want to extract]]></description>
-    </string-vector>  
+    </integer-vector>  
 
-    <string-vector>
+    <integer-vector>
       <name>typePairVec</name>
       <label>Chest Region-Type Pair Type</label>
       <channel>input</channel>
       <longflag>--typePair</longflag>
       <description><![CDATA[Specify a type in a region-type pair you want to extract]]></description>
-    </string-vector>  
+    </integer-vector>  
   </parameters>
 
   <parameters>

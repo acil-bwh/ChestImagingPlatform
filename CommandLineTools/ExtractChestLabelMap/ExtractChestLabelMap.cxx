@@ -54,6 +54,7 @@
 #include "itkImageFileWriter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 #include "itkImageRegionIterator.h"
+#include "cipConventions.h"
 #include "ExtractChestLabelMapCLP.h"
 
 typedef itk::CIPExtractChestLabelMapImageFilter       LabelMapExtractorType;
@@ -62,6 +63,8 @@ typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
+
+  cip::ChestConventions conventions;
 
   std::cout << "Reading..." << std::endl;
   cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
@@ -83,15 +86,19 @@ int main( int argc, char *argv[] )
     extractor->SetInput( reader->GetOutput() );
   for ( unsigned int i=0; i<regionVec.size(); i++ )
     {
-    extractor->SetChestRegion( (unsigned char)(regionVec[i]) );
+    unsigned char cipRegion = conventions.GetChestRegionValueFromName( regionVec[i] );
+    extractor->SetChestRegion( cipRegion );
     }
   for ( unsigned int i=0; i<typeVec.size(); i++ )
     {
-    extractor->SetChestType( (unsigned char)(typeVec[i]) );
+    unsigned char cipType = conventions.GetChestRegionValueFromName( typeVec[i] );
+    extractor->SetChestType( cipType );
     }
   for ( unsigned int i=0; i<regionPairVec.size(); i++ )
     {
-    extractor->SetRegionAndType( (unsigned char)(regionPairVec[i]), (unsigned char)(typePairVec[i]) );
+    unsigned char cipRegion = conventions.GetChestRegionValueFromName( regionPairVec[i] );
+    unsigned char cipType   = conventions.GetChestTypeValueFromName( typePairVec[i] );
+    extractor->SetRegionAndType( cipRegion, cipType );
     }
     extractor->Update();
 
