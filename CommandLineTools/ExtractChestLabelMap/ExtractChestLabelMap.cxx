@@ -91,7 +91,7 @@ int main( int argc, char *argv[] )
     }
   for ( unsigned int i=0; i<typeVec.size(); i++ )
     {
-    unsigned char cipType = conventions.GetChestRegionValueFromName( typeVec[i] );
+    unsigned char cipType = conventions.GetChestTypeValueFromName( typeVec[i] );
     extractor->SetChestType( cipType );
     }
   for ( unsigned int i=0; i<regionPairVec.size(); i++ )
