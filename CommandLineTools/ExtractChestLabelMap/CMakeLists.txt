@@ -4,9 +4,6 @@ PROJECT( ExtractChestLabelMap )
 
 SET ( MODULE_NAME ExtractChestLabelMap )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
-
 FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
 INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
 
