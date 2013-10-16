@@ -167,23 +167,23 @@ int main( int argc, char *argv[] )
     }
     extractor->Update();
 
-  IteratorType eIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
-  IteratorType rIt( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
+  // IteratorType eIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
+  // IteratorType rIt( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
 
-  eIt.GoToBegin();
-  rIt.GoToBegin();
-  while ( !rIt.IsAtEnd() )
-    {
-      rIt.Set( eIt.Get() );
+  // eIt.GoToBegin();
+  // rIt.GoToBegin();
+  // while ( !rIt.IsAtEnd() )
+  //   {
+  //     rIt.Set( eIt.Get() );
 
-      ++eIt;
-      ++rIt;
-    }
+  //     ++eIt;
+  //     ++rIt;
+  //   }
 
   std::cout << "Writing..." << std::endl;
   cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-  //    writer->SetInput( extractor->GetOutput() );
-    writer->SetInput( reader->GetOutput() );
+    writer->SetInput( extractor->GetOutput() );
+    //writer->SetInput( reader->GetOutput() );
     writer->SetFileName( outFileName );
     writer->UseCompressionOn();
   try
@@ -200,7 +200,7 @@ int main( int argc, char *argv[] )
 
   std::cout << "DONE." << std::endl;
 
-  return cip::EXITSUCCESS;
+  return 0;//cip::EXITSUCCESS;
 }
 
 #endif
