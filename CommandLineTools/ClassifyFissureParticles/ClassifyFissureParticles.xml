@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>ClassifyFissureParticles</title>
+  <description><![CDATA[This program is used to classify fissure particles using Fischer's Linear \
+    Discriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \
+    for the left or right lung. For each particle, its distance and angle with respect to the lobe boundaries \
+    are computed. The weighted sum of these quantities is then computed and compared to a threshold value, \
+    and a classification decision is made (either fissure or noise). If particles in the right lung are \
+    being considered, a particle is classified according to which entity it is most like (noise, right \
+    horizontal or right oblique). The classified particles are then written to file.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <string>
+      <name>particlesFileName</name>
+      <label>Particles file name</label>
+      <channel>input</channel>
+      <flag>p</flag>
+      <longflag>--particles</longflag>
+      <description><![CDATA[Particles file name]]></description>
+    </string>  
+
+    <string>
+      <name>loShapeModelFileName</name>
+      <label>Left oblique shape model file name</label>
+      <channel>input</channel>
+      <longflag>--loModel</longflag>
+      <description><![CDATA[Left oblique shape model file name]]></description>
+    </string>  
+
+    <string>
+      <name>roShapeModelFileName</name>
+      <label>Right oblique shape model file name</label>
+      <channel>input</channel>
+      <longflag>--roModel</longflag>
+      <description><![CDATA[Right oblique shape model file name]]></description>
+    </string>  
+
+    <string>
+      <name>rhShapeModelFileName</name>
+      <label>Right horizontal shape model file name</label>
+      <channel>input</channel>
+      <longflag>--rhModel</longflag>
+      <description><![CDATA[Right horizontal shape model file name]]></description>
+    </string>  
+
+    <string>
+      <name>loClassifiedFileName</name>
+      <label>Left oblique classified particles file name</label>
+      <channel>input</channel>
+      <longflag>--loClassified</longflag>
+      <description><![CDATA[Left oblique classified particles file name]]></description>
+    </string>  
+
+    <string>
+      <name>roClassifiedFileName</name>
+      <label>Right oblique classified particles file name</label>
+      <channel>input</channel>
+      <longflag>--roClassified</longflag>
+      <description><![CDATA[Right oblique classified particles file name]]></description>
+    </string>  
+
+    <string>
+      <name>rhClassifiedFileName</name>
+      <label>Right horizontal classified particles file name</label>
+      <channel>input</channel>
+      <longflag>--rhClassified</longflag>
+      <description><![CDATA[Right horizontal classified particles file name]]></description>
+    </string>  
+  </parameters>
+
+  <parameters>
+    <label>Fischer Linear Discriminant Params</label>
+    <description>Parameters for Fischer linear discriminant classification</description>
+    <double>
+      <name>distanceWeight</name>
+      <flag>d</flag>
+      <longflag>dist</longflag>
+      <description>Distance weight for Fischer discriminant projection</description>
+      <label>Distance Weight</label>
+      <default>-0.4677</default>
+    </double>
+
+    <double>
+      <name>angleWeight</name>
+      <flag>a</flag>
+      <longflag>angle</longflag>
+      <description>Angle weight for Fischer discriminant projection</description>
+      <label>Angle Weight</label>
+      <default>-0.8839</default>
+    </double>
+
+    <double>
+      <name>threshold</name>
+      <flag>t</flag>
+      <longflag>thresh</longflag>
+      <description>Threshold for Fischer discriminant based classification</description>
+      <label>Threshold</label>
+      <default>-30.0</default>
+    </double>
+  </parameters>
+</executable>
