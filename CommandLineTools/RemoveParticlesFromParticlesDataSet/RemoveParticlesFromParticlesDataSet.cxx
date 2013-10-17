@@ -17,13 +17,6 @@
  *               the data set specified with the -r flag.
  */
 
-
-//
-// TODO
-//
-// Commenting in doxygen style needs to be shaped up
-//
-
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "vtkSmartPointer.h"
@@ -32,91 +25,23 @@
 #include "vtkPolyDataWriter.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
-
+#include "RemoveParticlesFromParticlesDataSetCLP.h"
 
 void RemoveParticles( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 
-
-void usage()
-{
-  std::cerr << "\n";
-  std::cerr << "This program accepts two inputs: a particles dataset and another particles dataset\n";
-  std::cerr << "indicating which particles should be removed from the first dataset. The output if\n";
-  std::cerr << "the set of particles in the first dataset but not in the second.\n";
-  std::cerr << std::endl;
-  std::cerr << "Usage: RemoveParticlesFromParticlesDataSet <options> where <options> is one or more " << std::endl;
-  std::cerr << "of the following:\n\n";
-  std::cerr << "   <-h>     Display (this) usage information\n";
-  std::cerr << "   <-i>     Input particle data set file name. \n";
-  std::cerr << "   <-r>     Particle data set file name indicating which particles should be removed from\n";
-  std::cerr << "            the data set specified by the -i flag.\n";
-  std::cerr << "   <-o>     Output particle data set file name. The particles in the output will consist\n";
-  std::cerr << "            of the particles in the data set specified with the -i flag minus the particles in\n";
-  std::cerr << "            the data set specified with the -r flag.Output particle data set file name\n";
-
-  exit(1);
-}
-
-
 int main( int argc, char *argv[] )
 {
-  bool ok;
-
-  char* inFileName     = new char[512];   strcpy( inFileName, "q" );
-  char* removeFileName = new char[512];   strcpy( removeFileName, "q" );
-  char* outFileName    = new char[512];   strcpy( outFileName, "q" );
-
-  while ( argc > 1 )
-    {
-    ok = false;
-
-    if ((ok == false) && (strcmp(argv[1], "-h") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-      usage();      
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-r") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      removeFileName = argv[1];      
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-i") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      inFileName = argv[1];      
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-o") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-      
-      outFileName = argv[1];
-
-      argc--; argv++;
-      }
-    }
+  PARSE_ARGS;
 
   std::cout << "Reading particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
-    particlesReader->SetFileName( inFileName );
+    particlesReader->SetFileName( inFileName.c_str() );
     particlesReader->Update();
 
   std::cout << "Reading particles to remove..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > removeReader = vtkSmartPointer< vtkPolyDataReader >::New();
-  removeReader->SetFileName( removeFileName );
-  removeReader->Update();
+    removeReader->SetFileName( removeFileName.c_str() );
+    removeReader->Update();
 
   vtkSmartPointer< vtkPolyData > cleanedParticles = vtkSmartPointer< vtkPolyData >::New();
 
@@ -126,7 +51,7 @@ int main( int argc, char *argv[] )
   std::cout << "Writing airway particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
     particlesWriter->SetInput( cleanedParticles );
-    particlesWriter->SetFileName( outFileName );
+    particlesWriter->SetFileName( outFileName.c_str() );
     particlesWriter->Write();
 
   std::cout << "DONE." << std::endl;

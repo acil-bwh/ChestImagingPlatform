@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>RemoveParticlesFromParticlesDataSet</title>
+  <description><![CDATA[This program accepts two inputs: a particles dataset and another particles dataset\
+  indicating which particles should be removed from the first dataset. The output of the set of particles \
+  in the first dataset but not in the second.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <string>
+      <name>inFileName</name>
+      <label>Input particles file name</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <description><![CDATA[Input particles file name]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>outFileName</name>
+      <label>Output particles file name</label>
+      <channel>input</channel>
+      <flag>o</flag>
+      <description><![CDATA[Output particle data set file name. The particles in the output will consist\
+      of the particles in the data set specified with the -i flag minus the particles in\
+      the data set specified with the -r flag.Output particle data set file name]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>removeFileName</name>
+      <label>Remove particles file name</label>
+      <channel>input</channel>
+      <flag>r</flag>
+      <description><![CDATA[Particle data set file name indicating which particles should be removed from\
+      the input data set]]></description>
+      <default>NA</default>
+    </string>  
+
+  </parameters>
+</executable>
