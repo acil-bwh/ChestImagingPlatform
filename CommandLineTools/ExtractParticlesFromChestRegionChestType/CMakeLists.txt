@@ -2,10 +2,30 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( ExtractParticlesFromChestRegionChestType )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+SET ( MODULE_NAME ExtractParticlesFromChestRegionChestType )
 
-SET ( ExtractParticlesFromChestRegionChestType_SOURCE ExtractParticlesFromChestRegionChestType.cxx )
+FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
+INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
 
-ADD_EXECUTABLE ( ExtractParticlesFromChestRegionChestType ${ExtractParticlesFromChestRegionChestType_SOURCE})
-TARGET_LINK_LIBRARIES ( ExtractParticlesFromChestRegionChestType ${ITK_LIBRARIES} ${VTK_LIBRARIES} CIPCommon )
+FIND_PACKAGE( CIP REQUIRED )
+
+SET ( MODULE_INCLUDE_DIRECTORIES
+    ${CMAKE_SOURCE_DIR}/Common
+  )
+
+SET ( MODULE_TARGET_LIBRARIES
+  ${ITK_LIBRARIES}
+  ${VTK_LIBRARIES}
+  CIPCommon
+  )
+
+SET ( MODULE_SRCS ExtractParticlesFromChestRegionChestType.cxx )
+
+SEMMacroBuildCLI (
+  NAME ${MODULE_NAME}
+  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+  ADDITIONAL_SRCS ${MODULE_SRCS}
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  EXECUTABLE_ONLY
+  )

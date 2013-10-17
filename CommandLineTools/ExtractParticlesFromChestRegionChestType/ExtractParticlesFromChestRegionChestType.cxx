@@ -60,7 +60,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
@@ -70,74 +69,30 @@
 #include "vtkPointData.h"
 #include "cipConventions.h"
 #include "cipHelper.h"
+#include "ExtractParticlesFromChestRegionChestTypeCLP.h"
 
-void GetOutputParticlesUsingLabelMap( std::string, std::vector< unsigned char >, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
-void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned char >, std::vector< unsigned char >, 
+void GetOutputParticlesUsingLabelMap( std::string, std::vector< std::string >, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
+void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string >, std::vector< std::string >, 
 							vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::string labelMapFileName     = "NA";
-  std::string inParticlesFileName  = "NA";
-  std::string outParticlesFileName = "NA";
-  std::vector< unsigned char > cipRegions;
-  std::vector< unsigned char > cipTypes;
+  PARSE_ARGS;
 
-  // Program and argument descriptions for user help
-  std::string programDescription = "This program allows you to extract particles from an input particles data set using either\
-an input label map or the particles themselves. Many particles datasets contain a 'ChestType' and 'ChestRegion' data field.\
-The values of these fields can be used to isolate particles of interest. Alternatively, a label map can be specified, and only\
-the particles falling in the specified region of interest will be written. Additionally, even if the input particles do not have\
-the ChestType' or 'ChestRegion' data arrays, the output particles data set will have these with region and type values specified\
-at the command line.";
 
-  std::string labelMapFileNameDescription     = "Input label map file name. This is an optional input. If no label map is specified,\
-the 'ChestRegion' and 'ChestType' arrays in the input will be used to extract the\
-region or type specified with the '-r' and '-t' flags, respectively";
-  std::string inParticlesFileNameDescription  = "Input particles file name";
-  std::string outParticlesFileNameDescription = "Output particles file name";
-  std::string cipRegionsDescription            = "Chest regions from which to extract particles";
-  std::string cipTypesDescription              = "Chest types for which to extract particles. If specifying a label map this flag \
-is not relevent.";
-
-  // Parse the input arguments
-  try
-    {
-    TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 383 $" );
-
-    TCLAP::ValueArg<std::string> labelMapFileNameArg( "l", "labelMap", labelMapFileNameDescription, false, labelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> inParticlesFileNameArg( "i", "inParticles", inParticlesFileNameDescription, true, inParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outParticlesFileNameArg( "o", "outParticles", outParticlesFileNameDescription, true, outParticlesFileName, "string", cl );
-    TCLAP::MultiArg<int>         cipRegionsArg( "r", "region", cipRegionsDescription, false, "int", cl );
-    TCLAP::MultiArg<int>         cipTypesArg( "t", "type", cipTypesDescription, false, "int", cl );
-
-    cl.parse( argc, argv );
-
-    labelMapFileName     = labelMapFileNameArg.getValue();
-    inParticlesFileName  = inParticlesFileNameArg.getValue();
-    outParticlesFileName = outParticlesFileNameArg.getValue();
-
-    if ( cipRegionsArg.getValue().size() == 0 )
-      {
-	cipRegions.push_back( (unsigned char)(cip::UNDEFINEDREGION) );
-      }
-    for ( unsigned int i=0; i<cipRegionsArg.getValue().size(); i++ )
-      {
-	cipRegions.push_back( (unsigned char)(cipRegionsArg.getValue()[i]) );
-      }
-    for ( unsigned int i=0; i<cipTypesArg.getValue().size(); i++ )
-      {
-	cipTypes.push_back( (unsigned char)(cipTypesArg.getValue()[i]) );
-      }
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+    // if ( cipRegionsArg.getValue().size() == 0 )
+    //   {
+    // 	cipRegions.push_back( (unsigned char)(cip::UNDEFINEDREGION) );
+    //   }
+    // for ( unsigned int i=0; i<cipRegionsArg.getValue().size(); i++ )
+    //   {
+    // 	cipRegions.push_back( (unsigned char)(cipRegionsArg.getValue()[i]) );
+    //   }
+    // for ( unsigned int i=0; i<cipTypesArg.getValue().size(); i++ )
+    //   {
+    // 	cipTypes.push_back( (unsigned char)(cipTypesArg.getValue()[i]) );
+    //   }
+    // }
 
   vtkSmartPointer< vtkPolyData > outParticles = vtkSmartPointer< vtkPolyData >::New();
 
@@ -175,7 +130,7 @@ is not relevent.";
 // B) If a region is specified, all particles falling inside the specified label
 // map's region will be retained. The particles' ChestType array is preserved, but
 // the ChestRegion is overwritten with the specified desired region 
-void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< unsigned char > cipRegions, 
+void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::string > cipRegions, 
 				      vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
 {
   cip::ChestConventions conventions;
@@ -228,7 +183,7 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< unsigne
       {       
 	for ( unsigned int k=0; k<cipRegions.size(); k++ )
 	  {
-	    unsigned char cipRegion = cipRegions[k];
+	    unsigned char cipRegion = conventions.GetChestRegionValueFromName( cipRegions[k] );
 
 	    // If the label map chest region is a subordinate of the requested
 	    // chest region, then add this particle to the output    
@@ -258,9 +213,11 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< unsigne
 }
 
 
-void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned char > cipRegions, std::vector< unsigned char > cipTypes, 
+void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string > cipRegions, std::vector< std::string > cipTypes, 
 							vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
 {
+  cip::ChestConventions conventions;
+
   unsigned int numberPointDataArrays = inParticles->GetPointData()->GetNumberOfArrays();
   unsigned int numberParticles       = inParticles->GetNumberOfPoints();
 
@@ -282,7 +239,8 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< unsigned ch
     {
       for ( unsigned int j=0; j<cipTypes.size(); j++ )
 	{
-	  if ( static_cast< int >( inParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0] ) == cipTypes[j] )
+	  unsigned char cipType = conventions.GetChestRegionValueFromName( cipTypes[j] );
+	  if ( static_cast< int >( inParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0] ) == cipType )
 	    {
 	      outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
 

@@ -1,28 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <title>
-    ExtractParticlesFromChestRegionChestType
-  </title>
-
+  <category>Chest Imaging Platform</category>
+  <title>ExtractParticlesFromChestRegionChestType</title>
   <description>
-    <![CDATA[This program ...]]>
+    <![CDATA[This program allows you to extract particles from an input particles data set using either\
+	     an input label map or the particles themselves. Many particles datasets contain a 'ChestType' and 'ChestRegion' data field.\
+	     The values of these fields can be used to isolate particles of interest. Alternatively, a label map can be specified, and only\
+	     the particles falling in the specified region of interest will be written. Additionally, even if the input particles do not have\
+	     the ChestType' or 'ChestRegion' data arrays, the output particles data set will have these with region and type values specified\
+	     at the command line]]>
   </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
 
   <parameters>
-
-    <string>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
       <name>labelMapFileName</name>
       <label>Label Map File Name</label>
       <channel>input</channel>
       <flag>l</flag>
       <longflag>--labelMap</longflag>
-      <description><![CDATA[Input ]]></description>
+      <description><![CDATA[Input label map file name. This is an optional input. If no label map is specified,\
+      the 'ChestRegion' and 'ChestType' arrays in the input will be used to extract the region or type specified\
+      with the '-r' and '-t' flags, respectively ]]>
+      </description>
       <default>NA</default>
-    </string>  
+    </image>  
  
     <string>
       <name>inParticlesFileName</name>
-      <label>Particles File Name</label>
+      <label>Input Particles File Name</label>
       <channel>input</channel>
       <flag>i</flag>
       <longflag>--inParticles</longflag>
@@ -39,24 +53,27 @@
       <description><![CDATA[Output particles file name]]></description>
       <default>NA</default>
     </string>
+  </parameters>
 
-    <integer-vector>
+  <parameters>
+    <string-vector>
       <name>cipRegions</name>
-      <label>CIP Regions</label>
+      <label>Chest Regions</label>
       <channel>input</channel>
       <flag>r</flag>
       <longflag>--region</longflag>
       <description><![CDATA[Chest regions from which to extract particles]]></description>
-    </integer-vector>  
+    </string-vector>  
 
-    <integer-vector>
+    <string-vector>
       <name>cipTypes</name>
       <label>CIP Types</label>
       <channel>input</channel>
       <flag>t</flag>
       <longflag>--type</longflag>
-      <description><![CDATA[Chest ]]> </description>
-    </integer-vector> 
+      <description><![CDATA[Chest types for which to extract particles. If specifying a label map this flag \
+      is not relevent.]]> </description>
+    </string-vector> 
 
   </parameters>
 

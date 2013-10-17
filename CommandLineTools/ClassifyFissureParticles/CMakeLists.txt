@@ -32,10 +32,3 @@ SEMMacroBuildCLI (
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   EXECUTABLE_ONLY
   )
-##############
-
-
-#SET ( ClassifyFissureParticles_SOURCE ClassifyFissureParticles.cxx )
-
-#ADD_EXECUTABLE ( ClassifyFissureParticles ${ClassifyFissureParticles_SOURCE})
-#TARGET_LINK_LIBRARIES ( ClassifyFissureParticles ${ITK_LIBRARIES} ${VTK_LIBRARIES} CIPIO CIPCommon  )
