@@ -16,6 +16,7 @@ parser.add_option("-r",dest="rate",help="initial upsampling/downsampling rate [d
 parser.add_option("--tmpDir",dest="tmpDirectory",help="temporary directory" )
 parser.add_option("--dataDir", dest="dataDirectory",help="data directory for the case IDs")
 parser.add_option("-d",dest="delete_cache",help="delete cache in temp directory [default: %default]", action="store_true")
+parser.add_option("-a",dest="affine",help="run affine", action="store_true")
 parser.add_option("-e",dest="elastic",help="run elastic", action="store_true")
 parser.add_option("-b",dest="use_body_mask",help="compute body mask for affine registration step", action="store_true")
 parser.add_option("-l",dest="use_lung_mask",help="employs lung mask for elastic registration step", action="store_true")
@@ -37,6 +38,7 @@ rate = options.rate
 tmp_dir = options.tmpDirectory
 data_dir = options.dataDirectory
 delete_cache = options.delete_cache
+affine = options.affine
 elastic = options.elastic
 use_lung_mask = options.use_lung_mask
 use_body_mask = options.use_body_mask
@@ -138,14 +140,15 @@ tmp_command = "antsRegistration -d 3 -r [ %(f)s,%(m)s,0] \
                -c [%(its)s,1.e-8,20]  \
                -s 4x2x1vox \
                -f 8x4x2 \
-               -l 1 \
-               -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
+               -l 1"
+if affine == True:
+    tmp_command = tmp_command + " -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
                -t affine[ 0.1 ] \
                -c [%(its)s,1.e-8,20] \
                -s 4x2x1vox \
                -f 8x4x2 \
-               -l 1 -u 1 -z 1 \
-               -o [%(nm)s]"
+               -l 1 -u 1 -z 1"
+tmp_command = tmp_command + " -o [%(nm)s]"
 tmp_command = tmp_command % {'f':fixed_tmp,'m':moving_tmp, \
 'percentage':percentage,'its':its,'nm':deformation_prefix}
 
