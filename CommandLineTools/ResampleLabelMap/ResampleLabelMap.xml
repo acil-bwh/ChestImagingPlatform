@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Examples</category>
+  <category>Chest Imaging Platform</category>
   <title>ResampleLabelMap</title>
   <description><![CDATA[This program resamples a label map using an affine transform (read from file)]]></description>
   <version>0.0.1</version>
   <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
-  <acknowledgements>This work was partially funded ...</acknowledgements>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
   <parameters>
     <string>
       <name>labelMapFileName</name>
