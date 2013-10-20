@@ -41,6 +41,8 @@
         <integer>
             <name>maskValueTemp</name>
             <flag>v</flag>
+            <label>mask Value</label>
+            <channel>input</channel>
             <longflag>value</longflag>
             <description>Value to set voxels outside the region that is cropped. (default=0)</description>
             <default>0</default>
@@ -51,6 +53,7 @@
             <longflag>--region</longflag>
             <flag>r</flag>
             <label>regionVec</label>
+            <channel>input</channel>
             <description><![CDATA[Specify a region you want to crop]]></description>
         </integer-vector>
         
@@ -60,6 +63,7 @@
             <longflag>--typeVec</longflag>
             <flag>c</flag>
             <label>typeVec</label>
+            <channel>input</channel>
             <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
         </integer-vector>
         
@@ -68,6 +72,7 @@
             <longflag>--typePairVec</longflag>
             <flag>w</flag>
             <label>typePairVec</label>
+            <channel>input</channel>
             <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag]]></description>
         </integer-vector>
         <integer-vector>
@@ -75,6 +80,7 @@
             <longflag>regionPairVec</longflag>
             <flag>b</flag>
             <label>regionPairVec</label>
+            <channel>input</channel>
             <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
         </integer-vector>
         <string>
