@@ -145,7 +145,7 @@
       <longflag>--regionVec</longflag>
       <flag>r</flag>
       <label>regionVec</label>
-      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
+      <description><![CDATA[Specify a region you want to crop]]></description>
 </integer-vector>
 
   </parameters>

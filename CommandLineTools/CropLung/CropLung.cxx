@@ -66,8 +66,6 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
@@ -81,7 +79,10 @@
 #include "itkImageRegionIterator.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
+#include "CropLungCLP.h"
 
+namespace
+{
 typedef itk::GDCMImageIO                                                          ImageIOType;
 typedef itk::GDCMSeriesFileNames                                                  NamesGeneratorType;
 typedef itk::ImageSeriesReader< cip::CTType >                                     CTSeriesReaderType;
@@ -104,71 +105,93 @@ cip::CTType::Pointer ReadCTFromDirectory( std::string );
 cip::CTType::Pointer ReadCTFromFile( std::string  );
 cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string );
 
+    cip::CTType::Pointer ReadCTFromDirectory( std::string ctDir )
+    {
+        ImageIOType::Pointer gdcmIO = ImageIOType::New();
+        
+        std::cout << "---Getting file names..." << std::endl;
+        NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
+        namesGenerator->SetInputDirectory( ctDir );
+        
+        const CTSeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
+        
+        std::cout << "---Reading DICOM image..." << std::endl;
+        CTSeriesReaderType::Pointer dicomReader = CTSeriesReaderType::New();
+        dicomReader->SetImageIO( gdcmIO );
+        dicomReader->SetFileNames( filenames );
+        try
+        {
+            dicomReader->Update();
+        }
+        catch (itk::ExceptionObject &excp)
+        {
+            std::cerr << "Exception caught while reading dicom:";
+            std::cerr << excp << std::endl;
+            return NULL;
+        }
+        
+        return dicomReader->GetOutput();
+    }
+    
+    
+    cip::CTType::Pointer ReadCTFromFile( std::string fileName )
+    {
+        CTFileReaderType::Pointer reader = CTFileReaderType::New();
+        reader->SetFileName( fileName );
+        try
+        {
+            reader->Update();
+        }
+        catch ( itk::ExceptionObject &excp )
+        {
+            std::cerr << "Exception caught reading CT image:";
+            std::cerr << excp << std::endl;
+            return NULL;
+        }
+        
+        return reader->GetOutput();
+    }
+    
+    
+    cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
+    {
+        std::cout << "Reading label map..." << std::endl;
+        cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
+        reader->SetFileName( labelMapFileName );
+        try
+        {
+            reader->Update();
+        }
+        catch ( itk::ExceptionObject &excp )
+        {
+            std::cerr << "Exception caught reading label map:";
+            std::cerr << excp << std::endl;
+        }
+        
+        return reader->GetOutput();
+    }
+    
+} //end namespace
 
 int main( int argc, char *argv[] )
 {
   //
-  // Definiton of command line argument variables
+  // old Definiton of command line argument variables
   //
-  std::string  ctDir              = "q";
-  std::string  ctFileName         = "q";
-  std::string  plInputFileName    = "q";
-  std::string  ctOutputFileName   = "q";
-  std::string  plOutputFileName   = "q";  
-  int    maskOutputFlag           = 1;
-  short  maskValue                = 0;
-
-  std::vector< unsigned char >  regionVec;
-  std::vector< unsigned char >  typeVec;
-  std::vector< REGIONTYPEPAIR > regionTypePairVec;
-  
-  //
-  // Descriptions on inputs for user help
-  //
-  std::string programDescription = "Crop a CT lung volume for a specified region.\
-This tools provides the cropped CT volume and optionally \
-the cropped lung masked";
-  std::string ctDirArgDescription = "Input dicom directory with CT scan";
-  std::string inFileNameDescription = "Input CT file";
-  std::string labelMapFileNameDescription = "Label map file name";
-  std::string maskValueDescription = "Value to set voxels outside the region that is cropped. (default=0)";
-  std::string maskOutputFlagDescription = "Set to 0 if you don't want the voxels outside the defined region-type to be set to a fixed value. Set to 1 otherwise (default=1)";
-  std::string regionVecDescription = "Specify a region you want to crop";
-  std::string typeVecDescription = "Specify a type you want to crop";
-  std::string regionPairVecDescription = "Specify a region in a region-type pair you want to crop. This flag\
-  should be used together with the -typePair flag";
-  std::string typePairVecDescription = "Specify a type in a region-type pair you want to crop. This flag\
-  should be used together with the -regionPair flag";
-  std::string outputFileNameDescription = "Output Cropped CT volume";
-  std::string plOutputFileNameDescription = "Ouput label map volume";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-      TCLAP::CmdLine cl( programDescription,  ' ', "$Revision: 305 $" );
-      
-      //TCLAP::ValueArg<std::string> ctDirArg ( "", "dicom", ctDirArgDescription, false, ctDir, "directory", cl );
-      TCLAP::ValueArg<std::string> ctFileNameArg ( "i", "inFileName", inFileNameDescription, true, ctFileName, "filename", cl );
-      //cl.xorAdd( ctDirArg, ctFileNameArg );
-        
-      TCLAP::ValueArg<std::string> labelMapFileNameArg ( "", "plf", labelMapFileNameDescription,true,plInputFileName,"string", cl );
-        
-      TCLAP::ValueArg<short> maskValueArg ("v", "value", maskValueDescription,false, maskValue,"integer",cl);
-      TCLAP::ValueArg<int> maskOutputFlagArg ("m", "maskFlag", maskOutputFlagDescription,false,maskOutputFlag,"boolean",cl);
-        
-      //Region/Type flags
-      TCLAP::MultiArg<unsigned int> regionVecArg ("r","region",regionVecDescription,false,"unsigned char",cl);
-      TCLAP::MultiArg<unsigned int> typeVecArg ("t","type",typeVecDescription,false,"unsigned char",cl);
-      TCLAP::MultiArg<unsigned int> regionPairVecArg ("","regionPair",regionPairVecDescription,false,"unsigned char",cl);
-      TCLAP::MultiArg<unsigned int> typePairVecArg ("","typePair",typePairVecDescription,false,"unsigned char",cl);
+  //std::string  ctDir              = "q";
+    //std::string ctDirArgDescription = "Input dicom directory with CT scan";
+    //TCLAP::ValueArg<std::string> ctDirArg ( "", "dicom", ctDirArgDescription, false, ctDir, "directory", cl );
     
-      // Output flags
-      TCLAP::ValueArg<std::string> ctOutputFileNameArg ("o", "outFileName", outputFileNameDescription, true, ctOutputFileName, "filename", cl);
-      TCLAP::ValueArg<std::string> plOutputFileNameArg ("", "opl", plOutputFileNameDescription, false, plOutputFileName, "filename", cl);
+    //cl.xorAdd( ctDirArg, ctFileNameArg );
+    
+    std::vector< unsigned char >  regionVec;
+    std::vector< unsigned char >  typeVec;
+    std::vector< REGIONTYPEPAIR > regionTypePairVec;
+  
         
-      cl.parse( argc, argv );
+    PARSE_ARGS;
+        
+      short maskValue = (short)(maskValueTemp);
     
       /*
 	if (ctDirArg.isSet() ) 
@@ -185,45 +208,28 @@ the cropped lung masked";
 	}
       */
       
-      ctFileName          = ctFileNameArg.getValue();
-      plInputFileName     = labelMapFileNameArg.getValue();
-      ctOutputFileName    = ctOutputFileNameArg.getValue();
-      plOutputFileName    = plOutputFileNameArg.getValue();
-      maskValue           = maskValueArg.getValue();
-      maskOutputFlag      = maskOutputFlagArg.getValue(); 
-
-      for ( unsigned int i=0; i<regionVecArg.getValue().size(); i++ )
+    for ( unsigned int i=0; i<regionVecArg.size(); i++ )
 	{
-	  regionVec.push_back( regionVecArg.getValue()[i] );
+	  regionVec.push_back( (unsigned char) regionVecArg[i] );
 	}
-      for ( unsigned int i=0; i<typeVecArg.getValue().size(); i++ )
+    for ( unsigned int i=0; i<typeVecArg.size(); i++ )
 	{
-	  typeVec.push_back( typeVecArg.getValue()[i] );
+	  typeVec.push_back( (unsigned char)typeVecArg[i] );
 	}
-      if (regionPairVecArg.getValue().size() == typePairVecArg.getValue().size())
+    if (regionPairVecArg.size() == typePairVecArg.size())
 	{
-	  for ( unsigned int i=0; i<regionPairVecArg.getValue().size(); i++ )
+	  for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
 	    {
 	      REGIONTYPEPAIR regionTypePairTemp;
 	      
-	      regionTypePairTemp.region = regionPairVecArg.getValue()[i];
+	      regionTypePairTemp.region = (unsigned char)regionPairVecArg[i];
 	      argc--; argv++;
-	      regionTypePairTemp.type   = typePairVecArg.getValue()[i];
+	      regionTypePairTemp.type   = (unsigned char)typePairVecArg[i];
 	      
 	      regionTypePairVec.push_back( regionTypePairTemp );
 	    } 
 	}
-      else 
-	{
-	  //throw execption
-	  TCLAP::ArgException("RegionPair and TypePair arguments has to much in number of elements");
-	}
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-      std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-      return cip::ARGUMENTPARSINGERROR;
-    }
+
   
   //
   // First get the CT image, either from a directory or from a single
@@ -443,72 +449,4 @@ the cropped lung masked";
   return cip::EXITSUCCESS;
 }
 
-
-cip::CTType::Pointer ReadCTFromDirectory( std::string ctDir )
-{
-  ImageIOType::Pointer gdcmIO = ImageIOType::New();
-
-  std::cout << "---Getting file names..." << std::endl;
-  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
-    namesGenerator->SetInputDirectory( ctDir );
-
-  const CTSeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
-
-  std::cout << "---Reading DICOM image..." << std::endl;
-  CTSeriesReaderType::Pointer dicomReader = CTSeriesReaderType::New();
-    dicomReader->SetImageIO( gdcmIO );
-    dicomReader->SetFileNames( filenames );
-  try
-    {
-    dicomReader->Update();
-    }
-  catch (itk::ExceptionObject &excp)
-    {
-    std::cerr << "Exception caught while reading dicom:";
-    std::cerr << excp << std::endl;
-    return NULL;
-    }  
-
-  return dicomReader->GetOutput();
-}
-
-
-cip::CTType::Pointer ReadCTFromFile( std::string fileName )
-{
-  CTFileReaderType::Pointer reader = CTFileReaderType::New();
-    reader->SetFileName( fileName );
-  try
-    {
-    reader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught reading CT image:";
-    std::cerr << excp << std::endl;
-      return NULL;
-    }
-
-  return reader->GetOutput();
-} 
-
-
-cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
-{
-  std::cout << "Reading label map..." << std::endl;
-  cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
-    reader->SetFileName( labelMapFileName );
-  try
-    {
-    reader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught reading label map:";
-    std::cerr << excp << std::endl;
-    }
-
-  return reader->GetOutput();
-}
-
-#endif
 
