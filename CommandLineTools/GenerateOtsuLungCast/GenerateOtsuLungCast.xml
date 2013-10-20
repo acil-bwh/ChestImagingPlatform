@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform</category>
+    <title>FilterAirwayParticleData</title>
+    <description><![CDATA[This program produces an Otsu lung cast. (Cast is meant\
+        to refer to it being a preliminary mask from which other\
+        masks are derived / molded). The program simply interfaces\
+        with the itkCIPOtsuLungCastImageFilter. Before invoking the\
+        filter, however, the user has the option to clip the intensity\
+        values of the input image. It's generally recommend to clip\
+        anything below -1024 or above 1024 to 1024.]]>
+    </description>
+    <version>0.0.1</version>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+        
+        <string>
+            <name>ctFileName</name>
+            <label>CT FileName</label>
+            <channel>input</channel>
+            <flag>i</flag>
+            <longflag>ct</longflag>
+            <description><![CDATA[Input CT image file name]]></description>
+            <default>q</default>
+        </string>
+        <integer>
+            <name>lowerClipValueTemp</name>
+            <longflag>lowerClip</longflag>
+            <flag>l</flag>
+            <label>lowerClipValue</label>
+            <description><![CDATA[Lower clip value applied to input image before segmentation. Any value below the value specified with this flag will\
+                be replaced with the value specified by the -r flag. If the -r flag is not used, a default value of -1024 will be used as the lower clip \
+                value.]]></description>
+            <default>-1024</default>
+        </integer>
+        <integer>
+            <name>lowerReplacementValueTemp</name>
+            <longflag>lowerReplace</longflag>
+            <flag>r</flag>
+            <label>lowerReplacementValue</label>
+            <description><![CDATA[Lower replacement value applied to input image before segmentation. The value specified with this flag will replace any\
+                value below the value specified using the -l flag. If no value is specified with the -l flag, the default of -1024 will be used.]]></description>
+            <default>-1024</default>
+        </integer>
+        <integer>
+            <name>upperClipValueTemp</name>
+            <longflag>upperClip</longflag>
+            <flag>u</flag>
+            <label>upperClipValue</label>
+            <description><![CDATA[Upper clip value applied to input image before segmentation.Any value above the value specified with this flag will be\
+                replaced with the value specified by the -R flag. If the -R flag is not used, a default value of 1024 will be used as the replacement value.]]></description>
+            <default>1024</default>
+        </integer> 
+        <integer>
+            <name>upperReplacementValueTemp</name>
+            <longflag>upperReplace</longflag>
+            <flag>R</flag>
+            <label>upperReplacementValue</label>
+            <description><![CDATA[Upper replacement value applied to input image before segmentation. Any value above the value specified with this flag will\
+                replace the value specified using the -u flag. If no value is specified with the -u flag, the default of 1024 will be used.]]></description>
+            <default>1024</default>
+        </integer>
+        <string>
+            <name>lungMaskFileName</name>
+            <label>Lung Mask File Name</label>
+            <channel>output</channel>
+            <flag>o</flag>
+            <longflag>mask</longflag>
+            <description><![CDATA[Output lung mask file name]]></description>
+            <default>q</default>
+        </string>
+        <double>
+            <name>interParticleSpacing</name>
+            <label>Inter Particle Spacing</label>
+            <longflag>spacing</longflag>
+            <channel>input</channel>
+            <description>This value indicates the inter-particle spacing of the input data set </description>
+            <default>1.5</default>
+        </double>
+    </parameters>
+</executable>
