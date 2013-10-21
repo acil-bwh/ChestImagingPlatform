@@ -52,9 +52,7 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 
 #include "vtkSmartPointer.h"
 #include "vtkPolyData.h"
@@ -66,54 +64,25 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "cipConventions.h"
+#include "ReadNRRDsWriteVTKCLP.h"
 
-
+namespace
+{
 typedef itk::Image< double, 2 >                NRRDImageType;
 typedef itk::ImageFileReader< NRRDImageType >  ReaderType;
-
+}
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed.
-  //
-  std::string outFileName = "NA";
-  std::vector< std::string > inFileNameVec;
-  std::vector< std::string > arrayNameVec;
-
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDesc = "This program reads a number of NRRD files and collects the data in those files into \
-a single VTK polydata file for writing. The input data files typically contain particles information.";
-  std::string outFileNameDesc = "Ouput vtk file name. All particles information will be stored in this file.";
-  std::string inFileNameVecDesc = "Specify an input NRRD file name followed by a string (using the -a or --arrayName flags) \
-designating the name of the array in the output vtk file. Can specify multiple inputs. Note that a file name specified \
-with this flag must immediately be followed by a corresponding array name using the -a or --arrayName flags. \
-Files that are 1xN are assumed to have scalar data, 3xN are assumed to have vector data, and 9xN are assumed to \
-have matrix data. A 4xN file is assumed to contain spatial coordinates for the first 3 components and a scale \
-component for the 4th. Note that in this case, the string value assigned to this file is just a placeholder -- \
-the scale data will be placed in matrix with name 'scale'. 7xN files are assumed to have the following format: \
-mask xx xy xz yy yz zz, so a matrix is constructed using the components in the following order: [1 2 3 2 4 5 3 5 6] \
-(zero-based indexing)";
-  std::string arrayNameVecDesc = "Array names corresponding to files immediately preceding invocation of this flag (specified \
-with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
-data arrays";
 
   //
   // Parse the input arguments
   //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 224 $" );
+  PARSE_ARGS;
+    std::vector<std::string> arrayNameVec;
+    std::vector<std::string> inFileNameVec;
 
-    TCLAP::ValueArg<std::string> outFileNameArg( "o", "outFileName", outFileNameDesc, true, outFileName, "string", cl );
-    TCLAP::MultiArg<std::string> inFileNameVecArg( "i", "inFileName", inFileNameVecDesc, false, "string", cl );
-    TCLAP::MultiArg<std::string> arrayNameVecArg( "a", "arrayName", arrayNameVecDesc, false, "string", cl );
-
-    cl.parse( argc, argv );
-
-    if ( inFileNameVecArg.getValue().size() != arrayNameVecArg.getValue().size() )
+    if ( inFileNameVecArg.size() != arrayNameVecArg.size() )
       {
       std::cerr << "Mismatch between input file name (specified with -i or --inFileName) and array name ";
       std::cerr << "(specified with -a or --arrayName). See help for details" << std::endl;
@@ -121,20 +90,16 @@ data arrays";
       }
 
     outFileName = outFileNameArg.getValue();
-    for ( unsigned int i=0; i<inFileNameVecArg.getValue().size(); i++ )
+    for ( unsigned int i=0; i<inFileNameVecArg.size(); i++ )
       {
-      inFileNameVec.push_back( inFileNameVecArg.getValue()[i] );
+      inFileNameVec.push_back( inFileNameVecArg[i] );
       }
-    for ( unsigned int i=0; i<arrayNameVecArg.getValue().size(); i++ )
+    for ( unsigned int i=0; i<arrayNameVecArg.size(); i++ )
       {
-      arrayNameVec.push_back( arrayNameVecArg.getValue()[i] );
+      arrayNameVec.push_back( arrayNameVecArg[i] );
       }
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+
+
 
   vtkSmartPointer< vtkPolyData > polyData = vtkSmartPointer< vtkPolyData >::New();
   vtkSmartPointer< vtkPoints >   points   = vtkSmartPointer< vtkPoints >::New();
@@ -371,4 +336,3 @@ data arrays";
   return cip::EXITSUCCESS;
 }
 
-#endif

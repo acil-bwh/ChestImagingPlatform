@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform</category>
+    <title>ReadNRRDsWriteVTK</title>
+    <description><![CDATA[CThis program reads a number of NRRD files and collects the data in those files into \
+        a single VTK polydata file for writing. The input data files typically contain particles information.]]>
+    </description>
+    <version>0.0.1</version>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+        <string-vector>
+            <name>inFileNameVecArg</name>
+            <label>Input FileName Vector</label>
+            <channel>input</channel>
+            <flag>i</flag>
+            <longflag>inFileName</longflag>
+            <description><![CDATA[Specify an input NRRD file name followed by a string (using the -a or --arrayName flags) \
+                designating the name of the array in the output vtk file. Can specify multiple inputs. Note that a file name specified \
+                with this flag must immediately be followed by a corresponding array name using the -a or --arrayName flags. \
+                Files that are 1xN are assumed to have scalar data, 3xN are assumed to have vector data, and 9xN are assumed to \
+                have matrix data. A 4xN file is assumed to contain spatial coordinates for the first 3 components and a scale \
+                component for the 4th. Note that in this case, the string value assigned to this file is just a placeholder -- \
+                the scale data will be placed in matrix with name 'scale'. 7xN files are assumed to have the following format: \
+                mask xx xy xz yy yz zz, so a matrix is constructed using the components in the following order: [1 2 3 2 4 5 3 5 6] \
+                (zero-based indexing)]]></description>
+            <default>NA</default>
+        </string-vector>
+        
+        <string-vector>
+            <name>arrayNameVecArg</name>
+            <label>Array Name Vec</label>
+            <channel>input</channel>
+            <flag>a</flag>
+            <longflag>arrayName</longflag>
+            <description><![CDATA[Array names corresponding to files immediately preceding invocation of this flag (specified \
+                with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
+                data arrays]]></description>
+            <default>NA</default>
+        </string-vector>
+        
+         <string>
+            <name>outFileName</name>
+            <label>Output File Name</label>
+            <channel>output</channel>
+            <flag>o</flag>
+            <longflag>outFileName</longflag>
+            <description><![CDATA[Ouput vtk file name. All particles information will be stored in this file.]]></description>
+            <default>NA</default>
+        </string>        
+    </parameters>
+</executable>
