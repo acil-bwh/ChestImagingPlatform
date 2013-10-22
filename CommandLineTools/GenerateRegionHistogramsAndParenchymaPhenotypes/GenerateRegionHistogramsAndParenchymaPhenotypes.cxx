@@ -1448,21 +1448,24 @@ void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelM
         rllLungPhenotypes->volume += voxelVolume;
         }
       if ( lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) || 
-           lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) )
+           lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) ||
+	   lungRegion == static_cast< unsigned char >( cip::UPPERTHIRD ) )
         {
         (*utLungHistogram)[cIt.Get()]++;
         utLungPhenotypes->totalVoxels++;
         utLungPhenotypes->volume += voxelVolume;
         }
       if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) || 
-           lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) )
+           lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) || 
+	   lungRegion == static_cast< unsigned char >( cip::MIDDLETHIRD ) )
         {
         (*mtLungHistogram)[cIt.Get()]++;
         mtLungPhenotypes->totalVoxels++;
         mtLungPhenotypes->volume += voxelVolume;
         }
       if ( lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) || 
-           lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) )
+           lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) || 
+	   lungRegion == static_cast< unsigned char >( cip::LOWERTHIRD ))
         {
         (*ltLungHistogram)[cIt.Get()]++;
         ltLungPhenotypes->totalVoxels++;
