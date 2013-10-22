@@ -97,9 +97,7 @@ void GetAirwayProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::
 
 int main( int argc, char *argv[] )
 {
-  //
   // Begin by defining the arguments to be passed
-  //
   std::string labelMapFileName              = "NA";
   std::string ctFileName                    = "NA";
   std::string lungProjectionImageFileName   = "NA";
@@ -109,9 +107,7 @@ int main( int argc, char *argv[] )
   std::vector< std::string > leftLungCTFileNameVec;
   std::vector< std::string > rightLungCTFileNameVec;
 
-  //
   // Descriptions of the program and inputs for user help 
-  //
   std::string programDescription    = "This program can be used to produce quality control projection (2D) images\
 for multiple forms of input label map images. Currently supported use cases include label map images designating\
 lung labelings by thirds, whole lung labelings, airway labelings, and lung lobe labelings.";
@@ -135,9 +131,7 @@ will determine how many equally spaced output images will be generated. You must
 supply a CT image file name. These are meant to correspond to the images specified with\
 the -r flag so that overlay images and non overlay images can be compared";
 
-  //
   // Parse the input arguments
-  //
   try
     {
     TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 200 $" );
@@ -184,9 +178,7 @@ the -r flag so that overlay images and non overlay images can be compared";
     return cip::ARGUMENTPARSINGERROR;
     }
 
-  //
   // Read the label map
-  //
   std::cout << "Reading label map image..." << std::endl;
   cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
     labelMapReader->SetFileName( labelMapFileName );
@@ -749,7 +741,8 @@ void GetLungProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImag
         {
         region = conventions.GetChestRegionFromValue( it.Get() );
 
-        if ( region == cip::LEFTUPPERTHIRD || region == cip::WHOLELUNG || region == cip::LEFTLUNG )
+        if ( region == cip::LEFTUPPERTHIRD || region == cip::WHOLELUNG || 
+	     region == cip::LEFTLUNG )
           { 
           projectionImage->SetPixel( projectionIndex, 1*36 );
           }
@@ -769,10 +762,22 @@ void GetLungProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImag
           { 
           projectionImage->SetPixel( projectionIndex, 5*36 );
           }
-        else if ( region == cip::RIGHTLOWERTHIRD || region == cip::RIGHTLUNG)
+        else if ( region == cip::RIGHTLOWERTHIRD || region == cip::RIGHTLUNG )
           { 
           projectionImage->SetPixel( projectionIndex, 6*36 );
           }
+	else if ( region == cip::LOWERTHIRD )
+	  {
+          projectionImage->SetPixel( projectionIndex, 1*64 );
+	  }
+	else if ( region == cip::MIDDLETHIRD )
+	  {
+          projectionImage->SetPixel( projectionIndex, 2*64 );
+	  }
+	else if ( region == cip::UPPERTHIRD )
+	  {
+          projectionImage->SetPixel( projectionIndex, 3*64 );
+	  }
         }
       }
 
