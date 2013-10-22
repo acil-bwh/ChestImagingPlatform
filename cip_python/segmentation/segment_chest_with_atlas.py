@@ -1,5 +1,7 @@
 import pdb
 
+from chest_structure_likelihoods import ChestStructureLikelihood
+
 def segment_chest_with_atlas(input_image, priors, likelihood):
     """Segment structures using atlas data.    
 
@@ -14,7 +16,7 @@ def segment_chest_with_atlas(input_image, priors, likelihood):
 	interval [0, 1], indicating the probability of that particular
 	structure being present at that particular location.
 
-    likelihood : Instance of type StructureLikelihood
+    likelihoods : List StructureLikelihood class instances
         ...
         
     Returns
