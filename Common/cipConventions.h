@@ -165,6 +165,9 @@ enum ChestType {
   SUPERIORDIVISIONBRONCHUS,       //74
   LINGULARBRONCHUS,               //75
   MIDDLELOBEBRONCHUS,             //76
+  BRONCHIECTATICAIRWAY,           //77
+  NONBRONCHIECTATICAIRWAY,        //78
+  AMBIGUOUSBRONCHIECTATICAIRWAY,  //79
 };
 
 enum ReturnCode {
@@ -201,7 +204,7 @@ public:
   ChestConventions()
     {
       m_NumberOfEnumeratedChestRegions = 28;
-      m_NumberOfEnumeratedChestTypes   = 77;
+      m_NumberOfEnumeratedChestTypes   = 80;
 
       typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -360,6 +363,9 @@ public:
       ChestTypes.push_back( static_cast< unsigned char >( SUPERIORDIVISIONBRONCHUS ) );
       ChestTypes.push_back( static_cast< unsigned char >( LINGULARBRONCHUS ) );
       ChestTypes.push_back( static_cast< unsigned char >( MIDDLELOBEBRONCHUS ) );
+      ChestTypes.push_back( static_cast< unsigned char >( BRONCHIECTATICAIRWAY ) );
+      ChestTypes.push_back( static_cast< unsigned char >( NONBRONCHIECTATICAIRWAY ) );
+      ChestTypes.push_back( static_cast< unsigned char >( AMBIGUOUSBRONCHIECTATICAIRWAY ) );
 
       ChestRegionNames.push_back( "UNDEFINEDREGION" );
       ChestRegionNames.push_back( "WHOLELUNG" ); 
@@ -467,6 +473,9 @@ public:
       ChestTypeNames.push_back( "SUPERIORDIVISIONBRONCHUS" );
       ChestTypeNames.push_back( "LINGULARBRONCHUS" );
       ChestTypeNames.push_back( "MIDDLELOBEBRONCHUS" );
+      ChestTypeNames.push_back( "BRONCHIECTATICAIRWAY" );
+      ChestTypeNames.push_back( "NONBRONCHIECTATICAIRWAY" );
+      ChestTypeNames.push_back( "AMBIGUOUSBRONCHIECTATICAIRWAY" );
 
       //
       // Each type is associated with a color. This is generally
@@ -558,6 +567,10 @@ public:
       double* t075 = new double[3]; t075[0] = 0.98; t075[1] = 0.50; t075[2] = 0.45; ChestTypeColors.push_back( t075 ); //SUPERIORDIVISIONBRONCHUS
       double* t076 = new double[3]; t076[0] = 0.00; t076[1] = 0.03; t076[2] = 1.00; ChestTypeColors.push_back( t076 ); //LINGULARBRONCHUS
       double* t077 = new double[3]; t077[0] = 0.25; t077[1] = 0.88; t077[2] = 0.82; ChestTypeColors.push_back( t077 ); //MIDDLELOBEBRONCHUS
+
+      double* t078 = new double[3]; t078[0] = 0.25; t078[1] = 0.88; t078[2] = 0.81; ChestTypeColors.push_back( t078 ); //BRONCHIECTATICAIRWAY
+      double* t079 = new double[3]; t079[0] = 0.25; t079[1] = 0.87; t079[2] = 0.81; ChestTypeColors.push_back( t079 ); //NONBRONCHIECTATICAIRWAY
+      double* t080 = new double[3]; t080[0] = 0.25; t080[1] = 0.86; t080[2] = 0.81; ChestTypeColors.push_back( t080 ); //AMBIGUOUSBRONCHIECTATICAIRWAY
 
       //
       // Each region is associated with a color. This is generally
