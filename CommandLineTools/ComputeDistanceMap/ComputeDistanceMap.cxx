@@ -43,7 +43,6 @@
  */
 
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkResampleImageFilter.h"
 #include "itkImage.h"
