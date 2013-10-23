@@ -66,7 +66,6 @@
  *
  */
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
