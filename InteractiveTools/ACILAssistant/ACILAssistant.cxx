@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include "PaintBrushAndEraserGUI.h"
+#include "PaletteCounterGUI.h"
 #include "RegionGrowingGUI.h"
 #include "ACILAssistantBase.h"
 #include "itkImageFileReader.h"
@@ -54,6 +55,7 @@ static PaintBrushAndEraserGUI* paintBrushAndEraserInput;
 static RegionGrowingGUI* regionGrowingInput;
 static bool labelMapImageRead = false;
 static ACILAssistantBase* assistantInstance;
+static PaletteCounterGUI* paletteCounter;
 
 std::string exec(const char*);
 bool DoesRemoteFileExist(std::string study, std::string patientID, std::string caseName, std::string fileName);
@@ -91,6 +93,10 @@ Fl_Menu_Item menu_Menu[] = {
  {"Muscle", 0,  (Fl_Callback*)muscleMenu_CB, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
 
+ {"View", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Palette Counter", 0,  (Fl_Callback*)paletteCounter_CB, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0},
+
  {0,0,0,0,0,0,0,0,0}
 };
 
@@ -102,7 +108,7 @@ Fl_Slider *opacitySlider=(Fl_Slider *)0;
 int main(int argc, char **argv) {
   Fl_Double_Window* w;
   assistantInstance = new ACILAssistantBase();
-
+  paletteCounter = new PaletteCounterGUI();
   regionGrowingInput = new RegionGrowingGUI();
 
   paintBrushAndEraserInput = new PaintBrushAndEraserGUI();
@@ -750,6 +756,11 @@ std::cout << "DONE." << std::endl;
 UpdateViewer();
 }
 
+void paletteCounter_CB( Fl_Widget*, void* ) 
+{
+  paletteCounter->paletteCounterWindow->show();
+}
+
 void lungMenu_CB( Fl_Widget*, void* ) 
 {
   if ( !grayscaleImageRead )
@@ -784,7 +795,6 @@ void regionGrowingMenu_CB( Fl_Widget*, void* )
   paintBrushAndEraserInput->paintBrushAndEraserWindow->hide();
   regionGrowingInput->regionGrowingWindow->show();
 }
-
 
 void lungLobesMenu_CB( Fl_Widget*, void* ) 
 {
@@ -821,6 +831,8 @@ void Quit_CB( Fl_Widget*, void* ) {
 
 void clickSelect_CB( float x, float y, float z, float value ) 
 {
+  cip::ChestConventions conventions;
+
   ACILAssistantBase::GrayscaleImageType::IndexType index;
 
   index[0] = static_cast< unsigned int >( x );
@@ -866,6 +878,16 @@ void clickSelect_CB( float x, float y, float z, float value )
 	      assistantInstance->EraseLabelMapSlice( index, cipRegion, cipType, radius, lowerThreshold, upperThreshold, 
 						     paintBrushAndEraserInput->GetEraseSelectedSelected(), orientation );
 	    }
+	}
+
+      // Update the palette counter
+      if ( paletteCounter->paletteCounterWindow->visible() )
+	{
+	  unsigned char cipType   = paintBrushAndEraserInput->GetChestType(); 	
+	  unsigned char cipRegion = paintBrushAndEraserInput->GetChestRegion(); 	
+	  paletteCounter->SetChestRegion( conventions.GetChestRegionName(cipRegion) );
+	  paletteCounter->SetChestType( conventions.GetChestTypeName(cipType) );
+	  paletteCounter->SetCount( assistantInstance->GetNumberOfPaintedIndices( cipRegion, cipType ) );
 	}
 
       UpdateViewer();

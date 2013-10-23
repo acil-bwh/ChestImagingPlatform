@@ -1,0 +1,39 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0300 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include "cipConventions.h"} {private local
+} 
+
+decl {using namespace std;} {public local
+} 
+
+class PaletteCounterGUI {open
+} {
+  Function {PaletteCounterGUI()} {open selected
+  } {
+    code {this->m_ChestRegion = static_cast< unsigned char >( cip::UNDEFINEDREGION );} {}
+    code {this->m_ChestType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );} {}
+    Fl_Window paletteCounterWindow {
+      label {Palette Counter} open
+      xywh {801 145 363 115} type Double box UP_BOX visible
+    } {
+      Fl_Text_Display {} {
+        label {Selected Chest Region}
+        xywh {163 11 185 25} align 260
+      }
+      Fl_Text_Display {} {
+        label {Selected Chest Type}
+        xywh {164 44 185 25} align 260
+      }
+      Fl_Text_Display {} {
+        label {Number Selected Points}
+        xywh {164 75 185 25} align 260
+      }
+    }
+  }
+  decl {std::string m_ChestRegion;} {private local
+  }
+  decl {std::string m_ChestType;} {private local
+  }
+} 

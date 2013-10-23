@@ -65,10 +65,10 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Left Lung", 0, (Fl_Callback*)leftLungMenuItem_CB, (void*)(this));
       o->add("Right Lung", 0, (Fl_Callback*)rightLungMenuItem_CB, (void*)(this));
       o->add("Right Upper Lobe", 0, (Fl_Callback*)rightUpperLobeMenuItem_CB, (void*)(this));
-      //o->add("Right Middle Lobe", 0, (Fl_Callback*)rightMiddleLobeMenuItem_CB, (void*)(this));
+      o->add("Right Middle Lobe", 0, (Fl_Callback*)rightMiddleLobeMenuItem_CB, (void*)(this));
       o->add("Right Lower Lobe", 0, (Fl_Callback*)rightLowerLobeMenuItem_CB, (void*)(this));
-      //o->add("Left Upper Lobe", 0, (Fl_Callback*)leftUpperLobeMenuItem_CB, (void*)(this));
-      //o->add("Left Lower Lobe", 0, (Fl_Callback*)leftLowerLobeMenuItem_CB, (void*)(this));
+      o->add("Left Upper Lobe", 0, (Fl_Callback*)leftUpperLobeMenuItem_CB, (void*)(this));
+      o->add("Left Lower Lobe", 0, (Fl_Callback*)leftLowerLobeMenuItem_CB, (void*)(this));
       o->add("Left", 0, (Fl_Callback*)leftMenuItem_CB, (void*)(this));
       o->add("Right", 0, (Fl_Callback*)rightMenuItem_CB, (void*)(this));
       o->add("Liver", 0, (Fl_Callback*)liverMenuItem_CB, (void*)(this));
@@ -88,6 +88,9 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Visceral Fat", 0, (Fl_Callback*)visceralFatMenuItem_CB, (void*)(this));
       o->add("Oblique Fissure", 0, (Fl_Callback*)obliqueFissureMenuItem_CB, (void*)(this));
       o->add("Horizontal Fissure", 0, (Fl_Callback*)horizontalFissureMenuItem_CB, (void*)(this));
+      o->add("Bronchiectatic Airway", 0, (Fl_Callback*)bronchiectaticAirwayMenuItem_CB, (void*)(this));
+      o->add("Non-Bronchiectatic Airway", 0, (Fl_Callback*)nonBronchiectaticAirwayMenuItem_CB, (void*)(this));
+      o->add("Ambiguous-Bronchiectatic Airway", 0, (Fl_Callback*)ambiguousBronchiectaticAirwayMenuItem_CB, (void*)(this));
       //o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
       //o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
       //o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
@@ -435,7 +438,6 @@ void PaintBrushAndEraserGUI::pectoralisMinorMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::PECTORALISMINOR );
 }
 
-
 void PaintBrushAndEraserGUI::pectoralisMajorMenuItem_CB( Fl_Widget* o, void* v ) {
   ((PaintBrushAndEraserGUI*)v)->pectoralisMajorMenuItem_CB_i();
 }
@@ -462,6 +464,27 @@ void PaintBrushAndEraserGUI::obliqueFissureMenuItem_CB( Fl_Widget* o, void* v ) 
 }
 void PaintBrushAndEraserGUI::obliqueFissureMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
+}
+
+void PaintBrushAndEraserGUI::ambiguousBronchiectaticAirwayMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->ambiguousBronchiectaticAirwayMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::ambiguousBronchiectaticAirwayMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::AMBIGUOUSBRONCHIECTATICAIRWAY );
+}
+
+void PaintBrushAndEraserGUI::nonBronchiectaticAirwayMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->nonBronchiectaticAirwayMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::nonBronchiectaticAirwayMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::NONBRONCHIECTATICAIRWAY );
+}
+
+void PaintBrushAndEraserGUI::bronchiectaticAirwayMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->bronchiectaticAirwayMenuItem_CB_i();
+}
+void PaintBrushAndEraserGUI::bronchiectaticAirwayMenuItem_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::BRONCHIECTATICAIRWAY );
 }
 
 void PaintBrushAndEraserGUI::horizontalFissureMenuItem_CB( Fl_Widget* o, void* v ) {

@@ -36,6 +36,19 @@ ACILAssistantBase::ACILAssistantBase()
   this->FeetFirst      = false;
   this->Supine         = true;
   this->Prone          = false;
+
+  cip::ChestConventions conventions;
+  for ( unsigned int i=0; i<conventions.GetNumberOfEnumeratedChestRegions(); i++ )
+    {
+      unsigned char cipRegion = conventions.GetChestRegion( i );
+      for ( unsigned int j=0; j<conventions.GetNumberOfEnumeratedChestTypes(); j++ )
+	{
+	  unsigned char cipType = conventions.GetChestType( j );
+
+	  unsigned short value = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
+	  this->PaintedIndicesCounts[value] = 0;
+	}
+    }
 }
 
 ACILAssistantBase::~ACILAssistantBase(){}
@@ -149,11 +162,22 @@ void ACILAssistantBase::InitializeLabelMapImage( LabelMapType::SizeType size, La
   this->LabelMap->SetOrigin( origin );
 }
 
+unsigned int ACILAssistantBase::GetNumberOfPaintedIndices( unsigned char cipRegion, unsigned char cipType )
+{
+  cip::ChestConventions conventions;
+
+  unsigned short value = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
+
+  return this->PaintedIndicesCounts[value];
+}
 
 void ACILAssistantBase::PaintLabelMapSlice( LabelMapType::IndexType index, unsigned char cipType, unsigned char cipRegion, unsigned int radius, 
                                             short lowerThreshold, short upperThreshold, unsigned int orientation )
 {  
   cip::ChestConventions conventions;
+
+  unsigned short value = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
+  this->PaintedIndicesCounts[value]++;
 
   LabelMapType::IndexType tempIndex;
 
@@ -310,6 +334,11 @@ void ACILAssistantBase::EraseLabelMapSlice( LabelMapType::IndexType index, unsig
               unsigned char currentRegion = conventions.GetChestRegionFromValue( currentLabel );
               unsigned char currentType   = conventions.GetChestTypeFromValue( currentLabel );
             
+
+
+  // unsigned short value = conventions.GetValueFromChestRegionAndType( currentRegion, currentType );
+  // this->PaintedIndicesCounts[value]++;
+
               unsigned char newRegion = currentRegion;
               unsigned char newType   = currentType;
 
