@@ -35,7 +35,7 @@ class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
         self.exp_lambda = exp_lambda
         self.poly_feature_map = poly_feature_map
         
-        if poly_feature_map is NULL:
+        if poly_feature_map is None:
             self.poly_feature_map.feature_vectors = feature_vectors
             self.poly_feature_map.feature_vectors.num_terms = feature_vectors.len
             
