@@ -28,7 +28,8 @@ def segment_chest_with_atlas(input_image, priors, likelihood):
     posterior_energies = compute_structure_posterior_energy(likelihood, priors)
     
     # Step 3: For each structure separately, input the posterior energies into the graph cuts code
-    
+    for i in range(priors.len):
+         obtain_graph_cuts_segmentation(posterior_energies[i*2],posterior_energies[i*2+1])
     #Step 4: Postprocess by removing duplicate labels and pre-segmented structures (e.g. trachea)
     
     pass
