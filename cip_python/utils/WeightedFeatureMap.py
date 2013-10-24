@@ -1,6 +1,6 @@
 import pdb
 
-class Likelihoods:
+class WeightedFeatureMapDensity:
     """Base class for representing likelihood terms for various chest
     structures of interest.
 
@@ -13,7 +13,7 @@ class Likelihoods:
       pass
 
 
-class ExponentialLikelihoods:
+class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
     """Inhereted class for represening the lung likelihood term with a 2D
     exponential function (features being intensity and distance).
     
