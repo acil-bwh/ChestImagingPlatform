@@ -64,6 +64,15 @@ private:
   static void undefinedRegionMenuItem_CB( Fl_Widget* o, void* v );
   void undefinedRegionMenuItem_CB_i();
 
+  static void ambiguousBronchiectaticAirwayMenuItem_CB( Fl_Widget* o, void* v );
+  void ambiguousBronchiectaticAirwayMenuItem_CB_i();
+
+  static void nonBronchiectaticAirwayMenuItem_CB( Fl_Widget* o, void* v );
+  void nonBronchiectaticAirwayMenuItem_CB_i();
+
+  static void bronchiectaticAirwayMenuItem_CB( Fl_Widget* o, void* v );
+  void bronchiectaticAirwayMenuItem_CB_i();
+
   static void rightLungMenuItem_CB( Fl_Widget* o, void* v );
   void rightLungMenuItem_CB_i();
 

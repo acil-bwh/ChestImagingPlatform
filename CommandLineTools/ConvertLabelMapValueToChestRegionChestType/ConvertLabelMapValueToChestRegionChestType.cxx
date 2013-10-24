@@ -12,15 +12,13 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "ConvertLabelMapValueToChestRegionChestTypeCLP.h"
 
 int main( int argc, char *argv[] )
 {
-    PARSE_ARGS;
+  PARSE_ARGS;
     
-
   cip::ChestConventions conventions;
 
   std::cout << "Chest Region:\t" << conventions.GetChestRegionNameFromValue( value ) << std::endl;

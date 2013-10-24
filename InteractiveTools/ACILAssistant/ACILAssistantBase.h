@@ -81,6 +81,9 @@ public:
   /** Indicate that the scan is a prone scan */
   void SetScanIsProne();
 
+  /** Get the number of painted indices for the specified region and type */
+  unsigned int GetNumberOfPaintedIndices( unsigned char, unsigned char );
+
 private:
   typedef itk::ImageRegionIteratorWithIndex< GrayscaleImageType >                  GrayscaleIteratorType;
   typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                        LabelMapIteratorType;
@@ -98,6 +101,7 @@ private:
   bool Supine;
   bool FeetFirst;
   bool Prone;
+  std::map< unsigned short, unsigned int > PaintedIndicesCounts;
 
   void CloseLabelMap( LabelMapType::Pointer, unsigned short );
 

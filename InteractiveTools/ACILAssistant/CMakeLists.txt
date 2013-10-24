@@ -30,7 +30,7 @@ ${CMAKE_SOURCE_DIR}/Common
 ${CMAKE_SOURCE_DIR}/IO
 )
 
-SET ( ACILAssistant_SOURCE ACILAssistant.cxx PaintBrushAndEraserGUI.cxx RegionGrowingGUI.cxx ACILAssistantBase.cxx )
+SET ( ACILAssistant_SOURCE ACILAssistant.cxx PaintBrushAndEraserGUI.cxx PaletteCounterGUI.cxx RegionGrowingGUI.cxx ACILAssistantBase.cxx )
 
 ADD_EXECUTABLE ( ACILAssistant ${ACILAssistant_SOURCE})
 TARGET_LINK_LIBRARIES ( ACILAssistant ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${FLTK_LIBRARIES} CIPCommon CIPIO ${OPENGL_LIBRARIES} )
