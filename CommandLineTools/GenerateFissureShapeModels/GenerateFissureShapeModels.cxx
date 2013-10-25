@@ -124,7 +124,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "cipThinPlateSplineSurface.h"
 #include "itkNrrdImageIO.h"
@@ -147,7 +146,7 @@
 #include "cipChestRegionChestTypeLocationsIO.h"
 #include "cipLobeBoundaryShapeModel.h"
 #include "cipLobeBoundaryShapeModelIO.h"
-
+#include "GenerateFissureShapeModelsCLP.h"
 
 typedef itk::Image< unsigned short, 3 >                                             ImageType;
 typedef itk::Image< unsigned short, 2 >                                             ImageSliceType;
@@ -170,12 +169,9 @@ typedef itk::CIPExtractChestLabelMapImageFilter                                 
 typedef itk::TransformFileReader::TransformListType*                                TransformListType;
 typedef itk::ContinuousIndex< double, 3 >                                           ContinuousIndexType;
 
-
 struct PCA
 {
-  //
   // Eigenvalues are in descending order
-  //
   std::vector< double >                    meanVec;
   std::vector< double >                    modeVec;
   std::vector< std::vector< double > >     modeVecVec;
@@ -193,151 +189,19 @@ void GetZValuesFromTPS( std::vector< ImageType::PointType >, std::vector< double
                         ImageType::Pointer );
 PCA GetShapePCA( std::vector< std::vector< double > > );
 
-
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::vector< std::string > trainTransformFileVec;
-  std::vector< std::string > trainPointsFileVec;
+  PARSE_ARGS;
 
-  std::string inputFileName                    = "NA";
-  std::string refImageFileName                 = "NA";
-  std::string refPointsFileName                = "NA";
-  std::string rhShapeModelFileName             = "NA";
-  std::string roShapeModelFileName             = "NA";
-  std::string loShapeModelFileName             = "NA";
-  std::string outRefToInputTransformFileName   = "NA";
-  float maxStepLength                          = 1.0;
-  float minStepLength                          = 0.001;
-  float translationScale                       = 0.001;
-  float downsampleFactor                       = 4.0;
-  unsigned int numberOfIterations               = 20;
-
-  //
-  // Argument descriptions for user 
-  //
-  std::string programDescription = "This program is used to generate \
-fissure shape models based \
-on a training set. The basic approach is as follows: a reference image \
-is read and then registered to the label map for which the user \
-wants to produce fissure models. Additionally, a set of training \
-data is read in. These data sets consist of fissure indices and a \
-transform file that indicates the mapping between the training data \
-label map and the reference label map. Once the reference image is \
-registered to the input image, the resulting transform in \
-conjunction with the training data transform is used to map the \
-training fissure points to the input image's coordinate frame. This \
-is done repeatedly for all the training data sets. Once all the \
-fissure points are in the coordinate frame of the input image, PCA \
-is performed to get the mean and modes of the fissure points. This \
-data is then printed to file. \
-\
-The reference image for model building has been (arbitrarily) \
-chosen to be the COPDGene case, 10002K_INSP_STD_BWH_COPD. There are \
-20 training datasets consisting, including INSP and EXP data. These \
-datasets were manually segmented by George Washko and Alejandro Diaz \
-for the MICCAI 09 submission. The transform files used to map the \
-training data to the reference dataset and the files for the training \
-data can be found in ~/Processed/Atlases/LungLobeAtlases \
-\
-The output file format is as follows: the first line contains the \
-origin of the input image. The second line contains the spacing of \
-the input image. The third line indicates the number of modes, \
-N. The fourth line is the mean vector. The entries are for the \
-continuous index z-values of the control points. The next N lines \
-contain the mode variances and a weight value. Upon generation of \
-the shape model file, the weight value will be 0. Later in the lobe \
-segmentation process, this value can be overwritten with a weight \
-has been found by fitting to particles data. The next N lines are \
-the modes themselves -- again, the modes represent the variation of \
-the control points in the z-direction (the range of our TPS \
-function). The length of each mode (and mean) vector is m, where m \
-indicates the number of control points. Finally, the next m lines \
-indicate the control point indices (the domain locations). Note \
-that the z-value for these entries is 0. This is to emphasize that \
-they are in the domain -- the x-y plane.";
-
-  std::string trainTransformFileVecDesc           = "Training data set transform file. This file contains the \
-transform that is used to map the corresponding training data set's fissure points to the reference image's \
-coordinate system. It should immediately be followed with a region and type points file (specified with the \
---trainPoints flag)";
-  std::string trainPointsFileVecDesc              = "Region and type points file corresponding to the previously \
-called transform file (see notes for --trainTrans)";
-  std::string inputFileNameDesc                   = "Input label map to serve as starting point for lung lobe \
-segmentation .The level of lung segmentation 'grunularity' should be at the left lung right lung split \
-level. In other words, a mask divided into thirds (left and right) will work fine, as will one for which \
-only the left and right lung are labeled.";
-  std::string refImageFileNameDesc                = "Reference image label map corresponding to the reference points. \
-This is the image to which all other image data in the training set is registered to";
-  std::string refPointsFileNameDesc               = "Reference points corresponding to the reference image.";
-  std::string rhShapeModelFileNameDesc            = "Output right horizontal shape model file name";
-  std::string roShapeModelFileNameDesc            = "Output right oblique shape model file name";
-  std::string loShapeModelFileNameDesc            = "Output left oblique shape model file name";
-  std::string outRefToInputTransformFileNameDesc  = "Output reference image to input label map transform file name";
-  std::string maxStepLengthDesc                   = "Max step length. Default is 1.0";
-  std::string minStepLengthDesc                   = "Min step length. Default is 0.001";   
-  std::string numberOfIterationsDesc              = "Number of iterations. Default is 20";     
-  std::string translationScaleDesc                = "Translation scale. Default is 0.001";
-  std::string downsampleFactorDesc                = "Down sample factor. The fixed and moving images will be \
-down sampled by this amount before registration. (Default is 1.0, i.e. no down sampling).";
+  // The reference image for model building has been (arbitrarily)
+  // chosen to be the COPDGene case, 10002K_INSP_STD_BWH_COPD. There are
+  // 20 training datasets consisting, including INSP and EXP data. These
+  // datasets were manually segmented by George Washko and Alejandro Diaz
+  // for the MICCAI 09 submission. The transform files used to map the
+  // training data to the reference dataset and the files for the training
+  // data can be found in ~/Processed/Atlases/LungLobeAtlases
 
   unsigned int numTrainingSets = 0;
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 251 $" );
-
-    TCLAP::MultiArg<std::string> trainTransformFileVecArg( "", "trainTrans", trainTransformFileVecDesc, true, "string", cl );
-    TCLAP::MultiArg<std::string> trainPointsFileVecArg( "", "trainPoints", trainPointsFileVecDesc, true, "string", cl );
-    TCLAP::ValueArg<std::string> inputFileNameArg( "i", "inFileName", inputFileNameDesc, true, inputFileName, "string", cl );
-    TCLAP::ValueArg<std::string> refImageFileNameArg( "", "refim", refImageFileNameDesc, true, refImageFileName, "string", cl );
-    TCLAP::ValueArg<std::string> refPointsFileNameArg( "", "refps", refPointsFileNameDesc, true, refPointsFileName, "string", cl );
-    TCLAP::ValueArg<std::string> rhShapeModelFileNameArg( "", "orh", rhShapeModelFileNameDesc, false, rhShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<std::string> roShapeModelFileNameArg( "", "oro", roShapeModelFileNameDesc, false, roShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<std::string> loShapeModelFileNameArg( "", "olo", loShapeModelFileNameDesc, false, loShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outRefToInputTransformFileNameArg( "", "ot", outRefToInputTransformFileNameDesc, false, outRefToInputTransformFileName, "string", cl );
-    TCLAP::ValueArg<float> maxStepLengthArg( "", "max", maxStepLengthDesc, false, maxStepLength, "float", cl );
-    TCLAP::ValueArg<float> minStepLengthArg( "", "min", minStepLengthDesc, false, minStepLength, "float", cl );
-    TCLAP::ValueArg<float> translationScaleArg( "t", "transScale", translationScaleDesc, false, translationScale, "float", cl );
-    TCLAP::ValueArg<float> downsampleFactorArg( "d", "down", downsampleFactorDesc, false, downsampleFactor, "float", cl );
-    TCLAP::ValueArg<unsigned int> numberOfIterationsArg( "n", "numIters", numberOfIterationsDesc, false, numberOfIterations, "unsigned int", cl );
-
-    cl.parse( argc, argv );
-
-    for ( unsigned int i=0; i<trainTransformFileVecArg.getValue().size(); i++ )
-      {
-	trainTransformFileVec.push_back( trainTransformFileVecArg.getValue()[i] );
-      }
-    for ( unsigned int i=0; i<trainPointsFileVecArg.getValue().size(); i++ )
-      {
-	trainPointsFileVec.push_back( trainPointsFileVecArg.getValue()[i] );
-      }
-
-    numTrainingSets                = trainPointsFileVec.size();
-
-    inputFileName                  = inputFileNameArg.getValue();
-    refImageFileName               = refImageFileNameArg.getValue();
-    refPointsFileName              = refPointsFileNameArg.getValue();
-    rhShapeModelFileName           = rhShapeModelFileNameArg.getValue();
-    roShapeModelFileName           = roShapeModelFileNameArg.getValue();
-    loShapeModelFileName           = loShapeModelFileNameArg.getValue();
-    outRefToInputTransformFileName = outRefToInputTransformFileNameArg.getValue();
-    maxStepLength                  = maxStepLengthArg.getValue();
-    minStepLength                  = minStepLengthArg.getValue();
-    translationScale               = translationScaleArg.getValue();
-    downsampleFactor               = downsampleFactorArg.getValue();
-    numberOfIterations             = numberOfIterationsArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
 
   std::cout << "Reading fixed image..." << std::endl;
   ImageReaderType::Pointer fixedReader = ImageReaderType::New();
@@ -354,14 +218,12 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
 
   TransformType::Pointer refToInputTransform = TransformType::New();
 
-  //
   // We need to get the transform that maps the reference image (from
   // our training set) to the input image (whose lobes we want to
   // segment). We read both these images, downsample them, and then
   // register them. Once this has been done, we can use the resulting
   // transform to map all training points to the input image's
   // coordinate frame
-  //
   ImageType::Pointer subSampledFixedImage = ImageType::New();
 
   std::cout << "Subsampling fixed image..." << std::endl;
@@ -385,10 +247,8 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
   std::cout << "Subsampling moving image..." << std::endl;
   ResampleImage( movingReader->GetOutput(), subSampledMovingImage, downsampleFactor );
 
-  //
   // Now extract the whole lung region from the resized fixed and
   // moving images
-  //
   std::cout << "Extracting whole lung region from down sampled fixed image..." << std::endl;
   LabelMapExtractorType::Pointer fixedExtractor = LabelMapExtractorType::New();
     fixedExtractor->SetInput( subSampledFixedImage );
@@ -403,7 +263,7 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
 
   std::cout << "Registering reference image to input image..." << std::endl;
   refToInputTransform = RegisterLungs( fixedExtractor->GetOutput(), movingExtractor->GetOutput(), 
-				       maxStepLength, minStepLength, translationScale, numberOfIterations );
+  				       maxStepLength, minStepLength, translationScale, numberOfIterations );
 
   if ( outRefToInputTransformFileName.compare( "NA" ) != 0 )
     {
@@ -411,14 +271,12 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
       WriteTransformToFile( refToInputTransform, outRefToInputTransformFileName );
     }
 
-  //
   // Now that we have the transform that maps the reference image to
   // the input image, we need to read in and map all the training
   // points so that they are in the input image's coordinate frame.
   // The following three vectors of vectors will contain all the
   // points from the training set (transformed to be in the input
   // image's coordinate frame)
-  //
   std::vector< std::vector< ImageType::PointType > > loTransPointsVecVec;
   std::vector< std::vector< ImageType::PointType > > roTransPointsVecVec;
   std::vector< std::vector< ImageType::PointType > > rhTransPointsVecVec;
@@ -464,12 +322,10 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
     rhTransPointsVecVec.push_back( rhPointsVec );
     }
 
-  //
   // At this stage all the training points should be registered to the
   // input image's coordinate frame. We can now get the domain
   // locations for each of the three fissures. Note that the domain
   // locations have the z-coordinate zeroed out.
-  //
   std::cout << "Getting domain locations..." << std::endl;
   std::vector< ImageType::PointType > loDomainVec;
   GetDomainPoints( loTransPointsVecVec, &loDomainVec, fixedReader->GetOutput(), 0 );
@@ -480,12 +336,10 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
   std::vector< ImageType::PointType > rhDomainVec;
   GetDomainPoints( rhTransPointsVecVec, &rhDomainVec, fixedReader->GetOutput(), 2 );
 
-  //
   // Now we have the domain locations for each of our three
   // fissures. To build our PCA model, we need to evaluate the z
   // values at the domain locations for each of our training
   // datasets. 
-  //
   std::cout << "Getting range locations..." << std::endl;
   std::vector< std::vector< double > > rhRangeValuesVecVec;
   std::vector< std::vector< double > > roRangeValuesVecVec;
@@ -506,26 +360,22 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
     loRangeValuesVecVec.push_back( loRangeValuesVec );
     }
 
-  //
   // Now we have all the training information needed for building the
   // PCA-based fissure models for this case. 
-  //
   PCA rhShapePCA = GetShapePCA( rhRangeValuesVecVec );
   PCA roShapePCA = GetShapePCA( roRangeValuesVecVec );
   PCA loShapePCA = GetShapePCA( loRangeValuesVecVec );
 
-  //
   // Now create shape models for each of the three lobe boundaries. To do this we need to 
   // collect the domain locations and mean vector into a single collection of points
   // for each of the three boundaries
-  //
   std::vector< double* >* roMeanSurfacePoints = new std::vector< double* >;
   for ( unsigned int i=0; i<roShapePCA.meanVec.size(); i++ )
     {
       double* point = new double[3];
         point[0] = roDomainVec[i][0];
-	point[1] = roDomainVec[i][1];
-	point[2] = roShapePCA.meanVec[i];
+  	point[1] = roDomainVec[i][1];
+  	point[2] = roShapePCA.meanVec[i];
 
       roMeanSurfacePoints->push_back( point );
     }
@@ -535,8 +385,8 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
     {
       double* point = new double[3];
         point[0] = rhDomainVec[i][0];
-	point[1] = rhDomainVec[i][1];
-	point[2] = rhShapePCA.meanVec[i];
+  	point[1] = rhDomainVec[i][1];
+  	point[2] = rhShapePCA.meanVec[i];
 
       rhMeanSurfacePoints->push_back( point );
     }
@@ -546,15 +396,13 @@ down sampled by this amount before registration. (Default is 1.0, i.e. no down s
     {
       double* point = new double[3];
         point[0] = loDomainVec[i][0];
-	point[1] = loDomainVec[i][1];
-	point[2] = loShapePCA.meanVec[i];
+  	point[1] = loDomainVec[i][1];
+  	point[2] = loShapePCA.meanVec[i];
 
       loMeanSurfacePoints->push_back( point );
     }
 
-  //
   // Now create the boundary models
-  //
   std::vector< double > rhModeWeights;
   for ( unsigned int n=0; n<rhShapePCA.modeVec.size(); n++ )
     {
