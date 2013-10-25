@@ -60,7 +60,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -70,72 +69,11 @@
 #include "cipThinPlateSplineSurfaceModelToParticlesMetric.h"
 #include "cipNelderMeadSimplexOptimizer.h"
 #include "cipLobeBoundaryShapeModelIO.h"
-
+#include "FitFissureSurfaceModelToParticleDataCLP.h"
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Define arguments
-  //
-  std::string particlesFileName        = "NA";
-  std::string inShapeModelFileName     = "NA";
-  std::string outShapeModelFileName    = "NA";
-  double shapeVarianceThreshold        = 0.95;
-  double sigmaDistance                 = 20.0;
-  double sigmaTheta                    = 20.0;
-  bool   useModeWeights                = 0;
-  unsigned int numIters                = 0;
-
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDesc = "This program is used to fit a left oblique shape model to fissure \
-particles data. It is expected that the input shape model is generated with the 'GenerateFissureShapeModels' \
-program. The output shape model has the same form as the input shape model, but it indicates how much to \
-weight each of the primary modes of variation in order to achieve a good fit to the particles data.";
-
-  std::string particlesFileNameDesc = "Input particles file name (vtk)";
-  std::string inShapeModelFileNameDesc = "Input shape model file name";
-  std::string outShapeModelFileNameDesc = "Output shape model file name";
-  std::string shapeVarianceThresholdDesc = "Shape variance threshold. This indicates how much of \
-the variance you want accounted for during the shape model fitting process.";
-  std::string sigmaDistanceDesc = "Sigma distance value for the TPS to particles optimization";
-  std::string sigmaThetaDesc = "Sigma theta value for the TPS to particles optimization";
-  std::string useModeWeightsDesc = "Set to 1 to use stored mode weights for initialization. Set to 0 otherwise (0 by default)";
-  std::string numItersDesc = "Number of iterations to perform for Nelder-Mead simplex model fitting.";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 238 $" );
-
-    TCLAP::ValueArg<std::string> particlesFileNameArg( "p", "inFile", particlesFileNameDesc, true, particlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> inShapeModelFileNameArg( "i", "inModel", inShapeModelFileNameDesc, true, inShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outShapeModelFileNameArg( "o", "outModel", outShapeModelFileNameDesc, true, outShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<double> shapeVarianceThresholdArg( "v", "shapeVar", shapeVarianceThresholdDesc, false, shapeVarianceThreshold, "double", cl );
-    TCLAP::ValueArg<double> sigmaDistanceArg( "d", "sigDist", sigmaDistanceDesc, false, sigmaDistance, "double", cl );
-    TCLAP::ValueArg<double> sigmaThetaArg( "t", "sigTheta", sigmaThetaDesc, false, sigmaTheta, "double", cl );
-    TCLAP::ValueArg<bool> useModeWeightsArg( "w", "modeWeights", useModeWeightsDesc, false, useModeWeights, "bool", cl );
-    TCLAP::ValueArg<unsigned int> numItersArg( "n", "numIters", numItersDesc, false, numIters, "unsigned int", cl );
-
-    cl.parse( argc, argv );
-
-    particlesFileName            = particlesFileNameArg.getValue();
-    inShapeModelFileName         = inShapeModelFileNameArg.getValue();
-    outShapeModelFileName        = outShapeModelFileNameArg.getValue();
-    shapeVarianceThreshold       = shapeVarianceThresholdArg.getValue();
-    sigmaDistance                = sigmaDistanceArg.getValue();
-    sigmaTheta                   = sigmaThetaArg.getValue();
-    useModeWeights               = useModeWeightsArg.getValue();
-    numIters                     = numItersArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  PARSE_ARGS;
 
   std::cout << "Reading polydata..." << std::endl;
   vtkPolyDataReader* particlesReader = vtkPolyDataReader::New();
