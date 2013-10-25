@@ -80,7 +80,7 @@
 #include "cipNelderMeadSimplexOptimizer.h"
 #include "cipLobeBoundaryShapeModelIO.h"
 #include "cipLobeBoundaryShapeModel.h"
-
+#include "FitFissureSurfaceModelsToParticleDataCLP.h"
 
 unsigned int DetermineNumberOfModesToUse( cipLobeBoundaryShapeModel*, double );
 void GetOptimalParametersFromOptimization( cipLobeBoundaryShapeModel*, vtkPolyData*, std::vector< double >*, unsigned int, double*, double*,
@@ -91,93 +91,16 @@ double GetAngleBetweenVectors( double[3], double[3] );
 void UpdateParticleWeights( vtkPolyData*, std::vector< double >*, std::vector< double >*, double*, double*, 
                             cipLobeBoundaryShapeModel*, cipLobeBoundaryShapeModel*, double, double, unsigned int, unsigned int );
 
-
-
 int main( int argc, char *argv[] )
 {
-  //
-  // Define arguments
-  //
-  std::string particlesFileName        = "NA";
-  std::string inROShapeModelFileName   = "NA";
-  std::string outROShapeModelFileName  = "NA";
-  std::string inRHShapeModelFileName   = "NA";
-  std::string outRHShapeModelFileName  = "NA";
-  double shapeVarianceThreshold        = 0.95;
-  double sigmaDistance                 = 20.0;
-  double sigmaTheta                    = 20.0;
-  bool   useModeWeights                = 0;
-  unsigned int numIters                = 0;
-
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDesc = "This program fits two TPS surface models to the same particles data \
-set in an iterative fashion. It is meant to be used for fitting the \
-right oblique and the right horizontal surface models. The idea is \
-to optimize each surface location a little, and then reweight the \
-particles based on how much they agree with the current TPS surface \
-locations. So the RO model will gravitate towards more likely RO \
-particles, and the RH model will graviate towards more likely RH \
-model.";
-
-  std::string particlesFileNameDesc = "Input particles file name (vtk)";
-  std::string inROShapeModelFileNameDesc = "Input right oblique shape model file name";
-  std::string outROShapeModelFileNameDesc = "Output right oblique shape model file name";
-  std::string inRHShapeModelFileNameDesc = "Input right horizontal shape model file name";
-  std::string outRHShapeModelFileNameDesc = "Output right horizontal shape model file name";
-  std::string shapeVarianceThresholdDesc = "Shape variance threshold. This indicates how much of \
-the variance you want accounted for during the shape model fitting process.";
-  std::string sigmaDistanceDesc = "Sigma distance value for the TPS to particles optimization";
-  std::string sigmaThetaDesc = "Sigma theta value for the TPS to particles optimization";
-  std::string useModeWeightsDesc = "Set to 1 to use stored mode weights for initialization. Set to 0 otherwise (0 by default)";
-  std::string numItersDesc = "Number of iterations to perform for Nelder-Mead simplex model fitting.";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 240 $" );
-
-    TCLAP::ValueArg<std::string> particlesFileNameArg( "p", "inFile", particlesFileNameDesc, true, particlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> inROShapeModelFileNameArg( "", "inROModel", inROShapeModelFileNameDesc, true, inROShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outROShapeModelFileNameArg( "", "outROModel", outROShapeModelFileNameDesc, true, outROShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<std::string> inRHShapeModelFileNameArg( "", "inRHModel", inRHShapeModelFileNameDesc, true, inRHShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outRHShapeModelFileNameArg( "", "outRHModel", outRHShapeModelFileNameDesc, true, outRHShapeModelFileName, "string", cl );
-    TCLAP::ValueArg<double> shapeVarianceThresholdArg( "v", "shapeVar", shapeVarianceThresholdDesc, false, shapeVarianceThreshold, "double", cl );
-    TCLAP::ValueArg<double> sigmaDistanceArg( "d", "sigDist", sigmaDistanceDesc, false, sigmaDistance, "double", cl );
-    TCLAP::ValueArg<double> sigmaThetaArg( "t", "sigTheta", sigmaThetaDesc, false, sigmaTheta, "double", cl );
-    TCLAP::ValueArg<bool> useModeWeightsArg( "w", "modeWeights", useModeWeightsDesc, false, useModeWeights, "bool", cl );
-    TCLAP::ValueArg<unsigned int> numItersArg( "n", "numIters", numItersDesc, false, numIters, "unsigned int", cl );
-
-    cl.parse( argc, argv );
-
-    particlesFileName            = particlesFileNameArg.getValue();
-    inROShapeModelFileName       = inROShapeModelFileNameArg.getValue();
-    outROShapeModelFileName      = outROShapeModelFileNameArg.getValue();
-    inRHShapeModelFileName       = inRHShapeModelFileNameArg.getValue();
-    outRHShapeModelFileName      = outRHShapeModelFileNameArg.getValue();
-    shapeVarianceThreshold       = shapeVarianceThresholdArg.getValue();
-    sigmaDistance                = sigmaDistanceArg.getValue();
-    sigmaTheta                   = sigmaThetaArg.getValue();
-    useModeWeights               = useModeWeightsArg.getValue();
-    numIters                     = numItersArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  PARSE_ARGS;
 
   std::cout << "Reading polydata..." << std::endl;
   vtkPolyDataReader* particlesReader = vtkPolyDataReader::New();
     particlesReader->SetFileName( particlesFileName.c_str() );
     particlesReader->Update();    
 
-  //
   // Read shape models
-  //
   std::cout << "Reading RO shape model..." << std::endl;
   cipLobeBoundaryShapeModelIO* roModelIO = new cipLobeBoundaryShapeModelIO();
     roModelIO->SetFileName( inROShapeModelFileName );
@@ -188,10 +111,8 @@ the variance you want accounted for during the shape model fitting process.";
     rhModelIO->SetFileName( inRHShapeModelFileName );
     rhModelIO->Read();
 
-  //
   // Initialize the initial parameters for the RO and RH. First
   // determine how many modes to use for each
-  //
   unsigned int numberModesRO = DetermineNumberOfModesToUse( roModelIO->GetOutput(), shapeVarianceThreshold );
   unsigned int numberModesRH = DetermineNumberOfModesToUse( rhModelIO->GetOutput(), shapeVarianceThreshold );
 
@@ -224,9 +145,7 @@ the variance you want accounted for during the shape model fitting process.";
       }
     }
 
-  //
   // Initialize the particle weights
-  //
   std::cout << "Initializing particle weights..." << std::endl;
   std::vector< double > roParticleWeights;
   std::vector< double > rhParticleWeights;
@@ -237,9 +156,7 @@ the variance you want accounted for during the shape model fitting process.";
     rhParticleWeights.push_back( 1.0 );
     }
 
-  //
-  // Now enter the main optimization loop
-  //
+  // Now enter the main optimization loop  
   for ( unsigned int i=0; i<2; i++ )
     {
     std::cout << "Updating particle weights..." << std::endl;
@@ -260,10 +177,8 @@ the variance you want accounted for during the shape model fitting process.";
     GetOptimalParametersFromOptimization( rhModelIO->GetOutput(), particlesReader->GetOutput(), &rhParticleWeights,
                                           50, parametersRH, parametersRH, sigmaDistance, sigmaTheta, numberModesRH );
     }
-
-  //
+  
   // Now create and write the final models
-  //
   for ( unsigned int i=0; i<numberModesRO; i++ )
     {
       (*roModelIO->GetOutput()->GetModeWeights())[i] = parametersRO[i];
@@ -284,7 +199,7 @@ the variance you want accounted for during the shape model fitting process.";
 
   std::cout << "DONE." << std::endl;
 
-  return 0;
+  return cip::EXITSUCCESS;
 }
 
 
