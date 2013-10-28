@@ -302,72 +302,110 @@ InitializeViewer();
 void InitializeViewer() {
   cip::ChestConventions conventions;
 
-//unsigned short obliqueFissureLabel         = conventions.GetValueFromLungRegionAndType( UNDEFINEDREGION, OBLIQUEFISSURE );
-//unsigned short horizontalFissureLabel      = conventions.GetValueFromLungRegionAndType( UNDEFINEDREGION, HORIZONTALFISSURE );
-//unsigned short leftLungLabel               = conventions.GetValueFromLungRegionAndType( LEFTLUNG, UNDEFINEDTYPE );
-//unsigned short rightLungLabel              = conventions.GetValueFromLungRegionAndType( RIGHTLUNG, UNDEFINEDTYPE );
-//unsigned short leftObliqueFissureLabel     = conventions.GetValueFromLungRegionAndType( LEFTLUNG, OBLIQUEFISSURE );
-//unsigned short rightObliqueFissureLabel    = conventions.GetValueFromLungRegionAndType( RIGHTLUNG, OBLIQUEFISSURE );
-//unsigned short rightHorizontalFissureLabel = conventions.GetValueFromLungRegionAndType( RIGHTLUNG, HORIZONTALFISSURE );
-//unsigned short rightSuperiorLobeLabel      = conventions.GetValueFromLungRegionAndType( RIGHTSUPERIORLOBE, UNDEFINEDTYPE );
-//unsigned short rightMiddleLobeLabel        = conventions.GetValueFromLungRegionAndType( RIGHTMIDDLELOBE, UNDEFINEDTYPE );
-//unsigned short rightInferiorLobeLabel      = conventions.GetValueFromLungRegionAndType( RIGHTINFERIORLOBE, UNDEFINEDTYPE );
-//unsigned short leftSuperiorLobeLabel       = conventions.GetValueFromLungRegionAndType( LEFTSUPERIORLOBE, UNDEFINEDTYPE );
-//unsigned short leftInteriorLobeLabel       = conventions.GetValueFromLungRegionAndType( LEFTINFERIORLOBE, UNDEFINEDTYPE );
+  //unsigned short obliqueFissureLabel         = conventions.GetValueFromLungRegionAndType( UNDEFINEDREGION, OBLIQUEFISSURE );
+  //unsigned short horizontalFissureLabel      = conventions.GetValueFromLungRegionAndType( UNDEFINEDREGION, HORIZONTALFISSURE );
+  //unsigned short leftLungLabel               = conventions.GetValueFromLungRegionAndType( LEFTLUNG, UNDEFINEDTYPE );
+  //unsigned short rightLungLabel              = conventions.GetValueFromLungRegionAndType( RIGHTLUNG, UNDEFINEDTYPE );
+  //unsigned short leftObliqueFissureLabel     = conventions.GetValueFromLungRegionAndType( LEFTLUNG, OBLIQUEFISSURE );
+  //unsigned short rightObliqueFissureLabel    = conventions.GetValueFromLungRegionAndType( RIGHTLUNG, OBLIQUEFISSURE );
+  //unsigned short rightHorizontalFissureLabel = conventions.GetValueFromLungRegionAndType( RIGHTLUNG, HORIZONTALFISSURE );
+  //unsigned short rightSuperiorLobeLabel      = conventions.GetValueFromLungRegionAndType( RIGHTSUPERIORLOBE, UNDEFINEDTYPE );
+  //unsigned short rightMiddleLobeLabel        = conventions.GetValueFromLungRegionAndType( RIGHTMIDDLELOBE, UNDEFINEDTYPE );
+  //unsigned short rightInferiorLobeLabel      = conventions.GetValueFromLungRegionAndType( RIGHTINFERIORLOBE, UNDEFINEDTYPE );
+  //unsigned short leftSuperiorLobeLabel       = conventions.GetValueFromLungRegionAndType( LEFTSUPERIORLOBE, UNDEFINEDTYPE );
+  //unsigned short leftInteriorLobeLabel       = conventions.GetValueFromLungRegionAndType( LEFTINFERIORLOBE, UNDEFINEDTYPE );
 
-//unsigned short airwayGeneration0Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION0 );
-//unsigned short airwayGeneration1Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION1 );
-//unsigned short airwayGeneration2Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION2 );
-unsigned short airwayGeneration3Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION3 );
-unsigned short airwayGeneration4Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION4 );
-unsigned short airwayGeneration5Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION5 );
-unsigned short airwayGeneration6Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION6 );
-unsigned short airwayGeneration7Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION7 );
-unsigned short airwayGeneration8Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION8 );
-unsigned short expiratoryMalaciaLabel  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::EXPIRATORYMALACIA );
+  //unsigned short airwayGeneration0Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION0 );
+  //unsigned short airwayGeneration1Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION1 );
+  //unsigned short airwayGeneration2Label  = conventions.GetValueFromChestRegionAndType( UNDEFINEDREGION, AIRWAYGENERATION2 );
+  unsigned short airwayGeneration3Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION3 );
+  unsigned short airwayGeneration4Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION4 );
+  unsigned short airwayGeneration5Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION5 );
+  unsigned short airwayGeneration6Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION6 );
+  unsigned short airwayGeneration7Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION7 );
+  unsigned short airwayGeneration8Label  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAYGENERATION8 );
+  unsigned short expiratoryMalaciaLabel  = conventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::EXPIRATORYMALACIA );
 
-typedef itk::ColorTable< float > ColorTableType;
+  unsigned short rulBronch = conventions.GetValueFromChestRegionAndType( cip::RIGHTSUPERIORLOBE, cip::BRONCHIECTATICAIRWAY );
+  unsigned short rulNon    = conventions.GetValueFromChestRegionAndType( cip::RIGHTSUPERIORLOBE, cip::NONBRONCHIECTATICAIRWAY );
+  unsigned short rulAm     = conventions.GetValueFromChestRegionAndType( cip::RIGHTSUPERIORLOBE, cip::AMBIGUOUSBRONCHIECTATICAIRWAY );
 
-ColorTableType::Pointer colorTable = ColorTableType::New();
-colorTable->UseRandomColors( 50000 );
+  unsigned short rmlBronch = conventions.GetValueFromChestRegionAndType( cip::RIGHTMIDDLELOBE, cip::BRONCHIECTATICAIRWAY );
+  unsigned short rmlNon    = conventions.GetValueFromChestRegionAndType( cip::RIGHTMIDDLELOBE, cip::NONBRONCHIECTATICAIRWAY );
+  unsigned short rmlAm     = conventions.GetValueFromChestRegionAndType( cip::RIGHTMIDDLELOBE, cip::AMBIGUOUSBRONCHIECTATICAIRWAY );
 
+  unsigned short rllBronch = conventions.GetValueFromChestRegionAndType( cip::RIGHTINFERIORLOBE, cip::BRONCHIECTATICAIRWAY );
+  unsigned short rllNon    = conventions.GetValueFromChestRegionAndType( cip::RIGHTINFERIORLOBE, cip::NONBRONCHIECTATICAIRWAY );
+  unsigned short rllAm     = conventions.GetValueFromChestRegionAndType( cip::RIGHTINFERIORLOBE, cip::AMBIGUOUSBRONCHIECTATICAIRWAY );
 
-//colorTable->SetColor( obliqueFissureLabel-1,         0.0, 0.0, 0.5, "ObliqueFissure" );
-//colorTable->SetColor( horizontalFissureLabel-1,      0.0, 0.0, 1.0, "HorizontalFissure" );
-//colorTable->SetColor( leftLungLabel-1,               0.0, 1.0, 0.0, "LeftLung" );
-//colorTable->SetColor( rightLungLabel-1,              0.0, 1.0, 1.0, "RightLung" );
-//colorTable->SetColor( leftObliqueFissureLabel-1,     1.0, 0.0, 0.0, "LeftObliqueFissure" );
-//colorTable->SetColor( rightObliqueFissureLabel-1,    1.0, 0.0, 1.0, "RightObliqueFissure" );
-//colorTable->SetColor( rightHorizontalFissureLabel-1, 1.0, 1.0, 0.0, "RightHorizontalFissure" );
-//colorTable->SetColor( rightSuperiorLobeLabel-1,      0.5, 0.5, 0.0, "RightSuperiorLobe" );
-//colorTable->SetColor( rightMiddleLobeLabel-1,        0.0, 0.5, 0.5, "RightMiddleLobe" );
-//colorTable->SetColor( rightInferiorLobeLabel-1,      0.0, 0.5, 0.0, "RightInferiorLobe" );
-//colorTable->SetColor( leftSuperiorLobeLabel-1,       0.5, 0.0, 0.5, "LeftSuperiorLobe" );
-//colorTable->SetColor( leftInteriorLobeLabel-1,       0.5, 0.0, 0.0, "LeftInteriorLobe" );
-colorTable->SetColor( expiratoryMalaciaLabel-1,       0.0, 1.0, 0.0, "ExpiratoryMalacia" );
+  unsigned short lulBronch = conventions.GetValueFromChestRegionAndType( cip::LEFTSUPERIORLOBE, cip::BRONCHIECTATICAIRWAY );
+  unsigned short lulNon    = conventions.GetValueFromChestRegionAndType( cip::LEFTSUPERIORLOBE, cip::NONBRONCHIECTATICAIRWAY );
+  unsigned short lulAm     = conventions.GetValueFromChestRegionAndType( cip::LEFTSUPERIORLOBE, cip::AMBIGUOUSBRONCHIECTATICAIRWAY );
 
-colorTable->SetColor( airwayGeneration3Label-1, 0.63, 0.13, 0.94, "AirwayGeneration3" );
-colorTable->SetColor( airwayGeneration4Label-1, 0.0,  1.0,  0.0,  "AirwayGeneration4" );
-colorTable->SetColor( airwayGeneration5Label-1, 1.0,  0.41, 0.71, "AirwayGeneration5" );
-colorTable->SetColor( airwayGeneration6Label-1, 0.39, 0.58, 0.93, "AirwayGeneration6" );
-colorTable->SetColor( airwayGeneration7Label-1, 1.0,  1.0,  0.0,  "AirwayGeneration7" );
-colorTable->SetColor( airwayGeneration8Label-1, 1.0,  0.0,  0.0,  "AirwayGeneration8" );
+  unsigned short lllBronch = conventions.GetValueFromChestRegionAndType( cip::LEFTINFERIORLOBE, cip::BRONCHIECTATICAIRWAY );
+  unsigned short lllNon    = conventions.GetValueFromChestRegionAndType( cip::LEFTINFERIORLOBE, cip::NONBRONCHIECTATICAIRWAY );
+  unsigned short lllAm     = conventions.GetValueFromChestRegionAndType( cip::LEFTINFERIORLOBE, cip::AMBIGUOUSBRONCHIECTATICAIRWAY );          
+  
+  typedef itk::ColorTable< float > ColorTableType;
 
-sliceViewer->clear();
-sliceViewer->SetInputImage( assistantInstance->GetGrayscaleImage() );
-sliceViewer->SetInputOverlay( assistantInstance->GetLabelMapImage() );
-sliceViewer->orientation( 2 );
-sliceViewer->flipY( true );
-sliceViewer->sliceNum( 0 );
-sliceViewer->iwMax( -100 );
-sliceViewer->iwMin( -1200 );
-sliceViewer->SetOverlayColorIndex( 50000 );
-sliceViewer->SetColorTable( colorTable );
+  ColorTableType::Pointer colorTable = ColorTableType::New();
+  colorTable->UseRandomColors( 50000 );
 
-paintBrushAndEraserInput->SetLabelMapImage( assistantInstance->GetLabelMapImage() );
+  //colorTable->SetColor( obliqueFissureLabel-1,         0.0, 0.0, 0.5, "ObliqueFissure" );
+  //colorTable->SetColor( horizontalFissureLabel-1,      0.0, 0.0, 1.0, "HorizontalFissure" );
+  //colorTable->SetColor( leftLungLabel-1,               0.0, 1.0, 0.0, "LeftLung" );
+  //colorTable->SetColor( rightLungLabel-1,              0.0, 1.0, 1.0, "RightLung" );
+  //colorTable->SetColor( leftObliqueFissureLabel-1,     1.0, 0.0, 0.0, "LeftObliqueFissure" );
+  //colorTable->SetColor( rightObliqueFissureLabel-1,    1.0, 0.0, 1.0, "RightObliqueFissure" );
+  //colorTable->SetColor( rightHorizontalFissureLabel-1, 1.0, 1.0, 0.0, "RightHorizontalFissure" );
+  //colorTable->SetColor( rightSuperiorLobeLabel-1,      0.5, 0.5, 0.0, "RightSuperiorLobe" );
+  //colorTable->SetColor( rightMiddleLobeLabel-1,        0.0, 0.5, 0.5, "RightMiddleLobe" );
+  //colorTable->SetColor( rightInferiorLobeLabel-1,      0.0, 0.5, 0.0, "RightInferiorLobe" );
+  //colorTable->SetColor( leftSuperiorLobeLabel-1,       0.5, 0.0, 0.5, "LeftSuperiorLobe" );
+  //colorTable->SetColor( leftInteriorLobeLabel-1,       0.5, 0.0, 0.0, "LeftInteriorLobe" );
+  //colorTable->SetColor( expiratoryMalaciaLabel-1,       0.0, 1.0, 0.0, "ExpiratoryMalacia" );
 
+  // colorTable->SetColor( airwayGeneration3Label-1, 0.63, 0.13, 0.94, "AirwayGeneration3" );
+  // colorTable->SetColor( airwayGeneration4Label-1, 0.0,  1.0,  0.0,  "AirwayGeneration4" );
+  // colorTable->SetColor( airwayGeneration5Label-1, 1.0,  0.41, 0.71, "AirwayGeneration5" );
+  // colorTable->SetColor( airwayGeneration6Label-1, 0.39, 0.58, 0.93, "AirwayGeneration6" );
+  // colorTable->SetColor( airwayGeneration7Label-1, 1.0,  1.0,  0.0,  "AirwayGeneration7" );
+  // colorTable->SetColor( airwayGeneration8Label-1, 1.0,  0.0,  0.0,  "AirwayGeneration8" );
 
-UpdateViewer();
+  colorTable->SetColor( rulBronch-1, 1.0,  0.0,  0.0,  "rulBronch" );
+  colorTable->SetColor( rulNon-1,    1.0,  0.0,  0.0,  "rulNon" );
+  colorTable->SetColor( rulAm-1,     1.0,  0.0,  0.0,  "rulAm" );
+
+  colorTable->SetColor( rmlBronch-1, 0.0,  1.0,  0.0,  "rmlBronch" );
+  colorTable->SetColor( rmlNon-1,    0.0,  1.0,  0.0,  "rmlNon" );
+  colorTable->SetColor( rmlAm-1,     0.0,  1.0,  0.0,  "rmlAm" );
+
+  colorTable->SetColor( rllBronch-1, 0.6,  0.8,  1.0,  "rllBronch" );
+  colorTable->SetColor( rllNon-1,    0.6,  0.8,  1.0,  "rllNon" );
+  colorTable->SetColor( rllAm-1,     0.6,  0.8,  1.0,  "rllAm" );
+
+  colorTable->SetColor( lulBronch-1, 1.0,  1.0,  0.0,  "lulBronch" );
+  colorTable->SetColor( lulNon-1,    1.0,  1.0,  0.0,  "lulNon" );
+  colorTable->SetColor( lulAm-1,     1.0,  1.0,  0.0,  "lulAm" );
+
+  colorTable->SetColor( lllBronch-1, 1.0,  0.6,  0.8,  "lllBronch" );
+  colorTable->SetColor( lllNon-1,    1.0,  0.6,  0.8,  "lllNon" );
+  colorTable->SetColor( lllAm-1,     1.0,  0.6,  0.8,  "lllAm" );
+
+  sliceViewer->clear();
+  sliceViewer->SetInputImage( assistantInstance->GetGrayscaleImage() );
+  sliceViewer->SetInputOverlay( assistantInstance->GetLabelMapImage() );
+  sliceViewer->orientation( 2 );
+  sliceViewer->flipY( true );
+  sliceViewer->sliceNum( 0 );
+  sliceViewer->iwMax( -100 );
+  sliceViewer->iwMin( -1200 );
+  sliceViewer->SetOverlayColorIndex( 50000 );
+  sliceViewer->SetColorTable( colorTable );
+
+  paintBrushAndEraserInput->SetLabelMapImage( assistantInstance->GetLabelMapImage() );
+
+  UpdateViewer();
 }
 
 void sliceSlider_CB( Fl_Widget*, void* ) {
