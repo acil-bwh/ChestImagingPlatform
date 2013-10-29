@@ -38,7 +38,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -50,86 +49,46 @@
 #include <cfloat>
 #include <math.h>
 #include <fstream>
+#include "LabelAirwayParticlesByGenerationCLP.h"
 
 void PrintResults( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 
 int main( int argc, char *argv[] )
 {
-  // Begin by defining the arguments to be passed
-  std::string inParticlesFileName                 = "NA";
-  std::string outParticlesFileName                = "NA";
-  double      particleDistanceThreshold           = 2.0;
-  double      kernelDensityEstimationROIRadius    = DBL_MAX;
-  bool        printResults                        = false;
-  bool        kdeMode                             = false;
-  int         particleRoot                        = -1;
-  std::vector< std::string > airwayGenerationLabeledAtlasFileNames;
+  PARSE_ARGS;
 
-  // Argument descriptions for user help
-  std::string programDesc = "This program takes an input airway particles dataset \
-and assigns airway generation labels to each particle. The assigned labels are \
-coded in the ChestType point data arrays in the output particles data set. \
-The algorithm uses a Hidden Markov Model framework work to perform the generation \
-labeling.";
+  // // Begin by defining the arguments to be passed
+  // bool        kdeMode                             = false;
 
-  std::string inParticlesFileNameDesc  = "Input particles file name";
-  std::string outParticlesFileNameDesc = "Output particles file name with airway generation labels";
-  std::string particleDistanceThresholdDesc = "Particle distance threshold. If two particles are \
-farther apart than this threshold, they will not considered connected. Otherwise, a graph edge \
-will be formed between the particles where the edge weight is a function of the distance \
-between the particles. The weighted graph is then fed to a minimum spanning tree algorithm, the \
-output of which is used to establish directionality throught the particles for HMM analysis.";
-  std::string kernelDensityEstimationROIRadiusDesc = "The spherical radius region of interest \
-over which contributions to the kernel density estimation are made. Only atlas particles that \
-are within this physical distance will contribute to the estimate. By default, all atlas \
-particles will contribute to the estimate.";
-  std::string particleRootDesc = "The particle ID of the airway tree root if known.";
-  std::string airwayGenerationLabeledAtlasFileNamesDesc =  "Airway generation labeled atlas file name. \
-An airway generation labeled atlas is a particles data set that has point data array point named \
-'ChestType' that, for each particle, has a correctly labeled airway generation label. \
-Labeling must conform to the standards set forth in 'cipConventions.h'. \
-The atlas must be in the same coordinate frame as the input dataset that \
-is to be labeled. Multiple atlases may be specified. These atlases are \
-used to compute the emission probabilities (see descriptions of the HMM \
-algorithm) using kernel density estimation.";
-  std::string kdeModeDesc = "Set to 1 to use KDE-based classification for airway label assignment. \
-This is equivalent to only using the emission probabilities from the overall HMTM model. Set to 0 by default.";
-  std::string printResultsDesc = "Print results. Setting this flag assumes that the input particles \
-have been labeled. This option can be used for debugging and for quality assessment.";
+  // // Argument descriptions for user help
+  // std::string kdeModeDesc = "Set to 0 by default.";
 
-  // Parse the input arguments
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 383 $" );
+  // // Parse the input arguments
+  // try
+  //   {
+  //   TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 383 $" );
 
-    TCLAP::ValueArg<std::string> inParticlesFileNameArg ( "i", "inPart", inParticlesFileNameDesc, true, inParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outParticlesFileNameArg ( "o", "outPart", outParticlesFileNameDesc, true, outParticlesFileName, "string", cl );
-    TCLAP::ValueArg<double> particleDistanceThresholdArg ( "d", "distThresh", particleDistanceThresholdDesc, false, particleDistanceThreshold, "double", cl );
-    TCLAP::ValueArg<double> kernelDensityEstimationROIRadiusArg ( "", "kdeROI", kernelDensityEstimationROIRadiusDesc, false, kernelDensityEstimationROIRadius, "double", cl );
-    TCLAP::ValueArg<int> particleRootArg ( "r", "root", particleRootDesc, false, particleRoot, "int", cl );
-    TCLAP::MultiArg<std::string>  airwayGenerationLabeledAtlasFileNamesArg( "a", "atlas", airwayGenerationLabeledAtlasFileNamesDesc, true, "string", cl );
-    TCLAP::SwitchArg printResultsArg("","results", printResultsDesc, cl, false);
-    TCLAP::SwitchArg kdeModeArg("","kdeMode", kdeModeDesc, cl, false);
+  //   TCLAP::SwitchArg kdeModeArg("","kdeMode", kdeModeDesc, cl, false);
 
-    cl.parse( argc, argv );
+  //   cl.parse( argc, argv );
 
-    inParticlesFileName                = inParticlesFileNameArg.getValue();
-    outParticlesFileName               = outParticlesFileNameArg.getValue();
-    particleDistanceThreshold          = particleDistanceThresholdArg.getValue();
-    kernelDensityEstimationROIRadius   = kernelDensityEstimationROIRadiusArg.getValue();
-    printResults                       = printResultsArg.getValue();
-    kdeMode                            = kdeModeArg.getValue();
-    particleRoot                       = particleRootArg.getValue();
-    for ( unsigned int i=0; i<airwayGenerationLabeledAtlasFileNamesArg.getValue().size(); i++ )
-      {
-	airwayGenerationLabeledAtlasFileNames.push_back( airwayGenerationLabeledAtlasFileNamesArg.getValue()[i] );
-      }
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  //   inParticlesFileName                = inParticlesFileNameArg.getValue();
+  //   outParticlesFileName               = outParticlesFileNameArg.getValue();
+  //   particleDistanceThreshold          = particleDistanceThresholdArg.getValue();
+  //   kernelDensityEstimationROIRadius   = kernelDensityEstimationROIRadiusArg.getValue();
+  //   printResults                       = printResultsArg.getValue();
+  //   kdeMode                            = kdeModeArg.getValue();
+  //   particleRoot                       = particleRootArg.getValue();
+  //   for ( unsigned int i=0; i<airwayGenerationLabeledAtlasFileNamesArg.getValue().size(); i++ )
+  //     {
+  // 	airwayGenerationLabeledAtlasFileNames.push_back( airwayGenerationLabeledAtlasFileNamesArg.getValue()[i] );
+  //     }
+  //   }
+  // catch ( TCLAP::ArgException excp )
+  //   {
+  //   std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
+  //   return cip::ARGUMENTPARSINGERROR;
+  //   }
 
   // Read the particles to which generation labels are to be assigned
   std::cout << "Reading airway particles..." << std::endl;

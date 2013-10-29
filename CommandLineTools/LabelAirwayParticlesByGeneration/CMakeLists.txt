@@ -2,18 +2,32 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( LabelAirwayParticlesByGeneration )
 
-IF(NOT BUILD_COMMON)
-  MESSAGE ( FATAL_ERROR "Must build Common to build LabelAirwayParticlesByGeneration" )
-ENDIF(NOT BUILD_COMMON)
+SET ( MODULE_NAME LabelAirwayParticlesByGeneration )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities/ITK )
+FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
+INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
 
-SET ( LabelAirwayParticlesByGeneration_SOURCE LabelAirwayParticlesByGeneration.cxx )
+FIND_PACKAGE( CIP REQUIRED )
 
-ADD_EXECUTABLE ( LabelAirwayParticlesByGeneration ${LabelAirwayParticlesByGeneration_SOURCE}  )
-TARGET_LINK_LIBRARIES ( LabelAirwayParticlesByGeneration ${VTK_LIBRARIES} ${ITK_LIBRARIES} CIPCommon )
+SET ( MODULE_INCLUDE_DIRECTORIES
+    ${CMAKE_SOURCE_DIR}/Common
+    ${CMAKE_SOURCE_DIR}/Utilities
+    ${CMAKE_SOURCE_DIR}/Utilities/ITK
+  )
 
+SET ( MODULE_TARGET_LIBRARIES
+  ${ITK_LIBRARIES}
+  ${VTK_LIBRARIES}
+  CIPCommon
+  )
 
+SET ( MODULE_SRCS LabelAirwayParticlesByGeneration.cxx )
 
+SEMMacroBuildCLI (
+  NAME ${MODULE_NAME}
+  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+  ADDITIONAL_SRCS ${MODULE_SRCS}
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  EXECUTABLE_ONLY
+  )
