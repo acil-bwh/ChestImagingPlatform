@@ -1,6 +1,5 @@
 import sys
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatformPrivate/cip_python/utils")
-import feature_maps
+import cip_python.utils.feature_maps
 import numpy as np
 import Capture
 
@@ -10,7 +9,7 @@ I1 = np.array([[[1,2,3,4],[5,6,7,8],[1,2,3,4]],[[0,1,0,2],[2,1,1,3],[6,7,4,5]]])
 I2 = np.array([[[3,2,6,2],[4,5,9,100],[10,23,32,2]],[[1,5,2,4],[5,7,2,6],[8,2,3,7]]])
 I3 = np.array([[[3,2,6,2],[4,5,9,100],[10,23,32,2]],[[1,5,2,4],[5,7,2,6],[8,2,3,7]]])
 
-def test_polynomial_feature_map_numterms():
+def test_polynomial_feature_map_num_terms():
     my_polynomial_feature_map = feature_maps.PolynomialFeatureMap(  [I1,I2],[1,2])  
     my_polynomial_feature_map.compute_num_terms()
     sys.stdout=my_polynomial_feature_map.num_terms
@@ -42,7 +41,6 @@ def test_polynomial_feature_map_numterms():
     assert my_polynomial_feature_map.num_terms == 9  
  
 def test_polynomial_feature_map():
-
     sys.stderr.write(str(I1)+"\n")
     sys.stderr.write(str(I2)+"\n")
 
