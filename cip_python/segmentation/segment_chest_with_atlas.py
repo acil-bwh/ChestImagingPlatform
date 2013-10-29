@@ -1,6 +1,7 @@
 import pdb
-
-from chest_structure_likelihoods import ChestStructureLikelihood
+import sys
+sys.path.append("/Users/rolaharmouche/ChestImagingPlatformPrivate/cip_python/utils")
+import weighted_feature_map_densities
 
 def segment_chest_with_atlas(input_image, priors, likelihood):
     """Segment structures using atlas data.    
@@ -24,7 +25,7 @@ def segment_chest_with_atlas(input_image, priors, likelihood):
     label_map : array, shape (L, M, N)
         Segmented image with labels adhering to CIP conventions
     """
-    # Step 1: For all structures of interest, compute the posterior energy
+    # Step 1: For all structures of interest, compute the posterior energy        
     posterior_energies = compute_structure_posterior_energy(likelihood, priors)
     
     # Step 3: For each structure separately, input the posterior energies into the graph cuts code

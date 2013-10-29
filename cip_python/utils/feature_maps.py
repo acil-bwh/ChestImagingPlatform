@@ -37,12 +37,14 @@ class PolynomialFeatureMap(FeatureMap):
         same integer will be ignored, and the list will be sorted from low to
         high (e.g. [2, 1, 2] would be converted to [1, 2]).
         
+    __: Still need to implement for number of features > 2
+        
     """
-    def __init__(self, im_feature_vecs, input_orders, input_features):
-      FeatureMap.__init__(im_feature_vecs)
+    def __init__(self, im_feature_vecs, input_orders):
+      FeatureMap.__init__(self, im_feature_vecs) #rola added self
       self._num_terms = -1
-      num_terms_per_order = np.zeros(input_features.len)
-      
+      self.input_orders= sorted(list(set(input_orders))) #rola add, need to sort
+      self.num_terms_per_order = np.zeros(len(input_orders)) #rola add self
     """function that computes the number of terms in the feature map given the list
      of orders 
     ----------
@@ -58,20 +60,20 @@ class PolynomialFeatureMap(FeatureMap):
         #---------- = "(n+m-1) choose (m-1)"
         #(n!)(m-1)!
         self.num_terms=0
-        m = self.input_features.len
+        m = len(self.feature_vecs)
         f = math.factorial
-        for x in range(0, self.list_of_orders.len):
-            n = self.list_of_orders[x]
+        for x in range(0, len(self.input_orders)):
+            n = self.input_orders[x]
             self.num_terms_per_order[x] = f(n+m-1) /(f(n) * f(m-1))
             self.num_terms+=self.num_terms_per_order[x]
         
-    def get_mapped_feature_vecs(self, list_of_features):
+    def get_mapped_feature_vecs(self):
         """
         Get all the mapped feature vectors following polynomial expansion
         """
         pass
         
-    def get_mapped_feature_vec_element(self, element_index, list_of_features):
+    def get_mapped_feature_vec_element(self, element_index):
         """
         Get the mapped feature vector at a particular element 
         """
@@ -80,18 +82,21 @@ class PolynomialFeatureMap(FeatureMap):
         order_index = 0
         cumul_numterms = self.num_terms_per_order[order_index]
         element_within_order = element_index
-        while cumul_numterms < (element_index+1):          
+
+        while cumul_numterms < (element_index+1): 
+            element_within_order=int(element_within_order-self.num_terms_per_order[order_index]   )      
             order_index=order_index+1
-            cumul_numterms+=self.num_terms_per_order[order_index]
-            element_within_order=element_within_order-self.num_terms_per_order[order_index]
-            
+            cumul_numterms+=self.num_terms_per_order[order_index]            
+
         #now now through a case statement for the established orders and terms
-        if self.list_of_orders[order_index] is 1:
-            return list_of_features[element_index]
-        if self.list_of_orders[order_index] is 2:
+        if self.input_orders[order_index] is 0:
+            return 1.0
+        if self.input_orders[order_index] is 1:
+            return self.feature_vecs[element_index]
+        if self.input_orders[order_index] is 2:
             if element_within_order is 0:
-                return list_of_features[0]*list_of_features[0]
+                return np.multiply(self.feature_vecs[0],self.feature_vecs[0])
             if element_within_order is 1:
-                return list_of_features[0]*list_of_features[1]
+                return np.multiply(self.feature_vecs[0],self.feature_vecs[1])
             if element_within_order is 2:
-                return list_of_features[1]*list_of_features[1]        
+                return np.multiply(self.feature_vecs[1],self.feature_vecs[1])        

@@ -65,20 +65,21 @@ class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
         WeightedFeatureMapDensity.__init__(im_feature_vecs, weights, feature_map)
         self.lamda = lamda
         
-        if poly_feature_map is None:
-            self.poly_feature_map.feature_vectors = feature_vectors
-            self.poly_feature_map.feature_vectors.num_terms = feature_vectors.len
+        if feature_map is None:
+            self.poly_feature_map.feature_vectors = im_feature_vecs
+            self.poly_feature_map.feature_vectors.num_terms = im_feature_vecs.len
             
-        assert coefficients.shape ==  self.poly_feature_map.feature_vectors.num_terms
+        assert self.weights.shape ==  self.poly_feature_map.feature_vectors.num_terms
         
     def compute(self):
-        accum = 0
-        for d in range(0, self.poly_feature_map.num_terms):
+        accum = self.coefficients[0]*self.feature_vectors[0]
+        for d in range(1, self.poly_feature_map.num_terms):
             accum = accum + self.coefficients[d]*self.feature_vectors[d]
             
         return accum
         
-        
+   
+
 
         
     
