@@ -36,7 +36,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyData.h"
@@ -44,7 +43,7 @@
 #include "vtkPolyDataWriter.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
-
+#include "MergeParticleDataSetsCLP.h"
 
 void MergeParticles( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 void CopyParticles( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
@@ -53,45 +52,7 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > );
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::vector< std::string >  inFileNamesVec;
-  std::string                 outFileName      = "NA";
-
-  //
-  // Input argument descriptions for user help
-  //
-  std::string programDesc = "This program accepts as input multiple particle data sets and merges them \
-into one data set for output. If any of the inputs do not have ChestType and ChestRegion fields defined \
-this program will create them and initialize entries to UNDEFINEDTYPE and UNDEFINEDREGION";
-
-  std::string inFileNamesVecDesc = "Input particles file name";
-  std::string outFileNameDesc    = "Output particles file name";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 302 $" );
-
-    TCLAP::ValueArg<std::string> outFileNameArg( "o", "out", outFileNameDesc, true, outFileName, "string", cl );
-    TCLAP::MultiArg<std::string> inFileNamesVecArg( "i", "in", inFileNamesVecDesc, true, "string", cl );
-
-    cl.parse( argc, argv );
-
-    for ( unsigned int i=0; i<inFileNamesVecArg.getValue().size(); i++ )
-      {
-	inFileNamesVec.push_back( inFileNamesVecArg.getValue()[i] );
-      }
-    outFileName = outFileNameArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  PARSE_ARGS;
 
   vtkSmartPointer< vtkPolyData > mergedParticles = vtkSmartPointer< vtkPolyData >::New();
 

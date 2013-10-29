@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>MergeParticleDataSets</title>
+  <description><![CDATA[This program accepts as input multiple particle data sets and merges them \
+  into one data set for output. If any of the inputs do not have ChestType and ChestRegion fields defined \
+  this program will create them and initialize entries to UNDEFINEDTYPE and UNDEFINEDREGION.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <string-vector>
+      <name>inFileNamesVec</name>
+      <label>Inputs</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>in</longflag>
+      <description><![CDATA[Input particles file names]]></description>
+    </string-vector>  
+
+    <string>
+      <name>outFileName</name>
+      <label>Output</label>
+      <channel>input</channel>
+      <longflag>o</longflag>
+      <longflag>out</longflag>
+      <description><![CDATA[Output particles file name]]></description>
+    </string>  
+  </parameters>
+</executable>

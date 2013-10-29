@@ -57,39 +57,6 @@ int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  // // Begin by defining the arguments to be passed
-  // bool        kdeMode                             = false;
-
-  // // Argument descriptions for user help
-  // std::string kdeModeDesc = "Set to 0 by default.";
-
-  // // Parse the input arguments
-  // try
-  //   {
-  //   TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 383 $" );
-
-  //   TCLAP::SwitchArg kdeModeArg("","kdeMode", kdeModeDesc, cl, false);
-
-  //   cl.parse( argc, argv );
-
-  //   inParticlesFileName                = inParticlesFileNameArg.getValue();
-  //   outParticlesFileName               = outParticlesFileNameArg.getValue();
-  //   particleDistanceThreshold          = particleDistanceThresholdArg.getValue();
-  //   kernelDensityEstimationROIRadius   = kernelDensityEstimationROIRadiusArg.getValue();
-  //   printResults                       = printResultsArg.getValue();
-  //   kdeMode                            = kdeModeArg.getValue();
-  //   particleRoot                       = particleRootArg.getValue();
-  //   for ( unsigned int i=0; i<airwayGenerationLabeledAtlasFileNamesArg.getValue().size(); i++ )
-  //     {
-  // 	airwayGenerationLabeledAtlasFileNames.push_back( airwayGenerationLabeledAtlasFileNamesArg.getValue()[i] );
-  //     }
-  //   }
-  // catch ( TCLAP::ArgException excp )
-  //   {
-  //   std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-  //   return cip::ARGUMENTPARSINGERROR;
-  //   }
-
   // Read the particles to which generation labels are to be assigned
   std::cout << "Reading airway particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
