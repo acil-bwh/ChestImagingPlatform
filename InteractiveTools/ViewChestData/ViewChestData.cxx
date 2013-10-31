@@ -149,14 +149,21 @@ int main(int argc, char *argv[])
 
   // Vessel particles file names options:
   std::vector<std::string> vesselCylindersFileNames;
+  std::vector<std::string> vesselScaledDiscsFileNames;
   // Vessel cylinder colors:
   std::vector<double> vesselCylindersRed;
   std::vector<double> vesselCylindersGreen;
   std::vector<double> vesselCylindersBlue;
+  // Vessel scaled discs colors:
+  std::vector<double> vesselScaledDiscsRed;
+  std::vector<double> vesselScaledDiscsGreen;
+  std::vector<double> vesselScaledDiscsBlue;
   // Vessel glyph size
   std::vector<double> vesselCylindersSize;
+  std::vector<double> vesselScaledDiscsSize;
   // Vessel opacities for various glyph options
   std::vector<double> vesselCylindersOpacity;
+  std::vector<double> vesselScaledDiscsOpacity;
 
   // Fissure particles file names
   std::vector<std::string> fissureParticlesFileNames;
@@ -269,14 +276,23 @@ flags, respectively. These flags should be invoked immediately after invoking th
   std::string vesselCylindersFileNamesDesc = "Vessel particles file name to be rendered as cylinders. You \
 must also specify the color, opacity, and size of the glyphs with the --vcr, --vcg, --vcb, --vco, and --vcs \
 flags, respectively. These flags should be invoked immediately after invoking the --vCy flag.";
-  // Vessel cylinder color descriptions:
-  std::string vesselCylindersRedDesc   = "Red channel for vessel cylinders in interval [0,1]. See notes for --aCy flag";
-  std::string vesselCylindersGreenDesc = "Green channel for vessel cylinders in interval [0,1]. See notes for --aCy flag";
-  std::string vesselCylindersBlueDesc  = "Blue channel for vessel cylinders in interval [0,1]. See notes for --aCy flag";
-  // Airway opacities for various glyph option descriptions:
-  std::string vesselCylindersOpacityDesc = "Vessel cylinders opacity in interval [0,1]. See notes for --aCy flag";
+  std::string vesselScaledDiscsFileNamesDesc = "Vessel particles file name to be rendered as scaled discs. You \
+must also specify the color, opacity, and size of the glyphs with the --vsdr, --vsdg, --vsdb, --vsdo, and --vsds \
+flags, respectively. These flags should be invoked immediately after invoking the --vsd flag.";
+  // Vessel scaled discs color descriptions:
+  std::string vesselScaledDiscsRedDesc   = "Red channel for vessel scaled discs in interval [0,1]. See notes for --vsd flag";
+  std::string vesselScaledDiscsGreenDesc = "Green channel for vessel scaled discs in interval [0,1]. See notes for --vsd flag";
+  std::string vesselScaledDiscsBlueDesc  = "Blue channel for vessel scaled discs in interval [0,1]. See notes for --vsd flag";
+ // Vessel cylinder color descriptions:
+  std::string vesselCylindersRedDesc   = "Red channel for vessel cylinders in interval [0,1]. See notes for --vCy flag";
+  std::string vesselCylindersGreenDesc = "Green channel for vessel cylinders in interval [0,1]. See notes for --vCy flag";
+  std::string vesselCylindersBlueDesc  = "Blue channel for vessel cylinders in interval [0,1]. See notes for --vCy flag";
+  // Vessel opacities for various glyph option descriptions:
+  std::string vesselScaledDiscsOpacityDesc = "Vessel scaled discs opacity in interval [0,1]. See notes for --vsd flag";
+  std::string vesselCylindersOpacityDesc = "Vessel cylinders opacity in interval [0,1]. See notes for --vCy flag";
   // Vessel glyph size descriptions:
   std::string vesselCylindersSizeDesc = "Vessel cylinder size. See notes for --vCy flag";
+  std::string vesselScaledDiscsSizeDesc = "Vessel scaled discs size. See notes for --vsd flag";
 
   // Descs for fissure particle inputs
   std::string fissureParticlesFileNamesDesc  = "Fissure particles file name to be rendered as particles. You \
@@ -349,13 +365,20 @@ flags, respectively. These flags should be invoked immediately after invoking th
     TCLAP::MultiArg<double>        regionTypePointsScaleArg("", "rtpSc", regionTypePointsScaleDesc, false, "double", cl);
 
     // Vessel particles file names:
-    TCLAP::MultiArg<std::string> vesselCylindersFileNamesArg("", "vCy", vesselCylindersFileNamesDesc, false, "string", cl);
+    TCLAP::MultiArg<std::string> vesselScaledDiscsFileNamesArg("", "vsd", vesselScaledDiscsFileNamesDesc, false, "string", cl);
+    TCLAP::MultiArg<std::string> vesselCylindersFileNamesArg("", "vcy", vesselCylindersFileNamesDesc, false, "string", cl);
     // Vessel particles colors, opacity and size
     TCLAP::MultiArg<double> vesselCylindersRedArg("", "vcr", vesselCylindersRedDesc, false, "double", cl);
     TCLAP::MultiArg<double> vesselCylindersGreenArg("", "vcg", vesselCylindersGreenDesc, false, "double", cl);
     TCLAP::MultiArg<double> vesselCylindersBlueArg("", "vcb", vesselCylindersBlueDesc, false, "double", cl);
     TCLAP::MultiArg<double> vesselCylindersOpacityArg("", "vco", vesselCylindersOpacityDesc, false, "double", cl);
     TCLAP::MultiArg<double> vesselCylindersSizeArg("", "vcs", vesselCylindersSizeDesc, false, "double", cl);    
+
+    TCLAP::MultiArg<double> vesselScaledDiscsRedArg("", "vsdr", vesselScaledDiscsRedDesc, false, "double", cl);
+    TCLAP::MultiArg<double> vesselScaledDiscsGreenArg("", "vsdg", vesselScaledDiscsGreenDesc, false, "double", cl);
+    TCLAP::MultiArg<double> vesselScaledDiscsBlueArg("", "vsdb", vesselScaledDiscsBlueDesc, false, "double", cl);
+    TCLAP::MultiArg<double> vesselScaledDiscsOpacityArg("", "vsdo", vesselScaledDiscsOpacityDesc, false, "double", cl);
+    TCLAP::MultiArg<double> vesselScaledDiscsSizeArg("", "vsds", vesselScaledDiscsSizeDesc, false, "double", cl);   
 
     cl.parse(argc, argv);
 
@@ -535,6 +558,31 @@ flags, respectively. These flags should be invoked immediately after invoking th
       {
       vesselCylindersFileNames.push_back(vesselCylindersFileNamesArg.getValue()[i]);
       }
+    for (unsigned int i=0; i<vesselScaledDiscsFileNamesArg.getValue().size(); i++)
+      {
+      vesselScaledDiscsFileNames.push_back(vesselScaledDiscsFileNamesArg.getValue()[i]);
+      }
+    // Vessel scaled discs color, opacity and size
+    for (unsigned int i=0; i<vesselScaledDiscsRedArg.getValue().size(); i++)
+      {
+      vesselScaledDiscsRed.push_back(vesselScaledDiscsRedArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<vesselScaledDiscsGreenArg.getValue().size(); i++)
+      {
+      vesselScaledDiscsGreen.push_back(vesselScaledDiscsGreenArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<vesselScaledDiscsBlueArg.getValue().size(); i++)
+      {
+      vesselScaledDiscsBlue.push_back(vesselScaledDiscsBlueArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<vesselScaledDiscsOpacityArg.getValue().size(); i++)
+      {
+      vesselScaledDiscsOpacity.push_back(vesselScaledDiscsOpacityArg.getValue()[i]);
+      }
+    for (unsigned int i=0; i<vesselScaledDiscsSizeArg.getValue().size(); i++)
+      {
+      vesselScaledDiscsSize.push_back(vesselScaledDiscsSizeArg.getValue()[i]);
+      }
     // Vessel cylinders color, opacity and size
     for (unsigned int i=0; i<vesselCylindersRedArg.getValue().size(); i++)
       {
@@ -636,6 +684,11 @@ flags, respectively. These flags should be invoked immediately after invoking th
     {
     AddParticlesToViewer(viewer, airwayScaledDiscsFileNames, airwayScaledDiscsRed, airwayScaledDiscsGreen, airwayScaledDiscsBlue,
                          airwayScaledDiscsOpacity, airwayScaledDiscsSize, "airwayParticles", "scaledDiscs");
+    }
+  if (vesselScaledDiscsFileNames.size()> 0)
+    {
+    AddParticlesToViewer(viewer, vesselScaledDiscsFileNames, vesselScaledDiscsRed, vesselScaledDiscsGreen, vesselScaledDiscsBlue,
+                         vesselScaledDiscsOpacity, vesselScaledDiscsSize, "vesselParticles", "scaledDiscs");
     }
   if (vesselCylindersFileNames.size()> 0)
     {
@@ -868,10 +921,6 @@ void AddParticlesToViewer(cipChestDataViewer* viewer, std::vector<std::string> f
       {
 	viewer->SetAirwayParticlesAsCylinders(reader->GetOutput(), scale[i], name);
       }
-    if (particlesType.compare("vesselCylinders") == 0)
-      {
-	viewer->SetVesselParticlesAsCylinders(reader->GetOutput(), scale[i], name);
-      }
     if (particlesType.compare("airwayParticles") == 0)
       {
 	if (glyphType.compare("cylinder") == 0)
@@ -885,6 +934,21 @@ void AddParticlesToViewer(cipChestDataViewer* viewer, std::vector<std::string> f
 	else
 	  {
 	    viewer->SetAirwayParticles(reader->GetOutput(), scale[i], name);
+	  }
+      }
+    if (particlesType.compare("vesselParticles") == 0)
+      {
+	if (glyphType.compare("cylinder") == 0)
+	  {
+	    viewer->SetVesselParticlesAsCylinders(reader->GetOutput(), scale[i], name);
+	  }
+	else if (glyphType.compare("scaledDiscs") == 0)
+	  {
+	    viewer->SetVesselParticlesAsDiscs(reader->GetOutput(), scale[i], name);
+	  }
+	else
+	  {
+	    viewer->SetVesselParticles(reader->GetOutput(), scale[i], name);
 	  }
       }
 

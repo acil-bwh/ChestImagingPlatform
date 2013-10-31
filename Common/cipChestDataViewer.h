@@ -80,12 +80,13 @@ public:
   void SetVesselParticles( vtkPolyData*, double, std::string );
   void SetFissureParticles( vtkPolyData*, double, std::string );
 
-  vtkActor* SetAirwayParticlesAsCylinders( vtkPolyData*, double, std::string );
+  vtkSmartPointer< vtkActor > SetAirwayParticlesAsCylinders( vtkPolyData*, double, std::string );
   void SetVesselParticlesAsCylinders( vtkPolyData*, double, std::string );
   void SetPointsAsSpheres( vtkPolyData*, double, std::string );
 
-  vtkActor* SetAirwayParticlesAsDiscs( vtkPolyData*, double, std::string );
-  vtkActor* SetParticlesAsDiscs( vtkPolyData*, double, std::string, unsigned char, bool );
+  vtkSmartPointer< vtkActor > SetAirwayParticlesAsDiscs( vtkPolyData*, double, std::string );
+  vtkSmartPointer< vtkActor > SetVesselParticlesAsDiscs( vtkPolyData*, double, std::string );
+  vtkSmartPointer< vtkActor > SetParticlesAsDiscs( vtkPolyData*, double, std::string, unsigned char, bool );
 
   vtkSmartPointer< vtkActor > SetPolyData( vtkPolyData*, std::string );
 
