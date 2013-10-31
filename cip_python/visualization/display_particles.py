@@ -1,29 +1,30 @@
-    
 import vtk
 import math
 import numpy as np
+from optparse import OptionParser
 from vtk.util.numpy_support import vtk_to_numpy
 
-class DisplayVasculature:
-    
-    def __init__(self,file_list,spacing_list,h1_th=-200,glyph_type='Sphere',use_field_data=True,opacity_list=[],color_list=[],lung=[]):
-        self.mapper_list=list()
-        self.actor_list=list()
-        self.glyph_list=list()
+class DisplayVasculature:    
+    def __init__(self, file_list, spacing_list, h1_th=-200,
+                 glyph_type='Sphere', use_field_data=True, opacity_list=[],
+                 color_list=[], lung=[]):
+        self.mapper_list = list()
+        self.actor_list = list()
+        self.glyph_list = list()
         self.glyph_type = glyph_type
-        self.file_list=file_list
+        self.file_list = file_list
         self.spacing_list = spacing_list
         self.opacity_list = opacity_list
         self.h1_th = h1_th
-        self.color_list=color_list
-        self.lung=lung
+        self.color_list = color_list
+        self.lung = lung
         self.use_field_data = use_field_data
         self.ren = vtk.vtkRenderer()
 
     
     def compute_radius (self,poly,spacing):
         if self.use_field_data == False:
-            scale=poly.GetPointData().GetArray("scale")
+            scale = poly.GetPointData().GetArray("scale")
             h1 = poly.GetPointData().GetArray("h1")
             val = poly.GetPointData().GetArray('val')
         else:
@@ -51,8 +52,7 @@ class DisplayVasculature:
         poly.GetPointData().SetScalars(radiusA)
         return poly
 
-    def create_glyphs (self, poly):
-    
+    def create_glyphs (self, poly):    
         if self.glyph_type == 'Sphere':
             glyph = vtk.vtkSphereSource()
             glyph.SetRadius(1)
@@ -83,7 +83,8 @@ class DisplayVasculature:
 
         return glypher
 
-    def create_actor (self, glyph , opacity=1,color=[0.1,0.1,0.1], minrad=0, maxrad=5):
+    def create_actor (self, glyph , opacity=1,color=[0.1,0.1,0.1], minrad=0,
+                      maxrad=5):
         mapper=vtk.vtkPolyDataMapper()
         mapper.SetInput(glyph.GetOutput())
         mapper.SetColorModeToMapScalars()
@@ -135,17 +136,18 @@ class DisplayVasculature:
         iren.Start()
                                 
     def execute(self):
-
         for kk,file_name in enumerate(self.file_list):
             reader=vtk.vtkPolyDataReader()
             reader.SetFileName(file_name)
             reader.Update()
             
-            poly=self.compute_radius(reader.GetOutput(),spacing_list[kk])
+            poly = self.compute_radius(reader.GetOutput(),spacing_list[kk])
             if self.use_field_data == False:
-                poly.GetPointData().SetNormals(poly.GetPointData().GetArray("hevec0"))
+                poly.GetPointData().\
+                    SetNormals(poly.GetPointData().GetArray("hevec0"))
             else:
-                poly.GetPointData().SetNormals(poly.GetFieldData().GetArray("hevec0"))
+                poly.GetPointData().\
+                    SetNormals(poly.GetFieldData().GetArray("hevec0"))
         
             glypher=self.create_glyphs(poly)
             if len(self.color_list) <= kk:
@@ -187,52 +189,43 @@ class DisplayVasculature:
         ff.Modified()
         sf.Write()
 
+if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("-f", help='TODO', dest="file_name")
+    parser.add_option("-s", help='TODO', dest="spacing")
+    parser.add_option("--h1th", help='TODO', dest="h1th", default=0)
+    parser.add_option("--color", help='TODO', dest="color_list", default="")
+    parser.add_option("--opacity", help='TODO', dest="opacity_list", \
+                      default="")
+    parser.add_option("-l", help='TODO', dest="lung_filename", default="")
+    parser.add_option("--useFieldData", help='TODO', dest="use_field_data", \
+                      action="store_true"))
 
+    (options, args) = parser.parse_args()
 
-from optparse import OptionParser
-                                
-parser = OptionParser()
-parser.add_option("-f", dest="file_name")
-parser.add_option("-s", dest="spacing")
-parser.add_option("--h1th",dest="h1th",default=0)
-parser.add_option("--color",dest="color_list",default="")
-parser.add_option("--opacity",dest="opacity_list",default="")
-parser.add_option("-l",dest="lung_filename",default="")
-parser.add_option("--useFieldData",dest="use_field_data",action="store_true"))
+    translate_color = dict()
+    translate_color['red'] = [1, 0.1, 0.1]
+    translate_color['green'] = [0.1, 0.8, 0.1]
+    translate_color['orange'] = [0.95, 0.5, 0.01]
+    translate_color['blue'] = [0.1, 0.1, 0.9]
 
-(options, args) = parser.parse_args()
+    file_list = [i for i in str.split(options.file_name,',')]
+    useFieldData = options.useFieldData
+    spacing_list = [float(i) for i in str.split(options.spacing,',')]
+    lung_filename = options.lung_filename
 
-translate_color=dict()
-translate_color['red']=[1,0.1,0.1]
-translate_color['green']=[0.1,0.8,0.1]
-translate_color['orange']=[0.95,0.5,0.01]
-translate_color['blue']=[0.1,0.1,0.9]
-
-file_list=[i for i in str.split(options.file_name,',')]
-
-useFieldData = options.useFieldData
-
-spacing_list = [float(i) for i in str.split(options.spacing,',')]
-
-lung_filename = options.lung_filename
-
-if options.opacity_list == "":
-    opacity_list=[]
-else:
-    opacity_list = [float(i) for i in str.split(options.opacity_list,',')]
+    if options.opacity_list == "":
+        opacity_list=[]
+    else:
+        opacity_list = [float(i) for i in str.split(options.opacity_list,',')]
                            
-if options.color_list == "" :
-    color_list=[]
-else:
-    color_list = [translate_color[val] for val in str.split(options.color_list,',')]
+    if options.color_list == "" :
+        color_list=[]
+    else:
+        color_list = [translate_color[val] for val in str.split(options.color_list,',')]
 
-print color_list
+    print color_list
 
-dv = DisplayVasculature(file_list,spacing_list,float(options.h1th),'Cylinder',useFieldData,opacity_list,color_list,lung_filename)
-dv.execute()
-                                
-                                
-
-    
-                                
-                                
+    dv = DisplayVasculature(file_list, spacing_list, float(options.h1th), \
+        'Cylinder', useFieldData, opacity_list, color_list, lung_filename)
+    dv.execute()
