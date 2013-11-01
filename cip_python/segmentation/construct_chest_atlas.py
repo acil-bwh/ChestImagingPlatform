@@ -1,7 +1,43 @@
 import heapq
 num_cases=10
 
-def construct_lung_atlas(input_image, list_of_label_files):
+def construct_probabilistic_atlas(label_maps, normalize=true, weights='None',
+                                  atlas='None'):
+    """Creates probabilistic atlas from a collection of label maps
+
+    Parameters
+    ----------
+    label_maps : List of arrays, shape (L, M, N)
+        Each element of the list is an LxMxN array with the structure of
+        interest isolated. Any non-zero value will be considered as part
+        of the structure of interest. It is assumed that all label maps
+        have been registered to the same coordinate frame.
+
+    normalize : boolean, optional
+        If true, the returned atlas will be the sum of the inputs divided by
+        the number of input label maps
+
+    weights : float array, shape Dx1, optional 
+        Each of the label maps in specified in 'label_maps' can be weighted
+        by the corresponding weights provided in this vector. If not
+        specified, all label maps will we weighted equally.
+
+    in_atlas : array, shape (L, M, N)
+        The returned atlas will be computed as described above and then added
+        to this array before returning. Useful for repeated calls to this
+        function.
+        
+    Returns
+    -------
+    out_atlas : array, shape (L, M, N)
+        Output atlas
+    """
+    # All images in 'label_maps' must be the same size
+
+    # If 'weights' not None, test that each weight is between 0 and 1
+
+
+def construct_atlas(input_image, list_of_label_files):
     """Construct the lung atlas using training labeled data. 
 
     Parameters
@@ -66,7 +102,10 @@ def get_closest_cases(input_image, list_of_label_files):
     return closest_cases
     
     
-def getSimilarityVectorFromMI(patient_names, case_id, data_dir,transfo_dir,xml_generate):
+def get_mi_similarity_vec(patient_names, case_id, data_dir, transfo_dir,
+                          xml_generate):
+    """
+    """
     mat_dim=patient_names.len    
     sim_mat = np.ones(mat_dim)
     sim_mat = sim_mat*(-1000.0)
@@ -75,5 +114,5 @@ def getSimilarityVectorFromMI(patient_names, case_id, data_dir,transfo_dir,xml_g
     
     return sim_mat
 
-def generate_atlases_given_caselist(nput_image, closest_cases):
+def select_label_maps_and_generate_atlas(input_image, label_map_file_names):
     

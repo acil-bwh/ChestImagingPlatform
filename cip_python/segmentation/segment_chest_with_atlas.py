@@ -5,12 +5,16 @@ import weighted_feature_map_densities
 import numpy as np
 import construct_chest_atlas
 
-def segment_lung_with_atlas(input_image, list_of_label_files):
+def segment_lung_with_atlas(input_image, probabilistic_atlas):
     """Segment lung using training labeled data. 
 
     Parameters
     ----------
     input_image : float array, shape (L, M, N)
+
+    probabilistic_atlas : float array, shape (L, M, N)
+        Atlas to use as segmentation prior. Each voxel should have a value in
+        the interval [0, 1], indicating the probability of
 
     list_of_label_files : list of file names (string)
         Each file name points to a file that has a labeled 
@@ -21,12 +25,14 @@ def segment_lung_with_atlas(input_image, list_of_label_files):
     label_map : array, shape (L, M, N)
         Segmented image with labels adhering to CIP conventions
     """
-    
-    #Compute priors given the image and list of label map files
-    priors = construct_chest_atlas.construct_lung_atlas(input_image, list_of_label_files)
+    # Threshold atlas
+
+    # Compute distance map using thresholded atlas
+
+    # Compute likelihood
     
     #segment given priors
-    segment_chest_with_atlas(input_image, priors)
+    segment_chest_with_atlas(input_image, prior, likelihood)
 
 def segment_chest_with_atlas(input_image, priors):
     """Segment structures using atlas data. Computes the likelihoods given a
@@ -36,7 +42,7 @@ def segment_chest_with_atlas(input_image, priors):
     ----------
     input_image : float array, shape (L, M, N)
 
-    priors : list of float arrays with shape (L, M, N)
+    prior : list of float arrays with shape (L, M, N)
         Each structure of interest will be represented by an array having the
 	same size as the input image. Every voxel must have a value in the
 	interval [0, 1], indicating the probability of that particular
