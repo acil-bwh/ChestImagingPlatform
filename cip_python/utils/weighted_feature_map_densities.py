@@ -1,4 +1,5 @@
 import pdb
+import numpy as np
 
 class WeightedFeatureMapDensity:
     """Base class for representing likelihood terms for various chest
@@ -75,8 +76,11 @@ class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
         accum = self.coefficients[0]*self.feature_vectors[0]
         for d in range(1, self.poly_feature_map.num_terms):
             accum = accum + self.coefficients[d]*self.feature_vectors[d]
-            
-        return accum
+        
+        #note: the old code was done with square, should be removed for new code.
+        exponential_density = np.exp(-np.power(accum,2))
+        
+        return exponential_density
         
    
 
