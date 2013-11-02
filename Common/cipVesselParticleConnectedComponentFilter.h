@@ -41,6 +41,11 @@ public:
   void   SetScaleRatioThreshold( double );
   double GetScaleRatioThreshold();
 
+  /** When considering the connectedness between two particles, if either
+   *  of them has a scale greater than the max allowable scale, no connection
+   *  will be formed */
+  void SetMaximumAllowableScale( double );
+
   vtkPolyData* GetOutput();
 
 private:

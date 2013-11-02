@@ -53,11 +53,9 @@ template< class TInputImage >
 void
 cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 ::GenerateData()
-{  
-  //
+{	
   // Set the label that will be used for the foreground value in the
   // output image
-  //
   cip::ChestConventions conventions;
   unsigned short foregroundLabel = 
     conventions.GetValueFromChestRegionAndType( static_cast< unsigned char >( cip::UNDEFINEDREGION ), 
@@ -66,10 +64,8 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
   typename Superclass::InputImageConstPointer inputPtr = this->GetInput();
 
   typename InputImageType::SizeType size = inputPtr->GetBufferedRegion().GetSize();
-
-  //
+  
   // Allocate space for the output image
-  //
   typename Superclass::OutputImagePointer outputPtr = this->GetOutput(0);
     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
     outputPtr->SetBufferedRegion( inputPtr->GetBufferedRegion() );
@@ -79,19 +75,15 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
     outputPtr->SetSpacing( inputPtr->GetSpacing() );
     outputPtr->SetOrigin( inputPtr->GetOrigin() );
 
-  //
   // Create an ITK region that will be modified for each of our
-  // particles 
-  //
+  // particles   
   typename InputImageType::RegionType imageRegion;
   typename InputImageType::SizeType   regionSize;
   typename InputImageType::IndexType  regionStartIndex;
   typename InputImageType::IndexType  regionEndIndex;
-
-  //
+  
   // The bounding box start and end points will be updated using the
-  // stencil
-  //
+  // stencil  
   double* boundingBoxStartPoint = new double[3];
   double* boundingBoxEndPoint   = new double[3];
 
@@ -117,9 +109,9 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       // Following call has no effect if sphere stencil is used, but
       // is needed in case cylinder stencil is used
       //
-      this->Stencil->SetOrientation( this->ParticlesData->GetFieldData()->GetArray("hevec2")->GetTuple(i)[0], 
-                                     this->ParticlesData->GetFieldData()->GetArray("hevec2")->GetTuple(i)[1], 
-                                     this->ParticlesData->GetFieldData()->GetArray("hevec2")->GetTuple(i)[2] );
+      this->Stencil->SetOrientation( this->ParticlesData->GetPointData()->GetArray("hevec2")->GetTuple(i)[0], 
+                                     this->ParticlesData->GetPointData()->GetArray("hevec2")->GetTuple(i)[1], 
+                                     this->ParticlesData->GetPointData()->GetArray("hevec2")->GetTuple(i)[2] );
 
       if ( this->ScaleStencilPatternByParticleScale )
         {
@@ -133,9 +125,9 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       // Following call has no effect if sphere stencil is used, but
       // is needed in case cylinder stencil is used
       //
-      this->Stencil->SetOrientation( this->ParticlesData->GetFieldData()->GetArray("hevec1")->GetTuple(i)[0], 
-                                     this->ParticlesData->GetFieldData()->GetArray("hevec1")->GetTuple(i)[1], 
-                                     this->ParticlesData->GetFieldData()->GetArray("hevec1")->GetTuple(i)[2] );
+      this->Stencil->SetOrientation( this->ParticlesData->GetPointData()->GetArray("hevec1")->GetTuple(i)[0], 
+                                     this->ParticlesData->GetPointData()->GetArray("hevec1")->GetTuple(i)[1], 
+                                     this->ParticlesData->GetPointData()->GetArray("hevec1")->GetTuple(i)[2] );
       }
     if ( this->ChestParticleType == cip::VESSEL )
       {
@@ -143,9 +135,9 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       // Following call has no effect if sphere stencil is used, but
       // is needed in case cylinder stencil is used
       //
-      this->Stencil->SetOrientation( this->ParticlesData->GetFieldData()->GetArray("hevec0")->GetTuple(i)[0], 
-                                     this->ParticlesData->GetFieldData()->GetArray("hevec0")->GetTuple(i)[1], 
-                                     this->ParticlesData->GetFieldData()->GetArray("hevec0")->GetTuple(i)[2] );        
+      this->Stencil->SetOrientation( this->ParticlesData->GetPointData()->GetArray("hevec0")->GetTuple(i)[0], 
+                                     this->ParticlesData->GetPointData()->GetArray("hevec0")->GetTuple(i)[1], 
+                                     this->ParticlesData->GetPointData()->GetArray("hevec0")->GetTuple(i)[2] );        
 
       //
       // For vessels, both the cylinder and sphere radii can be scaled
@@ -155,7 +147,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       //
       if ( this->ScaleStencilPatternByParticleScale )
         {
-        double scale = this->ParticlesData->GetFieldData()->GetArray("scale")->GetTuple(i)[0];
+        double scale = this->ParticlesData->GetPointData()->GetArray("scale")->GetTuple(i)[0];
         double tempRadius = vcl_sqrt(2.0)*vcl_sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
 
         this->Stencil->SetRadius( tempRadius );

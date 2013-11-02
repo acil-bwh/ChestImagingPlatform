@@ -101,6 +101,7 @@ int main( int argc, char *argv[] )
     filter->SetParticleAngleThreshold( particleAngleThreshold );
     filter->SetScaleRatioThreshold( scaleRatioThreshold );
     filter->SetMaximumComponentSize( maxComponentSize );
+    filter->SetMaximumAllowableScale( maxAllowableScale );
     filter->SetInput( reader->GetOutput() );
     filter->Update();
 

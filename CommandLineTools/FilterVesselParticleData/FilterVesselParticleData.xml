@@ -66,8 +66,8 @@
 
     <double>
       <name>particleAngleThreshold</name>
-      <flag>d</flag>
-      <longflag>distance</longflag>
+      <flag>a</flag>
+      <longflag>angle</longflag>
       <description>Particle angle threshold used to test the connectivity between two particles (in degrees). \
       The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \
       eigenvector pointing in the direction of the vessel axis is then considered. For both particles, this angle must be below \
@@ -78,8 +78,8 @@
 
     <double>
       <name>scaleRatioThreshold</name>
-      <flag>d</flag>
-      <longflag>distance</longflag>
+      <flag>r</flag>
+      <longflag>ratio</longflag>
       <description>Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \
       two particles can differ in scale and still be considered for connectivity. The higher the value, \
       the more permisse the filter is with respect to scale differences</description>
@@ -105,6 +105,15 @@
       <label>Maximum component size</label>
       <default>USHRT_MAX</default>
     </integer>
+
+    <double>
+      <name>maxAllowableScale</name>
+      <longflag>maxScale</longflag>
+      <description>Max allowable scale. No connection will be made between two particles if either of them \
+      have a scale that exceeds this amount.</description>
+      <label>Maximum allowable scale</label>
+      <default>1.79769e+308</default>
+    </double>
 
   </parameters>
 </executable>

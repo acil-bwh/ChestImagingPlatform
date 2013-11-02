@@ -229,17 +229,13 @@ set to the inter-particle distance.";
     return cip::ARGUMENTPARSINGERROR;
     }
 
-  //
   // Read the particles
-  //
   std::cout << "Reading particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
     particlesReader->SetFileName( particlesFileName.c_str() );
     particlesReader->Update();    
 
-  //
   // Read the input label map
-  //
   std::cout << "Reading label map..." << std::endl;
   ReaderType::Pointer labelMapReader = ReaderType::New();
     labelMapReader->SetFileName( inLabelMapFileName );
@@ -255,9 +251,7 @@ set to the inter-particle distance.";
     return cip::LABELMAPREADFAILURE;
     }
 
-  //
   // Set up the stencils
-  //
   cipCylinderStencil* cylinderStencil = new cipCylinderStencil();
     cylinderStencil->SetRadius( radius );
     cylinderStencil->SetHeight( height );
@@ -265,9 +259,7 @@ set to the inter-particle distance.";
   cipSphereStencil* sphereStencil = new cipSphereStencil();
     sphereStencil->SetRadius( radius );
 
-  //
   // Now create the stenciled label map
-  //
   std::cout << "Creating stenciled label map..." << std::endl;
   StenciledLabelMapType::Pointer particlesToLabelMap = StenciledLabelMapType::New();
     particlesToLabelMap->SetParticlesData( particlesReader->GetOutput() );
