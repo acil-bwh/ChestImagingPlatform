@@ -65,7 +65,7 @@ class PolynomialFeatureMap(FeatureMap):
         for x in range(0, len(self.input_orders)):
             n = self.input_orders[x]
             self.num_terms_per_order[x] = f(n+m-1) /(f(n) * f(m-1))
-            self.num_terms+=self.num_terms_per_order[x]
+            self.num_terms+=int(self.num_terms_per_order[x])
         
     def get_mapped_feature_vecs(self):
         """

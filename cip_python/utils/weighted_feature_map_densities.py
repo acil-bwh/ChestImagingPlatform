@@ -63,22 +63,21 @@ class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
     """
     
     def __init__(self, im_feature_vecs, weights, feature_map, lamda):
-        WeightedFeatureMapDensity.__init__(im_feature_vecs, weights, feature_map)
+        WeightedFeatureMapDensity.__init__(self,im_feature_vecs, weights, feature_map) #rola add self
         self.lamda = lamda
         
         if feature_map is None:
-            self.poly_feature_map.feature_vectors = im_feature_vecs
-            self.poly_feature_map.feature_vectors.num_terms = im_feature_vecs.len
+            self.feature_map.feature_vectors = im_feature_vecs
+            self.feature_map.num_terms = im_feature_vecs.len
             
-        assert self.weights.shape ==  self.poly_feature_map.feature_vectors.num_terms
+        assert len(self.weights) ==  self.feature_map.num_terms
         
     def compute(self):
-        accum = self.coefficients[0]*self.feature_vectors[0]
-        for d in range(1, self.poly_feature_map.num_terms):
-            accum = accum + self.coefficients[d]*self.feature_vectors[d]
+        accum = self.weights[0]*self.feature_map.get_mapped_feature_vec_element(0)
+        for d in range(1, self.feature_map.num_terms):
+            accum = accum + self.weights[d]*self.feature_map.get_mapped_feature_vec_element(d)
         
-        #note: the old code was done with square, should be removed for new code.
-        exponential_density = np.exp(-np.power(accum,2))
+        exponential_density = np.exp(-accum)
         
         return exponential_density
         
