@@ -20,6 +20,7 @@ SET ( CIPCommon_SRCS
   cipAirwayDataInteractor.cxx
   cipVesselDataInteractor.cxx
   itkCIPExtractChestLabelMapImageFilter.cxx
+  itkCIPMergeChestLabelMapsImageFilter.cxx
   cipParticleConnectedComponentFilter.cxx
   cipVesselParticleConnectedComponentFilter.cxx
   cipAirwayParticleConnectedComponentFilter.cxx
