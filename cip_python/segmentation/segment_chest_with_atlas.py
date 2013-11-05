@@ -1,25 +1,28 @@
 import pdb
 import sys
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatformPrivate/cip_python/utils")
-import weighted_feature_map_densities
 import numpy as np
+from cip_python.utils.weighted_feature_map_densities \
+    import ExpWeightedFeatureMapDensity
+from cip_python.segmentation.construct_chest_atlas \
+    import construct_probabilistic_atlas
 import construct_chest_atlas
-
 
 def segment_chest_with_atlas(input_image, feature_vector, priors):
     """Segment structures using atlas data. Computes the likelihoods given a
-       feature_map, an input feature vector and priors. Uses exponential likelihood    
+    feature_map, an input feature vector and priors. Uses exponential
+    likelihood
 
     Parameters
     ----------
     input_image : float array, shape (L, M, N)
+        TODO
 
-    prior : list of float arrays with shape (L, M, N)
+    priors : list of float arrays with shape (L, M, N)
         Each structure of interest will be represented by an array having the
 	same size as the input image. Every voxel must have a value in the
 	interval [0, 1], indicating the probability of that particular
 	structure being present at that particular location.
-        ...
+        
         
     Returns
     -------
@@ -32,17 +35,19 @@ def segment_chest_with_atlas(input_image, feature_vector, priors):
     num_classes = priors.len
     likelihoods = np.zeros(np.size(priors))
     
-    my_polynomial_feature_map = weighted_feature_map_densities.PolynomialFeatureMap( feature_vector,[2] )  
+    my_polynomial_feature_map = \
+      weighted_feature_map_densities.PolynomialFeatureMap(feature_vector, [2])
     my_polynomial_feature_map.compute_num_terms()
 
     #listoflists=[ [0]*4 ] *5
-    posterior_energies = compute_structure_posterior_energies(likelihoods, priors)
+    posterior_energies = \
+       compute_structure_posterior_energies(likelihoods, priors)
         
-    # Step 3: For each structure separately, input the posterior energies into the graph cuts code    
+    # Step 3: For each structure separately, input the posterior energies into
+    # the graph cuts code    
     for i in range(num_classes):
         label_map=obtain_graph_cuts_segmentation(posterior_energies[i*2],posterior_energies[i*2+1])
-        
-    
+            
     return label_map
 
 
@@ -50,7 +55,8 @@ def segment_chest_with_atlas(input_image, feature_vector, priors):
 def compute_structure_posterior_energies(likelihoods, priors):
     """Computes the posterior energy given a list of structure likelihoods
        and priors.  
-        Parameters
+
+    Parameters
     ----------
     priors : list of float arrays with shape (L, M, N)
         Each structure of interest will be represented by an array having the

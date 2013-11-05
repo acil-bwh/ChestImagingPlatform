@@ -1,7 +1,7 @@
 import heapq
 num_cases=10
 
-def construct_probabilistic_atlas(label_maps, normalize=true, weights='None',
+def construct_probabilistic_atlas(label_maps, normalize=True, weights='None',
                                   atlas='None'):
     """Creates probabilistic atlas from a collection of label maps
 

@@ -1,4 +1,4 @@
-def get_closest_cases(input_image, list_of_label_files):    
+def get_closest_cases(input_image, list_of_label_files):
     """Get the closest cases to the test case using some
        similarity metric. 
 
