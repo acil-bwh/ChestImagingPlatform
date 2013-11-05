@@ -1,18 +1,34 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-PROJECT(ReadParticlesWriteConnectedParticles)
+PROJECT( ReadParticlesWriteConnectedParticles )
 
-IF(NOT BUILD_COMMON)
-  MESSAGE ( FATAL_ERROR "Must build Common to build LabelAirwayParticlesByGeneration" )
-ENDIF(NOT BUILD_COMMON)
+SET ( MODULE_NAME ReadParticlesWriteConnectedParticles )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
+INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
 
-SET (ReadParticlesWriteConnectedParticles_SOURCE ReadParticlesWriteConnectedParticles.cxx )
+FIND_PACKAGE( CIP REQUIRED )
 
-ADD_EXECUTABLE (ReadParticlesWriteConnectedParticles ${ReadParticlesWriteConnectedParticles_SOURCE})
-TARGET_LINK_LIBRARIES (ReadParticlesWriteConnectedParticles ${VTK_LIBRARIES} CIPCommon)
+SET ( MODULE_INCLUDE_DIRECTORIES
+    ${CMAKE_SOURCE_DIR}/Common
+    ${CMAKE_SOURCE_DIR}/Utilities
+  )
+
+SET ( MODULE_TARGET_LIBRARIES
+  ${VTK_LIBRARIES}
+  CIPCommon
+  )
+
+SET ( MODULE_SRCS ReadParticlesWriteConnectedParticles.cxx )
+
+SEMMacroBuildCLI (
+  NAME ${MODULE_NAME}
+  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+  ADDITIONAL_SRCS ${MODULE_SRCS}
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  EXECUTABLE_ONLY
+  )
 
 
 

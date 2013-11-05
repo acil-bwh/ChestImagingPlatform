@@ -45,10 +45,8 @@
  *
  */
 
-
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "vtkSmartPointer.h"
 #include "vtkPolyData.h"
 #include "vtkFieldData.h"
@@ -62,57 +60,14 @@
 #include "vtkDoubleArray.h"
 #include "cipConventions.h"
 #include "cipHelper.h"
+#include "ReadParticlesWriteConnectedParticlesCLP.h"
 
 vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointer<vtkPolyData>, double, std::string);
 bool GetEdgeWeight(unsigned int, unsigned int, vtkSmartPointer<vtkPolyData>, double*, double, std::string);
 
 int main( int argc, char *argv[] )
 {
-  // Begin by defining the arguments to be passed
-  std::string vesselParticlesFileName   = "NA";
-  std::string airwayParticlesFileName   = "NA";
-  std::string outParticlesFileName      = "NA";
-  double      particleDistanceThreshold = 2.0;
-
-  // Argument descriptions for user help
-  std::string programDesc = "This program reads either an airway particles dataset or a \
-vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \
-topology on the particles points. The output polydata is equivalent to the input polydata \
-but with polylines defined indicating the edges between particle points found by the min \
-spanning tree algorithm. The connected dataset is rendered and then optionally written to \
-file";
-
-  std::string vesselParticlesFileNameDesc  = "Input vessel particles file name";
-  std::string airwayParticlesFileNameDesc  = "Input airway particles file name";
-  std::string outParticlesFileNameDesc = "Output particles file name";
-  std::string particleDistanceThresholdDesc = "Particle distance threshold. If two particles are \
-farther apart than this threshold, they will not considered connected. Otherwise, a graph edge \
-will be formed between the particles where the edge weight is a function of the distance \
-between the particles. The weighted graph is then fed to a minimum spanning tree algorithm, the \
-output of which is used to establish directionality throught the particles for HMM analysis.";
-
-  // Parse the input arguments
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision$" );
-
-    TCLAP::ValueArg<std::string> vesselParticlesFileNameArg ( "v", "vessel", vesselParticlesFileNameDesc, false, vesselParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> airwayParticlesFileNameArg ( "a", "airway", airwayParticlesFileNameDesc, false, airwayParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outParticlesFileNameArg ( "o", "outPart", outParticlesFileNameDesc, false, outParticlesFileName, "string", cl );
-    TCLAP::ValueArg<double> particleDistanceThresholdArg ( "d", "distThresh", particleDistanceThresholdDesc, false, particleDistanceThreshold, "double", cl );
-
-    cl.parse( argc, argv );
-
-    vesselParticlesFileName   = vesselParticlesFileNameArg.getValue();
-    airwayParticlesFileName   = airwayParticlesFileNameArg.getValue();
-    outParticlesFileName      = outParticlesFileNameArg.getValue();
-    particleDistanceThreshold = particleDistanceThresholdArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  PARSE_ARGS;
 
   std::string particlesType;
   vtkSmartPointer<vtkPolyData> particles = vtkSmartPointer<vtkPolyData>::New();

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>ClassifyFissureParticles</title>
+  <description><![CDATA[This program reads either an airway particles dataset or a \
+  vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \
+  topology on the particles points. The output polydata is equivalent to the input polydata \
+  but with polylines defined indicating the edges between particle points found by the min \
+  spanning tree algorithm. The connected dataset is rendered and then optionally written to \
+  file.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <string>
+      <name>vesselParticlesFileName</name>
+      <label>Vessel particles file name</label>
+      <channel>input</channel>
+      <flag>v</flag>
+      <longflag>vessel</longflag>
+      <description><![CDATA[Vessel particles file name]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>airwayParticlesFileName</name>
+      <label>Airway particles file name</label>
+      <channel>input</channel>
+      <flag>a</flag>
+      <longflag>airway</longflag>
+      <description><![CDATA[Airway particles file name]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>outParticlesFileName</name>
+      <label>Output particles file name</label>
+      <channel>input</channel>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description><![CDATA[Output particles file name]]></description>
+      <default>NA</default>
+    </string>  
+  </parameters>
+
+  <parameters>
+    <double>
+      <name>particleDistanceThreshold</name>
+      <flag>d</flag>
+      <longflag>distThresh</longflag>
+      <description>Particle distance threshold. If two particles are \
+      farther apart than this threshold, they will not considered connected. Otherwise, a graph edge \
+      will be formed between the particles where the edge weight is a function of the distance \
+      between the particles. The weighted graph is then fed to a minimum spanning tree algorithm, the \
+      output of which is used to establish directionality throught the particles for HMM analysis</description>
+      <label>Particle distance threshold</label>
+      <default>2.0</default>
+    </double>
+  </parameters>
+</executable>
