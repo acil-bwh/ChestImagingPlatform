@@ -175,6 +175,56 @@ def print_info_to_file(tags, info, out_file):
 
     writer.close()    
    
+
+    
+def query_dicom_directories(dirs_file, out_file, tags, dicom_dir, show_tags):
+
+    # Print the tags to screen for reference if requested
+    if show_tags:
+       print_dicom_tags()
+
+    if tags is not None:
+        # Parse the list of tags the user has specified into a list of
+        # attributes       
+        attrs = tags.replace(" ", "").split(',')
+
+        if dicom_dir is not None:
+            if os.path.exists(dicom_dir):
+                # Get all the files in the directory. We assume that these are
+                # DICOM files. We will just use the first one in the returned
+                # list for querying
+                dir_and_file_name = get_file_in_dir(dicom_dir)               
+                dicom_info = dicom.read_file(dir_and_file_name)
+
+                formatted_line = \
+                    formatted_line_from_dicom_info(dicom_dir,
+                                                   dicom_info, attrs)
+                print_info_to_screen(tags, [formatted_line])
+            else:
+                raise ValueError("Specified DICOM directory does not exist") 
+
+        # Now read the directories file if the user has specified one
+        if dirs_file is not None:
+            assert os.path.isfile(dirs_file), "Directories file does \
+            not exist"
+
+            with open(dirs_file) as f:
+                dirs = f.readlines()
+
+            all_info = []
+            for line in dirs:
+                dicom_dir = line.rstrip('\n')
+                dir_and_file_name = get_file_in_dir(dicom_dir)
+                dicom_info = dicom.read_file(dir_and_file_name)
+                all_info.append(formatted_line_from_dicom_info(dicom_dir,
+                                                            dicom_info, attrs))
+
+            if options.out_file is not None:
+                print_info_to_file(tags, all_info, out_file)
+            else:
+                print_info_to_screen(tags, all_info)     
+
+
 if __name__ == "__main__":
     desc = """Query a set of DICOM directories for tag information and write
     results to an output file."""
@@ -207,48 +257,4 @@ if __name__ == "__main__":
                       default=False, action='store_true')    
 
     (options, args) = parser.parse_args()
-
-    # Print the tags to screen for reference if requested
-    if options.show_tags:
-       print_dicom_tags()
-
-    if options.tags is not None:
-        # Parse the list of tags the user has specified into a list of
-        # attributes       
-        attrs = options.tags.replace(" ", "").split(',')
-
-        if options.dicom_dir is not None:
-            if os.path.exists(options.dicom_dir):
-                # Get all the files in the directory. We assume that these are
-                # DICOM files. We will just use the first one in the returned
-                # list for querying
-                dir_and_file_name = get_file_in_dir(options.dicom_dir)               
-                dicom_info = dicom.read_file(dir_and_file_name)
-
-                formatted_line = \
-                    formatted_line_from_dicom_info(options.dicom_dir,
-                                                   dicom_info, attrs)
-                print_info_to_screen(options.tags, [formatted_line])
-            else:
-                raise ValueError("Specified DICOM directory does not exist") 
-
-        # Now read the directories file if the user has specified one
-        if options.dirs_file is not None:
-            assert os.path.isfile(options.dirs_file), "Directories file does \
-            not exist"
-
-            with open(options.dirs_file) as f:
-                dirs = f.readlines()
-
-            all_info = []
-            for line in dirs:
-                dicom_dir = line.rstrip('\n')
-                dir_and_file_name = get_file_in_dir(dicom_dir)
-                dicom_info = dicom.read_file(dir_and_file_name)
-                all_info.append(formatted_line_from_dicom_info(dicom_dir,
-                                                            dicom_info, attrs))
-
-            if options.out_file is not None:
-                print_info_to_file(options.tags, all_info, options.out_file)
-            else:
-                print_info_to_screen(options.tags, all_info)     
+    query_dicom_directories(options.dirs_file, options.out_file, options.tags, options.dicom_dir, options.show_tags)
