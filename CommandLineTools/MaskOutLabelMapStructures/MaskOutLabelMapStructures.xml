@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>ClassifyFissureParticles</title>
+  <description><![CDATA[This program will remove the specified chest structures from the input label map.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>inLabelMapFileName</name>
+      <label>Input label map</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>in</longflag>
+      <description><![CDATA[The label map from which to mask out structures..]]></description>
+    </image>  
+
+    <image>
+      <name>outLabelMapFileName</name>
+      <label>Output label map</label>
+      <channel>input</channel>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description><![CDATA[The output label map with the specified structures masked out.]]></description>
+    </image>  
+  </parameters>
+
+  <parameters>
+    <string-vector>
+      <name>maskRegionNames</name>
+      <label>Chest regions to mask out</label>
+      <channel>input</channel>
+      <flag>r</flag>
+      <longflag>regions</longflag>
+      <description>Any voxel having specified chest regions will be masked out regardless of the chest type values. </description>
+    </string-vector>
+
+    <string-vector>
+      <name>maskTypeNames</name>
+      <label>Chest types to mask out</label>
+      <channel>input</channel>
+      <flag>t</flag>
+      <longflag>types</longflag>
+      <description>Any voxel having specified chest types will be masked out regardless of the chest region values. </description>
+    </string-vector>
+
+    <string-vector>
+      <name>maskRegionTypePairNames</name>
+      <label>Chest region-type pairs to mask out</label>
+      <channel>input</channel>
+      <longflag>rt</longflag>
+      <description>Any voxel having the specified chest region, chest type pair will be masked out.</description>
+    </string-vector>
+  </parameters>
+
+</executable>
