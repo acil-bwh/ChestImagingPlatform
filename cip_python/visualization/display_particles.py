@@ -199,7 +199,7 @@ if __name__ == "__main__":
                       default="")
     parser.add_option("-l", help='TODO', dest="lung_filename", default="")
     parser.add_option("--useFieldData", help='TODO', dest="use_field_data", \
-                      action="store_true"))
+                      action="store_true")
 
     (options, args) = parser.parse_args()
 
@@ -210,7 +210,7 @@ if __name__ == "__main__":
     translate_color['blue'] = [0.1, 0.1, 0.9]
 
     file_list = [i for i in str.split(options.file_name,',')]
-    useFieldData = options.useFieldData
+    use_field_data = options.use_field_data
     spacing_list = [float(i) for i in str.split(options.spacing,',')]
     lung_filename = options.lung_filename
 
@@ -227,5 +227,5 @@ if __name__ == "__main__":
     print color_list
 
     dv = DisplayVasculature(file_list, spacing_list, float(options.h1th), \
-        'Cylinder', useFieldData, opacity_list, color_list, lung_filename)
+        'Cylinder', use_field_data, opacity_list, color_list, lung_filename)
     dv.execute()
