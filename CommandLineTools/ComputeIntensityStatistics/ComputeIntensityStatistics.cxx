@@ -36,7 +36,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
+#include "ComputeIntensityStatisticsCLP.h"
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -45,61 +45,26 @@
 #include <fstream>
 #include <limits.h>
 
-typedef itk::ImageRegionIterator< cip::LabelMapType > LabelMapIteratorType;
-typedef itk::ImageRegionIterator< cip::CTType >       CTIteratorType;
-
-struct STATS
+namespace
 {
-  double mean;
-  double median;
-  double std;
-  short  min;
-  short  max;
-  std::list< short > HUs;
-};
 
+   typedef itk::ImageRegionIterator< cip::LabelMapType > LabelMapIteratorType;
+   typedef itk::ImageRegionIterator< cip::CTType >       CTIteratorType;
+
+   struct STATS
+   {
+     double mean;
+     double median;
+     double std;
+     short  min;
+     short  max;
+     std::list< short > HUs;
+   };
+
+}
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::string labelMapFileName = "NA";
-  std::string ctFileName       = "NA";
-  std::string outFileName      = "NA";
-
-  //
-  // Argument descriptions for user help
-  //
-  std::string programDesc = "This program is used to compute intensity statistics for \
-chest-region chest-type pairs. For every pair present in the input label map, the mean, \
-min, max, median, and standard deviation are computed. The results are printed to the \
-command line.";
-  std::string labelMapFileNameDesc = "Input label map file name";
-  std::string ctFileNameDesc       = "Input CT file name";
-  std::string outFileNameDesc      = "Output CSV file";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 311 $" );
-
-    TCLAP::ValueArg<std::string> labelMapFileNameArg ( "l", "labelMapFileName", labelMapFileNameDesc, true, labelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> ctFileNameArg ( "c", "ctFileName", ctFileNameDesc, true, ctFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outFileNameArg ( "o", "outFileName", outFileNameDesc, false, outFileName, "string", cl );
-      
-    cl.parse( argc, argv );
-
-    labelMapFileName = labelMapFileNameArg.getValue();
-    ctFileName       = ctFileNameArg.getValue();
-    outFileName      = outFileNameArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  PARSE_ARGS;
 
   //
   // Read the label map
