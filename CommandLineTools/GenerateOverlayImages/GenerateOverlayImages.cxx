@@ -97,7 +97,7 @@ typedef itk::ImageFileWriter<OverlayType>  OverlayWriterType;
 double GetWindowLeveledValue(short, short, short);
 RGBPixelType GetOverlayPixelValue(double, unsigned short, double);
 void GetOverlayImages(cip::LabelMapType::Pointer, cip::CTType::Pointer, unsigned int, std::vector<OverlayType::Pointer>*, 
-		      double, std::string, short, short, unsigned char, unsigned char);
+		      double, std::string, short, short, unsigned char, unsigned char, bool);
 
 int main( int argc, char *argv[] )
 {
@@ -160,7 +160,7 @@ int main( int argc, char *argv[] )
 
   std::cout << "Getting overlay images..." << std::endl;
   GetOverlayImages(labelMapReader->GetOutput(), ctReader->GetOutput(), overlayFileNameVec.size(),
-		   &overlays, opacity, slicePlane, window, level, cipRegion, cipType);
+		   &overlays, opacity, slicePlane, window, level, cipRegion, cipType, bookEnds);
 
   // Finally, write the overlays to file
   for (unsigned int i=0; i<overlayFileNameVec.size(); i++)
@@ -190,7 +190,7 @@ int main( int argc, char *argv[] )
 
 void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer ctImage, unsigned int numImages,
 		      std::vector<OverlayType::Pointer>* overlayVec, double opacity, std::string slicePlane, 
-		      short window, short level, unsigned char cipRegion, unsigned char cipType)
+		      short window, short level, unsigned char cipRegion, unsigned char cipType, bool bookEnds)
 {
   cip::ChestConventions conventions;
 
@@ -283,7 +283,16 @@ void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer 
       overlay->Allocate();
       overlay->FillBuffer(rgbDefault);
 
-    unsigned int slice = sliceMin + n*(sliceMax - sliceMin)/(numImages + 1);
+    unsigned int slice;
+    if ( bookEnds )
+      {
+	slice = sliceMin + (n - 1)*(sliceMax - sliceMin)/numImages;
+      }
+    else
+      {
+	slice = sliceMin + n*(sliceMax - sliceMin)/(numImages + 1);
+      }
+
     index[kIndex] = slice;
 
     for ( unsigned int i=0; i<overlaySize[0]; i++ )
