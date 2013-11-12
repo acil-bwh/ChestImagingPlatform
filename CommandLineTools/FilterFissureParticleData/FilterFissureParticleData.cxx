@@ -68,71 +68,11 @@
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
 #include "cipFissureParticleConnectedComponentFilter.h"
+#include "FilterFissureParticleDataCLP.h"
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Define arguments
-  //
-  std::string  inParticlesFileName    = "NA";
-  std::string  outParticlesFileName   = "NA";
-  double       distanceThreshold      = 3.0;
-  double       interParticleSpacing   = 1.7;
-  double       angleThreshold         = 70;
-  unsigned int componentSizeThreshold = 110;
-
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDesc = "This program is used to filter fissure particles. In particular \
-it is used as step in the overall lung lobe segmentation framework. \
-Default values for the input parameters are chosen for that purpose. \
-The program provides an interface to the \
-'cipFissureParticleConnectedComponentFilter': connected components \
-concepts are used to eliminate small particle groups and to retain \
-those that form larger, sheet-like structures.";
-
-  std::string inParticlesFileNameDesc    = "Input particles file name";
-  std::string outParticlesFileNameDesc   = "Output particles file name";
-  std::string distanceThresholdDesc      = "Particle distance threshold (mm). A pair of particles must \
-be at least this close together to be considered for connectivity.";
-  std::string angleThresholdDesc         = "Particle angle threshold (degrees). The vector connecting \
-two particles is compared to their respective orientation vectors (indicating the approximate normal \
-vector to the local sheet they potentially lie on). If the angle between either of these vectors and \
-the connecting vector is less than this threshold, the particles are considered to be disconnected";
-  std::string interParticleSpacingDesc   = "The inter-particle spacing that was used to generate the input \
-particles";
-  std::string componentSizeThresholdDesc = "The minimum cardinality of a set of component particles needed \
-for that set to be passed through the filter";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 218 $" );
-
-    TCLAP::ValueArg<std::string>   inParticlesFileNameArg( "i", "in", inParticlesFileNameDesc, true, inParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string>   outParticlesFileNameArg( "o", "out", outParticlesFileNameDesc, true, outParticlesFileName, "string", cl );
-    TCLAP::ValueArg<double>        distanceThresholdArg( "d", "distanceThresh", distanceThresholdDesc, false, distanceThreshold, "double", cl );
-    TCLAP::ValueArg<double>        interParticleSpacingArg( "p", "spacing", interParticleSpacingDesc, false, interParticleSpacing, "double", cl );
-    TCLAP::ValueArg<double>        angleThresholdArg( "a", "angleThresh", angleThresholdDesc, false, angleThreshold, "double", cl );
-    TCLAP::ValueArg<unsigned int>  componentSizeThresholdArg( "s", "size", componentSizeThresholdDesc, false, componentSizeThreshold, "unsigned int", cl );
-
-    cl.parse( argc, argv );
-
-    inParticlesFileName    = inParticlesFileNameArg.getValue();
-    outParticlesFileName   = outParticlesFileNameArg.getValue();
-    distanceThreshold      = distanceThresholdArg.getValue();
-    interParticleSpacing   = interParticleSpacingArg.getValue();
-    angleThreshold         = angleThresholdArg.getValue();
-    componentSizeThreshold = componentSizeThresholdArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  PARSE_ARGS;
 
   std::cout << "Reading polydata..." << std::endl;
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
