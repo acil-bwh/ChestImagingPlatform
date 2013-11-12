@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>ComputeIntensityStatistics</title>
+  <description><![CDATA[This program is used to compute intensity statistics for chest-region  chest-type pairs. For every pair present in the input label map, the mean, min, max, median, and standard deviation are computed. The results are printed to the command line.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+
+  <parameters>
+    <string>
+      <name>labelMapFileName</name>
+      <label>Label Map FileName</label>
+      <channel>input</channel>
+      <flag>l</flag>
+      <longflag>--labelMapFileName</longflag>
+      <description><![CDATA[Input label map file name]]></description>
+      <default>NA</default>
+    </string>   
+    <string>
+      <name>ctFileName</name>
+      <label>ct File Name</label>
+      <channel>input</channel>
+      <flag>c</flag>
+      <longflag>--ctFileName</longflag>
+      <description><![CDATA[Input CT file name]]></description>
+      <default>NA</default>
+    </string>
+    <string>
+      <name>outFileName</name>
+      <label>output Filename</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>--output</longflag>
+      <description><![CDATA[Output CSV file]]></description>
+      <default>NA</default>
+    </string>   
+  </parameters>
+</executable>
