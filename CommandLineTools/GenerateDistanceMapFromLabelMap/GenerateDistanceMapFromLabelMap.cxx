@@ -68,10 +68,13 @@
 #include "itkImageFileWriter.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
+#include "itkDanielssonDistanceMapImageFilter.h"
 
 typedef itk::Image< short, 3 >                                                        DistanceMapType;
 typedef itk::ImageFileWriter< DistanceMapType >                                       WriterType;
+typedef itk::ImageFileWriter< cip::LabelMapType >                                     DEBWriterType;
 typedef itk::SignedMaurerDistanceMapImageFilter< cip::LabelMapType, DistanceMapType > SignedMaurerType;
+typedef itk::DanielssonDistanceMapImageFilter< cip::LabelMapType, DistanceMapType >   DanielssonType;
 typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >     NearestNeighborInterpolatorType;
 typedef itk::LinearInterpolateImageFunction< DistanceMapType, double >                LinearInterpolatorType;
 typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >              LabelMapResampleType;
@@ -81,11 +84,8 @@ typedef itk::ImageRegionIteratorWithIndex< DistanceMapType >                    
 typedef itk::IdentityTransform< double, 3 >                                           IdentityType;
 typedef itk::CIPExtractChestLabelMapImageFilter                                       LabelMapExtractorType;
 
-
-
 cip::LabelMapType::Pointer ResampleImage( cip::LabelMapType::Pointer, float );
 DistanceMapType::Pointer ResampleImage( DistanceMapType::Pointer, float );
-
 
 int main( int argc, char *argv[] )
 {
@@ -159,9 +159,13 @@ of the structure of interest should be assigned positive distance values";
     return cip::ARGUMENTPARSINGERROR;
     }  
 
-  //
+  if ( cipType == cip::UNDEFINEDTYPE && cipRegion == cip::UNDEFINEDREGION )
+    {
+      std::cout << "Must specify a chest region or chest type" << std::endl;
+      return cip::ARGUMENTPARSINGERROR;
+    }
+
   // Instantiate ChestConventions for convenience
-  //
   cip::ChestConventions conventions;
 
   //
@@ -182,16 +186,19 @@ of the structure of interest should be assigned positive distance values";
     return cip::LABELMAPREADFAILURE;
     }
 
+  std::cout << "Isolationg region and type of interest..." << std::endl;
   LabelMapExtractorType::Pointer extractLabelMap = LabelMapExtractorType::New();
     extractLabelMap->SetInput(reader->GetOutput());
-    extractLabelMap->SetChestRegion(cipRegion);
-    extractLabelMap->SetChestType(cipType);
+  if ( cipRegion != 0 )
+    {
+    extractLabelMap->SetChestRegion((unsigned char)cipRegion);
+    }
+  if ( cipType != 0 )
+    {
+    extractLabelMap->SetChestType((unsigned char)cipType);
+    }
     extractLabelMap->Update();
   
-  //
-  // Isolate the chest region / type of interest
-  //
-  std::cout << "Isolationg region and type of interest..." << std::endl;
   LabelMapIteratorType it( extractLabelMap->GetOutput(), extractLabelMap->GetOutput()->GetBufferedRegion() );
 
   it.GoToBegin();
@@ -199,19 +206,14 @@ of the structure of interest should be assigned positive distance values";
     {
     if ( it.Get() != 0 )
       {
-      unsigned char tmpRegion = conventions.GetChestRegionFromValue( it.Get() );
-      unsigned char tmpType   = conventions.GetChestTypeFromValue( it.Get() );
-
-      if ( (cipRegion == cip::UNDEFINEDREGION && tmpType == cipType) ||
-           (cipType == cip::UNDEFINEDTYPE && tmpRegion == cipRegion) ||
-           (cipType == tmpType && tmpRegion == cipRegion) )
-        {
-        it.Set( 1 );
-        }
-      else
-        {
-        it.Set( 0 );
-        }
+	if ( it.Get() != 0 )
+	  {
+	    it.Set( 1 );
+	  }
+	else
+	  {
+	    it.Set( 0 );
+	  }
       }
     
     ++it;
@@ -220,15 +222,15 @@ of the structure of interest should be assigned positive distance values";
   cip::LabelMapType::Pointer subSampledLabelMap;
 
   std::cout << "Downsampling label map..." << std::endl;
-  
-  subSampledLabelMap=ResampleImage( reader->GetOutput(), downsampleFactor );
+  subSampledLabelMap = ResampleImage( reader->GetOutput(), downsampleFactor );
   
   std::cout << "Generating distance map..." << std::endl;
-  SignedMaurerType::Pointer distanceMap = SignedMaurerType::New();
+  DanielssonType::Pointer distanceMap = DanielssonType::New();
     distanceMap->SetInput( subSampledLabelMap );
-    distanceMap->SetSquaredDistance( 0 );
-    distanceMap->SetUseImageSpacing( 1 );
-    distanceMap->SetInsideIsPositive( interiorIsPositive );
+    distanceMap->InputIsBinaryOn();
+    // distanceMap->SetSquaredDistance( 0 );
+    // distanceMap->SetUseImageSpacing( 1 );
+    // distanceMap->SetInsideIsPositive( interiorIsPositive );
   try
     {
     distanceMap->Update();
@@ -244,7 +246,7 @@ of the structure of interest should be assigned positive distance values";
   DistanceMapType::Pointer upSampledDistanceMap;
 
   std::cout << "Upsampling distance map..." << std::endl;
-  upSampledDistanceMap=ResampleImage( distanceMap->GetOutput(), 1.0/downsampleFactor );
+  upSampledDistanceMap = ResampleImage( distanceMap->GetOutput(), 1.0/downsampleFactor );
 
   std::cout << "Writing to file..." << std::endl;
   WriterType::Pointer writer = WriterType::New();

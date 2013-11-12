@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>ClassifyFissureParticles</title>
+  <description><![CDATA[This program will merge an overlay label map into a base label map. \
+  The user must indicate which structures should be merged. Structures can be chest regions, \
+  chest types, and or region-type pairs. Only the structures specified will be merged from the \
+  overlay label map onto the base label map.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>baseLabelMapFileName</name>
+      <label>Base label map</label>
+      <channel>input</channel>
+      <flag>b</flag>
+      <longflag>base</longflag>
+      <description><![CDATA[All labels in the base image remain untouched except for the rules specified by the user applied \
+      to the information in the overlay label map.]]></description>
+    </image>  
+
+    <image>
+      <name>overlayLabelMapFileName</name>
+      <label>Overlay label map</label>
+      <channel>input</channel>
+      <longflag>overlay</longflag>
+      <description><![CDATA[Contains labels that will be used together with the specified rules to update the base label map.]]></description>
+    </image>  
+
+    <image>
+      <name>outLabelMapFileName</name>
+      <label>Output label map</label>
+      <channel>input</channel>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description><![CDATA[Output label map]]></description>
+    </image>  
+  </parameters>
+
+  <parameters>
+    <string-vector>
+      <name>overrideTypes</name>
+      <label>Override chest types</label>
+      <channel>input</channel>
+      <longflag>otypes</longflag>
+      <description>Any voxel in the base (input) image with this type will be set to UNDEFINEDTYPE first, and then \
+      the type specified will be set according to the locations of that type in the overlay image</description>
+    </string-vector>
+
+    <string-vector>
+      <name>overrideRegions</name>
+      <label>Override chest regions</label>
+      <channel>input</channel>
+      <longflag>oregions</longflag>
+      <description>Any voxel in the base (input) image with this region will be set to UNDEFINEDREGION first, and then \
+      the region specified will be set according to the locations of that region in the overlay image</description>
+    </string-vector>
+
+    <string-vector>
+      <name>overrideRegionTypePairs</name>
+      <label>Override chest region, chest type pairs</label>
+      <channel>input</channel>
+      <longflag>opairs</longflag>
+      <description>Any voxel in the base (input) image with this region-type pair combination will have \
+      the type set to UNDEFINEDTYPE. The region will be untouched. All voxels in the overlay image having \
+      the specifed pair will have their type grafted onto the base image. The list of comma separated string \
+      values passed with this flag will be interpreted as a list of pairs, where the first member of the pair \
+      will be interpreted as the region value, and the second element of the pair will be considered as the type.</description>
+    </string-vector>
+
+    <string-vector>
+      <name>mergeTypes</name>
+      <label>Merge chest types</label>
+      <channel>input</channel>
+      <longflag>mtypes</longflag>
+      <description>The type specified will be set according to the locations of that type in the overlay image </description>
+    </string-vector>
+
+    <string-vector>
+      <name>mergeRegions</name>
+      <label>Merge chest regions</label>
+      <channel>input</channel>
+      <longflag>mregions</longflag>
+      <description>The region specified will be set according to the locations of that region in the overlay image</description>
+    </string-vector>
+
+    <string-vector>
+      <name>mergeRegionTypePairs</name>
+      <label>Merge chest region, chest type pairs</label>
+      <channel>input</channel>
+      <longflag>mpairs</longflag>
+      <description>All voxels having the specified region-type in the overlay image will be merged with the base image -- only the type will be \
+      grafted onto the base image, however. The specified region serves to identify the voxels in the overlay image, but the value of the \
+      region itself is not grafted</description>
+    </string-vector>
+  </parameters>
+
+</executable>

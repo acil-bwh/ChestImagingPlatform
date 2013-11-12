@@ -36,8 +36,8 @@ class ITK_EXPORT CIPMergeChestLabelMapsImageFilter :
 protected:
   struct REGIONANDTYPE
   {
-    unsigned char lungRegionValue;
-    unsigned char lungTypeValue;
+    unsigned char chestRegion;
+    unsigned char chestType;
   };
 
 public:
@@ -67,7 +67,7 @@ public:
   /** Setting GraftOverlay to be true will simply replace the base
    * image with the contents of the overlay image within the overlay
    * image region. False by default. Note that if this option is
-   * specified, none of the other rules supplied by the user witll be
+   * specified, none of the other rules supplied by the user will be
    * applied. Additionally, only one of GraftOverlay or MergeOverlay
    * can be set to true. They can't both be true, but they can both be
    * false (in which case the other rules supplied by the user will be
@@ -112,8 +112,8 @@ public:
   inline void SetOverrideChestRegionTypePair( unsigned char regionValue, unsigned char typeValue )
     {
       REGIONANDTYPE regionTypePair;
-        regionTypePair.lungRegionValue = regionValue;
-        regionTypePair.lungTypeValue   = typeValue;
+        regionTypePair.chestRegion = regionValue;
+        regionTypePair.chestType   = typeValue;
 
       this->m_OverrideChestRegionTypePairVec.push_back( regionTypePair );
     };
@@ -140,8 +140,8 @@ public:
   inline void SetMergeChestRegionTypePair( unsigned char regionValue, unsigned char typeValue )
     {
       REGIONANDTYPE regionTypePair;
-        regionTypePair.lungRegionValue = regionValue;
-        regionTypePair.lungTypeValue   = typeValue;
+        regionTypePair.chestRegion = regionValue;
+        regionTypePair.chestType   = typeValue;
 
       this->m_MergeChestRegionTypePairVec.push_back( regionTypePair );
     };
@@ -167,8 +167,8 @@ public:
   inline void SetPreserveChestRegionTypePair( unsigned char regionValue, unsigned char typeValue )
     {
       REGIONANDTYPE regionTypePair;
-        regionTypePair.lungRegionValue = regionValue;
-        regionTypePair.lungTypeValue   = typeValue;
+        regionTypePair.chestRegion = regionValue;
+        regionTypePair.chestType   = typeValue;
 
       this->m_PreserveChestRegionTypePairVec.push_back( regionTypePair );
     };
@@ -197,10 +197,9 @@ protected:
 
   void GenerateData();
 
-  void InitializeOutputWithInputAndOverrides();
   void MergeOverlay();
   void GraftOverlay();
-  void ApplyOverlayRules();
+  void ApplyRules();
   bool GetPermitChestRegionChange( unsigned char );
   bool GetPermitChestTypeChange( unsigned char, unsigned char );
 
@@ -217,8 +216,6 @@ private:
   std::vector< unsigned char > m_PreserveChestRegionVec;
   std::vector< unsigned char > m_PreserveChestTypeVec;
   std::vector< REGIONANDTYPE > m_PreserveChestRegionTypePairVec;
-
-  std::map< unsigned short, unsigned short > m_InputLabelsToCleanedLabelsMap;
 
   cip::LabelMapType::IndexType m_OverlayImageStartIndex;
   cip::LabelMapType::Pointer   m_OverlayImage;

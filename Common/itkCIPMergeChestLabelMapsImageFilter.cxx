@@ -34,11 +34,231 @@ CIPMergeChestLabelMapsImageFilter
     }
   else
     {
-    this->InitializeOutputWithInputAndOverrides();
-    this->ApplyOverlayRules();
+    this->ApplyRules();
     }
 }
 
+void
+CIPMergeChestLabelMapsImageFilter
+::ApplyRules()
+{
+  unsigned char iRegion, iType; // For input
+  unsigned char oRegion, oType; // For overlay
+  bool preserve = false;
+
+  ConstIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
+  IteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
+  IteratorType ovIt( this->m_OverlayImage, this->m_OverlayImage->GetBufferedRegion() );
+
+  oIt.GoToBegin();
+  iIt.GoToBegin();
+  ovIt.GoToBegin();
+  while ( !oIt.IsAtEnd() )
+    {
+      // By default the merged label map gets the value of the input label map
+      oIt.Set( iIt.Get() );
+
+      // Zero out any override regions, types, or region-type pairs if necessary
+      if ( iIt.Get() != 0 )
+	{
+	  iRegion = this->m_ChestConventions.GetChestRegionFromValue( iIt.Get() );	      
+	  iType = this->m_ChestConventions.GetChestTypeFromValue( iIt.Get() );
+
+	  // Only consider override types if the base value actually represents a type
+	  if ( iIt.Get() > 255 )
+	    {
+	      for ( unsigned int i=0; i<this->m_OverrideChestTypeVec.size(); i++ )
+		{
+		  if ( this->m_OverrideChestTypeVec[i] == iType )
+		    {
+		      oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( iRegion, (unsigned char)(cip::UNDEFINEDTYPE) ) );
+		      break;
+		    }
+		}
+	    }
+
+	  // Now deal with override regions
+	  for ( unsigned int i=0; i<this->m_OverrideChestRegionVec.size(); i++ )
+	    {
+	      if ( this->m_OverrideChestRegionVec[i] == iRegion )
+	  	{
+	  	  oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( (unsigned char)(cip::UNDEFINEDREGION), iType ) );
+	  	  break;
+	  	}
+	    }
+
+	  // Now consider override region-type pairs
+	  for ( unsigned int i=0; i<this->m_OverrideChestRegionTypePairVec.size(); i++ )
+	    {
+	      if ( this->m_OverrideChestRegionTypePairVec[i].chestRegion == iRegion && this->m_OverrideChestRegionTypePairVec[i].chestType == iType )
+	  	{
+	  	  oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( iRegion, (unsigned char)(cip::UNDEFINEDTYPE) ) );
+	  	  break;
+	  	}
+	    }
+	}
+
+      // Now apply overrides and merges provided that the overlay label map voxel actually has something to apply
+      if ( ovIt.Get() != 0 )
+      	{
+      	  iRegion = this->m_ChestConventions.GetChestRegionFromValue( iIt.Get() );	      
+      	  iType = this->m_ChestConventions.GetChestTypeFromValue( iIt.Get() );
+
+      	  oRegion = this->m_ChestConventions.GetChestRegionFromValue( ovIt.Get() );	      
+      	  oType = this->m_ChestConventions.GetChestTypeFromValue( ovIt.Get() );
+	  
+      	  // Only consider override types if the overlay value actually represents a type
+      	  if ( ovIt.Get() > 255 )
+      	    {
+      	      for ( unsigned int i=0; i<this->m_OverrideChestTypeVec.size(); i++ )
+      		{
+      		  if ( this->m_OverrideChestTypeVec[i] == oType )
+      		    {
+      		      preserve = false;
+      		      for ( unsigned int j=0; j<this->m_PreserveChestTypeVec.size(); j++ )
+      			{
+      			  if ( this->m_PreserveChestTypeVec[j] == iType )
+      			    {
+      			      preserve = true;
+      			      break;
+      			    }
+      			}
+
+      		      if ( !preserve )
+      			{
+      			  oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( iRegion, oType ) );
+      			}
+      		      break;
+      		    }
+      		}
+      	    }
+
+      	  // Now deal with override regions
+      	  for ( unsigned int i=0; i<this->m_OverrideChestRegionVec.size(); i++ )
+      	    {
+      	      if ( this->m_OverrideChestRegionVec[i] == oRegion )
+      		{
+      		  preserve = false;
+      		  for ( unsigned int j=0; j<this->m_PreserveChestRegionVec.size(); j++ )
+      		    {
+      		      if ( this->m_PreserveChestRegionVec[j] == iRegion )
+      			{
+      			  preserve = true;
+      			  break;
+      			}
+      		    }
+		  
+      		  if ( !preserve )
+      		    {
+      		      oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( oRegion, iType ) );
+      		    }
+      		  break;
+      		}
+      	    }
+
+      	  // Now consider override region-type pairs
+      	  for ( unsigned int i=0; i<this->m_OverrideChestRegionTypePairVec.size(); i++ )
+      	    {
+      	      if ( this->m_OverrideChestRegionTypePairVec[i].chestRegion == oRegion && this->m_OverrideChestRegionTypePairVec[i].chestType == oType )
+      		{
+      		  preserve = false;
+      		  for ( unsigned int j=0; j<this->m_PreserveChestRegionVec.size(); j++ )
+      		    {
+      		      if ( this->m_PreserveChestRegionTypePairVec[j].chestRegion == iRegion && 
+      			   this->m_PreserveChestRegionTypePairVec[j].chestType == iType )
+      			{
+      			  preserve = true;
+      			  break;
+      			}
+      		    }
+		  
+      		  if ( !preserve )
+      		    {
+      		      oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( oRegion, oType ) );
+      		    }
+      		  break;
+      		}
+      	    }
+
+      	  // Only consider merge types if the overlay value actually represents a type
+      	  if ( ovIt.Get() > 255 )
+      	    {
+      	      for ( unsigned int i=0; i<this->m_MergeChestTypeVec.size(); i++ )
+      		{
+      		  if ( this->m_MergeChestTypeVec[i] == oType )
+      		    {
+      		      preserve = false;
+      		      for ( unsigned int j=0; j<this->m_PreserveChestTypeVec.size(); j++ )
+      			{
+      			  if ( this->m_PreserveChestTypeVec[j] == iType )
+      			    {
+      			      preserve = true;
+      			      break;
+      			    }
+      			}
+		      
+      		      if ( !preserve )
+      			{
+      			  oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( iRegion, oType ) );
+      			}
+      		      break;
+      		    }
+      		}
+      	    }
+	  
+      	  // Now deal with merge regions
+      	  for ( unsigned int i=0; i<this->m_MergeChestRegionVec.size(); i++ )
+      	    {
+      	      if ( this->m_MergeChestRegionVec[i] == oRegion )
+      		{
+      		  preserve = false;
+      		  for ( unsigned int j=0; j<this->m_PreserveChestRegionVec.size(); j++ )
+      		    {
+      		      if ( this->m_PreserveChestRegionVec[j] == iRegion )
+      			{
+      			  preserve = true;
+      			  break;
+      			}
+      		    }
+		  
+      		  if ( !preserve )
+      		    {
+      		      oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( oRegion, iType ) );
+      		    }
+      		  break;
+      		}
+      	    }
+	  
+      	  // Now consider merge region-type pairs
+      	  for ( unsigned int i=0; i<this->m_MergeChestRegionTypePairVec.size(); i++ )
+      	    {
+      	      if ( this->m_MergeChestRegionTypePairVec[i].chestRegion == oRegion && this->m_MergeChestRegionTypePairVec[i].chestType == oType )
+      		{
+      		  preserve = false;
+      		  for ( unsigned int j=0; j<this->m_PreserveChestRegionVec.size(); j++ )
+      		    {
+      		      if ( this->m_PreserveChestRegionTypePairVec[j].chestRegion == iRegion && 
+      			   this->m_PreserveChestRegionTypePairVec[j].chestType == iType )
+      			{
+      			  preserve = true;
+      			  break;
+      			}
+      		    }
+		  
+      		  if ( !preserve )
+      		    {
+      		      oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( oRegion, oType ) );
+      		    }
+      		  break;
+      		}
+      	    }      
+      	}
+      
+      ++ovIt;  
+      ++iIt;
+      ++oIt;
+    } 
+}
 
 void
 CIPMergeChestLabelMapsImageFilter
@@ -119,91 +339,6 @@ CIPMergeChestLabelMapsImageFilter
 }
 
 
-void
-CIPMergeChestLabelMapsImageFilter
-::InitializeOutputWithInputAndOverrides()
-{
-  std::map< unsigned short, unsigned short >::iterator mapIt;
-
-  ConstIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
-
-  iIt.GoToBegin();
-  while ( !iIt.IsAtEnd() )
-    {
-    this->m_InputLabelsToCleanedLabelsMap.insert( std::pair< unsigned short, unsigned short >(iIt.Get(), iIt.Get()) );
-
-    ++iIt;
-    }
-
-  // For all the override regions specified by the user, we want to go
-  // through the list of labels in the input image, find the regions
-  // in the list that are meant to be overriden, and set them to
-  // UNDEFINEDREGION. We DON'T want to do this for any region that is
-  // meant to be preserved, however.
-  for ( int i=0; i<this->m_OverrideChestRegionVec.size(); i++ )
-    {
-    // Iterate over the map. For each label in the map, we want to get
-    // the corresponding region. If the region is in the override
-    // vector and NOT in the preserve region vector, then the label
-    // will be mapped to the override region
-    for ( mapIt = this->m_InputLabelsToCleanedLabelsMap.begin(); mapIt != this->m_InputLabelsToCleanedLabelsMap.end(); mapIt++ )
-      {
-      unsigned char lungRegion = this->m_ChestConventions.GetChestRegionFromValue( (*mapIt).first );
-      unsigned char lungType   = this->m_ChestConventions.GetChestTypeFromValue( (*mapIt).first );
-
-      if ( lungRegion == this->m_OverrideChestRegionVec[i] && this->GetPermitChestRegionChange( lungRegion ) )
-        {
-	  this->m_InputLabelsToCleanedLabelsMap[(*mapIt).first] = this->m_ChestConventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, lungType );
-        }
-      }
-    }
-
-  // For all the override types specified by the user, we want to go
-  // through the list of labels in the input image, find the types
-  // in the list that are meant to be overriden, and set them to
-  // UNDEFINEDTYPE. We DON'T want to do this for any type that is
-  // meant to be preserved, however.
-  for ( int i=0; i<this->m_OverrideChestTypeVec.size(); i++ )
-    {
-    // Iterate over the map. For each label in the map, we want to get
-    // the corresponding type. If the type is in the override
-    // vector and NOT in the preserve type vector, then the label
-    // will be mapped to the override type
-    for ( mapIt = this->m_InputLabelsToCleanedLabelsMap.begin(); mapIt != this->m_InputLabelsToCleanedLabelsMap.end(); mapIt++ )
-      {
-      unsigned char lungRegion = this->m_ChestConventions.GetChestRegionFromValue( (*mapIt).first );
-      unsigned char lungType   = this->m_ChestConventions.GetChestTypeFromValue( (*mapIt).first );
-
-      if ( lungType == this->m_OverrideChestTypeVec[i] && this->GetPermitChestTypeChange( lungRegion, lungType ) )
-        {
-	  this->m_InputLabelsToCleanedLabelsMap[(*mapIt).first] = this->m_ChestConventions.GetValueFromChestRegionAndType( lungRegion, cip::UNDEFINEDTYPE );         
-        }
-      }
-    }
-
-  // For all the override region-type pairs specified by the user, we
-  // want to go through the list of labels in the input image, find
-  // the pairs in the list that are meant to be overriden, and set the
-  // type to UNDEFINEDTYPE (note that the region will be untouched). 
-  for ( int i=0; i<this->m_OverrideChestRegionTypePairVec.size(); i++ )
-    {
-    // Iterate over the map. For each label in the map, we want to get
-    // the corresponding region and type. If the region and type are
-    // in the override vector, then the label will be mapped with an
-    // UNDEFINEDTYPE (the region will be untouched).
-    for ( mapIt = this->m_InputLabelsToCleanedLabelsMap.begin(); mapIt != this->m_InputLabelsToCleanedLabelsMap.end(); mapIt++ )
-      {
-      unsigned char lungRegion = this->m_ChestConventions.GetChestRegionFromValue( (*mapIt).first );
-      unsigned char lungType   = this->m_ChestConventions.GetChestTypeFromValue( (*mapIt).first );
-
-      if ( lungType == this->m_OverrideChestRegionTypePairVec[i].lungTypeValue &&
-           lungRegion == this->m_OverrideChestRegionTypePairVec[i].lungRegionValue )
-        {
-	  this->m_InputLabelsToCleanedLabelsMap[(*mapIt).first] = this->m_ChestConventions.GetValueFromChestRegionAndType( lungRegion, cip::UNDEFINEDTYPE );
-        }
-      }
-    }
-}
 
 void
 CIPMergeChestLabelMapsImageFilter
@@ -225,117 +360,6 @@ CIPMergeChestLabelMapsImageFilter
   this->m_OverlayImageStartIndex[0] = startIndex[0];
   this->m_OverlayImageStartIndex[1] = startIndex[1];
   this->m_OverlayImageStartIndex[2] = startIndex[2];
-}
-
-void
-CIPMergeChestLabelMapsImageFilter
-::ApplyOverlayRules()
-{
-  // At this point we are ready to start filling in the output image
-  // with values from the input (base) image. We have a mapping
-  // between labels in the input image and the "cleaned" labels that
-  // were generated from the "override" lists -- use this mapping to
-  // populate the output image
-  ConstIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
-  IteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
-
-  oIt.GoToBegin();
-  iIt.GoToBegin();
-  while ( !oIt.IsAtEnd() )
-    {
-    oIt.Set( this->m_InputLabelsToCleanedLabelsMap[iIt.Get()] );
-    
-    ++oIt;
-    ++iIt;
-    }
-
-  // Now we are ready to transfer the desired regions, types, and
-  // region-type pairs from the overlay image to the output
-  // image. Only do the transfer for non preserved regions, types, and
-  // pairs
-  cip::LabelMapType::SizeType overlayImageSize = this->m_OverlayImage->GetBufferedRegion().GetSize();
-
-  cip::LabelMapType::RegionType overlayImageRegion;
-    overlayImageRegion.SetSize( overlayImageSize );
-    overlayImageRegion.SetIndex( this->m_OverlayImageStartIndex );
-
-  IteratorType ovIt( this->m_OverlayImage, this->m_OverlayImage->GetBufferedRegion() );
-  IteratorType orIt( this->GetOutput(), overlayImageRegion );
-
-  ovIt.GoToBegin();
-  orIt.GoToBegin();
-  while ( !ovIt.IsAtEnd() )
-    {
-    unsigned char overlayChestRegion = this->m_ChestConventions.GetChestRegionFromValue( ovIt.Get() );
-    unsigned char overlayChestType   = this->m_ChestConventions.GetChestTypeFromValue( ovIt.Get() );
-
-    for ( int r=0; r<this->m_OverrideChestRegionVec.size(); r++ )
-      {
-      if ( overlayChestRegion == this->m_OverrideChestRegionVec[r] )
-        {
-        unsigned char lungRegion = this->m_ChestConventions.GetChestRegionFromValue( orIt.Get() );
-        unsigned char lungType   = this->m_ChestConventions.GetChestTypeFromValue( orIt.Get() );
-
-        if ( this->GetPermitChestRegionChange( lungRegion ) )
-          {
-          orIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( overlayChestRegion, lungType ) );
-          }
-
-        break;
-        }
-      }
-
-    for ( int r=0; r<this->m_MergeChestRegionVec.size(); r++ )
-      {
-      if ( overlayChestRegion == this->m_MergeChestRegionVec[r] )
-        {
-        unsigned char lungRegion = this->m_ChestConventions.GetChestRegionFromValue( orIt.Get() );
-        unsigned char lungType   = this->m_ChestConventions.GetChestTypeFromValue( orIt.Get() );
-
-        if ( this->GetPermitChestRegionChange( lungRegion ) )
-          {
-          orIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( overlayChestRegion, lungType ) );
-          }
-
-        break;
-        }
-      }
-
-    for ( int t=0; t<this->m_OverrideChestTypeVec.size(); t++ )
-      {
-      if ( overlayChestType == this->m_OverrideChestTypeVec[t] )
-        {
-        unsigned char lungRegion = this->m_ChestConventions.GetChestRegionFromValue( orIt.Get() );
-        unsigned char lungType   = this->m_ChestConventions.GetChestTypeFromValue( orIt.Get() );
-
-        if ( this->GetPermitChestTypeChange( lungRegion, lungType ) )
-          {
-          orIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( lungRegion, overlayChestType ) );
-          }
-
-        break;
-        }
-      }
-
-    for ( int t=0; t<this->m_MergeChestTypeVec.size(); t++ )
-      {
-      if ( overlayChestType == this->m_MergeChestTypeVec[t] )
-        {
-        unsigned char lungRegion = this->m_ChestConventions.GetChestRegionFromValue( orIt.Get() );
-        unsigned char lungType   = this->m_ChestConventions.GetChestTypeFromValue( orIt.Get() );
-
-        if ( this->GetPermitChestTypeChange( lungRegion, lungType ) )
-          {
-          orIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( lungRegion, overlayChestType ) );
-          }
-
-        break;
-        }
-      }
-        
-    ++ovIt;
-    ++orIt;
-    }
 }
 
 bool
@@ -367,8 +391,8 @@ CIPMergeChestLabelMapsImageFilter
 
   for ( int i=0; i<this->m_PreserveChestRegionTypePairVec.size(); i++ )
     {
-    if ( lungType == this->m_PreserveChestRegionTypePairVec[i].lungTypeValue &&
-         lungRegion == this->m_PreserveChestRegionTypePairVec[i].lungRegionValue )
+    if ( lungType == this->m_PreserveChestRegionTypePairVec[i].chestType &&
+         lungRegion == this->m_PreserveChestRegionTypePairVec[i].chestRegion )
       {
       return false;
       }

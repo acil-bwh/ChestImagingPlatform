@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>FilterVesselParticleData</title>
+  <description><![CDATA[This program reads fissure particles and filters them \
+  based on connected components analysis. Particles are placed in \
+  the same component provided they are sufficiently close to one \
+  another and sufficiently define a local sheet (i.e. they are sufficiently orthogonal to the \
+  vector connecting the two paticle spatial locations). Only \
+  components that have cardinality greater than or equal to that \
+  specified by the user will be retained in the output. Furthermore, \
+  the output particles will have a defined 'unmergedComponents' \
+  array that indicates the component label assigned to each particle.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <string>
+      <name>inParticlesFileName</name>
+      <label>Input particles file name</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>--in</longflag>
+      <description><![CDATA[Input particles file name]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>outParticlesFileName</name>
+      <label>Output particles file name</label>
+      <channel>input</channel>
+      <flag>o</flag>
+      <longflag>--out</longflag>
+      <description><![CDATA[Output particles file name]]></description>
+      <default>NA</default>
+    </string>  
+  </parameters>
+
+  <parameters>
+    <double>
+      <name>interParticleSpacing</name>
+      <longflag>spacing</longflag>
+      <description>This value indicates the inter-particle spacing of the input data set</description>
+      <label>Inter particle spacing</label>
+      <default>1.7</default>
+    </double>
+
+    <double>
+      <name>distanceThreshold</name>
+      <flag>d</flag>
+      <longflag>dist</longflag>
+      <description>Maximum inter-particle distance. Two particles must be at least this close \
+      together to be considered for connectivity </description>
+      <label>Max allowable distance</label>
+      <default>3.0</default>
+    </double>
+
+    <double>
+      <name>angleThreshold</name>
+      <flag>a</flag>
+      <longflag>angle</longflag>
+      <description>Particle angle threshold (degrees). The vector connecting \
+      two particles is compared to their respective orientation vectors (indicating the approximate normal \
+      vector to the local sheet they potentially lie on). If the angle between either of these vectors and \
+      the connecting vector is less than this threshold, the particles are considered to be disconnected</description>
+      <label>Particle angle threshold</label>
+      <default>70.0</default>
+    </double>
+
+    <integer>
+      <name>componentSizeThreshold</name>
+      <flag>s</flag>
+      <longflag>size</longflag>
+      <description>Component size cardinality threshold. Only components with this many particles or more \
+      will be retained in the output</description>
+      <label>Component size threshold</label>
+      <default>110</default>
+    </integer>
+  </parameters>
+</executable>
