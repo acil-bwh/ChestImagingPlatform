@@ -1,13 +1,43 @@
 import numpy as np
+from lxml import etree
 
-def get_mi_similarity_vec(patient_names, case_id, data_dir, transfo_dir,
-                          xml_generate):
+def getMISimilarityVec(input_image, list_of_image_files, \
+    list_of_tranformation_files):
+    """Obtain a similarity vector which contains similarity values between a 
+         a source case and a list of target cases. Assumes a transformation \
+         file exists.
+        
+
+    Parameters
+    ----------
+    input_image : integer array, shape (L, M, N)
+   
+    list_of_image_files : list of strings,
+        contains the image file names. The similarity between each of the images
+        in the list and the input_image is to be computed. 
+    
+    list_of_tranformation_files : list of strings, 
+        contains the transformation files to be applied to the corresponding \
+        image in the list_of_image_files
+
+        ...
+        
+    Returns
+    -------
+    similatity_vec : list of floats
+        Similarity values between the input_image and the associated images \
+        in list_of_image_files (at the same location in the array)
     """
-    """
-    mat_dim=patient_names.len    
-    sim_mat = np.ones(mat_dim)
-    sim_mat = sim_mat*(-1000.0)
+    assert list_of_image_files.len  == list_of_tranformation_files.len
+    
+    num_images = list_of_image_files.len
+    
+    #initialize an array of the same length as the number of files
+    similarity_vec = [-1000.0]*num_images
     
     #loop through all files and find similarity
-    
-    return sim_mat
+    for i in range(num_images): 
+        #Read the xml file and extract the similarity value
+        tree = etree.parse(list_of_tranformation_files[i])
+        similarity_vec[i] = tree.find('SimilarityValue').text
+    return similarity_vec

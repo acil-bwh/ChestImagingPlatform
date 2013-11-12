@@ -3,9 +3,7 @@ import sys
 import numpy as np
 from cip_python.utils.weighted_feature_map_densities \
     import ExpWeightedFeatureMapDensity
-from cip_python.segmentation.construct_chest_atlas \
-    import construct_probabilistic_atlas
-import construct_chest_atlas
+
 
 def segment_chest_with_atlas(input_image, feature_vector, priors):
     """Segment structures using atlas data. Computes the likelihoods given a
@@ -26,33 +24,39 @@ def segment_chest_with_atlas(input_image, feature_vector, priors):
         
     Returns
     -------
-    label_map : array, shape (L, M, N)
-        Segmented image with labels adhering to CIP conventions
+    label_map : list of integer array, shape (L, M, N)
+        Each segmented strcture of interest will be represented by an array 
+        with binary labels.
     """
     # Step 1: For all structures of interest, compute the posterior energy 
     
     #Define likelihood and compute it, for each label
     num_classes = priors.len
-    likelihoods = np.zeros(np.size(priors))
+    likelihoods = np.zeros(np.size(priors), dtype=np.float)
+    posterior_probabilities = np.zeros(np.size(priors), dtype=np.float)
+    label_map=np.zeros(np.size(priors), dtype=np.int)
     
     my_polynomial_feature_map = \
-      weighted_feature_map_densities.PolynomialFeatureMap(feature_vector, [2])
+      ExpWeightedFeatureMapDensity.PolynomialFeatureMap(feature_vector, [2])
     my_polynomial_feature_map.compute_num_terms()
 
     #listoflists=[ [0]*4 ] *5
-    posterior_energies = \
-       compute_structure_posterior_energies(likelihoods, priors)
+    posterior_probabilities = \
+       compute_structure_posterior_probabilities(likelihoods, priors)
         
     # Step 3: For each structure separately, input the posterior energies into
     # the graph cuts code    
     for i in range(num_classes):
-        label_map=obtain_graph_cuts_segmentation(posterior_energies[i*2],posterior_energies[i*2+1])
+        class_posterior_energies= posterior_probabilities[i]
+        not_class_posterior_energies = 1 - posterior_probabilities[i]
+        label_map[i]=obtain_graph_cuts_segmentation(class_posterior_energies, \
+          not_class_posterior_energies)
             
     return label_map
 
 
 
-def compute_structure_posterior_energies(likelihoods, priors):
+def compute_structure_posterior_probabilities(likelihoods, priors):
     """Computes the posterior energy given a list of structure likelihoods
        and priors.  
 

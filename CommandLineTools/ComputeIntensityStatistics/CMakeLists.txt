@@ -2,10 +2,27 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( ComputeIntensityStatistics )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+set(MODULE_NAME ComputeIntensityStatistics)
 
-SET ( ComputeIntensityStatistics_SOURCE ComputeIntensityStatistics.cxx )
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
-ADD_EXECUTABLE ( ComputeIntensityStatistics ${ComputeIntensityStatistics_SOURCE} )
-TARGET_LINK_LIBRARIES ( ComputeIntensityStatistics ${ITK_LIBRARIES} )
+set(MODULE_INCLUDE_DIRECTORIES
+  ${CIP_INCLUDE_DIRECTORIES}
+  )
+  
+set(MODULE_TARGET_LIBRARIES
+  ${CIP_LIBRARIES}
+  )
+  
+  set(MODULE_SRCS
+  )
+  
+SEMMacroBuildCLI(
+  NAME ${MODULE_NAME}
+  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+  ADDITIONAL_SRCS ${MODULE_SRCS}
+  RUNTIME_OUTPUT_DIRECTORY        "${CMAKE_BINARY_DIR}/bin"
+  EXECUTABLE_ONLY
+  )

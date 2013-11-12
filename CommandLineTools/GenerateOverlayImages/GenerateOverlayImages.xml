@@ -78,6 +78,16 @@
       <description><![CDATA[Set to 1 if sagittal overlay images are desired (0 by default).]]></description>
     </boolean>  
 
+    <boolean>
+      <name>bookEnds</name>
+      <label>Bookends option</label>
+      <channel>input</channel>
+      <flag>b</flag>
+      <default>0</default>
+      <description><![CDATA[Set to 1 in order to make overlays relative to the bounding box endpoints instead of \
+      the bounding box interior.]]></description>
+    </boolean>  
+
     <integer>
       <name>window</name>
       <label>Window setting</label>
