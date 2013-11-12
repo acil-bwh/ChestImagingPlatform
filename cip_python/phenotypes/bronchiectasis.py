@@ -15,12 +15,12 @@ class Bronchiectasis:
         self.vascular_file = vascular_file
         self.airway_file = airway_file
         self.output_prefix = output_prefix
-        self.distance_th = 20.0
+        self.distance_th = 30.0
         self.angle1_th = math.pi/4
         self.angle2_th = math.pi/3
         self.scale_ratio_th = 3.0
         self.distance_decay = 1.0
-        self.sigma = 0.2
+        self.sigma = 0.18
 
     def execute(self):
         readerV=vtk.vtkPolyDataReader()
@@ -62,9 +62,10 @@ class Bronchiectasis:
         cden = np.zeros(csa.size)
 
         print "Number of Airway Points "+str(na)
+        print "Number of Vessel Points "+str(vessel.GetNumberOfPoints())
         for kk in xrange(na):
             a_p=airway.GetPoint(kk)
-            pL.FindClosestNPoints(5,a_p,idList)
+            pL.FindClosestNPoints(20,a_p,idList)
             a_s=array_a["scale"].GetValue(kk)
             a_v=array_a["hevec2"].GetTuple3(kk)
             a_r=self.airway_radius_from_sigma(a_s)
@@ -88,27 +89,42 @@ class Bronchiectasis:
                     
                     #a_r=1.2
                     a_radius.append(a_r)
-                    
                     #v_r=1.0
                     v_radius.append(v_r)
-                    
-                    bden += 1/(math.sqrt(2*math.pi)*self.sigma) * a_r/v_r *np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
-                    cden += 1/(math.sqrt(2*math.pi)*self.sigma) *          np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
+
+        a_radius = np.array(a_radius,dtype=float)
+        v_radius = np.array(v_radius,dtype=float)
+                        #bron_array =((a_radius**2)/(v_radius**2))
+                        #accept_mask = self.reject_outliers_mask(bron_array)
+                        #print np.mean(a_radius2)
+        accept_a_mask=(np.abs(a_radius - np.mean(a_radius)) < 4 * np.std(a_radius))
+        accept_v_mask=(np.abs(v_radius - np.mean(v_radius)) < 4 * np.std(v_radius))
+                        #accept_a_mask = self.reject_outliers_mask(a_radius2)
+                        #accept_v_mask = self.reject_outliers_mask(v_radius2)
+        
+        a_radius=a_radius[np.logical_and(accept_a_mask,accept_v_mask)]
+        v_radius=v_radius[np.logical_and(accept_a_mask,accept_v_mask)]
+
+        for a_r,v_r in zip(a_radius,v_radius):
+            bden += 1/(math.sqrt(2*math.pi)*self.sigma) * a_r**2/v_r**2 *np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
+            cden += 1/(math.sqrt(2*math.pi)*self.sigma) *          np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
     
         #This is how you can do it using a kde method in scipy
-        csa_samples = math.pi*(np.array(v_radius)**2)
+        print "Number of computing points "+str(len(a_radius))
+        csa_samples = math.pi*(v_radius**2)
         kcden = kde.gaussian_kde(csa_samples)
         #cden = kcden(csa)
-        bden = bden/(len(a_radius))
-        cden = cden/(len(a_radius))
-        bron = bden/(cden+np.spacing(10000))
+        bden = bden/(float(len(a_radius)))
+        cden = cden/(float(len(a_radius)))
+        cden[cden<np.spacing(1e10)]=np.spacing(1e10)
+        bron = bden/cden
         print kcden.factor
                 #bden[cden<0.01]=0
         fig=plt.figure()
         ax1=fig.add_subplot(211)
         ax1.plot(rad,bron)
         ax1.grid(True)
-        plt.ylabel('Airway rad / Vessel rad')
+        plt.ylabel('Airway Area / Vessel Area')
         ax2=fig.add_subplot(212,sharex=ax1)
         ax2.plot(rad,cden)
         ax2.grid(True)
@@ -170,13 +186,14 @@ class Bronchiectasis:
         df=pd.DataFrame(np.array(ser).reshape([1,len(ser)]),columns=col)
         df.to_csv(self.output_prefix+'_bronchiectasisPhenotypes.csv')
 
-            
+    def reject_outliers_mask(data, m=2.0):
+        return (np.abs(data - np.mean(data)) < m * np.std(data))
     
     def airway_radius_from_sigma(self,sigma):
-        return 0.6*math.sqrt(2)*sigma
+        return 0.625*math.sqrt(2)*sigma
         
     def vessel_radius_from_sigma(self,sigma):
-        return 0.6*math.sqrt(2)*sigma
+        return 0.625*math.sqrt(2)*sigma
                                     
 
 if __name__ == "__main__":
