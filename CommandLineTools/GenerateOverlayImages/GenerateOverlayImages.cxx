@@ -81,7 +81,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -89,6 +88,7 @@
 #include "cipConventions.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkRGBPixel.h"
+#include "GenerateOverlayImagesCLP.h"
 
 typedef itk::RGBPixel<unsigned char>       RGBPixelType;
 typedef itk::Image<RGBPixelType, 2>        OverlayType;
@@ -101,85 +101,12 @@ void GetOverlayImages(cip::LabelMapType::Pointer, cip::CTType::Pointer, unsigned
 
 int main( int argc, char *argv[] )
 {
-  // Begin by defining the arguments to be passed
-  std::string labelMapFileName = "NA";
-  std::string ctFileName       = "NA";
-  bool axial    = true;
-  bool coronal  = false;
-  bool sagittal = false;
-  short window = 1100;
-  short level  = -650;
-  double opacity = 0.5;
-  unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION);
-  unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE);
-  std::vector<std::string> overlayFileNameVec;
+  PARSE_ARGS;
 
-  // Descriptions of the program and inputs for user help 
-  std::string programDesc = "This program produces RGB overlay images corresponding to the input CT image and \
-its label map. The overlay images will be spaced evenly across the bounding box in the direction orthogonal \
-to the plane of interest (axial, coronal, or sagittal). The user has control over the window-level settings \
-as well as the opacity of the overlay. The colors used in the overlay are established in the CIP conventions";
+  cip::ChestConventions conventions;
 
-  std::string labelMapDesc = "Input label map file name";
-  std::string ctFileNameDesc = "Input CT image file name. Only needs to be specified if you intend to create\
-lung lobe QC images";
-  std::string overlayFileNameVecDesc = "Names of the overlay images to produce. The images will be spaced \
-evenly across the bounding box in the direction orthogonal to the plane of interest.";
-  std::string windowDesc = "The window width setting in Hounsfield units for window-leveling";
-  std::string levelDesc = "The level setting in Hounsfield units for window-leveling";
-  std::string opacityDesc = "A real number between 0 and 1 indicating the opacity of the overlay (default is 0.5)";
-  std::string axialDesc = "Set to 1 if axial overlay images are desired (1 by default)";
-  std::string coronalDesc = "Set to 1 if coronal overlay images are desired (0 by default)";
-  std::string sagittalDesc = "Set to 1 if sagittal overlay images are desired (0 by default)";
-  std::string cipRegionDesc = "The chest region over which to compute the bounding box which in turn defines \
-where to take the slice planes from for the overlays. By default this value is set to UNDEFINEDREGION. If both \
-the chest region and chest type are left undefined, the entire foreground region will we considered when \
-computing the bounding box";
-  std::string cipTypeDesc = "The chest type over which to compute the bounding box which in turn defines \
-where to take the slice planes from for the overlays. By default this value is set to UNDEFINEDTYPE. If both \
-the chest region and chest type are left undefined, the entire foreground region will we considered when \
-computing the bounding box.";
-
-  // Parse the input arguments
-  try
-    {
-    TCLAP::CmdLine cl(programDesc, ' ', "$Revision$");
-
-    TCLAP::MultiArg<std::string> overlayFileNameVecArg ( "o", "overlays", overlayFileNameVecDesc, false, "string", cl );
-    TCLAP::ValueArg<std::string> labelMapFileNameArg ("l", "labelMap", labelMapDesc, true, labelMapFileName, "string", cl);
-    TCLAP::ValueArg<std::string> ctFileNameArg ("c", "ct", ctFileNameDesc, true, ctFileName, "string", cl);
-    TCLAP::ValueArg<short> windowArg ("", "window", windowDesc, false, window, "short", cl);
-    TCLAP::ValueArg<short> levelArg ("", "level", levelDesc, false, level, "short", cl);
-    TCLAP::ValueArg<double> opacityArg ("", "opacity", opacityDesc, false, opacity, "double", cl);
-    TCLAP::ValueArg<unsigned int> cipRegionArg ("", "region", cipRegionDesc, false, cipRegion, "unsigned char", cl);
-    TCLAP::ValueArg<unsigned int> cipTypeArg ("", "type", cipTypeDesc, false, cipType, "unsigned char", cl);
-    TCLAP::SwitchArg axialArg("z", "axial", axialDesc, cl, false);
-    TCLAP::SwitchArg coronalArg("y", "coronal", coronalDesc, cl, false);
-    TCLAP::SwitchArg sagittalArg("x", "sagittal", sagittalDesc, cl, false);
-
-    cl.parse( argc, argv );
-
-    labelMapFileName = labelMapFileNameArg.getValue();
-    ctFileName       = ctFileNameArg.getValue();
-    window           = windowArg.getValue();
-    level            = levelArg.getValue();
-    axial            = axialArg.getValue();
-    sagittal         = sagittalArg.getValue();
-    coronal          = coronalArg.getValue();
-    opacity          = opacityArg.getValue();
-    cipRegion        = (unsigned char)(cipRegionArg.getValue());
-    cipType          = (unsigned char)(cipTypeArg.getValue());
-
-    for (unsigned int i=0; i<overlayFileNameVecArg.getValue().size(); i++)
-      {
-      overlayFileNameVec.push_back(overlayFileNameVecArg.getValue()[i]);
-      }
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+  unsigned char cipRegion = conventions.GetChestRegionValueFromName( cipRegionName );
+  unsigned char cipType   = conventions.GetChestTypeValueFromName( cipTypeName );
 
   // Determine which slice plane in which the user wants the overlays
   std::string slicePlane;
