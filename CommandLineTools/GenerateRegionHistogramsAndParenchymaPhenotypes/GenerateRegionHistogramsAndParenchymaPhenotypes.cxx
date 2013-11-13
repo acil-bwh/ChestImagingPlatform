@@ -49,17 +49,17 @@
  * Displays usage information and exits.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
- 
-#include <tclap/CmdLine.h>
 #include <fstream>
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkImageRegionIterator.h"
 #include "cipConventions.h"
+#include "GenerateRegionHistogramsAndParenchymaPhenotypesCLP.h"
 
+namespace
+{
 typedef itk::ImageRegionIterator< cip::CTType >       CTIteratorType;
 typedef itk::ImageRegionIterator< cip::LabelMapType > LabelMapIteratorType;
 
@@ -88,6 +88,436 @@ struct PARENCHYMAPHENOTYPES
   double median;
 };
 
+    
+    void InitializeParenchymaPhenotypes( PARENCHYMAPHENOTYPES* phenotypes )
+    {
+        phenotypes->countBelow950 = 0;
+        phenotypes->countBelow925 = 0;
+        phenotypes->countBelow910 = 0;
+        phenotypes->countBelow905 = 0;
+        phenotypes->countBelow900 = 0;
+        phenotypes->countBelow875 = 0;
+        phenotypes->countBelow856 = 0;
+        phenotypes->countAbove0   = 0;
+        phenotypes->countAbove600 = 0;
+        phenotypes->countAbove250 = 0;
+        phenotypes->totalVoxels   = 0;
+        phenotypes->volume        = 0.0;
+        phenotypes->mass          = 0.0;
+        phenotypes->intensityMean = 0.0;
+    }
+    
+    unsigned int GetHistogramNumberOfCounts( std::map< short, unsigned int > histogram, short minBin, short maxBin )
+    {
+        unsigned int numCounts = 0;
+        
+        for ( short i = minBin; i<=maxBin; i++ )
+        {
+            numCounts += histogram[i];
+        }
+        
+        return numCounts;
+    }
+    
+    double GetHistogramSkewness( std::map< short, unsigned int > histogram, double mean, short minBin, short maxBin )
+    {
+        unsigned int numCounts = GetHistogramNumberOfCounts( histogram, minBin, maxBin );
+        
+        double numeratorSum   = 0.0;
+        double denominatorSum = 0.0;
+        
+        for ( short i=minBin; i<=maxBin; i++ )
+        {
+            for ( unsigned int j=0; j<histogram[i]; j++ )
+            {
+                numeratorSum   += pow( (static_cast< double >( i ) - mean), 3 );
+                denominatorSum += pow( (static_cast< double >( i ) - mean), 2 );
+            }
+        }
+        
+        double skewness = ((1.0/static_cast<double>(numCounts))*numeratorSum)/pow( (1.0/static_cast<double>(numCounts))*denominatorSum, 1.5 );
+        
+        return skewness;
+    }
+    
+    double GetHistogramKurtosis( std::map< short, unsigned int > histogram, double mean, short minBin, short maxBin )
+    {
+        unsigned int numCounts = GetHistogramNumberOfCounts( histogram, minBin, maxBin );
+        
+        double numeratorSum   = 0.0;
+        double denominatorSum = 0.0;
+        
+        for ( short i=minBin; i<=maxBin; i++ )
+        {
+            for ( unsigned int j=0; j<histogram[i]; j++ )
+            {
+                numeratorSum   += pow( (static_cast< double >(i) - mean), 4 );
+                denominatorSum += pow( (static_cast< double >(i) - mean), 2 );
+            }
+        }
+        
+        double kurtosis = ((1.0/static_cast<double>(numCounts))*numeratorSum)/pow( (1.0/static_cast<double>(numCounts))*denominatorSum, 2 );
+        
+        return kurtosis;
+    }
+
+    
+    double GetHistogramSTD( std::map< short, unsigned int > histogram, double mean, short minBin, short maxBin )
+    {
+        unsigned int counts = 0;
+        double histSTD = 0.0;
+        
+        for ( short i=minBin; i<=maxBin; i++ )
+        {
+            counts += histogram[i];
+            
+            histSTD += static_cast< double >( histogram[i] )*std::pow( static_cast< double >(i) - mean, 2 );
+        }
+        
+        histSTD = vcl_sqrt( histSTD/static_cast< double >( counts ) );
+        
+        return histSTD;
+    }
+    
+    void ComputeParenchymaPhenotypesSubset( PARENCHYMAPHENOTYPES* phenotypes, std::map< short, unsigned int > histogram, double voxelVolume, short minBin, short maxBin)
+    {
+        unsigned int tenthPercentileCounter     = 0;
+        unsigned int fifteenthPercentileCounter = 0;
+        unsigned int medianCounter              = 0;
+        unsigned int modeCounter                = 0;
+        
+        for ( int i=minBin; i<=maxBin; i++ )
+        {
+            phenotypes->intensityMean += static_cast< double >(i)*static_cast< double >( histogram[i] )/static_cast< double >( phenotypes->totalVoxels );
+            phenotypes->mass += static_cast< double >( histogram[i] )*(voxelVolume/1000.0)*(static_cast< double >(i)+1000.0)/1000.0;
+            
+            if ( histogram[i] > modeCounter )
+            {
+                modeCounter = histogram[i];
+                phenotypes->mode = i;
+            }
+            
+            tenthPercentileCounter += histogram[i];
+            if ( static_cast< double >( tenthPercentileCounter )/static_cast< double >( phenotypes->totalVoxels ) <= 0.1 )
+            {
+                phenotypes->tenthPercentileHU = i;
+            }
+            
+            fifteenthPercentileCounter += histogram[i];
+            if ( static_cast< double >( fifteenthPercentileCounter )/static_cast< double >( phenotypes->totalVoxels ) <= 0.15 )
+            {
+                phenotypes->fifteenthPercentileHU = i;
+            }
+            
+            medianCounter += histogram[i];
+            if ( static_cast< double >( medianCounter )/static_cast< double >( phenotypes->totalVoxels ) <= 0.5 )
+            {
+                phenotypes->median = i;
+            }
+            
+            if ( i<-950 )
+            {
+                phenotypes->countBelow950 += histogram[i];
+            }
+            if ( i<-925 )
+            {
+                phenotypes->countBelow925 += histogram[i];
+            }
+            if ( i<-910 )
+            {
+                phenotypes->countBelow910 += histogram[i];
+            }
+            if ( i<-905 )
+            {
+                phenotypes->countBelow905 += histogram[i];
+            }
+            if ( i<-900 )
+            {
+                phenotypes->countBelow900 += histogram[i];
+            }
+            if ( i<-875 )
+            {
+                phenotypes->countBelow875 += histogram[i];
+            }
+            if ( i<-856 )
+            {
+                phenotypes->countBelow856 += histogram[i];
+            }
+            if ( i>0 )
+            {
+                phenotypes->countAbove0 += histogram[i];
+            }
+            if ( i>-600 )
+            {
+                phenotypes->countAbove600 += histogram[i];
+            }
+            if ( i>-250 )
+            {
+                phenotypes->countAbove250 += histogram[i];
+            }
+        }
+        
+        phenotypes->skewness      = GetHistogramSkewness( histogram, phenotypes->intensityMean, minBin, maxBin );
+        phenotypes->kurtosis      = GetHistogramKurtosis( histogram, phenotypes->intensityMean, minBin, maxBin );
+        phenotypes->intensitySTD  = GetHistogramSTD( histogram, phenotypes->intensityMean, minBin, maxBin );
+    }
+    
+    
+       
+    
+
+    
+    
+    double GetHistogramMean( std::map< short, unsigned int > histogram, short minBin, short maxBin )
+    {
+        unsigned int numCounts = GetHistogramNumberOfCounts( histogram, minBin, maxBin );
+        
+        double mean = 0.0;
+        
+        for ( short i = minBin; i<=maxBin; i++ )
+        {
+            mean += (static_cast<double>(histogram[i])/static_cast< double >(numCounts))*static_cast< double >(i);
+        }
+        
+        return mean;
+    }
+    
+    
+
+
+    
+    
+    void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
+                                          PARENCHYMAPHENOTYPES* wholeLungPhenotypes, PARENCHYMAPHENOTYPES* leftLungPhenotypes, PARENCHYMAPHENOTYPES* rightLungPhenotypes, PARENCHYMAPHENOTYPES* lulLungPhenotypes,
+                                          PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
+                                          PARENCHYMAPHENOTYPES* lutLungPhenotypes, PARENCHYMAPHENOTYPES* lmtLungPhenotypes, PARENCHYMAPHENOTYPES* lltLungPhenotypes, PARENCHYMAPHENOTYPES* rutLungPhenotypes,
+                                          PARENCHYMAPHENOTYPES* rmtLungPhenotypes, PARENCHYMAPHENOTYPES* rltLungPhenotypes, PARENCHYMAPHENOTYPES* utLungPhenotypes, PARENCHYMAPHENOTYPES* mtLungPhenotypes,
+                                          PARENCHYMAPHENOTYPES* ltLungPhenotypes,
+                                          std::map< short, unsigned int >* wholeLungHistogram, std::map< short, unsigned int >* leftLungHistogram, std::map< short, unsigned int >* rightLungHistogram,
+                                          std::map< short, unsigned int >* lulLungHistogram, std::map< short, unsigned int >* lllLungHistogram, std::map< short, unsigned int >* rulLungHistogram,
+                                          std::map< short, unsigned int >* rmlLungHistogram, std::map< short, unsigned int >* rllLungHistogram, std::map< short, unsigned int >* lutLungHistogram,
+                                          std::map< short, unsigned int >* lmtLungHistogram, std::map< short, unsigned int >* lltLungHistogram, std::map< short, unsigned int >* rutLungHistogram,
+                                          std::map< short, unsigned int >* rmtLungHistogram, std::map< short, unsigned int >* rltLungHistogram, std::map< short, unsigned int >* utLungHistogram,
+                                          std::map< short, unsigned int >* mtLungHistogram, std::map< short, unsigned int >* ltLungHistogram,
+                                          double voxelVolume, short minBin, short maxBin )
+    {
+        cip::ChestConventions conventions;
+        
+        unsigned char lungRegion;
+        
+        CTIteratorType cIt( ctImage, ctImage->GetBufferedRegion() );
+        LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
+        
+        cIt.GoToBegin();
+        lIt.GoToBegin();
+        while ( !cIt.IsAtEnd() )
+        {
+            if (cIt.Get() < minBin || cIt.Get() > maxBin)
+            {
+                ++cIt;
+                ++lIt;
+                continue;
+            }
+            
+            if ( lIt.Get() != 0 )
+            {
+                lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
+                
+                if ( lungRegion != static_cast< unsigned char >( cip::UNDEFINEDREGION ) )
+                {
+                    (*wholeLungHistogram)[cIt.Get()]++;
+                    wholeLungPhenotypes->totalVoxels++;
+                    wholeLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTLUNG ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) )
+                {
+                    (*leftLungHistogram)[cIt.Get()]++;
+                    leftLungPhenotypes->totalVoxels++;
+                    leftLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTLUNG ) ||
+                    lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) ||
+                    lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) ||
+                    lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) ||
+                    lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) )
+                {
+                    (*rightLungHistogram)[cIt.Get()]++;
+                    rightLungPhenotypes->totalVoxels++;
+                    rightLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) )
+                {
+                    (*lulLungHistogram)[cIt.Get()]++;
+                    lulLungPhenotypes->totalVoxels++;
+                    lulLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) )
+                {
+                    (*lllLungHistogram)[cIt.Get()]++;
+                    lllLungPhenotypes->totalVoxels++;
+                    lllLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) )
+                {
+                    (*rulLungHistogram)[cIt.Get()]++;
+                    rulLungPhenotypes->totalVoxels++;
+                    rulLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) )
+                {
+                    (*rmlLungHistogram)[cIt.Get()]++;
+                    rmlLungPhenotypes->totalVoxels++;
+                    rmlLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) )
+                {
+                    (*rllLungHistogram)[cIt.Get()]++;
+                    rllLungPhenotypes->totalVoxels++;
+                    rllLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::UPPERTHIRD ) )
+                {
+                    (*utLungHistogram)[cIt.Get()]++;
+                    utLungPhenotypes->totalVoxels++;
+                    utLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::MIDDLETHIRD ) )
+                {
+                    (*mtLungHistogram)[cIt.Get()]++;
+                    mtLungPhenotypes->totalVoxels++;
+                    mtLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) ||
+                    lungRegion == static_cast< unsigned char >( cip::LOWERTHIRD ))
+                {
+                    (*ltLungHistogram)[cIt.Get()]++;
+                    ltLungPhenotypes->totalVoxels++;
+                    ltLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) )
+                {
+                    (*lutLungHistogram)[cIt.Get()]++;
+                    lutLungPhenotypes->totalVoxels++;
+                    lutLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) )
+                {
+                    (*lmtLungHistogram)[cIt.Get()]++;
+                    lmtLungPhenotypes->totalVoxels++;
+                    lmtLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) )
+                {
+                    (*lltLungHistogram)[cIt.Get()]++;
+                    lltLungPhenotypes->totalVoxels++;
+                    lltLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) )
+                {
+                    (*rutLungHistogram)[cIt.Get()]++;
+                    rutLungPhenotypes->totalVoxels++;
+                    rutLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) )
+                {
+                    (*rmtLungHistogram)[cIt.Get()]++;
+                    rmtLungPhenotypes->totalVoxels++;
+                    rmtLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) )
+                {
+                    (*rltLungHistogram)[cIt.Get()]++;
+                    rltLungPhenotypes->totalVoxels++;
+                    rltLungPhenotypes->volume += voxelVolume;
+                }
+            }
+            
+            ++cIt;
+            ++lIt;
+        }
+    }
+	
+	
+    void UpdateLobeHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
+                                           PARENCHYMAPHENOTYPES* lulLungPhenotypes, PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
+                                           std::map< short, unsigned int >* lulLungHistogram, std::map< short, unsigned int >* lllLungHistogram, std::map< short, unsigned int >* rulLungHistogram,
+                                           std::map< short, unsigned int >* rmlLungHistogram, std::map< short, unsigned int >* rllLungHistogram, double voxelVolume, short minBin, short maxBin )
+    {
+        cip::ChestConventions conventions;
+        
+        unsigned char lungRegion;
+        
+        CTIteratorType cIt( ctImage, ctImage->GetBufferedRegion() );
+        LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
+		
+        cIt.GoToBegin();
+        lIt.GoToBegin();
+        while ( !cIt.IsAtEnd() )
+        {
+            
+            if (cIt.Get() < minBin || cIt.Get() > maxBin)
+            {
+                ++cIt;
+                ++lIt;
+                continue;
+            }
+            
+            if ( lIt.Get() != 0 )
+            {
+                lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
+                
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) )
+                {
+                    (*lulLungHistogram)[cIt.Get()]++;
+                    lulLungPhenotypes->totalVoxels++;
+                    lulLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) )
+                {
+                    (*lllLungHistogram)[cIt.Get()]++;
+                    lllLungPhenotypes->totalVoxels++;
+                    lllLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) )
+                {
+                    (*rulLungHistogram)[cIt.Get()]++;
+                    rulLungPhenotypes->totalVoxels++;
+                    rulLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) )
+                {
+                    (*rmlLungHistogram)[cIt.Get()]++;
+                    rmlLungPhenotypes->totalVoxels++;
+                    rmlLungPhenotypes->volume += voxelVolume;
+                }
+                if ( lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) )
+                {
+                    (*rllLungHistogram)[cIt.Get()]++;
+                    rllLungPhenotypes->totalVoxels++;
+                    rllLungPhenotypes->volume += voxelVolume;
+                }
+            }
+            
+            ++cIt;
+            ++lIt;
+        }
+    }
+    
+} //end namespace
+
+    /*
 
 void InitializeParenchymaPhenotypes( PARENCHYMAPHENOTYPES* );
 void ComputeParenchymaPhenotypesSubset( PARENCHYMAPHENOTYPES*, std::map< short, unsigned int >, double, short, short);
@@ -112,87 +542,18 @@ void UpdateLobeHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::Label
                                         std::map< short, unsigned int >* , std::map< short, unsigned int >* , std::map< short, unsigned int >* ,
                                         std::map< short, unsigned int >* , std::map< short, unsigned int >* , double, short minBin, short maxBin);
 
-
-void usage()
-{
-  std::cerr << "\n";
-  std::cerr << "Usage: GenerateRegionIntensityHistogramsAndParenchymaPhenotypes <options> where <options> is one or more " << std::endl;
-  std::cerr << "of the following:\n\n";
-  std::cerr << "   <-h>     Display (this) usage information\n";
-  std::cerr << "   <-ic>    Input CT file name\n";
-  std::cerr << "   <-ipl>   Input partial lung label map file name\n";
-  std::cerr << "   <-ill>   Input lung lobe label map file name\n";
-  std::cerr << "   <-oh>    Output histogram file name\n";
-  std::cerr << "   <-op>    Output phenotypes file name\n";
-
-  exit(1);
-}
-
+*/
 
 int main( int argc, char *argv[] )
 {
-  bool ok;
+    
 
-  
-  std::string  ctFileName                   =  "NA";
-  std::string  partialLungLabelMapFileName  =  "NA";
-  std::string  lungLobeLabelMapFileName     =  "NA";
-  std::string  histogramFileName            =  "NA";
-  std::string  phenotypesFileName           =  "NA";
-  
-  short minBin = -1024;
-  short maxBin = 1024;
-  
-  
-  //
-  // Argument descriptions for user help
-  //
-  std::string programDesc = "This program is used to compute regional histograms and \
-  typical parenchyma phenotypes for emphysema assessment and other parenchymal abnormalities.";
-  std::string ctFileNameDesc       = "Input CT file name";
-  std::string partialLungLabelMapFileNameDesc = "Input partial lung label map file name";
-  std::string lungLobeLabelMapFileNameDesc = "Input lung lobe label map file name";
-  std::string histogramFileNameDesc = "Output histogram file name";
-  std::string phenotypesFileNameDesc = "Output phenotypes file name";
-  
-  std::string minBinDesc = "Value at low end of histogram. Default: -1024";
-  std::string maxBinDesc = "Value at high end of histogram. Default: 1024";
-  
-  
-  //
-  // Parse the input arguments
-  //
-  try
-  {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 1$" );
-    
-    TCLAP::ValueArg<std::string> ctFileNameArg ( "c", "ic", ctFileNameDesc, true, ctFileName, "string", cl );
-    TCLAP::ValueArg<std::string> partialLungLabelMapFileNameArg ( "p", "ipl", partialLungLabelMapFileNameDesc, false, partialLungLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> lungLobeLabelMapFileNameArg ( "l", "ill", lungLobeLabelMapFileNameDesc, false, lungLobeLabelMapFileName, "string", cl );
+    PARSE_ARGS;
 
-    TCLAP::ValueArg<short> minBinArg ("", "min", minBinDesc, false, minBin, "integer", cl);
-    TCLAP::ValueArg<short> maxBinArg ("", "max", maxBinDesc, false, maxBin, "integer", cl);
+    bool ok;
     
-    TCLAP::ValueArg<std::string> histogramFileNameArg ( "", "oh", histogramFileNameDesc, false, histogramFileName, "string", cl );
-    TCLAP::ValueArg<std::string> phenotypesFileNameArg ( "", "op", phenotypesFileNameDesc, false, phenotypesFileName, "string", cl );
-    
-    cl.parse( argc, argv );
-    
-    ctFileName       = ctFileNameArg.getValue();
-    partialLungLabelMapFileName = partialLungLabelMapFileNameArg.getValue();
-    lungLobeLabelMapFileName = lungLobeLabelMapFileNameArg.getValue();
-    minBin = minBinArg.getValue();
-    maxBin = maxBinArg.getValue();
-    
-    histogramFileName = histogramFileNameArg.getValue();
-    phenotypesFileName = phenotypesFileNameArg.getValue();
-  }
-  catch ( TCLAP::ArgException excp )
-  {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-  }
-
+    short minBin = (short) minBinTemp;
+    short maxBin = (short) maxBinTemp;
 
   //
   // Read the CT image
@@ -1158,426 +1519,3 @@ int main( int argc, char *argv[] )
 
   return 0;
 }
-
-void InitializeParenchymaPhenotypes( PARENCHYMAPHENOTYPES* phenotypes )
-{
-  phenotypes->countBelow950 = 0;
-  phenotypes->countBelow925 = 0;
-  phenotypes->countBelow910 = 0;
-  phenotypes->countBelow905 = 0;
-  phenotypes->countBelow900 = 0;
-  phenotypes->countBelow875 = 0;
-  phenotypes->countBelow856 = 0;
-  phenotypes->countAbove0   = 0;
-  phenotypes->countAbove600 = 0;
-  phenotypes->countAbove250 = 0;
-  phenotypes->totalVoxels   = 0;
-  phenotypes->volume        = 0.0;
-  phenotypes->mass          = 0.0;
-  phenotypes->intensityMean = 0.0;
-}
-
-
-void ComputeParenchymaPhenotypesSubset( PARENCHYMAPHENOTYPES* phenotypes, std::map< short, unsigned int > histogram, double voxelVolume, short minBin, short maxBin)
-{
-  unsigned int tenthPercentileCounter     = 0;
-  unsigned int fifteenthPercentileCounter = 0;
-  unsigned int medianCounter              = 0;
-  unsigned int modeCounter                = 0;
-
-  for ( int i=minBin; i<=maxBin; i++ )
-    {
-    phenotypes->intensityMean += static_cast< double >(i)*static_cast< double >( histogram[i] )/static_cast< double >( phenotypes->totalVoxels );
-    phenotypes->mass += static_cast< double >( histogram[i] )*(voxelVolume/1000.0)*(static_cast< double >(i)+1000.0)/1000.0;
-
-    if ( histogram[i] > modeCounter )
-      {
-      modeCounter = histogram[i];
-      phenotypes->mode = i;
-      }
-
-    tenthPercentileCounter += histogram[i];
-    if ( static_cast< double >( tenthPercentileCounter )/static_cast< double >( phenotypes->totalVoxels ) <= 0.1 )
-      {
-      phenotypes->tenthPercentileHU = i;
-      }
-
-    fifteenthPercentileCounter += histogram[i];
-    if ( static_cast< double >( fifteenthPercentileCounter )/static_cast< double >( phenotypes->totalVoxels ) <= 0.15 )
-      {
-      phenotypes->fifteenthPercentileHU = i;
-      }
-
-    medianCounter += histogram[i];
-    if ( static_cast< double >( medianCounter )/static_cast< double >( phenotypes->totalVoxels ) <= 0.5 )
-      {
-      phenotypes->median = i;
-      }
-
-    if ( i<-950 )
-      {
-      phenotypes->countBelow950 += histogram[i];
-      }
-    if ( i<-925 )
-      {
-      phenotypes->countBelow925 += histogram[i];
-      }
-    if ( i<-910 )
-      {
-      phenotypes->countBelow910 += histogram[i];
-      }
-    if ( i<-905 )
-      {
-      phenotypes->countBelow905 += histogram[i];
-      }
-    if ( i<-900 )
-      {
-      phenotypes->countBelow900 += histogram[i];
-      }
-    if ( i<-875 )
-      {
-      phenotypes->countBelow875 += histogram[i];
-      }
-    if ( i<-856 )
-      {
-      phenotypes->countBelow856 += histogram[i];
-      }
-    if ( i>0 )
-      {
-      phenotypes->countAbove0 += histogram[i];
-      }
-    if ( i>-600 )
-      {
-      phenotypes->countAbove600 += histogram[i];
-      }
-    if ( i>-250 )
-      {
-      phenotypes->countAbove250 += histogram[i];
-      }
-    }
-
-  phenotypes->skewness      = GetHistogramSkewness( histogram, phenotypes->intensityMean, minBin, maxBin );
-  phenotypes->kurtosis      = GetHistogramKurtosis( histogram, phenotypes->intensityMean, minBin, maxBin );
-  phenotypes->intensitySTD  = GetHistogramSTD( histogram, phenotypes->intensityMean, minBin, maxBin );
-}
-
-
-double GetHistogramKurtosis( std::map< short, unsigned int > histogram, double mean, short minBin, short maxBin )
-{
-  unsigned int numCounts = GetHistogramNumberOfCounts( histogram, minBin, maxBin );
-
-  double numeratorSum   = 0.0;
-  double denominatorSum = 0.0;
-
-  for ( short i=minBin; i<=maxBin; i++ )
-    {
-    for ( unsigned int j=0; j<histogram[i]; j++ )
-      {
-      numeratorSum   += pow( (static_cast< double >(i) - mean), 4 );    
-      denominatorSum += pow( (static_cast< double >(i) - mean), 2 );      
-      }
-    }
-
-  double kurtosis = ((1.0/static_cast<double>(numCounts))*numeratorSum)/pow( (1.0/static_cast<double>(numCounts))*denominatorSum, 2 );
-
-  return kurtosis;
-}
-
-
-double GetHistogramSkewness( std::map< short, unsigned int > histogram, double mean, short minBin, short maxBin )
-{
-  unsigned int numCounts = GetHistogramNumberOfCounts( histogram, minBin, maxBin );
-
-  double numeratorSum   = 0.0;
-  double denominatorSum = 0.0;
-
-  for ( short i=minBin; i<=maxBin; i++ )
-    {
-    for ( unsigned int j=0; j<histogram[i]; j++ )
-      {
-      numeratorSum   += pow( (static_cast< double >( i ) - mean), 3 );    
-      denominatorSum += pow( (static_cast< double >( i ) - mean), 2 );      
-      }
-    }
-
-  double skewness = ((1.0/static_cast<double>(numCounts))*numeratorSum)/pow( (1.0/static_cast<double>(numCounts))*denominatorSum, 1.5 );
-
-  return skewness;
-}
-
-
-double GetHistogramMean( std::map< short, unsigned int > histogram, short minBin, short maxBin )
-{
-  unsigned int numCounts = GetHistogramNumberOfCounts( histogram, minBin, maxBin );
-
-  double mean = 0.0;
-
-  for ( short i = minBin; i<=maxBin; i++ )
-    {
-    mean += (static_cast<double>(histogram[i])/static_cast< double >(numCounts))*static_cast< double >(i);
-    } 
-
-  return mean;
-}
-
-
-unsigned int GetHistogramNumberOfCounts( std::map< short, unsigned int > histogram, short minBin, short maxBin )
-{
-  unsigned int numCounts = 0;
-
-  for ( short i = minBin; i<=maxBin; i++ )
-    {
-    numCounts += histogram[i];
-    }
-
-  return numCounts;
-}
-
-
-double GetHistogramSTD( std::map< short, unsigned int > histogram, double mean, short minBin, short maxBin )
-{
-  unsigned int counts = 0;
-  double histSTD = 0.0;
-
-  for ( short i=minBin; i<=maxBin; i++ )
-    {
-    counts += histogram[i];
-
-    histSTD += static_cast< double >( histogram[i] )*std::pow( static_cast< double >(i) - mean, 2 );
-    }
-
-  histSTD = vcl_sqrt( histSTD/static_cast< double >( counts ) );
-
-  return histSTD;
-}
-
-
-void UpdateAllHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
-                                    PARENCHYMAPHENOTYPES* wholeLungPhenotypes, PARENCHYMAPHENOTYPES* leftLungPhenotypes, PARENCHYMAPHENOTYPES* rightLungPhenotypes, PARENCHYMAPHENOTYPES* lulLungPhenotypes,
-                                    PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
-                                    PARENCHYMAPHENOTYPES* lutLungPhenotypes, PARENCHYMAPHENOTYPES* lmtLungPhenotypes, PARENCHYMAPHENOTYPES* lltLungPhenotypes, PARENCHYMAPHENOTYPES* rutLungPhenotypes,
-                                    PARENCHYMAPHENOTYPES* rmtLungPhenotypes, PARENCHYMAPHENOTYPES* rltLungPhenotypes, PARENCHYMAPHENOTYPES* utLungPhenotypes, PARENCHYMAPHENOTYPES* mtLungPhenotypes,
-                                    PARENCHYMAPHENOTYPES* ltLungPhenotypes,
-                                    std::map< short, unsigned int >* wholeLungHistogram, std::map< short, unsigned int >* leftLungHistogram, std::map< short, unsigned int >* rightLungHistogram,
-                                    std::map< short, unsigned int >* lulLungHistogram, std::map< short, unsigned int >* lllLungHistogram, std::map< short, unsigned int >* rulLungHistogram,
-                                    std::map< short, unsigned int >* rmlLungHistogram, std::map< short, unsigned int >* rllLungHistogram, std::map< short, unsigned int >* lutLungHistogram,
-                                    std::map< short, unsigned int >* lmtLungHistogram, std::map< short, unsigned int >* lltLungHistogram, std::map< short, unsigned int >* rutLungHistogram,
-                                    std::map< short, unsigned int >* rmtLungHistogram, std::map< short, unsigned int >* rltLungHistogram, std::map< short, unsigned int >* utLungHistogram,
-                                    std::map< short, unsigned int >* mtLungHistogram, std::map< short, unsigned int >* ltLungHistogram,
-                                    double voxelVolume, short minBin, short maxBin )
-{
-  cip::ChestConventions conventions;
-
-  unsigned char lungRegion;
-
-  CTIteratorType cIt( ctImage, ctImage->GetBufferedRegion() );
-  LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
-
-  cIt.GoToBegin();
-  lIt.GoToBegin();
-  while ( !cIt.IsAtEnd() )
-    {
-    if (cIt.Get() < minBin || cIt.Get() > maxBin)
-      {
-      ++cIt;
-      ++lIt;
-      continue;
-      }
-      
-    if ( lIt.Get() != 0 )
-      {
-      lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-      
-      if ( lungRegion != static_cast< unsigned char >( cip::UNDEFINEDREGION ) )
-        {
-        (*wholeLungHistogram)[cIt.Get()]++;
-        wholeLungPhenotypes->totalVoxels++;
-        wholeLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTLUNG ) ||
-           lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) ||
-           lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) ||
-           lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) ||
-           lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) ||
-           lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) )
-        {
-        (*leftLungHistogram)[cIt.Get()]++;
-        leftLungPhenotypes->totalVoxels++;
-        leftLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTLUNG ) ||
-           lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) ||
-           lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) ||
-           lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) ||
-           lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) ||
-           lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) ||
-           lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) )
-        {
-        (*rightLungHistogram)[cIt.Get()]++;
-        rightLungPhenotypes->totalVoxels++;
-        rightLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) )
-        {
-        (*lulLungHistogram)[cIt.Get()]++;
-        lulLungPhenotypes->totalVoxels++;
-        lulLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) ) 
-        {
-        (*lllLungHistogram)[cIt.Get()]++;
-        lllLungPhenotypes->totalVoxels++;
-        lllLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) )
-        {
-        (*rulLungHistogram)[cIt.Get()]++;
-        rulLungPhenotypes->totalVoxels++;
-        rulLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) )
-        {
-        (*rmlLungHistogram)[cIt.Get()]++;
-        rmlLungPhenotypes->totalVoxels++;
-        rmlLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) )
-        {
-        (*rllLungHistogram)[cIt.Get()]++;
-        rllLungPhenotypes->totalVoxels++;
-        rllLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) || 
-           lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) ||
-	   lungRegion == static_cast< unsigned char >( cip::UPPERTHIRD ) )
-        {
-        (*utLungHistogram)[cIt.Get()]++;
-        utLungPhenotypes->totalVoxels++;
-        utLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) || 
-           lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) || 
-	   lungRegion == static_cast< unsigned char >( cip::MIDDLETHIRD ) )
-        {
-        (*mtLungHistogram)[cIt.Get()]++;
-        mtLungPhenotypes->totalVoxels++;
-        mtLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) || 
-           lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) || 
-	   lungRegion == static_cast< unsigned char >( cip::LOWERTHIRD ))
-        {
-        (*ltLungHistogram)[cIt.Get()]++;
-        ltLungPhenotypes->totalVoxels++;
-        ltLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) )
-        {
-        (*lutLungHistogram)[cIt.Get()]++;
-        lutLungPhenotypes->totalVoxels++;
-        lutLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) )
-        {
-        (*lmtLungHistogram)[cIt.Get()]++;
-        lmtLungPhenotypes->totalVoxels++;
-        lmtLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) )
-        {
-        (*lltLungHistogram)[cIt.Get()]++;
-        lltLungPhenotypes->totalVoxels++;
-        lltLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) )
-        {
-        (*rutLungHistogram)[cIt.Get()]++;
-        rutLungPhenotypes->totalVoxels++;
-        rutLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) )
-        {
-        (*rmtLungHistogram)[cIt.Get()]++;
-        rmtLungPhenotypes->totalVoxels++;
-        rmtLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) )
-        {
-        (*rltLungHistogram)[cIt.Get()]++;
-        rltLungPhenotypes->totalVoxels++;
-        rltLungPhenotypes->volume += voxelVolume;
-        }
-      }
-
-    ++cIt;
-    ++lIt;
-    }
-}
-	
-	
-void UpdateLobeHistogramsAndPhenotypes( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap,
-                                        PARENCHYMAPHENOTYPES* lulLungPhenotypes, PARENCHYMAPHENOTYPES* lllLungPhenotypes, PARENCHYMAPHENOTYPES* rulLungPhenotypes, PARENCHYMAPHENOTYPES* rmlLungPhenotypes, PARENCHYMAPHENOTYPES* rllLungPhenotypes,
-                                        std::map< short, unsigned int >* lulLungHistogram, std::map< short, unsigned int >* lllLungHistogram, std::map< short, unsigned int >* rulLungHistogram,
-                                        std::map< short, unsigned int >* rmlLungHistogram, std::map< short, unsigned int >* rllLungHistogram, double voxelVolume, short minBin, short maxBin )
-{
-  cip::ChestConventions conventions;
-  
-  unsigned char lungRegion;
-  
-  CTIteratorType cIt( ctImage, ctImage->GetBufferedRegion() );
-  LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
-		
-  cIt.GoToBegin();
-  lIt.GoToBegin();
-  while ( !cIt.IsAtEnd() )
-    {
-      
-    if (cIt.Get() < minBin || cIt.Get() > maxBin)
-      {
-      ++cIt;
-      ++lIt;
-      continue;
-      }
-      
-    if ( lIt.Get() != 0 )
-      {
-      lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-      
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) )
-        {
-        (*lulLungHistogram)[cIt.Get()]++;
-        lulLungPhenotypes->totalVoxels++;
-        lulLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) )
-        {
-        (*lllLungHistogram)[cIt.Get()]++;
-        lllLungPhenotypes->totalVoxels++;
-        lllLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) )
-        {
-        (*rulLungHistogram)[cIt.Get()]++;
-        rulLungPhenotypes->totalVoxels++;
-        rulLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) )
-        {
-        (*rmlLungHistogram)[cIt.Get()]++;
-        rmlLungPhenotypes->totalVoxels++;
-        rmlLungPhenotypes->volume += voxelVolume;
-        }
-      if ( lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) )
-        {
-        (*rllLungHistogram)[cIt.Get()]++;
-        rllLungPhenotypes->totalVoxels++;
-        rllLungPhenotypes->volume += voxelVolume;
-        }
-      }
-    
-    ++cIt;
-    ++lIt;
-    }
-}
-
-#endif
