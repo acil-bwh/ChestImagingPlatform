@@ -11,10 +11,11 @@ import matplotlib.pyplot as plt
 
 class Bronchiectasis:
 
-    def __init__(self, vascular_file, airway_file, output_prefix):
+    def __init__(self, vascular_file, airway_file, output_prefix,plot=True):
         self.vascular_file = vascular_file
         self.airway_file = airway_file
         self.output_prefix = output_prefix
+        self.plot = plot
         self.distance_th = 30.0
         self.angle1_th = math.pi/4
         self.angle2_th = math.pi/3
@@ -106,7 +107,7 @@ class Bronchiectasis:
         v_radius=v_radius[np.logical_and(accept_a_mask,accept_v_mask)]
 
         for a_r,v_r in zip(a_radius,v_radius):
-            bden += 1/(math.sqrt(2*math.pi)*self.sigma) * a_r**2/v_r**2 *np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
+            bden += 1/(math.sqrt(2*math.pi)*self.sigma) * a_r/v_r *np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
             cden += 1/(math.sqrt(2*math.pi)*self.sigma) *          np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
     
         #This is how you can do it using a kde method in scipy
@@ -120,21 +121,22 @@ class Bronchiectasis:
         bron = bden/cden
         print kcden.factor
                 #bden[cden<0.01]=0
-        fig=plt.figure()
-        ax1=fig.add_subplot(211)
-        ax1.plot(rad,bron)
-        ax1.grid(True)
-        plt.ylabel('Airway Area / Vessel Area')
-        ax2=fig.add_subplot(212,sharex=ax1)
-        ax2.plot(rad,cden)
-        ax2.grid(True)
-        plt.xlabel('Vessel Radius (mm)')
-        plt.ylabel('CSA Density')
+        if self.plot == True:
+            fig=plt.figure()
+            ax1=fig.add_subplot(211)
+            ax1.plot(rad,bron)
+            ax1.grid(True)
+            plt.ylabel('Airway Radius / Vessel Radius')
+            ax2=fig.add_subplot(212,sharex=ax1)
+            ax2.plot(rad,cden)
+            ax2.grid(True)
+            plt.xlabel('Vessel Radius (mm)')
+            plt.ylabel('CSA Density')
             #ax=fig.add_subplot(223)
             #ax.plot(rad,kcden(csa))
             #ax=fig.add_subplot(224)
             #ax.scatter(v_radius,np.array(a_radius)/np.array(v_radius))
-        fig.savefig(self.output_prefix+'_bronchiectasisPlot.png',dpi=180)
+            fig.savefig(self.output_prefix+'_bronchiectasisPlot.png',dpi=180)
         
 
         #print np.mean(sum(ba/ca[ba/ca>1]))
@@ -206,7 +208,9 @@ if __name__ == "__main__":
                     dest='airway_file',metavar='<string>',default=None)
     parser.add_option('-o',help='Output prefix name',
                                     dest='output_prefix',metavar='<string>',default=None)
+    parser.add_option('-p', help='Enable plotting', dest='plot', \
+                  action='store_true')
 
     (options,args) =  parser.parse_args()
-    bb=Bronchiectasis(options.vessel_file,options.airway_file,options.output_prefix)
+    bb=Bronchiectasis(options.vessel_file,options.airway_file,options.output_prefix,options.plot)
     bb.execute()
