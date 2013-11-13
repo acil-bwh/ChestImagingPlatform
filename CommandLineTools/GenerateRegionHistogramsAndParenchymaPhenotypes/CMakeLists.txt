@@ -2,17 +2,32 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( GenerateRegionHistogramsAndParenchymaPhenotypes )
 
-FIND_PACKAGE ( ITK )
-IF ( ITK_FOUND )
-  INCLUDE(${ITK_USE_FILE})
-ELSE ( ITK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
-ENDIF ( ITK_FOUND )
+set(MODULE_NAME GenerateRegionHistogramsAndParenchymaPhenotypes)
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
-SET ( GenerateRegionHistogramsAndParenchymaPhenotypes_SOURCE GenerateRegionHistogramsAndParenchymaPhenotypes.cxx )
+ FIND_PACKAGE( ITK REQUIRED )
 
-ADD_EXECUTABLE ( GenerateRegionHistogramsAndParenchymaPhenotypes ${GenerateRegionHistogramsAndParenchymaPhenotypes_SOURCE} )
-TARGET_LINK_LIBRARIES ( GenerateRegionHistogramsAndParenchymaPhenotypes ${ITK_LIBRARIES} )
+ FIND_PACKAGE( CIP REQUIRED )
+
+set(MODULE_INCLUDE_DIRECTORIES
+  ${CIP_INCLUDE_DIRECTORIES}
+  )
+
+set(MODULE_TARGET_LIBRARIES
+  ${ITK_LIBRARIES}
+  ${CIP_LIBRARIES}
+  )
+
+set(MODULE_SRCS
+  )
+
+SEMMacroBuildCLI(
+  NAME ${MODULE_NAME}
+  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+  ADDITIONAL_SRCS ${MODULE_SRCS}
+  RUNTIME_OUTPUT_DIRECTORY        "${CMAKE_BINARY_DIR}/bin"
+  EXECUTABLE_ONLY
+  )

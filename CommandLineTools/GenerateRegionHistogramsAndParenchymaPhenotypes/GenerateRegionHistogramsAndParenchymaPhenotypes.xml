@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>GenerateRegionIntensityHistogramsAndParenchymaPhenotypes</title>
+    <description><![CDATA[This program is used to compute regional histograms and typical parenchyma phenotypes for emphysema assessment and other parenchymal abnormalities.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateRegionIntensityHistogramsAndParenchymaPhenotypes</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+
+  <parameters>
+      
+    <string>
+        <name>ctFileName</name>
+        <label>ctF ileName</label>
+        <channel>input</channel>
+        <flag>c</flag>
+        <longflag>--ic</longflag>
+        <description><![CDATA[Input partial lung label map file name]]></description>
+        <default>q</default>
+    </string>
+      
+      
+    <string>
+      <name>partialLungLabelMapFileName</name>
+      <label>partial Lung Label Map FileName</label>
+      <channel>input</channel>
+      <flag>p</flag>
+      <longflag>--ipl</longflag>
+      <description><![CDATA[Input partial lung label map file name]]></description>
+      <default>q</default>
+    </string>
+      
+      <string>
+          <name>lungLobeLabelMapFileName</name>
+          <label>lung Lobe Label Map FileName</label>
+          <channel>input</channel>
+          <flag>l</flag>
+          <longflag>--ill</longflag>
+          <description><![CDATA[Input lung lobe label map file name]]></description>
+          <default>NA</default>
+      </string>
+      
+      <string>
+          <name>histogramFileName</name>
+          <label>histogram File Name</label>
+          <channel>output</channel>
+          <longflag>--oh</longflag>
+          <description><![CDATA[Output histogram file name]]></description>
+          <default>NA</default>
+      </string>
+      
+      <string>
+          <name>phenotypesFileName</name>
+          <label>phenotypes File Name</label>
+          <channel>output</channel>
+          <longflag>--op</longflag>
+          <description><![CDATA[Output phenotypes file name]]></description>
+          <default>NA</default>
+      </string>
+      
+      <integer>
+          <name>minBinTemp</name>
+          <label>minimum Bin</label>
+          <channel>input</channel>
+          <longflag>--min</longflag>
+          <description><![CDATA[ Value at low end of histogram.]]></description>
+          <default>-1024</default>
+      </integer>
+      <integer>
+          <name>maxBinTemp</name>
+          <label>maximum Bin</label>
+          <channel>input</channel>
+          <longflag>--max</longflag>
+          <description><![CDATA[ Value at high end of histogram.]]></description>
+          <default>1024</default>
+      </integer>
+      
+  </parameters>
+</executable>
