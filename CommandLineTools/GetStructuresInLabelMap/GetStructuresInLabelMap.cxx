@@ -8,41 +8,18 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <tclap/CmdLine.h>
 #include "cipConventions.h"
+#include "GetStructuresInLabelMapCLP.h"
 
 typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;
 
 int main( int argc, char *argv[] )
 {
-  // Begin by defining the arguments to be passed
-  std::string labelMapFileName = "NA";
 
-  // Input argument descriptions for user help
-  std::string programDesc = "This program reads in a label map image and writes \
-to the command line a list of the chest-region chest-type pairs that are present";
-
-  std::string labelMapFileNameDesc = "Input label map file name";
-
-  // Parse the input arguments
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision $" );
-
-    TCLAP::ValueArg<std::string> labelMapFileNameArg( "i", "input", labelMapFileNameDesc, true, labelMapFileName, "string", cl );
-
-    cl.parse( argc, argv );
-
-    labelMapFileName = labelMapFileNameArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
-
+  PARSE_ARGS;
+    
   cip::ChestConventions conventions;
 
   std::cout << "Reading label map..." << std::endl;
@@ -94,4 +71,3 @@ to the command line a list of the chest-region chest-type pairs that are present
   return cip::EXITSUCCESS;
 }
 
-#endif
