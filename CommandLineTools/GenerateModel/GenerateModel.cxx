@@ -44,9 +44,7 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -61,71 +59,43 @@
 #include "vtkPolyData.h"
 #include "vtkImageImport.h"
 #include "vtkSmartPointer.h"
+#include "GenerateModelCLP.h"
 
-typedef itk::Image< unsigned short, 3 >        ImageType;
-typedef itk::ImageFileReader< ImageType >      ReaderType;
-typedef itk::VTKImageExport< ImageType >       ExportType;
-typedef itk::ImageRegionIterator< ImageType >  IteratorType;
+namespace
+{
+   typedef itk::Image< unsigned short, 3 >        ImageType;
+   typedef itk::ImageFileReader< ImageType >      ReaderType;
+   typedef itk::VTKImageExport< ImageType >       ExportType;
+   typedef itk::ImageRegionIterator< ImageType >  IteratorType;
 
 
-void ConnectPipelines( ExportType::Pointer, vtkImageImport* );
+   void ConnectPipelines( ExportType::Pointer exporter, vtkImageImport* importer )
+   {
+    importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
+    importer->SetPipelineModifiedCallback(exporter->GetPipelineModifiedCallback());
+    importer->SetWholeExtentCallback(exporter->GetWholeExtentCallback());
+    importer->SetSpacingCallback(exporter->GetSpacingCallback());
+    importer->SetOriginCallback(exporter->GetOriginCallback());
+    importer->SetScalarTypeCallback(exporter->GetScalarTypeCallback());
+    importer->SetNumberOfComponentsCallback(exporter->GetNumberOfComponentsCallback());
+    importer->SetPropagateUpdateExtentCallback(exporter->GetPropagateUpdateExtentCallback());
+    importer->SetUpdateDataCallback(exporter->GetUpdateDataCallback());
+    importer->SetDataExtentCallback(exporter->GetDataExtentCallback());
+    importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
+    importer->SetCallbackUserData(exporter->GetCallbackUserData());
+    }
+
+}
 
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Define command line arguments
-  //
-  std::string    maskFileName                 = "NA";
-  std::string    outputModelFileName          = "NA";
-  unsigned int   smootherIterations           = 2;
-  unsigned short foregroundLabel              = -1;
-  bool           setStandardOriginAndSpacing  = 0;
-  float          decimatorTargetReduction     = 0.9;
+  PARSE_ARGS;
+  
+  unsigned int   smootherIterations           = (unsigned int) smootherIterationsTemp;
+  unsigned short foregroundLabel              = (unsigned short) foregroundLabelTemp;
 
-  //
-  // Descriptions of command line arguments for user help
-  //
-  std::string programDesc = "This program generates a 3D model given an input \
-label map mask using the discrete marching cubes algorithm";
-
-  std::string maskFileNameDesc                 = "Input mask file name";
-  std::string outputModelFileNameDesc          = "Output model file name";
-  std::string smootherIterationsDesc           = "Number of smoothing iterations";
-  std::string foregroundLabelDesc              = "Foreground label in the label map to be \
-used for generating the model";
-  std::string setStandardOriginAndSpacingDesc  = "Set to 1 to used standard origin and spacing. \
-Set to 0 by default.";
-  std::string decimatorTargetReductionDesc     = "Target reduction fraction for decimation";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-      TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 281 $" );
-
-      TCLAP::ValueArg<std::string>    maskFileNameArg( "i", "in", maskFileNameDesc, true, maskFileName, "string", cl);
-      TCLAP::ValueArg<std::string>    outputModelFileNameArg( "o", "out", outputModelFileNameDesc, true, outputModelFileName, "string", cl );
-      TCLAP::ValueArg<unsigned int>   smootherIterationsArg( "s", "smooth", smootherIterationsDesc, false, smootherIterations, "unsigned int", cl );
-      TCLAP::ValueArg<unsigned short> foregroundLabelArg( "l", "label", foregroundLabelDesc, false, foregroundLabel, "unsigned short", cl );
-      TCLAP::ValueArg<bool>           setStandardOriginAndSpacingArg( "", "origSp", setStandardOriginAndSpacingDesc, false, setStandardOriginAndSpacing, "bool", cl );
-      TCLAP::ValueArg<float>          decimatorTargetReductionArg( "r", "reduc", decimatorTargetReductionDesc, false, decimatorTargetReduction, "float", cl);
-
-      cl.parse( argc, argv );
-
-      maskFileName                = maskFileNameArg.getValue();
-      outputModelFileName         = outputModelFileNameArg.getValue();
-      smootherIterations          = smootherIterationsArg.getValue();
-      foregroundLabel             = foregroundLabelArg.getValue();
-      setStandardOriginAndSpacing = setStandardOriginAndSpacingArg.getValue();
-      decimatorTargetReduction    = decimatorTargetReductionArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-      std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-      return cip::ARGUMENTPARSINGERROR;
-    }
+    
 
   std::cout << "Reading mask..." << std::endl;    
   ReaderType::Pointer maskReader = ReaderType::New();
@@ -142,7 +112,7 @@ Set to 0 by default.";
     return cip::LABELMAPREADFAILURE;
     }
   
-  if ( setStandardOriginAndSpacing == 1 )
+  if ( setStandardOriginAndSpacing == true )
     {
     ImageType::SpacingType spacing;
       spacing[0] = 1;
@@ -269,20 +239,4 @@ Set to 0 by default.";
 // }
 
 
-void ConnectPipelines( ExportType::Pointer exporter, vtkImageImport* importer )
-{
-  importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
-  importer->SetPipelineModifiedCallback(exporter->GetPipelineModifiedCallback());
-  importer->SetWholeExtentCallback(exporter->GetWholeExtentCallback());
-  importer->SetSpacingCallback(exporter->GetSpacingCallback());
-  importer->SetOriginCallback(exporter->GetOriginCallback());
-  importer->SetScalarTypeCallback(exporter->GetScalarTypeCallback());
-  importer->SetNumberOfComponentsCallback(exporter->GetNumberOfComponentsCallback());
-  importer->SetPropagateUpdateExtentCallback(exporter->GetPropagateUpdateExtentCallback());
-  importer->SetUpdateDataCallback(exporter->GetUpdateDataCallback());
-  importer->SetDataExtentCallback(exporter->GetDataExtentCallback());
-  importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
-  importer->SetCallbackUserData(exporter->GetCallbackUserData());
-}
 
-#endif
