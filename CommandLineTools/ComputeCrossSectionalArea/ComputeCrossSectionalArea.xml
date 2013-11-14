@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Examples</category>
-  <title>GenerateMedianFilteredImage</title>
+  <category>Chest Imaging Platform</category>
+  <title>ComputeCrossSectionalArea</title>
   <description><![CDATA[This program can be used to compute cross sectional areas \
 of structures in the input label map image. The cross-sectional area is computed with \
 respect to the axial plane. The algorithm proceeds by tallying all voxels of various types \
 in the label map. The tally for each entity is then multiplied by the in-plane (axial) \
 spacing value to give the cross sectional areas. Quantities are printed to std out.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage</documentation-url>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ComputeCrossSectionalArea</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
-  <acknowledgements>This work was partially funded ...</acknowledgements>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.</acknowledgements>
 
   <parameters>
 
@@ -22,7 +24,7 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
       <flag>i</flag>
       <longflag>--inputFile</longflag>
       <description><![CDATA[e]]></description>
-      <default>q</default>
+      <default>NA</default>
     </string>
 
     <string>
@@ -32,7 +34,7 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
       <longflag>--outputFile</longflag>
       <channel>output</channel>
       <description><![CDATA[Output CSV file]]></description>
-      <default>q</default>
+      <default>NA</default>
     </string>
    
   </parameters>

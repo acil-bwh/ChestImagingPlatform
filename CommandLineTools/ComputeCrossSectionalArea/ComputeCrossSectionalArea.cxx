@@ -46,9 +46,11 @@
 #include <fstream>
 #include "ComputeCrossSectionalAreaCLP.h"
 
-typedef itk::Image< unsigned short, 3 >       ImageType;
-typedef itk::ImageFileReader< ImageType >     ReaderType;
-typedef itk::ImageRegionIterator< ImageType > IteratorType;
+namespace{
+    typedef itk::Image< unsigned short, 3 >       ImageType;
+    typedef itk::ImageFileReader< ImageType >     ReaderType;
+    typedef itk::ImageRegionIterator< ImageType > IteratorType;
+};
 
 int main( int argc, char *argv[] )
 {
