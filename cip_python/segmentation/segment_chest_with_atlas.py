@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from cip_python.utils.weighted_feature_map_densities \
     import ExpWeightedFeatureMapDensity
-
+from pygco import cut_from_graph
 
 def segment_chest_with_atlas(input_image, feature_vector, priors):
     """Segment structures using atlas data. Computes the likelihoods given a
@@ -94,10 +94,10 @@ def obtain_graph_cuts_segmentation(structure_posterior_energy, not_structure_pos
     Parameters
     ----------
     structure_posterior_energy: A float array with shape (L, M, N) 
-            representing the posterior energies for the structure of interest. 
+            representing the posterior energies for the structure of interest. (source) 
     not_structure_posterior_energy :  A float array with shape (L, M, N) 
             representing the posterior energies for not being the structure
-            of interest. 
+            of interest. (sink)
         ...
         
     Returns
@@ -106,4 +106,41 @@ def obtain_graph_cuts_segmentation(structure_posterior_energy, not_structure_pos
         Segmented image with labels adhering to CIP conventions
     """
     
-    pass
+    length = np.shape(structure_posterior_energy)[0];
+    width = np.shape(structure_posterior_energy)[1];
+    num_slices = np.shape(structure_posterior_energy)[2];
+    numNodes = length * width
+    segmented_image = np.zeros((length, width, num_slices), dtype = np.int32)
+    
+    for slice_num in range(0, num_slices):
+    
+        source_slice = structure_posterior_energy.ravel()[length*width*slice_num: length*width*(slice_num+1)].squeeze().reshape(length,width).astype(np.int32) 
+        sink_slice = not_structure_posterior_energy.ravel()[length*width*slice_num: length*width*(slice_num+1)].squeeze().reshape(length,width).astype(np.int32) 
+  
+        imageIndexArray =  np.arange(numNodes).reshape(np.shape(source_slice)[0], np.shape(source_slice)[1])
+ 
+        #Adding neighbourhood terms 
+        inds = np.arange(imageIndexArray.size).reshape(imageIndexArray.shape) #goes from [[0,1,...numcols-1],[numcols, ...],..[.., num_elem-1]]
+        horz = np.c_[inds[:, :-1].ravel(), inds[:, 1:].ravel()] #all rows, not last col make to 1d
+        vert = np.c_[inds[:-1, :].ravel(), inds[1:, :].ravel()] #all rows, not first col, make to 1d
+        edges = np.vstack([horz, vert]).astype(np.int32) #horz is first element, vert is 
+        theweights = np.ones((np.shape(edges))).astype(np.int32)*18
+        edges = np.hstack((edges,theweights))[:,0:3].astype(np.int32) #stack the weight value hor next to edge indeces
+    
+        #3rd order neighbours
+        horz = np.c_[inds[:, :-2].ravel(), inds[:,2:].ravel()] #all rows, not last col make to 1d
+        vert = np.c_[inds[:-2, :].ravel(), inds[2:, :].ravel()] #all rows, not first col, make to 1d
+        edges2 = np.vstack([horz, vert]).astype(np.int32) #horz is first element, vert is 
+        theweights2 = np.ones((np.shape(edges2))).astype(np.int32)
+        edges2 = np.hstack((edges2,theweights2))[:,0:3].astype(np.int32)
+    
+        edges = np.vstack([edges,edges2]).astype(np.int32)
+
+        pairwise_cost = np.array([[0, 1], [1, 0]], dtype = np.int32)
+    
+        energies = np.dstack((np.array(source_slice).astype(np.int32).flatten(), np.array(sink_slice).astype(np.int32).flatten())).squeeze()
+
+        segmented_slice = cut_from_graph(edges, energies, pairwise_cost, 3,'expansion') 
+        segmented_image[:,:,slice_num] = segmented_slice.reshape(length,width).transpose()
+
+    return segmented_image
