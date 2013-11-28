@@ -1,8 +1,10 @@
 import heapq
+import numpy as np
 from cip_python.utils.get_mi_similarity_vec \
     import getMISimilarityVec
     
-def getClosestCases(list_of_label_files, list_of_similarity_xml_files, similarity):
+def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
+    similarity, num_closest_cases):
     """Get the closest cases to the test case using some similarity metric and
        given a list of files that contain the similarity value. 
 
@@ -16,6 +18,9 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, similarit
         
     similarity : string
         Type of similarity used
+        
+    num_closest_cases : int
+        The number of closest cases to return
         ...
         
     Returns
@@ -26,8 +31,9 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, similarit
         ...
     """
 
+    #TODO: Account for different similarities
     
-    num_training_cases = list_of_label_files.len
+    num_training_cases = len(list_of_label_files)
     
     #Read the similarity values 
     similarity_values = getMISimilarityVec(list_of_similarity_xml_files)
@@ -37,15 +43,17 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, similarit
     for i in range(num_training_cases):
         indexes.append(i)
     
-    nlargestvalues = heapq.nlargest(11, indexes, key=lambda i: similarity_values[i]) #take (from 1 to 11)
+    nlargestvalues = heapq.nlargest(num_closest_cases+1, indexes, key=lambda \
+        i: similarity_values[i]) #take (from 1 to 11)
     print(nlargestvalues)
-    patient_atlas_labelmaps = [""]*num_training_cases
-    patient_atlas_similarity = [1.0]*num_training_cases
+    patient_atlas_labelmaps = [""]*num_closest_cases
+    patient_atlas_similarity = [1.0]*num_closest_cases
     
     #Now store the num_cases in a 2D list
-    for i in range(num_training_cases): 
+    for i in range(num_closest_cases): 
         patient_atlas_labelmaps[i] = list_of_label_files[nlargestvalues[i+1]]
+        print(patient_atlas_labelmaps[i])
         patient_atlas_similarity[i] = similarity_values[nlargestvalues[i+1]]
     
-    closest_cases = [patient_atlas_labelmaps, patient_atlas_similarity]
+    closest_cases = np.vstack((patient_atlas_labelmaps, patient_atlas_similarity))
     return closest_cases

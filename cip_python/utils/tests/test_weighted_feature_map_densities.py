@@ -45,6 +45,25 @@ def test_weighted_features():
     my_likelihood = my_weighted_density.compute()
     
     assert my_likelihood.all() == np.exp(-(the_weights[0]*np.power(I1,2) + the_weights[1]*I1*I2+ the_weights[2]*np.power(I2,2)) ).all()
+
+def test_weighted_features_elaborate():
+    #Slightly more elaborate, similar to likelihood computations needed for
+    # lung segmentation
+    left_polynomial_feature_map = PolynomialFeatureMap( [I1,I2],[0,1,2] )  
+    left_polynomial_feature_map.compute_num_terms()
+    
+    left_weights_temp = [0.002149, -0.002069, 5.258745]
+    left_weights = [left_weights_temp[2]*left_weights_temp[2], 2*left_weights_temp[0]*left_weights_temp[2], \
+                    2*left_weights_temp[1]*left_weights_temp[2], left_weights_temp[0]*left_weights_temp[0], \
+                    2*left_weights_temp[0]*left_weights_temp[1], left_weights_temp[1]*left_weights_temp[1] ]
+    left_lambda = 1.0
+    left_weighted_density = ExpWeightedFeatureMapDensity([I1,I2], left_weights, left_polynomial_feature_map, left_lambda)
+    left_likelihood = left_weighted_density.compute()
+    
+    #should be equivelent to: exp(-(alpha_est_non(1)*Ival + alpha_est_non(2)*Dval+alpha_est_non(3)))^2
+    
+    assert left_likelihood.all() == np.exp(-np.power(   (left_weights_temp[0]*I1 + left_weights_temp[1]*I2+ left_weights_temp[2])   , 2) ).all()
+    
     
     
     

@@ -45,8 +45,8 @@ class PolynomialFeatureMap(FeatureMap):
       self._num_terms = -1
       self.input_orders= sorted(list(set(input_orders))) #rola add, need to sort
       self.num_terms_per_order = np.zeros(len(input_orders)) #rola add self
-    """function that computes the number of terms in the feature map given the list
-     of orders 
+    """function that computes the number of terms in the feature map given the 
+     list of orders 
     ----------
     return: none 
         
@@ -55,7 +55,8 @@ class PolynomialFeatureMap(FeatureMap):
         """        
         Go through list of orders and add corresponding numterms
         """
-        #http://mathforum.org/library/drmath/view/68607.html. m terms to the nth power:
+        #http://mathforum.org/library/drmath/view/68607.html. 
+        # m terms to the nth power:
         #(n+(m-1))!
         #---------- = "(n+m-1) choose (m-1)"
         #(n!)(m-1)!
@@ -84,15 +85,20 @@ class PolynomialFeatureMap(FeatureMap):
         element_within_order = element_index
 
         while cumul_numterms < (element_index+1): 
-            element_within_order=int(element_within_order-self.num_terms_per_order[order_index]   )      
+            element_within_order=int( \
+               element_within_order-self.num_terms_per_order[order_index]   )      
             order_index=order_index+1
-            cumul_numterms+=self.num_terms_per_order[order_index]            
+            cumul_numterms+=self.num_terms_per_order[order_index] 
+            
+        print("order index = "+str(order_index)) 
+        print("element index = "+str(element_index))   
+        print("element within order = "+str(element_within_order))           
 
         #now now through a case statement for the established orders and terms
         if self.input_orders[order_index] is 0:
             return 1.0
         if self.input_orders[order_index] is 1:
-            return self.feature_vecs[element_index]
+            return self.feature_vecs[element_within_order]
         if self.input_orders[order_index] is 2:
             if element_within_order is 0:
                 return np.multiply(self.feature_vecs[0],self.feature_vecs[0])
