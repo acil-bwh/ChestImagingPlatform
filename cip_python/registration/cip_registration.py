@@ -55,29 +55,25 @@ def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cach
 
   # Set up input, output and temp volumes
   
-  #assumption : data dir is setup in the same structure as on MAD...
-  fixed_pid =  fixed_cid.split('_')[0]
-  moving_pid =  moving_cid.split('_')[0]
-  
-  fixed = os.path.join(data_dir,fixed_pid,fixed_cid,fixed_cid + ".nhdr")
-  moving = os.path.join(data_dir,moving_pid,moving_cid,moving_cid + ".nhdr")
+  fixed = os.path.join(data_dir,fixed_cid + ".nhdr")
+  moving = os.path.join(data_dir,moving_cid + ".nhdr")
   fixed_tmp = os.path.join(tmp_dir,fixed_cid + ".nhdr")
   moving_tmp = os.path.join(tmp_dir,moving_cid + ".nhdr")
-  moving_deformed = os.path.join(data_dir,moving_pid,moving_cid,moving_cid + "_to_" + fixed_cid + ".nhdr")
-  fixed_deformed = os.path.join(data_dir,fixed_pid,fixed_cid,fixed_cid + "_to_"+ moving_cid + ".nhdr")
+  moving_deformed = os.path.join(data_dir,moving_cid + "_to_" + fixed_cid + ".nhdr")
+  fixed_deformed = os.path.join(data_dir,fixed_cid + "_to_"+ moving_cid + ".nhdr")
   moving_deformed_tmp = os.path.join(tmp_dir,moving_cid + "_to_" + fixed_cid + ".nhdr")
   fixed_deformed_tmp = os.path.join(tmp_dir,fixed_cid + "_to_"+ moving_cid + ".nhdr")
 
 
-  deformation_prefix = os.path.join(data_dir,moving_pid,moving_cid,"registrationData",moving_cid + "_to_" + fixed_cid + "_tfm_")
+  deformation_prefix = os.path.join(data_dir,moving_cid + "_to_" + fixed_cid + "_tfm_")
   affine_tfm = deformation_prefix + "0GenericAffine.mat"
   affine_output_tfm = deformation_prefix + "0GenericAffine.tfm"
   affine_output_xml = deformation_prefix + "0GenericAffine.xml"
   elastic_tfm = deformation_prefix + "1Warp.nii.gz"
   elastic_inv_tfm = deformation_prefix + "1InverseWarp.nii.gz"
 
-  fixed_mask = os.path.join(data_dir,fixed_pid,fixed_cid,fixed_cid + "_partialLungLabelMap.nhdr")
-  moving_mask = os.path.join(data_dir,moving_pid,moving_cid,moving_cid + "_partialLungLabelMap.nhdr")
+  fixed_mask = os.path.join(data_dir,fixed_cid + "_partialLungLabelMap.nhdr")
+  moving_mask = os.path.join(data_dir,moving_cid + "_partialLungLabelMap.nhdr")
   fixed_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_partialLungLabelMap.nhdr")
   moving_mask_tmp = os.path.join(tmp_dir,moving_cid + "_partialLungLabelMap.nhdr")
 
