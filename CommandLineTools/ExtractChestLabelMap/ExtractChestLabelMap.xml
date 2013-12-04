@@ -2,12 +2,26 @@
 <executable>
   <category>Chest Imaging Platform</category>
   <title>ExtractChestLabelMap</title>
-  <description><![CDATA[Some description....]]></description>
+  <description><![CDATA[This program takes in a lung label map and producs a lung \
+  label map; it assumes the labeling conventions coded in cipConventions.h. \
+  The user specifies the regions and types he/she is \
+  interested in.  All other regions/types are set to UNDEFINEDTYPE \
+  and UNDEFINEDREGION.  Given that regions are hierarchical, a region \
+  that is higher in the hierarchy will be preferred to one that is \
+  lower.  E.g., if the user specifies both WHOLELUNG and \
+  LEFTSUPERIORLOBE, the region in the LEFTSUPERIORLOBE will be defined as \
+  such, and WHOLELUNG will be used elsewhere. Precedence will be as \
+  follows: types, regions, region-type pairs. In \
+  other words, if the user requests both LEFTLUNG and AIRWAY (not as a \
+  pair), then an AIRWAY voxel in the LEFTLUNG will be mapped to LEFTLUNG \
+  in the output. If the user additionally requests the AIRWAY, LEFTLUNG \
+  pair, then the entire voxel will be preserved.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
-  <acknowledgements>This work was partially funded ...</acknowledgements>
-
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.</acknowledgements>
   <parameters>
     <string-vector>
       <name>regionVec</name>
