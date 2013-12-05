@@ -11,7 +11,7 @@ import pdb
 import subprocess
 import os
 from subprocess import PIPE
-from cip_python.read_nrrds_write_vtk import ReadNRRDsWriteVTK
+from cip_python.utils.read_nrrds_write_vtk import ReadNRRDsWriteVTK
 
 class ChestParticles:
     """Base class for airway, vessel, and fissure particles classes.
