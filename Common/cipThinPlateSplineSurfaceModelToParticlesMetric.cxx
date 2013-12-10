@@ -12,7 +12,7 @@
 #include "cipThinPlateSplineSurfaceModelToParticlesMetric.h"
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
-
+#include "cipHelper.h"
 
 cipThinPlateSplineSurfaceModelToParticlesMetric
 ::cipThinPlateSplineSurfaceModelToParticlesMetric()
@@ -226,7 +226,7 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
     // Get the TPS surface normal at the domain location.
     //    
     this->ThinPlateSplineSurface->GetSurfaceNormal( (*optimalParams)[0], (*optimalParams)[1], normal );
-    double theta = this->GetAngleBetweenVectors( normal, orientation );
+    double theta = cip::GetAngleBetweenVectors( normal, orientation, true );
 
     //
     // Now that we have the surface normal and distance, we can
@@ -235,17 +235,6 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
     //    
     value -= this->ParticleWeights[i]*coefficient*std::exp( -0.5*std::pow(distance/this->SigmaDistance,2) )*
       std::exp( -0.5*std::pow(theta/this->SigmaTheta,2) );
-
-    if ( tpsHeight > position[2] )
-      {
-	value += this->ParticleWeights[i]*coefficient*std::exp( -0.5*std::pow(distance/this->SigmaDistance,2) )*
-	  std::exp( -0.5*std::pow(theta/this->SigmaTheta,2) );
-      }
-    else
-      {
-	value -= this->ParticleWeights[i]*coefficient*std::exp( -0.5*std::pow(distance/this->SigmaDistance,2) )*
-	  std::exp( -0.5*std::pow(theta/this->SigmaTheta,2) );
-      }
     }
 
   delete position;
@@ -253,37 +242,6 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
   delete orientation;
   
   return value;
-}
-
-
-double cipThinPlateSplineSurfaceModelToParticlesMetric::GetAngleBetweenVectors( const double vec1[3], const double vec2[3] ) const
-{
-  double vec1Mag = this->GetVectorMagnitude( vec1 );
-  double vec2Mag = this->GetVectorMagnitude( vec2 );
-
-  double arg = (vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2])/(vec1Mag*vec2Mag);
-
-  if ( vcl_abs( arg ) > 1.0 )
-    {
-    arg = 1.0;
-    }
-
-  double angle = 180.0*vcl_acos( arg )/vnl_math::pi;
-
-  if ( angle > 90.0 )
-    {
-    angle = 180.0 - angle;
-    }
-
-  return angle;   
-}
-
-
-double cipThinPlateSplineSurfaceModelToParticlesMetric::GetVectorMagnitude( const double vector[3] ) const
-{
-  double magnitude = vcl_sqrt( std::pow( vector[0], 2 ) + std::pow( vector[1], 2 ) + std::pow( vector[2], 2 ) );
-
-  return magnitude;
 }
 
 #endif
