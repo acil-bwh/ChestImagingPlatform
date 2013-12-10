@@ -11,22 +11,18 @@
 
 #include "cipThinPlateSplineSurfaceModelToParticlesMetric.h"
 #include "vtkFloatArray.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 
 
 cipThinPlateSplineSurfaceModelToParticlesMetric
 ::cipThinPlateSplineSurfaceModelToParticlesMetric()
 {
-  //
   // Particles are represented by VTK polydata
-  //
   this->Particles = vtkPolyData::New();
 
-  //
   // The 'cipThinPlateSplineSurface' class wraps functionality for
   // constructing and accessing data for a TPS interpolating surface
   // given a set of surface points 
-  //
   this->ThinPlateSplineSurface  = new cipThinPlateSplineSurface();
 
   this->ParticleToTPSMetric     = new cipParticleToThinPlateSplineSurfaceMetric();
@@ -51,10 +47,8 @@ void cipThinPlateSplineSurfaceModelToParticlesMetric::SetParticles( vtkPolyData*
   this->Particles = particles;
   this->NumberOfParticles = this->Particles->GetNumberOfPoints();
 
-  //
   // If no particle weights have already been specified, set each
   // particle to have equal, unity weight
-  //
   if ( this->ParticleWeights.size() == 0 )
     {
     for ( unsigned int i=0; i<this->NumberOfParticles; i++ )
@@ -195,9 +189,9 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
     position[1] = this->Particles->GetPoint(i)[1];
     position[2] = this->Particles->GetPoint(i)[2];
 
-    orientation[0] = this->Particles->GetFieldData()->GetArray( "hevec2" )->GetTuple(i)[0];
-    orientation[1] = this->Particles->GetFieldData()->GetArray( "hevec2" )->GetTuple(i)[1];
-    orientation[2] = this->Particles->GetFieldData()->GetArray( "hevec2" )->GetTuple(i)[2];
+    orientation[0] = this->Particles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[0];
+    orientation[1] = this->Particles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[1];
+    orientation[2] = this->Particles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[2];
 
     //
     // Determine the domain location for which the particle is closest
@@ -238,9 +232,20 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
     // Now that we have the surface normal and distance, we can
     // compute this particle's contribution to the overall objective
     // function value
-    //
+    //    
     value -= this->ParticleWeights[i]*coefficient*std::exp( -0.5*std::pow(distance/this->SigmaDistance,2) )*
       std::exp( -0.5*std::pow(theta/this->SigmaTheta,2) );
+
+    if ( tpsHeight > position[2] )
+      {
+	value += this->ParticleWeights[i]*coefficient*std::exp( -0.5*std::pow(distance/this->SigmaDistance,2) )*
+	  std::exp( -0.5*std::pow(theta/this->SigmaTheta,2) );
+      }
+    else
+      {
+	value -= this->ParticleWeights[i]*coefficient*std::exp( -0.5*std::pow(distance/this->SigmaDistance,2) )*
+	  std::exp( -0.5*std::pow(theta/this->SigmaTheta,2) );
+      }
     }
 
   delete position;
