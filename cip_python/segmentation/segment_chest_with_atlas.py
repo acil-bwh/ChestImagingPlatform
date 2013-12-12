@@ -42,7 +42,10 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
        compute_structure_posterior_probabilities(likelihoods, priors, \
                                                   normalization_constants)
                                                   
-            
+    import nrrd
+    nrrd.write("/Users/rolaharmouche/Documents/Data/COPDGene/test_left_posterior.nrrd", posterior_probabilities[0])
+    nrrd.write("/Users/rolaharmouche/Documents/Data/COPDGene/test_right_posterior.nrrd", posterior_probabilities[1])
+    
     #  For each structure separately, input the posterior energies into
     # the graph cuts code and obtain a segmentation   
     for i in range(num_classes):
@@ -53,27 +56,36 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
           posterior_probabilities[i].squeeze())*4000).astype(np.int32)
         label_map[i]=obtain_graph_cuts_segmentation( \
           not_class_posterior_energies, class_posterior_energies)
-          
+    
+    for i in range(0, num_classes):
+        label_map[i] = ndimage.binary_fill_holes(label_map[i]).astype(int)
+        label_map[i] = ndimage.binary_fill_holes(label_map[i]).astype(int)      
     #remove overlap between labels by choosing the label with the least energy
     
     total_labels = np.zeros([np.shape(label_map[0])[0], np.shape( \
        label_map[0])[1], np.shape(label_map[0])[2]], dtype=int)
     isMultiple_labels = np.zeros([np.shape(label_map[0])[0], \
        np.shape(label_map[0])[1], np.shape(label_map[0])[2]], dtype=int)
+    lowest_energy_label = np.zeros([np.shape(label_map[0])[0], \
+       np.shape(label_map[0])[1], np.shape(label_map[0])[2]], dtype=int)
     for i in range(0, num_classes):
         total_labels = np.add(total_labels, label_map[i])
     isMultiple_labels = (total_labels >1)
     
-    #find lowest energy label
-    lowest_energy_label = np.amax(label_map, axis=0)
+    #find lowest energy label, right now maximum posterior probability
+    lowest_energy_label = np.argmax(posterior_probabilities, axis=0)
+
+    #Debug: save lowest energy label
+    nrrd.write("/Users/rolaharmouche/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/lowest_energy_label.nrrd", lowest_energy_label)
+
     
     #isMultiple_labels&lowest or nonmultiple&current
     #or multiple & (non-lowest) = 0
-    for i in range(0, num_classes):
-        label_map[i] = ndimage.binary_fill_holes(label_map[i]).astype(int)
-        label_map[i] = ndimage.binary_fill_holes(label_map[i]).astype(int)
-        label_map[i][(np.logical_and(isMultiple_labels,i != \
-           lowest_energy_label))] = 0 
+
+        
+    for i in range(0, num_classes):    
+        isNotLowestEnergyLabel = (i != lowest_energy_label)       
+        label_map[i][(np.logical_and(isMultiple_labels,isNotLowestEnergyLabel))] = 0 
     
 
     return label_map
@@ -121,7 +133,6 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
     tozero_indeces_intensities = lungPriorSlicedialated < 1
     
     #compute distance using opposite atlas binary map. Assumption
-    print (np.shape(probabilistic_atlases))
     zero_indeces_ll = probabilistic_atlases[0] < 0.5
     leftLungPriorthres = np.ones((length, width,np.shape( \
       probabilistic_atlases[0])[2])).astype(np.float)
@@ -256,6 +267,8 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
          LdIgivenRlung.astype(np.float),probabilistic_atlases[1].astype( \
          np.float)),np.multiply(LdIgivenNlung.astype(np.float), \
          notLungPrior.astype(np.float)))  
+         
+         
     p_I_dright = np.add(np.multiply(RdIgivenLlung.astype(np.float), \
          probabilistic_atlases[0].astype(np.float)),np.multiply( \
          right_likelihood.astype(np.float), \
@@ -270,6 +283,9 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
     
     left_likelihood[tozero_indeces_intensities]=0
     right_likelihood[tozero_indeces_intensities]=0
+    
+    
+    #save likelihoods for debugging purposes
 
     #segment given feature vectors
     segmented_labels = segment_chest_with_atlas([left_likelihood.astype( \
@@ -317,7 +333,7 @@ def compute_structure_posterior_probabilities(likelihoods, priors, \
     posteriors = np.zeros(np.shape(likelihoods))
     
     for d in range(0, num_classes):
-        posteriors[d] = likelihoods[d]*priors[d] /normalization_constants[d]
+        posteriors[d] = likelihoods[d]*priors[d] /(normalization_constants[d])
         
     return posteriors
     

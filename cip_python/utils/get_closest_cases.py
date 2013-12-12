@@ -43,17 +43,17 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
     for i in range(num_training_cases):
         indexes.append(i)
     
-    nlargestvalues = heapq.nlargest(num_closest_cases+1, indexes, key=lambda \
-        i: similarity_values[i]) #take (from 1 to 11)
+    nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
+        i: similarity_values[i]) #take (from 0 to 10, assuming testint is not in trainng)
     print(nlargestvalues)
     patient_atlas_labelmaps = [""]*num_closest_cases
     patient_atlas_similarity = [1.0]*num_closest_cases
     
     #Now store the num_cases in a 2D list
     for i in range(num_closest_cases): 
-        patient_atlas_labelmaps[i] = list_of_label_files[nlargestvalues[i+1]]
+        patient_atlas_labelmaps[i] = list_of_label_files[nlargestvalues[i]]
         print(patient_atlas_labelmaps[i])
-        patient_atlas_similarity[i] = similarity_values[nlargestvalues[i+1]]
+        patient_atlas_similarity[i] = similarity_values[nlargestvalues[i]]
     
     closest_cases = np.vstack((patient_atlas_labelmaps, patient_atlas_similarity))
     return closest_cases

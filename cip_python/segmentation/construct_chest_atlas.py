@@ -1,4 +1,3 @@
-import heapq
 import numpy as np
 
 def construct_probabilistic_atlas(label_maps, normalize=True, weights=None,
