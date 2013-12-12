@@ -53,8 +53,17 @@ def transform_data ( reference_im, moving_im, transforms_list, output):
 
 def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cache,affine,elastic,use_lung_mask,use_body_mask,body_th,fast,resampled_out,generate_tfm):
 
-  # Set up input, output and temp volumes
-  
+
+  #Check required tools path enviroment variables for tools path
+  toolsPaths = ['ANTS_PATH','TEEM_PATH','ITKTOOLS_PATH'];
+  path=dict()
+  for path_name in toolsPaths:
+    path[path_name]=os.environ.get(path_name,False)
+    if path[path_name] == False:
+      print path_name + " environment variable is not set"
+      exit()
+        
+    # Set up input, output and temp volumes      
   fixed = os.path.join(data_dir,fixed_cid + ".nhdr")
   moving = os.path.join(data_dir,moving_cid + ".nhdr")
   fixed_tmp = os.path.join(tmp_dir,fixed_cid + ".nhdr")
@@ -305,15 +314,6 @@ if __name__ == "__main__":
     resampled_out = options.resampled_out
     generate_tfm = options.generate_tfm
     
-    #Check required tools path enviroment variables for tools path
-    toolsPaths = ['ANTS_PATH','TEEM_PATH','ITKTOOLS_PATH'];
-    path=dict()
-    for path_name in toolsPaths:
-      path[path_name]=os.environ.get(path_name,False)
-      if path[path_name] == False:
-        print path_name + " environment variable is not set"
-        exit()
-        
     register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cache,affine,elastic,use_lung_mask,use_body_mask,body_th,fast,resampled_out,generate_tfm)
 
 

@@ -1,3 +1,4 @@
+
 /** \file
  *  \ingroup commandLineTools
  *  \details This program registers 2 label maps, source and target, and
