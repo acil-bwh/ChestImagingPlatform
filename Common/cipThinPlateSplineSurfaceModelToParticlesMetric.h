@@ -75,9 +75,6 @@ public:
     }
 
 private:
-  double GetVectorMagnitude( const double[3] ) const;
-  double GetAngleBetweenVectors( const double[3], const double[3] ) const;
-
   vtkPolyData* Particles;
 
   cipNewtonOptimizer< 2 >*                     NewtonOptimizer;

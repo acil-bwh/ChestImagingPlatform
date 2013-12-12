@@ -9,7 +9,7 @@
 import os
 import pdb
 from optparse import OptionParser
-from cip_python.chest_particles import ChestParticles
+from cip_python.particles.chest_particles import ChestParticles
 
 class MultiResVesselParticles(ChestParticles):
     """Class for multiresolution vessel-specific particles sampling
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     if options.out_file is None:
         raise ValueError("Must specify an output file")
 
-    particles = MultiResAirwayParticles(options.ct_file, options.out_file,
+    particles = MultiResVesselParticles(options.ct_file, options.out_file,
                                         options.tmp_dir, options.mask_file,
                                         live_thresh=options.live_thresh,
                                         seed_thresh=options.seed_thresh,

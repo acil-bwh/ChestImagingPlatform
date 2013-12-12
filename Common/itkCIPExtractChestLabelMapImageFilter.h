@@ -2,13 +2,20 @@
  *  \class CIPExtractChestLabelMapImageFilter
  *  \ingroup common
  *  \brief This filter takes in a lung label map and producs a lung
- *  label map.  The user specifies the regions and types he/she is
+ *  label map; it assumes the labeling conventions coded in cipConventions.h.
+ *  The user specifies the regions and types he/she is
  *  interested in.  All other regions/types are set to UNDEFINEDTYPE
  *  and UNDEFINEDREGION.  Given that regions are hierarchical, a region
  *  that is higher in the hierarchy will be preferred to one that is
  *  lower.  E.g., if the user specifies both WHOLELUNG and
  *  LEFTSUPERIORLOBE, the region in the LEFTSUPERIORLOBE will be defined as
  *  such, and WHOLELUNG will be used elsewhere.
+ *
+ *  Precedence will be as follows: types, regions, region-type pairs. In 
+ *  other words, if the user requests both LEFTLUNG and AIRWAY (not as a 
+ *  pair), then an AIRWAY voxel in the LEFTLUNG will be mapped to LEFTLUNG 
+ *  in the output. If the user additionally requests the AIRWAY, LEFTLUNG 
+ *  pair, then the entire voxel will be preserved.
  *
  *  Note that this filter is not templated.  This is to enforce the
  *  usage of unsigned shorts as the label map type.  

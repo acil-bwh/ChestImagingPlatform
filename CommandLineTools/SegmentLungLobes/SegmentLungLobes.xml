@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>SegmentLungLobes</title>
+  <description><![CDATA[This program reads a label map image (where the labels\
+  correspond to the conventions laid out cipChestConventions.h) as\
+  well as particles defining the lobe boundaries and produces a\
+  label map with the lung lobes identified. The input is assumed to\
+  have the left and right lungs uniquely labeled. The user can pass\
+  particles for the left lung only (left oblique fissure particles),\
+  right lung only (both right oblique and right horizontal fissure\
+  particles) or both. Thin plate splines are used to define the\
+  interpolation boundaries between the lobes. It is assumed that the\
+  input particles datasets are 'clean' in the sense that each\
+  particle corresponds to (or is very likely to correspond to) the\
+  fissure it represents.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>inLabelMapFileName</name>
+      <label>Input label map file name</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>--in</longflag>
+      <description><![CDATA[Input lung label map file name. Left and right lungs must be uniquely labeled.]]></description>
+      <default>NA</default>
+    </image>  
+
+    <image>
+      <name>outLabelMapFileName</name>
+      <label>Output label map file name</label>
+      <channel>input</channel>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
+      <default>NA</default>
+    </image>  
+
+    <string>
+      <name>loParticlesFileName</name>
+      <label>Left oblique particles file name</label>
+      <channel>input</channel>
+      <longflag>--loParticles</longflag>
+      <description><![CDATA[Left oblique particles file name. It's assumed that all particles are "highly likely" to \
+      represent the left oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
+      through these points to define the boundary between the lobes.]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>roParticlesFileName</name>
+      <label>Right oblique particles file name</label>
+      <channel>input</channel>
+      <longflag>--roParticles</longflag>
+      <description><![CDATA[Right oblique particles file name. It's assumed that all particles are "highly likely" to \
+      represent the right oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
+      through these points to define the boundary between the lobes.]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>rhParticlesFileName</name>
+      <label>Right horizontal particles file name</label>
+      <channel>input</channel>
+      <longflag>--rhParticles</longflag>
+      <description><![CDATA[Right horizontal particles file name. It's assumed that all particles are "highly likely" to \
+      represent the right horizontal fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
+      through these points to define the boundary between the lobes.]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>regionTypePointsFileName</name>
+      <label>Region and type points file</label>
+      <channel>input</channel>
+      <longflag>regionType</longflag>
+      <description><![CDATA[Region and type points file indicating a set of points that lying on the lobe boundaries. \
+      If specified, these points will be used in addition to any particle points supplied in order to form a full set of \
+      points along the lobe boundaries through which interpolating surfaces will be fit.]]></description>
+      <default>NA</default>
+    </string>  
+  </parameters>
+
+  <parameters>
+    <double>
+      <name>lambda</name>
+      <flag>l</flag>
+      <longflag>lambda</longflag>
+      <description>Thin plate spline smoothing parameter.</description>
+      <label>Lambda</label>
+      <default>0.1</default>
+    </double>
+  </parameters>
+</executable>
