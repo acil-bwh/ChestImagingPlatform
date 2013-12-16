@@ -112,12 +112,13 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
     """
     
     #compute feature vectors for left and right lungs
-    ### replace with likelihood params for class 0.
+    ### TODO: replace with likelihood params for class 0.
 
 
     length  = np.shape(probabilistic_atlases[0])[0]
     width = np.shape(probabilistic_atlases[0])[1]
     
+    #Define lung area to segment
     lungPrior = probabilistic_atlases[0] + probabilistic_atlases[1]
     zero_indeces_thresholding = lungPrior < 0.35 
     lungPriorSlicedialated = lungPrior
@@ -132,7 +133,9 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
       structure=None, output=lungPriorSlicedialated, origin=0)
     tozero_indeces_intensities = lungPriorSlicedialated < 1
     
-    #compute distance using opposite atlas binary map. Assumption
+    
+    
+    #compute distance using opposite atlas binary map for the likelihood
     zero_indeces_ll = probabilistic_atlases[0] < 0.5
     leftLungPriorthres = np.ones((length, width,np.shape( \
       probabilistic_atlases[0])[2])).astype(np.float)
@@ -177,10 +180,28 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
     #  self.weights[d]*self.feature_map.get_mapped_feature_vec_element(d))
     #exponential_density = np.exp(-self.lamda*accum)*self.lamda
     
+    #left_weights_temp = [0.002149, -0.002069, 5.258745] 
+    #l_alpha_est_right=[0.001241, -0.025153, 4.609616]      
+    #l_alpha_est_non=[-0.001929, 0.010123, 3.937502]  
+    #
+    #
+    #right_weights_temp = [0.002149, -0.002069, 5.258745]
+    #r_alpha_est_left=[0.001241, -0.025153, 4.609616]
+    #r_alpha_est_non=[-0.001929, 0.010123, 3.937502]
     
-    l_alpha_est_non=[-0.001929, 0.010123, 3.937502]  
-    r_alpha_est_non=[-0.001929, 0.010123, 3.937502]      
-    left_weights_temp = [0.002149, -0.002069, 5.258745]
+    left_weights_temp=[0.000528, 0.006902, 3.084423]
+    l_alpha_est_right=[-0.000031, -0.009310, 2.708189]
+    l_alpha_est_non=[-0.001143, 0.002767, 3.676742]
+
+    right_weights_temp=[0.000528, 0.006902, 3.084423]
+    r_alpha_est_left=[-0.000031, -0.009310, 2.708189]
+    r_alpha_est_non=[-0.001143, 0.002767, 3.676742]    
+    
+    #r_alpha_est_left=[0.001346, -0.079930, 5.476841]
+    #right_weights_temp=[0.000822, 0.078177, 3.126748]
+    #r_alpha_est_non=[-0.001129, -0.032634, 4.296709]
+    
+    
     left_weights = [left_weights_temp[2]*left_weights_temp[2], \
                    2*left_weights_temp[0]*left_weights_temp[2], \
                     2*left_weights_temp[1]*left_weights_temp[2], \
@@ -193,7 +214,7 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
        left_polynomial_feature_map, left_lambda)
     left_likelihood = left_weighted_density.compute()
     
-    l_alpha_est_right=[0.001241, -0.025153, 4.609616]
+    
 
     left_weights_given_right = [l_alpha_est_right[2]*l_alpha_est_right[2], \
                     2*l_alpha_est_right[0]*l_alpha_est_right[2], \
@@ -218,7 +239,7 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
     LdIgivenNlung = left_given_nonlung_weighted_density.compute()
     
     
-    right_weights_temp = [0.002149, -0.002069, 5.258745]
+    
     right_weights = [right_weights_temp[2]*right_weights_temp[2], \
                     2*right_weights_temp[0]*right_weights_temp[2], \
                     2*right_weights_temp[1]*right_weights_temp[2], \
@@ -231,7 +252,7 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
            right_polynomial_feature_map, right_lambda)
     right_likelihood = right_weighted_density.compute()
     
-    r_alpha_est_left=[0.001241, -0.025153, 4.609616]
+    
     right_weights_given_left = [r_alpha_est_left[2]*r_alpha_est_left[2], \
                     2*r_alpha_est_left[0]*r_alpha_est_left[2], \
                     2*r_alpha_est_left[1]*r_alpha_est_left[2], \

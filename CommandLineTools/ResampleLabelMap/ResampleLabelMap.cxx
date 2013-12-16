@@ -47,12 +47,15 @@
 #include "itkResampleImageFilter.h"
 #include "itkMetaImageIO.h"
 #include "ResampleLabelMapCLP.h"
+#include <itkCompositeTransform.h>
+
 
 namespace
 {
 typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >  InterpolatorType;
 typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >           ResampleType;
 typedef itk::AffineTransform< double, 3 >                                          TransformType;
+    typedef itk::CompositeTransform< double, 3 >                                   CompositeTransformType;
 
 //TransformType::Pointer GetTransformFromFile( std::string );
 
@@ -138,18 +141,39 @@ int main( int argc, char *argv[] )
   //
   // Read the transform
   //
-  std::cout << "Reading label map image..." << std::endl;
+   
+    // good for non-composite
+    /*
   TransformType::Pointer transform = GetTransformFromFile( transformFileName );
 
   //
   // Invert the transformation if specified by command like argument
-  //
-  if (isInvertTransformation == true)
+   if (isInvertTransformation == true)
     {
       std::cout<<"inverting transform"<<std::endl;
        transform->GetInverse( transform );
     }
-  
+  */
+    
+    //last transform applied first, so make last transform
+    CompositeTransformType::Pointer transform = CompositeTransformType::New();
+    TransformType::Pointer transformTemp2 = TransformType::New();
+    for ( unsigned int i=0; i<transformFileName.size(); i++ )
+    { std::cout<<"adding tx: "<<i<<std::endl;
+        TransformType::Pointer transformTemp = TransformType::New();
+        transformTemp = GetTransformFromFile((transformFileName[i]).c_str() );
+        // Invert the transformation if specified by command like argument. Only inverting the first transformation
+
+        if((i==0)&& (isInvertTransformation == true))
+        {
+            std::cout<<"inverting transform"<<std::endl;
+            transformTemp->GetInverse( transformTemp );
+        }
+        transform->AddTransform(transformTemp);
+    }
+    
+    transform->SetAllTransformsToOptimizeOn();		
+
   //
   // Resample the label map
   //

@@ -20,16 +20,16 @@
       <longflag>--labelMapFile</longflag>
       <description><![CDATA[Label map file name to resample]]></description>
       <default>q</default>
-    </string>   
-    <string>
-      <name>transformFileName</name>
-      <label>Transform Filename</label>
-      <channel>input</channel>
-      <flag>t</flag>
-      <longflag>--transformFile</longflag>
-      <description><![CDATA[Transform file name]]></description>
-      <default>q</default>
     </string>
+    <string-vector>
+        <name>transformFileName</name>
+        <label>input Transform FileNames</label>
+        <channel>input</channel>
+        <flag>t</flag>
+        <longflag>--inputTransform</longflag>
+        <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
+        <default>q</default>
+    </string-vector>
     <string>
       <name>resampledFileName</name>
       <label>resampled Filename</label>
