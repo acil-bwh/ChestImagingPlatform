@@ -94,6 +94,8 @@ struct REGISTRATION_XML_DATA
   std::string sourceID;
   std::string destID;
   std::string similarityMeasure;
+  std::string image_type;
+  int transformationIndex;
 };
 
 void WriteTransformFile( TransformType::Pointer transform, char* fileName )
@@ -147,7 +149,7 @@ void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA
   xmlDocSetRootElement(doc, root_node);
 
   dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST
-"RegistrationOutput_v1.dtd");
+"RegistrationOutput_v2.dtd");
 
   //ID: attribute
   /* uuid not working on cluster
@@ -179,8 +181,15 @@ void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA
   std::ostringstream similaritString;
   //std::string tempsource;
   similaritString <<theXMLData.similarityValue;
+  std::ostringstream transformationIndexString;    
+  transformationIndexString <<theXMLData.transformationIndex;
+    
+  xmlNewChild(root_node, NULL, BAD_CAST "image_type", BAD_CAST
+                (theXMLData.image_type.c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST
 (theXMLData.transformationLink.c_str()));
+  xmlNewChild(root_node, NULL, BAD_CAST "transformation_index", BAD_CAST
+                (transformationIndexString.str().c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "movingID", BAD_CAST
 (theXMLData.sourceID.c_str()));
   xmlNewChild(root_node, NULL, BAD_CAST "fixedID", BAD_CAST
@@ -445,6 +454,13 @@ std::endl;
     labelMapRegistrationXMLData.similarityValue = (float)(bestValue);
     const char *similarity_type = metric->GetNameOfClass();
     labelMapRegistrationXMLData.similarityMeasure.assign(similarity_type);
+        
+    labelMapRegistrationXMLData.image_type.assign("leftLungRightLung");
+    labelMapRegistrationXMLData.transformationIndex = 0;
+        
+    // TODO: See if xml file is empty and change the transformation
+    // index accordingly
+        
     //if the patient IDs are specified  as args, use them,
     //otherwise, extract from patient path
 
