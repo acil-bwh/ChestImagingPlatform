@@ -33,6 +33,8 @@ public:
 private:
   static void undefinedRegionMenuItem_CB( Fl_Widget* o, void* v );
   void undefinedRegionMenuItem_CB_i();
+  static void wholeLungMenuItem_CB( Fl_Widget* o, void* v );
+  void wholeLungMenuItem_CB_i();
   static void airwayMenuItem_CB( Fl_Widget* o, void* v );
   void airwayMenuItem_CB_i();
 };
