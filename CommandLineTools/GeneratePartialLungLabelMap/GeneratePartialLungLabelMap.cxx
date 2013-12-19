@@ -4,10 +4,11 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkMedianImageFilter.h"
 #include "itkCIPPartialLungLabelMapImageFilter.h"
-#include "cipConventions.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
+#include "cipConventions.h"
+//#include "GeneratePartialLungLabelMapCLP.h"
 
 typedef itk::Image< unsigned short, 3 >                           UShortImageType;
 typedef itk::Image< short, 3 >                                    ShortImageType;
@@ -15,18 +16,16 @@ typedef itk::ImageFileReader< UShortImageType >                   UShortReaderTy
 typedef itk::ImageFileReader< ShortImageType >                    ShortReaderType;
 typedef itk::ImageFileWriter< UShortImageType >                   UShortWriterType;
 typedef itk::ImageRegionIteratorWithIndex< ShortImageType >       ShortIteratorType;
-//typedef itk::CIPPartialLungLabelMapImageFilter< ShortImageType >  PartialLungType;
+typedef itk::ImageRegionIteratorWithIndex< UShortImageType >      UShortIteratorType;
+typedef itk::PartialLungLabelMapImageFilter< ShortImageType >     PartialLungType;
 typedef itk::GDCMImageIO                                          ImageIOType;
 typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
 typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
-
-
 
 void LowerClipImage( ShortImageType::Pointer, short, short );
 void UpperClipImage( ShortImageType::Pointer, short, short );
 ShortImageType::Pointer ReadCTFromDirectory( char* );
 ShortImageType::Pointer ReadCTFromFile( char*  );
-
 
 void usage()
 {
@@ -53,15 +52,11 @@ void usage()
   std::cerr << "   <-ir>    Max airway volume increase rate (default is 2.0). This is passed to the\n";
   std::cerr << "            partial lung label map filter. Decrease this value if you see leakage\n";  
   std::cerr << "   <-min>   Minimum airway volume \n";
-  std::cerr << "   <-max>   Maximum airway volume \n";
   std::cerr << "   <-hf>    Set to 1 if the scan is head first (default) and 0 if feet first\n";
   std::cerr << "   <-hm>    Helper mask file name. This mask is a simple mask (typically binary with 1 as foreground)\n";
   std::cerr << "            such that the lung region is well thresholded and the lungs are separated. The\n";
   std::cerr << "            airways are assumed to be foregournd\n";
-  std::cerr << "   <-thr>   Lung Threshold for Binary Threshold filter used instead of Otsu if Otsu gives incorrect result\n";
-  std::cerr << "   <-sthr>  Standard deviation value to check if Otsu gives correct threhold, i.e. between Lung Threshold +/-std \n";
-  std::cerr << "   <-pvmax> Max. Percentage of airway volume to total lung volume + airways volume.  \n";
-  std::cerr << "   <-pvmin> Min. Percentage of airway volume to total lung volume + airways volume.  \n";
+
 
   exit(1);
 }
@@ -77,8 +72,8 @@ int main( int argc, char *argv[] )
   char*    helperMaskFileName            = new char[512];  strcpy( helperMaskFileName, "q" );
   char*    ctFileName                    = new char[512];  strcpy( ctFileName, "q" );
   char*    ctDir                         = new char[512];  strcpy( ctDir, "q" );
-  short    lowerClipValue                = -1025;
-  short    lowerReplacementValue         = 1024;
+  short    lowerClipValue                = -1024;
+  short    lowerReplacementValue         = -1024;
   short    upperClipValue                = 1024;
   short    upperReplacementValue         = 1024;
   double   closingRadius                 = 5.0;
@@ -88,10 +83,7 @@ int main( int argc, char *argv[] )
   double   airwayVolumeIncreaseRate      = 2.0;
   double   minAirwayVolume               = 0.0;
   double   maxAirwayVolume               = 50.0;
-  short    manualThreshold               = -400;
-  short    stdLungThreshold              = 50;
-  double   maxVolPercentAirway           = 0.013;
-  double   minVolPercentAirway           = 0.010;
+
   while ( argc > 1 )
     {
     ok = false;
@@ -237,42 +229,7 @@ int main( int argc, char *argv[] )
 
       argc--; argv++;
       }
-    
-    if ((ok == false) && (strcmp(argv[1], "-thr") == 0))
-          {
-          argc--; argv++;
-          ok = true;
 
-          manualThreshold = static_cast< short >( atoi(argv[1]));
-
-          argc--; argv++;
-          }
-    
-    if ((ok == false) && (strcmp(argv[1], "-sthr") == 0))
-          {
-          argc--; argv++;
-          ok = true;
-
-          stdLungThreshold = static_cast< short >( atoi(argv[1]));
-
-          argc--; argv++;
-          }
-    if ((ok == false) && (strcmp(argv[1], "-pvmax") == 0))
-         {
-         argc--; argv++;
-         ok = true;
-
-         maxVolPercentAirway= static_cast< double >( atof(argv[1]));
-         argc--; argv++;
-         }
-    if ((ok == false) && (strcmp(argv[1], "-pvmin") == 0))
-         {
-         argc--; argv++;
-         ok = true;
-
-         minVolPercentAirway= static_cast< double >( atof(argv[1]));
-         argc--; argv++;
-         }
     }
 
   //
@@ -311,12 +268,11 @@ int main( int argc, char *argv[] )
   std::cout << "Clipping low CT image values..." << std::endl;
   LowerClipImage( ctImage, lowerClipValue, lowerReplacementValue );
 
-  //std::cout << "Clipping low CT image values (enforcing -1024 lower bound)..." << std::endl;
-  //LowerClipImage( ctImage, -1024, -1024 );
+  std::cout << "Clipping low CT image values (enforcing -1024 lower bound)..." << std::endl;
+  LowerClipImage( ctImage, -1024, -1024 );
 
   std::cout << "Clipping upper CT image values..." << std::endl;
   UpperClipImage( ctImage, upperClipValue, upperReplacementValue );
-  
 
   {
   ShortImageType::SizeType medianRadius;
@@ -324,8 +280,7 @@ int main( int argc, char *argv[] )
     medianRadius[1] = 1;
     medianRadius[2] = 1;
 
-
- std::cout << "Executing median filter..." << std::endl;
+  std::cout << "Executing median filter..." << std::endl;
   MedianType::Pointer median = MedianType::New();
     median->SetInput( ctImage );
     median->SetRadius( medianRadius );
@@ -343,72 +298,117 @@ int main( int argc, char *argv[] )
     ++gIt;
     ++mIt;
     }
-    
-    
   }
-  
-  // std::cout << "Executing partial lung filter..." << std::endl;
-  // PartialLungType::Pointer partialLungFilter = PartialLungType::New();
-  //   partialLungFilter->SetInput( ctImage );
-  // if ( aggressiveLungSplitting == 1 )
-  //   {
-  //   partialLungFilter->SetAggressiveLeftRightSplitter( true );
-  //   }
-  // if ( headFirst == 1 )
-  //   {
-  //   partialLungFilter->SetHeadFirst( true );
-  //   }
-  // else
-  //   {
-  //   partialLungFilter->SetHeadFirst( false );
-  //   }
-  //   partialLungFilter->SetMaxAirwayVolumeIncreaseRate( airwayVolumeIncreaseRate );
-  //   partialLungFilter->SetLeftRightLungSplitRadius( lungSplitRadius );
-  //   partialLungFilter->SetMinAirwayVolume( minAirwayVolume );
-  //   partialLungFilter->SetMaxAirwayVolume( maxAirwayVolume );
-  //   partialLungFilter->SetClosingNeighborhood( closingNeighborhood );
-  //   partialLungFilter->SetManualThreshold( manualThreshold );
-  //   partialLungFilter->SetStdLungThreshold( stdLungThreshold );
-  //   partialLungFilter->SetMinVolPercentAirway( minVolPercentAirway);
-  //   partialLungFilter->SetMaxVolPercentAirway( maxVolPercentAirway);
-  // //
-  // // Read the helper mask if specified
-  // //
-  // if ( strcmp( helperMaskFileName, "q") != 0 )
-  //   {
-  //   std::cout << "Reading helper mask..." << std::endl;
-  //   UShortReaderType::Pointer helperReader = UShortReaderType::New();
-  //     helperReader->SetFileName( helperMaskFileName );
-  //   try
-  //     {
-  //     helperReader->Update();
-  //     }
-  //   catch ( itk::ExceptionObject &excp )
-  //     {
-  //     std::cerr << "Exception caught reading helper mask:";
-  //     std::cerr << excp << std::endl;
-  //     }
-  //   partialLungFilter->SetHelperMask( helperReader->GetOutput() );
-  //   }
-  //   partialLungFilter->Update();
 
-  // std::cout << "Writing lung mask image..." << std::endl;
-  // UShortWriterType::Pointer maskWriter = UShortWriterType::New(); 
-  //   maskWriter->SetInput( partialLungFilter->GetOutput() );
-  //   maskWriter->SetFileName( outputLungMaskFileName );
-  //   maskWriter->UseCompressionOn();
-  // try
-  //   {
-  //   maskWriter->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught while writing lung mask:";
-  //   std::cerr << excp << std::endl;
-  //   }
+  std::cout << "Executing partial lung filter..." << std::endl;
+  PartialLungType::Pointer partialLungFilter = PartialLungType::New();
+    partialLungFilter->SetInput( ctImage );
+  if ( aggressiveLungSplitting == 1 )
+    {
+    partialLungFilter->SetAggressiveLeftRightSplitter( true );
+    }
+  if ( headFirst == 1 )
+    {
+    partialLungFilter->SetHeadFirst( true );
+    }
+  else
+    {
+    partialLungFilter->SetHeadFirst( false );
+    }
+    partialLungFilter->SetMaxAirwayVolumeIncreaseRate( airwayVolumeIncreaseRate );
+    partialLungFilter->SetLeftRightLungSplitRadius( lungSplitRadius );
+    partialLungFilter->SetMinAirwayVolume( minAirwayVolume );
+    partialLungFilter->SetMaxAirwayVolume( maxAirwayVolume );
+    partialLungFilter->SetClosingNeighborhood( closingNeighborhood );
+  //
+  // Read the helper mask if specified
+  //
+  if ( strcmp( helperMaskFileName, "q") != 0 )
+    {
+    std::cout << "Reading helper mask..." << std::endl;
+    UShortReaderType::Pointer helperReader = UShortReaderType::New();
+      helperReader->SetFileName( helperMaskFileName );
+    try
+      {
+      helperReader->Update();
+      }
+    catch ( itk::ExceptionObject &excp )
+      {
+      std::cerr << "Exception caught reading helper mask:";
+      std::cerr << excp << std::endl;
+      }
+    partialLungFilter->SetHelperMask( helperReader->GetOutput() );
+    }
+    partialLungFilter->Update();
 
-  std::cout << "DONE." << std::endl; 
-  
+  // Before writing, label by thirds. Here we are only concerned about upper, middle, 
+  // and lower, regardless of left right.
+  cip::ChestConventions conventions;
+  unsigned int totVoxels = 0;
+
+  UShortIteratorType lIt( partialLungFilter->GetOutput(), partialLungFilter->GetOutput()->GetBufferedRegion() );
+
+  lIt.GoToBegin();
+  while ( !lIt.IsAtEnd() )
+    {
+      if ( lIt.Get() != 0 )
+	{
+	  if ( conventions.GetChestRegionFromValue( lIt.Get() ) > 0 )
+	    {
+	      totVoxels++;
+	    }
+	}
+
+      ++lIt;
+    }
+
+  unsigned int inc = 0;
+
+  lIt.GoToBegin();
+  while ( !lIt.IsAtEnd() )
+    {
+      if ( lIt.Get() != 0 )
+	{
+	  unsigned char cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
+	  unsigned char cipType   = conventions.GetChestTypeFromValue( lIt.Get() );
+	  if ( cipRegion > 0 )
+	    {
+	      inc++;
+
+	      if ( double(inc)/double(totVoxels) < 1.0/3.0 )
+		{
+		  lIt.Set( conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::LOWERTHIRD), cipType ) );
+		}
+	      else if ( double(inc)/double(totVoxels) < 2.0/3.0 )
+		{
+		  lIt.Set( conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::MIDDLETHIRD), cipType ) );
+		}
+	      else 
+		{
+		  lIt.Set( conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::UPPERTHIRD), cipType ) );
+		}
+	    }
+	}      
+
+      ++lIt;
+    }
+
+  std::cout << "Writing lung mask image..." << std::endl;
+  UShortWriterType::Pointer maskWriter = UShortWriterType::New(); 
+    maskWriter->SetInput( partialLungFilter->GetOutput() );
+    maskWriter->SetFileName( outputLungMaskFileName );
+    maskWriter->UseCompressionOn();
+  try
+    {
+    maskWriter->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught while writing lung mask:";
+    std::cerr << excp << std::endl;
+    }
+
+  std::cout << "DONE." << std::endl;
 
   return 0;
 }
