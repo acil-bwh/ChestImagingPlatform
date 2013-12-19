@@ -117,7 +117,7 @@ private:
 
   std::vector< OutputImageType::IndexType > m_SeedVec;
 
-  cip::ChestConventions  m_LungConventions;
+  cip::ChestConventions  m_ChestConventions;
   double                 m_MinAirwayVolume;
   double                 m_MaxAirwayVolume;
   double                 m_MaxAirwayVolumeIncreaseRate;

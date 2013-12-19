@@ -25,7 +25,7 @@
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"
-#include "itkExtractLungLabelMapImageFilter.h"
+#include "itkCIPExtractChestLabelMapImageFilter.h"
 
 
 namespace itk
@@ -129,7 +129,7 @@ protected:
   typedef itk::BinaryThresholdImageFilter< LabelMapSliceType, LabelMapSliceType >                Threshold2DType;
   typedef itk::BinaryErodeImageFilter< LabelMapType, LabelMapType, Element3DType >               Erode3DType;
   typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType >                   AirwaySegmentationType;
-  typedef itk::ExtractLungLabelMapImageFilter                                                    ExtractLabelMapType;
+  typedef itk::CIPExtractChestLabelMapImageFilter                                                ExtractLabelMapType;
 
   CIPWholeLungVesselAndAirwaySegmentationImageFilter();
   virtual ~CIPWholeLungVesselAndAirwaySegmentationImageFilter() {}
@@ -154,11 +154,11 @@ private:
 
   LabelMapType::Pointer m_AirwayLabelMap;
 
-  LungConventions  m_LungConventions;
-  bool             m_HeadFirst;
-  unsigned long    m_ClosingNeighborhood[3];
-  double           m_MinAirwayVolume;
-  double           m_MaxAirwayVolumeIncreaseRate; 
+  cip::ChestConventions  m_LungConventions;
+  bool                   m_HeadFirst;
+  unsigned long          m_ClosingNeighborhood[3];
+  double                 m_MinAirwayVolume;
+  double                 m_MaxAirwayVolumeIncreaseRate; 
 
 };
   

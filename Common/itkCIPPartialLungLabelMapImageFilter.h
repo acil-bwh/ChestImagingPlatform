@@ -5,8 +5,8 @@
 #include "itkImage.h"
 #include "cipConventions.h"
 #include "itkCIPWholeLungVesselAndAirwaySegmentationImageFilter.h"
-#include "itkSplitLeftAndRightLungsImageFilter.h"
-#include "itkLabelLungRegionsImageFilter.h"
+#include "itkCIPSplitLeftLungRightLungImageFilter.h"
+#include "itkCIPLabelLungRegionsImageFilter.h"
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"
 #include "itkOtsuThresholdImageFilter.h"
 #include "itkConnectedComponentImageFilter.h"
@@ -170,9 +170,9 @@ protected:
   typedef typename itk::Image< LabelMapPixelType, 2 >                                 LabelMapSliceType;
   typedef itk::ImageRegionIteratorWithIndex< LabelMapSliceType >                      LabelMapSliceIteratorType;
   typedef itk::Image< LabelMapPixelType, 3 >                                          LabelMapType;
-  typedef itk::WholeLungVesselAndAirwaySegmentationImageFilter< InputImageType >      WholeLungVesselAndAirwayType;
-  typedef itk::SplitLeftAndRightLungsImageFilter< InputImageType >                    SplitterType;
-  typedef itk::LabelLungRegionsImageFilter                                            LungRegionLabelerType;
+  typedef itk::CIPWholeLungVesselAndAirwaySegmentationImageFilter< InputImageType >   WholeLungVesselAndAirwayType;
+  typedef itk::CIPSplitLeftLungRightLungImageFilter< InputImageType >                 SplitterType;
+  typedef itk::CIPLabelLungRegionsImageFilter                                         LungRegionLabelerType;
   typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType >        AirwaySegmentationType;
   typedef itk::OtsuThresholdImageFilter< InputImageType, OutputImageType >            OtsuThresholdType;
   typedef itk::BinaryThresholdImageFilter< InputImageType, OutputImageType >          BinaryThresholdType;

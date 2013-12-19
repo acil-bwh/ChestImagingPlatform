@@ -12,7 +12,6 @@
 
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"
 
-
 namespace itk
 {
 
@@ -44,7 +43,7 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 
   this->Test();
 
-//   unsigned short airwayLabel = this->m_LungConventions.GetValueFromLungRegionAndType( UNDEFINEDREGION, AIRWAY );
+//   unsigned short airwayLabel = this->m_ChestConventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAY );
 
 //   typename InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
 
@@ -211,7 +210,7 @@ void
 CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 ::Test()
 {
-  unsigned short airwayLabel = this->m_LungConventions.GetValueFromLungRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAY );
+  unsigned short airwayLabel = this->m_ChestConventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAY );
 
   typename InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
 

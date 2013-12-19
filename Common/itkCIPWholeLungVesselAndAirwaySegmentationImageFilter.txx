@@ -64,7 +64,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
       {
       if ( aIt.Get() != 0 )
         {
-        this->SetLungType( oIt.GetIndex(), static_cast< unsigned char >( AIRWAY ) );
+        this->SetLungType( oIt.GetIndex(), static_cast< unsigned char >( cip::AIRWAY ) );
 
         this->m_AirwayIndexVec.push_back( oIt.GetIndex() );
         }
@@ -84,7 +84,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
       {
       if ( aIt.Get() != 0 )
         {
-        this->SetLungType( oIt.GetIndex(), static_cast< unsigned char >( AIRWAY ) );
+        this->SetLungType( oIt.GetIndex(), static_cast< unsigned char >( cip::AIRWAY ) );
 
         this->m_AirwayIndexVec.push_back( oIt.GetIndex() );
         }
@@ -228,7 +228,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
     {
     if ( rIt.Get() == lungHalf1Label || rIt.Get() == lungHalf2Label )
       {
-      mIt.Set( WHOLELUNG );
+      mIt.Set( cip::WHOLELUNG );
       }
     else 
       {
@@ -263,7 +263,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   //
   for ( unsigned int i=0; i<this->m_AirwayIndexVec.size(); i++ )
     {
-    this->SetLungType( this->m_AirwayIndexVec[i], UNDEFINEDTYPE );
+    this->SetLungType( this->m_AirwayIndexVec[i], cip::UNDEFINEDTYPE );
     }
 
   //
@@ -280,7 +280,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   typename Dilate3DType::Pointer dilater = Dilate3DType::New();
     dilater->SetInput( this->GetOutput() );
     dilater->SetKernel( structuringElement );
-    dilater->SetDilateValue( WHOLELUNG );
+    dilater->SetDilateValue( cip::WHOLELUNG );
   try
     {
     dilater->Update();
@@ -330,7 +330,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   typename Erode3DType::Pointer eroder = Erode3DType::New();
     eroder->SetInput( dilater->GetOutput() );
     eroder->SetKernel( structuringElement );
-    eroder->SetErodeValue( WHOLELUNG );
+    eroder->SetErodeValue( cip::WHOLELUNG );
   try
     {
     eroder->Update();
@@ -348,11 +348,11 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   mIt.GoToBegin();
   while ( !mIt.IsAtEnd() )
     {
-    if ( eIt.Get() == WHOLELUNG && mIt.Get() == 0 )
+    if ( eIt.Get() == cip::WHOLELUNG && mIt.Get() == 0 )
       {
       this->m_VesselIndexVec.push_back( eIt.GetIndex() );
-      this->SetLungType( eIt.GetIndex(), VESSEL );
-      this->SetLungRegion( eIt.GetIndex(), WHOLELUNG );
+      this->SetLungType( eIt.GetIndex(), cip::VESSEL );
+      this->SetLungRegion( eIt.GetIndex(), cip::WHOLELUNG );
       }
 
     ++eIt;
@@ -364,7 +364,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   //
   for ( unsigned int i=0; i<this->m_AirwayIndexVec.size(); i++ )
     {
-    this->SetLungType( this->m_AirwayIndexVec[i], AIRWAY );
+    this->SetLungType( this->m_AirwayIndexVec[i], cip::AIRWAY );
     }
 }
 
@@ -650,7 +650,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   LabelMapType::SizeType size = this->GetOutput()->GetBufferedRegion().GetSize();
   
   int elementRadius = 3;
-  unsigned short wholeLungAirwayValue = this->m_LungConventions.GetValueFromLungRegionAndType( WHOLELUNG, AIRWAY );
+  unsigned short wholeLungAirwayValue = this->m_LungConventions.GetValueFromLungRegionAndType( cip::WHOLELUNG, cip::AIRWAY );
 
   for ( unsigned int whichSlice = 0; whichSlice < size[2]; whichSlice++ )
     {
@@ -808,13 +808,13 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
         bool isPerimeter = false;
         bool touchingBackground = false;
 
-        for ( unsigned int x=(index[0]-1); x<=(index[0]+1); x++ )
+        for ( int x=int(index[0])-1; x<=(index[0]+1); x++ )
           {
           tempIndex[0] = x;
           
           if ( x >= 0 && x < size[0] )
             {
-            for ( unsigned int y=(index[1]-1); y<=(index[1]+1); y++ )
+            for ( int y=int(index[1])-1; y<=(index[1]+1); y++ )
               {
               tempIndex[1] = y;
               
@@ -825,7 +825,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
                   touchingBackground = true;
                   isPerimeter = true;
                   }
-                if ( this->GetOutput()->GetPixel( tempIndex ) == static_cast< OutputPixelType >( WHOLELUNG ) )
+                if ( this->GetOutput()->GetPixel( tempIndex ) == static_cast< OutputPixelType >( cip::WHOLELUNG ) )
                   {
                   isPerimeter = true;
                   }
@@ -936,7 +936,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   //
   ExtractLabelMapType::Pointer labelMapExtractor = ExtractLabelMapType::New();
     labelMapExtractor->SetInput( this->GetOutput() );
-    labelMapExtractor->SetLungRegion( static_cast< unsigned char >( WHOLELUNG ) );
+    labelMapExtractor->SetChestRegion( (unsigned char)( cip::WHOLELUNG ) );
     labelMapExtractor->Update();
 
   ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();

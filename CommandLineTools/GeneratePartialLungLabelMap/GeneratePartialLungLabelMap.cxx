@@ -17,7 +17,7 @@ typedef itk::ImageFileReader< ShortImageType >                    ShortReaderTyp
 typedef itk::ImageFileWriter< UShortImageType >                   UShortWriterType;
 typedef itk::ImageRegionIteratorWithIndex< ShortImageType >       ShortIteratorType;
 typedef itk::ImageRegionIteratorWithIndex< UShortImageType >      UShortIteratorType;
-typedef itk::PartialLungLabelMapImageFilter< ShortImageType >     PartialLungType;
+typedef itk::CIPPartialLungLabelMapImageFilter< ShortImageType >  PartialLungType;
 typedef itk::GDCMImageIO                                          ImageIOType;
 typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
 typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
