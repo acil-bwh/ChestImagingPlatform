@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
     <category>Chest Imaging Platform</category>
-    <title>CropLung</title>
+    <title>ReadDicomWriteTags</title>
     <description><![CDATA[This program reads a CT (DICOM) image, extracts tags of\
         interest and their values and then prints them file.]]>
     </description>

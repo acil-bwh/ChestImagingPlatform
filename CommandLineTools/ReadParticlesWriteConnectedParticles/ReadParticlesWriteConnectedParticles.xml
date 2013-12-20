@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform</category>
-  <title>ClassifyFissureParticles</title>
+  <title>ReadParticlesWriteConnectedParticles</title>
   <description><![CDATA[This program reads either an airway particles dataset or a \
   vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \
   topology on the particles points. The output polydata is equivalent to the input polydata \
