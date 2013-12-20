@@ -8,7 +8,7 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
 #include "cipConventions.h"
-//#include "GeneratePartialLungLabelMapCLP.h"
+#include "GeneratePartialLungLabelMapCLP.h"
 
 typedef itk::Image< unsigned short, 3 >                           UShortImageType;
 typedef itk::Image< short, 3 >                                    ShortImageType;
@@ -21,228 +21,28 @@ typedef itk::CIPPartialLungLabelMapImageFilter< ShortImageType >  PartialLungTyp
 typedef itk::GDCMImageIO                                          ImageIOType;
 typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
 typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
+typedef itk::MedianImageFilter< ShortImageType, ShortImageType > MedianType;
 
 void LowerClipImage( ShortImageType::Pointer, short, short );
 void UpperClipImage( ShortImageType::Pointer, short, short );
-ShortImageType::Pointer ReadCTFromDirectory( char* );
-ShortImageType::Pointer ReadCTFromFile( char*  );
-
-void usage()
-{
-  std::cerr << "\n";
-  std::cerr << "Usage: GeneratePartialLungLabelMap <options> where <options> is one or more " << std::endl;
-  std::cerr << "of the following:\n\n";
-  std::cerr << "   <-h>     Display (this) usage information\n";
-  std::cerr << "   <-ii>    Input CT image file name\n";
-  std::cerr << "   <-dir>   Input CT directory\n";
-  std::cerr << "   <-o>     Output image file name\n";
-  std::cerr << "   <-lcv>   Lower clip value applied to input image before segmentation. This flag\n";
-  std::cerr << "            should be followed by two values: the first value is the clip value and\n";
-  std::cerr << "            the second value is the replacement value (i.e., everything below the clip\n";
-  std::cerr << "            value will be assigned the replacement value)\n";
-  std::cerr << "   <-ucv>   Upper clip value applied to input image before segmentation. This flag\n";
-  std::cerr << "            should be followed by two values: the first value is the clip value and\n";
-  std::cerr << "            the second value is the replacement value (i.e., everything above the clip\n";
-  std::cerr << "            value will be assigned the replacement value)\n";
-  std::cerr << "   <-cr>    The radius used for morphological closing in physical units (mm). The structuring\n"; 
-  std::cerr << "            element is created so that the number of voxels in each direction covers no less\n";
-  std::cerr << "            than the specified amount\n";
-  std::cerr << "   <-agg>   Set to 1 for aggressive lung splitting.  Set to 0 (default) otherwise\n";
-  std::cerr << "   <-lsr>   Radius used to split the left and right lungs (3 by default)\n";
-  std::cerr << "   <-ir>    Max airway volume increase rate (default is 2.0). This is passed to the\n";
-  std::cerr << "            partial lung label map filter. Decrease this value if you see leakage\n";  
-  std::cerr << "   <-min>   Minimum airway volume \n";
-  std::cerr << "   <-hf>    Set to 1 if the scan is head first (default) and 0 if feet first\n";
-  std::cerr << "   <-hm>    Helper mask file name. This mask is a simple mask (typically binary with 1 as foreground)\n";
-  std::cerr << "            such that the lung region is well thresholded and the lungs are separated. The\n";
-  std::cerr << "            airways are assumed to be foregournd\n";
-
-
-  exit(1);
-}
-
+ShortImageType::Pointer ReadCTFromDirectory( std::string );
+ShortImageType::Pointer ReadCTFromFile( std::string );
 
 int main( int argc, char *argv[] )
 {
-  typedef itk::MedianImageFilter< ShortImageType, ShortImageType > MedianType;
-
-  bool ok;
-
-  char*    outputLungMaskFileName        = new char[512];  strcpy( outputLungMaskFileName, "q" );
-  char*    helperMaskFileName            = new char[512];  strcpy( helperMaskFileName, "q" );
-  char*    ctFileName                    = new char[512];  strcpy( ctFileName, "q" );
-  char*    ctDir                         = new char[512];  strcpy( ctDir, "q" );
-  short    lowerClipValue                = -1024;
-  short    lowerReplacementValue         = -1024;
-  short    upperClipValue                = 1024;
-  short    upperReplacementValue         = 1024;
-  double   closingRadius                 = 5.0;
-  int      aggressiveLungSplitting       = 0;
-  int      lungSplitRadius               = 3;
-  int      headFirst                     = 1;
-  double   airwayVolumeIncreaseRate      = 2.0;
-  double   minAirwayVolume               = 0.0;
-  double   maxAirwayVolume               = 50.0;
-
-  while ( argc > 1 )
-    {
-    ok = false;
-
-    if ((ok == false) && (strcmp(argv[1], "-h") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-      usage();      
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-hm") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      helperMaskFileName = argv[1];
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-hf") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      headFirst = atoi( argv[1] );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-min") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      minAirwayVolume = static_cast< double >( atof( argv[1] ) );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-max") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      maxAirwayVolume = static_cast< double >( atof( argv[1] ) );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-agg") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      aggressiveLungSplitting = atoi( argv[1] );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-ir") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      airwayVolumeIncreaseRate = static_cast< double >( atof( argv[1] ) );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-lsr") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      lungSplitRadius = atoi( argv[1] );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-dir") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      ctDir = argv[1];
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-cr") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      closingRadius = static_cast< double >( atof( argv[1] ) );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-ucv") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      upperClipValue        = static_cast< short >( atoi( argv[1] ) );
-      argc--; argv++;
-      upperReplacementValue = static_cast< short >( atoi( argv[1] ) );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-lcv") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      lowerClipValue        = static_cast< short >( atoi( argv[1] ) );
-      argc--; argv++;
-      lowerReplacementValue = static_cast< short >( atoi( argv[1] ) );
-
-      argc--; argv++;
-      }
-
-    if ((ok == false) && (strcmp(argv[1], "-ii") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      ctFileName = argv[1];
-
-      argc--; argv++;
-      }
-
-
-    if ((ok == false) && (strcmp(argv[1], "-o") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-
-      outputLungMaskFileName = argv[1];
-
-      argc--; argv++;
-      }
-
-    }
+  PARSE_ARGS;
 
   //
   // Read the CT image
   //
   ShortImageType::Pointer ctImage = ShortImageType::New();
 
-  if ( strcmp( ctDir, "q") != 0 )
+  if ( ctDir.compare("NA") != 0 )
     {
     std::cout << "Reading CT from directory..." << std::endl;
     ctImage = ReadCTFromDirectory( ctDir );
     }
-  else if ( strcmp( ctFileName, "q") != 0 )
+  else if ( ctFileName.compare("NA") != 0 )
     {
     std::cout << "Reading CT from file..." << std::endl;
     ctImage = ReadCTFromFile( ctFileName );
@@ -323,7 +123,7 @@ int main( int argc, char *argv[] )
   //
   // Read the helper mask if specified
   //
-  if ( strcmp( helperMaskFileName, "q") != 0 )
+  if ( helperMaskFileName.compare("NA") != 0 )
     {
     std::cout << "Reading helper mask..." << std::endl;
     UShortReaderType::Pointer helperReader = UShortReaderType::New();
@@ -448,7 +248,7 @@ void UpperClipImage( ShortImageType::Pointer image, short clipValue, short repla
 }
 
 
-ShortImageType::Pointer ReadCTFromDirectory( char* ctDir )
+ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
 {
   ImageIOType::Pointer gdcmIO = ImageIOType::New();
 
@@ -476,7 +276,7 @@ ShortImageType::Pointer ReadCTFromDirectory( char* ctDir )
 }
 
 
-ShortImageType::Pointer ReadCTFromFile( char* fileName )
+ShortImageType::Pointer ReadCTFromFile( std::string fileName )
 {
   ShortReaderType::Pointer reader = ShortReaderType::New();
     reader->SetFileName( fileName );
