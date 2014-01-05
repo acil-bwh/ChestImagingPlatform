@@ -12,7 +12,6 @@ Dependencies
 * boost (needed for airway generation labeling) 
 * teem 
 * FLTK (needed for ACILAssistant)
-* InsightApplications (needed for ACILAssistant)
 
 Information for Developers
 ==========================
