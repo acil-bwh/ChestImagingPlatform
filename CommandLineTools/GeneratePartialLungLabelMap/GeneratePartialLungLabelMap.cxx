@@ -30,16 +30,16 @@ ShortImageType::Pointer ReadCTFromFile( char*  );
 
 void usage()
 {
-  std::cerr << "\n";
-  std::cerr << "Usage: GeneratePartialLungLabelMap <options> where <options> is one or more " << std::endl;
-  std::cerr << "of the following:\n\n";
-  std::cerr << "   <-h>     Display (this) usage information\n";
-  std::cerr << "   <-ii>    Input CT image file name\n";
-  std::cerr << "   <-dir>   Input CT directory\n";
-  std::cerr << "   <-o>     Output image file name\n";
-  std::cerr << "   <-lcv>   Lower clip value applied to input image before segmentation. This flag\n";
-  std::cerr << "            should be followed by two values: the first value is the clip value and\n";
-  std::cerr << "            the second value is the replacement value (i.e., everything below the clip\n";
+  //std::cerr << "\n";
+  //std::cerr << "Usage: GeneratePartialLungLabelMap <options> where <options> is one or more " << std::endl;
+  //std::cerr << "of the following:\n\n";
+
+  //std::cerr << "   <-ii>    Input CT image file name\n";
+  //std::cerr << "   <-dir>   Input CT directory\n";
+  //std::cerr << "   <-o>     Output image file name\n";
+  //std::cerr << "   <-lcv>   Lower clip value applied to input image before segmentation. This flag\n";
+  //std::cerr << "            should be followed by two values: the first value is the clip value and\n";
+  //std::cerr << "            the second value is the replacement value (i.e., everything below the clip\n";
   std::cerr << "            value will be assigned the replacement value)\n";
   std::cerr << "   <-ucv>   Upper clip value applied to input image before segmentation. This flag\n";
   std::cerr << "            should be followed by two values: the first value is the clip value and\n";
@@ -55,9 +55,9 @@ void usage()
   std::cerr << "   <-min>   Minimum airway volume \n";
   std::cerr << "   <-max>   Maximum airway volume \n";
   std::cerr << "   <-hf>    Set to 1 if the scan is head first (default) and 0 if feet first\n";
-  std::cerr << "   <-hm>    Helper mask file name. This mask is a simple mask (typically binary with 1 as foreground)\n";
-  std::cerr << "            such that the lung region is well thresholded and the lungs are separated. The\n";
-  std::cerr << "            airways are assumed to be foregournd\n";
+  //std::cerr << "   <-hm>    Helper mask file name. This mask is a simple mask (typically binary with 1 as foreground)\n";
+  //std::cerr << "            such that the lung region is well thresholded and the lungs are separated. The\n";
+  //std::cerr << "            airways are assumed to be foregournd\n";
   std::cerr << "   <-thr>   Lung Threshold for Binary Threshold filter used instead of Otsu if Otsu gives incorrect result\n";
   std::cerr << "   <-sthr>  Standard deviation value to check if Otsu gives correct threhold, i.e. between Lung Threshold +/-std \n";
   std::cerr << "   <-pvmax> Max. Percentage of airway volume to total lung volume + airways volume.  \n";
@@ -73,11 +73,10 @@ int main( int argc, char *argv[] )
 
   bool ok;
 
-  char*    outputLungMaskFileName        = new char[512];  strcpy( outputLungMaskFileName, "q" );
-  char*    helperMaskFileName            = new char[512];  strcpy( helperMaskFileName, "q" );
-  char*    ctFileName                    = new char[512];  strcpy( ctFileName, "q" );
-  char*    ctDir                         = new char[512];  strcpy( ctDir, "q" );
-  short    lowerClipValue                = -1025;
+  //char*    outputLungMaskFileName        = new char[512];  strcpy( outputLungMaskFileName, "q" );
+  //char*    ctFileName                    = new char[512];  strcpy( ctFileName, "q" );
+  //char*    ctDir                         = new char[512];  strcpy( ctDir, "q" );
+  short    lowerClipValue                = (short)lowerClipValueTemp;
   short    lowerReplacementValue         = 1024;
   short    upperClipValue                = 1024;
   short    upperReplacementValue         = 1024;
@@ -96,12 +95,6 @@ int main( int argc, char *argv[] )
     {
     ok = false;
 
-    if ((ok == false) && (strcmp(argv[1], "-h") == 0))
-      {
-      argc--; argv++;
-      ok = true;
-      usage();      
-      }
 
     if ((ok == false) && (strcmp(argv[1], "-hm") == 0))
       {

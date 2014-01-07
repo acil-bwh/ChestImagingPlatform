@@ -180,22 +180,28 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases):
     #  self.weights[d]*self.feature_map.get_mapped_feature_vec_element(d))
     #exponential_density = np.exp(-self.lamda*accum)*self.lamda
     
-    #left_weights_temp = [0.002149, -0.002069, 5.258745] 
-    #l_alpha_est_right=[0.001241, -0.025153, 4.609616]      
-    #l_alpha_est_non=[-0.001929, 0.010123, 3.937502]  
+    left_weights_temp = [0.002149, -0.002069, 5.258745] 
+    l_alpha_est_right=[0.001241, -0.025153, 4.609616]      
+    l_alpha_est_non=[-0.001929, 0.010123, 3.937502]  
+    
+    
+    r_alpha_est_left=[0.002500, -0.095894, 6.786622]
+    right_weights_temp=[0.001245, 0.066628, 4.269774]
+    r_alpha_est_non=[-0.001433, -0.005590, 4.143140]
+
     #
     #
     #right_weights_temp = [0.002149, -0.002069, 5.258745]
     #r_alpha_est_left=[0.001241, -0.025153, 4.609616]
     #r_alpha_est_non=[-0.001929, 0.010123, 3.937502]
     
-    left_weights_temp=[0.000528, 0.006902, 3.084423]
-    l_alpha_est_right=[-0.000031, -0.009310, 2.708189]
-    l_alpha_est_non=[-0.001143, 0.002767, 3.676742]
+    #left_weights_temp=[0.000528, 0.006902, 3.084423]
+    #l_alpha_est_right=[-0.000031, -0.009310, 2.708189]
+    #l_alpha_est_non=[-0.001143, 0.002767, 3.676742]
 
-    right_weights_temp=[0.000528, 0.006902, 3.084423]
-    r_alpha_est_left=[-0.000031, -0.009310, 2.708189]
-    r_alpha_est_non=[-0.001143, 0.002767, 3.676742]    
+    #right_weights_temp=[0.000528, 0.006902, 3.084423]
+    #r_alpha_est_left=[-0.000031, -0.009310, 2.708189]
+    #r_alpha_est_non=[-0.001143, 0.002767, 3.676742]    
     
     #r_alpha_est_left=[0.001346, -0.079930, 5.476841]
     #right_weights_temp=[0.000822, 0.078177, 3.126748]
