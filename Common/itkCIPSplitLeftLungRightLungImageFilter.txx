@@ -1,13 +1,7 @@
-/**
- *  $Date: 2012-04-24 16:29:25 -0700 (Tue, 24 Apr 2012) $
- *  $Revision: 89 $
- *  $Author: jross $
- */
 #ifndef _itkCIPSplitLeftLungRightLungImageFilter_txx
 #define _itkCIPSplitLeftLungRightLungImageFilter_txx
 
 #include "itkCIPSplitLeftLungRightLungImageFilter.h"
-#include <limits>
 
 namespace itk
 {
@@ -16,13 +10,11 @@ template< class TInputImage >
 CIPSplitLeftLungRightLungImageFilter< TInputImage >
 ::CIPSplitLeftLungRightLungImageFilter()
 {
-  this->m_MinForegroundSlice          = std::numeric_limits<unsigned int>::max();
-  this->m_MaxForegroundSlice          = 0;
   this->m_ExponentialCoefficient      = 200;
   this->m_ExponentialTimeConstant     = -700;
   this->m_LeftRightLungSplitRadius    = 2;
   this->m_AggressiveLeftRightSplitter = false;
-  this->m_ChestLabelMap               = LabelMapType::New();
+  this->m_LungLabelMap                = LabelMapType::New();
 }
 
 
@@ -31,8 +23,6 @@ void
 CIPSplitLeftLungRightLungImageFilter< TInputImage >
 ::GenerateData()
 {
-  cip::ChestConventions conventions;
-
   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
@@ -41,356 +31,294 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     outputPtr->Allocate();
 
   //
-  // The input may already be split in which case we'll want to do
-  // nothing and just return the input.
+  // Fill the output image with the contents of the input image
   //
   LabelMapIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
-  LabelMapIteratorType lIt( this->m_ChestLabelMap, this->m_ChestLabelMap->GetBufferedRegion() );
+  LabelMapIteratorType lIt( this->m_LungLabelMap, this->m_LungLabelMap->GetBufferedRegion() );
 
-  if ( this->IsVolumeSplit( this->m_ChestLabelMap ) )
+  oIt.GoToBegin();
+  lIt.GoToBegin();
+  while ( !lIt.IsAtEnd() )
     {
-    oIt.GoToBegin();
-    lIt.GoToBegin();
-    while ( !lIt.IsAtEnd() )
-      {
-      oIt.Set( lIt.Get() );
+    oIt.Set( lIt.Get() );
 
-      ++oIt;
-      ++lIt;
+    ++oIt;
+    ++lIt;
+    }
+
+  LabelMapType::SizeType size = this->GetOutput()->GetBufferedRegion().GetSize();
+
+  int minX = size[0]/3;
+  int maxX = size[0]-size[0]/3;
+  int minY = 0;
+  int maxY = size[1]-1;
+
+  typename InputImageSliceType::IndexType searchStartIndex;
+  typename InputImageSliceType::IndexType searchEndIndex;
+
+  LabelMapType::IndexType index3D;
+
+  //
+  // We will keep track of the path indices used to split the
+  // previous slice. To insure that the left and right lungs are
+  // split in 3D, we will zero-out all label map points falling
+  // within the region between the path in the current slice and the
+  // path in the previous slice.
+  //
+  std::map< short, short > previousPathMap;
+
+  int previousMinY = size[1];
+  int previousMaxY = 0;
+
+  for ( unsigned int i=0; i<size[2]; i++ )
+    {
+    bool merged = this->GetLungsMergedInSliceRegion( size[0]/3, 0, size[0]/3, size[1], i ); 
+
+    index3D[2] = i;
+
+    if ( merged )
+      {
+      int numSplitAttempts = 0;
+      
+      while ( merged && numSplitAttempts < 3 )
+        {
+        numSplitAttempts++;
+        
+        typename InputImageType::SizeType roiSize;
+          roiSize[0] = maxX - minX + 20;
+
+        if ( maxX - minX + 20 < 0 )
+          {
+          roiSize[0] = 0;
+          }
+        if ( roiSize[0] > size[0] )
+          {
+          roiSize[0] = size[0];
+          }
+        
+        roiSize[1] = maxY - minY + 20;
+        if ( maxY - minY + 20 < 0 )
+          {
+          roiSize[1] = 0;
+          }
+        if ( roiSize[1] > size[1] )
+          {
+          roiSize[1] = size[1];
+          }
+
+        roiSize[2] = 0;
+        
+        typename InputImageType::IndexType roiStartIndex;
+          roiStartIndex[0] = minX - 10;
+        
+        if ( roiStartIndex[0] < 0 )
+          {
+          roiStartIndex[0] = 0;
+          }
+        
+        roiStartIndex[1] = minY - 10;
+        if ( roiStartIndex[1] < 0 )
+          {
+          roiStartIndex[1] = 0;
+          }
+        
+        roiStartIndex[2] = i;
+        
+        typename InputImageType::RegionType roiRegion;
+          roiRegion.SetSize( roiSize );
+          roiRegion.SetIndex( roiStartIndex );
+        
+        typename InputExtractorType::Pointer roiExtractor = InputExtractorType::New();
+          roiExtractor->SetInput( this->GetInput() );
+          roiExtractor->SetExtractionRegion( roiRegion );
+          roiExtractor->Update();
+
+        searchStartIndex[0] = roiStartIndex[0] + roiSize[0]/2;
+        searchStartIndex[1] = roiStartIndex[1];
+        
+        searchEndIndex[0] = roiStartIndex[0] + roiSize[0]/2;
+        searchEndIndex[1] = roiStartIndex[1] + roiSize[1] - 1;
+
+        //
+        // Set the startIndex to the the top-center of the ROI and the
+        // endIndex to be the bottom-center of the ROI
+        //
+        std::vector< LabelMapSliceType::IndexType > pathIndices = this->GetMinCostPath( roiExtractor->GetOutput(), searchStartIndex, searchEndIndex );
+        
+        minX = size[0];
+        maxX = 0;
+        minY = size[1];
+        maxY = 0;
+        
+        bool foundMinMax = false;
+        for ( unsigned int j=0; j<pathIndices.size(); j++ )
+          {
+          index3D[0] = (pathIndices[j])[0];
+          index3D[1] = (pathIndices[j])[1];
+          
+          if ( this->GetOutput()->GetPixel( index3D ) !=0 )
+            {
+            foundMinMax = true;
+            
+            if ( index3D[0] < minX )
+              {
+              minX = index3D[0];
+              }
+            if ( index3D[0] > maxX )
+              {
+              maxX = index3D[0];
+              }
+            if ( index3D[1] < minY )
+              {
+              minY = index3D[1];
+              }
+            if ( index3D[1] > maxY )
+              {
+              maxY = index3D[1];
+              }
+            }          
+          }
+        
+        if ( !foundMinMax || this->m_AggressiveLeftRightSplitter )
+          {
+          minX = size[0]/3;
+          maxX = size[0]-size[0]/3;
+          minY = 0;
+          maxY = size[1]-1;
+          }
+        
+        for ( unsigned int j=0; j<pathIndices.size(); j++ )
+          {
+          LabelMapType::IndexType tempIndex;
+            tempIndex[2] = i;
+
+          int currentX  = (pathIndices[j])[0];
+          int currentY  = (pathIndices[j])[1];
+
+          int startX = currentX - this->m_LeftRightLungSplitRadius;
+          int endX   = currentX + this->m_LeftRightLungSplitRadius;
+
+          if ( previousPathMap.size() > 0 )
+            {
+            if ( currentY >= previousMinY && currentY <= previousMaxY )
+              {
+              //
+              // Determine the extent in the x-direction to zero-out
+              //
+              int previousX = previousPathMap[(pathIndices[j])[1]];
+              
+              if ( previousX - currentX < 0 )
+                {
+                startX = previousX - this->m_LeftRightLungSplitRadius;
+                endX   = currentX  + this->m_LeftRightLungSplitRadius;
+                }
+              else 
+                {
+                startX = currentX  - this->m_LeftRightLungSplitRadius;
+                endX   = previousX + this->m_LeftRightLungSplitRadius;
+                }                
+              }
+            }
+
+          tempIndex[1] = (pathIndices[j])[1];
+          for ( int x=startX; x<=endX; x++ )
+            {
+            tempIndex[0] = x;
+
+            if ( this->GetOutput()->GetBufferedRegion().IsInside( tempIndex ) )
+              {
+              if ( this->GetOutput()->GetPixel( tempIndex ) != 0 )
+                {
+                this->m_RemovedIndices.push_back( tempIndex );
+                }
+              this->GetOutput()->SetPixel( tempIndex, 0 );
+              }
+            }
+
+          for ( int y=-this->m_LeftRightLungSplitRadius; y<=this->m_LeftRightLungSplitRadius; y++ )
+            {
+            tempIndex[1] = (pathIndices[j])[1] + y;            
+
+            for ( int x=-this->m_LeftRightLungSplitRadius; x<=this->m_LeftRightLungSplitRadius; x++ )
+              {
+              tempIndex[0] = (pathIndices[j])[0] + x;
+              
+              if ( this->GetOutput()->GetBufferedRegion().IsInside( tempIndex ) )
+                {
+                if ( x==this->m_LeftRightLungSplitRadius || x==-this->m_LeftRightLungSplitRadius || 
+                     y==this->m_LeftRightLungSplitRadius || y==-this->m_LeftRightLungSplitRadius )
+                  {
+                  if ( this->GetType( tempIndex ) == static_cast< unsigned char >( cip::VESSEL ) )
+                    {
+                    if ( this->GetOutput()->GetPixel( tempIndex ) != 0 )
+                      {
+                      this->m_RemovedIndices.push_back( tempIndex );
+                      }
+                    this->GetOutput()->SetPixel( tempIndex, 0 );
+                    }
+                  }
+                else
+                  {
+                  if ( this->GetOutput()->GetPixel( tempIndex ) != 0 )
+                    {
+                    this->m_RemovedIndices.push_back( tempIndex );
+                    }
+                  this->GetOutput()->SetPixel( tempIndex, 0 );
+                  }
+                }
+              }
+            }          
+          }
+        
+        merged = this->GetLungsMergedInSliceRegion( size[0]/3, 0, size[0]/3, size[1], i ); 
+        
+        if ( merged )
+          {
+          minX = size[0]/3;
+          maxX = size[0]-size[0]/3;
+          minY = 0;
+          maxY = size[1]-1;
+          }
+        else
+          {
+          //
+          // Assign the map values to use while splitting the next
+          // slice 
+          //
+          previousPathMap.clear();
+
+          previousMinY = size[1];
+          previousMaxY = 0;
+
+          for ( unsigned int i=0; i<pathIndices.size(); i++ )
+            {
+            previousPathMap[(pathIndices[i])[1]] = (pathIndices[i])[0];
+
+            if ( (pathIndices[i])[1] < previousMinY )
+              {
+              previousMinY = (pathIndices[i])[1];
+              }
+            if ( (pathIndices[i])[1] > previousMaxY )
+              {
+              previousMaxY = (pathIndices[i])[1];
+              }
+            }
+          }
+        }
+      }
+    else
+      {
+      minX = size[0]/3;
+      maxX = size[0]-size[0]/3;
+      minY = 0;
+      maxY = size[1]-1;
+
+      previousPathMap.clear();
+
+      previousMinY = size[1];
+      previousMaxY = 0;
       }
     }
-  else
-    {
-    //
-    // If we're here, the input label map is not split, so we have to
-    // split it. As we'll be looping over the image, determine the min
-    // and max foreground slices.
-    //
-    unsigned char cipRegion;
-
-    oIt.GoToBegin();
-    lIt.GoToBegin();
-    while ( !lIt.IsAtEnd() )
-      {
-      cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-
-      if ( conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, static_cast< unsigned char >( cip::WHOLELUNG ) ) )
-        {
-        if ( lIt.GetIndex()[2] < this->m_MinForegroundSlice )
-          {
-          this->m_MinForegroundSlice = lIt.GetIndex()[2];
-          }
-        if ( lIt.GetIndex()[2] > this->m_MaxForegroundSlice )
-          {
-          this->m_MaxForegroundSlice = lIt.GetIndex()[2];
-          }
-
-        oIt.Set( cip::WHOLELUNG );
-        }
-
-      ++oIt;
-      ++lIt;
-      }
-
-    //
-    // If a connection exists, it tends to occur in the middle of the
-    // lung. The top portion and the bottom portion are split. We next
-    // want to determine the middle subvolume to focus on. Begin by
-    // splitting the volume into thirds. The bottom third extends from
-    // m_MinForegroundSlice to lowerMiddleForeground slice. The middle
-    // third extends from lowerMiddleForegroundSlice to
-    // upperMiddleForegroundSlice. The upper third extends from
-    // upperMiddleForegroundSlice to m_MaxForegroundSlice. We do a
-    // binary search on both [upper,lower]MiddleForegroundSlices to
-    // identify the slices that yield upper and lower regions that are
-    // split
-    //
-    unsigned int temp = (this->m_MaxForegroundSlice - this->m_MinForegroundSlice)/3;
-    unsigned int lowerMiddleForegroundSlice = this->m_MinForegroundSlice + temp;
-    unsigned int upperMiddleForegroundSlice = this->m_MaxForegroundSlice - temp;
-
-    //
-    // Now adjust lowerMiddleForegroundSlice until we find a split
-    // lower third
-    //
-    
-
-
-
-//   LabelMapType::SizeType size = this->GetOutput()->GetBufferedRegion().GetSize();
-
-//   int minX = size[0]/3;
-//   int maxX = size[0]-size[0]/3;
-//   int minY = 0;
-//   int maxY = size[1]-1;
-
-//   typename InputImageSliceType::IndexType searchStartIndex;
-//   typename InputImageSliceType::IndexType searchEndIndex;
-
-//   LabelMapType::IndexType index3D;
-
-//   //
-//   // We will keep track of the path indices used to split the
-//   // previous slice. To insure that the left and right lungs are
-//   // split in 3D, we will zero-out all label map points falling
-//   // within the region between the path in the current slice and the
-//   // path in the previous slice.
-//   //
-//   std::map< short, short > previousPathMap;
-
-//   int previousMinY = size[1];
-//   int previousMaxY = 0;
-
-//   for ( unsigned int i=0; i<size[2]; i++ )
-//     {
-//     bool merged = this->GetLungsMergedInSliceRegion( size[0]/3, 0, size[0]/3, size[1], i ); 
-
-//     index3D[2] = i;
-
-//     if ( merged )
-//       {
-//       int numSplitAttempts = 0;
-      
-//       while ( merged && numSplitAttempts < 3 )
-//         {
-//         numSplitAttempts++;
-        
-//         typename InputImageType::SizeType roiSize;
-//           roiSize[0] = maxX - minX + 20;
-
-//         if ( roiSize[0] < 0 )
-//           {
-//           roiSize[0] = 0;
-//           }
-//         if ( roiSize[0] > size[0] )
-//           {
-//           roiSize[0] = size[0];
-//           }
-        
-//         roiSize[1] = maxY - minY + 20;
-//         if ( roiSize[1] < 0 )
-//           {
-//           roiSize[1] = 0;
-//           }
-//         if ( roiSize[1] > size[1] )
-//           {
-//           roiSize[1] = size[1];
-//           }
-
-//         roiSize[2] = 0;
-        
-//         typename InputImageType::IndexType roiStartIndex;
-//           roiStartIndex[0] = minX - 10;
-        
-//         if ( roiStartIndex[0] < 0 )
-//           {
-//           roiStartIndex[0] = 0;
-//           }
-        
-//         roiStartIndex[1] = minY - 10;
-//         if ( roiStartIndex[1] < 0 )
-//           {
-//           roiStartIndex[1] = 0;
-//           }
-        
-//         roiStartIndex[2] = i;
-        
-//         typename InputImageType::RegionType roiRegion;
-//           roiRegion.SetSize( roiSize );
-//           roiRegion.SetIndex( roiStartIndex );
-        
-//         typename InputExtractorType::Pointer roiExtractor = InputExtractorType::New();
-//           roiExtractor->SetInput( this->GetInput() );
-//           roiExtractor->SetExtractionRegion( roiRegion );
-//           roiExtractor->Update();
-
-//         searchStartIndex[0] = roiStartIndex[0] + roiSize[0]/2;
-//         searchStartIndex[1] = roiStartIndex[1];
-        
-//         searchEndIndex[0] = roiStartIndex[0] + roiSize[0]/2;
-//         searchEndIndex[1] = roiStartIndex[1] + roiSize[1] - 1;
-
-//         //
-//         // Set the startIndex to the the top-center of the ROI and the
-//         // endIndex to be the bottom-center of the ROI
-//         //
-//         std::vector< LabelMapSliceType::IndexType > pathIndices = this->GetMinCostPath( roiExtractor->GetOutput(), searchStartIndex, searchEndIndex );
-        
-//         minX = size[0];
-//         maxX = 0;
-//         minY = size[1];
-//         maxY = 0;
-        
-//         bool foundMinMax = false;
-//         for ( unsigned int j=0; j<pathIndices.size(); j++ )
-//           {
-//           index3D[0] = (pathIndices[j])[0];
-//           index3D[1] = (pathIndices[j])[1];
-          
-//           if ( this->GetOutput()->GetPixel( index3D ) !=0 )
-//             {
-//             foundMinMax = true;
-            
-//             if ( index3D[0] < minX )
-//               {
-//               minX = index3D[0];
-//               }
-//             if ( index3D[0] > maxX )
-//               {
-//               maxX = index3D[0];
-//               }
-//             if ( index3D[1] < minY )
-//               {
-//               minY = index3D[1];
-//               }
-//             if ( index3D[1] > maxY )
-//               {
-//               maxY = index3D[1];
-//               }
-//             }          
-//           }
-        
-//         if ( !foundMinMax || this->m_AggressiveLeftRightSplitter )
-//           {
-//           minX = size[0]/3;
-//           maxX = size[0]-size[0]/3;
-//           minY = 0;
-//           maxY = size[1]-1;
-//           }
-        
-//         for ( unsigned int j=0; j<pathIndices.size(); j++ )
-//           {
-//           LabelMapType::IndexType tempIndex;
-//             tempIndex[2] = i;
-
-//           int currentX  = (pathIndices[j])[0];
-//           int currentY  = (pathIndices[j])[1];
-
-//           int startX = currentX - this->m_LeftRightLungSplitRadius;
-//           int endX   = currentX + this->m_LeftRightLungSplitRadius;
-
-//           if ( previousPathMap.size() > 0 )
-//             {
-//             if ( currentY >= previousMinY && currentY <= previousMaxY )
-//               {
-//               //
-//               // Determine the extent in the x-direction to zero-out
-//               //
-//               int previousX = previousPathMap[(pathIndices[j])[1]];
-              
-//               if ( previousX - currentX < 0 )
-//                 {
-//                 startX = previousX - this->m_LeftRightLungSplitRadius;
-//                 endX   = currentX  + this->m_LeftRightLungSplitRadius;
-//                 }
-//               else 
-//                 {
-//                 startX = currentX  - this->m_LeftRightLungSplitRadius;
-//                 endX   = previousX + this->m_LeftRightLungSplitRadius;
-//                 }                
-//               }
-//             }
-
-//           tempIndex[1] = (pathIndices[j])[1];
-//           for ( int x=startX; x<=endX; x++ )
-//             {
-//             tempIndex[0] = x;
-
-//             if ( this->GetOutput()->GetBufferedRegion().IsInside( tempIndex ) )
-//               {
-//               if ( this->GetOutput()->GetPixel( tempIndex ) != 0 )
-//                 {
-//                 this->m_RemovedIndices.push_back( tempIndex );
-//                 }
-//               this->GetOutput()->SetPixel( tempIndex, 0 );
-//               }
-//             }
-
-//           for ( int y=-this->m_LeftRightLungSplitRadius; y<=this->m_LeftRightLungSplitRadius; y++ )
-//             {
-//             tempIndex[1] = (pathIndices[j])[1] + y;            
-
-//             for ( int x=-this->m_LeftRightLungSplitRadius; x<=this->m_LeftRightLungSplitRadius; x++ )
-//               {
-//               tempIndex[0] = (pathIndices[j])[0] + x;
-              
-//               if ( this->GetOutput()->GetBufferedRegion().IsInside( tempIndex ) )
-//                 {
-//                 if ( x==this->m_LeftRightLungSplitRadius || x==-this->m_LeftRightLungSplitRadius || 
-//                      y==this->m_LeftRightLungSplitRadius || y==-this->m_LeftRightLungSplitRadius )
-//                   {
-//                   if ( this->GetType( tempIndex ) == static_cast< unsigned char >( VESSEL ) )
-//                     {
-//                     if ( this->GetOutput()->GetPixel( tempIndex ) != 0 )
-//                       {
-//                       this->m_RemovedIndices.push_back( tempIndex );
-//                       }
-//                     this->GetOutput()->SetPixel( tempIndex, 0 );
-//                     }
-//                   }
-//                 else
-//                   {
-//                   if ( this->GetOutput()->GetPixel( tempIndex ) != 0 )
-//                     {
-//                     this->m_RemovedIndices.push_back( tempIndex );
-//                     }
-//                   this->GetOutput()->SetPixel( tempIndex, 0 );
-//                   }
-//                 }
-//               }
-//             }          
-//           }
-        
-//         merged = this->GetLungsMergedInSliceRegion( size[0]/3, 0, size[0]/3, size[1], i ); 
-        
-//         if ( merged )
-//           {
-//           minX = size[0]/3;
-//           maxX = size[0]-size[0]/3;
-//           minY = 0;
-//           maxY = size[1]-1;
-//           }
-//         else
-//           {
-//           //
-//           // Assign the map values to use while splitting the next
-//           // slice 
-//           //
-//           previousPathMap.clear();
-
-//           previousMinY = size[1];
-//           previousMaxY = 0;
-
-//           for ( unsigned int i=0; i<pathIndices.size(); i++ )
-//             {
-//             previousPathMap[(pathIndices[i])[1]] = (pathIndices[i])[0];
-
-//             if ( (pathIndices[i])[1] < previousMinY )
-//               {
-//               previousMinY = (pathIndices[i])[1];
-//               }
-//             if ( (pathIndices[i])[1] > previousMaxY )
-//               {
-//               previousMaxY = (pathIndices[i])[1];
-//               }
-//             }
-//           }
-//         }
-//       }
-//     else
-//       {
-//       minX = size[0]/3;
-//       maxX = size[0]-size[0]/3;
-//       minY = 0;
-//       maxY = size[1]-1;
-
-//       previousPathMap.clear();
-
-//       previousMinY = size[1];
-//       previousMaxY = 0;
-//       }
-//     }
-}      
 }
 
 
@@ -669,7 +597,7 @@ void
 CIPSplitLeftLungRightLungImageFilter< TInputImage >
 ::SetLungLabelMap( OutputImageType::Pointer airwayLabelMap )
 {
-  this->m_ChestLabelMap = airwayLabelMap;
+  this->m_LungLabelMap = airwayLabelMap;
 }
 
   

@@ -1,25 +1,9 @@
-/**
- *  \class itkCIPSplitLeftLungRightLung
- *  \ingroup common
- *  \brief This filter will split the left and right lungs, producing a
- *  label map with the left and right lungs properly labeled
- *  (according to the labeling conventions laid out in cipConventions.h).
- *
- *  This filter takes an input label map (adhering to the labeling
- *  conventions laid out in cipConventions) and properly labels the
- *  left and right lungs. It first attempts to label the left and
- *  right lungs by performing 3D connected component analysis...
- *
- *  $Date: 2012-04-24 17:06:09 -0700 (Tue, 24 Apr 2012) $
- *  $Revision: 93 $
- *  $Author: jross $
- *
- *  TODO:
- *  1) Filter description needs fleshing out above. 
- *  2) Use atlas?
- *  3) What assumptions to be made about the input? 
- *  4) This filter should be assumed under construction until this
- *  comment is removed
+/** \class CIPSplitLeftAndRightLungsImageFilter
+ * \brief This filter takes as input a 3D lung label map image (with
+ * labelings assumed to adhere to the conventions described in
+ * itkLungConventions.h. The output of this filter is a lung label map
+ * image with the left and right lungs split. No relabeling is
+ * performed. 
  */
 
 #ifndef __itkCIPSplitLeftLungRightLungImageFilter_h
@@ -40,7 +24,6 @@
 
 namespace itk
 {
-
 template <class TInputImage>
 class ITK_EXPORT CIPSplitLeftLungRightLungImageFilter :
     public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
@@ -55,7 +38,7 @@ public:
   typedef itk::Image< unsigned short, 3 >   OutputImageType;
 
   /** Standard class typedefs. */
-  typedef CIPSplitLeftLungRightLungImageFilter                   Self;
+  typedef CIPSplitLeftLungRightLungImageFilter                      Self;
   typedef ImageToImageFilter< InputImageType, OutputImageType >  Superclass;
   typedef SmartPointer< Self >                                   Pointer;
   typedef SmartPointer< const Self >                             ConstPointer;
@@ -159,15 +142,14 @@ private:
   CIPSplitLeftLungRightLungImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  LabelMapType::Pointer m_ChestLabelMap;
+  LabelMapType::Pointer m_LungLabelMap;
 
   std::vector< LabelMapType::IndexType >  m_RemovedIndices;
+  cip::ChestConventions                   m_LungConventions;
   double                                  m_ExponentialCoefficient;
   double                                  m_ExponentialTimeConstant;
   bool                                    m_AggressiveLeftRightSplitter;
   int                                     m_LeftRightLungSplitRadius;
-  unsigned int                            m_MaxForegroundSlice;
-  unsigned int                            m_MinForegroundSlice;
 };
   
 } // end namespace itk

@@ -85,10 +85,10 @@ endif()
 set( CIP_BUILD_TESTING OFF CACHE BOOL
   "Perform some tests on basic functionality of CIP." )
 
-if( CIP_BUILD_TESTING )
-enable_testing()
-add_subdirectory( ${CIP_SOURCE_DIR}/../Testing ${CIP_BINARY_DIR}/Testing )
-include( CTest )
+if ( CIP_BUILD_TESTING )
+  enable_testing()
+  #add_subdirectory( ${CIP_SOURCE_DIR}/Testing ${CIP_BINARY_DIR}/Testing )
+  include( CTest )
 endif()
 
 #---------------------------------------------------------------------

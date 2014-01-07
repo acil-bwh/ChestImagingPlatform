@@ -109,34 +109,50 @@ int main( int argc, char *argv[] )
 
   double* initialParameters = new double[numberModesUsed];
   double* optimalParameters = new double[numberModesUsed];
+  std::vector< double > params_debug;
+  std::vector< double > params_debug_ref;
   for ( unsigned int i=0; i<numberModesUsed; i++ )
     {
     if ( useModeWeights )
       {
 	initialParameters[i] = (*modelIO->GetOutput()->GetModeWeights())[i];
+	params_debug.push_back( initialParameters[i] );
+	params_debug_ref.push_back( initialParameters[i] );
       }
     else
       {
 	initialParameters[i] = 0.0;
+	params_debug.push_back( initialParameters[i] );
+	params_debug_ref.push_back( initialParameters[i] );
       }
+    std::cout << params_debug[i] << std::endl;
     }
 
-  std::cout << "Executing Nelder Mead Optimizer..." << std::endl;
-  cipNelderMeadSimplexOptimizer* nelderMeadOptimizer = new cipNelderMeadSimplexOptimizer( numberModesUsed );
-    nelderMeadOptimizer->SetInitialParameters( initialParameters );
-    nelderMeadOptimizer->SetMetric( tpsToParticlesMetric );
-    nelderMeadOptimizer->SetNumberOfIterations( numIters );
-    nelderMeadOptimizer->Update();
-    nelderMeadOptimizer->GetOptimalParameters( optimalParameters );
-
-  for ( unsigned int i=0; i<numberModesUsed; i++ )
+  std::cout << "------------" << std::endl;
+  std::cout << "Ref:\t" << tpsToParticlesMetric->GetValue( &params_debug ) << std::endl;
+  std::cout << "------------" << std::endl;
+  for ( double i = -2.0; i<=2.0; i += 0.05 )
     {
-      (*modelIO->GetOutput()->GetModeWeights())[i] = optimalParameters[i];
+      params_debug[1] = params_debug_ref[1] + i;
+      std::cout << i << "\t" << tpsToParticlesMetric->GetValue( &params_debug ) << std::endl;
     }
 
-  std::cout << "Writing shape model to file..." << std::endl;
-  modelIO->SetFileName( outShapeModelFileName );
-  modelIO->Write();
+  // std::cout << "Executing Nelder Mead Optimizer..." << std::endl;
+  // cipNelderMeadSimplexOptimizer* nelderMeadOptimizer = new cipNelderMeadSimplexOptimizer( numberModesUsed );
+  //   nelderMeadOptimizer->SetInitialParameters( initialParameters );
+  //   nelderMeadOptimizer->SetMetric( tpsToParticlesMetric );
+  //   nelderMeadOptimizer->SetNumberOfIterations( numIters );
+  //   nelderMeadOptimizer->Update();
+  //   nelderMeadOptimizer->GetOptimalParameters( optimalParameters );
+
+  // for ( unsigned int i=0; i<numberModesUsed; i++ )
+  //   {
+  //     (*modelIO->GetOutput()->GetModeWeights())[i] = optimalParameters[i];
+  //   }
+
+  // std::cout << "Writing shape model to file..." << std::endl;
+  // modelIO->SetFileName( outShapeModelFileName );
+  // modelIO->Write();
 
   std::cout << "DONE." << std::endl;
 

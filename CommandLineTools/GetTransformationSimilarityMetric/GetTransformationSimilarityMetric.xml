@@ -2,7 +2,10 @@
 <executable>
   <category>Chest Imaging Platform</category>
   <title>GetTransformationSimilarityMetric</title>
-  <description><![CDATA[This program calculates a similarity measure between 2 CT images in a region specified by a label map. It takes as input the 2 CT images and their corresponding label maps, and a transformation file, and appends the values of the similarity metric to an existing xml file if one is provided.]]></description>
+  <description><![CDATA[This program calculates a similarity measure between 2 CT images in \
+  a region specified by a label map. It takes as input the 2 CT images and their corresponding \
+  label maps, and a transformation file, and appends the values of the similarity metric to an \
+  existing xml file if one is provided.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
@@ -18,7 +21,9 @@
       <channel>input</channel>
       <flag>v</flag>
       <longflag>--SimilarityMetric</longflag>
-      <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual information), NMI (for normalized mutual information), and mean squares (msqr), NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
+      <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual \ 
+      information), NMI (for normalized mutual information), and mean squares (msqr), \
+      NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
       <default>MI</default>
     </string>
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform</category>
-  <title>ClassifyFissureParticles</title>
+  <title>MergeChestLabelMaps</title>
   <description><![CDATA[This program will merge an overlay label map into a base label map. \
   The user must indicate which structures should be merged. Structures can be chest regions, \
   chest types, and or region-type pairs. Only the structures specified will be merged from the \

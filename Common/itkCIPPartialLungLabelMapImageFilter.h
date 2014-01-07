@@ -1,19 +1,3 @@
-/**
- *  \class itkCIPPartialLungLabelMapImageFilter
- *  \ingroup common
- *  \brief This class reads computes a initial (partial) 
- *          lung segmentation
- *
- *  Detailed description
- *
- *  Date:     $Date: 2012-04-24 17:06:09 -0700 (Tue, 24 Apr 2012) $
- *  Version:  $Revision: 93 $
- *  Author :  $  $
- *
- *  TODO:
- *  Needs commenting
- */
-
 #ifndef __itkCIPPartialLungLabelMapImageFilter_h
 #define __itkCIPPartialLungLabelMapImageFilter_h
 
@@ -24,7 +8,6 @@
 #include "itkCIPSplitLeftLungRightLungImageFilter.h"
 #include "itkCIPLabelLungRegionsImageFilter.h"
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"
-#include "itkCIPSplitLeftLungRightLungImageFilter.h"
 #include "itkOtsuThresholdImageFilter.h"
 #include "itkConnectedComponentImageFilter.h"
 #include "itkRelabelComponentImageFilter.h"
@@ -50,7 +33,7 @@ namespace itk
  */
 template <class TInputImage>
 class ITK_EXPORT CIPPartialLungLabelMapImageFilter :
-  public ImageToImageFilter< TInputImage, cip::LabelMapType >
+    public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
 {
 public:
   /** Extract dimension from input and output image. */
@@ -59,11 +42,11 @@ public:
 
   /** Convenient typedefs for simplifying declarations. */
   typedef TInputImage                       InputImageType;
-  //  typedef itk::Image< unsigned short, 3 >   cip::LabelMapType;
+  typedef itk::Image< unsigned short, 3 >   OutputImageType;
 
   /** Standard class typedefs. */
   typedef CIPPartialLungLabelMapImageFilter                         Self;
-  typedef ImageToImageFilter< InputImageType, cip::LabelMapType >  Superclass;
+  typedef ImageToImageFilter< InputImageType, OutputImageType >  Superclass;
   typedef SmartPointer< Self >                                   Pointer;
   typedef SmartPointer< const Self >                             ConstPointer;
 
@@ -76,9 +59,9 @@ public:
   /** Image typedef support. */
   typedef unsigned short                               LabelMapPixelType;
   typedef typename InputImageType::PixelType           InputPixelType;
-  typedef typename cip::LabelMapType::PixelType          OutputPixelType;
+  typedef typename OutputImageType::PixelType          OutputPixelType;
   typedef typename InputImageType::RegionType          InputImageRegionType;
-  typedef typename cip::LabelMapType::RegionType         OutputImageRegionType;
+  typedef typename OutputImageType::RegionType         OutputImageRegionType;
   typedef typename InputImageType::SizeType            InputSizeType;
 
   /** Reasonable airway segmentations have been empiracally found to
@@ -88,23 +71,7 @@ public:
       find the best threshold for connected threshold segmentation) */
   itkSetMacro( MinAirwayVolume, double );
   itkGetMacro( MinAirwayVolume, double );
-  /** For FHS 35cm FOV data, the lung segmentation gave errors therefore
-   We add an option of fixed threshold if Otsu threshold does not provide
-   a threshold value in the correct range */
-  itkSetMacro( ManualThreshold, short ); //sila
-  itkGetMacro( ManualThreshold, short ); //sila
-  itkSetMacro( StdLungThreshold, short ); //sila
-  itkGetMacro( StdLungThreshold, short ); //sila
-  /* An option to set airways region growing max and min ratio limits.
-   * This is the ratio of airway volume to the volume
-   * of total lung+airways. In FHS35 data, due to noise we decided to lower
-   * these values to only get the main bronchi and trachea, otherwise
-   * a lot of leakage happens during region growing
-   */
-  itkSetMacro( MaxVolPercentAirway, double ); //sila
-  itkGetMacro( MaxVolPercentAirway, double ); //sila
-  itkSetMacro( MinVolPercentAirway, double ); //sila
-  itkGetMacro( MinVolPercentAirway, double ); //sila
+
   /** Region growing can "explode slowly". That is, the lung region
    *  can slowly be filled by the region growing algorithm in a way
    *  that goes undetected by the other explosion control
@@ -176,12 +143,12 @@ public:
   /** If the user specifies an airway label map, it will be used in
    * in the overall segmentation. If no airway label map is specified,
    * one will be automatically determined. */
-  void SetAirwayLabelMap( cip::LabelMapType::Pointer );
+  void SetAirwayLabelMap( OutputImageType::Pointer );
 
   /** This method allows a user to specify seeds to be used during the
    * airway segmentation process. If no seeds are specified, the
    * filter will attempt to find them automatically */
-  void AddAirwaySegmentationSeed( cip::LabelMapType::IndexType );
+  void AddAirwaySegmentationSeed( OutputImageType::IndexType );
 
   /** Set the neighborhood defining the structuring element for
    *  morphological closing (3 dimensions) */
@@ -194,7 +161,7 @@ public:
    *  assumed to be foreground as well. Passing a helper mask is
    *  optional and is intended to be used for recovering failure modes
    */
-  void SetHelperMask( cip::LabelMapType::Pointer );
+  void SetHelperMask( OutputImageType::Pointer );
 
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
@@ -203,12 +170,12 @@ protected:
   typedef typename itk::Image< LabelMapPixelType, 2 >                                 LabelMapSliceType;
   typedef itk::ImageRegionIteratorWithIndex< LabelMapSliceType >                      LabelMapSliceIteratorType;
   typedef itk::Image< LabelMapPixelType, 3 >                                          LabelMapType;
-  typedef itk::CIPWholeLungVesselAndAirwaySegmentationImageFilter< InputImageType >      WholeLungVesselAndAirwayType;
-  typedef itk::CIPSplitLeftLungRightLungImageFilter< InputImageType >                    SplitterType;
-  typedef itk::CIPLabelLungRegionsImageFilter                                            LungRegionLabelerType;
-  typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType >           AirwaySegmentationType;
-  typedef itk::OtsuThresholdImageFilter< InputImageType, cip::LabelMapType >            OtsuThresholdType;
-  typedef itk::BinaryThresholdImageFilter< InputImageType, cip::LabelMapType >          BinaryThresholdType;
+  typedef itk::CIPWholeLungVesselAndAirwaySegmentationImageFilter< InputImageType >   WholeLungVesselAndAirwayType;
+  typedef itk::CIPSplitLeftLungRightLungImageFilter< InputImageType >                 SplitterType;
+  typedef itk::CIPLabelLungRegionsImageFilter                                         LungRegionLabelerType;
+  typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType >        AirwaySegmentationType;
+  typedef itk::OtsuThresholdImageFilter< InputImageType, OutputImageType >            OtsuThresholdType;
+  typedef itk::BinaryThresholdImageFilter< InputImageType, OutputImageType >          BinaryThresholdType;
   typedef itk::ConnectedComponentImageFilter< LabelMapSliceType, LabelMapSliceType >  ConnectedComponent2DType;
   typedef itk::ConnectedComponentImageFilter< LabelMapType, ComponentImageType >      ConnectedComponent3DType;
   typedef itk::RelabelComponentImageFilter< LabelMapSliceType, LabelMapSliceType >    Relabel2DType;
@@ -234,15 +201,15 @@ protected:
   void ExpandLungRegionInSlice( LabelMapType::Pointer, LabelMapType::IndexType, unsigned char, short );
   void ExpandLeftRight( LabelMapType::IndexType, short, unsigned short, unsigned int );
   void ConditionalDilation( short );
-  std::vector< cip::LabelMapType::IndexType > GetAirwaySeeds();
+  std::vector< OutputImageType::IndexType > GetAirwaySeeds();
 
 
 private:
   CIPPartialLungLabelMapImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  std::vector< cip::LabelMapType::IndexType > m_AirwaySegmentationSeedVec;
-  std::vector< cip::LabelMapType::IndexType > m_AirwayIndicesVec;
+  std::vector< OutputImageType::IndexType > m_AirwaySegmentationSeedVec;
+  std::vector< OutputImageType::IndexType > m_AirwayIndicesVec;
 
   LabelMapType::Pointer m_AirwayLabelMap;
   LabelMapType::Pointer m_HelperMask;
@@ -258,10 +225,6 @@ private:
   unsigned long    m_ClosingNeighborhood[3];
   int              m_LeftRightLungSplitRadius;
   short            m_OtsuThreshold;
-  short            m_ManualThreshold; //sila
-  short            m_StdLungThreshold; //sila
-  double           m_MaxVolPercentAirway;//sila
-  double           m_MinVolPercentAirway;//sila
 };
   
 } // end namespace itk

@@ -233,8 +233,11 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
     // compute this particle's contribution to the overall objective
     // function value
     //    
+    // DEB
     value -= this->ParticleWeights[i]*coefficient*std::exp( -0.5*std::pow(distance/this->SigmaDistance,2) )*
       std::exp( -0.5*std::pow(theta/this->SigmaTheta,2) );
+
+    //value += this->ParticleWeights[i]*coefficient*std::exp( -distance/5.0 )*std::exp( -theta/25.0 );
     }
 
   delete position;

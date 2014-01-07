@@ -2,6 +2,7 @@
 <executable>
   <category>Chest Imaging Platform</category>
   <title>GeneratePartialLungLabelMap</title>
+
   <description><![CDATA[Generates a partial lung LabelMap from CT image.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>

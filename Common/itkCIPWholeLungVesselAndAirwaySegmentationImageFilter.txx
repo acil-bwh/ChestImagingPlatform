@@ -1,4 +1,3 @@
-
 #ifndef _itkCIPWholeLungVesselAndAirwaySegmentationImageFilter_txx
 #define _itkCIPWholeLungVesselAndAirwaySegmentationImageFilter_txx
 
@@ -593,13 +592,13 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   //
   // Determine the region corresponding to this value
   //
-  unsigned char lungRegion = this->m_Lungions.GetLungRegionFromValue( currentValue );
+  unsigned char lungRegion = this->m_LungConventions.GetLungRegionFromValue( currentValue );
 
   //
   // Determine the new value given the type to set and the current
   // region 
   //
-  unsigned short newValue = this->m_Lungions.GetValueFromLungRegionAndType( lungRegion, lungType );
+  unsigned short newValue = this->m_LungConventions.GetValueFromLungRegionAndType( lungRegion, lungType );
 
   //
   // Set the new value at the specified index
@@ -621,13 +620,13 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   //
   // Determine the type corresponding to this value
   //
-  unsigned char lungType = this->m_Lungions.GetLungTypeFromValue( currentValue );
+  unsigned char lungType = this->m_LungConventions.GetLungTypeFromValue( currentValue );
 
   //
   // Determine the new value given the region to set and the current
   // type
   //
-  unsigned short newValue = this->m_Lungions.GetValueFromLungRegionAndType( lungRegion, lungType );
+  unsigned short newValue = this->m_LungConventions.GetValueFromLungRegionAndType( lungRegion, lungType );
 
   //
   // Set the new value at the specified index
@@ -651,7 +650,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   LabelMapType::SizeType size = this->GetOutput()->GetBufferedRegion().GetSize();
   
   int elementRadius = 3;
-  unsigned short wholeLungAirwayValue = this->m_Lungions.GetValueFromLungRegionAndType( cip::WHOLELUNG, cip::AIRWAY );
+  unsigned short wholeLungAirwayValue = this->m_LungConventions.GetValueFromLungRegionAndType( cip::WHOLELUNG, cip::AIRWAY );
 
   for ( unsigned int whichSlice = 0; whichSlice < size[2]; whichSlice++ )
     {
@@ -809,17 +808,17 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
         bool isPerimeter = false;
         bool touchingBackground = false;
 
-        for ( unsigned int x=(index[0]-1); x<=(index[0]+1); x++ )
+        for ( int x=int(index[0])-1; x<=(index[0]+1); x++ )
           {
           tempIndex[0] = x;
           
-          if ( x < size[0] )
+          if ( x >= 0 && x < size[0] )
             {
-            for ( unsigned int y=(index[1]-1); y<=(index[1]+1); y++ )
+            for ( int y=int(index[1])-1; y<=(index[1]+1); y++ )
               {
               tempIndex[1] = y;
               
-              if ( y < size[1] )
+              if ( y >= 0 && y < size[1] )
                 {
                 if ( this->GetOutput()->GetPixel( tempIndex ) == itk::NumericTraits< OutputPixelType >::Zero )
                   {
@@ -937,7 +936,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
   //
   ExtractLabelMapType::Pointer labelMapExtractor = ExtractLabelMapType::New();
     labelMapExtractor->SetInput( this->GetOutput() );
-    labelMapExtractor->SetChestRegion( static_cast< unsigned char >( cip::WHOLELUNG ) );
+    labelMapExtractor->SetChestRegion( (unsigned char)( cip::WHOLELUNG ) );
     labelMapExtractor->Update();
 
   ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform</category>
-  <title>ClassifyFissureParticles</title>
+  <title>MaskOutLabelMapStructures</title>
   <description><![CDATA[This program will remove the specified chest structures from the input label map.]]>
   </description>
   <version>0.0.1</version>

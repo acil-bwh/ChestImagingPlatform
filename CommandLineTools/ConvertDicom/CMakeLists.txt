@@ -16,3 +16,7 @@ SET ( ConvertDicom_SOURCE ConvertDicom.cxx )
 
 ADD_EXECUTABLE ( ConvertDicom ${ConvertDicom_SOURCE} )
 TARGET_LINK_LIBRARIES ( ConvertDicom ${ITK_LIBRARIES}  )
+
+IF ( CIP_BUILD_TESTING )
+ SUBDIRS ( Testing )
+ENDIF( CIP_BUILD_TESTING ) 

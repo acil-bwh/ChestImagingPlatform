@@ -1,15 +1,14 @@
-/** \class CIPWholeLungVesselAndAirwaySegmentationImageFilter
+/** \class WholeLungVesselAndAirwaySegmentationImageFilter
  * \brief This filter produces a lung label map given a grayscale
  * input image. The output image consists of the following labelings:
  * AIRWAY, VESSEL, and WHOLELUNG (in keeping with the conventions
- * outlined in cipConventions.h). No attempt is made to split the
+ * outlined in itkLungConventions.h). No attempt is made to split the
  * lung halves in two, nor is there an attempt to label the lungs by
  * thirds, etc. Users of this filter may wish to supply their own
  * airway label map, which will then be incorporated into the overall
  * segmentation routine. If no airway label map is provided, one will
  * be computed automatically.
  */
-
 #ifndef __itkCIPWholeLungVesselAndAirwaySegmentationImageFilter_h
 #define __itkCIPWholeLungVesselAndAirwaySegmentationImageFilter_h
 
@@ -156,10 +155,10 @@ private:
   LabelMapType::Pointer m_AirwayLabelMap;
 
   cip::ChestConventions  m_LungConventions;
-  bool             m_HeadFirst;
-  unsigned long    m_ClosingNeighborhood[3];
-  double           m_MinAirwayVolume;
-  double           m_MaxAirwayVolumeIncreaseRate; 
+  bool                   m_HeadFirst;
+  unsigned long          m_ClosingNeighborhood[3];
+  double                 m_MinAirwayVolume;
+  double                 m_MaxAirwayVolumeIncreaseRate; 
 
 };
   

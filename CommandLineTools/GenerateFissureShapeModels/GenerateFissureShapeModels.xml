@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform</category>
-  <title>ClassifyFissureParticles</title>
+  <title>GenerateFissureShapeModels</title>
   <description><![CDATA[This program is used to generate fissure shape models based \
   on a training set. The basic approach is as follows: a reference image \
   is read and then registered to the label map for which the user \

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
     <category>Chest Imaging Platform</category>
-    <title>FilterAirwayParticleData</title>
+    <title>GenerateOtsuLungCast</title>
     <description><![CDATA[This program produces an Otsu lung cast. (Cast is meant\
         to refer to it being a preliminary mask from which other\
         masks are derived / molded). The program simply interfaces\

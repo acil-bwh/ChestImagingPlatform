@@ -21,6 +21,7 @@ RegionGrowingGUI::RegionGrowingGUI() {
     { Fl_Choice* o = chestRegionChoice = new Fl_Choice(103, 118, 269, 28, "Chest Region");
       chestRegionChoice->down_box(FL_BORDER_BOX);
       o->add("Undefined Region", 0, (Fl_Callback*)undefinedRegionMenuItem_CB, (void*)(this));
+      o->add("Whole Lung", 0, (Fl_Callback*)wholeLungMenuItem_CB, (void*)(this));
     } // Fl_Choice* chestRegionChoice
     { Fl_Choice* o = chestTypeChoice = new Fl_Choice(103, 155, 269, 28, "Chest Type");
       chestTypeChoice->down_box(FL_BORDER_BOX);
@@ -55,6 +56,14 @@ short RegionGrowingGUI::GetMinThreshold() {
 
 short RegionGrowingGUI::GetMaxThreshold() {
   return static_cast< short >( this->maxThresholdInput->value() );
+}
+
+void RegionGrowingGUI::wholeLungMenuItem_CB( Fl_Widget* o, void* v ) {
+  ((RegionGrowingGUI*)v)->wholeLungMenuItem_CB_i();
+}
+
+void RegionGrowingGUI::wholeLungMenuItem_CB_i() {
+  this->m_ChestRegion = (unsigned char)( cip::WHOLELUNG );
 }
 
 void RegionGrowingGUI::undefinedRegionMenuItem_CB( Fl_Widget* o, void* v ) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform</category>
-  <title>ClassifyFissureParticles</title>
+  <title>FitFissureSurfaceModelsToParticleData</title>
   <description><![CDATA[This program fits two TPS surface models to the same particles data \
   set in an iterative fashion. It is meant to be used for fitting the \
   right oblique and the right horizontal surface models. The idea is \
