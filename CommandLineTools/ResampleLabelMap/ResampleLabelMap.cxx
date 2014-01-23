@@ -102,7 +102,7 @@ int main( int argc, char *argv[] )
   
   std::cout << "Reading destination information..." << std::endl;
   cip::LabelMapReaderType::Pointer destinationReader = cip::LabelMapReaderType::New();
-    destinationReader->SetFileName( destinationFileName );
+    destinationReader->SetFileName( destinationFileName.c_str() );
   try
     {
     destinationReader->Update();
@@ -125,7 +125,7 @@ int main( int argc, char *argv[] )
   //
   std::cout << "Reading label map image..." << std::endl;
   cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
-    labelMapReader->SetFileName( labelMapFileName );
+    labelMapReader->SetFileName( labelMapFileName.c_str() );
   try
     {
     labelMapReader->Update();
@@ -205,7 +205,7 @@ int main( int argc, char *argv[] )
   //
   std::cout << "Writing resampled label map..." << std::endl;
   cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-    writer->SetFileName( resampledFileName );
+  writer->SetFileName( resampledFileName.c_str());
     writer->UseCompressionOn();
     writer->SetInput( resampler->GetOutput() );
   try

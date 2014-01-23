@@ -62,6 +62,8 @@
 #include "vtkIdList.h"
 #include "vtkMatrix4x4.h"
 #include "RegisterLungAtlasCLP.h"
+#include "vtkXMLPolyDataReader.h"
+#include <vtksys/SystemTools.hxx>
 
 namespace
 {
@@ -82,9 +84,9 @@ int main( int argc, char *argv[] )
   //
   // Read the CT image
   //
-  std::cout << "Reading CT image..." << std::endl;
+  std::cout << "Reading CT image...new" << std::endl;
   ReaderType::Pointer ctReader = ReaderType::New();
-    ctReader->SetFileName( ctFileName );
+    ctReader->SetFileName( ctFileName.c_str() );
   try
     {
     ctReader->Update();
@@ -144,14 +146,33 @@ int main( int argc, char *argv[] )
   //
   // Now read the convex hull mesh
   //
-  std::cout << "Reading convex hull mesh..." << std::endl;
-  vtkSmartPointer< vtkPolyDataReader > meshReader = vtkSmartPointer< vtkPolyDataReader >::New();
-    meshReader->SetFileName( convexHullMeshFileName.c_str() );
+  std::cout << "Reading convex hull mesh... 2" << std::endl;
+    
+      vtkSmartPointer< vtkIterativeClosestPointTransform > icp = vtkSmartPointer< vtkIterativeClosestPointTransform >::New();
+    
+    
+std::string extension = vtksys::SystemTools::LowerCase( vtksys::SystemTools::GetFilenameLastExtension(convexHullMeshFileName) );
+vtkSmartPointer< vtkPolyDataReader > meshReader = NULL;
+vtkSmartPointer< vtkXMLPolyDataReader > meshReaderxml = NULL;
+    // vtkSmartPointer< vtkPolyDataReader > meshReader = vtkSmartPointer< vtkPolyDataReader >::New();
+    if( extension == std::string(".vtk") )
+{
+    meshReader = vtkSmartPointer< vtkPolyDataReader >::New();
+    meshReader->SetFileName( convexHullMeshFileName.c_str() ); //.c_str()
     meshReader->Update();
+    icp->SetSource( meshReader->GetOutput() );
+}
+else if( extension == std::string(".vtp") )
+{
+    meshReaderxml = vtkSmartPointer< vtkXMLPolyDataReader >::New();
+    meshReaderxml->SetFileName(convexHullMeshFileName.c_str() );
+    meshReaderxml->Update();
+    icp->SetSource( meshReaderxml->GetOutput() );
+}
 
   std::cout << "Registering..." << std::endl;
-  vtkSmartPointer< vtkIterativeClosestPointTransform > icp = vtkSmartPointer< vtkIterativeClosestPointTransform >::New();
-    icp->SetSource( meshReader->GetOutput() );
+
+    
     icp->SetTarget( target );
     icp->SetStartByMatchingCentroids( true );
     icp->GetLandmarkTransform()->SetModeToAffine();

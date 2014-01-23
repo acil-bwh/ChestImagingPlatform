@@ -64,7 +64,7 @@ class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
     
     def __init__(self, im_feature_vecs, weights, feature_map, lamda):
         WeightedFeatureMapDensity.__init__(self,im_feature_vecs, weights, \
-           feature_map) #rola add self
+           feature_map) 
         self.lamda = lamda
         
         if feature_map is None:
@@ -78,9 +78,7 @@ class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
         print(self.feature_map.num_terms)
         accum = \
             self.weights[0]*self.feature_map.get_mapped_feature_vec_element(0)
-        for d in range(1, self.feature_map.num_terms):
-            print(d)
-            # print(self.feature_map.get_mapped_feature_vec_element(d))
+        for d in range(1, self.feature_map.num_terms):            
             accum = accum + \
               self.weights[d]*self.feature_map.get_mapped_feature_vec_element(d)
         

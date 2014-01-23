@@ -543,7 +543,7 @@ int main( int argc, char *argv[] )
   //
   std::cout << "Reading left atlas..." << std::endl;
   ReaderType::Pointer leftReader = ReaderType::New();
-    leftReader->SetFileName( leftAtlasFileName );
+    leftReader->SetFileName( leftAtlasFileName.c_str() ); //.c_str()
   try
     {
     leftReader->Update();
@@ -587,7 +587,7 @@ int main( int argc, char *argv[] )
   //
   std::cout << "Reading right atlas..." << std::endl;
   ReaderType::Pointer rightReader = ReaderType::New();
-    rightReader->SetFileName( rightAtlasFileName );
+    rightReader->SetFileName( rightAtlasFileName.c_str() ); //.c_str()
   try
     {
     rightReader->Update();
@@ -644,10 +644,10 @@ int main( int argc, char *argv[] )
   //
   // Write the convex hull
   //
-  std::cout << "Writing convex hull..." << std::endl;
+  std::cout << "Writing convex hull... " << std::endl;
   WriterType::Pointer writer = WriterType::New();
-    writer->SetFileName( outputFileName );
-    writer->UseCompressionOn();
+    writer->SetFileName( outputFileName.c_str() ); //
+    writer->UseCompressionOn(); 
     writer->SetInput( convexHullImage );
   try
     {

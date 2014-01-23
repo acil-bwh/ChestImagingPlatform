@@ -23,7 +23,7 @@
     </acknowledgements>
 
   <parameters>
-    <string>
+    <image>
       <name>leftAtlasFileName</name>
       <label>Left Atlas Filename</label>
       <channel>input</channel>
@@ -31,8 +31,8 @@
       <longflag>--leftAtlas</longflag>
       <description><![CDATA[Left lung atlas file name]]></description>
       <default>q</default>
-    </string>   
-    <string>
+    </image>
+    <image>
       <name>rightAtlasFileName</name>
       <label>right Atlas FileName</label>
       <channel>input</channel>
@@ -40,8 +40,8 @@
       <longflag>--rightAtlas</longflag>
       <description><![CDATA[Right lung atlas file name]]></description>
       <default>q</default>
-    </string>
-    <string>
+    </image>
+    <geometry>
       <name>outputFileName</name>
       <label>output Filename</label>
       <channel>input</channel>
@@ -49,7 +49,7 @@
       <longflag>--output</longflag>
       <description><![CDATA[Output convex hull file name]]></description>
       <default>q</default>
-    </string>   
+    </geometry>
     <integer>
       <name>numRotations</name>
       <label>number of Rotations</label>

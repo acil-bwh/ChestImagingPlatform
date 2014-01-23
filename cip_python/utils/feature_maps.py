@@ -90,10 +90,6 @@ class PolynomialFeatureMap(FeatureMap):
             order_index=order_index+1
             cumul_numterms+=self.num_terms_per_order[order_index] 
             
-        print("order index = "+str(order_index)) 
-        print("element index = "+str(element_index))   
-        print("element within order = "+str(element_within_order))           
-
         #now now through a case statement for the established orders and terms
         if self.input_orders[order_index] is 0:
             return 1.0

@@ -21,8 +21,8 @@
       <channel>input</channel>
       <flag>v</flag>
       <longflag>--SimilarityMetric</longflag>
-      <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual \ 
-      information), NMI (for normalized mutual information), and mean squares (msqr), \
+      <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual \
+          information), NMI (for normalized mutual information), and mean squares (msqr), \
       NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
       <default>MI</default>
     </string>

@@ -37,14 +37,18 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
     
     #Read the similarity values 
     similarity_values = getMISimilarityVec(list_of_similarity_xml_files)
-    
+    print(similarity_values)
+
     #find highest matches    
     indexes=[]
     for i in range(num_training_cases):
         indexes.append(i)
-    
-    nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
-        i: similarity_values[i]) #take (from 0 to 10, assuming testint is not in trainng)
+    if (similarity == "NCC"):
+        nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
+            i: abs(float(similarity_values[i]))) #take (from 0 to 10, assuming testint is not in trainng)
+    else:
+        nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
+            i: (similarity_values[i])) #take (from 0 to 10, assuming testint is not in trainng)        
     print(nlargestvalues)
     patient_atlas_labelmaps = [""]*num_closest_cases
     patient_atlas_similarity = [1.0]*num_closest_cases
@@ -57,3 +61,18 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
     
     closest_cases = np.vstack((patient_atlas_labelmaps, patient_atlas_similarity))
     return closest_cases
+
+def getRandomCases(list_of_label_files, num_closest_cases):  
+    
+    #find 10 random patients from the list (make sure that they exclude the patient
+
+    patient_atlas_labelmaps = [""]*num_closest_cases
+    patient_atlas_similarity = [0.1]*num_closest_cases
+    nrandomvalues= np.random.randint(0, 99, 15)
+    
+    nrandomvalues3 = np.unique(nrandomvalues)[0:10]
+    for i in range(num_closest_cases): #i=0,9
+        patient_atlas_labelmaps[i] = list_of_label_files[nrandomvalues3[i]]
+        
+    random_cases = np.vstack((patient_atlas_labelmaps, patient_atlas_similarity))
+    return random_cases

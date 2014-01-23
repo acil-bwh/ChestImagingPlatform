@@ -12,7 +12,7 @@
         and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
   <parameters>
-    <string>
+    <image>
       <name>ctFileName</name>
       <label>CT file name</label>
       <channel>input</channel>
@@ -20,8 +20,8 @@
       <longflag>--ct</longflag>
       <description><![CDATA[CT file name]]></description>
       <default>q</default>
-    </string>  
-    <string>
+    </image>
+    <geometry type="model">
       <name>convexHullMeshFileName</name>
       <label>convex Hull Mesh FileName</label>
       <channel>input</channel>
@@ -30,7 +30,7 @@
       <description><![CDATA[Convex hull mesh file name
 ]]></description>
       <default>q</default>
-    </string>  
+    </geometry>
     <string>
       <name>outputTransformFileName</name>
       <label>output Transform FileName</label>

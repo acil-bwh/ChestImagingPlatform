@@ -66,6 +66,8 @@
 #include "itkNormalizedCorrelationImageToImageMetric.h"
 #include <itkSubsample.h>
 #include <itkCompositeTransform.h>
+#include <itkAffineTransform.h>
+#include "itkResampleImageFilter.h"
 
 namespace
 {
@@ -98,7 +100,7 @@ typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >  
 typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  >                 ncMetricType;
 typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
 typedef itk::CompositeTransform< double, 3 > CompositeTransformType;
-
+typedef itk::ImageFileWriter< ShortImageType >  WriterType;
 
 struct REGIONTYPEPAIR
 {
@@ -143,7 +145,31 @@ void ReadTransformFromFile( TransformType::Pointer transform, const char* fileNa
 
 }
 
-
+TransformType::Pointer GetTransformFromFile( std::string fileName )
+{
+    itk::TransformFileReader::Pointer transformReader = itk::TransformFileReader::New();
+    transformReader->SetFileName( fileName );
+        try
+        {
+            transformReader->Update();
+        }
+        catch ( itk::ExceptionObject &excp )
+        {
+            std::cerr << "Exception caught reading transform:";
+            std::cerr << excp << std::endl;
+        }
+        
+        itk::TransformFileReader::TransformListType::const_iterator it;
+        
+        it = transformReader->GetTransformList()->begin();
+        
+        TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() );
+        
+        // transform->GetInverse( transform ); //Not sure about what this is doing here
+        
+        return transform;
+}
+    
 cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
 {
   std::cout << "Reading label map..." << std::endl;
@@ -246,8 +272,7 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
 
-  std::cout<< "agrs parsed, new 2"<<similarityMetric.c_str()<<std::endl;
-  
+ 
   //Read in region and type pair
   std::vector< REGIONTYPEPAIR > regionTypePairVec;
   /*	
@@ -292,7 +317,7 @@ int main( int argc, char *argv[] )
   else
     {
     std::cerr <<"Error: No lung label map specified"<< std::endl;
-    return cip::EXITFAILURE;
+    //return cip::EXITFAILURE;
     }
   
 
@@ -309,9 +334,9 @@ int main( int argc, char *argv[] )
   cip::LabelMapType::Pointer subSampledMovingImage = cip::LabelMapType::New();
   if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
-    std::cout << "Reading label map from file..." << std::endl;
-    movingLabelMap = ReadLabelMapFromFile( movingLabelmapFileName );
 
+    movingLabelMap = ReadLabelMapFromFile( movingLabelmapFileName );
+        
     if (movingLabelMap.GetPointer() == NULL)
       {
       return cip::LABELMAPREADFAILURE;
@@ -320,7 +345,7 @@ int main( int argc, char *argv[] )
   else
     {
     std::cerr <<"Error: No lung label map specified"<< std::endl;
-    return cip::EXITFAILURE;
+    //return cip::EXITFAILURE;
     }
 /*
   // Extract fixed Image region that we want
@@ -432,9 +457,9 @@ int main( int argc, char *argv[] )
   typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
   MaskReaderType::Pointer  maskReader = MaskReaderType::New();
   
-  /*if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+  if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
-      maskReader->SetFileName(fixedLabelmapFileName.c_str() );
+      maskReader->SetFileName(movingLabelmapFileName.c_str() );
 
       try
 	{
@@ -449,7 +474,7 @@ int main( int argc, char *argv[] )
       spatialObjectMask->SetImage(maskReader->GetOutput());
       //Subsample(spatialObjectMask,downsampleFactor);
 
-      }*/
+    }
   
   //  spatialObjectMask->SetImage(  movingLabelMap);
 
@@ -458,30 +483,36 @@ int main( int argc, char *argv[] )
   //parse transform arg  and join transforms together
   
    // TransformType::Pointer transform = TransformType::New();
-   //last transform applied first, so make last transform 
-  CompositeTransformType::Pointer transform = CompositeTransformType::New();
-   TransformType::Pointer transformTemp2 = TransformType::New();
+   //last transform applied first, so make last transform
+    CompositeTransformType::Pointer transform = CompositeTransformType::New();
+    TransformType::Pointer transformTemp2 = TransformType::New();
     for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
-      { std::cout<<"adding tx: "<<i<<std::endl;
-     TransformType::Pointer transformTemp = TransformType::New();
-     ReadTransformFromFile(transformTemp, (inputTransformFileName[i]).c_str() );
-       // Invert the transformation if specified by command like argument. Only inverting the first transformation
-     //bool isInvertTransformation = true;
-     if((i==0)&& (isInvertTransform == true))
-	 {
-	   std::cout<<"inverting transform"<<std::endl;
-	   transformTemp->GetInverse( transformTemp );
-	 }
-     // ReadTransformFromFile(transformTemp2, inputTransformFileName[i].c_str() );
-     transform->AddTransform(transformTemp);
-       }
+      {
 
-       transform->SetAllTransformsToOptimizeOn();		
+          TransformType::Pointer transformTemp = TransformType::New();
+          //ReadTransformFromFile(transformTemp, (inputTransformFileName[i]).c_str() );
+         transformTemp = GetTransformFromFile((inputTransformFileName[i]).c_str() );
+          // Invert the transformation if specified by command like argument. Only inverting the first transformation
+          //isInvertTransform = true;
+          if((i==0)&& (isInvertTransform == true))
+          {
+              std::cout<<"inverting transform"<<std::endl;
+              //transformTemp->Print( std::cout);
+              transformTemp->SetMatrix( transformTemp->GetInverseMatrix());
+              //transformTemp->Print( std::cout);
+              transform->AddTransform(transformTemp); 
+          }
+            
+          else    
+              transform->AddTransform(transformTemp);
+          transformTemp2 = GetTransformFromFile(inputTransformFileName[0].c_str() );
+       
+      }
+
+       transform->SetAllTransformsToOptimizeOn();
 
 
-  //test identity
 
-  std::cout<<"initializing transform"<<std::endl;
   /*
 
   InitializerType::Pointer initializer = InitializerType::New();
@@ -493,6 +524,7 @@ int main( int argc, char *argv[] )
 
   */
 
+  
 
   OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
   optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;   optimizerScales[2] =  1.0;
@@ -507,22 +539,58 @@ int main( int argc, char *argv[] )
   std::cout<<"initializing optimizer"<<std::endl;
   OptimizerType::Pointer optimizer = OptimizerType::New();
   //optimizer->SetScales( optimizerScales );
-  optimizer->SetMaximumStepLength( 0 );
-  optimizer->SetMinimumStepLength( 0 );
-  optimizer->SetNumberOfIterations( 1 );
-
-
+  //optimizer->SetMaximumStepLength( 0.00000000 );
+  //optimizer->SetMinimumStepLength( 0.00000000 );
+  optimizer->SetNumberOfIterations( 0 );
+    
+    ShortImageType::SpacingType spacing;
+    //cip::LabelMapType::
+    ShortImageType::SizeType    size;
+    ShortImageType::PointType   origin;
+    
+    spacing = ctFixedImage->GetSpacing();
+    size    = ctFixedImage->GetLargestPossibleRegion().GetSize();
+    origin  = ctFixedImage->GetOrigin();
+    
+    TransformType::Pointer reg_transform = TransformType::New();
+    /*
+    std::cout << "Resampling..." << std::endl;
+    ResampleType::Pointer resampler = ResampleType::New();
+    resampler->SetTransform( transformTemp2 );
+    resampler->SetInterpolator( interpolator );
+    resampler->SetInput( ctMovingImage );
+    resampler->SetSize( size );
+    resampler->SetOutputSpacing( spacing );
+    resampler->SetOutputOrigin( origin );
+    resampler->SetOutputDirection( ctFixedImage->GetDirection() );
+    try
+    {
+        resampler->Update();
+    }
+    catch ( itk::ExceptionObject &excp )
+    {
+        std::cerr << "Exception caught resampling:";
+        std::cerr << excp << std::endl;
+        
+        return cip::RESAMPLEFAILURE;
+    }
+    */
+    
+   
   RegistrationType::Pointer registration = RegistrationType::New();
   registration->SetOptimizer( optimizer );
   registration->SetInterpolator( interpolator );
-  registration->SetTransform( transform );
+    registration->SetTransform(transform);
   registration->SetFixedImage( ctFixedImage);
 
-    registration->SetMovingImage(ctMovingImage ); 
+    registration->SetMovingImage(ctMovingImage);// resampler->GetOutput());//ctMovingImage);
   //registration->SetFixedImageRegion(
   //	 fixedExtractor->GetOutput()->GetBufferedRegion() );
-  registration->SetInitialTransformParameters( transform->GetParameters());
+    registration->SetInitialTransformParameters( transform->GetParameters());//transform->GetParameters());
 
+    
+   //Save output for debugging purposes
+    
 
   std::cout<<"initializing metric"<<std::endl;
  
@@ -535,34 +603,30 @@ int main( int argc, char *argv[] )
       histogramSize[1] = 20;
       metric->SetHistogramSize( histogramSize );
 
-       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	        metric->SetFixedImageMask( spatialObjectMask );
+     //  if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	 //       metric->SetFixedImageMask( spatialObjectMask );
       registration->SetMetric( metric );
      
     }
     else if (similarityMetric =="msqr")
       {
 	msqrMetricType::Pointer metric = msqrMetricType::New();
-       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	        metric->SetFixedImageMask( spatialObjectMask );
+
         registration->SetMetric( metric );
-       std::cout<<"msqr metric selected"<<std::endl;
       }
     else if (similarityMetric =="nc")
       {
-	ncMetricType::Pointer metric = ncMetricType::New();
-       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	        metric->SetFixedImageMask( spatialObjectMask );
+          ncMetricType::Pointer metric = ncMetricType::New();
+          if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
+              metric->SetMovingImageMask( spatialObjectMask );
+          
         registration->SetMetric( metric );
-       std::cout<<"nc metric selected"<<std::endl;
       }
     else if (similarityMetric =="gd")
       {
 	gdMetricType::Pointer metric = gdMetricType::New();
-       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	        metric->SetFixedImageMask( spatialObjectMask );
+
         registration->SetMetric( metric );
-       std::cout<<"gd metric selected"<<std::endl;
       }
    else //MI is default
      {
@@ -573,16 +637,17 @@ int main( int argc, char *argv[] )
 
       metric->SetFixedImageStandardDeviation( 13.5 );
       metric->SetMovingImageStandardDeviation( 13.5 );
+         
+
       // if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
       //	        metric->SetFixedImageMask( spatialObjectMask );
        registration->SetMetric( metric );
        	
      }
  
- std::cout << "Starting registration for mutual information calculation..." << std::endl;
     similarity_type = registration->GetMetric()->GetNameOfClass();
- 
-   std::cout << "Similarity metric used"<<similarity_type<<std::endl;
+    std::cout << "Similarity metric used, new: "<<similarity_type<<std::endl;
+
 
 
  
@@ -602,10 +667,15 @@ std::endl;
   OptimizerType::ParametersType finalParams = registration->GetLastTransformParameters();
   //get the Mutual information value between the registered CT images
   int numberOfIterations2 = optimizer->GetCurrentIteration();
-  const double mutualInformationValue = optimizer->GetValue();
-  std::cout<<"number mutual iteration = "<<numberOfIterations2<<"  MI="<<mutualInformationValue<<std::endl;
+  //const double mutualInformationValue = optimizer->GetValue();
+  const double mutualInformationValue = registration->GetMetric()->GetValue(finalParams);
+  std::cout<<" iteration = "<<numberOfIterations2<<"  metric="<<mutualInformationValue<<std::endl;
 
-  
+
+    
+    
+    
+    
   SIMILARITY_XML_DATA ctSimilarityXMLData;
   ctSimilarityXMLData.regionAndTypeUsed.assign("");
   /*for ( unsigned int i=0; i<regionVecArg.size(); i++ )
