@@ -52,28 +52,6 @@
           <description><![CDATA[Lower clip value applied to input image before segmentation. This flag should be followed by two values: the first value is the clip value and the second value is the replacement value (i.e., everything below the clip.]]></description>
           <default>-1025</default>
       </integer>
-
-      
-      
-      
-      
-      
-      <integer>
-          <name>lowerClipValueTemp</name>
-          <longflag>--</longflag>
-          <flag></flag>
-          <label></label>
-          <description><![CDATA[]]></description>
-          <default>NA</default>
-      </integer>
-      
-      
-      
-      
-      
-      
-      
-      
       <float>
       <name>downsampleFactor</name>
       <label>downsample Factor</label>
