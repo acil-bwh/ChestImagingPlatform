@@ -9,7 +9,6 @@
  */
 
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "GetStructuresInLabelMapCLP.h"
 
