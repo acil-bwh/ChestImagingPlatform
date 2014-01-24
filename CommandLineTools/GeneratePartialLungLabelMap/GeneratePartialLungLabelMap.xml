@@ -2,125 +2,155 @@
 <executable>
   <category>Chest Imaging Platform</category>
   <title>GeneratePartialLungLabelMap</title>
-
-  <description><![CDATA[Generates a partial lung LabelMap from CT image.]]></description>
+  <description><![CDATA[Segment a CT image into lung regions with approximate aiway and vessel \
+  segmentations.]]>
+  </description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
+
   <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>outputLungMaskFileName</name>
+      <label>Output segmentation file name</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description><![CDATA[Output segmentation file name]]></description>
+      <default>NA</default>
+    </image>  
+
+    <image>
+      <name>ctFileName</name>
+      <label>CT file name</label>
+      <channel>input</channel>
+      <flag>c</flag>
+      <longflag>--ct</longflag>
+      <description><![CDATA[CT image file name]]></description>
+      <default>NA</default>
+    </image>  
+
+    <image>
+      <name>helperMaskFileName</name>
+      <label>Helper mask file name</label>
+      <channel>input</channel>
+      <longflag>hm</longflag>
+      <description><![CDATA[Help mask file name. The helper mask is a crude lung segmentation that \
+      can be supplied to assist the segmentation for difficult cases.]]></description>
+      <default>NA</default>
+    </image>  
 
     <string>
-      <name>helperMaskFileName</name>
-      <label>Similarity Metric</label>
+      <name>ctDir</name>
+      <label>CT directory name</label>
       <channel>input</channel>
-      <longflag>--hm</longflag>
-        <description><![CDATA[Helper mask file name. This mask is a simple mask (typically binary with 1 as foreground) such that the lung region is well thresholded and the lungs are separated. The airways are assumed to be foregournd]]></description>
+      <longflag>dir</longflag>
+      <description><![CDATA[Directory containing DICOM images to segment.]]></description>
       <default>NA</default>
-    </string>
-      <string>
-          <name>outputLungMaskFileName</name>
-          <label>output Lung Mask File Name</label>
-          <channel>output</channel>
-          <flag>-o</flag>
-          <description><![CDATA[output Lung Mask File Name]]></description>
-          <default>NA</default>
-      </string>
-      <string>
-          <name>ctFileName</name>
-          <label>ct FileName</label>
-          <channel>input</channel>
-          <longflag>--ii</longflag>
-          <description><![CDATA[Input CT image file name]]></description>
-          <default>NA</default>
-      </string>
-      <string>
-          <name>ctDir</name>
-          <label>Input CT directory</label>
-          <channel>input</channel>
-          <longflag>--dir</longflag>
-          <description><![CDATA[Input CT directory]]></description>
-          <default>NA</default>
-      </string>
-      <integer>
-          <name>lowerClipValueTemp</name>
-          <longflag>--lcv</longflag>
-          <label></label>
-          <description><![CDATA[Lower clip value applied to input image before segmentation. This flag should be followed by two values: the first value is the clip value and the second value is the replacement value (i.e., everything below the clip.]]></description>
-          <default>-1025</default>
-      </integer>
-      <float>
-      <name>downsampleFactor</name>
-      <label>downsample Factor</label>
-      <channel>input</channel>
-      <flag>d</flag>
-      <longflag>--degrees</longflag>
-      <description><![CDATA[downsampleFactor]]></description>
-      <default>1.0</default>
-    </float>  
-<integer-vector>
-      <name>typeVecArg</name>
-      <longflag>--typeVec</longflag>
-      <flag>c</flag>
-      <label>typeVec</label>
-      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
+    </string>  
+  </parameters>
 
-<integer-vector>
-      <name>typePairVecArg</name>
-      <longflag>--typePairVec</longflag>
-      <flag>w</flag>
-      <label>typePairVec</label>
-      <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag]]></description>
-</integer-vector>
+  <parameters>
+    <integer>
+      <name>lowerClipValue</name>
+      <longflag>lcv</longflag>
+      <description>Lower clip value applied to input image before segmentation. \
+      Everything below the clip value will be assigned the replacement value.</description>
+      <label>Lower clip value</label>
+      <default>-1024</default>
+    </integer>
 
-<integer-vector>
-      <name>regionPairVecArg</name>
-      <longflag>regionPairVec</longflag>
-      <flag>b</flag>
-      <label>regionPairVec</label>
-      <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
+    <integer>
+      <name>lowerReplacementValue</name>
+      <longflag>lrv</longflag>
+      <description>Lower replacement value applied to input image before segmentation. \
+      Everything below the clip value will be assigned the replacement value.</description>
+      <label>Lower replacement value</label>
+      <default>-1024</default>
+    </integer>
+
+    <integer>
+      <name>upperClipValue</name>
+      <longflag>ucv</longflag>
+      <description>Upper clip value applied to input image before segmentation. \
+      Everything above the clip value will be assigned the replacement value.</description>
+      <label>Upper clip value</label>
+      <default>1024</default>
+    </integer>
+
+    <integer>
+      <name>upperReplacementValue</name>
+      <longflag>urv</longflag>
+      <description>Upper replacement value applied to input image before segmentation. \
+      Everything above the clip value will be assigned the replacement value.</description>
+      <label>Upper replacement value</label>
+      <default>1024</default>
+    </integer>
+
+    <integer>
+      <name>lungSplitRadius</name>
+      <longflag>lsr</longflag>
+      <description>Radius used to split the left and right lungs.</description>
+      <label>Lung split radius</label>
+      <default>3</default>
+    </integer>
+
+    <double>
+      <name>closingRadius</name>
+      <longflag>cr</longflag>
+      <description>The radius used for morphological closing in physical units (mm). The structuring \
+      element is created so that the number of voxels in each direction covers no less \
+      than the specified amount</description>
+      <label>Morphological closing radius</label>
+      <default>5.0</default>
+    </double>
+
+    <double>
+      <name>minAirwayVolume</name>
+      <longflag>min</longflag>
+      <description>Minimum airway volume</description>
+      <default>0.0</default>
+      <label>Minimum airway volume</label>
+    </double>
+
+    <double>
+      <name>maxAirwayVolume</name>
+      <longflag>max</longflag>
+      <description>Maximum airway volume</description>
+      <default>50.0</default>
+      <label>Maximum airway volume</label>
+    </double>
+
+    <double>
+      <name>airwayVolumeIncreaseRate</name>
+      <longflag>ir</longflag>
+      <description>Maximum rate at which the airway is volume is permitted to increase as threshold \
+      is lowered during airway segmentation.</description>
+      <default>2.0</default>
+      <label>Airway volume increase rate</label>
+    </double>
 
     <boolean>
-      <name>isInvertTransform</name>
-      <label>Invert Transformation</label>
-      <channel>input</channel>
-      <longflag>--invertTransformation</longflag>
-      <description><![CDATA[Uses the inverse transformation if set to True. Default: False.]]></description>
-      <default>false</default>
-    </boolean> 
+      <name>headFirst</name>
+      <longflag>hf</longflag>
+      <description>Indicates if scan is head first.</description>
+      <label>Head first</label>
+      <default>true</default>
+    </boolean>
 
-   <string-vector>
-      <name>inputTransformFileName</name>
-      <label>input Transform FileNames</label>
-      <channel>input</channel>
-      <flag>q</flag>
-      <longflag>--inputTransform</longflag>
-      <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
-      <default>q</default>
-    </string-vector>   
- 
-    <string>
-      <name>outputXMLFileName</name>
-      <label>output XML File</label>
-      <channel>input</channel>
-      <flag>e</flag>
-      <longflag>--outputXMLFile</longflag>
-      <description><![CDATA[The name of the output xml file. If not specified, it will be automatically assigned as moving-to-fixed.xml ]]></description>
-      <default>q</default>
-    </string> 
-
-<integer-vector>
-      <name>regionVecArg</name>
-      <longflag>--regionVec</longflag>
-      <flag>r</flag>
-      <label>regionVec</label>
-      <description><![CDATA[Specify a region you want to crop]]></description>
-</integer-vector>
+    <boolean>
+      <name>aggressiveLungSplitting</name>
+      <longflag>agg</longflag>
+      <description>Use aggressive lung splitting to split the left and right lungs.</description>
+      <label>Aggressive lung splitting</label>
+      <default>0</default>
+    </boolean>
 
   </parameters>
 </executable>
