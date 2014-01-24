@@ -787,7 +787,7 @@ std::endl;
           std::cout<<"outputtransform filename ="<<inputTransformFileName[i].c_str()<<std::endl;
           pos=0;
           next=0;
-          for (int i = 0; i < (pathLength);i++)
+          for (int ii = 0; ii < (pathLength);ii++)
           {
             pos = next+1;
               next = inputTransformFileName[0].find('/', next+1);
