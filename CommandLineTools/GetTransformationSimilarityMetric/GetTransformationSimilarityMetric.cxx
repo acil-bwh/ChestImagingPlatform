@@ -541,7 +541,7 @@ int main( int argc, char *argv[] )
   //optimizer->SetScales( optimizerScales );
   //optimizer->SetMaximumStepLength( 0.00000000 );
   //optimizer->SetMinimumStepLength( 0.00000000 );
-  optimizer->SetNumberOfIterations( 0 );
+  optimizer->SetNumberOfIterations( 0 ); //0 good
     
     ShortImageType::SpacingType spacing;
     //cip::LabelMapType::
@@ -653,7 +653,9 @@ int main( int argc, char *argv[] )
  
   try
     {
-      registration->StartRegistration();
+        registration->Initialize();
+        registration->Update();
+      //registration->StartRegistration();
     }
   catch( itk::ExceptionObject &excp )
     {
