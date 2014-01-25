@@ -71,10 +71,6 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
     
     #find lowest energy label, right now maximum posterior probability
     lowest_energy_label = np.argmax(posterior_probabilities, axis=0)
-
-    #Debug: save lowest energy label
-    nrrd.write("/Users/rolaharmouche/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/lowest_energy_label.nrrd", lowest_energy_label)
-
     
     #isMultiple_labels&lowest or nonmultiple&current
     #or multiple & (non-lowest) = 0
