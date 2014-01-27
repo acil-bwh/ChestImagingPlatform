@@ -75,6 +75,7 @@ enum ChestRegion {
   LIVER,                  //25
   SPLEEN,                 //26
   ABDOMEN,                //27
+  PARAVERTEBRAL,          //28
 };
 
 
@@ -168,6 +169,7 @@ enum ChestType {
   BRONCHIECTATICAIRWAY,           //77
   NONBRONCHIECTATICAIRWAY,        //78
   AMBIGUOUSBRONCHIECTATICAIRWAY,  //79
+  MUSCLE,                         //80
 };
 
 enum ReturnCode {
@@ -203,8 +205,8 @@ public:
   ~ChestConventions(){};
   ChestConventions()
     {
-      m_NumberOfEnumeratedChestRegions = 28;
-      m_NumberOfEnumeratedChestTypes   = 80;
+      m_NumberOfEnumeratedChestRegions = 29;
+      m_NumberOfEnumeratedChestTypes   = 81;
 
       typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -285,6 +287,7 @@ public:
       ChestRegions.push_back( static_cast< unsigned char >( LIVER ) );
       ChestRegions.push_back( static_cast< unsigned char >( SPLEEN ) );
       ChestRegions.push_back( static_cast< unsigned char >( ABDOMEN ) );
+      ChestRegions.push_back( static_cast< unsigned char >( PARAVERTEBRAL ) );
 
       ChestTypes.push_back( static_cast< unsigned char >( UNDEFINEDTYPE ) );
       ChestTypes.push_back( static_cast< unsigned char >( NORMALPARENCHYMA ) );
@@ -366,6 +369,7 @@ public:
       ChestTypes.push_back( static_cast< unsigned char >( BRONCHIECTATICAIRWAY ) );
       ChestTypes.push_back( static_cast< unsigned char >( NONBRONCHIECTATICAIRWAY ) );
       ChestTypes.push_back( static_cast< unsigned char >( AMBIGUOUSBRONCHIECTATICAIRWAY ) );
+      ChestTypes.push_back( static_cast< unsigned char >( MUSCLE ) );
 
       ChestRegionNames.push_back( "UNDEFINEDREGION" );
       ChestRegionNames.push_back( "WHOLELUNG" ); 
@@ -395,6 +399,7 @@ public:
       ChestRegionNames.push_back( "LIVER" );
       ChestRegionNames.push_back( "SPLEEN" );
       ChestRegionNames.push_back( "ABDOMEN" );
+      ChestRegionNames.push_back( "PARAVERTEBRAL" );
 
       ChestTypeNames.push_back( "UNDEFINEDTYPE" );
       ChestTypeNames.push_back( "NORMALPARENCHYMA" );
@@ -476,6 +481,7 @@ public:
       ChestTypeNames.push_back( "BRONCHIECTATICAIRWAY" );
       ChestTypeNames.push_back( "NONBRONCHIECTATICAIRWAY" );
       ChestTypeNames.push_back( "AMBIGUOUSBRONCHIECTATICAIRWAY" );
+      ChestTypeNames.push_back( "MUSCLE" );
 
       //
       // Each type is associated with a color. This is generally
@@ -571,6 +577,7 @@ public:
       double* t078 = new double[3]; t078[0] = 0.25; t078[1] = 0.88; t078[2] = 0.81; ChestTypeColors.push_back( t078 ); //BRONCHIECTATICAIRWAY
       double* t079 = new double[3]; t079[0] = 0.25; t079[1] = 0.87; t079[2] = 0.81; ChestTypeColors.push_back( t079 ); //NONBRONCHIECTATICAIRWAY
       double* t080 = new double[3]; t080[0] = 0.25; t080[1] = 0.86; t080[2] = 0.81; ChestTypeColors.push_back( t080 ); //AMBIGUOUSBRONCHIECTATICAIRWAY
+      double* t081 = new double[3]; t081[0] = 0.90; t081[1] = 0.00; t081[2] = 0.00; ChestTypeColors.push_back( t081 ); //MUSCLE
 
       //
       // Each region is associated with a color. This is generally
@@ -605,6 +612,7 @@ public:
       double* r026 = new double[3]; r026[0] = 0.66; r026[1] = 0.36; r026[2] = 0.40; ChestRegionColors.push_back( r026 ); //LIVER
       double* r027 = new double[3]; r027[0] = 1.00; r027[1] = 1.00; r027[2] = 0.01; ChestRegionColors.push_back( r027 ); //SPLEEN
       double* r028 = new double[3]; r028[0] = 1.00; r028[1] = 0.50; r028[2] = 0.01; ChestRegionColors.push_back( r028 ); //ABDOMEN
+      double* r029 = new double[3]; r029[0] = 1.00; r029[1] = 0.51; r029[2] = 0.01; ChestRegionColors.push_back( r029 ); //PARAVERTEBRAL
     }
   unsigned char GetNumberOfEnumeratedChestRegions() const
     {
