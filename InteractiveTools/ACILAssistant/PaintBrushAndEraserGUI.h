@@ -106,6 +106,12 @@ private:
   static void aorta_CB( Fl_Widget* o, void* v );
   void aorta_CB_i();
 
+  static void paravertebral_CB( Fl_Widget* o, void* v );
+  void paravertebral_CB_i();
+
+  static void muscle_CB( Fl_Widget* o, void* v );
+  void muscle_CB_i();
+
   static void liverMenuItem_CB( Fl_Widget* o, void* v );
   void liverMenuItem_CB_i();
 
