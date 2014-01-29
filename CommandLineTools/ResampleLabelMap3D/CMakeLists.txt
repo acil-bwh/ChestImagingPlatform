@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.0)
 
-project(ResampleLabelMap )
+project(ResampleLabelMap3D )
 
-set(MODULE_NAME ResampleLabelMap)
+set(MODULE_NAME ResampleLabelMap3D)
 
 
 find_package(SlicerExecutionModel REQUIRED)

@@ -46,7 +46,7 @@
 #include "itkTransformFileReader.h"
 #include "itkResampleImageFilter.h"
 #include "itkMetaImageIO.h"
-#include "ResampleLabelMapCLP.h"
+#include "ResampleLabelMap3DCLP.h"
 #include <itkCompositeTransform.h>
 
 

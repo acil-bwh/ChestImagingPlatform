@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-PROJECT(RegisterLabelMaps)
+PROJECT(RegisterLabelMaps3D)
 
-set(MODULE_NAME RegisterLabelMaps)
+set(MODULE_NAME RegisterLabelMaps3D)
 
 find_package(LibXml2 REQUIRED)
 
