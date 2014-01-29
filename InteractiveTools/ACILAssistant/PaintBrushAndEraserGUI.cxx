@@ -75,6 +75,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Spleen", 0, (Fl_Callback*)spleenMenuItem_CB, (void*)(this));
       o->add("Abdomen", 0, (Fl_Callback*)abdomen_CB, (void*)(this));
       o->add("Aorta", 0, (Fl_Callback*)aorta_CB, (void*)(this));
+      o->add("Paravertebral", 0, (Fl_Callback*)paravertebral_CB, (void*)(this));
     }
     { Fl_Choice* o = chestTypeChoice = new Fl_Choice(103, 214, 269, 28, "Chest Type");
       o->down_box(FL_BORDER_BOX);
@@ -91,6 +92,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Bronchiectatic Airway", 0, (Fl_Callback*)bronchiectaticAirwayMenuItem_CB, (void*)(this));
       o->add("Non-Bronchiectatic Airway", 0, (Fl_Callback*)nonBronchiectaticAirwayMenuItem_CB, (void*)(this));
       o->add("Ambiguous-Bronchiectatic Airway", 0, (Fl_Callback*)ambiguousBronchiectaticAirwayMenuItem_CB, (void*)(this));
+      o->add("Muscle", 0, (Fl_Callback*)muscle_CB, (void*)(this));
       //o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
       //o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
       //o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
@@ -355,7 +357,6 @@ void PaintBrushAndEraserGUI::leftMenuItem_CB_i() {
   this->m_ChestRegion = static_cast< unsigned char >( cip::LEFT );
 }
 
-
 void PaintBrushAndEraserGUI::rightMenuItem_CB( Fl_Widget* o, void* v ) {
   ((PaintBrushAndEraserGUI*)v)->rightMenuItem_CB_i();
 }
@@ -375,6 +376,22 @@ void PaintBrushAndEraserGUI::aorta_CB( Fl_Widget* o, void* v ) {
 }
 void PaintBrushAndEraserGUI::aorta_CB_i() {
   this->m_ChestRegion = static_cast< unsigned char >( cip::AORTA );
+}
+
+void PaintBrushAndEraserGUI::paravertebral_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->paravertebral_CB_i();
+}
+void PaintBrushAndEraserGUI::paravertebral_CB_i() {
+  this->m_ChestRegion = static_cast< unsigned char >( cip::PARAVERTEBRAL );
+}
+
+void PaintBrushAndEraserGUI::muscle_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->muscle_CB_i();
+}
+void PaintBrushAndEraserGUI::muscle_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::MUSCLE );
+  this->minValueInput->value(-50);
+  this->maxValueInput->value(90);
 }
 
 void PaintBrushAndEraserGUI::liverMenuItem_CB( Fl_Widget* o, void* v ) {
@@ -436,6 +453,8 @@ void PaintBrushAndEraserGUI::pectoralisMinorMenuItem_CB( Fl_Widget* o, void* v )
 }
 void PaintBrushAndEraserGUI::pectoralisMinorMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::PECTORALISMINOR );
+  this->minValueInput->value(-50);
+  this->maxValueInput->value(90);
 }
 
 void PaintBrushAndEraserGUI::pectoralisMajorMenuItem_CB( Fl_Widget* o, void* v ) {
@@ -443,6 +462,8 @@ void PaintBrushAndEraserGUI::pectoralisMajorMenuItem_CB( Fl_Widget* o, void* v )
 }
 void PaintBrushAndEraserGUI::pectoralisMajorMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::PECTORALISMAJOR );
+  this->minValueInput->value(-50);
+  this->maxValueInput->value(90);
 }
 
 void PaintBrushAndEraserGUI::subcutaneousFatMenuItem_CB( Fl_Widget* o, void* v ) {
@@ -450,6 +471,8 @@ void PaintBrushAndEraserGUI::subcutaneousFatMenuItem_CB( Fl_Widget* o, void* v )
 }
 void PaintBrushAndEraserGUI::subcutaneousFatMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::SUBCUTANEOUSFAT );
+  this->minValueInput->value(-200);
+  this->maxValueInput->value(0); 
 }
 
 void PaintBrushAndEraserGUI::visceralFatMenuItem_CB( Fl_Widget* o, void* v ) {
@@ -457,6 +480,8 @@ void PaintBrushAndEraserGUI::visceralFatMenuItem_CB( Fl_Widget* o, void* v ) {
 }
 void PaintBrushAndEraserGUI::visceralFatMenuItem_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::VISCERALFAT );
+  this->minValueInput->value(-250);
+  this->maxValueInput->value(-50);
 }
 
 void PaintBrushAndEraserGUI::obliqueFissureMenuItem_CB( Fl_Widget* o, void* v ) {
