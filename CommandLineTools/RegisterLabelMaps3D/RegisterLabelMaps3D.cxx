@@ -417,8 +417,9 @@ int main( int argc, char *argv[] )
   
   try
     {
-      registration->StartRegistration();
-      //registration->Update(); for ITKv4
+      //registration->StartRegistration();
+      registration->Initialize();
+      registration->Update();
     }
   catch( itk::ExceptionObject &excp )
     {
