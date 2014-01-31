@@ -8,7 +8,7 @@
 
 import os
 import pdb
-from cip_python.chest_particles import ChestParticles
+from cip_python.particles.chest_particles import ChestParticles
 
 class AirwayParticles(ChestParticles):
     """Class for airway-specific particles sampling
@@ -184,3 +184,5 @@ class AirwayParticles(ChestParticles):
         self.save_vtk(out_particles % 3)
         print "finished saving\#####n"
 
+        #Clean tmp Directory
+        self.clean_tmp_dir()
