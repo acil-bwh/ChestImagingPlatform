@@ -123,7 +123,10 @@ class MultiResVesselParticles(ChestParticles):
         print "about to save to vtk\n"
         self.save_vtk(merged_particles)
         print "finished saving\#####n"
-
+     
+        #Clean tmp Directory
+        self.clean_tmp_dir()
+  
     def execute_vessel_level (self,level):
         #Pre-processing
         if self._down_sample_rate > 1:

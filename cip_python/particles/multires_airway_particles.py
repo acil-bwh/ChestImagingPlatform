@@ -9,7 +9,7 @@
 import os
 import pdb
 from optparse import OptionParser
-from cip_python.chest_particles import ChestParticles
+from cip_python.particles.chest_particles import ChestParticles
 
 class MultiResAirwayParticles(ChestParticles):
     """Class for multiresolution airway-specific particles sampling
@@ -121,6 +121,9 @@ class MultiResAirwayParticles(ChestParticles):
         print "about to save to vtk\n"
         self.save_vtk(merged_particles)
         print "finished saving\#####n"
+  
+        #Clean tmp Directory
+        self.clean_tmp_dir()
 
     def execute_airway_level (self,level):
         #Pre-processing
@@ -239,8 +242,7 @@ class MultiResAirwayParticles(ChestParticles):
         return out_particles % (3,level)
 
 if __name__ == "__main__":
-    desc = """Produces a scatter plot of the input data and edges indicating\
-        constraints between data indices."""
+    desc = """Multi-resolution scale-space particles for airway segmentation."""
     
     parser = OptionParser(description=desc)
     parser.add_option('--ct_file', 
