@@ -8,7 +8,7 @@
 
 import os
 import pdb
-from cip_python.chest_particles import ChestParticles
+from cip_python.particles.chest_particles import ChestParticles
 
 class VesselParticles(ChestParticles):
     """Class for vessel-specific particles sampling
