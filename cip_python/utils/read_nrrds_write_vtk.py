@@ -19,5 +19,5 @@ class ReadNRRDsWriteVTK:
         self._argumentList = self._argumentList + " -i " + fileName + " -a " + arrayName
 
     def execute( self ):
-        tmpCommand = "ReadNRRDsWriteVTK " + self._argumentList                
+        tmpCommand = "ReadNRRDsWriteVTK " + self._argumentList
         subprocess.call( tmpCommand, shell=True )
