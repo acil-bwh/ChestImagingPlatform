@@ -138,7 +138,7 @@ class ChestParticles:
         # Limit the uppe range of the input image
         self._max_intensity =  400
         # Limit the lower range of the input image
-        self._minIntensity = -1024
+        self._min_intensity = -1024
         # Downsampling factor to enable multiresolution particles
         self._down_sample_rate = down_sample_rate
 
@@ -436,7 +436,7 @@ class ChestParticles:
         out_vol : string
         
         """
-        tmp_command = "unu 3op clamp " + str(self._minIntensity) + " " + \
+        tmp_command = "unu 3op clamp " + str(self._min_intensity) + " " + \
             in_vol + " " + str(self._max_intensity)  + \
             " | unu resample -s x1 x1 x1 " + self._inverse_kernel_params + \
             " -t float -o " + out_vol
