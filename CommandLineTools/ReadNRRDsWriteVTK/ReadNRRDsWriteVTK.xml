@@ -54,6 +54,15 @@
             <longflag>outFileName</longflag>
             <description><![CDATA[Ouput vtk file name. All particles information will be stored in this file.]]></description>
             <default>NA</default>
-        </string>        
+        </string>
+      
+        <boolean>
+          <name>binaryOutput</name>
+          <label>VTK binary output file</label>
+          <flag>b</flag>
+          <longflag>binary</longflag>
+          <description><![CDATA[Ouput vtk file name in binary format.]]></description>
+          <default>false</default>
+        </boolean>
     </parameters>
 </executable>
