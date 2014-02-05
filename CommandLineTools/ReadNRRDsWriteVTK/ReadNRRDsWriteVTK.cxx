@@ -81,7 +81,7 @@ int main( int argc, char *argv[] )
   PARSE_ARGS;
     std::vector<std::string> arrayNameVec;
     std::vector<std::string> inFileNameVec;
-
+  
     if ( inFileNameVecArg.size() != arrayNameVecArg.size() )
       {
       std::cerr << "Mismatch between input file name (specified with -i or --inFileName) and array name ";
@@ -328,8 +328,16 @@ int main( int argc, char *argv[] )
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );
     writer->SetInput( polyData );
-    writer->SetFileTypeToASCII();
-    writer->Write();  
+    if (binaryOutput)
+      {
+      writer->SetFileTypeToBinary();
+      }
+    else
+      {
+      writer->SetFileTypeToASCII();
+      }
+
+    writer->Write();
 
   std::cout << "DONE." << std::endl;
 
