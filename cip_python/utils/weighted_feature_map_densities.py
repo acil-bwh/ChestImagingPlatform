@@ -74,14 +74,11 @@ class ExpWeightedFeatureMapDensity(WeightedFeatureMapDensity):
         assert len(self.weights) ==  self.feature_map.num_terms
         
     def compute(self):
-        print(len(self.weights))
-        print(self.feature_map.num_terms)
         accum = \
             self.weights[0]*self.feature_map.get_mapped_feature_vec_element(0)
-        for d in range(1, self.feature_map.num_terms):            
+        for d in range(1, self.feature_map.num_terms):  
             accum = accum + \
               self.weights[d]*self.feature_map.get_mapped_feature_vec_element(d)
-        
         exponential_density = np.exp(-self.lamda*accum)*self.lamda
         
         return exponential_density

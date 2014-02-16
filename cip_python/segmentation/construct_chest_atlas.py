@@ -41,9 +41,9 @@ def construct_probabilistic_atlas(label_maps, normalize=True, weights=None,
     #initialise atlas if NONE
 
     if atlas is None:
-         atlas = np.zeros([np.shape(label_maps[0])[0], np.shape( \
-                label_maps[0])[1], np.shape(label_maps[0])[2]], dtype=float)
-        
+         #atlas = np.zeros([np.shape(label_maps[0])[0], np.shape( \
+         #       label_maps[0])[1], np.shape(label_maps[0])[2]], dtype=float)
+         atlas = np.zeros(np.shape(label_maps[0]), dtype=float)        
     
     # Get the number of labelmaps
     num_labelmaps = len(label_maps)

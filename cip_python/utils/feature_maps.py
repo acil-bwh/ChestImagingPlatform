@@ -97,7 +97,7 @@ class PolynomialFeatureMap(FeatureMap):
             return self.feature_vecs[element_within_order]
         if self.input_orders[order_index] is 2:
             if element_within_order is 0:
-                return np.multiply(self.feature_vecs[0],self.feature_vecs[0])
+                 return np.multiply(self.feature_vecs[0],self.feature_vecs[0])
             if element_within_order is 1:
                 return np.multiply(self.feature_vecs[0],self.feature_vecs[1])
             if element_within_order is 2:

@@ -40,18 +40,20 @@ def transform_data ( reference_im, moving_im, transforms_list, output):
     None
     
   """
+  toolsPaths = ['TEEM_PATH','ITKTOOLS_PATH','ANTS_PATH'];
+  path=dict()
   
   tmp_command = "antsApplyTransforms -d 3 -i %(m)s -r %(f)s -n linear -o %(deformed)s"
   tmp_command = tmp_command % {'f':reference_im,'m':moving_im,'deformed':output}
   for tt in transforms_list:
     tmp_command = tmp_command + " -t %(tt)s"
     tmp_command = tmp_command % {'tt':tt}
-  
+   
     tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
     subprocess.call( tmp_command, shell=True, env=os.environ.copy())
-    
 
-def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cache,affine,elastic,use_lung_mask,use_body_mask,body_th,fast,resampled_out,generate_tfm):
+
+def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cache,affine,elastic,use_lung_mask,use_body_mask,body_th,fast,resampled_out,generate_tfm,pec_registration):
 
 
   #Check required tools path enviroment variables for tools path
@@ -89,13 +91,43 @@ def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cach
   fixed_body_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_bodyMask.nhdr")
   moving_body_mask_tmp = os.path.join(tmp_dir,moving_cid + "_bodyMask.nhdr")
 
+  fixed_pec_mask = os.path.join(data_dir,fixed_cid + "_pecsSubcutaneousFatClosedSlice_mask.nrrd") #dialiared pec mask
+  moving_pec_mask = os.path.join(data_dir,fixed_cid + "_pecsSubcutaneousFatClosedSlice_mask.nrrd")
+  fixed_pec_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_pecsSubcutaneousFatClosedSlice_mask.nrrd")
+  moving_pec_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_pecsSubcutaneousFatClosedSlice_mask.nrrd")
+  
+  if pec_registration == True:
+    fixed = os.path.join(data_dir,fixed_cid + "_pecSlice.nrrd")
+    moving = os.path.join(data_dir,moving_cid + "_pecSlice.nrrd")
+    fixed_tmp = os.path.join(tmp_dir,fixed_cid + "_pecSlice.nrrd")
+    moving_tmp = os.path.join(tmp_dir,moving_cid + "_pecSlice.nrrd")
+    moving_deformed = os.path.join(data_dir,moving_cid + "_to_" + fixed_cid + "_pecSlice.nrrd")
+    fixed_deformed = os.path.join(data_dir,fixed_cid + "_to_"+ moving_cid + "_pecSlice.nrrd")
+    moving_deformed_tmp = os.path.join(tmp_dir,moving_cid + "_to_" + fixed_cid + "_pecSlice.nrrd")
+    fixed_deformed_tmp = os.path.join(tmp_dir,fixed_cid + "_to_"+ moving_cid + "_pecSlice.nrrd")
+    affine_output_tfm = deformation_prefix + "0GenericAffine_pec.tfm"
+    affine_output_xml = deformation_prefix + "0GenericAffine_pec.xml"    
+    
+    fixed_body_mask = os.path.join(data_dir,fixed_cid + "_partialLungLabelMap_pecSlice.nrrd") #dialiared pec mask
+    moving_body_mask = os.path.join(data_dir,fixed_cid + "_partialLungLabelMap_pecSlice.nrrd")
+    fixed_body_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_partialLungLabelMap_pecSlice.nrrd")
+    moving_body_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_partialLungLabelMap_pecSlice.nrrd")
+  
+    fixed_mask = os.path.join(data_dir,fixed_cid + "_partialLungLabelMap_pecSlice.nrrd")
+    moving_mask = os.path.join(data_dir,moving_cid + "_partialLungLabelMap_pecSlice.nrrd")
+    fixed_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_partialLungLabelMap_pecSlice.nrrd")
+    moving_mask_tmp = os.path.join(tmp_dir,moving_cid + "_partialLungLabelMap_pecSlice.nrrd")
+# moving_mask = os.path.join(data_dir,moving_cid + "_pecsSubcutaneousFatClosedSlice_regmask.nrrd")
 
   #Conditions input images: Gaussian blurring to account for SHARP kernel
   #Compute tissue compartment volume (silly linear mapping)
   unu = os.path.join(path['TEEM_PATH'],"unu")
   for im in [fixed,moving]:
     out = os.path.join(tmp_dir,os.path.basename(im))
-    tmp_command = unu + " resample -i %(in)s -s x1 x1 = -k dgauss:%(sigma)f,3 | "+ unu + " resample -s x%(r)f x%(r)f x%(r)f -k tent"
+    if pec_registration == True:
+        tmp_command = unu + " resample -i %(in)s -s x1 x1 = -k dgauss:%(sigma)f,3 | "+ unu + " resample -s x%(r)f x%(r)f x%(r)f -k tent"
+    else:
+        tmp_command = unu + " resample -i %(in)s -s x1 x1 = -k dgauss:%(sigma)f,3 | "+ unu + " resample -s x%(r)f x%(r)f x%(r)f -k tent"
     tmp_command = tmp_command + " | "+ unu + " 2op + - 1000 | " + unu + " 2op / - 1055 -t float -o %(out)s"
     tmp_command = tmp_command % {'in':im, 'out':out,'sigma':sigma,'r':rate}
     print tmp_command
@@ -133,7 +165,9 @@ def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cach
       sys.stdout.flush()
       subprocess.call( tmp_command, shell=True)
 
-
+  #If pecs, extract pec portion and dilate result, no need to now.
+  
+  
   #Perform Affine registration
   if fast == True:
     percentage=0.1
@@ -165,15 +199,42 @@ def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cach
       tmp_command = tmp_command % {'f_mask':fixed_body_mask_tmp,'m_mask':moving_body_mask_tmp}
 
     tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
-  
-    print tmp_command
-    sys.stdout.flush()
-    subprocess.call( tmp_command, shell=True, env=os.environ.copy())
+    
+  if pec_registration == True:
+    tmp_command = "antsRegistration -d 2 -r [ %(f)s,%(m)s,0] \
+             -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
+             -t  translation[ 0.1 ] \
+             -c [%(its)s,1.e-8,20]  \
+             -s 4x2x1vox \
+             -f 8x4x2 \
+             -l 1"
+    if affine == True:
+      tmp_command = tmp_command + " -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
+                  -t affine[ 0.1 ] \
+                  -c [%(its)s,1.e-8,20] \
+                  -s 4x2x1vox \
+                  -f 8x4x2 \
+                  -l 1 -u 1 -z 1"
+      tmp_command = tmp_command + " -o [%(nm)s]"
+      tmp_command = tmp_command % {'f':fixed_tmp,'m':moving_tmp, \
+        'percentage':percentage,'its':its,'nm':deformation_prefix}
+
+      if use_body_mask == True:
+        tmp_command = tmp_command + " -x [%(f_mask)s,%(m_mask)s]"
+        tmp_command = tmp_command % {'f_mask':fixed_body_mask_tmp,'m_mask':moving_body_mask_tmp}
+
+  tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
+        
+  print tmp_command
+  sys.stdout.flush()
+  subprocess.call( tmp_command, shell=True, env=os.environ.copy())
     
     #transform to tfm according to cip naming conventions and generate xml file
-    if generate_tfm == True:
+  if generate_tfm == True:
       #transform the .mat file
       tmp_command = "ConvertTransformFile 3 " +affine_tfm + " " + affine_output_tfm
+      if pec_registration == True:
+          tmp_command = "ConvertTransformFile 2 " +affine_tfm + " " + affine_output_tfm
       tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
       subprocess.call( tmp_command, shell=True )
       

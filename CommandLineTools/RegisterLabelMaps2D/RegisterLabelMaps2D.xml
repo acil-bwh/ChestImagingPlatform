@@ -156,13 +156,21 @@
 </integer-vector>
 
 <boolean>
-    <name>is2D</name>
+    <name>isIntensity</name>
     <label>Invert Transformation</label>
     <channel>input</channel>
-    <longflag>--is2D</longflag>
-    <description><![CDATA[Uses a 2D transform if true]]></description>
+    <longflag>--isIntensity</longflag>
+    <description><![CDATA[Uses intensity based registration if true]]></description>
     <default>false</default>
 </boolean>
       
+<string>
+          <name>fixedLabelmapFileName</name>
+          <label>fixed LabelMap FileName</label>
+          <channel>input</channel>
+          <longflag>--fixedLabelmapFileName</longflag>
+          <description><![CDATA[fixed LabelMap FileName]]></description>
+          <default>q</default>
+  </string>
   </parameters>
 </executable>
