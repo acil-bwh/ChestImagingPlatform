@@ -99,12 +99,13 @@ class ChestParticles:
         self._init_mode = "Random"
         # Run at a single scale vs a full scale-space exploration:
         self._single_scale = 0 
-        self._use_mask = 1
+        self._use_mask = True
         self._max_scale = max_scale
         self._scale_samples = scale_samples
         self._iterations = 50
 
         self._verbose = 1
+        self._permissive = True #Allow volumes to have different shapes (false is safer)
 
         # Energy specific params:
         # -----------------------
@@ -137,7 +138,7 @@ class ChestParticles:
         # Limit the uppe range of the input image
         self._max_intensity =  400
         # Limit the lower range of the input image
-        self._minIntensity = -1024
+        self._min_intensity = -1024
         # Downsampling factor to enable multiresolution particles
         self._down_sample_rate = down_sample_rate
 
@@ -157,10 +158,13 @@ class ChestParticles:
                 str(self._max_scale) + "-on:VSN"
         else:
             self._volParams = " -vol " + self._tmp_in_file_name + \
-                ":scalar:V -usa true"
+                ":scalar:V"
 
-        if self._use_mask == 1:
+        if self._use_mask == True:
             self._volParams += " " + self._tmp_mask_file_name + ":scalar:M"
+
+        if self._permissive == True:
+            self._volParams += " " + "-usa true"
 
     def set_info_params(self):
         if self._single_scale == 1:
@@ -211,7 +215,7 @@ class ChestParticles:
                 ":1 strn:" + volTag + ":heval0:0:1 ")
             #Here we don't give an option for mode thresh. Always active
 
-        if self._use_mask == 1:
+        if self._use_mask == True:
             maskVal = "0.5"
             self._info_params += " spthr:M:val:" + maskVal + ":1"
 
@@ -306,7 +310,7 @@ class ChestParticles:
         if self._down_sample_rate > 1:
             downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
             self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5',self.down_sample_rate)
-            if self._use_mask == 1:
+            if self._use_mask == True:
                 downsampledMask = os.path.join(self._tmp_dir, "mask-down.nrrd")
                 self.down_sample(self._mask_file_name,downsampledMask,'cheap',self.down_sample_rate)
                 self._tmp_mask_file_name = downsampledMask
@@ -337,7 +341,7 @@ class ChestParticles:
         if os.path.exists(self._tmp_in_file_name) == False:
             return False
 
-        if self._use_mask==1:
+        if self._use_mask==True:
             if os.path.exists(self._tmp_mask_file_name) == False:
                 return False
 
@@ -432,7 +436,7 @@ class ChestParticles:
         out_vol : string
         
         """
-        tmp_command = "unu 3op clamp " + str(self._minIntensity) + " " + \
+        tmp_command = "unu 3op clamp " + str(self._min_intensity) + " " + \
             in_vol + " " + str(self._max_intensity)  + \
             " | unu resample -s x1 x1 x1 " + self._inverse_kernel_params + \
             " -t float -o " + out_vol
@@ -498,7 +502,7 @@ class ChestParticles:
         subprocess.call( tmp_command, shell=True )
 
     def differential_mask (self, current_down_rate,previous_down_rate,output_mask):
-        if self._use_mask == 1:
+        if self._use_mask == True:
             downsampled_mask_prev = os.path.join(self._tmp_dir, \
                                          "mask-down-previous.nrrd")
             #Down-sampling previous level

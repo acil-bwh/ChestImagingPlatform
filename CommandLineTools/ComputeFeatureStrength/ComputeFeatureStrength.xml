@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform</category>
+    <title>ComputeFeatureStrength</title>
+    <description><![CDATA[Compute the feature strength for an image.\
+        A feature can be a ridge line (vessel), valley line (airway), \
+       a ridge surface (fissure) or a valley surface]]>
+    </description>
+    <version>0.0.1</version>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+      
+        <image>
+            <name>ctFileName</name>
+            <label>Input CT FileName</label>
+            <channel>input</channel>
+            <flag>i</flag>
+            <longflag>inFileName</longflag>
+            <description><![CDATA[Input CT file]]></description>
+        </image>
+        
+      <image>
+        <name>strengthFileName</name>
+        <label>Output Strenght  File Name</label>
+        <channel>output</channel>
+        <flag>o</flag>
+        <longflag>outFileName</longflag>
+        <description><![CDATA[Output Strenght map file name]]></description>
+      </image>
+      
+      <image>
+        <name>scaleFileName</name>
+        <label>Output optimal scale  File Name</label>
+        <channel>output</channel>
+        <longflag>outScaleFileName</longflag>
+        <description><![CDATA[Output Optimal scale file name]]></description>
+      </image>
+      
+    </parameters>
+  
+    <parameters>
+      <label>General Parameters</label>
+      <description>General parameters</description>
+      
+        <double-vector>
+            <name>gaussianStd</name>
+            <longflag>std</longflag>
+            <label>gaussianStd</label>
+            <channel>input</channel>
+          <description><![CDATA[Gaussian smoothing standard deviation. 1 value: sigma, 3 values: sigmaMin, sigmaMax, numberOfSteps]]></description>
+        </double-vector>
+    
+        <double>
+          <name>sigmaStepMethod</name>
+          <longflag>ssm</longflag>
+          <label>sigmaStepMethod</label>
+          <channel>input</channel>
+          <description><![CDATA[Sigma step method. Choose one of: 0 - Equispapced sigma steps, 1 - Logarithmic sigma steps.]]></description>
+          <default>1</default>
+        </double>
+      
+        <boolean>
+          <name>rescale</name>
+          <longflag>rescale</longflag>
+          <label>rescale</label>
+          <channel>input</channel>
+          <description><![CDATA[Rescale the input in the range 0-1]]></description>
+        </boolean>
+    
+      <integer>
+        <name>threads</name>
+        <longflag>threads</longflag>
+        <label>threads</label>
+        <channel>input</channel>
+        <description><![CDATA[Number of threads used. Default all (0)]]></description>
+        <constraints>
+          <minimum>0</minimum>
+          <step>1</step>
+        </constraints>
+        <default>0</default>
+      </integer>
+      
+      <string-enumeration>
+          <name>method</name>
+          <flag>m</flag>
+          <longflag>method</longflag>
+          <element>Frangi</element>
+          <element>StrainEnergy</element>
+          <element>ModifiedKrissian</element>
+          <element>Descoteaux</element>
+          <element>FrangiXiao</element>
+          <element>DescoteauxXiao</element>
+        
+          <default>Frangi</default>
+          <description><![CDATA[Feature strength method.     \
+                      Frangi           - Frangi method \
+                      StrainEnergy     - Strain energy method \
+                      ModifiedKrissian - feature strength based on Krissian paper (only for line-like structures) \
+                      Descoteaux       - Descoteaux method (only for surface-like structures) \
+                      FrangiXiao       - Frangi-Xiao (only for surface-like structures) \
+                      DescoteauxXiao   - Descoteaux-Xiao (only for surface-like structures)]]></description>
+        
+        </string-enumeration>
+      
+      <string-enumeration>
+          <name>feature</name>
+          <flag>f</flag>
+          <longflag>feature</longflag>
+          <element>RidgeLine</element>
+          <element>ValleyLine</element>
+          <element>RidgeSurface</element>
+          <element>ValleySurface</element>
+          <default>RidgeLine</default>
+          <description><![CDATA[Feature to extract. \
+                      RidgeLine     - Bright tubes. Vessel-like structures \
+                      ValleyLine    - Dark tubes. Airway-like structures \
+                      RidgeSurface  - Bright sheets. Fissure-like structures \
+                      ValleySurface - Dark sheets. Cartilage-like structures ]]></description>
+    </string-enumeration>
+        
+      </parameters>
+      <parameters>
+        <label> Frangi and Decouteaux Methods Parameters </label>
+        <description>Frangi and Decouteaux based methods parameters</description>
+       <double>
+         <name>alpha</name>
+         <longflag>alpha</longflag>
+         <label>alpha</label>
+         <channel>input</channel>
+         <description><![CDATA[alpha param: distinguish sheets from lines]]></description>
+         <constraints>
+           <minimum>0</minimum>
+           <maximum>1</maximum>
+           <step>0.1</step>
+         </constraints>
+         <default>0.5</default>
+         </double>
+        
+          <double>
+            <name>beta</name>
+            <longflag>beta</longflag>
+            <label>beta</label>
+            <channel>input</channel>
+            <description><![CDATA[beta param: blobness]]></description>
+            <constraints>
+             <minimum>0</minimum>
+             <maximum>1</maximum>
+             <step>0.1</step>
+            </constraints>
+            <default>0.5</default>
+          </double>
+           
+           <double>
+             <name>C</name>
+             <longflag>C</longflag>
+             <label>C</label>
+             <channel>input</channel>
+             <description><![CDATA[C param: noise leve]]></description>
+             <constraints>
+               <minimum>0</minimum>
+               <maximum>300</maximum>
+               <step>0.1</step>
+             </constraints>
+             <default>0.5</default>
+           </double>
+  
+           </parameters>
+         
+         <parameters>
+           <label>Strain Energy's method Parameters</label>
+           <description>Straing Energy (Xiao) based-method parameters</description>
+           <double>
+           <name>alphase</name>
+           <longflag>alphase</longflag>
+           <label>alphase</label>
+           <channel>input</channel>
+           <description><![CDATA[alpha param in strain energy: brightness contrast ]]></description>
+           <constraints>
+             <minimum>0</minimum>
+             <maximum>1</maximum>
+             <step>0.1</step>
+           </constraints>
+           <default>0.25</default>
+         </double>
+  
+           <double>
+             <name>nu</name>
+             <longflag>nu</longflag>
+             <label>nu</label>
+             <channel>input</channel>
+             <description><![CDATA[nu param in stain energy: structure strenght ]]></description>
+             <constraints>
+               <minimum>-1</minimum>
+               <maximum>0.5</maximum>
+               <step>0.1</step>
+             </constraints>
+             <default>0</default>
+           </double>
+           
+           <double>
+             <name>kappa</name>
+             <longflag>kappa</longflag>
+             <label>kappa</label>
+             <channel>input</channel>
+             <description><![CDATA[kappa param in strain energy: sharpness of vesselness function ]]></description>
+             <constraints>
+               <minimum>0.01</minimum>
+               <maximum>2</maximum>
+               <step>0.1</step>
+             </constraints>
+             <default>0.5</default>
+           </double>
+           
+           <double>
+             <name>betase</name>
+             <longflag>betase</longflag>
+             <label>betase</label>
+             <channel>input</channel>
+             <description><![CDATA[beta param in strain energy: step edge supression]]></description>
+             <constraints>
+               <minimum>0.01</minimum>
+               <maximum>2</maximum>
+               <step>0.1</step>
+             </constraints>
+             <default>0.1</default>
+           </double>
+           
+           </parameters>
+</executable>

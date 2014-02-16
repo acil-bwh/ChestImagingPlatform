@@ -16,7 +16,7 @@
     <parameters>
         <label>IO</label>
         <description>Input/output parameters</description>
-        <string-vector>
+        <file multiple="true">
             <name>inFileNameVecArg</name>
             <label>Input FileName Vector</label>
             <channel>input</channel>
@@ -32,9 +32,9 @@
                 mask xx xy xz yy yz zz, so a matrix is constructed using the components in the following order: [1 2 3 2 4 5 3 5 6] \
                 (zero-based indexing)]]></description>
             <default>NA</default>
-        </string-vector>
+        </file>
         
-        <string-vector>
+        <string multiple="true">
             <name>arrayNameVecArg</name>
             <label>Array Name Vec</label>
             <channel>input</channel>
@@ -44,7 +44,7 @@
                 with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
                 data arrays]]></description>
             <default>NA</default>
-        </string-vector>
+        </string>
         
          <string>
             <name>outFileName</name>
@@ -54,6 +54,15 @@
             <longflag>outFileName</longflag>
             <description><![CDATA[Ouput vtk file name. All particles information will be stored in this file.]]></description>
             <default>NA</default>
-        </string>        
+        </string>
+      
+        <boolean>
+          <name>binaryOutput</name>
+          <label>VTK binary output file</label>
+          <flag>b</flag>
+          <longflag>binary</longflag>
+          <description><![CDATA[Ouput vtk file name in binary format.]]></description>
+          <default>false</default>
+        </boolean>
     </parameters>
 </executable>

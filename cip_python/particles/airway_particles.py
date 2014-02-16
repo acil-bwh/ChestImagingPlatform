@@ -8,7 +8,7 @@
 
 import os
 import pdb
-from cip_python.chest_particles import ChestParticles
+from cip_python.particles.chest_particles import ChestParticles
 
 class AirwayParticles(ChestParticles):
     """Class for airway-specific particles sampling
@@ -75,7 +75,7 @@ class AirwayParticles(ChestParticles):
             downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
             self.down_sample(self._in_file_name, downsampled_vol, \
                              "cubic:0,0.5",self._down_sample_rate)
-            if self._use_mask == 1:
+            if self._use_mask == True:
             	downsampled_mask = os.path.join(self._tmp_dir, \
                                                 "mask-down.nrrd")
             	self.down_sample(self._mask_file_name, \
@@ -126,7 +126,7 @@ class AirwayParticles(ChestParticles):
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
-        self._use_mask = 1 #TODO: was 0
+        self._use_mask = True #TODO: was 0
 
         # Energy
         # Radial energy function (psi_2 in the paper).
@@ -153,7 +153,7 @@ class AirwayParticles(ChestParticles):
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
-        self._use_mask = 1 # TODO: was 0
+        self._use_mask = True # TODO: was 0
 
         # Energy
         self._inter_particle_energy_type = "add"
@@ -184,3 +184,5 @@ class AirwayParticles(ChestParticles):
         self.save_vtk(out_particles % 3)
         print "finished saving\#####n"
 
+        #Clean tmp Directory
+        self.clean_tmp_dir()

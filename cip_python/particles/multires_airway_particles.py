@@ -8,8 +8,9 @@
 
 import os
 import pdb
+import math
 from optparse import OptionParser
-from cip_python.chest_particles import ChestParticles
+from cip_python.particles.chest_particles import ChestParticles
 
 class MultiResAirwayParticles(ChestParticles):
     """Class for multiresolution airway-specific particles sampling
@@ -71,7 +72,7 @@ class MultiResAirwayParticles(ChestParticles):
      
     def execute(self):            
         #Compute Resolution Pyramid
-        max_scale_per_level = self._max_scale / 2**(self._multi_res_levels-1)
+        max_scale_per_level = int(math.ceil(self._max_scale / 2**(self._multi_res_levels-1)))
         max_scale = self._max_scale
         mask_file_name = self._mask_file_name
         #Run particles for each level
@@ -94,7 +95,7 @@ class MultiResAirwayParticles(ChestParticles):
 
         self._init_mode = "Particles"
         self._in_particles_file_name = merged_particles
-        self._use_mask = 1 # TODO: was 0
+        self._use_mask = True # TODO: was 0
             
         # Energy
         self._inter_particle_energy_type = "add"
@@ -121,6 +122,9 @@ class MultiResAirwayParticles(ChestParticles):
         print "about to save to vtk\n"
         self.save_vtk(merged_particles)
         print "finished saving\#####n"
+  
+        #Clean tmp Directory
+        self.clean_tmp_dir()
 
     def execute_airway_level (self,level):
         #Pre-processing
@@ -128,7 +132,7 @@ class MultiResAirwayParticles(ChestParticles):
             downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
             self.down_sample(self._in_file_name, downsampled_vol, \
                              "cubic:0,0.5",self._down_sample_rate)
-            if self._use_mask == 1:
+            if self._use_mask == True:
                 downsampled_mask = os.path.join(self._tmp_dir, \
                                                 "mask-down.nrrd")
                 if level == self._multi_res_levels:
@@ -155,9 +159,15 @@ class MultiResAirwayParticles(ChestParticles):
         deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampled_vol, deconvolved_vol)
         print "finished deconvolution\n"
+        #Adjust seeding threshold levels to account for downsampling rate
+        orig_live_thresh = self._live_thresh
+        orig_seed_thresh = self._seed_thresh
+        self._live_thresh = self._live_thresh/self._down_sample_rate
+        self._seed_thresh = self._seed_thresh/self._down_sample_rate
+        print "level "+str(level)+"seed th: "+str(self._seed_thresh)+"live th: "+str(self._live_thresh)
         #Setting member variables that will not change
         self._tmp_in_file_name = deconvolved_vol
-        
+                  
         # Temporary nrrd particles points
         out_particles = os.path.join(self._tmp_dir, "pass%d-l%d.nrrd")
         #Pass 1
@@ -186,7 +196,7 @@ class MultiResAirwayParticles(ChestParticles):
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % (1,level)
-        self._use_mask = 1 #TODO: was 0
+        self._use_mask = True #TODO: was 0
         
         # Energy
         # Radial energy function (psi_2 in the paper).
@@ -213,7 +223,7 @@ class MultiResAirwayParticles(ChestParticles):
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % (2,level)
-        self._use_mask = 1 # TODO: was 0
+        self._use_mask = True # TODO: was 0
         
         # Energy
         self._inter_particle_energy_type = "add"
@@ -236,11 +246,14 @@ class MultiResAirwayParticles(ChestParticles):
         # Adjust scale to account for the level of resolution
         self.adjust_scale(out_particles % (3,level))
         
+        # Recover threshold
+        self._live_thresh = orig_live_thresh
+        self._seed_thresh = orig_seed_thresh
+                  
         return out_particles % (3,level)
 
 if __name__ == "__main__":
-    desc = """Produces a scatter plot of the input data and edges indicating\
-        constraints between data indices."""
+    desc = """Multi-resolution scale-space particles for airway segmentation."""
     
     parser = OptionParser(description=desc)
     parser.add_option('--ct_file', 
@@ -277,8 +290,8 @@ if __name__ == "__main__":
 
     particles = MultiResAirwayParticles(options.ct_file, options.out_file,
                                         options.tmp_dir, options.mask_file,
-                                        live_thresh=options.live_thresh,
-                                        seed_thresh=options.seed_thresh,
-                                        max_scale=options.max_scale,
-                                        multi_res_levels=options.levels)
+                                        live_thresh=float(options.live_thresh),
+                                        seed_thresh=float(options.seed_thresh),
+                                        max_scale=float(options.max_scale),
+                                        multi_res_levels=int(options.levels))
     particles.execute()
