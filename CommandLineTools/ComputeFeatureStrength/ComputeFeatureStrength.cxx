@@ -71,9 +71,9 @@ typedef cip::CTType InputImageType;
 
 typedef itk::MultiScaleGaussianEnhancementImageFilter<
 InputImageType, OutputImageType >                 MultiScaleFilterType;
-typedef typename MultiScaleFilterType
+typedef MultiScaleFilterType
 ::GradientMagnitudePixelType                      GradientMagnitudePixelType;
-typedef typename MultiScaleFilterType
+typedef MultiScaleFilterType
 ::EigenValueArrayType                             EigenValueArrayType;
 
 /** Supported functors. */
@@ -152,7 +152,7 @@ int main( int argc, char *argv[] )
   itk::MultiThreader::SetGlobalMaximumNumberOfThreads( maxThreads );
   
   // Create multi-scale filter. */
-  typename MultiScaleFilterType::Pointer multiScaleFilter
+  MultiScaleFilterType::Pointer multiScaleFilter
   = MultiScaleFilterType::New();
   
   bool generateScalesOutput;
@@ -171,7 +171,7 @@ int main( int argc, char *argv[] )
   {
     if ( feature == "RidgeLine" )
     {
-      typename FrangiVesselnessFunctorType::Pointer functor
+      FrangiVesselnessFunctorType::Pointer functor
       = FrangiVesselnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -181,7 +181,7 @@ int main( int argc, char *argv[] )
     }
     else if (feature == "ValleyLine" )
     {
-      typename FrangiVesselnessFunctorType::Pointer functor
+      FrangiVesselnessFunctorType::Pointer functor
       = FrangiVesselnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -191,7 +191,7 @@ int main( int argc, char *argv[] )
     }
     else if (feature == "RidgeSurface" )
     {
-      typename FrangiSheetnessFunctorType::Pointer functor
+      FrangiSheetnessFunctorType::Pointer functor
       = FrangiSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -201,7 +201,7 @@ int main( int argc, char *argv[] )
     }
     else if (feature == "ValleySurface" )
     {
-      typename FrangiSheetnessFunctorType::Pointer functor
+      FrangiSheetnessFunctorType::Pointer functor
       = FrangiSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -220,7 +220,7 @@ int main( int argc, char *argv[] )
   {
     if ( feature == "RidgeLine" )
     {
-      typename StrainEnergyVesselnessFunctorType::Pointer functor
+      StrainEnergyVesselnessFunctorType::Pointer functor
       = StrainEnergyVesselnessFunctorType::New();
       functor->SetAlpha( alphase );
       functor->SetBeta( betase );
@@ -232,7 +232,7 @@ int main( int argc, char *argv[] )
     }
     else if ( feature == "ValleyLine" )
     {
-      typename StrainEnergyVesselnessFunctorType::Pointer functor
+      StrainEnergyVesselnessFunctorType::Pointer functor
       = StrainEnergyVesselnessFunctorType::New();
       functor->SetAlpha( alphase );
       functor->SetBeta( betase );
@@ -244,7 +244,7 @@ int main( int argc, char *argv[] )
     }
     else if ( feature == "RidgeSurface" )
     {
-      typename StrainEnergySheetnessFunctorType::Pointer functor
+      StrainEnergySheetnessFunctorType::Pointer functor
       = StrainEnergySheetnessFunctorType::New();
       functor->SetAlpha( alphase );
       functor->SetBeta( betase );
@@ -256,7 +256,7 @@ int main( int argc, char *argv[] )
     }
     else if ( feature == "ValleySurface" )
     {
-      typename StrainEnergySheetnessFunctorType::Pointer functor
+      StrainEnergySheetnessFunctorType::Pointer functor
       = StrainEnergySheetnessFunctorType::New();
       functor->SetAlpha( alphase );
       functor->SetBeta( betase );
@@ -277,7 +277,7 @@ int main( int argc, char *argv[] )
   {
     if ( feature == "RidgeLine" )
     {
-      typename ModifiedKrissianVesselnessFunctorType::Pointer functor
+      ModifiedKrissianVesselnessFunctorType::Pointer functor
       = ModifiedKrissianVesselnessFunctorType::New();
       functor->SetBrightObject( true );
       
@@ -285,7 +285,7 @@ int main( int argc, char *argv[] )
     }
     else if ( feature == "ValleyLine" )
     {
-      typename ModifiedKrissianVesselnessFunctorType::Pointer functor
+      ModifiedKrissianVesselnessFunctorType::Pointer functor
       = ModifiedKrissianVesselnessFunctorType::New();
       functor->SetBrightObject( false );
       
@@ -301,7 +301,7 @@ int main( int argc, char *argv[] )
   {
     if ( feature == "RidgeSurface" )
     {
-      typename DescoteauxSheetnessFunctorType::Pointer functor
+      DescoteauxSheetnessFunctorType::Pointer functor
       = DescoteauxSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -312,7 +312,7 @@ int main( int argc, char *argv[] )
     }
     else if ( feature == "ValleySurface" )
     {
-      typename DescoteauxSheetnessFunctorType::Pointer functor
+      DescoteauxSheetnessFunctorType::Pointer functor
       = DescoteauxSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -331,7 +331,7 @@ int main( int argc, char *argv[] )
   {
     if ( feature ==  "RidgeSurface" )
     {
-      typename FrangiXiaoSheetnessFunctorType::Pointer functor
+      FrangiXiaoSheetnessFunctorType::Pointer functor
       = FrangiXiaoSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -343,7 +343,7 @@ int main( int argc, char *argv[] )
     }
     else if ( feature == "ValleySurface" )
     {
-      typename FrangiXiaoSheetnessFunctorType::Pointer functor
+      FrangiXiaoSheetnessFunctorType::Pointer functor
       = FrangiXiaoSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -362,7 +362,7 @@ int main( int argc, char *argv[] )
   {
     if ( feature == "RidgeSurface" )
     {
-      typename DescoteauxXiaoSheetnessFunctorType::Pointer functor
+      DescoteauxXiaoSheetnessFunctorType::Pointer functor
       = DescoteauxXiaoSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -374,7 +374,7 @@ int main( int argc, char *argv[] )
     }
     else if ( feature == "ValleySurface" )
     {
-      typename DescoteauxXiaoSheetnessFunctorType::Pointer functor
+      DescoteauxXiaoSheetnessFunctorType::Pointer functor
       = DescoteauxXiaoSheetnessFunctorType::New();
       functor->SetAlpha( alpha );
       functor->SetBeta( beta );
@@ -434,7 +434,7 @@ int main( int argc, char *argv[] )
     }
   
   // Write feature strenght output
-  typename WriterType::Pointer writer = WriterType::New();
+  WriterType::Pointer writer = WriterType::New();
   writer->SetInput( multiScaleFilter->GetOutput() );
   writer->SetFileName( strengthFileName );
   writer->UseCompressionOn();
