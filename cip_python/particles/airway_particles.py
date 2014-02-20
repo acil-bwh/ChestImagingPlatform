@@ -68,7 +68,12 @@ class AirwayParticles(ChestParticles):
         self._max_intensity = max_intensity
         self._min_intensity = min_intensity
         self._live_thresh = live_thresh
-        self._seed_thresh = seed_thresh        
+        self._seed_thresh = seed_thresh
+        self._max_scale = max_scale
+        self._scale_samples = scale_samples
+        self._down_sample_rate = down_sample_rate
+
+        self._population_control_period = 6
 
     def execute(self):
         #Pre-processing
