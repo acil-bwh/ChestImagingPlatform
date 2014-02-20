@@ -69,6 +69,9 @@ class VesselParticles(ChestParticles):
         self._min_intensity = min_intensity
         self._live_thresh = live_thresh
         self._seed_thresh = seed_thresh
+        self._scale_samples = scale_samples
+        self._down_sample_rate = down_sample_rate
+
         self._mode_thresh = -0.5
         self._population_control_period = 6
 
