@@ -7,7 +7,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 
 class DisplayParticles:
-    def __init__(self, file_list,spacing_list,feature_type,h_th=-200,
+    def __init__(self, file_list,spacing_list,feature_type,irad = 1.2, h_th=-200,
                  glyph_type='sphere', glyph_scale_factor=1,use_field_data=True, opacity_list=[],
                  color_list=[], lung=[]):
       
@@ -30,6 +30,7 @@ class DisplayParticles:
         self.file_list = file_list
         self.spacing_list = spacing_list
         self.opacity_list = opacity_list
+        self.irad = irad
         self.h_th = h_th
         self.color_list = color_list
         self.lung = lung
@@ -45,7 +46,14 @@ class DisplayParticles:
         self.strength_map['valley_line'] = "h1"
         self.strength_map['ridge_surface'] = "h2"
         self.strength_map['valley_surface'] = "h0"
-          
+  
+        if feature_type == 'ridge_line' or feature_type == 'valley_line':
+            self.height = irad
+            self.radius = 0.5
+        elif feature_type == 'ridge_surface' or feature_type == 'valley_surface':
+            self.height = 0.5
+            self.radius = irad
+  
         self.min_rad = 0.5
         self.max_rad = 6
         self.glyph_scale_factor = glyph_scale_factor
@@ -110,8 +118,8 @@ class DisplayParticles:
             glyph.SetThetaResolution(8)
         elif self.glyph_type == 'cylinder':
             glyph = vtk.vtkCylinderSource()
-            glyph.SetHeight(1.9)
-            glyph.SetRadius(0.5)
+            glyph.SetHeight(self.height)
+            glyph.SetRadius(self.radius)
             glyph.SetCenter(0,0,0)
             glyph.SetResolution(10)
             glyph.CappingOn()
@@ -254,6 +262,8 @@ if __name__ == "__main__":
     parser.add_option("-s", help='TODO', dest="spacing")
     parser.add_option("--feature", help='TODO', dest="feature_type", \
                       default="vessel")
+    parser.add_option("--irad", help='interparticle distance', dest="irad", \
+                      default=1.2)
     parser.add_option("--hth", help='TODO', dest="hth", default=0)
     parser.add_option("--color", help='TODO', dest="color_list", default="")
     parser.add_option("--opacity", help='TODO', dest="opacity_list", \
@@ -295,7 +305,7 @@ if __name__ == "__main__":
 
     print use_field_data
 
-    dv = DisplayParticles(file_list, spacing_list,options.feature_type,float(options.hth), \
+    dv = DisplayParticles(file_list, spacing_list,options.feature_type,float(options.irad),float(options.hth), \
         'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lung_filename)
     dv.capture_prefix = options.capture_prefix
     dv.execute()
