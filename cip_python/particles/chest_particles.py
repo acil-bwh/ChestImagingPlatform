@@ -95,7 +95,7 @@ class ChestParticles:
         # -----------------------------
         # Options: Bspline3, Bspline5, Bspline7 and C4:
         self._recon_kernel_type    = "C4"
-        # Options: Ramdom, Halton, Particles, PerVoxel:
+        # Options: Random, Halton, Particles, PerVoxel:
         self._init_mode = "Random"
         # Run at a single scale vs a full scale-space exploration:
         self._single_scale = 0 
@@ -118,11 +118,13 @@ class ChestParticles:
         self._inter_particle_energy_type = "justr" 
         self._use_strength = "true"
 
-        # Init specific params
+        # Initialization params
+        # -----------------
         self._ppv = 1 # Points per voxel.
         self._nss = 1 # Number of samples along scale axis
         self._jit = 1 # Jittering to do for each point
-
+        self._number_init_particles = 10000 #Number of initial particles (used with Rnadom and Halton)
+              
         # Optimizer params:
         # -----------------
         # Binning width as mulitple of irad. Increase this value run into
@@ -224,29 +226,32 @@ class ChestParticles:
             #self._reconKernelParams = "-k00 cubic:1,0 -k11 \
             #cubicd:1,0 -k22 cubicdd:1,0 -kssr hermite"
             self._reconKernelParams = \
-                "-k00 bspl3 -k11 bspl3d -k22 bspl3dd -kssr hermite"
+                "-k00 bspl3 -k11 bspl3d -k22 bspl3dd"
             self._inverse_kernel_params = "-k bspl3ai"
         elif self._recon_kernel_type == "Bspline5":
             self._reconKernelParams = \
-                "-k00 bspl5 -k11 bspl5d -k22 bspl5dd -kssr hermite"
+                "-k00 bspl5 -k11 bspl5d -k22 bspl5dd"
             self._inverse_kernel_params = "-k bspl5ai"
         elif self._recon_kernel_type == "Bspline7":
             self._reconKernelParams = \
-                "-k00 bspl7 -k11 bspl7d -k22 bspl7dd -kssr hermite"
+                "-k00 bspl7 -k11 bspl7d -k22 bspl7dd"
             self._inverse_kernel_params = "-k bspl7ai"
         elif self._recon_kernel_type == "C4":
             self._reconKernelParams = \
-                "-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
+                "-k00 c4h -k11 c4hd -k22 c4hdd"
             self._inverse_kernel_params = "-k c4hai"
         else:
             self._reconKernelParams = \
-                "-k00 c4h -k11 c4hd -k22 c4hdd -kssr hermite"
+                "-k00 c4h -k11 c4hd -k22 c4hdd"
             self._inverse_kernel_params = "-k c4hai"
-            
-        if self._blurring_kernel_type == "DiscreteGaussian":
-            self._reconKernelParams = self._reconKernelParams + " -kssb ds:1,5"
-        elif self._blurring_kernel_type == "ContinuousGaussian":
-            self._reconKernelParams = self._reconKernelParams + \
+        
+        # Add recon kernel along scale if we run multiscale mode
+        if self._single_scale == 0:
+            self._reconKernelParams = self._reconKernelParams + " -kssr hermite"
+            if self._blurring_kernel_type == "DiscreteGaussian":
+              self._reconKernelParams = self._reconKernelParams + " -kssb ds:1,5"
+            elif self._blurring_kernel_type == "ContinuousGaussian":
+              self._reconKernelParams = self._reconKernelParams + \
                 " -kssb gauss:1,5"
 
     def set_optimizer_params(self):
@@ -271,9 +276,9 @@ class ChestParticles:
 
     def set_init_params(self):
         if self._init_mode == "Random":
-            self._init_params = "-np "+ str(self._numberParticles)
+            self._init_params = "-np "+ str(self._number_init_particles)
         elif self._init_mode == "Halton":
-            self._init_params = "-np "+ str(self._numberParticles) + "-halton"
+            self._init_params = "-np "+ str(self._number_init_particles) + "-halton"
         elif self._init_mode == "Particles":
             self._init_params = "-pi "+ self._in_particles_file_name
         elif self._init_mode == "PerVoxel":
@@ -364,26 +369,21 @@ class ChestParticles:
 
         # Trick to add scale value
         if self._single_scale == 1:
-            tmp_command = "unu head " + output + \
-                " | grep size | awk '{split($0,a,\" \"); print a[3]}'"
-
-            tmpNP = subprocess.call(tmp_command, shell=True, stdout=PIPE,
-                                      stderr=PIPE)
-            NP = tmpNP.communicate()[0].rstrip('\n')
-            tmp_command = "echo \"0 0 0 " + str(self._max_scale) + \
-                "\" | unu pad -min 0 0 -max 3 " + NP + \
-                " -b mirror | unu 2op + - " + output + " -o " + output
-
-            subprocess.call( tmp_command, shell=True )
-
+          tmp_command = "unu crop -min M 0 -max M M -i " + output + \
+                      " | unu 2op + - " + str(self._max_scale) + \
+                      " | unu inset -min M 0 -s - -i " + output + " -o " + output
+          if self._verbose > 0:
+            print tmp_command
+          subprocess.call( tmp_command, shell=True )
+            
     def probe_points(self, in_volume, inputParticles, quantity,
                      normalizedDerivatives=0):
         output = os.path.join(self._tmp_dir, quantity+".nrrd")
         if self._single_scale == 1:
             tmp_command = "unu crop -i " + inputParticles + \
-                "-min 0 0 -max 2 M | gprobe -i " + in_volume + "-k scalar "
-            tmp_command += self._reconKernelParams + "-pi - -q " + \
-                quantity + " -v 0 -o " + output
+                " -min 0 0 -max 2 M | gprobe -i " + in_volume + " -k scalar "
+            tmp_command += self._reconKernelParams + " -pi - -q " + \
+                quantity + " -v "+str(self._verbose)+" -o " + output
         else:
             #tmp_command = (
             #    "cd "+ self._temporaryDirectory + "; gprobe -i " + in_volume +
@@ -411,8 +411,9 @@ class ChestParticles:
 
             if normalizedDerivatives == 1:
                 tmp_command += " -ssnd"
+
         if self._verbose > 0:
-            print tmp_command
+          print tmp_command
 
         subprocess.call( tmp_command, shell=True )
 
