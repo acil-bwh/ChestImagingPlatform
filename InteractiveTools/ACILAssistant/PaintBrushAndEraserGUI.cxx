@@ -93,6 +93,7 @@ PaintBrushAndEraserGUI::PaintBrushAndEraserGUI() {
       o->add("Non-Bronchiectatic Airway", 0, (Fl_Callback*)nonBronchiectaticAirwayMenuItem_CB, (void*)(this));
       o->add("Ambiguous-Bronchiectatic Airway", 0, (Fl_Callback*)ambiguousBronchiectaticAirwayMenuItem_CB, (void*)(this));
       o->add("Muscle", 0, (Fl_Callback*)muscle_CB, (void*)(this));
+      o->add("Diaphragm", 0, (Fl_Callback*)diaphragm_CB, (void*)(this));
       //o->add("Airway Generation 5", 0, (Fl_Callback*)airwayGeneration5MenuItem_CB, (void*)(this));
       //o->add("Mild Centrilobular Emphysema", 0, (Fl_Callback*)mildCentrilobularMenuItem_CB, (void*)(this));
       //o->add("Moderate Centrilobular Emphysema", 0, (Fl_Callback*)moderateCentrilobularMenuItem_CB, (void*)(this));
@@ -392,6 +393,13 @@ void PaintBrushAndEraserGUI::muscle_CB_i() {
   this->m_ChestType = static_cast< unsigned char >( cip::MUSCLE );
   this->minValueInput->value(-50);
   this->maxValueInput->value(90);
+}
+
+void PaintBrushAndEraserGUI::diaphragm_CB( Fl_Widget* o, void* v ) {
+  ((PaintBrushAndEraserGUI*)v)->diaphragm_CB_i();
+}
+void PaintBrushAndEraserGUI::diaphragm_CB_i() {
+  this->m_ChestType = static_cast< unsigned char >( cip::DIAPHRAGM );
 }
 
 void PaintBrushAndEraserGUI::liverMenuItem_CB( Fl_Widget* o, void* v ) {

@@ -170,6 +170,7 @@ enum ChestType {
   NONBRONCHIECTATICAIRWAY,        //78
   AMBIGUOUSBRONCHIECTATICAIRWAY,  //79
   MUSCLE,                         //80
+  DIAPHRAGM,                      //81
 };
 
 enum ReturnCode {
@@ -206,7 +207,7 @@ public:
   ChestConventions()
     {
       m_NumberOfEnumeratedChestRegions = 29;
-      m_NumberOfEnumeratedChestTypes   = 81;
+      m_NumberOfEnumeratedChestTypes   = 82;
 
       typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -370,6 +371,7 @@ public:
       ChestTypes.push_back( static_cast< unsigned char >( NONBRONCHIECTATICAIRWAY ) );
       ChestTypes.push_back( static_cast< unsigned char >( AMBIGUOUSBRONCHIECTATICAIRWAY ) );
       ChestTypes.push_back( static_cast< unsigned char >( MUSCLE ) );
+      ChestTypes.push_back( static_cast< unsigned char >( DIAPHRAGM ) );
 
       ChestRegionNames.push_back( "UNDEFINEDREGION" );
       ChestRegionNames.push_back( "WHOLELUNG" ); 
@@ -482,6 +484,7 @@ public:
       ChestTypeNames.push_back( "NONBRONCHIECTATICAIRWAY" );
       ChestTypeNames.push_back( "AMBIGUOUSBRONCHIECTATICAIRWAY" );
       ChestTypeNames.push_back( "MUSCLE" );
+      ChestTypeNames.push_back( "DIAPHRAGM" );
 
       //
       // Each type is associated with a color. This is generally
@@ -578,6 +581,7 @@ public:
       double* t079 = new double[3]; t079[0] = 0.25; t079[1] = 0.87; t079[2] = 0.81; ChestTypeColors.push_back( t079 ); //NONBRONCHIECTATICAIRWAY
       double* t080 = new double[3]; t080[0] = 0.25; t080[1] = 0.86; t080[2] = 0.81; ChestTypeColors.push_back( t080 ); //AMBIGUOUSBRONCHIECTATICAIRWAY
       double* t081 = new double[3]; t081[0] = 0.90; t081[1] = 0.00; t081[2] = 0.00; ChestTypeColors.push_back( t081 ); //MUSCLE
+      double* t082 = new double[3]; t082[0] = 0.91; t082[1] = 0.00; t082[2] = 0.00; ChestTypeColors.push_back( t082 ); //DIAPHRAGM
 
       //
       // Each region is associated with a color. This is generally

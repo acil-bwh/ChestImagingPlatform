@@ -112,6 +112,9 @@ private:
   static void muscle_CB( Fl_Widget* o, void* v );
   void muscle_CB_i();
 
+  static void diaphragm_CB( Fl_Widget* o, void* v );
+  void diaphragm_CB_i();
+
   static void liverMenuItem_CB( Fl_Widget* o, void* v );
   void liverMenuItem_CB_i();
 
