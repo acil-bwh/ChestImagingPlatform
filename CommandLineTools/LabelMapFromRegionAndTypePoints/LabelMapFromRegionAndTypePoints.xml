@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>LabelMapFromRegionAndTypePoints</title>
+  <description><![CDATA[Reads a region and types points file and creates a label map of the labels\
+  at the specified coordinates using the CIP labeling conventions.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>ctFileName</name>
+      <label>Input CT file name</label>
+      <channel>input</channel>
+      <longflag>i</longflag>
+      <description><![CDATA[Input CT file. Either an input CT file or an input label map must be\
+      specified in order to acquire the size, spacing, and origin information needed to create]]></description>
+      <default>NA</default>
+    </image>  
+
+    <image>
+      <name>labelMapFileName</name>
+      <label>Label map file name</label>
+      <channel>input</channel>
+      <longflag>l</longflag>
+      <description><![CDATA[Label map file name. Either an input CT file or an input label map must be\
+      specified in order to acquire the size, spacing, and origin information needed to create.]]></description>
+      <default>NA</default>
+    </image>  
+
+    <string>
+      <name>regionAndTypePoints</name>
+      <label>Region and type points file</label>
+      <channel>input</channel>
+      <longflag>r</longflag>
+      <description><![CDATA[Region and type points file from which to create the label map.]]></description>
+      <default>NA</default>
+    </string> 
+
+    <image>
+      <name>outLabelMapFileName</name>
+      <label>Output label map file name</label>
+      <channel>output</channel>
+      <longflag>o</longflag>
+      <description><![CDATA[Output label map file name.]]></description>
+      <default>NA</default>
+    </image>   
+  </parameters>
+</executable>

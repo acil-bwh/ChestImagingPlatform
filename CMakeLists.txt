@@ -68,7 +68,7 @@ include_directories( ${CIP_INCLUDE_DIRECTORIES} )
 #---------------------------------------------------------------------
 # Link libraries
 
-SET( CIP_LIBRARIES CIPCommon CIPUtilities)
+SET( CIP_LIBRARIES CIPCommon CIPUtilities CIPIO)
 
 #---------------------------------------------------------------------
 # Define where to install CIP
