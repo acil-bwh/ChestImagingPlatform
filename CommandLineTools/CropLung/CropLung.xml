@@ -27,7 +27,6 @@
             <default>q</default>
         </string>
         
-        
         <string>
             <name>plInputFileName</name>
             <label>Label Map File Name</label>
@@ -37,22 +36,37 @@
             <description><![CDATA[Label map file name]]></description>
             <default>q</default>
         </string>
-        
-        <integer>
-            <name>maskValueTemp</name>
-            <flag>v</flag>
-            <label>mask Value</label>
-            <channel>input</channel>
-            <longflag>value</longflag>
-            <description>Value to set voxels outside the region that is cropped. (default=0)</description>
-            <default>0</default>
-        </integer>
-        
+      
+        <string>
+          <name>plOutputFileName</name>
+          <label>Label Map Output File Name</label>
+          <channel>output</channel>
+          <longflag>opl</longflag>
+          <description><![CDATA[Ouput label map volume]]></description>
+          <default>q</default>
+        </string>
+      
+        <string>
+          <name>ctOutputFileName</name>
+          <label>CT Output File Name</label>
+          <channel>output</channel>
+          <flag>o</flag>
+          <longflag>outFileName</longflag>
+          <description><![CDATA[Output Cropped CT volume]]></description>
+          <default>q</default>
+        </string>
+
+    </parameters>
+
+    <parameters>
+        <label> Region Type </label>
+        <description>Selection of Region/Type for cropping</description>
+
         <integer-vector>
             <name>regionVecArg</name>
-            <longflag>--region</longflag>
+            <longflag>region</longflag>
             <flag>r</flag>
-            <label>regionVec</label>
+            <label>Region</label>
             <channel>input</channel>
             <description><![CDATA[Specify a region you want to crop]]></description>
         </integer-vector>
@@ -60,53 +74,67 @@
         
         <integer-vector>
             <name>typeVecArg</name>
-            <longflag>--typeVec</longflag>
-            <flag>c</flag>
-            <label>typeVec</label>
+            <longflag>type</longflag>
+            <flag>t</flag>
+            <label>Type</label>
             <channel>input</channel>
-            <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
+            <description><![CDATA[Specify a type you want to crop]]></description>
+        </integer-vector>
+        
+        <integer-vector>
+          <name>regionPairVecArg</name>
+          <longflag>regionPairVec</longflag>
+          <flag>b</flag>
+          <label>Region Pair Vec</label>
+          <channel>input</channel>
+          <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the typePair flag]]></description>
         </integer-vector>
         
         <integer-vector>
             <name>typePairVecArg</name>
-            <longflag>--typePairVec</longflag>
+            <longflag>typePairVec</longflag>
             <flag>w</flag>
-            <label>typePairVec</label>
+            <label>Type Pair Vec</label>
             <channel>input</channel>
-            <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag]]></description>
+            <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the regionPair flag]]></description>
         </integer-vector>
-        <integer-vector>
-            <name>regionPairVecArg</name>
-            <longflag>regionPairVec</longflag>
-            <flag>b</flag>
-            <label>regionPairVec</label>
-            <channel>input</channel>
-            <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-        </integer-vector>
-        <string>
-            <name>plOutputFileName</name>
-            <label>Label Map Output File Name</label>
-            <channel>output</channel>
-            <longflag>opl</longflag>
-            <description><![CDATA[Ouput label map volume]]></description>
-            <default>q</default>
-        </string>
-        <string>
-            <name>ctOutputFileName</name>
-            <label>CT Output File Name</label>
-            <channel>output</channel>
-            <flag>o</flag>
-            <longflag>outFileName</longflag>
-            <description><![CDATA[Output Cropped CT volume]]></description>
-            <default>q</default>
-        </string>
+      
+
+      
+      </parameters>
+  
+      <parameters>
+        <label> Options </label>
+        <description> Additional parameters </description>
         
+        <integer-vector>
+            <name>paddingVecArg</name>
+            <longflag>padding</longflag>
+            <flag>p</flag>
+            <label>Padding</label>
+            <description><![CDATA[Specify padding along region/type x,y,z bounding box]]></description>
+            <default>0,0,0</default>
+        </integer-vector>
+            
         <integer>
-            <name>maskOutputFlag</name>
-            <flag>m</flag>
-            <longflag>maskFlag</longflag>
-            <description>Set to 0 if you don't want the voxels outside the defined region-type to be set to a fixed value. Set to 1 otherwise (default=1)</description>
-            <default>1</default>
+          <name>maskOutputFlag</name>
+          <flag>m</flag>
+          <longflag>maskFlag</longflag>
+          <label>Mask Output</label>
+          <description>Set to 0 if you don't want the voxels outside the defined region-type to be set to a fixed value. Set to 1 otherwise (default=1)</description>
+          <default>1</default>
         </integer>
+      
+        <integer>
+          <name>maskValueTemp</name>
+          <flag>v</flag>
+          <label>Mask value</label>
+          <channel>input</channel>
+          <longflag>value</longflag>
+          <description>Value to set voxels outside the region that is cropped. (default=0)</description>
+          <default>0</default>
+        </integer>
+      
     </parameters>
+      
 </executable>

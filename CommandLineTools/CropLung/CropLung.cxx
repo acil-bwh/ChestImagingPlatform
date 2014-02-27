@@ -4,62 +4,81 @@
  *  crops the input volume and/or label map to the specified
  *  region/type
  * 
- *  USAGE: 
- *
- *   ./CropLung  [--opl \<filename\>] -o \<filename\> 
- *               [--typePair \<unsigned char\>] ...  
- *               [--regionPair \<unsigned char\>] ...  
- *               [-t \<unsigned char\>] ...  [-r \<unsigned char\>]
- *               ...  
- *               [-m \<boolean\>] [-v \<integer\>] --plf \<string\> -i
- *               \<filename\> 
- *               [--] [--version] [-h]
- *
- *  Where: 
- *
- *   --opl \<filename\>
- *     Ouput label map volume
- *
- *   -o \<filename\>,  --outFileName \<filename\>
- *     (required)  Output Cropped CT volume
- *
- *   --typePair \<unsigned char\>  (accepted multiple times)
- *     Specify a type in a region-type pair you want to crop. This flag 
- *     should be used together with the -regionPair flag
- *
- *   --regionPair \<unsigned char\>  (accepted multiple times)
- *     Specify a region in a region-type pair you want to crop. This flag 
- *     should be used together with the -typePair flag
- *
- *   -t \<unsigned char\>,  --type \<unsigned char\>  (accepted multiple times)
- *     Specify a type you want to crop
- *
- *   -r \<unsigned char\>,  --region \<unsigned char\>  (accepted multiple times)
- *     Specify a region you want to crop
- *
- *   -m \<boolean\>,  --maskFlag \<boolean\>
- *     Set to 0 if you don't want the voxels outside the defined region-type
- *     to be set to a fixed value. Set to 1 otherwise (default=1)
- *
- *   -v \<integer\>,  --value \<integer\>
- *     Value to set voxels outside the region that is cropped. (default=0)
- *
- *   --plf \<string\>
- *     (required)  Label map file name
- *
- *   -i \<filename\>,  --inFileName \<filename\>
- *     (required)  Input CT file
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
- * 
+ *  USAGE:
+ *  
+   CropLung  [--returnparameterfile <std::string>]
+   [--processinformationaddress <std::string>] [--xml] [--echo]
+   [-v <int>] [-m <int>] [-p <std::vector<int>>] [-w
+   <std::vector<int>>] [-b <std::vector<int>>] [-t
+   <std::vector<int>>] [-r <std::vector<int>>] [-o <std::string>]
+   [--opl <std::string>] [-l <std::string>] [-i <std::string>]
+   [--] [--version] [-h]
+   
+   
+   Where:
+   
+   --returnparameterfile <std::string>
+   Filename in which to write simple return parameters (int, float,
+   int-vector, etc.) as opposed to bulk return parameters (image,
+   geometry, transform, measurement, table).
+   
+   --processinformationaddress <std::string>
+   Address of a structure to store process information (progress, abort,
+   etc.). (default: 0)
+   
+   --xml
+   Produce xml description of command line arguments (default: 0)
+   
+   --echo
+   Echo the command line arguments (default: 0)
+   
+   -v <int>,  --value <int>
+   Value to set voxels outside the region that is cropped. (default=0)
+   (default: 0)
+   
+   -m <int>,  --maskFlag <int>
+   Set to 0 if you don't want the voxels outside the defined region-type
+   to be set to a fixed value. Set to 1 otherwise (default=1) (default:
+   1)
+   
+   -p <std::vector<int>>,  --padding <std::vector<int>>
+   Specify padding along region/type x,y,z bounding box (default: 0,0,0)
+   
+   -w <std::vector<int>>,  --typePairVec <std::vector<int>>
+   Specify a type in a region type pair you want to crop. This flag
+   should be used together with the regionPair flag
+   
+   -b <std::vector<int>>,  --regionPairVec <std::vector<int>>
+   Specify a region in a region type pair you want to crop. This flag
+   should be used together with the typePair flag
+   
+   -t <std::vector<int>>,  --type <std::vector<int>>
+   Specify a type you want to crop
+   
+   -r <std::vector<int>>,  --region <std::vector<int>>
+   Specify a region you want to crop
+   
+   -o <std::string>,  --outFileName <std::string>
+   Output Cropped CT volume (default: q)
+   
+   --opl <std::string>
+   Ouput label map volume (default: q)
+   
+   -l <std::string>,  --plf <std::string>
+   Label map file name (default: q)
+   
+   -i <std::string>,  --inFileName <std::string>
+   Input CT file (default: q)
+   
+   --,  --ignore_rest
+   Ignores the rest of the labeled arguments following this flag.
+   
+   --version
+   Displays version information and exits.
+   
+   -h,  --help
+   Displays usage information and exits.
+   
  *  $Date: 2012-10-24 17:51:27 -0400 (Wed, 24 Oct 2012) $
  *  $Revision: 305 $
  *  $Author: jross $
@@ -79,6 +98,9 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 #include "CropLungCLP.h"
+
+#define MAXBB 10000
+#define MINBB -10000
 
 namespace
 {
@@ -189,8 +211,16 @@ int main( int argc, char *argv[] )
   
         
     PARSE_ARGS;
-        
-      short maskValue = (short)(maskValueTemp);
+  
+    // Param error checking
+    if (paddingVecArg.size()!=3)
+    {
+      std::cout<<" Padding needs three input params"<<std::endl;
+      return cip::ARGUMENTPARSINGERROR;
+    }
+  
+  
+    short maskValue = (short)(maskValueTemp);
     
       /*
 	if (ctDirArg.isSet() ) 
@@ -207,15 +237,15 @@ int main( int argc, char *argv[] )
 	}
       */
       
-    for ( unsigned int i=0; i<regionVecArg.size(); i++ )
+  for ( unsigned int i=0; i<regionVecArg.size(); i++ )
 	{
 	  regionVec.push_back( (unsigned char) regionVecArg[i] );
 	}
-    for ( unsigned int i=0; i<typeVecArg.size(); i++ )
+  for ( unsigned int i=0; i<typeVecArg.size(); i++ )
 	{
 	  typeVec.push_back( (unsigned char)typeVecArg[i] );
 	}
-    if (regionPairVecArg.size() == typePairVecArg.size())
+  if (regionPairVecArg.size() == typePairVecArg.size())
 	{
 	  for ( unsigned int i=0; i<regionPairVecArg.size(); i++ )
 	    {
@@ -302,6 +332,7 @@ int main( int argc, char *argv[] )
     }
   for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
     {
+      std::cout<<"Region: "<<(int) regionTypePairVec[i].region<<" Type: "<<(int) regionTypePairVec[i].type<<std::endl;
     extractor->SetRegionAndType( regionTypePairVec[i].region, regionTypePairVec[i].type );
     }  
     extractor->Update();
@@ -320,12 +351,13 @@ int main( int argc, char *argv[] )
   l2It.GoToBegin();
   ctIt.GoToBegin();
   int bbox[6];
-  bbox[0] = 10000;
-  bbox[1] = -10000;
-  bbox[2] = 10000;
-  bbox[3] = -10000;
-  bbox[4] = 10000;
-  bbox[5] = -10000; 
+  bbox[0] = MAXBB;
+  bbox[1] = MINBB;
+  bbox[2] = MAXBB;
+  bbox[3] = MINBB;
+  bbox[4] = MAXBB;
+  bbox[5] = MINBB;
+  int bboxset =0;
   while ( !lIt.IsAtEnd() )
     {
       if (lIt.Get() != 0)
@@ -338,7 +370,8 @@ int main( int argc, char *argv[] )
            if (index[i] > bbox[i*2+1])
              bbox[i*2+1] = static_cast<int>( index[i] );
            }
-        }
+          bboxset=1;
+         }
        if (maskOutputFlag && l2It.Get() == 0)
          {
          ctIt.Set(maskValue);
@@ -347,8 +380,26 @@ int main( int argc, char *argv[] )
      ++l2It;
      ++ctIt;
     }
+  
+  if (bboxset == 0 )
+  {
+    std::cout<<"Region/type not present"<<std::endl;
+    return cip::EXITFAILURE;
+  }
+  
   for (int i=0;i<5;i++)
     std::cout<<i<<": "<<bbox[i]<<std::endl;
+  
+ // Add padding values
+  for (int i=0; i<paddingVecArg.size();i++)
+  {
+    bbox[i*2] -= paddingVecArg[i];
+    bbox[i*2+1] += paddingVecArg[i];
+  }
+  
+  for (int i=0;i<5;i++)
+    std::cout<<i<<": "<<bbox[i]<<std::endl;
+  
 
     if (strcmp(ctOutputFileName.c_str(),"q") != 0) 
       {
