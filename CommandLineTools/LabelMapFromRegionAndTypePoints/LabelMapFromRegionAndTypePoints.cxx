@@ -23,7 +23,7 @@ int main( int argc, char *argv[] )
 
   cip::LabelMapType::SpacingType spacing;
   cip::LabelMapType::SizeType    size;
-  cip::LabelMapType::SpacingType origin;
+  cip::LabelMapType::PointType   origin;
 
   if ( labelMapFileName.compare( "NA" ) != 0 )
     {
