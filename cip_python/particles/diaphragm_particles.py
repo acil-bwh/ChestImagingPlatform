@@ -219,7 +219,7 @@ if __name__ == "__main__":
   else:
     max_scale = float(op.max_scale)
 
-dp=DiaphragmParticles(op.input_ct,op.output_particles,op.tmp_dir,op.input_mask,max_scale,\
+  dp=DiaphragmParticles(op.input_ct,op.output_particles,op.tmp_dir,op.input_mask,max_scale,\
                         float(op.live_th),float(op.seed_th),int(op.scale_samples),float(op.down_sample_rate),\
                         float(op.min_intensity),float(op.max_intensity))
   dp.execute()
