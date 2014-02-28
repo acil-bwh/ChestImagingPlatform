@@ -124,6 +124,10 @@ IF(BUILD_SANDBOX)
   SUBDIRS (Sandbox)
 ENDIF(BUILD_SANDBOX)
 
+IF ( CIP_BUILD_TESTING )
+ SUBDIRS ( cip_python )
+ENDIF( CIP_BUILD_TESTING ) 
+
 #----------------------------------------------------------------------
 # Make it easier to include cip functionality in other programs.
 # See UseFile.cmake for instructions.
