@@ -363,7 +363,7 @@ int main( int argc, char *argv[] )
       if (lIt.Get() != 0)
         {
          index = lIt.GetIndex();
-         for (int i=0;i<3;i++) 
+          for (int i=0;i<cip::CTType::ImageDimension;i++)
            {
            if (index[i] < bbox[i*2])
              bbox[i*2] = static_cast<int>( index[i] );
@@ -387,16 +387,32 @@ int main( int argc, char *argv[] )
     return cip::EXITFAILURE;
   }
   
-  for (int i=0;i<5;i++)
+  for (int i=0;i<2*cip::CTType::ImageDimension;i++)
     std::cout<<i<<": "<<bbox[i]<<std::endl;
   
  // Add padding values
-  for (int i=0; i<paddingVecArg.size();i++)
+  for (int i=0; i<cip::CTType::ImageDimension;i++)
   {
     bbox[i*2] -= paddingVecArg[i];
     bbox[i*2+1] += paddingVecArg[i];
   }
   
+  // Check bounding box limits
+  cip::CTType::RegionType region = ctImage->GetLargestPossibleRegion();
+  cip::CTType::SizeType sizeCT = region.GetSize();
+  cip::CTType::IndexType indexCT = region.GetIndex();
+  
+  for (int i=0; i<cip::CTType::ImageDimension; i++)
+  {
+    if (bbox[i*2] < indexCT[i])
+    {
+      bbox[i*2]=indexCT[i];
+    }
+    if (bbox[i*2+1] > indexCT[i]+sizeCT[i]-1)
+    {
+      bbox[i*2+1]=indexCT[i]+sizeCT[i]-1;
+    }
+  }
   for (int i=0;i<5;i++)
     std::cout<<i<<": "<<bbox[i]<<std::endl;
   
