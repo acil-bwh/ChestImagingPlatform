@@ -58,7 +58,8 @@ class FissureParticles(ChestParticles):
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, max_scale=1.2, live_thresh=-30.6,
-                 seed_thresh=-30.6, scale_samples=1, down_sample_rate=1, min_intensity=-1000, max_intensity=-500):
+                 seed_thresh=-30.6, scale_samples=1, down_sample_rate=1,
+                 min_intensity=-1000, max_intensity=-500):
         ChestParticles.__init__(self, feature_type="ridge_surface",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
@@ -90,7 +91,7 @@ class FissureParticles(ChestParticles):
             	downsampled_mask = os.path.join(self._tmp_dir, \
                                                 "mask-down.nrrd")
             	self.down_sample(self._mask_file_name, \
-                                 downsampled_mask, "cheap",self._down_sample_rate)
+                        downsampled_mask, "cheap",self._down_sample_rate)
             	self._tmp_mask_file_name = downsampled_mask
             
         else:
@@ -224,21 +225,27 @@ class FissureParticles(ChestParticles):
         #Clean tmp Directory
         self.clean_tmp_dir()
 
-
 if __name__ == "__main__":
 
   parser = OptionParser()
   parser.add_option("-i", help='input CT scan', dest="input_ct")
   parser.add_option("-m", help='input mask for seeding', dest="input_mask")
-  parser.add_option("-o", help='output particles (vtk format)', dest="output_particles")
+  parser.add_option("-o", help='output particles (vtk format)', \
+                    dest="output_particles")
   parser.add_option("-t", help='tmp directory', dest="tmp_dir")
   parser.add_option("-s", help='max scale', dest="max_scale",default=1.2)
-  parser.add_option("-r", help='down sampling rate (>=1)', dest="down_sample_rate",default=1.0)
-  parser.add_option("-n", help='number of scale volumes', dest="scale_samples",default=1)
-  parser.add_option("--lth", help='live threshold (<0)', dest="live_th",default=-30)
-  parser.add_option("--sth", help='seed threshold (<0)', dest="seed_th",default=-30)
-  parser.add_option("--minI", help='min intensity for feature', dest="min_intensity",default=-1000)
-  parser.add_option("--maxI", help='max intensity for feature', dest="max_intensity",default=-500)
+  parser.add_option("-r", help='down sampling rate (>=1)', \
+                    dest="down_sample_rate", default=1.0)
+  parser.add_option("-n", help='number of scale volumes', \
+                    dest="scale_samples", default=1)
+  parser.add_option("--lth", help='live threshold (<0)', \
+                    dest="live_th", default=-30)
+  parser.add_option("--sth", help='seed threshold (<0)', \
+                    dest="seed_th", default=-30)
+  parser.add_option("--minI", help='min intensity for feature', \
+                    dest="min_intensity", default=-1000)
+  parser.add_option("--maxI", help='max intensity for feature', \
+                    dest="max_intensity", default=-500)
 
   (op, args) = parser.parse_args()
 
@@ -248,8 +255,10 @@ if __name__ == "__main__":
   else:
     max_scale = float(op.max_scale)
 
-  dp=FissureParticles(op.input_ct,op.output_particles,op.tmp_dir,op.input_mask,max_scale,\
-                        float(op.live_th),float(op.seed_th),int(op.scale_samples),float(op.down_sample_rate),\
-                        float(op.min_intensity),float(op.max_intensity))
+  dp = FissureParticles(op.input_ct, op.output_particles, op.tmp_dir, 
+                        op.input_mask,max_scale, float(op.live_th),
+                        float(op.seed_th), int(op.scale_samples),
+                        float(op.down_sample_rate),
+                        float(op.min_intensity), float(op.max_intensity))
   dp.execute()
 
