@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include "PaintBrushAndEraserGUI.h"
 #include "PaletteCounterGUI.h"
+#include "QueryOverlayGUI.h"
 #include "RegionGrowingGUI.h"
 #include "ACILAssistantBase.h"
 #include "itkImageFileReader.h"
@@ -53,6 +54,7 @@ static std::vector< SESSIONDATA > sessionDataVec;
 static bool grayscaleImageRead = false;
 static PaintBrushAndEraserGUI* paintBrushAndEraserInput;
 static RegionGrowingGUI* regionGrowingInput;
+static QueryOverlayGUI* queryOverlayInput;
 static bool labelMapImageRead = false;
 static ACILAssistantBase* assistantInstance;
 static PaletteCounterGUI* paletteCounter;
@@ -80,6 +82,7 @@ Fl_Menu_Item menu_Menu[] = {
 
  {"Tools", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
  {"Paint Brush And Eraser", 0,  (Fl_Callback*)paintBrushAndEraserMenu_CB, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Query Overlay", 0,  (Fl_Callback*)queryOverlayMenu_CB, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
 
  {"Segmentation", 0,  0, 0, 64, FL_NORMAL_LABEL, 0, 14, 0},
@@ -110,6 +113,7 @@ int main(int argc, char **argv) {
   assistantInstance = new ACILAssistantBase();
   paletteCounter = new PaletteCounterGUI();
   regionGrowingInput = new RegionGrowingGUI();
+  queryOverlayInput = new QueryOverlayGUI();
 
   paintBrushAndEraserInput = new PaintBrushAndEraserGUI();
   paintBrushAndEraserInput->SetUpdateViewerFunction( &UpdateViewer );
@@ -764,6 +768,13 @@ void opacitySlider_CB( Fl_Widget*, void* ) {
 void paintBrushAndEraserMenu_CB( Fl_Widget*, void* ) {
   regionGrowingInput->regionGrowingWindow->hide();
   paintBrushAndEraserInput->paintBrushAndEraserWindow->show();
+  queryOverlayInput->queryOverlayWindow->hide();
+}
+
+void queryOverlayMenu_CB( Fl_Widget*, void* ) {
+  regionGrowingInput->regionGrowingWindow->hide();
+  paintBrushAndEraserInput->paintBrushAndEraserWindow->hide();
+  queryOverlayInput->queryOverlayWindow->show();
 }
 
 void leftLungRightLungMenu_CB( Fl_Widget*, void* ) {
@@ -831,6 +842,7 @@ void muscleMenu_CB( Fl_Widget*, void* )
 void regionGrowingMenu_CB( Fl_Widget*, void* ) 
 {
   paintBrushAndEraserInput->paintBrushAndEraserWindow->hide();
+  queryOverlayInput->queryOverlayWindow->hide();
   regionGrowingInput->regionGrowingWindow->show();
 }
 
@@ -926,6 +938,13 @@ void clickSelect_CB( float x, float y, float z, float value )
 	  paletteCounter->SetChestRegion( conventions.GetChestRegionName(cipRegion) );
 	  paletteCounter->SetChestType( conventions.GetChestTypeName(cipType) );
 	  paletteCounter->SetCount( assistantInstance->GetNumberOfPaintedIndices( cipRegion, cipType ) );
+	}
+
+      if ( queryOverlayInput->queryOverlayWindow->visible() )
+	{
+	  unsigned short label = assistantInstance->GetLabelMapImage()->GetPixel( index );
+	  queryOverlayInput->SetChestRegion( conventions.GetChestRegionNameFromValue( label ) );
+	  queryOverlayInput->SetChestType( conventions.GetChestTypeNameFromValue( label ) );
 	}
 
       UpdateViewer();
