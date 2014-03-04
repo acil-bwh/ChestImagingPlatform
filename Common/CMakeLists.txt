@@ -1,12 +1,39 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.4)
 
 PROJECT( CIPCommon )
 
-INCLUDE_DIRECTORIES( 
-${CMAKE_SOURCE_DIR}/Utilities/ITK
-${CMAKE_SOURCE_DIR}/Utilities/VTK
-)
 
+# --------------------------------------------------------------------------
+# Include dirs
+# --------------------------------------------------------------------------
+INCLUDE_DIRECTORIES( 
+${CIPUtilities_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} )
+
+# --------------------------------------------------------------------------
+# Configure headers
+# --------------------------------------------------------------------------
+set(configure_header_file vtkCIPCommonConfigure.h)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/${configure_header_file}.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
+  )
+
+# --------------------------------------------------------------------------
+# Install headers
+# --------------------------------------------------------------------------
+if(NOT DEFINED ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
+  set(${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT ON)
+endif()
+if(NOT ${PROJECT_NAME}_INSTALL_NO_DEVELOPMENT)
+  file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.(h|txx)")
+  install(
+    FILES ${headers} ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
+    DESTINATION include/${PROJECT_NAME} COMPONENT Development)
+endif()
+
+# --------------------------------------------------------------------------
+# Sources
+# --------------------------------------------------------------------------
 SET ( CIPCommon_SRCS
   vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.cxx
   vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter.cxx
@@ -29,17 +56,22 @@ SET ( CIPCommon_SRCS
   cipNelderMeadSimplexOptimizer.cxx
   cipParticleToThinPlateSplineSurfaceMetric.cxx
   cipHelper.cxx
+  vtkSimpleLungMask.cxx
+  vtkImageStatistics.cxx
   )
 
 IF(VTK_USE_BOOST)
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
   SET ( CIPCommon_SRCS 
         ${CIPCommon_SRCS}
-	    vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.cxx
+	vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.cxx
         vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter.cxx
        )
 ENDIF (VTK_USE_BOOST)
        
+# --------------------------------------------------------------------------
+# Build library
+# --------------------------------------------------------------------------
 set( LIB_NAME CIPCommon )
 
 add_library(${LIB_NAME}
