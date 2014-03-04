@@ -72,6 +72,8 @@
 #ifndef __vtkGlyph3DWithScaling_h
 #define __vtkGlyph3DWithScaling_h
 
+#include "vtkCIPUtilitiesConfigure.h"
+
 #include "vtkPolyDataAlgorithm.h"
 
 #define VTK_SCALE_BY_SCALAR 0
@@ -93,7 +95,7 @@
 
 class vtkTransform;
 
-class VTK_GRAPHICS_EXPORT vtkGlyph3DWithScaling : public vtkPolyDataAlgorithm
+class VTK_CIP_UTILITIES_EXPORT vtkGlyph3DWithScaling : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkGlyph3DWithScaling,vtkPolyDataAlgorithm);
