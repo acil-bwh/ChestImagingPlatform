@@ -1,6 +1,16 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.9)
 
 PROJECT( CIP)
+
+
+#-----------------------------------------------------------------------------
+# Update CMake module path
+#------------------------------------------------------------------------------
+set(CMAKE_MODULE_PATH
+  ${CIP_SOURCE_DIR}/CMake
+  ${CMAKE_MODULE_PATH}
+  )
+set(CIP_CMAKE_DIR ${CIP_SOURCE_DIR}/CMake)
 
 #--------------------------------------------------------------------
 # Find ITK.
