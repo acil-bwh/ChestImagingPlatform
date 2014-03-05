@@ -314,12 +314,12 @@ int main( int argc, char *argv[] )
       return cip::LABELMAPREADFAILURE;
       }
     }
-  else
+/*  else
     {
-    std::cerr <<" No lung label map specified"<< std::endl;
+    std::cout <<" No lung label map specified"<< std::endl;
     //return cip::EXITFAILURE;
     }
-  
+*/  
 
   //Read in moving image label map from file and subsample
     typedef itk::ImageMaskSpatialObject< 2 >   MaskType;
@@ -341,11 +341,12 @@ int main( int argc, char *argv[] )
       return cip::LABELMAPREADFAILURE;
       }
     }
-  else
+/*  else
     {
-    std::cerr <<"Error: No lung label map specified"<< std::endl;
+    std::cout <<"Error: No lung label map specified"<< std::endl;
     //return cip::EXITFAILURE;
     }
+ */
 /*
   // Extract fixed Image region that we want
   std::cout << "Extracting region and type..." << std::endl;
@@ -535,7 +536,6 @@ int main( int argc, char *argv[] )
 
 
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
-  std::cout<<"initializing optimizer"<<std::endl;
   OptimizerType::Pointer optimizer = OptimizerType::New();
 
   optimizer->SetNumberOfIterations( 0 ); //0 good
@@ -587,9 +587,6 @@ int main( int argc, char *argv[] )
 
     
    //Save output for debugging purposes
-    
-
-  std::cout<<"initializing metric"<<std::endl;
  
     if (similarityMetric =="NMI")
     {
@@ -646,8 +643,6 @@ int main( int argc, char *argv[] )
      }
  
     similarity_type = registration->GetMetric()->GetNameOfClass();
-    std::cout << "Similarity metric used, new: "<<similarity_type<<std::endl;
-
 
 
  
@@ -712,7 +707,6 @@ std::endl;
   
   ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
   
-  std::cout<<"getting transfo filename"<<std::endl;
   if ( strcmp(inputTransformFileName[0].c_str(), "q") != 0 )
     {
       std::string infoFilename = inputTransformFileName[0];
@@ -759,8 +753,7 @@ std::endl;
 	  ctSimilarityXMLData.movingID.erase(next,ctSimilarityXMLData.movingID.length()-1);
 	  ctSimilarityXMLData.movingID.erase(0, pos);
 	}
-      
-      std::cout<<"in middle of savinge"<<std::endl;
+
       if ( strcmp(fixedImageID.c_str(), "q") != 0 ) 
 	{
 
@@ -804,13 +797,10 @@ std::endl;
       }
 
       
-      
-      std::cout<<"saving output to: "<<infoFilename.c_str()<<std::endl;
       WriteMeasuresXML(infoFilename.c_str(), ctSimilarityXMLData);
 
     }
   
-  std::cout << "DONE." << std::endl;
  
   return 0;
 
