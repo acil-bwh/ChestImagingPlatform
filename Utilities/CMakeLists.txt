@@ -44,9 +44,11 @@ SET (CIP_UTILITIES_VTK ${CMAKE_SOURCE_DIR}/Utilities/VTK)
 SET ( CIPUtilities_SRCS
   ${CIP_UTILITIES_VTK}/vtkSuperquadricTensorGlyphFilter.cxx
   ${CIP_UTILITIES_VTK}/vtkGlyph3DWithScaling.cxx
-  ${CIP_UTILITIES_VTK}/vtkImageConnectivity.h             
-  ${CIP_UTILITIES_VTK}/vtkImageErode.h 
-  ${CIP_UTILITIES_VTK}/vtkImageNeighborhoodFilter.h
+  ${CIP_UTILITIES_VTK}/vtkImageConnectivity.cxx           
+  ${CIP_UTILITIES_VTK}/vtkImageErode.cxx
+  ${CIP_UTILITIES_VTK}/vtkImageNeighborhoodFilter.cxx
+  ${CIP_UTILITIES_VTK}/vtkNRRDReader.cxx
+  ${CIP_UTILITIES_VTK}/vtkNRRDWriter.cxx
 )
 
 # --------------------------------------------------------------------------
@@ -59,7 +61,7 @@ add_library(${LIB_NAME}
          ${CIPUtilities_SRCS} 
   )
 
-TARGET_LINK_LIBRARIES ( ${LIB_NAME} ${VTK_LIBRARIES} )
+TARGET_LINK_LIBRARIES ( ${LIB_NAME} ${VTK_LIBRARIES} ${Teem_LIBRARIES} )
 
 # --------------------------------------------------------------------------
 # Export target
