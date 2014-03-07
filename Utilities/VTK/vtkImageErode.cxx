@@ -15,8 +15,16 @@
 #include <time.h>
 #include "vtkObjectFactory.h"
 
+#include "vtkDataArray.h"
+#include "vtkImageData.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkObjectFactory.h"
+#include "vtkPointData.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
+
+
 //------------------------------------------------------------------------------
-vtkCxxRevisionMacro(vtkImageErode, "$Revision: 12195 $");
 vtkStandardNewMacro(vtkImageErode);
 
 //----------------------------------------------------------------------------
@@ -44,10 +52,11 @@ vtkImageErode::~vtkImageErode()
 // For every pixel in the foreground, if a neighbor is in the background,
 // then the pixel becomes background.
 template <class T>
-static void vtkImageErodeExecute(vtkImageErode *self,
+void vtkImageErodeExecute(vtkImageErode *self,
                      vtkImageData *inData, T *inPtr,
-                     vtkImageData *outData,
-                     int outExt[6], int id)
+                     vtkImageData *outData, T *outPtr,
+                     int outExt[6], int id,
+                     vtkDataArray *inArray)
 {
   // For looping though output (and input) pixels.
   int outMin0, outMax0, outMin1, outMax1, outMin2, outMax2;
@@ -71,7 +80,6 @@ static void vtkImageErodeExecute(vtkImageErode *self,
   T backgnd = (T)(self->GetBackground());
   T foregnd = (T)(self->GetForeground());
   T pix;
-  T *outPtr = (T*)outData->GetScalarPointerForExtent(outExt);
   unsigned long count = 0;
   unsigned long target;
 
@@ -97,7 +105,7 @@ static void vtkImageErodeExecute(vtkImageErode *self,
   self->GetMaskIncrements(maskInc0, maskInc1, maskInc2);
 
   // in and out should be marching through corresponding pixels.
-  inPtr = (T *)(inData->GetScalarPointer(outMin0, outMin1, outMin2));
+  inPtr = static_cast<T *>(inData->GetScalarPointer(outMin0, outMin1, outMin2));
 
   target = (unsigned long)(numComps*(outMax2-outMin2+1)*
     (outMax1-outMin1+1)/50.0);
@@ -192,56 +200,49 @@ static void vtkImageErodeExecute(vtkImageErode *self,
 
 //----------------------------------------------------------------------------
 // Description:
-// This method is passed a input and output data, and executes the filter
-// algorithm to fill the output from the input.
-// It just executes a switch statement to call the correct function for
-// the datas data types.
-void vtkImageErode::ThreadedExecute(vtkImageData *inData, 
-                    vtkImageData *outData,
-                    int outExt[6], int id)
+// This method contains the first switch statement that calls the correct
+// templated function for the input and output region types.
+void vtkImageErode::ThreadedRequestData(
+                          vtkInformation *vtkNotUsed(request),
+                          vtkInformationVector **inputVector,
+                          vtkInformationVector *vtkNotUsed(outputVector),
+                          vtkImageData ***inData,
+                          vtkImageData **outData,
+                          int outExt[6], int id)
 {
-  void *inPtr = inData->GetScalarPointerForExtent(outExt);
+  void *inPtr;
+  void *outPtr = outData[0]->GetScalarPointerForExtent(outExt);
 
-  switch (inData->GetScalarType())
+  vtkDataArray *inArray = this->GetInputArrayToProcess(0,inputVector);
+  if (id == 0)
+  {
+    outData[0]->GetPointData()->GetScalars()->SetName(inArray->GetName());
+  }
+  
+  inPtr = inArray->GetVoidPointer(0);
+
+  switch (inArray->GetDataType())
     {
-  case VTK_DOUBLE:
-    vtkImageErodeExecute(this, inData, (double *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_FLOAT:
-    vtkImageErodeExecute(this, inData, (float *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_LONG:
-    vtkImageErodeExecute(this, inData, (long *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_INT:
-    vtkImageErodeExecute(this, inData, (int *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_UNSIGNED_INT:
-    vtkImageErodeExecute(this, inData, (unsigned int *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_SHORT:
-    vtkImageErodeExecute(this, inData, (short *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_UNSIGNED_SHORT:
-    vtkImageErodeExecute(this, inData, (unsigned short *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_CHAR:
-    vtkImageErodeExecute(this, inData, (char *)(inPtr), 
-      outData, outExt, id);
-    break;
-  case VTK_UNSIGNED_CHAR:
-    vtkImageErodeExecute(this, inData, (unsigned char *)(inPtr), 
-      outData, outExt, id);
-    break;
+    vtkTemplateMacro(
+      vtkImageErodeExecute(this,inData[0][0],
+              static_cast<VTK_TT *>(inPtr),
+              outData[0], static_cast<VTK_TT *>(outPtr),
+              outExt, id,inArray));
   default:
     vtkErrorMacro(<< "Execute: Unknown input ScalarType");
     return;
     }
+}
+
+//----------------------------------------------------------------------------
+void vtkImageErode::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os, indent);
+  
+  os << indent << "Background: " << this->Background;
+  os << "\n";
+  
+  os << indent << "Foreground: " << this->Foreground;
+  os << "\n";
+  
 }
