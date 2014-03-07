@@ -370,97 +370,76 @@ int main( int argc, char *argv[] )
     rhTransPointsVecVec.push_back( rhPointsVec );
     }
 
-  // At this stage all the training points should be registered to the
-  // input image's coordinate frame. We can now get the domain
-  // locations for each of the three fissures. Note that the domain
-  // locations have the z-coordinate zeroed out.
-  std::cout << "Getting domain locations..." << std::endl;
-  std::vector< ImageType::PointType > loDomainVec;
-  GetDomainPoints( loTransPointsVecVec, &loDomainVec, fixedReader->GetOutput(), 0 );
-
-  std::vector< ImageType::PointType > roDomainVec;
-  GetDomainPoints( roTransPointsVecVec, &roDomainVec, fixedReader->GetOutput(), 1 );
-
-  std::vector< ImageType::PointType > rhDomainVec;
-  GetDomainPoints( rhTransPointsVecVec, &rhDomainVec, fixedReader->GetOutput(), 2 );
-
   // Now we have the domain locations for each of our three
-  // fissures. To build our PCA model, we need to evaluate the z
-  // values at the domain locations for each of our training
-  // datasets. 
+  // boundaries. To build our PCA model, we need to evaluate the z
+  // values at the domain locations for each of our training 
+  // datasets. THe right oblique ('ro') and right horizontal ('rh')
+  // are evaluated separately, but then collected ('right').
   std::cout << "Getting range locations..." << std::endl;
-  std::vector< std::vector< double > > rhRangeValuesVecVec;
-  std::vector< std::vector< double > > roRangeValuesVecVec;
   std::vector< std::vector< double > > loRangeValuesVecVec;
+  std::vector< std::vector< double > > rightRangeValuesVecVec;
 
   for ( unsigned int i=0; i<numTrainingSets; i++ )
     {
     std::vector< double > roRangeValuesVec;
     std::vector< double > rhRangeValuesVec;
     std::vector< double > loRangeValuesVec;
+    std::vector< double > rightRangeValuesVec;
 
-    GetZValuesFromTPS( roDomainVec, &roRangeValuesVec, roTransPointsVecVec[i], fixedReader->GetOutput() );
-    GetZValuesFromTPS( rhDomainVec, &rhRangeValuesVec, rhTransPointsVecVec[i], fixedReader->GetOutput() );
-    GetZValuesFromTPS( loDomainVec, &loRangeValuesVec, loTransPointsVecVec[i], fixedReader->GetOutput() );
+    GetZValuesFromTPS( rightDomainPatternPoints, &roRangeValuesVec, roTransPointsVecVec[i], fixedReader->GetOutput() );
+    GetZValuesFromTPS( rightDomainPatternPoints, &rhRangeValuesVec, rhTransPointsVecVec[i], fixedReader->GetOutput() );
+    GetZValuesFromTPS( leftDomainPatternPoints, &loRangeValuesVec, loTransPointsVecVec[i], fixedReader->GetOutput() );
 
-    roRangeValuesVecVec.push_back( roRangeValuesVec );
-    rhRangeValuesVecVec.push_back( rhRangeValuesVec );
+    for ( unsigned int j=0; j<roRangeValuesVec.size(); j++ )
+      {
+	rightRangeValuesVec.push_back( roRangeValuesVec[j] );
+      }
+    for ( unsigned int j=0; j<rhRangeValuesVec.size(); j++ )
+      {
+	rightRangeValuesVec.push_back( rhRangeValuesVec[j] );
+      }
+
     loRangeValuesVecVec.push_back( loRangeValuesVec );
+    rightRangeValuesVecVec.push_back( rightRangeValuesVec );
     }
 
   // Now we have all the training information needed for building the
   // PCA-based fissure models for this case. 
-  PCA rhShapePCA = GetShapePCA( rhRangeValuesVecVec );
-  PCA roShapePCA = GetShapePCA( roRangeValuesVecVec );
-  PCA loShapePCA = GetShapePCA( loRangeValuesVecVec );
+  PCA loShapePCA    = GetShapePCA( loRangeValuesVecVec );
+  PCA rightShapePCA = GetShapePCA( rightRangeValuesVecVec );
 
   // Now create shape models for each of the three lobe boundaries. To do this we need to 
   // collect the domain locations and mean vector into a single collection of points
   // for each of the three boundaries
-  std::vector< double* >* roMeanSurfacePoints = new std::vector< double* >;
-  for ( unsigned int i=0; i<roShapePCA.meanVec.size(); i++ )
+  std::vector< double* >* rightMeanSurfacePoints = new std::vector< double* >;
+  for ( unsigned int i=0; i<rightShapePCA.meanVec.size(); i++ )
     {
+      unsigned int index = i%(rightShapePCA.meanVec.size()/2);
+
       double* point = new double[3];
-        point[0] = roDomainVec[i][0];
-  	point[1] = roDomainVec[i][1];
-  	point[2] = roShapePCA.meanVec[i];
+        point[0] = rightDomainPatternPoints[index][0];
+  	point[1] = rightDomainPatternPoints[index][1];
+  	point[2] = rightShapePCA.meanVec[i];
 
-      roMeanSurfacePoints->push_back( point );
-    }
-
-  std::vector< double* >* rhMeanSurfacePoints = new std::vector< double* >;
-  for ( unsigned int i=0; i<rhShapePCA.meanVec.size(); i++ )
-    {
-      double* point = new double[3];
-        point[0] = rhDomainVec[i][0];
-  	point[1] = rhDomainVec[i][1];
-  	point[2] = rhShapePCA.meanVec[i];
-
-      rhMeanSurfacePoints->push_back( point );
+      rightMeanSurfacePoints->push_back( point );
     }
 
   std::vector< double* >* loMeanSurfacePoints = new std::vector< double* >;
   for ( unsigned int i=0; i<loShapePCA.meanVec.size(); i++ )
     {
       double* point = new double[3];
-        point[0] = loDomainVec[i][0];
-  	point[1] = loDomainVec[i][1];
+        point[0] = leftDomainPatternPoints[i][0];
+  	point[1] = leftDomainPatternPoints[i][1];
   	point[2] = loShapePCA.meanVec[i];
 
       loMeanSurfacePoints->push_back( point );
     }
 
   // Now create the boundary models
-  std::vector< double > rhModeWeights;
-  for ( unsigned int n=0; n<rhShapePCA.modeVec.size(); n++ )
+  std::vector< double > rightModeWeights;
+  for ( unsigned int n=0; n<rightShapePCA.modeVec.size(); n++ )
     {
-      rhModeWeights.push_back( 0.0 );
-    }
-
-  std::vector< double > roModeWeights;
-  for ( unsigned int n=0; n<roShapePCA.modeVec.size(); n++ )
-    {
-      roModeWeights.push_back( 0.0 );
+      rightModeWeights.push_back( 0.0 );
     }
 
   std::vector< double > loModeWeights;
@@ -479,23 +458,14 @@ int main( int argc, char *argv[] )
     spacing[1] = fixedReader->GetOutput()->GetSpacing()[1];
     spacing[2] = fixedReader->GetOutput()->GetSpacing()[2];
 
-  cipLobeBoundaryShapeModel* roShapeModel = new cipLobeBoundaryShapeModel();
-    roShapeModel->SetImageOrigin( origin );
-    roShapeModel->SetImageSpacing( spacing );
-    roShapeModel->SetMeanSurfacePoints( roMeanSurfacePoints );
-    roShapeModel->SetEigenvalues( &roShapePCA.modeVec );
-    roShapeModel->SetModeWeights( &roModeWeights );
-    roShapeModel->SetEigenvectors( &roShapePCA.modeVecVec );
-    roShapeModel->SetNumberOfModes( roShapePCA.numModes );
-
-  cipLobeBoundaryShapeModel* rhShapeModel = new cipLobeBoundaryShapeModel();
-    rhShapeModel->SetImageOrigin( origin );
-    rhShapeModel->SetImageSpacing( spacing );
-    rhShapeModel->SetMeanSurfacePoints( rhMeanSurfacePoints );
-    rhShapeModel->SetEigenvalues( &rhShapePCA.modeVec );
-    rhShapeModel->SetModeWeights( &rhModeWeights );
-    rhShapeModel->SetEigenvectors( &rhShapePCA.modeVecVec );
-    rhShapeModel->SetNumberOfModes( rhShapePCA.numModes );
+  cipLobeBoundaryShapeModel* rightShapeModel = new cipLobeBoundaryShapeModel();
+    rightShapeModel->SetImageOrigin( origin );
+    rightShapeModel->SetImageSpacing( spacing );
+    rightShapeModel->SetMeanSurfacePoints( rightMeanSurfacePoints );
+    rightShapeModel->SetEigenvalues( &rightShapePCA.modeVec );
+    rightShapeModel->SetModeWeights( &rightModeWeights );
+    rightShapeModel->SetEigenvectors( &rightShapePCA.modeVecVec );
+    rightShapeModel->SetNumberOfModes( rightShapePCA.numModes );
 
   cipLobeBoundaryShapeModel* loShapeModel = new cipLobeBoundaryShapeModel();
     loShapeModel->SetImageOrigin( origin );
@@ -506,27 +476,20 @@ int main( int argc, char *argv[] )
     loShapeModel->SetEigenvectors( &loShapePCA.modeVecVec );
     loShapeModel->SetNumberOfModes( loShapePCA.numModes );
 
-  if ( rhShapeModelFileName.compare( "NA" ) != 0 )
+  if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     {
-    std::cout << "Writing right horizontal shape model to file..." << std::endl;
-    cipLobeBoundaryShapeModelIO rhWriter;
-      rhWriter.SetFileName( rhShapeModelFileName );
-      rhWriter.SetInput( rhShapeModel );
-      rhWriter.Write();
+    std::cout << "Writing right shape model to file..." << std::endl;
+    cipLobeBoundaryShapeModelIO rightWriter;
+      rightWriter.SetFileName( rightShapeModelFileName );
+      rightWriter.SetInput( rightShapeModel );
+      rightWriter.Write();
     }
-  if ( roShapeModelFileName.compare( "NA" ) != 0 )
+
+  if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     {
-    std::cout << "Writing right oblique shape model to file..." << std::endl;
-    cipLobeBoundaryShapeModelIO roWriter;
-      roWriter.SetFileName( roShapeModelFileName );
-      roWriter.SetInput( roShapeModel );
-      roWriter.Write();
-    }
-  if ( loShapeModelFileName.compare( "NA" ) != 0 )
-    {
-    std::cout << "Writing left oblique shape model to file..." << std::endl;
+    std::cout << "Writing left shape model to file..." << std::endl;
     cipLobeBoundaryShapeModelIO loWriter;
-      loWriter.SetFileName( loShapeModelFileName );
+      loWriter.SetFileName( leftShapeModelFileName );
       loWriter.SetInput( loShapeModel );
       loWriter.Write();
     }
