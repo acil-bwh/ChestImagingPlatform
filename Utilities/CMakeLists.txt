@@ -3,15 +3,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT( CIPUtilities )
 
 # --------------------------------------------------------------------------
-# Include dirs
+# Set INCLUDE_DIRS variable
 # --------------------------------------------------------------------------
-set(include_dirs
-  ${CMAKE_CURRENT_SOURCE_DIR}/VTK
-  ${CMAKE_CURRENT_BINARY_DIR}/VTK
-  ${CMAKE_CURRENT_SOURCE_DIR}/ITK
-  ${CMAKE_CURRENT_BINARY_DIR}/ITK 
- )
-include_directories(${include_dirs})
+set(${PROJECT_NAME}_INCLUDE_DIRS 
+       ${CMAKE_CURRENT_SOURCE_DIR}/VTK 
+       ${CMAKE_CURRENT_BINARY_DIR}/VTK
+       ${CMAKE_CURRENT_SOURCE_DIR}/ITK 
+       ${CMAKE_CURRENT_BINARY_DIR}/ITK
+     CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
+
+
+include_directories(${CIPUtilities_INCLUDE_DIRS})
 
 # --------------------------------------------------------------------------
 # Configure headers
@@ -103,11 +105,6 @@ install(TARGETS ${lib_name}
 #  export(TARGETS ${lib_name}Python ${lib_name}PythonD APPEND FILE ${${PROJECT_NAME}_EXPORT_FILE})
 #endif()
 
-# --------------------------------------------------------------------------
-# Set INCLUDE_DIRS variable
-# --------------------------------------------------------------------------
-set(${PROJECT_NAME}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/VTK ${CMAKE_CURRENT_BINARY_DIR}/VTK
-  ${CMAKE_CURRENT_SOURCE_DIR}/ITK ${CMAKE_CURRENT_BINARY_DIR}/ITK
-  CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
+
 
 
