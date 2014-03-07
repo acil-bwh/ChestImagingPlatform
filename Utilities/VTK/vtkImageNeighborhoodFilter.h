@@ -21,15 +21,16 @@
 #ifndef __vtkImageNeighborhoodFilter_h
 #define __vtkImageNeighborhoodFilter_h
 
-#include "vtkImageSpatialFilter.h"
+#include "vtkImageSpatialAlgorithm.h"
 #include "vtkCIPUtilitiesConfigure.h"
 
-class VTK_CIP_UTILITIES_EXPORT vtkImageNeighborhoodFilter : public vtkImageSpatialFilter
+class VTK_CIP_UTILITIES_EXPORT vtkImageNeighborhoodFilter : public vtkImageSpatialAlgorithm
 {
 public:
   static vtkImageNeighborhoodFilter *New();
-  vtkTypeRevisionMacro(vtkImageNeighborhoodFilter,vtkImageSpatialFilter);
-
+  vtkTypeMacro(vtkImageNeighborhoodFilter,vtkImageSpatialAlgorithm);
+  void PrintSelf(ostream& os, vtkIndent indent);
+  
   /// 
   /// Mask that defines area of interest in the neighborhood.
   /// Value is 1 for voxels of interest, 0 otherwise.
@@ -68,6 +69,12 @@ protected:
 
   int Neighbor;
   unsigned char *Mask;
+  
+private:
+  vtkImageNeighborhoodFilter(const vtkImageNeighborhoodFilter&);  // Not implemented.
+  void operator=(const vtkImageNeighborhoodFilter&);  // Not implemented.
+  
+  
 };
 
 #endif
