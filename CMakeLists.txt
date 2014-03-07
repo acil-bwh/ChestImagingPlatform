@@ -33,6 +33,16 @@ ELSE ( VTK_FOUND )
 ENDIF ( VTK_FOUND )
 
 #---------------------------------------------------------------------
+# Find Teem
+
+FIND_PACKAGE ( Teem )
+IF ( Teem_FOUND )
+  INCLUDE(${Teem_USE_FILE})
+ELSE ( VTK_FOUND )
+  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
+ENDIF ( Teem_FOUND )
+
+#---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
 # They hide real warnings.
 
@@ -71,7 +81,11 @@ set( CIP_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}" )
 set( CIP_INCLUDE_DIRECTORIES 
   "${CIP_SOURCE_DIR}/Common"
   "${CIP_SOURCE_DIR}/Utilities/ITK"
-  "${CIP_SOURCE_DIR}/Utilities/VTK")
+  "${CIP_SOURCE_DIR}/Utilities/VTK"
+  "${CMAKE_BINARY_DIR}/Common"
+  "${CMAKE_BINARY_DIR}/Utilities/VTK"
+  "${CMAKE_BINARY_DIR}/Utilities/ITK"
+)
 
 include_directories( ${CIP_INCLUDE_DIRECTORIES} )
 
