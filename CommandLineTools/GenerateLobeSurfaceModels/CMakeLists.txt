@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-PROJECT( GenerateFissureShapeModels )
+PROJECT( GenerateLobeSurfaceModels )
 
-SET ( MODULE_NAME GenerateFissureShapeModels )
+SET ( MODULE_NAME GenerateLobeSurfaceModels )
 
 FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
 INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
@@ -22,7 +22,7 @@ SET ( MODULE_TARGET_LIBRARIES
   CIPIO
   )
 
-SET ( MODULE_SRCS GenerateFissureShapeModels.cxx )
+SET ( MODULE_SRCS GenerateLobeSurfaceModels.cxx )
 
 SEMMacroBuildCLI (
   NAME ${MODULE_NAME}

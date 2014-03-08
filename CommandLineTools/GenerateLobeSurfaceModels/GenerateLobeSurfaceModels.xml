@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform</category>
-  <title>GenerateFissureShapeModels</title>
+  <title>GenerateLobeSurfaceModels</title>
   <description><![CDATA[This program is used to generate fissure shape models based \
   on a training set. The basic approach is as follows: a reference image \
   is read and then registered to the label map for which the user \
@@ -32,7 +32,14 @@
   indicates the number of control points. Finally, the next m lines \
   indicate the control point indices (the domain locations). Note \
   that the z-value for these entries is 0. This is to emphasize that \
-  they are in the domain -- the x-y plane.]]>
+  they are in the domain -- the x-y plane. Two shape model files can \
+  be saved: one for the left lung and one for the right lung. In the \
+  right lung PCA is performed over the right oblique and right horizontal \
+  surfaces taken together. In the corresponding saved file, the first \
+  half of the points represent the right oblique surface, and the \
+  second half of the points represent the right horizontal surface. \
+  Note that the right oblique and right horizontal surfaces share the \
+  same points in the domain.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
@@ -77,29 +84,23 @@
     </string>  
 
     <string>
-      <name>rhShapeModelFileName</name>
-      <label>Right horizontal shape model file name</label>
+      <name>rightShapeModelFileName</name>
+      <label>Right oblique and right horizontal shape model file name</label>
       <channel>input</channel>
-      <longflag>orh</longflag>
-      <description><![CDATA[Output right horizontal shape model file name.]]></description>
+      <longflag>or</longflag>
+      <description><![CDATA[Output right oblique and right horizontal shape model file name. The first \
+      half of the entries in the saved fill will correspond to the right oblique boundary surface. \
+      The second half of the entries will correspond to the right horizontal boundary surface.]]></description>
       <default>NA</default>
     </string>  
 
     <string>
-      <name>roShapeModelFileName</name>
-      <label>Right oblique shape model file name</label>
+      <name>leftShapeModelFileName</name>
+      <label>Left shape model file name</label>
       <channel>input</channel>
-      <longflag>oro</longflag>
-      <description><![CDATA[Output right oblique shape model file name.]]></description>
-      <default>NA</default>
-    </string>  
-
-    <string>
-      <name>loShapeModelFileName</name>
-      <label>Left oblique shape model file name</label>
-      <channel>input</channel>
-      <longflag>olo</longflag>
-      <description><![CDATA[Output left oblique shape model file name.]]></description>
+      <longflag>ol</longflag>
+      <description><![CDATA[Output left lung shape model file name. This file will contain the shape model \
+      describing the boundary between the left upper and left lower lobes.]]></description>
       <default>NA</default>
     </string>  
 
