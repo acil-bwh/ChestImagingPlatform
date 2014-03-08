@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>ChestImagingPlatform</category>
-  <title>Extract Lung Mask</title>
-  <description> Extract Lung Mask.
-</description>
+  <category>Chest Imaging Platform.Toolkit.Segmentation</category>
+  <title>Generate Simple Lung Mask</title>
+  <description> Generate Simple Lung Mask</description>
   <version>0.1.0.$Revision: 1.1 $(alpha)</version>
   <documentation-url></documentation-url>
   <license></license>
@@ -24,7 +23,7 @@
       <index>0</index>
       <description>Input Chest CT volume</description>
     </image>
-    <image>
+    <image type="label">
       <name>outputVolume</name>
       <label>Output Volume</label>
       <channel>output</channel>
