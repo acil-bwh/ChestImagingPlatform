@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-PROJECT(GetTransformationSimilarityMetric)
+PROJECT(GetTransformationSimilarityMetric3D)
 
-set(MODULE_NAME GetTransformationSimilarityMetric)
+set(MODULE_NAME GetTransformationSimilarityMetric3D)
 
 find_package(LibXml2 REQUIRED)
 
