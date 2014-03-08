@@ -35,7 +35,7 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkIdentityTransform.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
-#include "GetTransformationSimilarityMetricCLP.h"
+#include "GetTransformationSimilarityMetric3DCLP.h"
 #include "cipConventions.h"
 #include "cipHelper.h"
 #include <sstream>
