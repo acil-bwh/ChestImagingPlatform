@@ -14,7 +14,65 @@
         and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
   <parameters>
+  <label>I/O</label>
+   <image>
+      <name>fixedCTFileName</name>
+      <label>fixed CT FileName</label>
+      <channel>input</channel>
+      <flag>g</flag>
+      <longflag>--fixedCTFileName</longflag>
+      <description><![CDATA[fixed CT File Name]]></description>
+      <default>e</default>
+    </image>   
+    <image>
+      <name>movingCTFileName</name>
+      <label>moving CT FileName</label>
+      <channel>input</channel>
+      <flag>a</flag>
+      <longflag>--movingCTFileName</longflag>
+      <description><![CDATA[moving CT FileName]]></description>
+      <default>e</default>
+    </image>
+   <string-vector>
+      <name>inputTransformFileName</name>
+      <label>input Transform FileNames</label>
+      <channel>input</channel>
+      <flag>q</flag>
+      <longflag>--inputTransform</longflag>
+      <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
+      <default>q</default>
+    </string-vector>    
+    <image>
+      <name>fixedLabelmapFileName</name>
+      <label>fixed LabelMap FileName</label>
+      <channel>input</channel>
+      <flag>f</flag>
+      <longflag>--fixedLabelMapFileName</longflag>
+      <description><![CDATA[fixed Image File Name]]></description>
+      <default>q</default>
+    </image> 
 
+   <image>
+      <name>movingLabelmapFileName</name>
+      <label>moving LabelMap FileName</label>
+      <channel>input</channel>
+      <flag>m</flag>
+      <longflag>--movingLabelMapFileName</longflag>
+      <description><![CDATA[moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.]]></description>
+      <default>q</default>
+    </image>
+    <string>
+      <name>outputXMLFileName</name>
+      <label>output XML File</label>
+      <channel>output</channel>
+      <flag>e</flag>
+      <longflag>--outputXMLFile</longflag>
+      <description><![CDATA[The name of the output xml file. If not specified, no xml file will be output. ]]></description>
+      <default>q</default>
+    </string>
+    </parameters>
+    <parameters>
+    <label>Similarity parameters</label>
     <string>
       <name>similarityMetric</name>
       <label>Similarity Metric</label>
@@ -26,52 +84,13 @@
       NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
       <default>MI</default>
     </string>
-
-    <string>
-      <name>fixedLabelmapFileName</name>
-      <label>fixed LabelMap FileName</label>
-      <channel>input</channel>
-      <flag>f</flag>
-      <longflag>--fixedLabelMapFileName</longflag>
-      <description><![CDATA[fixed Image File Name]]></description>
-      <default>q</default>
-    </string> 
-
-   <string>
-      <name>movingLabelmapFileName</name>
-      <label>moving LabelMap FileName</label>
-      <channel>input</channel>
-      <flag>m</flag>
-      <longflag>--movingLabelMapFileName</longflag>
-      <description><![CDATA[moving LabelMap FileName]]></description>
-      <default>q</default>
-    </string>
-
-   <string>
-      <name>fixedCTFileName</name>
-      <label>fixed CT FileName</label>
-      <channel>input</channel>
-      <flag>g</flag>
-      <longflag>--fixedCTFileName</longflag>
-      <description><![CDATA[fixed CT File Name]]></description>
-      <default>e</default>
-    </string>   
-    <string>
-      <name>movingCTFileName</name>
-      <label>moving CT FileName</label>
-      <channel>input</channel>
-      <flag>a</flag>
-      <longflag>--movingCTFileName</longflag>
-      <description><![CDATA[moving CT FileName]]></description>
-      <default>e</default>
-    </string>
     <string>
       <name>movingImageID</name>
       <label>moving Image subject ID</label>
       <channel>input</channel>
       <flag>s</flag>
       <longflag>--movingImageID</longflag>
-      <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
+      <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be null.]]></description>
       <default>q</default>
     </string>   
     <string>
@@ -80,42 +99,9 @@
       <channel>input</channel>
       <flag>u</flag>
       <longflag>--fixedImageID</longflag>
-      <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
+      <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be null.]]></description>
       <default>q</default>
     </string> 
-    <float>
-      <name>downsampleFactor</name>
-      <label>downsample Factor</label>
-      <channel>input</channel>
-      <flag>d</flag>
-      <longflag>--degrees</longflag>
-      <description><![CDATA[downsampleFactor]]></description>
-      <default>1.0</default>
-    </float>  
-<integer-vector>
-      <name>typeVecArg</name>
-      <longflag>--typeVec</longflag>
-      <flag>c</flag>
-      <label>typeVec</label>
-      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
-
-<integer-vector>
-      <name>typePairVecArg</name>
-      <longflag>--typePairVec</longflag>
-      <flag>w</flag>
-      <label>typePairVec</label>
-      <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag]]></description>
-</integer-vector>
-
-<integer-vector>
-      <name>regionPairVecArg</name>
-      <longflag>regionPairVec</longflag>
-      <flag>b</flag>
-      <label>regionPairVec</label>
-      <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
-
     <boolean>
       <name>isInvertTransform</name>
       <label>Invert Transformation</label>
@@ -125,33 +111,7 @@
       <default>false</default>
     </boolean> 
 
-   <string-vector>
-      <name>inputTransformFileName</name>
-      <label>input Transform FileNames</label>
-      <channel>input</channel>
-      <flag>q</flag>
-      <longflag>--inputTransform</longflag>
-      <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
-      <default>q</default>
-    </string-vector>   
  
-    <string>
-      <name>outputXMLFileName</name>
-      <label>output XML File</label>
-      <channel>input</channel>
-      <flag>e</flag>
-      <longflag>--outputXMLFile</longflag>
-      <description><![CDATA[The name of the output xml file. If not specified, it will be automatically assigned as moving-to-fixed.xml ]]></description>
-      <default>q</default>
-    </string> 
-
-<integer-vector>
-      <name>regionVecArg</name>
-      <longflag>--regionVec</longflag>
-      <flag>r</flag>
-      <label>regionVec</label>
-      <description><![CDATA[Specify a region you want to crop]]></description>
-</integer-vector>
 
   </parameters>
 </executable>
