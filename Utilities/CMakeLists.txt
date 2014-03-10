@@ -3,15 +3,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT( CIPUtilities )
 
 # --------------------------------------------------------------------------
-# Include dirs
+# Set INCLUDE_DIRS variable
 # --------------------------------------------------------------------------
-set(include_dirs
-  ${CMAKE_CURRENT_SOURCE_DIR}/VTK
-  ${CMAKE_CURRENT_BINARY_DIR}/VTK
-  ${CMAKE_CURRENT_SOURCE_DIR}/ITK
-  ${CMAKE_CURRENT_BINARY_DIR}/ITK 
- )
-include_directories(${include_dirs})
+set(${PROJECT_NAME}_INCLUDE_DIRS 
+       ${CMAKE_CURRENT_SOURCE_DIR}/VTK 
+       ${CMAKE_CURRENT_BINARY_DIR}/VTK
+       ${CMAKE_CURRENT_SOURCE_DIR}/ITK 
+       ${CMAKE_CURRENT_BINARY_DIR}/ITK
+     CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
+
+
+include_directories(${CIPUtilities_INCLUDE_DIRS})
 
 # --------------------------------------------------------------------------
 # Configure headers
@@ -44,9 +46,11 @@ SET (CIP_UTILITIES_VTK ${CMAKE_SOURCE_DIR}/Utilities/VTK)
 SET ( CIPUtilities_SRCS
   ${CIP_UTILITIES_VTK}/vtkSuperquadricTensorGlyphFilter.cxx
   ${CIP_UTILITIES_VTK}/vtkGlyph3DWithScaling.cxx
-  ${CIP_UTILITIES_VTK}/vtkImageConnectivity.h             
-  ${CIP_UTILITIES_VTK}/vtkImageErode.h 
-  ${CIP_UTILITIES_VTK}/vtkImageNeighborhoodFilter.h
+  ${CIP_UTILITIES_VTK}/vtkImageConnectivity.cxx           
+  ${CIP_UTILITIES_VTK}/vtkImageErode.cxx
+  ${CIP_UTILITIES_VTK}/vtkImageNeighborhoodFilter.cxx
+  ${CIP_UTILITIES_VTK}/vtkNRRDReader.cxx
+  ${CIP_UTILITIES_VTK}/vtkNRRDWriter.cxx
 )
 
 # --------------------------------------------------------------------------
@@ -59,7 +63,7 @@ add_library(${LIB_NAME}
          ${CIPUtilities_SRCS} 
   )
 
-TARGET_LINK_LIBRARIES ( ${LIB_NAME} ${VTK_LIBRARIES} )
+TARGET_LINK_LIBRARIES ( ${LIB_NAME} ${VTK_LIBRARIES} ${Teem_LIBRARIES} )
 
 # --------------------------------------------------------------------------
 # Export target
@@ -101,11 +105,6 @@ install(TARGETS ${lib_name}
 #  export(TARGETS ${lib_name}Python ${lib_name}PythonD APPEND FILE ${${PROJECT_NAME}_EXPORT_FILE})
 #endif()
 
-# --------------------------------------------------------------------------
-# Set INCLUDE_DIRS variable
-# --------------------------------------------------------------------------
-set(${PROJECT_NAME}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/VTK ${CMAKE_CURRENT_BINARY_DIR}/VTK
-  ${CMAKE_CURRENT_SOURCE_DIR}/ITK ${CMAKE_CURRENT_BINARY_DIR}/ITK
-  CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
+
 
 

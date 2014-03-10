@@ -147,7 +147,7 @@
 #include "cipLobeBoundaryShapeModel.h"
 #include "cipLobeBoundaryShapeModelIO.h"
 #include "cipHelper.h"
-#include "GenerateFissureShapeModelsCLP.h"
+#include "GenerateLobeSurfaceModelsCLP.h"
 
 typedef itk::Image< unsigned short, 3 >                                             ImageType;
 typedef itk::Image< unsigned short, 2 >                                             ImageSliceType;

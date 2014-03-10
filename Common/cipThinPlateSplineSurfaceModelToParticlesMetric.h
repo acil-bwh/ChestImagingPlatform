@@ -1,19 +1,9 @@
 /**
  *  \file cipThinPlateSplineSurfaceModelToParticlesMetric
  *  \ingroup common
- *  \brief This class implements an objective function that measures how well
- *  a given thin plate spline (TPS) surface model fits a given set of
- *  particles data. The intuition behind the metric is that particles
- *  that are close to the current surface and oriented parallel to the
- *  direction of the surface normal (at the nearest point) contribute
- *  strongly to the objective function value. On the other hand,
- *  particles that are far from the surface and/or oriented orthogonal
- *  to the surface normal do not contribute to the objective function
- *  value.
- *
- *  $Date: 2012-09-05 16:59:15 -0400 (Wed, 05 Sep 2012) $
- *  $Revision: 231 $
- *  $Author: jross $
+ *  \brief This is an abstract base class that abstracts away some
+ *  core functionality needed by classes that compute metric values
+ *  between TPS surface(s) and sets of particles.
  *
  */
 
@@ -33,12 +23,25 @@ public:
 
   /** This method returns the value of the cost function corresponding
     * to the specified parameters. */
-  double GetValue( const std::vector< double >* const ) const; 
+  virtual double GetValue( const std::vector< double >* const ) const = 0; 
 
-  /** Set the particles data to be used during the optimization */     
-  void SetParticles( vtkPolyData* const );
+  /** Set fissure particles data that may be used during the optimization */
+  void SetFissureParticles( vtkPolyData* const );
 
-  void SetParticleWeights( std::vector< double >* );
+  /** Set airway particles data that may be used during the optimization */
+  void SetAirwayParticles( vtkPolyData* const );
+
+  /** Set vessel particles data that may be used during the optimization */
+  void SetVesselParticles( vtkPolyData* const );
+
+  /** Set weights for each of the fissure particles */
+  void SetFissureParticleWeights( std::vector< double >* );
+
+  /** Set weights for each of the airway particles */
+  void SetAirwayParticleWeights( std::vector< double >* );
+
+  /** Set weights for each of the vessel particles */
+  void SetVesselParticleWeights( std::vector< double >* );
 
   /** The mean surface points are the physical x, y, and z-coordinates
    *  of a collection of points that define the mean surface in our model */
@@ -53,46 +56,109 @@ public:
    *  eigenvalue pair) to establish the full shape model */
   void SetEigenvectorAndEigenvalue( const std::vector< double >* const, double );
 
-  /** The sigma distance parameter value controls the effect of
-   *  particle-surface distance during the objective function value
+  /** The fissure sigma distance parameter value controls the effect of
+   *  fissure particle-surface distance during the objective function value
    *  computation. */
-  void SetSigmaDistance( double sigDist )
+  void SetFissureSigmaDistance( double sigDist )
     {
-      SigmaDistance = sigDist;
+      FissureSigmaDistance = sigDist;
     }
 
-  /** The sigma theta parameter value controls the effect of
+  /** The sigma theta parameter value controls the effect of fissure
    *  particle-surface orientation difference during the objective
    *  function value computation. */
-  void SetSigmaTheta( double sigTheta )
+  void SetFissureSigmaTheta( double sigTheta )
     {
-      SigmaTheta = sigTheta;
+      FissureSigmaTheta = sigTheta;
     }
 
-  cipThinPlateSplineSurface* GetThinPlateSplineSurface()
+  /** The vessel sigma distance parameter value controls the effect of
+   *  vessel particle-surface distance during the objective function value
+   *  computation. */
+  void SetVesselSigmaDistance( double sigDist )
     {
-      return ThinPlateSplineSurface;
+      VesselSigmaDistance = sigDist;
+    }
+
+  /** The sigma theta parameter value controls the effect of vessel
+   *  particle-surface orientation difference during the objective
+   *  function value computation. */
+  void SetVesselSigmaTheta( double sigTheta )
+    {
+      VesselSigmaTheta = sigTheta;
+    }
+
+  /** The airway sigma distance parameter value controls the effect of
+   *  airway particle-surface distance during the objective function value
+   *  computation. */
+  void SetAirwaySigmaDistance( double sigDist )
+    {
+      AirwaySigmaDistance = sigDist;
+    }
+
+  /** The sigma theta parameter value controls the effect of airway
+   *  particle-surface orientation difference during the objective
+   *  function value computation. */
+  void SetAirwaySigmaTheta( double sigTheta )
+    {
+      AirwaySigmaTheta = sigTheta;
+    }
+
+  /** In general the metric will be composed of airway, fissure, and vessel
+      terms. Optionally set the weight of the fissure term with this 
+      function. */
+  void SetFissureTermWeight( double weight )
+    {
+      FissureTermWeight = weight;
+    }
+
+  /** In general the metric will be composed of airway, fissure, and vessel
+      terms. Optionally set the weight of the vessel term with this 
+      function. */
+  void SetVesselTermWeight( double weight )
+    {
+      VesselTermWeight = weight;
+    }
+
+  /** In general the metric will be composed of airway, fissure, and vessel
+      terms. Optionally set the weight of the airway term with this 
+      function. */
+  void SetAirwayTermWeight( double weight )
+    {
+      AirwayTermWeight = weight;
     }
 
 private:
-  vtkPolyData* Particles;
+  vtkPolyData* FissureParticles;
+  vtkPolyData* AirwayParticles;
+  vtkPolyData* VesselParticles;
 
-  cipNewtonOptimizer< 2 >*                     NewtonOptimizer;
-  cipThinPlateSplineSurface*                   ThinPlateSplineSurface;
-  cipParticleToThinPlateSplineSurfaceMetric*   ParticleToTPSMetric;
+  double FissureTermWeight;
+  double VesselTermWeight;
+  double AirwayTermWeight;
 
-  std::vector< double >                  ParticleWeights;
-  std::vector< double* >                 SurfacePoints;
-  std::vector< std::vector< double > >   Eigenvectors;
-  std::vector< double >                  Eigenvalues;
-  std::vector< double* >                 MeanPoints;
+  std::vector< double >                 FissureParticleWeights;
+  std::vector< double >                 AirwayParticleWeights;
+  std::vector< double >                 VesselParticleWeights;
+  std::vector< double* >                SurfacePoints;
+  std::vector< std::vector< double > >  Eigenvectors;
+  std::vector< double >                 Eigenvalues;
+  std::vector< double* >                MeanPoints;
 
-  double SigmaDistance;
-  double SigmaTheta;
+  double FissureSigmaDistance;
+  double FissureSigmaTheta;
+
+  double VesselSigmaDistance;
+  double VesselSigmaTheta;
+
+  double AirwaySigmaDistance;
+  double AirwaySigmaTheta;
 
   unsigned int NumberOfModes;
   unsigned int NumberOfSurfacePoints;
-  unsigned int NumberOfParticles;
+  unsigned int NumberOfFissureParticles;
+  unsigned int NumberOfAirwayParticles;
+  unsigned int NumberOfVesselParticles;
 };
 
 

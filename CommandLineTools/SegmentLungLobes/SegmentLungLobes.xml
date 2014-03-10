@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Segmentation</category>
   <title>SegmentLungLobes</title>
   <description><![CDATA[This program reads a label map image (where the labels\
   correspond to the conventions laid out cipChestConventions.h) as\
@@ -26,17 +26,17 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <image>
+    <image type="label">
       <name>inLabelMapFileName</name>
       <label>Input label map file name</label>
       <channel>input</channel>
       <flag>i</flag>
-      <longflag>--in</longflag>
+      <longflag>in</longflag>
       <description><![CDATA[Input lung label map file name. Left and right lungs must be uniquely labeled.]]></description>
       <default>NA</default>
     </image>  
 
-    <image>
+    <image type="label">
       <name>outLabelMapFileName</name>
       <label>Output label map file name</label>
       <channel>input</channel>
@@ -44,8 +44,38 @@
       <longflag>out</longflag>
       <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
       <default>NA</default>
-    </image>  
+    </image>
+    </parameters>
+  
+    <parameters>
+    <label>Fiducial Points</label>
+    <description><![CDATA[Fiducials points along the fissures]]></description>
+    <point multiple="true" coordinateSystem="ras">
+      <name>rightHorizontalFiducials</name>
+      <label>Horizontal Right Fiducials</label>
+      <longflag>--rightHorizontalFiducials</longflag>
+      <description><![CDATA[Fiducals along right horizontal fissure]]></description>
+      <default>0,0,0</default>
+    </point>
+    <point multiple="true" coordinateSystem="ras">
+      <name>rightObliqueFiducials</name>
+      <label>Oblique Right Fiducials</label>
+      <longflag>rightObliqueFiducials</longflag>
+      <description><![CDATA[Fiducials along right oblique fissure]]></description>
+      <default>0,0,0</default>
+    </point>
+    <point multiple="true" coordinateSystem="ras">
+      <name>leftObliqueFiducials</name>
+      <label>Left Oblique Fiducials</label>
+      <longflag>leftObliqueFiducials</longflag>
+      <description><![CDATA[Fiducials along left oblique fissure]]></description>
+      <default>0,0,0</default>
+    </point>
+  </parameters>
 
+  <parameters>
+    <label>Fissure Particles</label>
+    <description>Fissure Particles</description>
     <string>
       <name>loParticlesFileName</name>
       <label>Left oblique particles file name</label>
@@ -78,7 +108,11 @@
       through these points to define the boundary between the lobes.]]></description>
       <default>NA</default>
     </string>  
-
+    </parameters>
+  
+    <parameters>
+    <label>Region Type Points</label>
+    <description>Region Type Points</description>
     <string>
       <name>regionTypePointsFileName</name>
       <label>Region and type points file</label>
@@ -92,6 +126,8 @@
   </parameters>
 
   <parameters>
+    <description>Options</description>
+    <label>Options</label>
     <double>
       <name>lambda</name>
       <flag>l</flag>
