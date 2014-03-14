@@ -67,11 +67,11 @@
 
 namespace
 {
-typedef itk::Image< short, 3 >                           ImageType;
-typedef itk::ImageFileReader< ImageType >                ReaderType;
-typedef itk::ImageRegionIteratorWithIndex< ImageType >   IteratorType;
-typedef itk::AffineTransform< double, 3 >                TransformType;
-typedef itk::Matrix< double, 3, 3 >                      MatrixType;
+  typedef itk::Image< short, 3 >                           ImageType;
+  typedef itk::ImageFileReader< ImageType >                ReaderType;
+  typedef itk::ImageRegionIteratorWithIndex< ImageType >   IteratorType;
+  typedef itk::AffineTransform< double, 3 >                TransformType;
+  typedef itk::Matrix< double, 3, 3 >                      MatrixType;
 }
 
 int main( int argc, char *argv[] )
@@ -84,19 +84,19 @@ int main( int argc, char *argv[] )
   //
   // Read the CT image
   //
-  std::cout << "Reading CT image...new" << std::endl;
+  std::cout << "Reading CT image." << std::endl;
   ReaderType::Pointer ctReader = ReaderType::New();
-    ctReader->SetFileName( ctFileName.c_str() );
+  ctReader->SetFileName( ctFileName.c_str() );
   try
     {
-    ctReader->Update();
+      ctReader->Update();
     }
   catch ( itk::ExceptionObject &excp )
     {
-    std::cerr << "Exception caught reading CT image:";
-    std::cerr << excp << std::endl;
+      std::cerr << "Exception caught reading CT image:";
+      std::cerr << excp << std::endl;
 
-    return cip::NRRDREADFAILURE;
+      return cip::NRRDREADFAILURE;
     }
 
   //
@@ -112,32 +112,32 @@ int main( int argc, char *argv[] )
   it.GoToBegin();
   while ( !it.IsAtEnd() )
     {
-    if ( it.Get() >= boneThreshold )
-      {
-      ctReader->GetOutput()->TransformIndexToPhysicalPoint( it.GetIndex(), itkPoint );
+      if ( it.Get() >= boneThreshold )
+	{
+	  ctReader->GetOutput()->TransformIndexToPhysicalPoint( it.GetIndex(), itkPoint );
 
-      double vtkPoint[3];
-        vtkPoint[0] = itkPoint[0];
-        vtkPoint[1] = itkPoint[1];
-        vtkPoint[2] = itkPoint[2];
+	  double vtkPoint[3];
+	  vtkPoint[0] = itkPoint[0];
+	  vtkPoint[1] = itkPoint[1];
+	  vtkPoint[2] = itkPoint[2];
 
-      targetPoints->InsertNextPoint( vtkPoint );
-      }
+	  targetPoints->InsertNextPoint( vtkPoint );
+	}
 
-    ++it;
+      ++it;
     }
 
   vtkSmartPointer< vtkPolyData > target = vtkSmartPointer< vtkPolyData >::New();
-    target->SetPoints( targetPoints );
+  target->SetPoints( targetPoints );
 
   vtkSmartPointer< vtkCellArray > targetArray = vtkSmartPointer< vtkCellArray >::New();
 
   for( unsigned int i=0; i<target->GetNumberOfPoints(); i++ )
     {
-    vtkSmartPointer< vtkIdList > idList = vtkSmartPointer< vtkIdList >::New();
+      vtkSmartPointer< vtkIdList > idList = vtkSmartPointer< vtkIdList >::New();
       idList->InsertNextId( i );
   
-    targetArray->InsertNextCell( idList );
+      targetArray->InsertNextCell( idList );
     }
   
   target->SetVerts( targetArray );
@@ -146,62 +146,62 @@ int main( int argc, char *argv[] )
   //
   // Now read the convex hull mesh
   //
-  std::cout << "Reading convex hull mesh... 2" << std::endl;
+  std::cout << "Reading convex hull mesh... " << std::endl;
     
-      vtkSmartPointer< vtkIterativeClosestPointTransform > icp = vtkSmartPointer< vtkIterativeClosestPointTransform >::New();
+  vtkSmartPointer< vtkIterativeClosestPointTransform > icp = vtkSmartPointer< vtkIterativeClosestPointTransform >::New();
     
     
-std::string extension = vtksys::SystemTools::LowerCase( vtksys::SystemTools::GetFilenameLastExtension(convexHullMeshFileName) );
-vtkSmartPointer< vtkPolyDataReader > meshReader = NULL;
-vtkSmartPointer< vtkXMLPolyDataReader > meshReaderxml = NULL;
-    // vtkSmartPointer< vtkPolyDataReader > meshReader = vtkSmartPointer< vtkPolyDataReader >::New();
-    if( extension == std::string(".vtk") )
-{
-    meshReader = vtkSmartPointer< vtkPolyDataReader >::New();
-    meshReader->SetFileName( convexHullMeshFileName.c_str() ); //.c_str()
-    meshReader->Update();
-    icp->SetSource( meshReader->GetOutput() );
-}
-else if( extension == std::string(".vtp") )
-{
-    meshReaderxml = vtkSmartPointer< vtkXMLPolyDataReader >::New();
-    meshReaderxml->SetFileName(convexHullMeshFileName.c_str() );
-    meshReaderxml->Update();
-    icp->SetSource( meshReaderxml->GetOutput() );
-}
+  std::string extension = vtksys::SystemTools::LowerCase( vtksys::SystemTools::GetFilenameLastExtension(convexHullMeshFileName) );
+
+  vtkSmartPointer< vtkPolyDataReader > meshReader = vtkSmartPointer< vtkPolyDataReader >::New();
+  vtkSmartPointer< vtkXMLPolyDataReader > meshReaderxml = vtkSmartPointer< vtkXMLPolyDataReader >::New();
+
+  if( extension == std::string(".vtk") )
+    {
+       std::cout << "Reading convex hull vtk file... " << std::endl;
+      meshReader->SetFileName( convexHullMeshFileName.c_str() );
+      meshReader->Update();
+      icp->SetSource( meshReader->GetOutput() );
+    }
+  else if( extension == std::string(".vtp") )
+    {
+      meshReaderxml->SetFileName(convexHullMeshFileName.c_str() );
+      meshReaderxml->Update();
+      icp->SetSource( meshReaderxml->GetOutput() );
+    }
 
   std::cout << "Registering..." << std::endl;
 
     
-    icp->SetTarget( target );
-    icp->SetStartByMatchingCentroids( true );
-    icp->GetLandmarkTransform()->SetModeToAffine();
-    icp->SetMaximumNumberOfIterations( numberOfIterations );
-    icp->Modified();
-    icp->Update();
+  icp->SetTarget( target );
+  icp->SetStartByMatchingCentroids( true );
+  icp->GetLandmarkTransform()->SetModeToAffine();
+  icp->SetMaximumNumberOfIterations( numberOfIterations );
+  icp->Modified();
+  icp->Update();
 
   vtkSmartPointer< vtkMatrix4x4 > vMatrix = icp->GetMatrix();
   std::cout << "The resulting matrix is: " << *vMatrix << std::endl;
 
   MatrixType iMatrix;
-    iMatrix(0,0) = vMatrix->GetElement(0,0);  iMatrix(0,1) = vMatrix->GetElement(0,1);  iMatrix(0,2) = vMatrix->GetElement(0,2);
-    iMatrix(1,0) = vMatrix->GetElement(1,0);  iMatrix(1,1) = vMatrix->GetElement(1,1);  iMatrix(1,2) = vMatrix->GetElement(1,2);
-    iMatrix(2,0) = vMatrix->GetElement(2,0);  iMatrix(2,1) = vMatrix->GetElement(2,1);  iMatrix(2,2) = vMatrix->GetElement(2,2);
+  iMatrix(0,0) = vMatrix->GetElement(0,0);  iMatrix(0,1) = vMatrix->GetElement(0,1);  iMatrix(0,2) = vMatrix->GetElement(0,2);
+  iMatrix(1,0) = vMatrix->GetElement(1,0);  iMatrix(1,1) = vMatrix->GetElement(1,1);  iMatrix(1,2) = vMatrix->GetElement(1,2);
+  iMatrix(2,0) = vMatrix->GetElement(2,0);  iMatrix(2,1) = vMatrix->GetElement(2,1);  iMatrix(2,2) = vMatrix->GetElement(2,2);
 
   TransformType::TranslationType translation;
-    translation[0] = vMatrix->GetElement(0,3);
-    translation[1] = vMatrix->GetElement(1,3);
-    translation[2] = vMatrix->GetElement(2,3);
+  translation[0] = vMatrix->GetElement(0,3);
+  translation[1] = vMatrix->GetElement(1,3);
+  translation[2] = vMatrix->GetElement(2,3);
 
   TransformType::Pointer transform = TransformType::New();
-    transform->SetMatrix( iMatrix );
-    transform->SetTranslation( translation );
+  transform->SetMatrix( iMatrix );
+  transform->SetTranslation( translation );
 
   std::cout << "Writing transform to file..." << std::endl;
   itk::TransformFileWriter::Pointer transformWriter = itk::TransformFileWriter::New();
-    transformWriter->SetInput( transform );
-    transformWriter->SetFileName( outputTransformFileName );
-    transformWriter->Update();
+  transformWriter->SetInput( transform );
+  transformWriter->SetFileName( outputTransformFileName );
+  transformWriter->Update();
 
   std::cout << "DONE." << std::endl;
 

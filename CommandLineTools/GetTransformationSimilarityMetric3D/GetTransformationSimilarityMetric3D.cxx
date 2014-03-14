@@ -229,9 +229,8 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
 
-  //Read in fixed image label map from file and subsample
+  //Read in fixed image label map from file 
   cip::LabelMapType::Pointer fixedLabelMap = cip::LabelMapType::New();
-  cip::LabelMapType::Pointer subSampledFixedImage = cip::LabelMapType::New();
   if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
     {
       std::cout << "Reading label map from file..." << std::endl;
@@ -248,14 +247,12 @@ int main( int argc, char *argv[] )
     }
   
 
-  //If specified, read in moving image label map from file and subsample
+  //If specified, read in moving image label map from file 
   typedef itk::ImageMaskSpatialObject< 3 >   MaskType;
   MaskType::Pointer  spatialObjectMask = MaskType::New();
   cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
-    
   if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
-
       movingLabelMap = ReadLabelMapFromFile( movingLabelmapFileName );
         
       if (movingLabelMap.GetPointer() == NULL)
@@ -313,10 +310,8 @@ int main( int argc, char *argv[] )
   
   //last transform applied first, so make last transform
   CompositeTransformType::Pointer transform = CompositeTransformType::New();
-  TransformType::Pointer transformTemp2 = TransformType::New();
   for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
-
       TransformType::Pointer transformTemp = TransformType::New();
       transformTemp = GetTransformFromFile(inputTransformFileName[i] );
       // Invert the transformation if specified by command like argument. Only inverting the first transformation
@@ -324,13 +319,10 @@ int main( int argc, char *argv[] )
         {
           transformTemp->SetMatrix( transformTemp->GetInverseMatrix());
           transform->AddTransform(transformTemp);
-        }
-            
+        }          
       else
-	transform->AddTransform(transformTemp);
-       
+	transform->AddTransform(transformTemp); 
     }
-
   transform->SetAllTransformsToOptimizeOn();
 
 
@@ -345,7 +337,6 @@ int main( int argc, char *argv[] )
   registration->SetInterpolator( interpolator );
   registration->SetTransform(transform);
   registration->SetFixedImage( ctFixedImage);
-
   registration->SetMovingImage(ctMovingImage);
   registration->SetInitialTransformParameters( transform->GetParameters());
 

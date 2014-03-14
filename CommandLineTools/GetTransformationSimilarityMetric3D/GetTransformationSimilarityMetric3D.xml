@@ -42,7 +42,7 @@
       <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
       <default>q</default>
     </string-vector>    
-    <image>
+    <image type="label">
       <name>fixedLabelmapFileName</name>
       <label>fixed LabelMap FileName</label>
       <channel>input</channel>
