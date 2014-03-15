@@ -480,13 +480,12 @@ int main( int argc, char* argv[] )
  
 
   std::vector< std::string > directoryList;
-
+   
   PARSE_ARGS;
-
 
   for ( unsigned int i=0; i<directoryListArg.size(); i++ )
       {
-      directoryList.push_back( directoryList[i] );
+         directoryList.push_back( directoryListArg[i] );
       }
 
   //

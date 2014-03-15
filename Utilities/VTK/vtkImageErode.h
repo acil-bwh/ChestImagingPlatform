@@ -19,7 +19,6 @@
 #ifndef __vtkImageErode_h
 #define __vtkImageErode_h
 
-#include "vtkImageData.h"
 #include "vtkImageNeighborhoodFilter.h"
 #include "vtkCIPUtilitiesConfigure.h"
 
@@ -27,8 +26,9 @@ class VTK_CIP_UTILITIES_EXPORT vtkImageErode : public vtkImageNeighborhoodFilter
 {
 public:
   static vtkImageErode *New();
-  vtkTypeRevisionMacro(vtkImageErode,vtkImageNeighborhoodFilter);
-    
+  vtkTypeMacro(vtkImageErode,vtkImageNeighborhoodFilter);
+  void PrintSelf(ostream& os, vtkIndent indent);
+  
   ///  
   /// Background and foreground pixel values in the image.
   /// Usually 0 and some label value, respectively.
@@ -43,9 +43,20 @@ protected:
 
   float Background;
   float Foreground;
+  
+  void ThreadedRequestData(vtkInformation *request,
+                           vtkInformationVector **inputVector,
+                           vtkInformationVector *outputVector,
+                           vtkImageData ***inData, vtkImageData **outData,
+                           int extent[6], int id);
 
-  void ThreadedExecute(vtkImageData *inData, vtkImageData *outData, 
-    int extent[6], int id);
+  //void ThreadedExecute(vtkImageData *inData, vtkImageData *outData,
+  //  int extent[6], int id);
+
+private:
+  vtkImageErode(const vtkImageErode&);  // Not implemented.
+  void operator=(const vtkImageErode&);  // Not implemented.
+
 };
 
 #endif

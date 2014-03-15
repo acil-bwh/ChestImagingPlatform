@@ -6,8 +6,12 @@ PROJECT( CIPCommon )
 # --------------------------------------------------------------------------
 # Include dirs
 # --------------------------------------------------------------------------
-INCLUDE_DIRECTORIES( 
-${CIPUtilities_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} )
+set(${PROJECT_NAME}_INCLUDE_DIRS 
+      ${CIPUtilities_INCLUDE_DIRS} 
+      ${CMAKE_CURRENT_BINARY_DIR}
+     CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
+
+INCLUDE_DIRECTORIES( ${CIPCommon_INCLUDE_DIRS}  )
 
 # --------------------------------------------------------------------------
 # Configure headers

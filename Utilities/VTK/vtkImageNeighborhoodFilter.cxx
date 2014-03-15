@@ -16,7 +16,6 @@
 #include "vtkObjectFactory.h"
 
 //------------------------------------------------------------------------------
-vtkCxxRevisionMacro(vtkImageNeighborhoodFilter, "$Revision: 12195 $");
 vtkStandardNewMacro(vtkImageNeighborhoodFilter);
 
 //----------------------------------------------------------------------------
@@ -161,6 +160,13 @@ void vtkImageNeighborhoodFilter::GetRelativeHoodExtent(int &hoodMin0,
 //         << " " << hoodMin2 << endl;
 //    cout << "max: " << hoodMax0 << " " << hoodMax1
 //         << " " << hoodMax2 << endl;
+}
+
+//----------------------------------------------------------------------------
+void vtkImageNeighborhoodFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os, indent);
+   
 }
 
 
