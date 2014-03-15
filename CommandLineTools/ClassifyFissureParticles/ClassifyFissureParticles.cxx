@@ -87,7 +87,7 @@
 #include "cipThinPlateSplineSurfaceModelToParticlesMetric.h"
 #include "cipConventions.h"
 #include "cipHelper.h"
-#include "cipLobeBoundaryShapeModelIO.h"
+#include "cipLobeSurfaceModelIO.h"
 #include "ClassifyFissureParticlesCLP.h"
 
 struct PARTICLEINFO
@@ -125,7 +125,7 @@ int main( int argc, char *argv[] )
   if ( roShapeModelFileName.compare( "NA" ) != 0 )
     { 
     std::cout << "Reading right oblique shape model..." << std::endl;
-    cipLobeBoundaryShapeModelIO* roShapeModelIO = new cipLobeBoundaryShapeModelIO(); 
+    cip::LobeSurfaceModelIO* roShapeModelIO = new cip::LobeSurfaceModelIO(); 
       roShapeModelIO->SetFileName( roShapeModelFileName );
       roShapeModelIO->Read();
 
@@ -137,7 +137,7 @@ int main( int argc, char *argv[] )
     tpsVec.push_back( roTPS );
     
     std::cout << "Reading right horizontal shape model..." << std::endl;
-    cipLobeBoundaryShapeModelIO* rhShapeModelIO = new cipLobeBoundaryShapeModelIO();
+    cip::LobeSurfaceModelIO* rhShapeModelIO = new cip::LobeSurfaceModelIO();
       rhShapeModelIO->SetFileName( rhShapeModelFileName );
       rhShapeModelIO->Read();
 
@@ -151,7 +151,7 @@ int main( int argc, char *argv[] )
   else if ( loShapeModelFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Reading left oblique shape model..." << std::endl;
-    cipLobeBoundaryShapeModelIO* loShapeModelIO = new cipLobeBoundaryShapeModelIO();
+    cip::LobeSurfaceModelIO* loShapeModelIO = new cip::LobeSurfaceModelIO();
       loShapeModelIO->SetFileName( loShapeModelFileName );
       loShapeModelIO->Read();
 

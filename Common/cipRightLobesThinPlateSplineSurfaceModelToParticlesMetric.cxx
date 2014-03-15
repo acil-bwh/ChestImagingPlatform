@@ -2,16 +2,16 @@
  *
  */
 
-#ifndef __cipThinPlateSplineSurfaceModelToParticlesMetric_cxx
-#define __cipThinPlateSplineSurfaceModelToParticlesMetric_cxx
+#ifndef __cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric_cxx
+#define __cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric_cxx
 
-#include "cipThinPlateSplineSurfaceModelToParticlesMetric.h"
+#include "cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric.h"
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "cipHelper.h"
 
-cipThinPlateSplineSurfaceModelToParticlesMetric
-::cipThinPlateSplineSurfaceModelToParticlesMetric()
+cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric
+::cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric()
 {
   // The 'cipThinPlateSplineSurface' class wraps functionality for
   // constructing and accessing data for a TPS interpolating surface
@@ -42,12 +42,14 @@ cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric
 // number of PCA modes in our model. Also note that
 // 'SetMeanSurfacePoints' must be called prior to the 'GetValue'
 // call. 
-double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vector< double >* const params ) const
+double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vector< double >* const params )
 {
-  // First we must construct the TPS surface given the param values
+  // First we must construct the TPS surface given the param values. Note that we assume the first
+  // half of the surface points correspond to the right oblique surface, and the second half
+  // correspond to the right horizontal surface.
   for ( unsigned int p=0; p<this->NumberOfSurfacePoints; p++ )
     {
-      if ( p < this->NumberOfRightObliqueSurfacePoints )
+      if ( p < this->NumberOfSurfacePoints/2 )
 	{
 	  this->RightObliqueSurfacePoints[p][2] = this->MeanPoints[p][2];
 
@@ -62,7 +64,7 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
 	}
       else
 	{
-	  unsigned int index = p - this->NumberOfRightObliqueSurfacePoints;
+	  unsigned int index = p - this->NumberOfSurfacePoints/2;
 	  this->RightHorizontalSurfacePoints[index][2] = this->MeanPoints[p][2];
 
 	  for ( unsigned int m=0; m<this->NumberOfModes; m++ )      
@@ -82,12 +84,12 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vec
   this->RightHorizontalThinPlateSplineSurface->SetSurfacePoints( &this->RightHorizontalSurfacePoints );
   this->RightObliqueThinPlateSplineSurface->SetSurfacePoints( &this->RightObliqueSurfacePoints );
 
-  value = this->FissureTermWeight*this->GetFissureTermValue() + this->VesselTermWeight*this->GetVesselTermValue();
+  double value = this->FissureTermWeight*this->GetFissureTermValue() + this->VesselTermWeight*this->GetVesselTermValue();
   
   return value;
 }
 
-double cipThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermValue() const
+double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermValue()
 {
   double fissureTermValue = 0.0;
 
@@ -144,10 +146,10 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermValue() co
 
     // Get the TPS surface normals at the domain locations.
     this->RightObliqueThinPlateSplineSurface->GetSurfaceNormal( (*roOptimalParams)[0], (*roOptimalParams)[1], roNormal );
-    double roTheta = cip::GetAngleBetweenVectors( roNormal, roOrientation, true );
+    double roTheta = cip::GetAngleBetweenVectors( roNormal, orientation, true );
 
     this->RightHorizontalThinPlateSplineSurface->GetSurfaceNormal( (*rhOptimalParams)[0], (*rhOptimalParams)[1], rhNormal );
-    double rhTheta = cip::GetAngleBetweenVectors( rhNormal, rhOrientation, true );
+    double rhTheta = cip::GetAngleBetweenVectors( rhNormal, orientation, true );
 
     // Now that we have the surface normals and distances, we can compute this 
     // particle's contribution to the overall objective function value. Note that
@@ -172,7 +174,7 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermValue() co
   return fissureTermValue;
 }
 
-double cipThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermValue() const
+double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermValue()
 {
   double vesselTermValue = 0.0;
 
@@ -229,10 +231,10 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermValue() con
 
     // Get the TPS surface normals at the domain locations.
     this->RightObliqueThinPlateSplineSurface->GetSurfaceNormal( (*roOptimalParams)[0], (*roOptimalParams)[1], roNormal );
-    double roTheta = cip::GetAngleBetweenVectors( roNormal, roOrientation, true );
+    double roTheta = cip::GetAngleBetweenVectors( roNormal, orientation, true );
 
     this->RightHorizontalThinPlateSplineSurface->GetSurfaceNormal( (*rhOptimalParams)[0], (*rhOptimalParams)[1], rhNormal );
-    double rhTheta = cip::GetAngleBetweenVectors( rhNormal, rhOrientation, true );
+    double rhTheta = cip::GetAngleBetweenVectors( rhNormal, orientation, true );
 
     // Now that we have the surface normals and distances, we can compute this 
     // particle's contribution to the overall objective function value. Note that
@@ -256,6 +258,11 @@ double cipThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermValue() con
   delete orientation;
 
   return vesselTermValue;
+}
+
+double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetAirwayTermValue()
+{
+  return 0;
 }
 
 #endif

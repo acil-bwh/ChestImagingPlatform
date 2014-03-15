@@ -23,7 +23,7 @@ public:
 
   /** This method returns the value of the cost function corresponding
     * to the specified parameters. */
-  virtual double GetValue( const std::vector< double >* const ) const = 0; 
+  virtual double GetValue( const std::vector< double >* const ) = 0; 
 
   /** Set fissure particles data that may be used during the optimization */
   void SetFissureParticles( vtkPolyData* const );
@@ -128,7 +128,11 @@ public:
       AirwayTermWeight = weight;
     }
 
-private:
+protected:
+  virtual double GetFissureTermValue() = 0;
+  virtual double GetAirwayTermValue()  = 0;
+  virtual double GetVesselTermValue()  = 0;
+
   vtkPolyData* FissureParticles;
   vtkPolyData* AirwayParticles;
   vtkPolyData* VesselParticles;

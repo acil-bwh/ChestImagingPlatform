@@ -144,10 +144,10 @@
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 #include "itkContinuousIndex.h"
 #include "cipChestRegionChestTypeLocationsIO.h"
-#include "cipLobeBoundaryShapeModel.h"
-#include "cipLobeBoundaryShapeModelIO.h"
+#include "cipLobeSurfaceModel.h"
+#include "cipLobeSurfaceModelIO.h"
 #include "cipHelper.h"
-#include "GenerateFissureShapeModelsCLP.h"
+#include "GenerateLobeSurfaceModelsCLP.h"
 
 typedef itk::Image< unsigned short, 3 >                                             ImageType;
 typedef itk::Image< unsigned short, 2 >                                             ImageSliceType;
@@ -458,7 +458,7 @@ int main( int argc, char *argv[] )
     spacing[1] = fixedReader->GetOutput()->GetSpacing()[1];
     spacing[2] = fixedReader->GetOutput()->GetSpacing()[2];
 
-  cipLobeBoundaryShapeModel* rightShapeModel = new cipLobeBoundaryShapeModel();
+  cipLobeSurfaceModel* rightShapeModel = new cipLobeSurfaceModel();
     rightShapeModel->SetImageOrigin( origin );
     rightShapeModel->SetImageSpacing( spacing );
     rightShapeModel->SetMeanSurfacePoints( rightMeanSurfacePoints );
@@ -467,7 +467,7 @@ int main( int argc, char *argv[] )
     rightShapeModel->SetEigenvectors( &rightShapePCA.modeVecVec );
     rightShapeModel->SetNumberOfModes( rightShapePCA.numModes );
 
-  cipLobeBoundaryShapeModel* loShapeModel = new cipLobeBoundaryShapeModel();
+  cipLobeSurfaceModel* loShapeModel = new cipLobeSurfaceModel();
     loShapeModel->SetImageOrigin( origin );
     loShapeModel->SetImageSpacing( spacing );
     loShapeModel->SetMeanSurfacePoints( loMeanSurfacePoints );
@@ -479,7 +479,7 @@ int main( int argc, char *argv[] )
   if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing right shape model to file..." << std::endl;
-    cipLobeBoundaryShapeModelIO rightWriter;
+    cip::LobeSurfaceModelIO rightWriter;
       rightWriter.SetFileName( rightShapeModelFileName );
       rightWriter.SetInput( rightShapeModel );
       rightWriter.Write();
@@ -488,7 +488,7 @@ int main( int argc, char *argv[] )
   if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing left shape model to file..." << std::endl;
-    cipLobeBoundaryShapeModelIO loWriter;
+    cip::LobeSurfaceModelIO loWriter;
       loWriter.SetFileName( leftShapeModelFileName );
       loWriter.SetInput( loShapeModel );
       loWriter.Write();

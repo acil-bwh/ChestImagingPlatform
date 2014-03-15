@@ -9,7 +9,7 @@ ENDIF(NOT BUILD_COMMON)
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
 
 SET ( CIPIO_SRCS
-  cipLobeBoundaryShapeModelIO.cxx
+  cipLobeSurfaceModelIO.cxx
   cipChestRegionChestTypeLocationsIO.cxx
   cipThinPlateSplineSurfaceIO.cxx
   )
@@ -21,3 +21,7 @@ add_library(${LIB_NAME}
   )
 
 TARGET_LINK_LIBRARIES ( ${LIB_NAME} ${VTK_LIBRARIES} ${ITK_LIBRARIES} CIPCommon )
+
+IF ( CIP_BUILD_TESTING )
+ SUBDIRS ( Testing )
+ENDIF( CIP_BUILD_TESTING ) 

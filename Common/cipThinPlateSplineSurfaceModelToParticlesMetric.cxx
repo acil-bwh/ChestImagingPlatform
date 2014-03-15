@@ -158,12 +158,10 @@ void cipThinPlateSplineSurfaceModelToParticlesMetric::SetEigenvectorAndEigenvalu
     {
     tempEigenvector.push_back( (*eigenvector)[i] );
     }
-
   this->Eigenvectors.push_back( tempEigenvector );
 
   // Set the eigenvalue
   this->Eigenvalues.push_back( eigenvalue );
-
   // Increment to keep track of the number of modes
   this->NumberOfModes++;
 }

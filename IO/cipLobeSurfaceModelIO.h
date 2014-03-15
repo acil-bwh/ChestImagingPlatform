@@ -1,5 +1,5 @@
 /**
- *  \class cipLobeBoundaryShapeModelIO
+ *  \class cipLobeSurfaceModelIO
  *  \ingroup io
  *  \brief This class handles the input and output of lobe boundary
  *  shape models.
@@ -17,19 +17,19 @@
  *  
  */
 
-#ifndef __cipLobeBoundaryShapeModelIO_h
-#define __cipLobeBoundaryShapeModelIO_h
+#ifndef __cipLobeSurfaceModelIO_h
+#define __cipLobeSurfaceModelIO_h
 
-
-#include "cipLobeBoundaryShapeModel.h"
+#include "cipLobeSurfaceModel.h"
 #include <string>
 
-
-class cipLobeBoundaryShapeModelIO
+namespace cip
+{
+class LobeSurfaceModelIO
 {
 public:
-  ~cipLobeBoundaryShapeModelIO();
-  cipLobeBoundaryShapeModelIO();
+  ~LobeSurfaceModelIO();
+  LobeSurfaceModelIO();
 
   void SetFileName( std::string );
 
@@ -39,15 +39,17 @@ public:
   /** The returned shape model intentionally left non-const because we
    *  may with to modify the mode weights of the shape model. Doing
    *  this will allow an easy read-modify-write flow */
-  cipLobeBoundaryShapeModel* GetOutput();
+  cipLobeSurfaceModel* GetOutput();
 
   /** Set the shape model to write to file */
-  void SetInput( cipLobeBoundaryShapeModel* );
+  void SetInput( cipLobeSurfaceModel* );
 
 private:
-  cipLobeBoundaryShapeModel* ShapeModel;
+  cipLobeSurfaceModel* ShapeModel;
 
   std::string FileName;
 };
 
-#endif
+} // end namespace cip
+
+#endif // __cipLobeSurfaceModelIO_h

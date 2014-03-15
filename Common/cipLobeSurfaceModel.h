@@ -1,5 +1,5 @@
 /**
- *  \class cipLobeBoundaryShapeModel
+ *  \class cipLobeSurfaceModel
  *  \ingroup common
  *  \brief This class ...
  *
@@ -13,16 +13,16 @@
  *  
  */
 
-#ifndef __cipLobeBoundaryShapeModel_h
-#define __cipLobeBoundaryShapeModel_h
+#ifndef __cipLobeSurfaceModel_h
+#define __cipLobeSurfaceModel_h
 
 #include <vector>
 
-class cipLobeBoundaryShapeModel
+class cipLobeSurfaceModel
 {
 public:
-  ~cipLobeBoundaryShapeModel();
-  cipLobeBoundaryShapeModel();
+  ~cipLobeSurfaceModel();
+  cipLobeSurfaceModel();
 
   /**  Pointers are assumed to have 3 elements */
   void SetImageOrigin( double const* );
