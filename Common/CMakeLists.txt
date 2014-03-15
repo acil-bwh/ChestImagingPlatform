@@ -39,7 +39,7 @@ SET ( CIPCommon_SRCS
   vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter.cxx
   #cipConnectedAirwayParticlesToHMMAirwayGraphFunctor.cxx  
   cipThinPlateSplineSurface.cxx
-  cipLobeBoundaryShapeModel.cxx
+  cipLobeSurfaceModel.cxx
   cipChestRegionChestTypeLocations.cxx
   cipSphereStencil.cxx
   cipCylinderStencil.cxx
@@ -52,12 +52,15 @@ SET ( CIPCommon_SRCS
   cipVesselParticleConnectedComponentFilter.cxx
   cipAirwayParticleConnectedComponentFilter.cxx
   cipFissureParticleConnectedComponentFilter.cxx
+  cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric.cxx
+  cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric.cxx
   cipThinPlateSplineSurfaceModelToParticlesMetric.cxx
   cipNelderMeadSimplexOptimizer.cxx
   cipParticleToThinPlateSplineSurfaceMetric.cxx
   cipHelper.cxx
   vtkSimpleLungMask.cxx
   vtkImageStatistics.cxx
+  cipExceptionObject.cxx
   )
 
 IF(VTK_USE_BOOST)
