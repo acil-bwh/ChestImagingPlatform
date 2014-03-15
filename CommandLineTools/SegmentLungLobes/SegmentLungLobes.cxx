@@ -90,12 +90,12 @@ int main( int argc, char *argv[] )
 
   // Instatiate ChestConventions for general convenience later
   cip::ChestConventions conventions;
-
+  
   // Define the vectors of physical points needed for creating the TPS
   std::vector< double* > loPoints;
   std::vector< double* > roPoints;
   std::vector< double* > rhPoints;
-
+  
   // If the user has specified a region-type points file name, read
   // the data
   if ( regionTypePointsFileName.compare( "NA" ) != 0 )
@@ -144,22 +144,87 @@ int main( int argc, char *argv[] )
         }
       }
     }
-
+  
   // Read in the left-lung-right-lung label map
   std::cout << "Reading lung label map..." << std::endl;
   cip::LabelMapReaderType::Pointer leftLungRightLungReader = cip::LabelMapReaderType::New();
-    leftLungRightLungReader->SetFileName( inLabelMapFileName );
+  leftLungRightLungReader->SetFileName( inLabelMapFileName );
   try
-    {
+  {
     leftLungRightLungReader->Update();
-    }
+  }
   catch ( itk::ExceptionObject &excp )
-    {
+  {
     std::cerr << "Exception caught while reading label map:";
     std::cerr << excp << std::endl;
-
+    
     return cip::LABELMAPREADFAILURE;
-    }
+  }
+  
+  // Read Fiducial points if they are available
+  if( rightHorizontalFiducials.size() > 0 )
+  {
+    cip::LabelMapType::PointType lpsPoint;
+    cip::LabelMapType::IndexType index;
+    
+    for( ::size_t i = 0; i < rightHorizontalFiducials.size(); ++i )
+    {
+      // seeds come in ras, convert to lps
+      lpsPoint[0] = -rightHorizontalFiducials[i][0];
+      lpsPoint[1] = -rightHorizontalFiducials[i][1];
+      lpsPoint[2] = rightHorizontalFiducials[i][2];
+      
+      leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
+      double* location = new double[3];
+      location[0]=index[0];
+      location[1]=index[1];
+      location[2]=index[2];
+      rhPoints.push_back(location);
+  	}
+  }
+  
+  if( rightObliqueFiducials.size() > 0 )
+  {
+    cip::LabelMapType::PointType lpsPoint;
+    cip::LabelMapType::IndexType index;
+    
+    for( ::size_t i = 0; i < rightObliqueFiducials.size(); ++i )
+    {
+      // seeds come in ras, convert to lps
+      lpsPoint[0] = -rightObliqueFiducials[i][0];
+      lpsPoint[1] = -rightObliqueFiducials[i][1];
+      lpsPoint[2] = rightObliqueFiducials[i][2];
+      
+      leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
+      double* location = new double[3];
+      location[0]=index[0];
+      location[1]=index[1];
+      location[2]=index[2];
+      roPoints.push_back(location);
+  	}
+  }
+  
+  if( leftObliqueFiducials.size() > 0 )
+  {
+    cip::LabelMapType::PointType lpsPoint;
+    cip::LabelMapType::IndexType index;
+    
+    for( ::size_t i = 0; i < leftObliqueFiducials.size(); ++i )
+    {
+      // seeds come in ras, convert to lps
+      lpsPoint[0] = -leftObliqueFiducials[i][0];
+      lpsPoint[1] = -leftObliqueFiducials[i][1];
+      lpsPoint[2] = leftObliqueFiducials[i][2];
+      
+      leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
+      double* location = new double[3];
+      location[0]=index[0];
+      location[1]=index[1];
+      location[2]=index[2];
+      loPoints.push_back(location);
+  	}
+  }
+
 
   // Read in the particles data
   if ( loParticlesFileName.compare( "NA" ) != 0 )
@@ -205,6 +270,7 @@ int main( int argc, char *argv[] )
     std::cerr << "Insufficient fissure points specified. Exiting." << std::endl;
     return cip::INSUFFICIENTDATAFAILURE;
     }
+  
 
   // Now define the TPS surfaces for each of the three fissures
   cipThinPlateSplineSurface* roTPS = new cipThinPlateSplineSurface;

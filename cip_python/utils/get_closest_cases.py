@@ -68,9 +68,9 @@ def getRandomCases(list_of_label_files, num_closest_cases):
 
     patient_atlas_labelmaps = [""]*num_closest_cases
     patient_atlas_similarity = [0.1]*num_closest_cases
-    nrandomvalues= np.random.randint(0, 99, 15)
+    nrandomvalues= np.random.randint(0, 393, 20)
     
-    nrandomvalues3 = np.unique(nrandomvalues)[0:10]
+    nrandomvalues3 = np.unique(nrandomvalues)[0:(num_closest_cases+1)]
     for i in range(num_closest_cases): #i=0,9
         patient_atlas_labelmaps[i] = list_of_label_files[nrandomvalues3[i]]
         

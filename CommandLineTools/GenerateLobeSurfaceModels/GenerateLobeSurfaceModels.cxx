@@ -144,9 +144,10 @@
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 #include "itkContinuousIndex.h"
 #include "cipChestRegionChestTypeLocationsIO.h"
-#include "cipLobeBoundaryShapeModel.h"
-#include "cipLobeBoundaryShapeModelIO.h"
-#include "GenerateFissureShapeModelsCLP.h"
+#include "cipLobeSurfaceModel.h"
+#include "cipLobeSurfaceModelIO.h"
+#include "cipHelper.h"
+#include "GenerateLobeSurfaceModelsCLP.h"
 
 typedef itk::Image< unsigned short, 3 >                                             ImageType;
 typedef itk::Image< unsigned short, 2 >                                             ImageSliceType;
@@ -188,10 +189,23 @@ void GetDomainPoints( std::vector< std::vector< ImageType::PointType > >, std::v
 void GetZValuesFromTPS( std::vector< ImageType::PointType >, std::vector< double >*, std::vector< ImageType::PointType >,
                         ImageType::Pointer );
 PCA GetShapePCA( std::vector< std::vector< double > > );
+void GetDomainPatternedPoints(ImageType::PointType, float[2], unsigned int, std::vector< ImageType::PointType >* );
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
+
+  if ( trainTransformFileVec.size() != trainPointsFileVec.size() )
+    {
+      std::cerr << "Must specify same number of training data transform files ";
+      std::cerr << "and training data points files" << std::endl;
+      return cip::ARGUMENTPARSINGERROR;
+    }
+  if ( trainTransformFileVec.size() == 0 )
+    {
+      std::cerr << "Must supply training data" << std::endl;
+      return cip::ARGUMENTPARSINGERROR;
+    }
 
   // The reference image for model building has been (arbitrarily)
   // chosen to be the COPDGene case, 10002K_INSP_STD_BWH_COPD. There are
@@ -201,7 +215,7 @@ int main( int argc, char *argv[] )
   // training data to the reference dataset and the files for the training
   // data can be found in ~/Processed/Atlases/LungLobeAtlases
 
-  unsigned int numTrainingSets = 0;
+  unsigned int numTrainingSets = trainTransformFileVec.size();
 
   std::cout << "Reading fixed image..." << std::endl;
   ImageReaderType::Pointer fixedReader = ImageReaderType::New();
@@ -216,7 +230,39 @@ int main( int argc, char *argv[] )
     std::cerr << excp << std::endl;
     }
 
-  TransformType::Pointer refToInputTransform = TransformType::New();
+  // Now that we've read in the left-lung right-lung label map, we can create a set of
+  // points in the axial plane (the "domain" points) at which we'll compute TPS values.
+  // The domain points will be spread across the bounding box region in the axial plane;
+  // there will be a set of domain points for the right lung and a separate set of 
+  // domain points for the right lung. The right oblique and right horizontal lobe 
+  // boundaries will share the same set of domain points for simplicity. Start by 
+  // obtaining the domain points for the left lung.
+  cip::LabelMapType::RegionType leftLungBoundingBox = 
+    cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(fixedReader->GetOutput(), (unsigned char)(cip::LEFTLUNG));
+
+  ImageType::PointType leftBoundingBoxStartPoint;
+  fixedReader->GetOutput()->TransformIndexToPhysicalPoint( leftLungBoundingBox.GetIndex(), leftBoundingBoxStartPoint );
+
+  float leftWidth[2];
+    leftWidth[0] = leftLungBoundingBox.GetSize()[0]*fixedReader->GetOutput()->GetSpacing()[0];
+    leftWidth[1] = leftLungBoundingBox.GetSize()[1]*fixedReader->GetOutput()->GetSpacing()[1];
+
+  std::vector< ImageType::PointType > leftDomainPatternPoints;
+  GetDomainPatternedPoints(leftBoundingBoxStartPoint, leftWidth, 2, &leftDomainPatternPoints );
+
+  cip::LabelMapType::RegionType rightLungBoundingBox = 
+    cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(fixedReader->GetOutput(), (unsigned char)(cip::RIGHTLUNG));
+
+  // Now ge the set of domain points for the right lung
+  ImageType::PointType rightBoundingBoxStartPoint;
+  fixedReader->GetOutput()->TransformIndexToPhysicalPoint( rightLungBoundingBox.GetIndex(), rightBoundingBoxStartPoint );
+
+  float rightWidth[2];
+    rightWidth[0] = rightLungBoundingBox.GetSize()[0]*fixedReader->GetOutput()->GetSpacing()[0];
+    rightWidth[1] = rightLungBoundingBox.GetSize()[1]*fixedReader->GetOutput()->GetSpacing()[1];
+
+  std::vector< ImageType::PointType > rightDomainPatternPoints;
+  GetDomainPatternedPoints(rightBoundingBoxStartPoint, rightWidth, 2, &rightDomainPatternPoints );
 
   // We need to get the transform that maps the reference image (from
   // our training set) to the input image (whose lobes we want to
@@ -224,6 +270,8 @@ int main( int argc, char *argv[] )
   // register them. Once this has been done, we can use the resulting
   // transform to map all training points to the input image's
   // coordinate frame
+  TransformType::Pointer refToInputTransform = TransformType::New();
+
   ImageType::Pointer subSampledFixedImage = ImageType::New();
 
   std::cout << "Subsampling fixed image..." << std::endl;
@@ -322,97 +370,76 @@ int main( int argc, char *argv[] )
     rhTransPointsVecVec.push_back( rhPointsVec );
     }
 
-  // At this stage all the training points should be registered to the
-  // input image's coordinate frame. We can now get the domain
-  // locations for each of the three fissures. Note that the domain
-  // locations have the z-coordinate zeroed out.
-  std::cout << "Getting domain locations..." << std::endl;
-  std::vector< ImageType::PointType > loDomainVec;
-  GetDomainPoints( loTransPointsVecVec, &loDomainVec, fixedReader->GetOutput(), 0 );
-
-  std::vector< ImageType::PointType > roDomainVec;
-  GetDomainPoints( roTransPointsVecVec, &roDomainVec, fixedReader->GetOutput(), 1 );
-
-  std::vector< ImageType::PointType > rhDomainVec;
-  GetDomainPoints( rhTransPointsVecVec, &rhDomainVec, fixedReader->GetOutput(), 2 );
-
   // Now we have the domain locations for each of our three
-  // fissures. To build our PCA model, we need to evaluate the z
-  // values at the domain locations for each of our training
-  // datasets. 
+  // boundaries. To build our PCA model, we need to evaluate the z
+  // values at the domain locations for each of our training 
+  // datasets. THe right oblique ('ro') and right horizontal ('rh')
+  // are evaluated separately, but then collected ('right').
   std::cout << "Getting range locations..." << std::endl;
-  std::vector< std::vector< double > > rhRangeValuesVecVec;
-  std::vector< std::vector< double > > roRangeValuesVecVec;
   std::vector< std::vector< double > > loRangeValuesVecVec;
+  std::vector< std::vector< double > > rightRangeValuesVecVec;
 
   for ( unsigned int i=0; i<numTrainingSets; i++ )
     {
     std::vector< double > roRangeValuesVec;
     std::vector< double > rhRangeValuesVec;
     std::vector< double > loRangeValuesVec;
+    std::vector< double > rightRangeValuesVec;
 
-    GetZValuesFromTPS( roDomainVec, &roRangeValuesVec, roTransPointsVecVec[i], fixedReader->GetOutput() );
-    GetZValuesFromTPS( rhDomainVec, &rhRangeValuesVec, rhTransPointsVecVec[i], fixedReader->GetOutput() );
-    GetZValuesFromTPS( loDomainVec, &loRangeValuesVec, loTransPointsVecVec[i], fixedReader->GetOutput() );
+    GetZValuesFromTPS( rightDomainPatternPoints, &roRangeValuesVec, roTransPointsVecVec[i], fixedReader->GetOutput() );
+    GetZValuesFromTPS( rightDomainPatternPoints, &rhRangeValuesVec, rhTransPointsVecVec[i], fixedReader->GetOutput() );
+    GetZValuesFromTPS( leftDomainPatternPoints, &loRangeValuesVec, loTransPointsVecVec[i], fixedReader->GetOutput() );
 
-    roRangeValuesVecVec.push_back( roRangeValuesVec );
-    rhRangeValuesVecVec.push_back( rhRangeValuesVec );
+    for ( unsigned int j=0; j<roRangeValuesVec.size(); j++ )
+      {
+	rightRangeValuesVec.push_back( roRangeValuesVec[j] );
+      }
+    for ( unsigned int j=0; j<rhRangeValuesVec.size(); j++ )
+      {
+	rightRangeValuesVec.push_back( rhRangeValuesVec[j] );
+      }
+
     loRangeValuesVecVec.push_back( loRangeValuesVec );
+    rightRangeValuesVecVec.push_back( rightRangeValuesVec );
     }
 
   // Now we have all the training information needed for building the
   // PCA-based fissure models for this case. 
-  PCA rhShapePCA = GetShapePCA( rhRangeValuesVecVec );
-  PCA roShapePCA = GetShapePCA( roRangeValuesVecVec );
-  PCA loShapePCA = GetShapePCA( loRangeValuesVecVec );
+  PCA loShapePCA    = GetShapePCA( loRangeValuesVecVec );
+  PCA rightShapePCA = GetShapePCA( rightRangeValuesVecVec );
 
   // Now create shape models for each of the three lobe boundaries. To do this we need to 
   // collect the domain locations and mean vector into a single collection of points
   // for each of the three boundaries
-  std::vector< double* >* roMeanSurfacePoints = new std::vector< double* >;
-  for ( unsigned int i=0; i<roShapePCA.meanVec.size(); i++ )
+  std::vector< double* >* rightMeanSurfacePoints = new std::vector< double* >;
+  for ( unsigned int i=0; i<rightShapePCA.meanVec.size(); i++ )
     {
+      unsigned int index = i%(rightShapePCA.meanVec.size()/2);
+
       double* point = new double[3];
-        point[0] = roDomainVec[i][0];
-  	point[1] = roDomainVec[i][1];
-  	point[2] = roShapePCA.meanVec[i];
+        point[0] = rightDomainPatternPoints[index][0];
+  	point[1] = rightDomainPatternPoints[index][1];
+  	point[2] = rightShapePCA.meanVec[i];
 
-      roMeanSurfacePoints->push_back( point );
-    }
-
-  std::vector< double* >* rhMeanSurfacePoints = new std::vector< double* >;
-  for ( unsigned int i=0; i<rhShapePCA.meanVec.size(); i++ )
-    {
-      double* point = new double[3];
-        point[0] = rhDomainVec[i][0];
-  	point[1] = rhDomainVec[i][1];
-  	point[2] = rhShapePCA.meanVec[i];
-
-      rhMeanSurfacePoints->push_back( point );
+      rightMeanSurfacePoints->push_back( point );
     }
 
   std::vector< double* >* loMeanSurfacePoints = new std::vector< double* >;
   for ( unsigned int i=0; i<loShapePCA.meanVec.size(); i++ )
     {
       double* point = new double[3];
-        point[0] = loDomainVec[i][0];
-  	point[1] = loDomainVec[i][1];
+        point[0] = leftDomainPatternPoints[i][0];
+  	point[1] = leftDomainPatternPoints[i][1];
   	point[2] = loShapePCA.meanVec[i];
 
       loMeanSurfacePoints->push_back( point );
     }
 
   // Now create the boundary models
-  std::vector< double > rhModeWeights;
-  for ( unsigned int n=0; n<rhShapePCA.modeVec.size(); n++ )
+  std::vector< double > rightModeWeights;
+  for ( unsigned int n=0; n<rightShapePCA.modeVec.size(); n++ )
     {
-      rhModeWeights.push_back( 0.0 );
-    }
-
-  std::vector< double > roModeWeights;
-  for ( unsigned int n=0; n<roShapePCA.modeVec.size(); n++ )
-    {
-      roModeWeights.push_back( 0.0 );
+      rightModeWeights.push_back( 0.0 );
     }
 
   std::vector< double > loModeWeights;
@@ -431,25 +458,16 @@ int main( int argc, char *argv[] )
     spacing[1] = fixedReader->GetOutput()->GetSpacing()[1];
     spacing[2] = fixedReader->GetOutput()->GetSpacing()[2];
 
-  cipLobeBoundaryShapeModel* roShapeModel = new cipLobeBoundaryShapeModel();
-    roShapeModel->SetImageOrigin( origin );
-    roShapeModel->SetImageSpacing( spacing );
-    roShapeModel->SetMeanSurfacePoints( roMeanSurfacePoints );
-    roShapeModel->SetEigenvalues( &roShapePCA.modeVec );
-    roShapeModel->SetModeWeights( &roModeWeights );
-    roShapeModel->SetEigenvectors( &roShapePCA.modeVecVec );
-    roShapeModel->SetNumberOfModes( roShapePCA.numModes );
+  cipLobeSurfaceModel* rightShapeModel = new cipLobeSurfaceModel();
+    rightShapeModel->SetImageOrigin( origin );
+    rightShapeModel->SetImageSpacing( spacing );
+    rightShapeModel->SetMeanSurfacePoints( rightMeanSurfacePoints );
+    rightShapeModel->SetEigenvalues( &rightShapePCA.modeVec );
+    rightShapeModel->SetModeWeights( &rightModeWeights );
+    rightShapeModel->SetEigenvectors( &rightShapePCA.modeVecVec );
+    rightShapeModel->SetNumberOfModes( rightShapePCA.numModes );
 
-  cipLobeBoundaryShapeModel* rhShapeModel = new cipLobeBoundaryShapeModel();
-    rhShapeModel->SetImageOrigin( origin );
-    rhShapeModel->SetImageSpacing( spacing );
-    rhShapeModel->SetMeanSurfacePoints( rhMeanSurfacePoints );
-    rhShapeModel->SetEigenvalues( &rhShapePCA.modeVec );
-    rhShapeModel->SetModeWeights( &rhModeWeights );
-    rhShapeModel->SetEigenvectors( &rhShapePCA.modeVecVec );
-    rhShapeModel->SetNumberOfModes( rhShapePCA.numModes );
-
-  cipLobeBoundaryShapeModel* loShapeModel = new cipLobeBoundaryShapeModel();
+  cipLobeSurfaceModel* loShapeModel = new cipLobeSurfaceModel();
     loShapeModel->SetImageOrigin( origin );
     loShapeModel->SetImageSpacing( spacing );
     loShapeModel->SetMeanSurfacePoints( loMeanSurfacePoints );
@@ -458,27 +476,20 @@ int main( int argc, char *argv[] )
     loShapeModel->SetEigenvectors( &loShapePCA.modeVecVec );
     loShapeModel->SetNumberOfModes( loShapePCA.numModes );
 
-  if ( rhShapeModelFileName.compare( "NA" ) != 0 )
+  if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     {
-    std::cout << "Writing right horizontal shape model to file..." << std::endl;
-    cipLobeBoundaryShapeModelIO rhWriter;
-      rhWriter.SetFileName( rhShapeModelFileName );
-      rhWriter.SetInput( rhShapeModel );
-      rhWriter.Write();
+    std::cout << "Writing right shape model to file..." << std::endl;
+    cip::LobeSurfaceModelIO rightWriter;
+      rightWriter.SetFileName( rightShapeModelFileName );
+      rightWriter.SetInput( rightShapeModel );
+      rightWriter.Write();
     }
-  if ( roShapeModelFileName.compare( "NA" ) != 0 )
+
+  if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     {
-    std::cout << "Writing right oblique shape model to file..." << std::endl;
-    cipLobeBoundaryShapeModelIO roWriter;
-      roWriter.SetFileName( roShapeModelFileName );
-      roWriter.SetInput( roShapeModel );
-      roWriter.Write();
-    }
-  if ( loShapeModelFileName.compare( "NA" ) != 0 )
-    {
-    std::cout << "Writing left oblique shape model to file..." << std::endl;
-    cipLobeBoundaryShapeModelIO loWriter;
-      loWriter.SetFileName( loShapeModelFileName );
+    std::cout << "Writing left shape model to file..." << std::endl;
+    cip::LobeSurfaceModelIO loWriter;
+      loWriter.SetFileName( leftShapeModelFileName );
       loWriter.SetInput( loShapeModel );
       loWriter.Write();
     }
@@ -705,6 +716,114 @@ void ReadFissurePointsFromFile( const std::string fileName,
 	    }
 	}
     }  
+}
+
+
+//
+// This function considers a bounding box in the axial plane an produces a collection of
+// points distributed evenly throughout the bounding box region and along the bounding
+// box border. The 'density' parameter controls how many points are used to sample the
+// region. At a minimum, there will be a point at each corner of the bounding box and
+// a point at the center. If 'density' is set to 1, there will additionally be another
+// point centered in the middle of each edge segment and one point centered in the 
+// middle of each segment connecting the center and each point along the border. If
+// 'density' is set to 2, there will be two points evenly spaced along each border
+// segment and two points evenly spaced along each segment connecting the center the
+// center point to each border point, etc.
+//
+void GetDomainPatternedPoints(ImageType::PointType start, float width[2], unsigned int density,
+			      std::vector< ImageType::PointType >* patternPoints)
+{
+  // Create the center point and add it
+  ImageType::PointType center;
+    center[0] = start[0] + width[0]/2.0;
+    center[1] = start[1] + width[1]/2.0;
+    center[2] = 0.0;
+  
+  (*patternPoints).push_back( center );
+
+  // Now create the corner points and add them. Note that the corners are
+  // ordered in clockwise fashion. This is important for the code below.
+  std::vector< ImageType::PointType > corners;
+  std::vector< ImageType::PointType > borderPoints;
+
+  ImageType::PointType corner1;
+    corner1[0] = start[0];
+    corner1[1] = start[1];
+    corner1[2] = 0.0;
+  (*patternPoints).push_back( corner1 );
+  corners.push_back( corner1 );
+
+  ImageType::PointType corner2;
+    corner2[0] = start[0] + width[0];
+    corner2[1] = start[1];
+    corner2[2] = 0.0;
+  (*patternPoints).push_back( corner2 );
+  corners.push_back( corner2 );
+
+  ImageType::PointType corner3;
+    corner3[0] = corner2[0];
+    corner3[1] = corner2[1] + width[1];
+    corner3[2] = 0.0;
+  (*patternPoints).push_back( corner3 );
+  corners.push_back( corner3 );
+
+  ImageType::PointType corner4;
+    corner4[0] = start[0];
+    corner4[1] = start[1] + width[1];
+    corner4[2] = 0.0;
+  (*patternPoints).push_back( corner4 );
+  corners.push_back( corner4 );
+
+  // If there is a non-zero density specified, we'll add the edge points
+  // and "spoke" points. Start with the edge points
+  for ( unsigned int i=0; i<4; i++ )
+    {
+      borderPoints.push_back( corners[i] );
+
+      double vec[2];
+      if ( i < 3 )
+	{
+        vec[0] = corners[i+1][0] - corners[i][0];
+	vec[1] = corners[i+1][1] - corners[i][1];      
+	}
+      else
+	{
+        vec[0] = corners[0][0] - corners[3][0];
+	vec[1] = corners[0][1] - corners[3][1];      
+	}
+
+      for ( unsigned int j=1; j<=density; j++ )
+	{
+	  ImageType::PointType point;
+
+	  point[0] = corners[i][0] + double(j)*vec[0]/double(density + 1);
+	  point[1] = corners[i][1] + double(j)*vec[1]/double(density + 1);
+	  point[2] = 0.0;
+
+	  borderPoints.push_back( point );
+	  (*patternPoints).push_back( point );	  
+	}
+    }
+
+  // Now add the "spoke" points if necessary
+  for ( unsigned int i=0; i<borderPoints.size(); i++ )
+    {
+      double vec[2];
+        vec[0] = borderPoints[i][0] - center[0];
+  	vec[1] = borderPoints[i][1] - center[1];
+      
+      for ( unsigned int j=1; j<=density; j++ )
+  	{
+  	  ImageType::PointType point;
+
+  	  point[0] = center[0] + double(j)*vec[0]/double(density + 1);
+  	  point[1] = center[1] + double(j)*vec[1]/double(density + 1);
+  	  point[2] = 0.0;
+
+  	  (*patternPoints).push_back( point );	  
+  	}
+    }
 }
 
 

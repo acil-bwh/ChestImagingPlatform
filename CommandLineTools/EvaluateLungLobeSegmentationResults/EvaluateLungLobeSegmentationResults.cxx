@@ -22,7 +22,7 @@
 #include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "cipChestRegionChestTypeLocationsIO.h"
-#include "cipLobeBoundaryShapeModelIO.h"
+#include "cipLobeSurfaceModelIO.h"
 #include "cipParticleToThinPlateSplineSurfaceMetric.h"
 #include "cipThinPlateSplineSurface.h"
 #include "cipNewtonOptimizer.h"

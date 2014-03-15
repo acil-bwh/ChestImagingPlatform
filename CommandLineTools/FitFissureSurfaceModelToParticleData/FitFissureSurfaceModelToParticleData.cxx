@@ -75,84 +75,84 @@ int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  std::cout << "Reading polydata..." << std::endl;
-  vtkPolyDataReader* particlesReader = vtkPolyDataReader::New();
-    particlesReader->SetFileName( particlesFileName.c_str() );
-    particlesReader->Update();    
+//   std::cout << "Reading polydata..." << std::endl;
+//   vtkPolyDataReader* particlesReader = vtkPolyDataReader::New();
+//     particlesReader->SetFileName( particlesFileName.c_str() );
+//     particlesReader->Update();    
 
-  //
-  // Read shape model
-  //
-  std::cout << "Reading shape model..." << std::endl;
-  cipLobeBoundaryShapeModelIO* modelIO = new cipLobeBoundaryShapeModelIO();
-    modelIO->SetFileName( inShapeModelFileName );
-    modelIO->Read();
+//   //
+//   // Read shape model
+//   //
+//   std::cout << "Reading shape model..." << std::endl;
+//   cipLobeBoundaryShapeModelIO* modelIO = new cipLobeBoundaryShapeModelIO();
+//     modelIO->SetFileName( inShapeModelFileName );
+//     modelIO->Read();
 
-  unsigned int numberModesUsed   = 0;
-  double       weightAccumulator = 0.0;
-  cipThinPlateSplineSurfaceModelToParticlesMetric* tpsToParticlesMetric = new cipThinPlateSplineSurfaceModelToParticlesMetric();
-    tpsToParticlesMetric->SetMeanSurfacePoints( modelIO->GetOutput()->GetMeanSurfacePoints() );
-    tpsToParticlesMetric->SetParticles( particlesReader->GetOutput() );
-    tpsToParticlesMetric->SetSigmaDistance( sigmaDistance );
-    tpsToParticlesMetric->SetSigmaTheta( sigmaTheta );
-//  while ( weightAccumulator < shapeVarianceThreshold && numberModesUsed < 9 )
-  while ( numberModesUsed < 9 )
-    {      
-    tpsToParticlesMetric->SetEigenvectorAndEigenvalue( &(*modelIO->GetOutput()->GetEigenvectors())[numberModesUsed],       
-						       (*modelIO->GetOutput()->GetEigenvalues())[numberModesUsed] );      
-    weightAccumulator += (*modelIO->GetOutput()->GetEigenvalues())[numberModesUsed]/
-      modelIO->GetOutput()->GetEigenvalueSum();
+//   unsigned int numberModesUsed   = 0;
+//   double       weightAccumulator = 0.0;
+//   cipThinPlateSplineSurfaceModelToParticlesMetric* tpsToParticlesMetric = new cipThinPlateSplineSurfaceModelToParticlesMetric();
+//     tpsToParticlesMetric->SetMeanSurfacePoints( modelIO->GetOutput()->GetMeanSurfacePoints() );
+//     tpsToParticlesMetric->SetParticles( particlesReader->GetOutput() );
+//     tpsToParticlesMetric->SetSigmaDistance( sigmaDistance );
+//     tpsToParticlesMetric->SetSigmaTheta( sigmaTheta );
+// //  while ( weightAccumulator < shapeVarianceThreshold && numberModesUsed < 9 )
+//   while ( numberModesUsed < 9 )
+//     {      
+//     tpsToParticlesMetric->SetEigenvectorAndEigenvalue( &(*modelIO->GetOutput()->GetEigenvectors())[numberModesUsed],       
+// 						       (*modelIO->GetOutput()->GetEigenvalues())[numberModesUsed] );      
+//     weightAccumulator += (*modelIO->GetOutput()->GetEigenvalues())[numberModesUsed]/
+//       modelIO->GetOutput()->GetEigenvalueSum();
   
-    numberModesUsed++;
-    }
-  std::cout << "Variance explained:\t" << weightAccumulator << std::endl;
+//     numberModesUsed++;
+//     }
+//   std::cout << "Variance explained:\t" << weightAccumulator << std::endl;
 
-  double* initialParameters = new double[numberModesUsed];
-  double* optimalParameters = new double[numberModesUsed];
-  std::vector< double > params_debug;
-  std::vector< double > params_debug_ref;
-  for ( unsigned int i=0; i<numberModesUsed; i++ )
-    {
-    if ( useModeWeights )
-      {
-	initialParameters[i] = (*modelIO->GetOutput()->GetModeWeights())[i];
-	params_debug.push_back( initialParameters[i] );
-	params_debug_ref.push_back( initialParameters[i] );
-      }
-    else
-      {
-	initialParameters[i] = 0.0;
-	params_debug.push_back( initialParameters[i] );
-	params_debug_ref.push_back( initialParameters[i] );
-      }
-    std::cout << params_debug[i] << std::endl;
-    }
+//   double* initialParameters = new double[numberModesUsed];
+//   double* optimalParameters = new double[numberModesUsed];
+//   std::vector< double > params_debug;
+//   std::vector< double > params_debug_ref;
+//   for ( unsigned int i=0; i<numberModesUsed; i++ )
+//     {
+//     if ( useModeWeights )
+//       {
+// 	initialParameters[i] = (*modelIO->GetOutput()->GetModeWeights())[i];
+// 	params_debug.push_back( initialParameters[i] );
+// 	params_debug_ref.push_back( initialParameters[i] );
+//       }
+//     else
+//       {
+// 	initialParameters[i] = 0.0;
+// 	params_debug.push_back( initialParameters[i] );
+// 	params_debug_ref.push_back( initialParameters[i] );
+//       }
+//     std::cout << params_debug[i] << std::endl;
+//     }
 
-  std::cout << "------------" << std::endl;
-  std::cout << "Ref:\t" << tpsToParticlesMetric->GetValue( &params_debug ) << std::endl;
-  std::cout << "------------" << std::endl;
-  for ( double i = -2.0; i<=2.0; i += 0.05 )
-    {
-      params_debug[1] = params_debug_ref[1] + i;
-      std::cout << i << "\t" << tpsToParticlesMetric->GetValue( &params_debug ) << std::endl;
-    }
+//   std::cout << "------------" << std::endl;
+//   std::cout << "Ref:\t" << tpsToParticlesMetric->GetValue( &params_debug ) << std::endl;
+//   std::cout << "------------" << std::endl;
+//   for ( double i = -2.0; i<=2.0; i += 0.05 )
+//     {
+//       params_debug[1] = params_debug_ref[1] + i;
+//       std::cout << i << "\t" << tpsToParticlesMetric->GetValue( &params_debug ) << std::endl;
+//     }
 
-  // std::cout << "Executing Nelder Mead Optimizer..." << std::endl;
-  // cipNelderMeadSimplexOptimizer* nelderMeadOptimizer = new cipNelderMeadSimplexOptimizer( numberModesUsed );
-  //   nelderMeadOptimizer->SetInitialParameters( initialParameters );
-  //   nelderMeadOptimizer->SetMetric( tpsToParticlesMetric );
-  //   nelderMeadOptimizer->SetNumberOfIterations( numIters );
-  //   nelderMeadOptimizer->Update();
-  //   nelderMeadOptimizer->GetOptimalParameters( optimalParameters );
+//   // std::cout << "Executing Nelder Mead Optimizer..." << std::endl;
+//   // cipNelderMeadSimplexOptimizer* nelderMeadOptimizer = new cipNelderMeadSimplexOptimizer( numberModesUsed );
+//   //   nelderMeadOptimizer->SetInitialParameters( initialParameters );
+//   //   nelderMeadOptimizer->SetMetric( tpsToParticlesMetric );
+//   //   nelderMeadOptimizer->SetNumberOfIterations( numIters );
+//   //   nelderMeadOptimizer->Update();
+//   //   nelderMeadOptimizer->GetOptimalParameters( optimalParameters );
 
-  // for ( unsigned int i=0; i<numberModesUsed; i++ )
-  //   {
-  //     (*modelIO->GetOutput()->GetModeWeights())[i] = optimalParameters[i];
-  //   }
+//   // for ( unsigned int i=0; i<numberModesUsed; i++ )
+//   //   {
+//   //     (*modelIO->GetOutput()->GetModeWeights())[i] = optimalParameters[i];
+//   //   }
 
-  // std::cout << "Writing shape model to file..." << std::endl;
-  // modelIO->SetFileName( outShapeModelFileName );
-  // modelIO->Write();
+//   // std::cout << "Writing shape model to file..." << std::endl;
+//   // modelIO->SetFileName( outShapeModelFileName );
+//   // modelIO->Write();
 
   std::cout << "DONE." << std::endl;
 

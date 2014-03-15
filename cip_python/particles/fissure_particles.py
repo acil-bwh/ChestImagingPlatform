@@ -58,7 +58,8 @@ class FissureParticles(ChestParticles):
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, max_scale=1.2, live_thresh=-30.6,
-                 seed_thresh=-30.6, scale_samples=1, down_sample_rate=1, min_intensity=-1000, max_intensity=-500):
+                 seed_thresh=-30.6, scale_samples=1, down_sample_rate=1,
+                 min_intensity=-1000, max_intensity=-500):
         ChestParticles.__init__(self, feature_type="ridge_surface",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
@@ -90,17 +91,15 @@ class FissureParticles(ChestParticles):
             	downsampled_mask = os.path.join(self._tmp_dir, \
                                                 "mask-down.nrrd")
             	self.down_sample(self._mask_file_name, \
-                                 downsampled_mask, "cheap",self._down_sample_rate)
+                        downsampled_mask, "cheap",self._down_sample_rate)
             	self._tmp_mask_file_name = downsampled_mask
             
         else:
             downsampled_vol = self._in_file_name
             self._tmp_mask_file_name = self._mask_file_name
 
-        print "2"
         deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampled_vol, deconvolved_vol)
-        print "finished deconvolution\n"
               
         #Setting member variables that will not change
         self._tmp_in_file_name = deconvolved_vol
@@ -123,23 +122,16 @@ class FissureParticles(ChestParticles):
             self._iterations = 50
             
             #Build parameters and run
-            print "resetting param groups\n"
             self.reset_params()
-            print "building param groups\n"
             self.build_params()
-            print "Starting execution\n"
             self.execute_pass(out_particles % 3)
-            print "Finished pass 1\n"
-
-        else:
-              
+        else:              
           #Pass 1
           #Init params
           self._use_strength = False
           self._inter_particle_energy_type = "uni"
           self._init_mode = "Random"
           self._number_init_particles = 10000
-
 
           # Energy
           # Radial energy function (psi_1 in the paper)
@@ -151,13 +143,9 @@ class FissureParticles(ChestParticles):
           self._iterations = 10
 
           #Build parameters and run
-          print "resetting param groups\n"
           self.reset_params()
-          print "building param groups\n"
           self.build_params()
-          print "Starting pass 1\n"
           self.execute_pass(out_particles % 1)
-          print "Finished pass 1\n"
 
           # Pass 2
           # Init params
@@ -183,9 +171,7 @@ class FissureParticles(ChestParticles):
           # Build parameters and run
           self.reset_params()
           self.build_params()
-          print "starting pass 2\n"
           self.execute_pass(out_particles % 2)
-          print "finished pass 2\n"
 
           # Pass 3
           self._init_mode = "Particles"
@@ -206,39 +192,41 @@ class FissureParticles(ChestParticles):
           # Build parameters and run
           self.reset_params()
           self.build_params()
-          print "starting pass 3\n"
           self.execute_pass(out_particles % 3)
-          print "finished pass 3\n"
 
         # Probe quantities and save to VTK
-        print "about to probe\n"
         self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
-        print "finished probing\n"
+        
         #Adjust scale if down-sampling was performed
         if self._down_sample_rate > 1:
             self.adjust_scale(out_particles % 3)
-        print "about to save to vtk\n"
         self.save_vtk(out_particles % 3)
-        print "finished saving\#####n"
 
         #Clean tmp Directory
         self.clean_tmp_dir()
 
-
 if __name__ == "__main__":
-
   parser = OptionParser()
   parser.add_option("-i", help='input CT scan', dest="input_ct")
   parser.add_option("-m", help='input mask for seeding', dest="input_mask")
-  parser.add_option("-o", help='output particles (vtk format)', dest="output_particles")
+  parser.add_option("-o", help='output particles (vtk format)', \
+                    dest="output_particles")
   parser.add_option("-t", help='tmp directory', dest="tmp_dir")
-  parser.add_option("-s", help='max scale', dest="max_scale",default=1.2)
-  parser.add_option("-r", help='down sampling rate (>=1)', dest="down_sample_rate",default=1.0)
-  parser.add_option("-n", help='number of scale volumes', dest="scale_samples",default=1)
-  parser.add_option("--lth", help='live threshold (<0)', dest="live_th",default=-30)
-  parser.add_option("--sth", help='seed threshold (<0)', dest="seed_th",default=-30)
-  parser.add_option("--minI", help='min intensity for feature', dest="min_intensity",default=-1000)
-  parser.add_option("--maxI", help='max intensity for feature', dest="max_intensity",default=-500)
+  parser.add_option("-s", help='max scale (default 1.2)', dest="max_scale", \
+                    default=1.2)
+  parser.add_option("-r", help='down sampling rate. Must be greater than or \
+                    equal to 1.0 (default 1.0)', dest="down_sample_rate",
+                    default=1.0)
+  parser.add_option("-n", help='number of scale volumes (default 1)', \
+                    dest="scale_samples", default=1)
+  parser.add_option("--lth", help='live threshold. Must be less than zero \
+                    (default -30)', dest="live_th", default=-30)
+  parser.add_option("--sth", help='seed threshold. Must be less than zero \
+                    (defaut -30)', dest="seed_th", default=-30)
+  parser.add_option("--minI", help='min intensity for feature (default -1000)',
+                    dest="min_intensity", default=-1000)
+  parser.add_option("--maxI", help='max intensity for feature (default -500)',
+                    dest="max_intensity", default=-500)
 
   (op, args) = parser.parse_args()
 
@@ -248,8 +236,10 @@ if __name__ == "__main__":
   else:
     max_scale = float(op.max_scale)
 
-  dp=FissureParticles(op.input_ct,op.output_particles,op.tmp_dir,op.input_mask,max_scale,\
-                        float(op.live_th),float(op.seed_th),int(op.scale_samples),float(op.down_sample_rate),\
-                        float(op.min_intensity),float(op.max_intensity))
+  dp = FissureParticles(op.input_ct, op.output_particles, op.tmp_dir, 
+                        op.input_mask,max_scale, float(op.live_th),
+                        float(op.seed_th), int(op.scale_samples),
+                        float(op.down_sample_rate),
+                        float(op.min_intensity), float(op.max_intensity))
   dp.execute()
 

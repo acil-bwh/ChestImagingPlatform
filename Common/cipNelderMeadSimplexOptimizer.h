@@ -84,10 +84,10 @@ public:
    *  spline surface contained in the metric. This is useful as it can
    *  be passed to a viewing utility to visualize the surface after
    *  optimizer convergence */
-  cipThinPlateSplineSurface* GetThinPlateSplineSurface()
-    {
-      return Metric->GetThinPlateSplineSurface();
-    }
+  /* cipThinPlateSplineSurface* GetThinPlateSplineSurface() */
+  /*   { */
+  /*     return Metric->GetThinPlateSplineSurface(); */
+  /*   } */
 
   /** Calling this method starts the optimization */
   void Update();

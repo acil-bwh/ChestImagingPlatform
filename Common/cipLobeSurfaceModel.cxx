@@ -6,17 +6,17 @@
  *
  */
 
-#include "cipLobeBoundaryShapeModel.h"
+#include "cipLobeSurfaceModel.h"
 #include "vnl/vnl_math.h"
 
-cipLobeBoundaryShapeModel::cipLobeBoundaryShapeModel()
+cipLobeSurfaceModel::cipLobeSurfaceModel()
 {
   this->ImageOrigin  = new double[3];
   this->ImageSpacing = new double[3];
 }
 
 
-cipLobeBoundaryShapeModel::~cipLobeBoundaryShapeModel()
+cipLobeSurfaceModel::~cipLobeSurfaceModel()
 {
   delete[] this->ImageOrigin;
   delete[] this->ImageSpacing;
@@ -29,7 +29,7 @@ cipLobeBoundaryShapeModel::~cipLobeBoundaryShapeModel()
 }
 
 
-void cipLobeBoundaryShapeModel::SetImageOrigin( double const* origin )
+void cipLobeSurfaceModel::SetImageOrigin( double const* origin )
 {
   this->ImageOrigin[0] = origin[0];
   this->ImageOrigin[1] = origin[1];
@@ -37,13 +37,13 @@ void cipLobeBoundaryShapeModel::SetImageOrigin( double const* origin )
 }
 
 
-double const* cipLobeBoundaryShapeModel::GetImageOrigin() const
+double const* cipLobeSurfaceModel::GetImageOrigin() const
 {
   return this->ImageOrigin;
 }
 
 
-void cipLobeBoundaryShapeModel::SetImageSpacing( double const* spacing )
+void cipLobeSurfaceModel::SetImageSpacing( double const* spacing )
 {
   this->ImageSpacing[0] = spacing[0];
   this->ImageSpacing[1] = spacing[1];
@@ -51,25 +51,25 @@ void cipLobeBoundaryShapeModel::SetImageSpacing( double const* spacing )
 }
 
 
-double const* cipLobeBoundaryShapeModel::GetImageSpacing() const
+double const* cipLobeSurfaceModel::GetImageSpacing() const
 {
   return this->ImageSpacing;
 }
 
 
-void cipLobeBoundaryShapeModel::SetEigenvalueSum( double sum )
+void cipLobeSurfaceModel::SetEigenvalueSum( double sum )
 {
   this->EigenvalueSum = sum;
 }
 
 
-double cipLobeBoundaryShapeModel::GetEigenvalueSum() const
+double cipLobeSurfaceModel::GetEigenvalueSum() const
 {
   return this->EigenvalueSum;
 }
 
 
-void cipLobeBoundaryShapeModel::SetMeanSurfacePoints( std::vector< double* > const* points )
+void cipLobeSurfaceModel::SetMeanSurfacePoints( std::vector< double* > const* points )
 {
   this->MeanSurfacePoints.clear();
 
@@ -85,13 +85,13 @@ void cipLobeBoundaryShapeModel::SetMeanSurfacePoints( std::vector< double* > con
 }
 
 
-std::vector< double* > const* cipLobeBoundaryShapeModel::GetMeanSurfacePoints() const
+std::vector< double* > const* cipLobeSurfaceModel::GetMeanSurfacePoints() const
 {
   return &this->MeanSurfacePoints;
 }
 
 
-std::vector< double* > const* cipLobeBoundaryShapeModel::GetWeightedSurfacePoints()
+std::vector< double* > const* cipLobeSurfaceModel::GetWeightedSurfacePoints()
 {
   this->ComputeWeightedSurfacePoints();
 
@@ -99,7 +99,7 @@ std::vector< double* > const* cipLobeBoundaryShapeModel::GetWeightedSurfacePoint
 }
 
 
-void cipLobeBoundaryShapeModel::ComputeWeightedSurfacePoints()
+void cipLobeSurfaceModel::ComputeWeightedSurfacePoints()
 {
   this->WeightedSurfacePoints.clear();
   
@@ -120,7 +120,7 @@ void cipLobeBoundaryShapeModel::ComputeWeightedSurfacePoints()
 }
 
 
-void cipLobeBoundaryShapeModel::SetEigenvalues( std::vector< double > const* eigVals )
+void cipLobeSurfaceModel::SetEigenvalues( std::vector< double > const* eigVals )
 {
   this->Eigenvalues.clear();
 
@@ -131,13 +131,13 @@ void cipLobeBoundaryShapeModel::SetEigenvalues( std::vector< double > const* eig
 }
 
 
-std::vector< double > const* cipLobeBoundaryShapeModel::GetEigenvalues() const
+std::vector< double > const* cipLobeSurfaceModel::GetEigenvalues() const
 {
   return &this->Eigenvalues;
 }
 
 
-void cipLobeBoundaryShapeModel::SetEigenvectors( std::vector< std::vector< double > > const* eigenvectors )
+void cipLobeSurfaceModel::SetEigenvectors( std::vector< std::vector< double > > const* eigenvectors )
 {
   this->Eigenvectors.clear();
 
@@ -155,13 +155,13 @@ void cipLobeBoundaryShapeModel::SetEigenvectors( std::vector< std::vector< doubl
 }
 
 
-std::vector< std::vector< double > > const* cipLobeBoundaryShapeModel::GetEigenvectors() const
+std::vector< std::vector< double > > const* cipLobeSurfaceModel::GetEigenvectors() const
 {
   return &this->Eigenvectors;
 }
 
 
-void cipLobeBoundaryShapeModel::SetModeWeights( std::vector< double > const* weights )
+void cipLobeSurfaceModel::SetModeWeights( std::vector< double > const* weights )
 {
   this->ModeWeights.clear();
 
@@ -172,19 +172,19 @@ void cipLobeBoundaryShapeModel::SetModeWeights( std::vector< double > const* wei
 }
 
 
-std::vector< double >* cipLobeBoundaryShapeModel::GetModeWeights()
+std::vector< double >* cipLobeSurfaceModel::GetModeWeights()
 {
   return &this->ModeWeights;
 }
 
 
-void cipLobeBoundaryShapeModel::SetNumberOfModes( unsigned int numberOfModes )
+void cipLobeSurfaceModel::SetNumberOfModes( unsigned int numberOfModes )
 {
   this->NumberOfModes = numberOfModes;
 }
 
 
-unsigned int cipLobeBoundaryShapeModel::GetNumberOfModes() const
+unsigned int cipLobeSurfaceModel::GetNumberOfModes() const
 {
   return this->NumberOfModes;
 }

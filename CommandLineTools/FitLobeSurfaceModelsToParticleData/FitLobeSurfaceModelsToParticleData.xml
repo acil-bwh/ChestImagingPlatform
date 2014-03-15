@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform</category>
+  <title>FitFissureSurfaceModelToParticleData</title>
+  <description><![CDATA[This program is used to fit a left oblique shape model to fissure \
+  particles data. It is expected that the input shape model is generated with the 'GenerateFissureShapeModels' \
+  program. The output shape model has the same form as the input shape model, but it indicates how much to \
+  weight each of the primary modes of variation in order to achieve a good fit to the particles data.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <string>
+      <name>leftFissureParticlesFileName</name>
+      <label>Left lung fissure particles file name</label>
+      <channel>input</channel>
+      <longflag>lf</longflag>
+      <description><![CDATA[Left lung fissure particles file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>leftVesselParticlesFileName</name>
+      <label>Left lung vessel particles file name</label>
+      <channel>input</channel>
+      <longflag>lv</longflag>
+      <description><![CDATA[Left lung vessel particles file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>leftAirwayParticlesFileName</name>
+      <label>Left lung airway particles file name</label>
+      <channel>input</channel>
+      <longflag>la</longflag>
+      <description><![CDATA[Left lung airway particles file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>rightFissureParticlesFileName</name>
+      <label>Right lung fissure particles file name</label>
+      <channel>input</channel>
+      <longflag>rf</longflag>
+      <description><![CDATA[Right lung fissure particles file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>rightVesselParticlesFileName</name>
+      <label>Right lung vessel particles file name</label>
+      <channel>input</channel>
+      <longflag>rv</longflag>
+      <description><![CDATA[Right lung vessel particles file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>rightAirwayParticlesFileName</name>
+      <label>Right lung airway particles file name</label>
+      <channel>input</channel>
+      <longflag>ra</longflag>
+      <description><![CDATA[Right lung airway particles file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>inLeftModelFileName</name>
+      <label>Input left lobes surface model file name</label>
+      <channel>input</channel>
+      <longflag>ilm</longflag>
+      <description><![CDATA[Input left lobes surface model file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>inRightModelFileName</name>
+      <label>Input right lobes surface model file name</label>
+      <channel>input</channel>
+      <longflag>irm</longflag>
+      <description><![CDATA[Input right lobes surface model file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>outLeftModelFileName</name>
+      <label>Output left lobes surface model file name</label>
+      <channel>output</channel>
+      <longflag>olm</longflag>
+      <description><![CDATA[Output left lobes surface model file name]]></description>
+      <default>NA</default>
+    </string> 
+
+    <string>
+      <name>outRightModelFileName</name>
+      <label>Output right lobes surface model file name</label>
+      <channel>output</channel>
+      <longflag>orm</longflag>
+      <description><![CDATA[Output right lobes surface model file name]]></description>
+      <default>NA</default>
+    </string> 
+
+  </parameters>
+
+  <parameters>
+    <double>
+      <name>shapeVarianceThreshold</name>
+      <flag>v</flag>
+      <longflag>shapeVar</longflag>
+      <description>Shape variance threshold. This indicates how much of \
+      the variance you want accounted for during the shape model fitting process</description>
+      <label>Shape Variance Threshold</label>
+      <default>0.95</default>
+    </double>
+
+    <double>
+      <name>fissureSigmaDistance</name>
+      <longflag>fd</longflag>
+      <description>Fissure sigma distance value for the TPS to particles optimization</description>
+      <label>Fissure Sigma Distance</label>
+      <default>20.0</default>
+    </double>
+
+    <double>
+      <name>vesselSigmaDistance</name>
+      <longflag>vd</longflag>
+      <description>Vessel sigma distance value for the TPS to particles optimization</description>
+      <label>Vessel Sigma Distance</label>
+      <default>20.0</default>
+    </double>
+
+    <double>
+      <name>airwaySigmaDistance</name>
+      <longflag>ad</longflag>
+      <description>Airway sigma distance value for the TPS to particles optimization</description>
+      <label>Aissure Sigma Distance</label>
+      <default>20.0</default>
+    </double>
+
+    <double>
+      <name>fissureSigmaTheta</name>
+      <longflag>ft</longflag>
+      <description>Fissure sigma theta value for the TPS to particles optimization</description>
+      <label>Fissure Sigma Theta</label>
+      <default>20.0</default>
+    </double>
+
+    <double>
+      <name>vesselSigmaTheta</name>
+      <longflag>vt</longflag>
+      <description>Vessel sigma theta value for the TPS to particles optimization</description>
+      <label>Vessel Sigma Theta</label>
+      <default>20.0</default>
+    </double>
+
+    <double>
+      <name>airwaySigmaTheta</name>
+      <longflag>at</longflag>
+      <description>Airway sigma theta value for the TPS to particles optimization</description>
+      <label>Airway Sigma Theta</label>
+      <default>20.0</default>
+    </double>
+
+    <boolean>
+      <name>useLeftModeWeights</name>
+      <longflag>lw</longflag>
+      <description>Set to 1 to use stored mode weights for initialization. Set to 0 otherwise.</description>
+      <label>Use left mode weights</label>
+      <default>0</default>
+    </boolean>
+
+    <boolean>
+      <name>useRightModeWeights</name>
+      <longflag>rw</longflag>
+      <description>Set to 1 to use stored mode weights for initialization. Set to 0 otherwise.</description>
+      <label>Use right mode weights</label>
+      <default>0</default>
+    </boolean>
+
+    <integer>
+      <name>numIters</name>
+      <flag>n</flag>
+      <longflag>numIters</longflag>
+      <description>Number of iterations to perform for Nelder-Mead simplex model fitting</description>
+      <label>Number of Iterations</label>
+      <default>0</default>
+    </integer>
+  </parameters>
+</executable>

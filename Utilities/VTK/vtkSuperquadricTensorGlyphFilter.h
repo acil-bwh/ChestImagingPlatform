@@ -45,8 +45,9 @@
 #define vtkSuperquadricTensorGlyphFilter_h
 
 #include "vtkPolyDataAlgorithm.h"
+#include "vtkCIPUtilitiesConfigure.h"
 
-class vtkSuperquadricTensorGlyphFilter : public vtkPolyDataAlgorithm
+class VTK_CIP_UTILITIES_EXPORT vtkSuperquadricTensorGlyphFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeRevisionMacro(vtkSuperquadricTensorGlyphFilter, vtkPolyDataAlgorithm);
