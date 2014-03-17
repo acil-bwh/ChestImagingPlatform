@@ -69,7 +69,7 @@ namespace
 
   //images
 typedef itk::Image< unsigned short, 2 >       LabelMapType2D;
-typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType2D;
+typedef itk::ImageFileReader< LabelMapType2D >  LabelMapReaderType2D;
 typedef itk::Image< short, 2 >                ShortImageType;
 typedef itk::ImageFileReader< ShortImageType > ShortReaderType;
 typedef itk::ImageFileReader< ShortImageType >                                                            CTFileReaderType;
@@ -138,7 +138,7 @@ struct SIMILARITY_XML_DATA
     
   LabelMapType2D::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
   {
-    LabelMapType2DReaderType::Pointer reader = LabelMapType2D::New();
+    LabelMapReaderType2D::Pointer reader = LabelMapReaderType2D::New(); 
     reader->SetFileName( labelMapFileName );
     try
       {
@@ -237,7 +237,7 @@ int main( int argc, char *argv[] )
   PARSE_ARGS;
 
   //Read in fixed image label map from file 
-  LabelMapType2D::Pointer fixedLabelMap = cip::LabelMapType::New();
+  LabelMapType2D::Pointer fixedLabelMap = LabelMapType2D::New();
   if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
     {
     std::cout << "Reading label map from file..." << fixedLabelmapFileName<<std::endl;
@@ -257,7 +257,7 @@ int main( int argc, char *argv[] )
   //If specified, read in moving image label map from file 
   typedef itk::ImageMaskSpatialObject< 2 >   MaskType;
   MaskType::Pointer  spatialObjectMask = MaskType::New();
-  LabelMapType2D::Pointer movingLabelMap = cip::LabelMapType::New();
+  LabelMapType2D::Pointer movingLabelMap = LabelMapType2D::New();
   if ( strcmp(movingLabelmapFileName.c_str(), "q") != 0 )
     {
 
