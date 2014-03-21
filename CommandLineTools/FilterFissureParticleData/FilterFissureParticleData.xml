@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>FilterFissureParticleData</title>
   <description><![CDATA[This program reads fissure particles and filters them \
   based on connected components analysis. Particles are placed in \

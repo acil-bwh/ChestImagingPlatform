@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Segmentation</category>
   <title>GeneratePartialLungLabelMap</title>
   <description><![CDATA[Segment a CT image into lung regions with approximate aiway and vessel \
   segmentations.]]>

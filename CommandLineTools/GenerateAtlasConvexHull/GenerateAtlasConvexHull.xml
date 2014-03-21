@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>GenerateAtlasConvexHull</title>
   <description><![CDATA[his program reads atlas lung images and generates a convex hull image \
   corresponding to them. It is assumed that the atlas exists as two separate atlases: one for \

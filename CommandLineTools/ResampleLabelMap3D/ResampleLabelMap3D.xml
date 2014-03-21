@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>ResampleLabelMap</title>
   <description><![CDATA[This program resamples a label map using an affine transform (read from file)]]></description>
   <version>0.0.1</version>
