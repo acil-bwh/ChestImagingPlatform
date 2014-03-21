@@ -1,0 +1,15 @@
+<!ELEMENT Inter_Subject_Measure+
+	  (SimilarityValue,SimilarityMeasure,transformation+,
+	  movingID, fixedID, fixedMask, movingMask,ImageExtension)>
+<!ELEMENT fixedID (#PCDATA) #REQUIRED>
+<!ELEMENT movingID (#PCDATA) #REQUIRED>
+<!ELEMENT fixedMask (#PCDATA) #REQUIRED>
+<!ELEMENT movingMask (#PCDATA) #REQUIRED>
+<!ELEMENT transformation+
+	  (transformation_file)>
+<!ELEMENT transformation_file xlink:href CDATA #REQUIRED> 
+<!ATTLIST transformation  order (#PCDATA) #REQUIRED> 
+<!ATTLIST transformation  isInverse (#PCDATA) #REQUIRED> 
+<!ELEMENT ImageExtension (#PCDATA) #REQUIRED> 
+<!ELEMENT SimilarityMeasure (#PCDATA) #REQUIRED>
+<!ELEMENT SimilarityValue (#PCDATA) #REQUIRED>

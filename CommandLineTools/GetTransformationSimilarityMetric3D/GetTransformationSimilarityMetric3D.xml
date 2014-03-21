@@ -102,14 +102,13 @@
       <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be null.]]></description>
       <default>q</default>
     </string> 
-    <boolean>
-      <name>isInvertTransform</name>
-      <label>Invert Transformation</label>
+    <integer-vector>
+      <name>invertTransform</name>
+      <label>Invert Transformations</label>
       <channel>input</channel>
-      <longflag>invertTransformation</longflag>
-      <description><![CDATA[Uses the inverse transformation if set to True. Default: False.]]></description>
-      <default>false</default>
-    </boolean> 
+      <longflag>invertTransformations</longflag>
+      <description><![CDATA[Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).]]></description>
+    </integer-vector> 
 
  
 
