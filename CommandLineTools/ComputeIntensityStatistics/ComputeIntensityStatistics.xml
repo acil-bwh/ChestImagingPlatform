@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Quantification</category>
   <title>ComputeIntensityStatistics</title>
   <description><![CDATA[This program is used to compute intensity statistics for chest-region  chest-type pairs. For every pair present in the input label map, the mean, min, max, median, and standard deviation are computed. The results are printed to the command line.]]></description>
   <version>0.0.1</version>

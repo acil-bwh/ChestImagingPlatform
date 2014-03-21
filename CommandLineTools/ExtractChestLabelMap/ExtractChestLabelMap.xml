@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>ExtractChestLabelMap</title>
   <description><![CDATA[This program takes in a lung label map and producs a lung \
   label map; it assumes the labeling conventions coded in cipConventions.h. \

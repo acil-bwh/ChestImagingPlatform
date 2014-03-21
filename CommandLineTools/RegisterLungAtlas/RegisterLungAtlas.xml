@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit</category>
+  <category>Chest Imaging Platform.Toolkit.Registration</category>
   <title>RegisterLungAtlas</title>
   <description><![CDATA[This program is used to register a lung atlas convex hull mesh to the bones (ribs) in CT image. It used the iterativeclosest point algorithm with an affine transform to perform the registration. The input CT image is thresholded at a specified level: all voxels (physical points) above the threshold are added to the target point set. We assume that the ribs will be the bony objects that the mesh points will attract to. The final transform is written to file for image resampling using other tools.]]></description>
   <version>0.0.1</version>

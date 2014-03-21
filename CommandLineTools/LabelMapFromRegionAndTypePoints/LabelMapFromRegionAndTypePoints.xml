@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>LabelMapFromRegionAndTypePoints</title>
   <description><![CDATA[Reads a region and types points file and creates a label map of the labels\
   at the specified coordinates using the CIP labeling conventions.]]>

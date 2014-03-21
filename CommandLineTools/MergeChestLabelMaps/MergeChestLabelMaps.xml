@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>MergeChestLabelMaps</title>
   <description><![CDATA[This program will merge an overlay label map into a base label map. \
   The user must indicate which structures should be merged. Structures can be chest regions, \
@@ -39,7 +39,7 @@
     <image>
       <name>outLabelMapFileName</name>
       <label>Output label map</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <flag>o</flag>
       <longflag>out</longflag>
       <description><![CDATA[Output label map]]></description>
@@ -47,6 +47,8 @@
   </parameters>
 
   <parameters>
+    <label>Rules</label>
+    <description> Rules to apply in the merge process</description>
     <string-vector>
       <name>overrideTypes</name>
       <label>Override chest types</label>

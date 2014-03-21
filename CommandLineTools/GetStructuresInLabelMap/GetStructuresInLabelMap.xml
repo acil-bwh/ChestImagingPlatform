@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>GetStructuresInLabelMap</title>
     <description><![CDATA[This program reads in a label map image and writes to the command line a list of the chest-region chest-type pairs that are present.]]></description>
   <version>0.0.1</version>

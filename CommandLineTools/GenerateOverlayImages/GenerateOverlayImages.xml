@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>GenerateOverlayImages</title>
   <description><![CDATA[This program produces RGB overlay images corresponding to the input CT image and \
   its label map. The overlay images will be spaced evenly across the bounding box in the direction orthogonal \
