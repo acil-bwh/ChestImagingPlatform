@@ -20,7 +20,7 @@
       <label>fixed CT FileName</label>
       <channel>input</channel>
       <flag>g</flag>
-      <longflag>--fixedCTFileName</longflag>
+      <longflag>fixedCTFileName</longflag>
       <description><![CDATA[fixed CT File Name]]></description>
       <default>e</default>
     </image>   
@@ -29,7 +29,7 @@
       <label>moving CT FileName</label>
       <channel>input</channel>
       <flag>a</flag>
-      <longflag>--movingCTFileName</longflag>
+      <longflag>movingCTFileName</longflag>
       <description><![CDATA[moving CT FileName]]></description>
       <default>e</default>
     </image>
@@ -38,7 +38,7 @@
       <label>input Transform FileNames</label>
       <channel>input</channel>
       <flag>q</flag>
-      <longflag>--inputTransform</longflag>
+      <longflag>inputTransform</longflag>
       <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
       <default>q</default>
     </string-vector>    
@@ -47,30 +47,32 @@
       <label>fixed LabelMap FileName</label>
       <channel>input</channel>
       <flag>f</flag>
-      <longflag>--fixedLabelMapFileName</longflag>
+      <longflag>fixedLabelMapFileName</longflag>
       <description><![CDATA[fixed Image File Name]]></description>
       <default>q</default>
     </image> 
 
-   <image>
+   <image type="label">
       <name>movingLabelmapFileName</name>
       <label>moving LabelMap FileName</label>
       <channel>input</channel>
       <flag>m</flag>
-      <longflag>--movingLabelMapFileName</longflag>
+      <longflag>movingLabelMapFileName</longflag>
       <description><![CDATA[moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.]]></description>
       <default>q</default>
     </image>
-    <string>
+
+    <file fileExtensions=".xml">
       <name>outputXMLFileName</name>
       <label>output XML File</label>
       <channel>output</channel>
       <flag>e</flag>
-      <longflag>--outputXMLFile</longflag>
+      <longflag>outputXMLFile</longflag>
       <description><![CDATA[The name of the output xml file. If not specified, no xml file will be output. ]]></description>
       <default>q</default>
-    </string>
+    </file>
     </parameters>
+
     <parameters>
     <label>Similarity parameters</label>
     <string>
@@ -78,7 +80,7 @@
       <label>Similarity Metric</label>
       <channel>input</channel>
       <flag>v</flag>
-      <longflag>--SimilarityMetric</longflag>
+      <longflag>SimilarityMetric</longflag>
       <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual \
           information), NMI (for normalized mutual information), and mean squares (msqr), \
       NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
@@ -89,7 +91,7 @@
       <label>moving Image subject ID</label>
       <channel>input</channel>
       <flag>s</flag>
-      <longflag>--movingImageID</longflag>
+      <longflag>movingImageID</longflag>
       <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be null.]]></description>
       <default>q</default>
     </string>   
@@ -98,7 +100,7 @@
       <label>Fixed Image subject ID</label>
       <channel>input</channel>
       <flag>u</flag>
-      <longflag>--fixedImageID</longflag>
+      <longflag>fixedImageID</longflag>
       <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be null.]]></description>
       <default>q</default>
     </string> 
@@ -106,7 +108,7 @@
       <name>isInvertTransform</name>
       <label>Invert Transformation</label>
       <channel>input</channel>
-      <longflag>--invertTransformation</longflag>
+      <longflag>invertTransformation</longflag>
       <description><![CDATA[Uses the inverse transformation if set to True. Default: False.]]></description>
       <default>false</default>
     </boolean> 
