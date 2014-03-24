@@ -26,7 +26,7 @@
       <image type="label">
           <name>outFileName</name>
           <label> Label Map Filename</label>
-          <channel>input</channel>
+          <channel>output</channel>
           <flag>o</flag>
           <longflag>out</longflag>
           <description><![CDATA[Output label map file name.]]></description>
