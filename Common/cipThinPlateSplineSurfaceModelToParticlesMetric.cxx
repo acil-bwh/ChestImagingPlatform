@@ -26,6 +26,10 @@ cipThinPlateSplineSurfaceModelToParticlesMetric
   this->NumberOfFissureParticles = 0;
   this->NumberOfAirwayParticles  = 0;
   this->NumberOfVesselParticles  = 0;
+
+  this->FissureTermWeight = 1.0;
+  this->VesselTermWeight  = 1.0;
+  this->AirwayTermWeight  = 1.0;
 }
 
 

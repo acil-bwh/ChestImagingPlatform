@@ -9,6 +9,7 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "cipHelper.h"
+#include "cipExceptionObject.h"
 
 cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric
 ::cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric()
@@ -37,6 +38,27 @@ cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric
 // call. 
 double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vector< double >* const params )
 {
+  if ( this->MeanPoints.size() == 0 )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vector< double >* const params )", 
+				  "Mean surface points are not set" );
+    }
+
+  assert ( this->MeanPoints.size() == this->NumberOfSurfacePoints );
+
+  if ( this->LeftObliqueSurfacePoints.size() == 0 )
+    {
+      for ( unsigned int i=0; i<this->NumberOfSurfacePoints; i++ )
+	{
+	  this->LeftObliqueSurfacePoints.push_back( this->MeanPoints[i] );
+	}
+    }
+
+  assert ( this->LeftObliqueSurfacePoints.size() == this->NumberOfSurfacePoints );
+  assert ( this->Eigenvalues.size() == this->NumberOfModes );
+  assert ( this->Eigenvectors.size() == this->NumberOfModes );
+
   // First we must construct the TPS surface given the param values. 
   for ( unsigned int p=0; p<this->NumberOfSurfacePoints; p++ )
     {
@@ -57,7 +79,13 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
   this->LeftObliqueThinPlateSplineSurface->SetSurfacePoints( &this->LeftObliqueSurfacePoints );
 
   double value = this->FissureTermWeight*this->GetFissureTermValue() + this->VesselTermWeight*this->GetVesselTermValue();
-  
+
+  std::cout << "this->FissureTermWeight:\t" << this->FissureTermWeight << std::endl;
+  std::cout << "this->GetFissureTermValue():\t" << this->GetFissureTermValue() << std::endl;
+  std::cout << "this->VesselTermWeight:\t" << this->VesselTermWeight << std::endl;
+  std::cout << "this->GetVesselTermValue():\t" << this->GetVesselTermValue() << std::endl;
+
+  std::cout << "Value:\t" << value << std::endl;
   return value;
 }
 

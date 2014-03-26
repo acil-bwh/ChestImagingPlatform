@@ -11,7 +11,7 @@ set(${PROJECT_NAME}_INCLUDE_DIRS
       ${CMAKE_CURRENT_BINARY_DIR}
      CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
 
-INCLUDE_DIRECTORIES( ${CIPCommon_INCLUDE_DIRS}  )
+INCLUDE_DIRECTORIES( ${CIPCommon_INCLUDE_DIRS}  )  
 
 # --------------------------------------------------------------------------
 # Configure headers
