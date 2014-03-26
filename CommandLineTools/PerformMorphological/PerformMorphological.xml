@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>PerformMorphological</title>
+  <description><![CDATA[This program performs morphological operations such as dilation , erosion, opening and closing.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/PerformMorphological</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+  <parameters>
+  <label>I/O</label>    
+      <image type="label">
+          <name>inFileName</name>
+          <label>Input Label Map Filename</label>
+          <channel>input</channel>
+          <flag>i</flag>
+          <longflag>in</longflag>
+          <description><![CDATA[Input label map file name.]]></description>
+          <default>q</default>
+      </image>
+
+      <image type="label">
+          <name>outFileName</name>
+          <label> Label Map Filename</label>
+          <channel>output</channel>
+          <flag>o</flag>
+          <longflag>out</longflag>
+          <description><![CDATA[Output label map file name.]]></description>
+          <default>q</default>
+      </image>
+  </parameters>
+    <parameters>
+        <label>morphological operators</label>
+        <boolean>
+            <name>close</name>
+            <label>Close</label>
+            <channel>input</channel>
+            <longflag>cl</longflag>
+            <description><![CDATA[Set to 1 to perform morphological closing. Default: False. Only one morphological operation can be specified. Operations are considered in the following order: dilate, erode, open, close. E.g., if dilation is specified, only it will be performed regardless of whether the other operations have requested.]]></description>
+            <default>false</default>
+        </boolean>
+        <boolean>
+            <name>dilate</name>
+            <label>dilate</label>
+            <channel>input</channel>
+            <flag>d</flag>
+            <longflag>dilate</longflag>
+            <description><![CDATA[Set to 1 to perform morphological dilation. Default: False. Only one morphological operation can be specified. Operations are considered in the following order: dilate, erode, open, close. E.g., if dilation is specified, only it will be performed regardless of whether the other operations have requested.]]></description>
+            <default>false</default>
+        </boolean>
+        <boolean>
+            <name>erode</name>
+            <label>erode</label>
+            <channel>input</channel>
+            <flag>e</flag>
+            <longflag>erode</longflag>
+            <description><![CDATA[Set to 1 to perform morphological erosion. Default: False. Only one morphological operation can be specified. Operations are considered in the following order: dilate, erode, open, close. E.g., if dilation is specified, only it will be performed regardless of whether the other operations have requested.]]></description>
+            <default>false</default>
+        </boolean>        
+        <boolean>
+            <name>open</name>
+            <label>open</label>
+            <channel>input</channel>
+            <longflag>op</longflag>
+            <description><![CDATA[Set to 1 to perform morphological opening. Default: False. Only one morphological operation can be specified. Operations are considered in the following order: dilate, erode, open, close. E.g., if dilation is specified, only it will be performed regardless of whether the other operations have requested.]]></description>
+            <default>false</default>
+        </boolean>
+    </parameters>
+    <parameters>
+    <label>morphological parameters</label>
+        <integer>
+            <name>kernelRadiusXint</name>
+            <label>X Kernel Radius</label>
+            <channel>input</channel>
+            <longflag>radx</longflag>
+            <description><![CDATA[Radius of morphology kernel in the x-direction.]]></description>
+            <default>1</default>
+        </integer>
+        <integer>
+            <name>kernelRadiusYint</name>
+            <label>Y Kernel Radius</label>
+            <channel>input</channel>
+            <longflag>rady</longflag>
+            <description><![CDATA[Radius of morphology kernel in the y-direction.]]></description>
+            <default>1</default>
+        </integer>
+        <integer>
+            <name>kernelRadiusZint</name>
+            <label>Z Kernel Radius</label>
+            <channel>input</channel>
+            <longflag>radz</longflag>
+            <description><![CDATA[Radius of morphology kernel in the xzdirection.]]></description>
+            <default>1</default>
+        </integer>
+        <integer-vector>
+            <name>regionsVecArg</name>
+            <label>Regions vector</label>
+            <channel>input</channel>
+            <flag>r</flag>
+            <longflag>region</longflag>
+            <description><![CDATA[Users must specify chest-region chest-type pairs. only labels corresponding to the pairs will be operated on. Use this flag to specify the chest region of a given pair. Each time this flag is used, the -t or --type flag should also be used to specify the corresponding type]]></description>
+        </integer-vector>
+        <integer-vector>
+            <name>typesVecArg</name>
+            <label>Types vector</label>
+            <channel>input</channel>
+            <flag>t</flag>
+            <longflag>type</longflag>
+            <description><![CDATA[Users must specify chest-region chest-type pairs; only labels corresponding to the pairs will be operated on. Use this flag to specify the chest type of a given pair. Each time this flag is used, the -r or --region flag should also be used to specify the corresponding region]]></description>
+        </integer-vector>
+        <boolean>
+            <name>allRegionTypePairs</name>
+            <label>open</label>
+            <channel>input</channel>
+            <flag>a</flag>
+            <longflag>all</longflag>
+            <description><![CDATA[If set to 1, then all chest-region chest-type pairs present in the input label map will be processed. Any region-type pairs specified using the -r (--region) and -t (--type) flags will be ignored. (0 by default).]]></description>
+            <default>false</default>
+        </boolean>
+        </parameters>
+</executable>

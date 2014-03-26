@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+l<?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>FitFissureSurfaceModelToParticleData</title>
   <description><![CDATA[This program is used to fit a left oblique shape model to fissure \
   particles data. It is expected that the input shape model is generated with the 'GenerateFissureShapeModels' \

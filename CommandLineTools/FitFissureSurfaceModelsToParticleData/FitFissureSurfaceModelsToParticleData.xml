@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>FitFissureSurfaceModelsToParticleData</title>
   <description><![CDATA[This program fits two TPS surface models to the same particles data \
   set in an iterative fashion. It is meant to be used for fitting the \

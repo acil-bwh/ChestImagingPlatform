@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>GenerateLobeSurfaceModels</title>
   <description><![CDATA[This program is used to generate fissure shape models based \
   on a training set. The basic approach is as follows: a reference image \

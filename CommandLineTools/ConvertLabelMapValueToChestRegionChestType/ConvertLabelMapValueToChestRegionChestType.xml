@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-    <category>Chest Imaging Platform</category>
+    <category>Chest Imaging Platform.Toolkit.Utils</category>
     <title>ConvertLabelMapValueToChestRegionChestType</title>
     <description><![CDATA[This simple program takes an unsigned short label \
         map value that conforms to the labeling conventions laid out in \

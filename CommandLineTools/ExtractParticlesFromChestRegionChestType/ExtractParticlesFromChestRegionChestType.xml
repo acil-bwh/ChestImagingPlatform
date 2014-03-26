@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>ExtractParticlesFromChestRegionChestType</title>
   <description>
     <![CDATA[This program allows you to extract particles from an input particles data set using either\
