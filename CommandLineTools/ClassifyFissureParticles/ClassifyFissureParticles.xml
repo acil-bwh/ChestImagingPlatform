@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>ClassifyFissureParticles</title>
   <description><![CDATA[This program is used to classify fissure particles using Fischer's Linear \
     Discriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \

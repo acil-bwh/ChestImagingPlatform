@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>LabelAirwayParticlesByGeneration</title>
   <description><![CDATA[This program takes an input airway particles dataset \
   and assigns airway generation labels to each particle. The assigned labels are \

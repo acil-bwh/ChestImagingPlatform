@@ -35,13 +35,13 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileWriter.h"
 #include "itkImageSeriesReader.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
+#include "ConvertDicomCLP.h"
 
 typedef itk::Image< short, 3 >                ImageType;
 typedef itk::GDCMImageIO                      ImageIOType;
@@ -51,43 +51,8 @@ typedef itk::ImageFileWriter< ImageType >     WriterType;
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-  std::string dicomDir            = "NA";
-  std::string outputImageFileName = "NA";
-
-  //
-  // Input argument descriptions for user help
-  //
-  std::string programDesc = "This simple program takes as an argument a directory \
-containing DICOM images, and produces a single file as \
-output. Single files are preferred for our operations as \
-they compactly contain the CT data.";
-
-  std::string dicomDirDesc = "Input dicom directory";
-  std::string outputImageFileNameDesc = "Output image file name";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 300 $" );
-
-    TCLAP::ValueArg<std::string> dicomDirArg ( "i", "dicomDir", dicomDirDesc, true, dicomDir, "string", cl );
-    TCLAP::ValueArg<std::string> outputImageFileNameArg ( "o", "output", outputImageFileNameDesc, true, outputImageFileName, "string", cl );
-
-    cl.parse( argc, argv );
-
-    dicomDir            = dicomDirArg.getValue();
-    outputImageFileName = outputImageFileNameArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
+    
+  PARSE_ARGS;  
 
   //
   // Read the DICOM data

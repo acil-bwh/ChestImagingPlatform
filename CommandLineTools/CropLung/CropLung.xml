@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-    <category>Chest Imaging Platform</category>
+    <category>Chest Imaging Platform.Toolkit.Processing</category>
     <title>CropLung</title>
     <description><![CDATA[Crop a CT lung volume for a specified region.\
         This tools provides the cropped CT volume and optionally \

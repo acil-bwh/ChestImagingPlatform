@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-    <category>Chest Imaging Platform</category>
+    <category>Chest Imaging Platform.Toolkit.Processing</category>
     <title>ComputeDistanceMap</title>
     <description><![CDATA[This program computes a distance map from an \
         input binary map. A donwsampling can be applied prior to the distance map computation \

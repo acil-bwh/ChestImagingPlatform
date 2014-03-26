@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>GenerateMedianFilteredImage</title>
   <description><![CDATA[Median Filter of a CT volume]]></description>
   <version>0.0.1</version>

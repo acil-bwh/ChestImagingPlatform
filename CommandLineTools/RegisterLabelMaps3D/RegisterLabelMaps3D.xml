@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Registration</category>
   <title>RegisterLabelMaps</title>
   <description><![CDATA[This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.]]></description>
   <version>0.0.1</version>
@@ -12,7 +12,8 @@
         and does not necessarily represent the official views of the National Institutes of Health.
    </acknowledgements>
   <parameters>
-    <string>
+  <label>I/O</label>
+    <image>
       <name>fixedImageFileName</name>
       <label>fixed Image FileName</label>
       <channel>input</channel>
@@ -20,8 +21,9 @@
       <longflag>--fixedImageFileName</longflag>
       <description><![CDATA[fixed Image File Name]]></description>
       <default>q</default>
-    </string>   
-    <string>
+    </image>   
+
+    <image>
       <name>movingImageFileName</name>
       <label>moving Image FileName</label>
       <channel>input</channel>
@@ -29,8 +31,26 @@
       <longflag>--movingImageFileName</longflag>
       <description><![CDATA[moving Image FileName]]></description>
       <default>q</default>
-    </string>   
-    <string>
+    </image>   
+    <image>
+      <name>outputImageFileName</name>
+      <label>output Image FileName</label>
+      <channel>output</channel>
+      <flag>z</flag>
+      <longflag>--outputImage</longflag>
+      <description><![CDATA[Output image file name]]></description>
+      <default>q</default>
+    </image> 
+    <transform>
+      <name>outputTransformFileName</name>
+      <label>output Transform FileName</label>
+      <channel>output</channel>
+      <flag>q</flag>
+      <longflag>--outputTransform</longflag>
+      <description><![CDATA[Output transform file name]]></description>
+      <default>q</default>
+    </transform> 
+    <string> 
       <name>movingImageID</name>
       <label>moving Image subject ID</label>
       <channel>input</channel>
@@ -57,7 +77,9 @@
       <default>NA</default>
       <description><![CDATA[unique Id for the registration process.]]></description>
     </string> 
-
+    </parameters>
+    <parameters>
+    <label>Registration parameters</label>
     <float>
       <name>downsampleFactor</name>
       <label>downsample Factor</label>
@@ -103,26 +125,6 @@
       <description><![CDATA[translationScale]]></description>
       <default>0.001</default>
     </float> 
-    <string>
-      <name>outputImageFileName</name>
-      <label>output Image FileName</label>
-      <channel>output</channel>
-      <flag>z</flag>
-      <longflag>--outputImage</longflag>
-      <description><![CDATA[Output image file name]]></description>
-      <default>q</default>
-    </string>  
-
-    <string>
-      <name>outputTransformFileName</name>
-      <label>output Transform FileName</label>
-      <channel>output</channel>
-      <flag>q</flag>
-      <longflag>--outputTransform</longflag>
-      <description><![CDATA[Output transform file name]]></description>
-      <default>q</default>
-    </string>   
-
 <integer-vector>
       <name>regionVecArg</name>
       <longflag>regionVec</longflag>

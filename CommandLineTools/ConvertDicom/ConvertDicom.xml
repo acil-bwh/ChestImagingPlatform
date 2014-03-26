@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>CovertDicom</title>
+    <description><![CDATA[This simple program takes as an argument a directory \
+        containing DICOM images, and produces a single file as \
+        output. Single files are preferred for our operations as \
+        they compactly contain the CT data.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+   </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+      <directory>
+          <name>dicomDir</name>
+          <longflag>--inputDicomDirectory</longflag>
+          <label>Input Dicom Data</label>
+          <channel>input</channel>
+          <description><![CDATA[Input dicom directory]]></description>
+      </directory>
+    <image>
+      <name>outputImageFileName</name>
+      <label>output Image FileName</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>--output</longflag>
+      <description><![CDATA[Output image file name]]></description>
+      <default>q</default>
+    </image>
+  </parameters>
+</executable>

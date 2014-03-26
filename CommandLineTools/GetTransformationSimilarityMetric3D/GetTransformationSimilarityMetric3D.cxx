@@ -48,6 +48,7 @@
 #include <libxml/xmlIO.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
+#include <libxml/xmlmemory.h>
 
 #include "GetTransformationSimilarityMetric3DCLP.h"
 #include "cipConventions.h"
@@ -104,6 +105,9 @@ namespace
     std::string movingID;
     std::string similarityMeasure;
     std::string regionAndTypeUsed;
+    std::string fixedMask;
+    std::string movingMask;
+    std::string extention;
   };
 
 
@@ -175,7 +179,7 @@ namespace
     xmlDocPtr doc = NULL;       /* document pointer */
     xmlNodePtr root_node = NULL; /* Node pointers */
     xmlDtdPtr dtd = NULL;       /* DTD pointer */
-    
+    xmlAttrPtr newattr;
 
     xmlNodePtr transfo_node[5];
     
@@ -187,7 +191,7 @@ namespace
     root_node = xmlNewNode(NULL, BAD_CAST "Inter_Subject_Measure");
     xmlDocSetRootElement(doc, root_node);
 
-    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "InterSubjectMeasures_v2.dtd");
+    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "InterSubjectMeasures_v3.dtd");
  
     // xmlNewChild() creates a new node, which is "attached"
     // as child node of root_node node. 
@@ -196,27 +200,29 @@ namespace
   
     xmlNewChild(root_node, NULL, BAD_CAST "movingID", BAD_CAST (theXMLData. movingID.c_str()));
     xmlNewChild(root_node, NULL, BAD_CAST "fixedID", BAD_CAST (theXMLData.fixedID.c_str()));
+    xmlNewChild(root_node, NULL, BAD_CAST "movingMask", BAD_CAST (theXMLData. movingMask.c_str()));
+    xmlNewChild(root_node, NULL, BAD_CAST "fixedMask", BAD_CAST (theXMLData.fixedMask.c_str()));
     xmlNewChild(root_node, NULL, BAD_CAST "SimilarityMeasure", BAD_CAST (theXMLData.similarityMeasure.c_str()));
     xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
-  
+    xmlNewChild(root_node, NULL, BAD_CAST "ImageExtension", BAD_CAST (theXMLData.extention.c_str()));
+
+
+
     for(int i = 0; i<5; i++)
       {
         if (!theXMLData.transformationLink[i].empty())
 	  {
             transfo_node[i] = xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST (""));
-            xmlNewChild(transfo_node[i], NULL, BAD_CAST "transformation_file", BAD_CAST (theXMLData.transformationLink[i].c_str()));
-            xmlNewChild(transfo_node[i], NULL, BAD_CAST "transformation_isInverse", BAD_CAST (theXMLData.transformation_isInverse[i].c_str()));
+            xmlNewChild(transfo_node[i], NULL, BAD_CAST "file", BAD_CAST (theXMLData.transformationLink[i].c_str()));
+            newattr = xmlNewProp(transfo_node[i], BAD_CAST "isInverse", BAD_CAST (theXMLData.transformation_isInverse[i].c_str()));
             std::ostringstream order_string;
             order_string << theXMLData.transformation_order[i];
-            xmlNewChild(transfo_node[i], NULL, BAD_CAST "transformation_order", BAD_CAST (order_string.str().c_str()));
+            newattr = xmlNewProp(transfo_node[i], BAD_CAST "order",  BAD_CAST (order_string.str().c_str()));
 	  }
-      }
-    
+      }    
     xmlSaveFormatFileEnc(file, doc, "UTF-8", 1);
     xmlFreeDoc(doc);
-
   }
-
 } //end namespace
 
 int main( int argc, char *argv[] )
@@ -229,42 +235,30 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
 
-  //Read in fixed image label map from file 
-  cip::LabelMapType::Pointer fixedLabelMap = cip::LabelMapType::New();
-  if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+  //fill out the isInvertTransform vector
+  bool *isInvertTransform = new bool[inputTransformFileName.size()];
+  for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
-      std::cout << "Reading label map from file..." << std::endl;
-      fixedLabelMap = ReadLabelMapFromFile( fixedLabelmapFileName );
+      std::cout<<inputTransformFileName[i]<<std::endl;
+      isInvertTransform[i] = false;
+    }   
+  std::cout<<invertTransform.size()<<std::endl;
+  for ( unsigned int i=0; i<invertTransform.size(); i++ )
+    {
+      isInvertTransform[invertTransform[i]] = true;
+    }  
 
-      if (fixedLabelMap.GetPointer() == NULL)
-	{
-	  return cip::LABELMAPREADFAILURE;
-	}
-    }
-  else
-    {
-      std::cout <<"No  label map specified"<< std::endl;
-    }
-  
 
   //If specified, read in moving image label map from file 
   typedef itk::ImageMaskSpatialObject< 3 >   MaskType;
-  MaskType::Pointer  spatialObjectMask = MaskType::New();
-  cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
-  if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
-    {
-      movingLabelMap = ReadLabelMapFromFile( movingLabelmapFileName );
-        
-      if (movingLabelMap.GetPointer() == NULL)
-	{
-	  return cip::LABELMAPREADFAILURE;
-	}
-    }
-  else
-    {
-      std::cout <<"No  label map specified"<< std::endl;
-    }
-    
+  MaskType::Pointer  fixedSpatialObjectMask = MaskType::New();
+  MaskType::Pointer  movingSpatialObjectMask = MaskType::New();
+
+  typedef itk::Image< unsigned char, 3 >   ImageMaskType;
+  typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
+  MaskReaderType::Pointer  fixedMaskReader = MaskReaderType::New();
+  MaskReaderType::Pointer  movingMaskReader = MaskReaderType::New();
+
   //Read the CT images
   ShortImageType::Pointer ctFixedImage = ShortImageType::New();
   ctFixedImage = ReadCTFromFile( fixedCTFileName );
@@ -282,19 +276,15 @@ int main( int argc, char *argv[] )
       return cip::NRRDREADFAILURE;
     }
 
-  //Set mask  object
+  //Set mask  object, assumption, any voxel > 0 is part of mask
 
-  typedef itk::Image< unsigned char, 3 >   ImageMaskType;
-  typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
-  MaskReaderType::Pointer  maskReader = MaskReaderType::New();
-  
   if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
-      maskReader->SetFileName(movingLabelmapFileName.c_str() );
+      movingMaskReader->SetFileName(movingLabelmapFileName.c_str() );
 
       try
 	{
-	  maskReader->Update();
+	  movingMaskReader->Update();
 	}
       catch( itk::ExceptionObject & err )
 	{
@@ -302,10 +292,33 @@ int main( int argc, char *argv[] )
 	  std::cerr << err << std::endl;
 	  return EXIT_FAILURE;
 	}
-      spatialObjectMask->SetImage(maskReader->GetOutput());
+      movingSpatialObjectMask->SetImage(movingMaskReader->GetOutput());
+    }
+  else
+    {
+      std::cout <<"No moving label map specified"<< std::endl;
+    }
+  if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+    {
+      fixedMaskReader->SetFileName(fixedLabelmapFileName.c_str() );
+
+      try
+	{
+	  fixedMaskReader->Update();
+	}
+      catch( itk::ExceptionObject & err )
+	{
+	  std::cerr << "ExceptionObject caught !" << std::endl;
+	  std::cerr << err << std::endl;
+	  return EXIT_FAILURE;
+	}
+      fixedSpatialObjectMask->SetImage(fixedMaskReader->GetOutput());
 
     }
-
+  else
+    {
+      std::cout <<"No fixed label map specified"<< std::endl;
+    }
   //parse transform arg  and join transforms together
   
   //last transform applied first, so make last transform
@@ -315,8 +328,9 @@ int main( int argc, char *argv[] )
       TransformType::Pointer transformTemp = TransformType::New();
       transformTemp = GetTransformFromFile(inputTransformFileName[i] );
       // Invert the transformation if specified by command like argument. Only inverting the first transformation
-      if((i==0)&& (isInvertTransform == true))
+      if(isInvertTransform[i] == true)
         {
+	  std::cout<<"inverting transform "<<inputTransformFileName[i]<<std::endl;
           transformTemp->SetMatrix( transformTemp->GetInverseMatrix());
           transform->AddTransform(transformTemp);
         }          
@@ -353,7 +367,9 @@ int main( int argc, char *argv[] )
       metric->SetHistogramSize( histogramSize );
 
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetMovingImageMask( spatialObjectMask );
+	metric->SetMovingImageMask( movingSpatialObjectMask );
+      if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	metric->SetFixedImageMask( fixedSpatialObjectMask );
       registration->SetMetric( metric );
      
     }
@@ -366,7 +382,9 @@ int main( int argc, char *argv[] )
     {
       ncMetricType::Pointer metric = ncMetricType::New();
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetMovingImageMask( spatialObjectMask );
+	metric->SetMovingImageMask( movingSpatialObjectMask );
+      if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	metric->SetFixedImageMask( fixedSpatialObjectMask );
       registration->SetMetric( metric );
     }
   else if (similarityMetric =="gd")
@@ -381,7 +399,9 @@ int main( int argc, char *argv[] )
       metric->SetMovingImageStandardDeviation( 13.5 );
          
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetMovingImageMask( spatialObjectMask );
+	metric->SetMovingImageMask( movingSpatialObjectMask );
+      if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	metric->SetFixedImageMask( fixedSpatialObjectMask );
       registration->SetMetric( metric );       	
     }
  
@@ -395,8 +415,7 @@ int main( int argc, char *argv[] )
     }
   catch( itk::ExceptionObject &excp )
     {
-      std::cerr << "ExceptionObject caught while executing registration" <<
-	std::endl;
+      std::cerr << "ExceptionObject caught while executing registration" << std::endl;
       std::cerr << excp << std::endl;
     }
 
@@ -410,10 +429,25 @@ int main( int argc, char *argv[] )
     {
 
       SIMILARITY_XML_DATA ctSimilarityXMLData;
-      ctSimilarityXMLData.regionAndTypeUsed.assign("");
+      ctSimilarityXMLData.regionAndTypeUsed.assign("N/A");
       ctSimilarityXMLData.similarityValue = (float)(similarityValue);
       ctSimilarityXMLData.similarityMeasure.assign(similarity_type);
-    
+      if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
+	{
+	  ctSimilarityXMLData.movingMask.assign(movingLabelmapFileName);
+	}
+      else
+	{
+	  ctSimilarityXMLData.movingMask.assign("N/A");
+	}
+      if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	{
+	  ctSimilarityXMLData.fixedMask.assign(fixedLabelmapFileName);
+	}
+      else
+	{
+	  ctSimilarityXMLData.fixedMask.assign("N/A");
+	}
       
       if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
 	{
@@ -433,11 +467,15 @@ int main( int argc, char *argv[] )
 	{
 	  ctSimilarityXMLData.fixedID.assign("N/A");
 	}
-  
- 
+      //extract the extension from the filename
+      ctSimilarityXMLData.extention.assign(fixedCTFileName);
+      int pathLength = 0, pos=0, next=0; 
+      next = ctSimilarityXMLData.extention.find('.', next+1);
+      ctSimilarityXMLData.extention.erase(0,next);
+      std::cout<<ctSimilarityXMLData.extention<<std::endl;
+	
       //remove path from output transformation file before storing in xml
-      //For each transformation
-      int pathLength = 0, pos=0, next=0;  
+      //For each transformation       
       for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
 	{ 
 	  pos=0;
@@ -449,7 +487,7 @@ int main( int argc, char *argv[] )
 	    }
 	  ctSimilarityXMLData.transformationLink[i].assign(inputTransformFileName[i].c_str());
 	  ctSimilarityXMLData.transformation_order[i]= i;
-	  if((i==0)&& (isInvertTransform == true))
+	  if(isInvertTransform[i] == true)
 	    ctSimilarityXMLData.transformation_isInverse[i].assign("True");
 	  else
 	    ctSimilarityXMLData.transformation_isInverse[i].assign("False");

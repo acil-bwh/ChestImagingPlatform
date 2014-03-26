@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>MergeParticleDataSets</title>
   <description><![CDATA[This program accepts as input multiple particle data sets and merges them \
   into one data set for output. If any of the inputs do not have ChestType and ChestRegion fields defined \
@@ -17,22 +17,22 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <string-vector>
+    <geometry multiple="true">
       <name>inFileNamesVec</name>
       <label>Inputs</label>
       <channel>input</channel>
       <flag>i</flag>
       <longflag>in</longflag>
       <description><![CDATA[Input particles file names]]></description>
-    </string-vector>  
+    </geometry>
 
-    <string>
+    <geometry>
       <name>outFileName</name>
       <label>Output</label>
       <channel>input</channel>
       <longflag>o</longflag>
       <longflag>out</longflag>
       <description><![CDATA[Output particles file name]]></description>
-    </string>  
+    </geometry>
   </parameters>
 </executable>

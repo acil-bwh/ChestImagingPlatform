@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>GenerateDistanceMapFromLabelMap</title>
 <description><![CDATA[This program can be used to compute a distance map from an \
 input label map (that adheres to the CIP label map conventions \

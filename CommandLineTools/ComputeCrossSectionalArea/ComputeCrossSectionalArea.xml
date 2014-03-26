@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Quantification</category>
   <title>ComputeCrossSectionalArea</title>
   <description><![CDATA[This program can be used to compute cross sectional areas \
 of structures in the input label map image. The cross-sectional area is computed with \

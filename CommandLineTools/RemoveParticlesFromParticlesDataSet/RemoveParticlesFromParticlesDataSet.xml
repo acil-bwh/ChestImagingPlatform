@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>RemoveParticlesFromParticlesDataSet</title>
   <description><![CDATA[This program accepts two inputs: a particles dataset and another particles dataset\
   indicating which particles should be removed from the first dataset. The output of the set of particles \

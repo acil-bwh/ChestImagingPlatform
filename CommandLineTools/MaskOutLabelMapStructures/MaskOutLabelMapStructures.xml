@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>MaskOutLabelMapStructures</title>
   <description><![CDATA[This program will remove the specified chest structures from the input label map.]]>
   </description>

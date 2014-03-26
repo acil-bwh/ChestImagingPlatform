@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-    <category>Chest Imaging Platform</category>
+    <category>Chest Imaging Platform.Toolkit.Utils</category>
     <title>ReadNRRDsWriteVTK</title>
     <description><![CDATA[CThis program reads a number of NRRD files and collects the data in those files into \
         a single VTK polydata file for writing. The input data files typically contain particles information.]]>
