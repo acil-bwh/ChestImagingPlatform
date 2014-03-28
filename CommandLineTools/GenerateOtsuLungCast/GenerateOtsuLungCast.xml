@@ -31,6 +31,16 @@
             <description><![CDATA[Input CT image file name]]></description>
             <default>q</default>
         </string>
+
+	<string>
+	  <name>ctDir</name>
+	  <label>CT directory name</label>
+	  <channel>input</channel>
+	  <longflag>dir</longflag>
+	  <description><![CDATA[Directory containing DICOM images to segment.]]></description>
+	  <default>NA</default>
+	</string>  
+
         <integer>
             <name>lowerClipValueTemp</name>
             <longflag>lowerClip</longflag>
