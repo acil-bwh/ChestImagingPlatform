@@ -8,4 +8,5 @@ INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
 SET ( LabelParticlesByChestRegionChestType_SOURCE LabelParticlesByChestRegionChestType.cxx )
 
 ADD_EXECUTABLE ( LabelParticlesByChestRegionChestType ${LabelParticlesByChestRegionChestType_SOURCE} )
-TARGET_LINK_LIBRARIES ( LabelParticlesByChestRegionChestType ${VTK_LIBRARIES} ${ITK_LIBRARIES} )
+TARGET_LINK_LIBRARIES ( LabelParticlesByChestRegionChestType 
+     ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${CIP_LIBRARIES} )
