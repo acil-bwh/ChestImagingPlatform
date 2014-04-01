@@ -106,14 +106,17 @@ endif()
 #---------------------------------------------------------------------
 # Testing
 
-set( CIP_BUILD_TESTING OFF CACHE BOOL
-  "Perform some tests on basic functionality of CIP." )
+set( CIP_BUILD_TESTING OFF CACHE BOOL "Perform some tests on basic functionality of CIP." )
 
 if ( CIP_BUILD_TESTING )
   enable_testing()
-  #add_subdirectory( ${CIP_SOURCE_DIR}/Testing ${CIP_BINARY_DIR}/Testing )
   include( CTest )
-endif()
+  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE")
+  SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON")
+else( CIP_BUILD_TESTING )
+  #SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE")
+  #SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON")
+endif( CIP_BUILD_TESTING )
 
 #---------------------------------------------------------------------
 # Compilation options

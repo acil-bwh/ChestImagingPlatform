@@ -13,6 +13,8 @@ set(${PROJECT_NAME}_INCLUDE_DIRS
 
 INCLUDE_DIRECTORIES( ${CIPCommon_INCLUDE_DIRS}  )  
 
+message(${CIPCommon_INCLUDE_DIRS})
+
 # --------------------------------------------------------------------------
 # Configure headers
 # --------------------------------------------------------------------------
@@ -65,6 +67,7 @@ SET ( CIPCommon_SRCS
   vtkSimpleLungMask.cxx
   vtkImageStatistics.cxx
   cipExceptionObject.cxx
+  cipChestConventions.cxx
   )
 
 IF(VTK_USE_BOOST)
@@ -92,3 +95,6 @@ target_link_libraries(${LIB_NAME}
 #  ${Teem_LIBRARIES}
   )
 
+IF ( CIP_BUILD_TESTING )
+ SUBDIRS ( Testing )
+ENDIF( CIP_BUILD_TESTING ) 

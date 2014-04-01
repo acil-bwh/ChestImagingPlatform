@@ -15,7 +15,7 @@ INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
 SET ( QualityControl_SOURCE QualityControl.cxx )
 
 ADD_EXECUTABLE ( QualityControl ${QualityControl_SOURCE})
-TARGET_LINK_LIBRARIES ( QualityControl ${ITK_LIBRARIES} )
+TARGET_LINK_LIBRARIES ( QualityControl CIPCommon ${ITK_LIBRARIES} )
 
 
 
