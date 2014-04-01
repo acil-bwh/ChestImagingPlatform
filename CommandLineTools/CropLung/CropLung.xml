@@ -17,7 +17,7 @@
     <parameters>
         <label>IO</label>
         <description>Input/output parameters</description>
-        <string>
+        <image>
             <name>ctFileName</name>
             <label>Input CT FileName</label>
             <channel>input</channel>
@@ -25,9 +25,9 @@
             <longflag>inFileName</longflag>
             <description><![CDATA[Input CT file]]></description>
             <default>q</default>
-        </string>
+        </image>
         
-        <string>
+        <image type="label">
             <name>plInputFileName</name>
             <label>Label Map File Name</label>
             <channel>input</channel>
@@ -35,18 +35,9 @@
             <longflag>plf</longflag>
             <description><![CDATA[Label map file name]]></description>
             <default>q</default>
-        </string>
-      
-        <string>
-          <name>plOutputFileName</name>
-          <label>Label Map Output File Name</label>
-          <channel>output</channel>
-          <longflag>opl</longflag>
-          <description><![CDATA[Ouput label map volume]]></description>
-          <default>q</default>
-        </string>
-      
-        <string>
+        </image>
+        
+        <image>
           <name>ctOutputFileName</name>
           <label>CT Output File Name</label>
           <channel>output</channel>
@@ -54,7 +45,17 @@
           <longflag>outFileName</longflag>
           <description><![CDATA[Output Cropped CT volume]]></description>
           <default>q</default>
-        </string>
+        </image>
+      
+        <image type="label">
+          <name>plOutputFileName</name>
+          <label>Label Map Output File Name</label>
+          <channel>output</channel>
+          <longflag>opl</longflag>
+          <description><![CDATA[Ouput label map volume]]></description>
+          <default>q</default>
+        </image>
+      
 
     </parameters>
 
@@ -62,45 +63,42 @@
         <label> Region Type </label>
         <description>Selection of Region/Type for cropping</description>
 
-        <integer-vector>
+        <string-vector>
             <name>regionVecArg</name>
             <longflag>region</longflag>
             <flag>r</flag>
-            <label>Region</label>
+            <label>regions</label>
             <channel>input</channel>
-            <description><![CDATA[Specify a region you want to crop]]></description>
-        </integer-vector>
+            <description><![CDATA[Specify a region you want to crop (ex: WholeLung)]]></description>
+        </string-vector>
         
         
-        <integer-vector>
+        <string-vector>
             <name>typeVecArg</name>
             <longflag>type</longflag>
             <flag>t</flag>
             <label>Type</label>
             <channel>input</channel>
-            <description><![CDATA[Specify a type you want to crop]]></description>
-        </integer-vector>
+            <description><![CDATA[Specify a type you want to crop (ex:Airway)]]></description>
+        </string-vector>
         
-        <integer-vector>
+        <string-vector>
           <name>regionPairVecArg</name>
-          <longflag>regionPairVec</longflag>
+          <longflag>regionPair</longflag>
           <flag>b</flag>
           <label>Region Pair Vec</label>
           <channel>input</channel>
           <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the typePair flag]]></description>
-        </integer-vector>
+        </string-vector>
         
-        <integer-vector>
+        <string-vector>
             <name>typePairVecArg</name>
-            <longflag>typePairVec</longflag>
+            <longflag>typePair</longflag>
             <flag>w</flag>
             <label>Type Pair Vec</label>
             <channel>input</channel>
             <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the regionPair flag]]></description>
-        </integer-vector>
-      
-
-      
+        </string-vector>
       </parameters>
   
       <parameters>

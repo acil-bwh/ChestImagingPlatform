@@ -208,8 +208,9 @@ int main( int argc, char *argv[] )
     std::vector< unsigned char >  regionVec;
     std::vector< unsigned char >  typeVec;
     std::vector< REGIONTYPEPAIR > regionTypePairVec;
+    cip::ChestConventions conventions;
+
   
-        
     PARSE_ARGS;
   
     // Param error checking
@@ -239,11 +240,11 @@ int main( int argc, char *argv[] )
       
   for ( unsigned int i=0; i<regionVecArg.size(); i++ )
 	{
-	  regionVec.push_back( (unsigned char) regionVecArg[i] );
+	  regionVec.push_back( (unsigned char) conventions.GetChestRegionValueFromName(regionVecArg[i]) );
 	}
   for ( unsigned int i=0; i<typeVecArg.size(); i++ )
-	{
-	  typeVec.push_back( (unsigned char)typeVecArg[i] );
+	{ 
+	  typeVec.push_back( (unsigned char) conventions.GetChestTypeValueFromName(typeVecArg[i]) );
 	}
   if (regionPairVecArg.size() == typePairVecArg.size())
 	{
@@ -251,9 +252,9 @@ int main( int argc, char *argv[] )
 	    {
 	      REGIONTYPEPAIR regionTypePairTemp;
 	      
-	      regionTypePairTemp.region = (unsigned char)regionPairVecArg[i];
-	      argc--; argv++;
-	      regionTypePairTemp.type   = (unsigned char)typePairVecArg[i];
+	      regionTypePairTemp.region = (unsigned char)conventions.GetChestRegionValueFromName(regionPairVecArg[i]);
+	      //argc--; argv++;
+	      regionTypePairTemp.type   = (unsigned char)conventions.GetChestTypeValueFromName(typePairVecArg[i]);
 	      
 	      regionTypePairVec.push_back( regionTypePairTemp );
 	    } 
