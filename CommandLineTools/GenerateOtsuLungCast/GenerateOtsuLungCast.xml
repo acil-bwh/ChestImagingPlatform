@@ -22,7 +22,7 @@
         <label>IO</label>
         <description>Input/output parameters</description>
         
-        <string>
+        <image>
             <name>ctFileName</name>
             <label>CT FileName</label>
             <channel>input</channel>
@@ -30,36 +30,52 @@
             <longflag>ct</longflag>
             <description><![CDATA[Input CT image file name]]></description>
             <default>q</default>
-        </string>
+        </image>
 
-	<string>
-	  <name>ctDir</name>
-	  <label>CT directory name</label>
-	  <channel>input</channel>
-	  <longflag>dir</longflag>
-	  <description><![CDATA[Directory containing DICOM images to segment.]]></description>
-	  <default>NA</default>
-	</string>  
+      <string>
+        <name>ctDir</name>
+        <label>CT directory name</label>
+        <channel>input</channel>
+        <longflag>dir</longflag>
+        <description><![CDATA[Directory containing DICOM images to segment.]]></description>
+        <default>NA</default>
+      </string>  
 
+      <image type="label">
+        <name>lungMaskFileName</name>
+        <label>Lung Mask File Name</label>
+        <channel>output</channel>
+        <flag>o</flag>
+        <longflag>mask</longflag>
+        <description><![CDATA[Output lung mask file name]]></description>
+        <default>q</default>
+      </image>
+      
+    </parameters>
+  
+    <parameters>
+      <label>Options</label>
+      <description>Optinal parameters</description>
+      
         <integer>
             <name>lowerClipValueTemp</name>
             <longflag>lowerClip</longflag>
             <flag>l</flag>
             <label>lowerClipValue</label>
             <description><![CDATA[Lower clip value applied to input image before segmentation. Any value below the value specified with this flag will\
-                be replaced with the value specified by the -r flag. If the -r flag is not used, a default value of -1024 will be used as the lower clip \
-                value.]]></description>
+                be replaced with the value specified by -r flag.]]></description>
             <default>-1024</default>
         </integer>
+      
         <integer>
             <name>lowerReplacementValueTemp</name>
             <longflag>lowerReplace</longflag>
             <flag>r</flag>
             <label>lowerReplacementValue</label>
-            <description><![CDATA[Lower replacement value applied to input image before segmentation. The value specified with this flag will replace any\
-                value below the value specified using the -l flag. If no value is specified with the -l flag, the default of -1024 will be used.]]></description>
+            <description><![CDATA[Lower replacement value applied to input image before segmentation.]]></description>
             <default>-1024</default>
         </integer>
+      
         <integer>
             <name>upperClipValueTemp</name>
             <longflag>upperClip</longflag>
@@ -78,22 +94,6 @@
                 replace the value specified using the -u flag. If no value is specified with the -u flag, the default of 1024 will be used.]]></description>
             <default>1024</default>
         </integer>
-        <string>
-            <name>lungMaskFileName</name>
-            <label>Lung Mask File Name</label>
-            <channel>output</channel>
-            <flag>o</flag>
-            <longflag>mask</longflag>
-            <description><![CDATA[Output lung mask file name]]></description>
-            <default>q</default>
-        </string>
-        <double>
-            <name>interParticleSpacing</name>
-            <label>Inter Particle Spacing</label>
-            <longflag>spacing</longflag>
-            <channel>input</channel>
-            <description>This value indicates the inter-particle spacing of the input data set </description>
-            <default>1.5</default>
-        </double>
+
     </parameters>
 </executable>
