@@ -15,8 +15,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   this->m_ClosingNeighborhood[1]      = 7;
   this->m_ClosingNeighborhood[2]      = 7;
   this->m_MinAirwayVolume             = 10.0;
-  this->m_MaxAirwayVolume             = 500.0;
-  this->m_MaxAirwayVolumeIncreaseRate = 2.0; 
   this->m_ExponentialCoefficient      = 200;
   this->m_ExponentialTimeConstant     = -700;
   this->m_LeftRightLungSplitRadius    = 2;
@@ -34,372 +32,342 @@ void
 CIPPartialLungLabelMapImageFilter< TInputImage >
 ::GenerateData()
 {  
-  cip::ChestConventions conventions;
+/*   cip::ChestConventions conventions; */
 
-  LabelMapType::SpacingType spacing = this->GetInput()->GetSpacing();
+/*   LabelMapType::SpacingType spacing = this->GetInput()->GetSpacing(); */
 
-  typedef itk::ImageFileWriter< LabelMapType > WriterType;
+/*   typedef itk::ImageFileWriter< LabelMapType > WriterType; */
 
-  //
-  // Allocate space for the output image
-  //
-  typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
-  typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
-    outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
-    outputPtr->SetBufferedRegion( inputPtr->GetBufferedRegion() );
-    outputPtr->SetLargestPossibleRegion( inputPtr->GetLargestPossibleRegion() );
-    outputPtr->Allocate();
-    outputPtr->FillBuffer( 0 );
+/*   // Allocate space for the output image */
+/*   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput(); */
+/*   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0); */
+/*     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() ); */
+/*     outputPtr->SetBufferedRegion( inputPtr->GetBufferedRegion() ); */
+/*     outputPtr->SetLargestPossibleRegion( inputPtr->GetLargestPossibleRegion() ); */
+/*     outputPtr->Allocate(); */
+/*     outputPtr->FillBuffer( 0 ); */
 
-  if ( this->m_HelperMask.IsNull() )
-    {
-    //
-    // Apply Otsu threshold
-    //
-    this->ApplyOtsuThreshold();
-    }
-  else
-    {
-    //
-    // Apply the helper mask
-    //
-    this->ApplyHelperMask();
-    }
+/*   if ( this->m_HelperMask.IsNull() ) */
+/*     { */
+/*     // */
+/*     // Apply Otsu threshold */
+/*     // */
+/*     this->ApplyOtsuThreshold(); */
+/*     } */
+/*   else */
+/*     { */
+/*     // */
+/*     // Apply the helper mask */
+/*     // */
+/*     this->ApplyHelperMask(); */
+/*     } */
 
-  //
-  // We want to set the max airway volume to be a percentage of the
-  // lung volume (lungs plus airways). Compute the volume of the lungs
-  // and airways
-  //
-  unsigned int counter = 0;
 
-  LabelMapIteratorType  mIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );  
+/*   // Identify airways */
+/*   std::vector< OutputImageType::IndexType > airwaySeedVec = this->GetAirwaySeeds(); */
 
-  mIt.GoToBegin();
-  while ( !mIt.IsAtEnd() )
-    {
-    if ( mIt.Get() != 0 )
-      {
-      counter++;
-      }
+/*   std::cout << "---Segmenting airways..." << std::endl; */
+/*   typename AirwaySegmentationType::Pointer airwaySegmenter = AirwaySegmentationType::New(); */
+/*     airwaySegmenter->SetInput( this->GetInput() );     */
+/*     airwaySegmenter->SetMinIntensityThreshold( this->m_AirwayMinIntensityThreshold ); */
+/*     airwaySegmenter->SetMaxIntensityThreshold( this->m_AirwayMaxIntensityThreshold ); */
+/*   for ( unsigned int i=0; i<airwaySeedVec.size(); i++ ) */
+/*     { */
+/*     airwaySegmenter->AddSeed( airwaySeedVec[i] ); */
+/*     }           */
+/*     airwaySegmenter->Update(); */
 
-    ++mIt;
-    }
+/* //   std::cout << "---Removing trachea and main bronchi..." << std::endl; */
+/* //   this->RemoveTracheaAndMainBronchi(); */
 
-  std::cout << "---Total volume:\t" << static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2] << std::endl;
-  std::cout << "---Percentage:\t" << this->m_MaxAirwayVolume/(static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2]) << std::endl;
-
-  this->m_MaxAirwayVolume = 0.0085*static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2];
-  this->m_MinAirwayVolume = 0.005*static_cast< double >( counter )*spacing[0]*spacing[1]*spacing[2];
-  std::cout << "---Max airway volume:\t" << this->m_MaxAirwayVolume << std::endl;
-  std::cout << "---Min airway volume:\t" << this->m_MinAirwayVolume << std::endl;
-
-  //
-  // Identify airways
-  //
-  std::vector< OutputImageType::IndexType > airwaySeedVec = this->GetAirwaySeeds();
-
-  std::cout << "---Segmenting airways..." << std::endl;
-  typename AirwaySegmentationType::Pointer airwaySegmenter = AirwaySegmentationType::New();
-    airwaySegmenter->SetInput( this->GetInput() );    
-    airwaySegmenter->SetMaxIntensityThreshold( -800 );
-  for ( unsigned int i=0; i<airwaySeedVec.size(); i++ )
-    {
-    airwaySegmenter->AddSeed( airwaySeedVec[i] );
-    }          
-    airwaySegmenter->Update();
-
-//   std::cout << "---Removing trachea and main bronchi..." << std::endl;
-//   this->RemoveTracheaAndMainBronchi();
-
-  // Collect / remove airway indices
-  std::cout << "---Recorind and removing airways..." << std::endl;
-  this->RecordAndRemoveAirways( airwaySegmenter->GetOutput() );  
+/*   // Collect / remove airway indices */
+/*   std::cout << "---Recorind and removing airways..." << std::endl; */
+/*   this->RecordAndRemoveAirways( airwaySegmenter->GetOutput() );   */
   
-  // There may still be small foreground regions
-  // within the trachea / main bronchi that were not picked up via the
-  // airway segmentation routine. We'll zero out all components that
-  // don't accomodate for a significant portion of the overall
-  // foreground region
-  ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();
-    connectedComponent->SetInput( this->GetOutput() );
+/*   // There may still be small foreground regions */
+/*   // within the trachea / main bronchi that were not picked up via the */
+/*   // airway segmentation routine. We'll zero out all components that */
+/*   // don't accomodate for a significant portion of the overall */
+/*   // foreground region */
+/*   ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New(); */
+/*     connectedComponent->SetInput( this->GetOutput() ); */
 
-  // Relabel the connected components
-  Relabel3DType::Pointer relabelComponent = Relabel3DType::New();
-    relabelComponent->SetInput( connectedComponent->GetOutput() );
-    relabelComponent->Update();  
+/*   // Relabel the connected components */
+/*   Relabel3DType::Pointer relabelComponent = Relabel3DType::New(); */
+/*     relabelComponent->SetInput( connectedComponent->GetOutput() ); */
+/*     relabelComponent->Update();   */
 
-  unsigned int totalSize = 0;
+/*   unsigned int totalSize = 0; */
 
-  for ( unsigned int i=0; i<relabelComponent->GetNumberOfObjects(); i++ )
-    {
-    totalSize += relabelComponent->GetSizeOfObjectsInPixels()[i];
-    }  
+/*   for ( unsigned int i=0; i<relabelComponent->GetNumberOfObjects(); i++ ) */
+/*     { */
+/*     totalSize += relabelComponent->GetSizeOfObjectsInPixels()[i]; */
+/*     }   */
 
-  unsigned long componentsToRemoveThreshold;
+/*   unsigned long componentsToRemoveThreshold; */
 
-  for ( unsigned int i=0; i<relabelComponent->GetNumberOfObjects(); i++ )
-    {
-//    std::cout << "Component label:\t" << i+1 << "\t Percentage:\t" << static_cast< double >( relabelComponent->GetSizeOfObjectsInPixels()[i] )/static_cast< double >( totalSize ) << std::endl;
-    if ( static_cast< double >( relabelComponent->GetSizeOfObjectsInPixels()[i] )/static_cast< double >( totalSize ) < 0.20 )
-      {
-      componentsToRemoveThreshold = i+1;
-      break;
-      }
-    }  
+/*   for ( unsigned int i=0; i<relabelComponent->GetNumberOfObjects(); i++ ) */
+/*     { */
+/* //    std::cout << "Component label:\t" << i+1 << "\t Percentage:\t" << static_cast< double >( relabelComponent->GetSizeOfObjectsInPixels()[i] )/static_cast< double >( totalSize ) << std::endl; */
+/*     if ( static_cast< double >( relabelComponent->GetSizeOfObjectsInPixels()[i] )/static_cast< double >( totalSize ) < 0.20 ) */
+/*       { */
+/*       componentsToRemoveThreshold = i+1; */
+/*       break; */
+/*       } */
+/*     }   */
 
-  ComponentIteratorType rIt( relabelComponent->GetOutput(), relabelComponent->GetOutput()->GetBufferedRegion() );
+/*   ComponentIteratorType rIt( relabelComponent->GetOutput(), relabelComponent->GetOutput()->GetBufferedRegion() ); */
 
-  mIt.GoToBegin();
-  rIt.GoToBegin();
-  while ( !mIt.IsAtEnd() )
-    {
-    if ( rIt.Get() >= componentsToRemoveThreshold )
-      {
-      mIt.Set( 0 );
-      }
+/*   mIt.GoToBegin(); */
+/*   rIt.GoToBegin(); */
+/*   while ( !mIt.IsAtEnd() ) */
+/*     { */
+/*     if ( rIt.Get() >= componentsToRemoveThreshold ) */
+/*       { */
+/*       mIt.Set( 0 ); */
+/*       } */
 
-    ++mIt;
-    ++rIt;
-    }
+/*     ++mIt; */
+/*     ++rIt; */
+/*     } */
 
-  //
-  // The erosion step below has been added specifically for use with
-  // helper input images. It's assumed that the helper image has the
-  // left and right lungs split "pretty well", but some small
-  // connections may persist. Therefore, we'll erode and then attemp
-  // to label the left and right, after which we'll refill the output
-  // image.
-  //
-  LungRegionLabelerType::Pointer leftRightLabeler = LungRegionLabelerType::New();
+/*   // */
+/*   // The erosion step below has been added specifically for use with */
+/*   // helper input images. It's assumed that the helper image has the */
+/*   // left and right lungs split "pretty well", but some small */
+/*   // connections may persist. Therefore, we'll erode and then attemp */
+/*   // to label the left and right, after which we'll refill the output */
+/*   // image. */
+/*   // */
+/*   LungRegionLabelerType::Pointer leftRightLabeler = LungRegionLabelerType::New(); */
 
-  if ( this->m_HelperMask.IsNotNull() )
-    {
-    Element3DType structuringElement;
-      structuringElement.SetRadius( 1 );
-      structuringElement.CreateStructuringElement();
+/*   if ( this->m_HelperMask.IsNotNull() ) */
+/*     { */
+/*     Element3DType structuringElement; */
+/*       structuringElement.SetRadius( 1 ); */
+/*       structuringElement.CreateStructuringElement(); */
 
-//    std::cout << "---Eroding helper image..." << std::endl;
-    Erode3DType::Pointer eroder = Erode3DType::New();
-      eroder->SetInput( this->GetOutput() );
-      eroder->SetKernel( structuringElement );
-      eroder->SetErodeValue( 1 );
-    try
-      {
-      eroder->Update();
-      }
-    catch ( itk::ExceptionObject &excp )
-      {
-      std::cerr << "Exception caught eroding:";
-      std::cerr << excp << std::endl;
-      }
+/* //    std::cout << "---Eroding helper image..." << std::endl; */
+/*     Erode3DType::Pointer eroder = Erode3DType::New(); */
+/*       eroder->SetInput( this->GetOutput() ); */
+/*       eroder->SetKernel( structuringElement ); */
+/*       eroder->SetErodeValue( 1 ); */
+/*     try */
+/*       { */
+/*       eroder->Update(); */
+/*       } */
+/*     catch ( itk::ExceptionObject &excp ) */
+/*       { */
+/*       std::cerr << "Exception caught eroding:"; */
+/*       std::cerr << excp << std::endl; */
+/*       } */
 
-//    std::cout << "---Labeling helper image..." << std::endl;
-    leftRightLabeler->SetInput( eroder->GetOutput() );
-    leftRightLabeler->LabelLeftAndRightLungsOn();
-    leftRightLabeler->SetHeadFirst( this->m_HeadFirst );
-    leftRightLabeler->SetSupine( this->m_Supine );
-    leftRightLabeler->Update();
+/* //    std::cout << "---Labeling helper image..." << std::endl; */
+/*     leftRightLabeler->SetInput( eroder->GetOutput() ); */
+/*     leftRightLabeler->LabelLeftAndRightLungsOn(); */
+/*     leftRightLabeler->SetHeadFirst( this->m_HeadFirst ); */
+/*     leftRightLabeler->SetSupine( this->m_Supine ); */
+/*     leftRightLabeler->Update(); */
 
-    LabelMapIteratorType lrIt( leftRightLabeler->GetOutput(), leftRightLabeler->GetOutput()->GetBufferedRegion() );
-    LabelMapIteratorType hIt( this->m_HelperMask, this->m_HelperMask->GetBufferedRegion() ); 
+/*     LabelMapIteratorType lrIt( leftRightLabeler->GetOutput(), leftRightLabeler->GetOutput()->GetBufferedRegion() ); */
+/*     LabelMapIteratorType hIt( this->m_HelperMask, this->m_HelperMask->GetBufferedRegion() );  */
 
-    LabelMapType::IndexType index;
-    unsigned short labelValue;
+/*     LabelMapType::IndexType index; */
+/*     unsigned short labelValue; */
 
-//    std::cout << "---Filling output image will left / right labeled helper..." << std::endl;
+/* //    std::cout << "---Filling output image will left / right labeled helper..." << std::endl; */
 
-    mIt.GoToBegin();
-    lrIt.GoToBegin();
-    hIt.GoToBegin();
-    while ( !hIt.IsAtEnd() )
-      {
-      if ( hIt.Get() != 0 )
-        {
-        labelValue = 0;
+/*     mIt.GoToBegin(); */
+/*     lrIt.GoToBegin(); */
+/*     hIt.GoToBegin(); */
+/*     while ( !hIt.IsAtEnd() ) */
+/*       { */
+/*       if ( hIt.Get() != 0 ) */
+/*         { */
+/*         labelValue = 0; */
 
-        for ( int x=-1; x<=1; x++ )
-          {
-          index[0] = hIt.GetIndex()[0] + x;
+/*         for ( int x=-1; x<=1; x++ ) */
+/*           { */
+/*           index[0] = hIt.GetIndex()[0] + x; */
 
-          for ( int y=-1; y<=1; y++ )
-            {
-            index[1] = hIt.GetIndex()[1] + y;
+/*           for ( int y=-1; y<=1; y++ ) */
+/*             { */
+/*             index[1] = hIt.GetIndex()[1] + y; */
 
-            for ( int z=-1; z<=1; z++ )
-              {
-              index[2] = hIt.GetIndex()[2] + z;
+/*             for ( int z=-1; z<=1; z++ ) */
+/*               { */
+/*               index[2] = hIt.GetIndex()[2] + z; */
               
-              if ( this->GetInput()->GetBufferedRegion().IsInside( index ) )
-                {
-                if ( leftRightLabeler->GetOutput()->GetPixel( index ) != 0 )
-                  {
-                  labelValue = leftRightLabeler->GetOutput()->GetPixel( index );
-                  }
-                }
-              }
-            }
-          }
+/*               if ( this->GetInput()->GetBufferedRegion().IsInside( index ) ) */
+/*                 { */
+/*                 if ( leftRightLabeler->GetOutput()->GetPixel( index ) != 0 ) */
+/*                   { */
+/*                   labelValue = leftRightLabeler->GetOutput()->GetPixel( index ); */
+/*                   } */
+/*                 } */
+/*               } */
+/*             } */
+/*           } */
 
-        mIt.Set( labelValue );
-        }
+/*         mIt.Set( labelValue ); */
+/*         } */
 
-      ++mIt;
-      ++lrIt;
-      ++hIt;
-      }
-    }
+/*       ++mIt; */
+/*       ++lrIt; */
+/*       ++hIt; */
+/*       } */
+/*     } */
 
-  //if ( this->m_HelperMask.IsNull() )
-  if ( false ) //DEB
-    {
-    // Attempt to label left and right. Further processing may not be necessary.
-    leftRightLabeler->SetInput( this->GetOutput() );
-    leftRightLabeler->LabelLeftAndRightLungsOn();
-    leftRightLabeler->SetHeadFirst( this->m_HeadFirst );
-    leftRightLabeler->SetSupine( this->m_Supine );
-    leftRightLabeler->Update();
+/*   //if ( this->m_HelperMask.IsNull() ) */
+/*   if ( false ) //DEB */
+/*     { */
+/*     // Attempt to label left and right. Further processing may not be necessary. */
+/*     leftRightLabeler->SetInput( this->GetOutput() ); */
+/*     leftRightLabeler->LabelLeftAndRightLungsOn(); */
+/*     leftRightLabeler->SetHeadFirst( this->m_HeadFirst ); */
+/*     leftRightLabeler->SetSupine( this->m_Supine ); */
+/*     leftRightLabeler->Update(); */
 
-//    LabelMapIteratorType mIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
-    LabelMapIteratorType lrIt( leftRightLabeler->GetOutput(), leftRightLabeler->GetOutput()->GetBufferedRegion() );
+/* //    LabelMapIteratorType mIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() ); */
+/*     LabelMapIteratorType lrIt( leftRightLabeler->GetOutput(), leftRightLabeler->GetOutput()->GetBufferedRegion() ); */
 
-    mIt.GoToBegin();
-    lrIt.GoToBegin();
-    while ( !mIt.IsAtEnd() )
-      {
-      mIt.Set( lrIt.Get() );
+/*     mIt.GoToBegin(); */
+/*     lrIt.GoToBegin(); */
+/*     while ( !mIt.IsAtEnd() ) */
+/*       { */
+/*       mIt.Set( lrIt.Get() ); */
       
-      ++mIt;
-      ++lrIt;
-      }
+/*       ++mIt; */
+/*       ++lrIt; */
+/*       } */
     
-    if ( !leftRightLabeler->GetLabelingSuccess() )
-      {
-      //
-      // Threshold the input with a more conservative upper threshold value
-      // 
-      typename BinaryThresholdType::Pointer thresholder = BinaryThresholdType::New();
-        thresholder->SetInput( this->GetInput() );
-        thresholder->SetOutsideValue( 0 );
-        thresholder->SetInsideValue( static_cast< unsigned short >( cip::WHOLELUNG ) );
-        thresholder->SetLowerThreshold( itk::NumericTraits< short >::min() );
-//      thresholder->SetUpperThreshold( -700 );
-        thresholder->SetUpperThreshold( -800 );
-        thresholder->Update();
+/*     if ( !leftRightLabeler->GetLabelingSuccess() ) */
+/*       { */
+/*       // */
+/*       // Threshold the input with a more conservative upper threshold value */
+/*       //  */
+/*       typename BinaryThresholdType::Pointer thresholder = BinaryThresholdType::New(); */
+/*         thresholder->SetInput( this->GetInput() ); */
+/*         thresholder->SetOutsideValue( 0 ); */
+/*         thresholder->SetInsideValue( static_cast< unsigned short >( cip::WHOLELUNG ) ); */
+/*         thresholder->SetLowerThreshold( itk::NumericTraits< short >::min() ); */
+/* //      thresholder->SetUpperThreshold( -700 ); */
+/*         thresholder->SetUpperThreshold( -800 ); */
+/*         thresholder->Update(); */
       
-      LabelMapIteratorType tIt( thresholder->GetOutput(), thresholder->GetOutput()->GetBufferedRegion() );
+/*       LabelMapIteratorType tIt( thresholder->GetOutput(), thresholder->GetOutput()->GetBufferedRegion() ); */
 
-      mIt.GoToBegin();
-      tIt.GoToBegin();
-      while ( !tIt.IsAtEnd() )
-        {
-        if ( mIt.Get() == 0 )
-          {                                         
-          tIt.Set( 0 );
-          }
+/*       mIt.GoToBegin(); */
+/*       tIt.GoToBegin(); */
+/*       while ( !tIt.IsAtEnd() ) */
+/*         { */
+/*         if ( mIt.Get() == 0 ) */
+/*           {                                          */
+/*           tIt.Set( 0 ); */
+/*           } */
       
-        ++mIt;
-        ++tIt;
-        }
+/*         ++mIt; */
+/*         ++tIt; */
+/*         } */
 
-      //
-      // Attempt to label left and right. Splitting may not be necessary
-      //
-      leftRightLabeler->SetInput( thresholder->GetOutput() );
-      leftRightLabeler->LabelLeftAndRightLungsOn();
-      leftRightLabeler->SetHeadFirst( this->m_HeadFirst );
-      leftRightLabeler->SetSupine( this->m_Supine );
-      leftRightLabeler->Update();
+/*       // */
+/*       // Attempt to label left and right. Splitting may not be necessary */
+/*       // */
+/*       leftRightLabeler->SetInput( thresholder->GetOutput() ); */
+/*       leftRightLabeler->LabelLeftAndRightLungsOn(); */
+/*       leftRightLabeler->SetHeadFirst( this->m_HeadFirst ); */
+/*       leftRightLabeler->SetSupine( this->m_Supine ); */
+/*       leftRightLabeler->Update(); */
 
-      if ( !leftRightLabeler->GetLabelingSuccess() )
-        {
-        //
-        // Split left and right lungs
-        //
-        typename SplitterType::Pointer splitter = SplitterType::New();
-          splitter->SetInput( this->GetInput() );
-          splitter->SetLungLabelMap( thresholder->GetOutput() );
-          splitter->SetExponentialCoefficient( this->m_ExponentialCoefficient );
-          splitter->SetExponentialTimeConstant( this->m_ExponentialTimeConstant );
-          splitter->SetLeftRightLungSplitRadius( this->m_LeftRightLungSplitRadius );
-          splitter->SetAggressiveLeftRightSplitter( this->m_AggressiveLeftRightSplitter );    
-          splitter->Update();    
+/*       if ( !leftRightLabeler->GetLabelingSuccess() ) */
+/*         { */
+/*         // */
+/*         // Split left and right lungs */
+/*         // */
+/*         typename SplitterType::Pointer splitter = SplitterType::New(); */
+/*           splitter->SetInput( this->GetInput() ); */
+/*           splitter->SetLungLabelMap( thresholder->GetOutput() ); */
+/*           splitter->SetExponentialCoefficient( this->m_ExponentialCoefficient ); */
+/*           splitter->SetExponentialTimeConstant( this->m_ExponentialTimeConstant ); */
+/*           splitter->SetLeftRightLungSplitRadius( this->m_LeftRightLungSplitRadius ); */
+/*           splitter->SetAggressiveLeftRightSplitter( this->m_AggressiveLeftRightSplitter );     */
+/*           splitter->Update();     */
       
-        //
-        // Label left and right lungs
-        //
-        leftRightLabeler->SetInput( splitter->GetOutput() );
-        leftRightLabeler->LabelLeftAndRightLungsOn();
-        leftRightLabeler->SetHeadFirst( this->m_HeadFirst );
-        leftRightLabeler->SetSupine( this->m_Supine );
-        leftRightLabeler->Update();
-        }
+/*         // */
+/*         // Label left and right lungs */
+/*         // */
+/*         leftRightLabeler->SetInput( splitter->GetOutput() ); */
+/*         leftRightLabeler->LabelLeftAndRightLungsOn(); */
+/*         leftRightLabeler->SetHeadFirst( this->m_HeadFirst ); */
+/*         leftRightLabeler->SetSupine( this->m_Supine ); */
+/*         leftRightLabeler->Update(); */
+/*         } */
 
-      lrIt.GoToBegin();
-      mIt.GoToBegin();
-      while ( !lrIt.IsAtEnd() )
-        {
-        mIt.Set( lrIt.Get() );
+/*       lrIt.GoToBegin(); */
+/*       mIt.GoToBegin(); */
+/*       while ( !lrIt.IsAtEnd() ) */
+/*         { */
+/*         mIt.Set( lrIt.Get() ); */
         
-        ++mIt;
-        ++lrIt;
-        }
+/*         ++mIt; */
+/*         ++lrIt; */
+/*         } */
 
-      //
-      // Perform conditional dilation
-      //
-      this->ConditionalDilation( this->m_OtsuThreshold );
-      }
-    }
+/*       // */
+/*       // Perform conditional dilation */
+/*       // */
+/*       this->ConditionalDilation( this->m_OtsuThreshold ); */
+/*       } */
+/*     } */
 
-  // Perform morphological closing on the left and right lungs
-//  if ( leftRightLabeler->GetLabelingSuccess() )
-  if ( false ) //DEB
-    {
-    this->CloseLabelMap( static_cast< unsigned short >( cip::LEFTLUNG ) );
-    this->CloseLabelMap( static_cast< unsigned short >( cip::RIGHTLUNG ) );
-    }
-  else
-    {
-    this->CloseLabelMap( static_cast< unsigned short >( cip::WHOLELUNG ) );
-    }
+/*   // Perform morphological closing on the left and right lungs */
+/* //  if ( leftRightLabeler->GetLabelingSuccess() ) */
+/*   if ( false ) //DEB */
+/*     { */
+/*     this->CloseLabelMap( static_cast< unsigned short >( cip::LEFTLUNG ) ); */
+/*     this->CloseLabelMap( static_cast< unsigned short >( cip::RIGHTLUNG ) ); */
+/*     } */
+/*   else */
+/*     { */
+/*     this->CloseLabelMap( static_cast< unsigned short >( cip::WHOLELUNG ) ); */
+/*     } */
 
-  std::cout << "---Labeling regions..." << std::endl;
-  LungRegionLabelerType::Pointer lungRegionLabeler = LungRegionLabelerType::New();
-    lungRegionLabeler->SetInput( this->GetOutput() );
-    lungRegionLabeler->LabelLungThirdsOn();
-    lungRegionLabeler->SetHeadFirst( this->m_HeadFirst );
-    lungRegionLabeler->SetSupine( this->m_Supine );
-    lungRegionLabeler->Update();
+/*   std::cout << "---Labeling regions..." << std::endl; */
+/*   LungRegionLabelerType::Pointer lungRegionLabeler = LungRegionLabelerType::New(); */
+/*     lungRegionLabeler->SetInput( this->GetOutput() ); */
+/*     lungRegionLabeler->LabelLungThirdsOn(); */
+/*     lungRegionLabeler->SetHeadFirst( this->m_HeadFirst ); */
+/*     lungRegionLabeler->SetSupine( this->m_Supine ); */
+/*     lungRegionLabeler->Update(); */
 
-  this->GraftOutput( lungRegionLabeler->GetOutput() );
+/*   this->GraftOutput( lungRegionLabeler->GetOutput() ); */
 
-  //
-  // Add back the airways
-  //
-  unsigned char  lungRegion;
-  unsigned short labelValue;
+/*   // */
+/*   // Add back the airways */
+/*   // */
+/*   unsigned char  lungRegion; */
+/*   unsigned short labelValue; */
 
-  LabelMapIteratorType m2It( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
-  LabelMapIteratorType aIt( this->m_AirwayLabelMap, this->m_AirwayLabelMap->GetBufferedRegion() );
+/*   LabelMapIteratorType m2It( this->GetOutput(), this->GetOutput()->GetBufferedRegion() ); */
+/*   LabelMapIteratorType aIt( this->m_AirwayLabelMap, this->m_AirwayLabelMap->GetBufferedRegion() ); */
 
-//  LabelMapIteratorType aIt( airwaySegmenter->GetOutput(), airwaySegmenter->GetOutput()->GetBufferedRegion() );
+/* //  LabelMapIteratorType aIt( airwaySegmenter->GetOutput(), airwaySegmenter->GetOutput()->GetBufferedRegion() ); */
 
-  aIt.GoToBegin();
-  m2It.GoToBegin();
-  while ( !m2It.IsAtEnd() )
-    {
-    if ( aIt.Get() != 0 )
-      {
-      lungRegion = conventions.GetChestRegionFromValue( m2It.Get() );
-      labelValue = conventions.GetValueFromChestRegionAndType( lungRegion, static_cast< unsigned char >( cip::AIRWAY ) );
+/*   aIt.GoToBegin(); */
+/*   m2It.GoToBegin(); */
+/*   while ( !m2It.IsAtEnd() ) */
+/*     { */
+/*     if ( aIt.Get() != 0 ) */
+/*       { */
+/*       lungRegion = conventions.GetChestRegionFromValue( m2It.Get() ); */
+/*       labelValue = conventions.GetValueFromChestRegionAndType( lungRegion, static_cast< unsigned char >( cip::AIRWAY ) ); */
 
-      m2It.Set( labelValue );
-      }
+/*       m2It.Set( labelValue ); */
+/*       } */
 
-    ++aIt;
-    ++m2It;
-    }
+/*     ++aIt; */
+/*     ++m2It; */
+/*     } */
 }
 
 template < class TInputImage >
@@ -1482,7 +1450,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   os << indent << "Printing itkCIPPartialLungLabelMapImageFilter: " << std::endl;
   os << indent << "ClosingNeighborhood: " << this->m_ClosingNeighborhood[0] << "\t" << this->m_ClosingNeighborhood[1] << "\t" << this->m_ClosingNeighborhood[2] << std::endl;
   os << indent << "MinAirwayVolume: " << this->m_MinAirwayVolume << std::endl;
-  os << indent << "MaxAirwayVolumeIncreaseRate: " << this->m_MaxAirwayVolumeIncreaseRate << std::endl;
   os << indent << "ExponentialCoefficient: " << this->m_ExponentialCoefficient << std::endl;
   os << indent << "ExponentialTimeConstant: " << this->m_ExponentialTimeConstant << std::endl;
   os << indent << "LeftRightLungSplitRadius: " << this->m_LeftRightLungSplitRadius << std::endl;

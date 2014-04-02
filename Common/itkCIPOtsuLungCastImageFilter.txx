@@ -1,12 +1,11 @@
-/*=========================================================================
-
-=========================================================================*/
+/**
+ *
+ */
 #ifndef _itkCIPOtsuLungCastImageFilter_txx
 #define _itkCIPOtsuLungCastImageFilter_txx
 
 #include "itkCIPOtsuLungCastImageFilter.h"
 #include "cipConventions.h"
-
 
 namespace itk
 {
@@ -18,15 +17,12 @@ CIPOtsuLungCastImageFilter< TInputImage >
 
 }
 
-
 template< class TInputImage >
 void
 CIPOtsuLungCastImageFilter< TInputImage >
 ::GenerateData()
 {  
-  //
   // Allocate space for the output image
-  //
   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
@@ -35,10 +31,8 @@ CIPOtsuLungCastImageFilter< TInputImage >
     outputPtr->Allocate();
     outputPtr->FillBuffer( 0 );
 
-  //
   // The first step is to run Otsu threshold on the input data.  This
   // classifies each voxel as either "body" or "air"
-  //
   typename OtsuThresholdType::Pointer otsuThreshold = OtsuThresholdType::New();
     otsuThreshold->SetInput( this->GetInput() );
     otsuThreshold->Update();
@@ -47,27 +41,22 @@ CIPOtsuLungCastImageFilter< TInputImage >
   int ctYDim = (this->GetInput()->GetBufferedRegion().GetSize())[1];
 
   this->GraftOutput( otsuThreshold->GetOutput() );
-  //
+
   // The next step is to identify all connected components in the
   // thresholded image
-  //
   ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();
     connectedComponent->SetInput( otsuThreshold->GetOutput() );
     connectedComponent->Update();
 
-  //
   // Relabel the connected components
-  //
   Relabel3DType::Pointer relabelComponent = Relabel3DType::New();
     relabelComponent->SetInput( connectedComponent->GetOutput() );
     relabelComponent->Update();  
 
-  //
   // Now we want to identify the component labels that correspond to
   // the left lung and the right lung. In some cases, they might not
   // be connected, that's why we need to do a separate search for
   // each.
-  //
   std::vector< int >  lungHalf1ComponentCounter;
   std::vector< int >  lungHalf2ComponentCounter;
   for ( unsigned int i=0; i<=relabelComponent->GetNumberOfObjects(); i++ )
@@ -150,7 +139,6 @@ CIPOtsuLungCastImageFilter< TInputImage >
     ++rIt;
     }
 }
-
   
 /**
  * Standard "PrintSelf" method
