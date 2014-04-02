@@ -102,9 +102,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   std::cout << "---Segmenting airways..." << std::endl;
   typename AirwaySegmentationType::Pointer airwaySegmenter = AirwaySegmentationType::New();
     airwaySegmenter->SetInput( this->GetInput() );    
-    airwaySegmenter->SetMaxAirwayVolumeIncreaseRate( this->m_MaxAirwayVolumeIncreaseRate );
-    airwaySegmenter->SetMinAirwayVolume( this->m_MinAirwayVolume );
-    airwaySegmenter->SetMaxAirwayVolume( this->m_MaxAirwayVolume );
+    airwaySegmenter->SetMaxIntensityThreshold( -800 );
   for ( unsigned int i=0; i<airwaySeedVec.size(); i++ )
     {
     airwaySegmenter->AddSeed( airwaySeedVec[i] );
