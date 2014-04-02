@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform.Toolkit.Segmentation</category>
+    <title>GenerateBinaryThinning3D</title>
+    <description><![CDATA[This program generates a skeleton from a binary mask]]>
+    </description>
+    <version>0.0.1</version>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+        
+        <image type="label">
+            <name>inputMask</name>
+            <label>Input Binary Mask</label>
+            <channel>input</channel>
+            <flag>i</flag>
+            <longflag>in</longflag>
+            <description><![CDATA[Input binary mask]]></description>
+        </image>
+
+      <image type="label">
+        <name>outputMask</name>
+        <label>Output Skeleton</label>
+        <channel>output</channel>
+        <flag>o</flag>
+        <longflag>out</longflag>
+        <description><![CDATA[Output skeleton]]></description>
+      </image>
+      
+    </parameters>
+  
+</executable>
