@@ -119,6 +119,9 @@ else( CIP_BUILD_TESTING )
 endif( CIP_BUILD_TESTING )
 
 #---------------------------------------------------------------------
+set( CIP_BUILD_CLI_EXECUTABLEONLY ON CACHE BOOL "Build CLIs only with executables and not shared libraries+executables.")
+
+#---------------------------------------------------------------------
 # Compilation options
 
 SET(BUILD_UTILITIES ON CACHE BOOL "BUILD_UTILITIES")
