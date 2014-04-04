@@ -210,7 +210,7 @@ if __name__ == "__main__":
   parser.add_argument("--liveTh",dest="lth",type=float,default=-125)
   parser.add_argument("--seedTh",dest="sth",type=float,default=-100)
   parser.add_argument("-s", dest="voxel_size",type=float,default=0)
-  parser.add_argument("--crop",dest="crop",default=0)
+  parser.add_argument("--crop",dest="crop",default="0")
   parser.add_argument("--rate",dest="rate",type=float,default=1)
   parser.add_argument("--minscale",dest="min_scale",type=float,default=0.7)
   parser.add_argument("--maxscale",dest="max_scale",type=float,default=4)
