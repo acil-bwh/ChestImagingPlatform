@@ -397,7 +397,7 @@ class ChestParticles:
                 "-k scalar %(kernel_params)s -pi %(input_particles)s "
                 "-q %(qty)s -v 0 -o %(output)s "
                 "-ssn %(num_scales)d -sso -ssr 0 %(max_scale)03u "
-                "-ssf V-%%03u-%(scale_samples)03u.nrrd"
+                "-ssf %(path_name)s-%%03u-%(scale_samples)03u.nrrd"
             ) % {
                 'input': in_volume,
                 'kernel_params': self._reconKernelParams,
@@ -406,7 +406,8 @@ class ChestParticles:
                 'output': output,
                 'num_scales': self._scale_samples,
                 'max_scale': self._max_scale,
-                'scale_samples': self._scale_samples
+                'scale_samples': self._scale_samples,
+                'path_name': os.path.join(self._tmp_dir,"V")
             }
 
             if normalizedDerivatives == 1:
