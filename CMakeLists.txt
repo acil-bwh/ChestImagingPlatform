@@ -169,6 +169,10 @@ ENDIF( CIP_BUILD_TESTING )
 # The "use" file.
 SET( CIP_USE_FILE ${CIP_SOURCE_DIR}/UseFile.cmake )
 
+#Rola add: set the cli macro file. not working
+include (${CIP_SOURCE_DIR}/cipMacroBuildCLI.cmake)
+
+
 # Create the config file. It defines some variables, and by placing
 # this in the binary directory, the find_package command will recognise
 # the CIP package.
