@@ -4,187 +4,241 @@ import sys
 import string
 import subprocess
 import os
+import nrrd
 
-from optparse import OptionParser
+from cip_python.particles.vessel_particles import VesselParticles
+from cip_python.particles.multires_vessel_particles import MultiResVesselParticles
 
-parser = OptionParser()
-parser.add_option("-c", dest="caseId")
-parser.add_option("--cipPython", dest="cipPythonDirectory")
-parser.add_option("--tmpDir", dest="tmpDirectory")
-parser.add_option("--dataDir", dest="dataDirectory")
-parser.add_option("--cleanCache", action="store_true", dest="cleanCache", default=False)
-parser.add_option("-r",dest="region")
-parser.add_option("--rate",dest="rate")
-parser.add_option("--init",dest="init_method",default="Frangi")
-parser.add_option("--crop",dest="crop",default="0")
-parser.add_option("--multires",dest="multires",action="store_true", default = False)
-parser.add_option("--justparticles",dest="justparticles",action="store_true", default=False)
+class VesselParticlesPipeline:
+  """Class that implements a vessel particle extraction pipeline for a given region
+     This tools currently depends on Teem, ITKTools and CIP
+  Parameters
+  ---------
 
-(options, args) = parser.parse_args()
+  """
+  def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,case_id,init_method='Frangi',\
+                lth=-125,sth=-100,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
 
-sys.path.append(options.cipPythonDirectory)
-from cip_python import GenerateAirwayParticles
-from cip_python import GenerateFeatureStrengthMap
-from cip_python.vessel_particles import VesselParticles
-from cip_python.multires_vessel_particles import MultiResVesselParticles
+    assert init_method == 'Frangi' or init_method == 'Threshold'
 
-caseId = options.caseId
-init_method = options.init_method
-assert init_method == 'Frangi' or init_method == 'Threshold'
+    self._ct_file_name=ct_file_name
+    self._pl_file_name=pl_file_name
+    self._regions=regions
+    self._tmp_dir=tmp_dir
+    self._output_prefix=output_prefix
+    self._case_id=case_id
+    self._init_method=init_method
+    self._lth=lth
+    self._sth=sth
+    self._voxel_size=voxel_size
+    self._min_scale=min_scale
+    self._max_scale=max_scale
+    self._crop=crop
+    self._rate=rate
+    self._multires=multires
+    self._justparticles=justparticles
+    self._clean_cache=clean_cache
 
-rate=float(options.rate)
+    #Internal params
+    #Distance from wall that we don't want to consider in the initialization (negative= inside the lung, positive= outside the lung)
+    self._distance_from_wall = -2
+    #Threshold on the vesselness map (for particles initialization mask)
+    self._vesselness_th = 0.5
+    #Intensity threshold (for particles initialization mask)
+    self._intensity_th = -700
 
-#region = [2,3]
-#region=[2]
-#regionTag = ['right','left']
-region = [int(i) for i in str.split(options.region,',')]
+  def execute(self):
 
-regionTag = dict()
-regionTag[2]='right'
-regionTag[3]='left'
+    header=nrrd.read_header(open(self._ct_file_name))
+    
+    max_z=header['sizes'][2]
+    spacing=[header['space directions'][kk][kk] for kk in xrange(3)]
+    
+    if len(crop) < 2:
+      crop_flag = False
+    else:
+      if crop[0]<0:
+        crop[0]=0
+      elif crop[1]>max_z:
+        crop_flag = False
+ 
+      crop_flag = True
 
-if options.crop == 0:
-    crop_flag = False
-else:
-    crop = [int(i) for i in str.split(options.crop,',')]
-    crop_flag = True
+    ct_file_name = self._ct_file_name
+    pl_file_name = self._pl_file_name
 
-multires = options.multires
-justparticles  = options.justparticles
-print justparticles
+    #Data preprocessing (cropping and/or resampling) before region based analysis
+    if self._justparticles == False:
+      
+      #Crop volume if flag is set
+      ct_file_name_crop = os.path.join(self._tmp_dir,self._case_id + "_crop.nhdr")
+      pl_file_name_crop = os.path.join(self._tmp_dir,self._case_id + "_croppartialLungLabelMap.nhdr")
+      if crop_flag == True:
+        if self._rate == 1:
+          ratestr = "="
+        else:
+          ratestr = 'x%f' % rate 
+        tmpCommand = "unu crop -min 0 0 %(z1)d -max M M %(z2)d -i %(in)s | unu resample -k %(kernel)s -s = = %(ratestr)s -o %(out)s"
 
-
-#Check required tools path enviroment variables for tools path
-toolsPaths = ['CIP_PATH','TEEM_PATH','ITKTOOLS_PATH'];
-path=dict()
-for path_name in toolsPaths:
-    path[path_name]=os.environ.get(path_name,False)
-    if path[path_name] == False:
-        print path_name + " environment variable is not set"
-        exit()
-
-
-plFileName = os.path.join(options.dataDirectory,caseId + "_partialLungLabelMap.nhdr")
-ctFileName = os.path.join(options.dataDirectory,caseId + ".nhdr")
-
-minFeatureStrength = 60
-
-#Crop volume if flag is set
-ctFileNameCrop = os.path.join(options.tmpDirectory,caseId + "_crop.nhdr")
-plFileNameCrop = os.path.join(options.tmpDirectory,caseId + "_croppartialLungLabelMap.nhdr")
-
-if justparticles == False:
-
-    if crop_flag == True:
-        tmpCommand = "unu crop -min 0 0 %(z1)d -max M M %(z2)d -i %(in)s | unu resample -k %(kernel)s -s = = x%(factor)f -o %(out)s"
-
-        tmpCommandCT = tmpCommand % {'z1':crop[0],'z2':crop[1],'in':ctFileName,'out':ctFileNameCrop,'factor':rate,'kernel':"cubic:1,0"}
-        tmpCommandPL = tmpCommand % {'z1':crop[0],'z2':crop[1],'in':plFileName,'out':plFileNameCrop,'factor':rate,'kernel':"cheap"}
+        tmpCommandCT = tmpCommand % {'z1':crop[0],'z2':crop[1],'in':ct_file_name,'out':ct_file_name_crop,'ratestr':ratestr,'kernel':"cubic:1,0"}
+        tmpCommandPL = tmpCommand % {'z1':crop[0],'z2':crop[1],'in':pl_file_name,'out':pl_file_name_crop,'ratestr':ratestr,'kernel':"cheap"}
         print tmpCommandCT
         print tmpCommandPL
+        
         subprocess.call(tmpCommandCT,shell=True)
         subprocess.call(tmpCommandPL,shell=True)
-        ctFileName = ctFileNameCrop
-        plFileName = plFileNameCrop
+        ct_file_name = ct_file_name_crop
+        pl_file_name = pl_file_name_crop
 
-for ii in region:
-    tmpDir = os.path.join(options.tmpDirectory,regionTag[ii])
-    if os.path.exists(tmpDir) == False:
-        os.mkdir(tmpDir)
+      #Do resampling to isotropic voxel size to compute accurate scale measurements
+      ct_file_name_resample = os.path.join(self._tmp_dir,self._case_id + "_resample.nhdr")
+      pl_file_name_resample = os.path.join(self._tmp_dir,self._case_id + "_resamplepartialLungLabelMap.nhdr")
 
-    # Define FileNames that will be used
-    plFileNameRegion= os.path.join(tmpDir,caseId + "_" + regionTag[ii] + "_partialLungLabelMap.nhdr")
-    ctFileNameRegion= os.path.join(tmpDir,caseId + "_" + regionTag[ii] + ".nhdr")
-    featureMapFileNameRegion = os.path.join(tmpDir,caseId + "_" + regionTag[ii] + "_featureMap.nhdr")
-    maskFileNameRegion = os.path.join(tmpDir,caseId + "_" + regionTag[ii] + "_mask.nhdr")
-    particlesFileNameRegion = os.path.join(options.dataDirectory,caseId + "_" + regionTag[ii] + "VesselParticles.vtk")
-
-    if justparticles == False:
-
-        #Create SubVolume Region
-        tmpCommand ="CropLung -r %(region)d -m 1 -v 0 -i %(ct-in)s --plf %(lm-in)s -o %(ct-out)s --opl %(lm-out)s"
-        tmpCommand = tmpCommand % {'region':ii,'ct-in':ctFileName,'lm-in':plFileName,'ct-out':ctFileNameRegion,'lm-out':plFileNameRegion}
-        tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
-        print tmpCommand
-        subprocess.call( tmpCommand, shell=True )
-
-        #Extract Lung Region + Distance map to peel lung
-        tmpCommand ="ExtractChestLabelMap -r %(region)d -i %(lm-in)s -o %(lm-out)s"
-        tmpCommand = tmpCommand % {'region':ii,'lm-in':plFileNameRegion,'lm-out':plFileNameRegion}
-        tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
-        print tmpCommand
-        subprocess.call( tmpCommand, shell=True )
-
-        tmpCommand ="unu 2op gt %(lm-in)s 0.5 -o %(lm-out)s"
-        tmpCommand = tmpCommand % {'lm-in':plFileNameRegion,'lm-out':plFileNameRegion}
-        print tmpCommand
-    ###subprocess.call( tmpCommand, shell=True )
-
-        tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
-        tmpCommand = tmpCommand % {'lm-in':plFileNameRegion,'distance-map':plFileNameRegion}
-        tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
-        print tmpCommand
-        subprocess.call( tmpCommand, shell=True )
-
-        tmpCommand ="unu 2op lt %(distance-map)s -2 -t short -o %(lm-out)s"
-        tmpCommand = tmpCommand % {'distance-map':plFileNameRegion,'lm-out':plFileNameRegion}
-        print tmpCommand
-        subprocess.call( tmpCommand, shell=True )
-
-
-        if False:
-            # Create Feature Strength Map for the Region
-            strengthMap = FeatureStrengthMap("ridge_line",ctFileNameRegion,featureMapFileNameRegion,tmpDir)
-            strengthMap._clean_tmp_dir=False
-            strengthMap._max_scale = 4
-            strengthMap._scale_samples = 5
-            strengthMap._max_feature_strength = 10000
-            strengthMap._probe_scales = [0.75,1,1.75,3]
-
-            strengthMap.execute()
-
-            # Threshold Feature Strength Map
-            tmpCommand ="unu 2op gt %(input)s %(min-strength)f -t short -o %(output)s; unu 2op gt %(lm-input)s 0.5 | unu 2op x - %(output)s -o %(output)s"
-            tmpCommand = tmpCommand % {'input':featureMapFileNameRegion,'min-strength':minFeatureStrength,'lm-input':plFileNameRegion,'output':maskFileNameRegion}
-            print tmpCommand
-            subprocess.call( tmpCommand, shell=True )
-
-    # Compute Frangi
-        if init_method == 'Frangi':
-            tmpCommand = "pxenhancement -in %(in)s -m FrangiVesselness -std %(minscale)f 3 4 -ssm 0 -alpha 0.5 -beta 0.5 -C 250 -out %(out)s"
-            minscale=0.7/rate
-            tmpCommand = tmpCommand % {'in':ctFileNameRegion,'out':featureMapFileNameRegion,'minscale':minscale}
-            tmpCommand  = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
-            print tmpCommand
-            subprocess.call( tmpCommand, shell=True )
-
-            #Hist equalization, threshold Feature strength and masking
-            tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 | unu 2op gt - 0.55  | unu convert -t short -o %(out)s"
-            tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':plFileNameRegion,'out':maskFileNameRegion}
-            print tmpCommand
-            subprocess.call( tmpCommand , shell=True)
-        elif init_method == 'Threshold':
-            tmpCommand = "unu 2op gt %(in)s -700 | unu 2op x - %(mask)s -o %(out)s"
-            tmpCommand = tmpCommand % {'in':ctFileNameRegion,'mask':plFileNameRegion,'out':maskFileNameRegion}
-            print tmpCommand
-            subprocess.call( tmpCommand , shell=True)
+      if self._voxel_size>0:
+        tmpCommand = "unu resample -k %(kernel)s -s x%(f1)f x%(f2)f x%(f3)f -i %(in)s -o %(out)s"
+        tmpCommandCT = tmpCommand % {'in':ct_file_name,'out':ct_file_name_resample,'kernel':"tent",'f1':spacing[0]/self._voxel_size,'f2':spacing[1]/self._voxel_size,'f3':spacing[2]/self._voxel_size}
+        tmpCommandPL = tmpCommand % {'in':pl_file_name,'out':pl_file_name_resample,'kernel':"cheap",'f1':spacing[0]/self._voxel_size,'f2':spacing[1]/self._voxel_size,'f3':spacing[2]/self._voxel_size}
+        print tmpCommandCT
+        print tmpCommandPL
         
-        #Binary Thinning
-        tmpCommand = "/Users/rjosest/src/external/itkBinaryThinnking3D/Source/bin/BinaryThinning3D %(in)s %(out)s"
-        tmpCommand = tmpCommand % {'in':maskFileNameRegion,'out':maskFileNameRegion}
-        print tmpCommand
-        subprocess.call( tmpCommand, shell=True)
+        subprocess.call(tmpCommandCT,shell=True)
+        subprocess.call(tmpCommandPL,shell=True)
+        ct_file_name = ct_file_name_resample
+        pl_file_name = pl_file_name_resample
+        
 
-    # Airway Particles For the Region
-    if multires==False:
-        lt=-500*float(rate)
-        st=-400*float(rate)
-        lt=float(-400)
-        st=float(-300)
-        particlesGenerator = VesselParticles(ctFileNameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=lt,seed_thresh=st)
-        particlesGenerator._clean_tmp_dir=options.cleanCache
-        particlesGenerator.execute()
-    else:
-        particlesGenerator = MultiResVesselParticles(ctFileNameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
-        particlesGenerator._clean_tmp_dir=options.cleanCache
-        particlesGenerator.execute()
+    for ii in self._regions:
+        rtag = ii.lower()
+        tmpDir = os.path.join(self._tmp_dir,rtag)
+        if os.path.exists(tmpDir) == False:
+            os.mkdir(tmpDir)
+
+        # Define FileNames that will be used
+        pl_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + "_partialLungLabelMap.nhdr")
+        ct_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + ".nhdr")
+        featureMapFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_featureMap.nhdr")
+        maskFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_mask.nhdr")
+        particlesFileNameRegion = os.path.join(self._output_prefix+ "_" + rtag + "VesselParticles.vtk")
+
+        if self._justparticles == False:
+
+            #Create SubVolume Region
+            tmpCommand ="CropLung -r %(region)s -m 0 -v -1000 -i %(ct-in)s --plf %(lm-in)s -o %(ct-out)s --opl %(lm-out)s"
+            tmpCommand = tmpCommand % {'region':ii,'ct-in':ct_file_name,'lm-in':pl_file_name,'ct-out':ct_file_nameRegion,'lm-out':pl_file_nameRegion}
+            tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
+            print tmpCommand
+            subprocess.call( tmpCommand, shell=True )
+
+            #Extract Lung Region + Distance map to peel lung
+            tmpCommand ="ExtractChestLabelMap -r %(region)s -i %(lm-in)s -o %(lm-out)s"
+            tmpCommand = tmpCommand % {'region':ii,'lm-in':pl_file_nameRegion,'lm-out':pl_file_nameRegion}
+            tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
+            print tmpCommand
+            subprocess.call( tmpCommand, shell=True )
+
+            tmpCommand ="unu 2op gt %(lm-in)s 0.5 -o %(lm-out)s"
+            tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'lm-out':pl_file_nameRegion}
+            print tmpCommand
+            subprocess.call( tmpCommand, shell=True )
+
+            #tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s -s 2"
+            #tmpCommand = tmpCommand % {'lm-in':self._pl_file_nameRegion,'distance-map':self._pl_file_nameRegion}
+            #tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
+            #print tmpCommand
+            #subprocess.call( tmpCommand, shell=True )
+
+            tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
+            tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
+            tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
+            print tmpCommand
+            subprocess.call( tmpCommand, shell=True )
+
+            tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
+            tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
+            print tmpCommand
+            subprocess.call( tmpCommand, shell=True )
+
+            # Compute Frangi
+            if self._init_method == 'Frangi':
+                tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f RidgeLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.5 --beta 0.5 --C 250 -o %(out)s"
+                tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
+                tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
+                print tmpCommand
+                subprocess.call( tmpCommand, shell=True )
+
+                #Hist equalization, threshold Feature strength and masking
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
+                print tmpCommand
+                subprocess.call( tmpCommand , shell=True)
+            elif self._init_method == 'Threshold':
+                tmpCommand = "unu 2op gt %(in)s %(intensity_th)f | unu 2op x - %(mask)s -o %(out)s"
+                tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'mask':pl_file_nameRegion,'intensity_th':self._intensity_th,'out':maskFileNameRegion}
+                print tmpCommand
+                subprocess.call( tmpCommand , shell=True)
+            
+            #Binary Thinning
+            tmpCommand = "GenerateBinaryThinning3D -i %(in)s -o %(out)s"
+            tmpCommand = tmpCommand % {'in':maskFileNameRegion,'out':maskFileNameRegion}
+            tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
+            print tmpCommand
+            subprocess.call( tmpCommand, shell=True)
+
+        # Vessel Particles For the Region
+        if self._multires==False:
+            particlesGenerator = VesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth)
+            particlesGenerator._clean_tmp_dir=self._clean_cache
+            particlesGenerator.execute()
+        else:
+            particlesGenerator = MultiResVesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
+            particlesGenerator._clean_tmp_dir=self._clean_cache
+            particlesGenerator.execute()
+
+
+
+
+if __name__ == "__main__":
+  import argparse
+
+  parser = argparse.ArgumentParser(description='Vessel particle extraction pipeline')
+  parser.add_argument("-c", dest="case_id",required=True)
+  parser.add_argument("-i", dest="ct_file_name",required=True)
+  parser.add_argument("-l",dest="pl_file_name",required=True)
+  parser.add_argument("-o",dest="output_prefix",required=True)
+  parser.add_argument("--tmpDir", dest="tmp_dir",required=True)
+  parser.add_argument("-r",dest="regions",required=True)
+  parser.add_argument("--liveTh",dest="lth",type=float,default=-125)
+  parser.add_argument("--seedTh",dest="sth",type=float,default=-100)
+  parser.add_argument("-s", dest="voxel_size",type=float,default=0)
+  parser.add_argument("--crop",dest="crop",default=0)
+  parser.add_argument("--rate",dest="rate",type=float,default=1)
+  parser.add_argument("--minscale",dest="min_scale",type=float,default=0.7)
+  parser.add_argument("--maxscale",dest="max_scale",type=float,default=4)
+  parser.add_argument("--init",dest="init_method",default="Frangi")
+  parser.add_argument("--multires",dest="multires",action="store_true", default = False)
+  parser.add_argument("--justparticles",dest="justparticles",action="store_true", default=False)
+  parser.add_argument("--cleanCache", action="store_true", dest="clean_cache", default=False)
+
+
+  #Check required tools path enviroment variables for tools path
+  toolsPaths = ['CIP_PATH','TEEM_PATH','ITKTOOLS_PATH'];
+  path=dict()
+  for path_name in toolsPaths:
+    path[path_name]=os.environ.get(path_name,False)
+    if path[path_name] == False:
+      print path_name + " environment variable is not set"
+      exit()
+
+  op  = parser.parse_args()
+  assert op.init_method == 'Frangi' or op.init_method == 'Threshold'
+
+  #region = [2,3]
+  #region=[2]
+  #regionTag = ['right','left']
+  crop = [int(kk) for kk in str.split(op.crop,',')]
+  regions = [kk for kk in str.split(op.regions,',')]
+
+  vp=VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.case_id,op.init_method,\
+                             op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
+
+  vp.execute()
