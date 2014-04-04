@@ -2,7 +2,7 @@
 find_package(SlicerExecutionModel NO_MODULE REQUIRED GenerateCLP)
 include(${SlicerExecutionModel_USE_FILE})
 
-FIND_PACKAGE( CIP REQUIRED )
+#FIND_PACKAGE( CIP REQUIRED )
 
 macro(cipMacroBuildCLI)
   set(options
@@ -28,8 +28,8 @@ macro(cipMacroBuildCLI)
     )
 
   set ( INCLUDE_DIRECTORIES
-    ${CIP_INCLUDE_DIRECTORIES}
     ${MY_CIP_ADDITIONAL_INCLUDE_DIRECTORIES}
+    ${CIP_INCLUDE_DIRECTORIES}
    )
    
    set(TARGET_LIBRARIES
