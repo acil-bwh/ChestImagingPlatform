@@ -13,8 +13,6 @@ set(${PROJECT_NAME}_INCLUDE_DIRS
 
 INCLUDE_DIRECTORIES( ${CIPCommon_INCLUDE_DIRS}  )  
 
-message(${CIPCommon_INCLUDE_DIRS})
-
 # --------------------------------------------------------------------------
 # Configure headers
 # --------------------------------------------------------------------------
