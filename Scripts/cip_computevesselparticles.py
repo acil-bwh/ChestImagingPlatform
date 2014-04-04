@@ -16,7 +16,7 @@ class VesselParticlesPipeline:
   ---------
 
   """
-  def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,case_id,init_method='Frangi',\
+  def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',\
                 lth=-125,sth=-100,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
 
     assert init_method == 'Frangi' or init_method == 'Threshold'
@@ -26,7 +26,6 @@ class VesselParticlesPipeline:
     self._regions=regions
     self._tmp_dir=tmp_dir
     self._output_prefix=output_prefix
-    self._case_id=case_id
     self._init_method=init_method
     self._lth=lth
     self._sth=sth
@@ -38,6 +37,8 @@ class VesselParticlesPipeline:
     self._multires=multires
     self._justparticles=justparticles
     self._clean_cache=clean_cache
+
+    self._case_id = str.split(os.path.basename(ct_file_name),'.')[0]
 
     #Internal params
     #Distance from wall that we don't want to consider in the initialization (negative= inside the lung, positive= outside the lung)
@@ -201,7 +202,6 @@ if __name__ == "__main__":
   import argparse
 
   parser = argparse.ArgumentParser(description='Vessel particle extraction pipeline')
-  parser.add_argument("-c", dest="case_id",required=True)
   parser.add_argument("-i", dest="ct_file_name",required=True)
   parser.add_argument("-l",dest="pl_file_name",required=True)
   parser.add_argument("-o",dest="output_prefix",required=True)
@@ -238,7 +238,7 @@ if __name__ == "__main__":
   crop = [int(kk) for kk in str.split(op.crop,',')]
   regions = [kk for kk in str.split(op.regions,',')]
 
-  vp=VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.case_id,op.init_method,\
+  vp=VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,\
                              op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
 
   vp.execute()
