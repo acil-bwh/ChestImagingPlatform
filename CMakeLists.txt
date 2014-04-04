@@ -158,6 +158,12 @@ IF ( CIP_BUILD_TESTING )
  SUBDIRS ( cip_python )
 ENDIF( CIP_BUILD_TESTING ) 
 
+#-----------------------------------------------------------------------------
+# CMake Function(s) and Macro(s)
+#-----------------------------------------------------------------------------
+include(cipMacroBuildCLI)
+
+
 #----------------------------------------------------------------------
 # Make it easier to include cip functionality in other programs.
 # See UseFile.cmake for instructions.
@@ -167,17 +173,13 @@ ENDIF( CIP_BUILD_TESTING )
 #EXPORT( TARGETS ${CIP_LIBRARIES} FILE ${CIP_LIBRARY_DEPENDS_FILE} )
 
 # The "use" file.
-SET( CIP_USE_FILE ${CIP_SOURCE_DIR}/UseFile.cmake )
-
-#Rola add: set the cli macro file. not working
-include (${CIP_SOURCE_DIR}/cipMacroBuildCLI.cmake)
-
+SET( CIP_USE_FILE ${CIP_CMAKE_DIR}/UseFile.cmake )
 
 # Create the config file. It defines some variables, and by placing
 # this in the binary directory, the find_package command will recognise
 # the CIP package.
 
-CONFIGURE_FILE( ${CIP_SOURCE_DIR}/CIPConfig.cmake.in
+CONFIGURE_FILE( ${CIP_CMAKE_DIR}/CIPConfig.cmake.in
  ${CIP_BINARY_DIR}/CIPConfig.cmake @ONLY )
 
 # Store the current build directory in the CMake user package registry
