@@ -68,7 +68,7 @@
  *
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+//#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <fstream>
 #include "itkImage.h"
@@ -81,344 +81,350 @@
 
 namespace
 {
-typedef itk::Image< unsigned char, 2 >                         ProjectionImageType;
-typedef itk::ImageFileWriter< ProjectionImageType >            ProjectionWriterType;
-typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType > LabelMapIteratorType;
-typedef itk::ImageRegionIteratorWithIndex< cip::CTType >       CTIteratorType;
-typedef itk::RGBPixel< unsigned char >                         RGBPixelType;
-typedef itk::Image< RGBPixelType, 2 >                          OverlayType;
-typedef itk::ImageFileWriter< OverlayType >                    OverlayWriterType;
+  typedef itk::Image< unsigned char, 2 >                         ProjectionImageType;
+  typedef itk::ImageFileWriter< ProjectionImageType >            ProjectionWriterType;
+  typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType > LabelMapIteratorType;
+  typedef itk::ImageRegionIteratorWithIndex< cip::CTType >       CTIteratorType;
+  typedef itk::RGBPixel< unsigned char >                         RGBPixelType;
+  typedef itk::Image< RGBPixelType, 2 >                          OverlayType;
+  typedef itk::ImageFileWriter< OverlayType >                    OverlayWriterType;
 
-/*
-double GetWindowLeveledValue( short );
-RGBPixelType GetOverlayPixelValue( double, unsigned short, double );
-void GenerateLungLobeOverlayImages( cip::LabelMapType::Pointer, cip::CTType::Pointer, unsigned int, std::vector< OverlayType::Pointer >*,
-                                    std::vector< unsigned int >, double );
-void GetLungProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
-void GetAirwayProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
-*/
+  /*
+    double GetWindowLeveledValue( short );
+    RGBPixelType GetOverlayPixelValue( double, unsigned short, double );
+    void GenerateLungLobeOverlayImages( cip::LabelMapType::Pointer, cip::CTType::Pointer, unsigned int, std::vector< OverlayType::Pointer >*,
+    std::vector< unsigned int >, double );
+    void GetLungProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
+    void GetAirwayProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
+  */
 
-void GenerateLungLobeOverlayImages( cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer ctImage, unsigned int numImages,
-                                       std::vector< OverlayType::Pointer >* overlayVec, std::vector< unsigned int > lungRegions,
-                                       double opacity )
-    {
-        cip::LabelMapType::SizeType size = labelMap->GetBufferedRegion().GetSize();
-        
-        unsigned int xMin   = size[0];
-        unsigned int xMax   = 0;
-        
-        cip::ChestConventions conventions;
-        bool checkMinMax;
-        
-        //
-        // Get the left lung and right lung bounding regions in the
-        // x-direction
-        //
-        LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
-        
-        lIt.GoToBegin();
-        while ( !lIt.IsAtEnd() )
-        {
-            if ( lIt.Get() != 0 )
-            {
-                unsigned char lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-                
-                for ( unsigned int i=0; i<lungRegions.size(); i++ )
-                {
-                    checkMinMax = false;
-                    
-                    if ( lungRegion == static_cast< unsigned char >( lungRegions[i] ) )
-                    {
-                        checkMinMax = true;
-                        break;
-                    }
-                }
-                if ( checkMinMax )
-                {
-                    if ( lIt.GetIndex()[0] < xMin )
-                    {
-                        xMin = lIt.GetIndex()[0];
-                    }
-                    if ( lIt.GetIndex()[0] > xMax )
-                    {
-                        xMax = lIt.GetIndex()[0];
-                    }
-                }
-            }
-            
-            ++lIt;
-        }
-        
-        cip::LabelMapType::IndexType index;
-        OverlayType::IndexType  overlayIndex;
-        
-        RGBPixelType overlayValue;
-        
-        double         windowLeveledValue;
-        unsigned short labelValue;
-        
-        for ( unsigned int i=1; i<=numImages; i++ )
-        {
-            OverlayType::Pointer overlay = OverlayType::New();
-            
-            OverlayType::SizeType overlaySize;
-            overlaySize[0] = size[1];
-            overlaySize[1] = size[2];
-            
-            RGBPixelType rgbDefault;
-            rgbDefault[0] = 0;
-            rgbDefault[1] = 0;
-            rgbDefault[2] = 0;
-            
-            overlay->SetRegions( overlaySize );
-            overlay->Allocate();
-            overlay->FillBuffer( rgbDefault );
-            
-            unsigned int xValue  = xMin + i*(xMax - xMin)/(numImages+1);
-            
-            for ( unsigned int y=0; y<size[1]; y++ )
-            {
-                index[1] = y;
-                overlayIndex[0] = y;
-                
-                for ( unsigned int z=0; z<size[2]; z++ )
-                {
-                    index[2] = z;
-                    overlayIndex[1] = size[2] - z - 1;
-                    
-                    //
-                    // First get and assign the left value
-                    //
-                    index[0] = xValue;
-                    
-                    windowLeveledValue = GetWindowLeveledValue( ctImage->GetPixel( index ) );
-                    labelValue = labelMap->GetPixel( index );
-                    
-                    if ( opacity == 0.0 )
-                    {
-                        overlayValue[0] = windowLeveledValue;
-                        overlayValue[1] = windowLeveledValue;
-                        overlayValue[2] = windowLeveledValue;
-                    }
-                    else
-                    {
-                        overlayValue = GetOverlayPixelValue( windowLeveledValue, labelValue, opacity );
-                    }
-                    
-                    overlay->SetPixel( overlayIndex, overlayValue );
-                }
-            }
-            
-            overlayVec->push_back( overlay );
-        }
-    }
+
     
     
-    double GetWindowLeveledValue( short ctValue )
-    {
-        double slope     = 255.0/1024.0;
-        double intercept = 255.0;
+  double GetWindowLeveledValue( short ctValue )
+  {
+    double slope     = 255.0/1024.0;
+    double intercept = 255.0;
         
-        double windowLeveledValue;
+    double windowLeveledValue;
         
-        if ( ctValue < 0 )
-        {
-            windowLeveledValue = slope*static_cast< double >( ctValue ) + intercept;
+    if ( ctValue < 0 )
+      {
+	windowLeveledValue = slope*static_cast< double >( ctValue ) + intercept;
             
-            if ( windowLeveledValue < 0.0 )
-            {
-                windowLeveledValue = 0.0;
-            }
-        }
-        else
-        {
-            windowLeveledValue = 255.0;
-        }
+	if ( windowLeveledValue < 0.0 )
+	  {
+	    windowLeveledValue = 0.0;
+	  }
+      }
+    else
+      {
+	windowLeveledValue = 255.0;
+      }
         
-        return windowLeveledValue;
-    }
+    return windowLeveledValue;
+  }
+
+  //
+  // Assumes the labelValue is the full label map value (i.e. not an
+  // extracted region or type). The region is extracted from this value
+  // from within the function
+  //
+  RGBPixelType GetOverlayPixelValue( double windowLeveledValue, unsigned short labelValue, double opacity )
+  {
+    cip::ChestConventions conventions;
+        
+    unsigned char lungRegion = conventions.GetChestRegionFromValue( labelValue );
+        
+    unsigned char redChannel, greenChannel, blueChannel;
+        
+    if ( lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) )
+      {
+	redChannel   = 255;
+	greenChannel = 0;
+	blueChannel  = 0;
+      }
+    else if ( lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) )
+      {
+	redChannel   = 0;
+	greenChannel = 255;
+	blueChannel  = 0;
+      }
+    else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) )
+      {
+	redChannel   = 0;
+	greenChannel = 255;
+	blueChannel  = 255;
+      }
+    else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) )
+      {
+	redChannel   = 255;
+	greenChannel = 0;
+	blueChannel  = 255;
+      }
+    else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) )
+      {
+	redChannel   = 0;
+	greenChannel = 0;
+	blueChannel  = 255;
+      }
+    else
+      {
+	redChannel   = 0;
+	greenChannel = 0;
+	blueChannel  = 0;
+            
+	opacity = 0.0;
+      }
+        
+    RGBPixelType rgb;
+    rgb[0] = static_cast< unsigned char >( (1.0 - opacity)*windowLeveledValue + opacity*redChannel );
+    rgb[1] = static_cast< unsigned char >( (1.0 - opacity)*windowLeveledValue + opacity*greenChannel );
+    rgb[2] = static_cast< unsigned char >( (1.0 - opacity)*windowLeveledValue + opacity*blueChannel );
+        
+    return rgb;
+  }
     
-    
+    void GenerateLungLobeOverlayImages( cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer ctImage, unsigned int numImages,
+				      std::vector< OverlayType::Pointer >* overlayVec, std::vector< unsigned int > lungRegions,
+				      double opacity )
+  {
+    cip::LabelMapType::SizeType size = labelMap->GetBufferedRegion().GetSize();
+        
+    unsigned int xMin   = size[0];
+    unsigned int xMax   = 0;
+        
+    cip::ChestConventions conventions;
+    bool checkMinMax;
+        
     //
-    // Assumes the labelValue is the full label map value (i.e. not an
-    // extracted region or type). The region is extracted from this value
-    // from within the function
+    // Get the left lung and right lung bounding regions in the
+    // x-direction
     //
-    RGBPixelType GetOverlayPixelValue( double windowLeveledValue, unsigned short labelValue, double opacity )
-    {
-        cip::ChestConventions conventions;
+    LabelMapIteratorType lIt( labelMap, labelMap->GetBufferedRegion() );
         
-        unsigned char lungRegion = conventions.GetChestRegionFromValue( labelValue );
-        
-        unsigned char redChannel, greenChannel, blueChannel;
-        
-        if ( lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) )
-        {
-            redChannel   = 255;
-            greenChannel = 0;
-            blueChannel  = 0;
-        }
-        else if ( lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ) )
-        {
-            redChannel   = 0;
-            greenChannel = 255;
-            blueChannel  = 0;
-        }
-        else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) )
-        {
-            redChannel   = 0;
-            greenChannel = 255;
-            blueChannel  = 255;
-        }
-        else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLELOBE ) )
-        {
-            redChannel   = 255;
-            greenChannel = 0;
-            blueChannel  = 255;
-        }
-        else if ( lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ) )
-        {
-            redChannel   = 0;
-            greenChannel = 0;
-            blueChannel  = 255;
-        }
-        else
-        {
-            redChannel   = 0;
-            greenChannel = 0;
-            blueChannel  = 0;
-            
-            opacity = 0.0;
-        }
-        
-        RGBPixelType rgb;
-        rgb[0] = static_cast< unsigned char >( (1.0 - opacity)*windowLeveledValue + opacity*redChannel );
-        rgb[1] = static_cast< unsigned char >( (1.0 - opacity)*windowLeveledValue + opacity*greenChannel );
-        rgb[2] = static_cast< unsigned char >( (1.0 - opacity)*windowLeveledValue + opacity*blueChannel );
-        
-        return rgb;
-    }
-    
-    
-    void GetAirwayProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage )
-    {
-        ProjectionImageType::IndexType projectionIndex;
-        
-        cip::LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
-        
-        ProjectionImageType::SizeType projectionSize;
-        projectionSize[0] = labelMapSize[0];
-        projectionSize[1] = labelMapSize[2];
-        
-        cip::ChestConventions conventions;
-        
-        unsigned char region, type;
-        
-        LabelMapIteratorType it( labelMap, labelMap->GetBufferedRegion() );
-        
-        it.GoToBegin();
-        while ( !it.IsAtEnd() )
-        {
-            if ( it.Get() > 511 )
-            {
-                projectionIndex[0] = projectionSize[0] - it.GetIndex()[0] - 1;
-                projectionIndex[1] = projectionSize[1] - it.GetIndex()[2] - 1;
+    lIt.GoToBegin();
+    while ( !lIt.IsAtEnd() )
+      {
+	if ( lIt.Get() != 0 )
+	  {
+	    unsigned char lungRegion = conventions.GetChestRegionFromValue( lIt.Get() );
                 
-                if ( projectionImage->GetPixel( projectionIndex ) == 0 )
-                {
-                    type = conventions.GetChestTypeFromValue( it.Get() );
+	    for ( unsigned int i=0; i<lungRegions.size(); i++ )
+	      {
+		checkMinMax = false;
                     
-                    if ( type == cip::AIRWAY )
-                    {
-                        region = conventions.GetChestRegionFromValue( it.Get() );
-                        
-                        if ( region == cip::UNDEFINEDREGION )
-                        {
-                            projectionImage->SetPixel( projectionIndex, 255 );
-                        }
-                        
-                    }
-                }
-            }
+		if ( lungRegion == static_cast< unsigned char >( lungRegions[i] ) )
+		  {
+		    checkMinMax = true;
+		    break;
+		  }
+	      }
+	    if ( checkMinMax )
+	      {
+		if ( lIt.GetIndex()[0] < xMin )
+		  {
+		    xMin = lIt.GetIndex()[0];
+		  }
+		if ( lIt.GetIndex()[0] > xMax )
+		  {
+		    xMax = lIt.GetIndex()[0];
+		  }
+	      }
+	  }
             
-            ++it;
-        }
-    }
-    
-    
-    void GetLungProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage  )
-    {
-        ProjectionImageType::IndexType projectionIndex;
+	++lIt;
+      }
         
-        cip::ChestConventions conventions;
+    cip::LabelMapType::IndexType index;
+    OverlayType::IndexType  overlayIndex;
         
-        cip::LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
+    RGBPixelType overlayValue;
         
-        ProjectionImageType::SizeType projectionSize;
-        projectionSize[0] = labelMapSize[0];
-        projectionSize[1] = labelMapSize[2];
+    double         windowLeveledValue;
+    unsigned short labelValue;
         
-        unsigned char region;
-        
-        LabelMapIteratorType it( labelMap, labelMap->GetBufferedRegion() );
-        
-        it.GoToBegin();
-        while ( !it.IsAtEnd() )
-        {
-            if ( it.Get() > 0 )
-            {
-                projectionIndex[0] = projectionSize[0] - it.GetIndex()[0] - 1;
-                projectionIndex[1] = projectionSize[1] - it.GetIndex()[2] - 1;
+    for ( unsigned int i=1; i<=numImages; i++ )
+      {
+	OverlayType::Pointer overlay = OverlayType::New();
+            
+	OverlayType::SizeType overlaySize;
+	overlaySize[0] = size[1];
+	overlaySize[1] = size[2];
+            
+	RGBPixelType rgbDefault;
+	rgbDefault[0] = 0;
+	rgbDefault[1] = 0;
+	rgbDefault[2] = 0;
+            
+	overlay->SetRegions( overlaySize );
+	overlay->Allocate();
+	overlay->FillBuffer( rgbDefault );
+            
+	unsigned int xValue  = xMin + i*(xMax - xMin)/(numImages+1);
+            
+	for ( unsigned int y=0; y<size[1]; y++ )
+	  {
+	    index[1] = y;
+	    overlayIndex[0] = y;
                 
-                if ( projectionImage->GetPixel( projectionIndex ) == 0 )
-                {
-                    region = conventions.GetChestRegionFromValue( it.Get() );
+	    for ( unsigned int z=0; z<size[2]; z++ )
+	      {
+		index[2] = z;
+		overlayIndex[1] = size[2] - z - 1;
                     
-                    if ( region == cip::LEFTUPPERTHIRD || region == cip::WHOLELUNG || 
-                        region == cip::LEFTLUNG )
-                    { 
-                        projectionImage->SetPixel( projectionIndex, 1*36 );
-                    }
-                    else if ( region == cip::LEFTMIDDLETHIRD )
-                    { 
-                        projectionImage->SetPixel( projectionIndex, 2*36 );
-                    }
-                    else if ( region == cip::LEFTLOWERTHIRD )
-                    { 
-                        projectionImage->SetPixel( projectionIndex, 3*36 );
-                    }
-                    else if ( region == cip::RIGHTUPPERTHIRD )
-                    { 
-                        projectionImage->SetPixel( projectionIndex, 4*36 );
-                    }
-                    else if ( region == cip::RIGHTMIDDLETHIRD )
-                    { 
-                        projectionImage->SetPixel( projectionIndex, 5*36 );
-                    }
-                    else if ( region == cip::RIGHTLOWERTHIRD || region == cip::RIGHTLUNG )
-                    { 
-                        projectionImage->SetPixel( projectionIndex, 6*36 );
-                    }
-                    else if ( region == cip::LOWERTHIRD )
-                    {
-                        projectionImage->SetPixel( projectionIndex, 1*64 );
-                    }
-                    else if ( region == cip::MIDDLETHIRD )
-                    {
-                        projectionImage->SetPixel( projectionIndex, 2*64 );
-                    }
-                    else if ( region == cip::UPPERTHIRD )
-                    {
-                        projectionImage->SetPixel( projectionIndex, 3*64 );
-                    }
-                }
-            }
+		//
+		// First get and assign the left value
+		//
+		index[0] = xValue;
+                    
+		windowLeveledValue = GetWindowLeveledValue( ctImage->GetPixel( index ) );
+		labelValue = labelMap->GetPixel( index );
+                    
+		if ( opacity == 0.0 )
+		  {
+		    overlayValue[0] = windowLeveledValue;
+		    overlayValue[1] = windowLeveledValue;
+		    overlayValue[2] = windowLeveledValue;
+		  }
+		else
+		  {
+		    overlayValue = GetOverlayPixelValue( windowLeveledValue, labelValue, opacity );
+		  }
+                    
+		overlay->SetPixel( overlayIndex, overlayValue );
+	      }
+	  }
             
-            ++it;
-        }
-    }
+	overlayVec->push_back( overlay );
+      }
+  }
+  
+
     
-}
+    
+  void GetAirwayProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage )
+  {
+    ProjectionImageType::IndexType projectionIndex;
+        
+    cip::LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
+        
+    ProjectionImageType::SizeType projectionSize;
+    projectionSize[0] = labelMapSize[0];
+    projectionSize[1] = labelMapSize[2];
+        
+    cip::ChestConventions conventions;
+        
+    unsigned char region, type;
+        
+    LabelMapIteratorType it( labelMap, labelMap->GetBufferedRegion() );
+        
+    it.GoToBegin();
+    while ( !it.IsAtEnd() )
+      {
+	if ( it.Get() > 511 )
+	  {
+	    projectionIndex[0] = projectionSize[0] - it.GetIndex()[0] - 1;
+	    projectionIndex[1] = projectionSize[1] - it.GetIndex()[2] - 1;
+                
+	    if ( projectionImage->GetPixel( projectionIndex ) == 0 )
+	      {
+		type = conventions.GetChestTypeFromValue( it.Get() );
+                    
+		if ( type == cip::AIRWAY )
+		  {
+		    region = conventions.GetChestRegionFromValue( it.Get() );
+                        
+		    if ( region == cip::UNDEFINEDREGION )
+		      {
+			projectionImage->SetPixel( projectionIndex, 255 );
+		      }
+                        
+		  }
+	      }
+	  }
+            
+	++it;
+      }
+  }
+    
+    
+  void GetLungProjectionImage( cip::LabelMapType::Pointer labelMap, ProjectionImageType::Pointer projectionImage  )
+  {
+    ProjectionImageType::IndexType projectionIndex;
+        
+    cip::ChestConventions conventions;
+        
+    cip::LabelMapType::SizeType labelMapSize = labelMap->GetBufferedRegion().GetSize();
+        
+    ProjectionImageType::SizeType projectionSize;
+    projectionSize[0] = labelMapSize[0];
+    projectionSize[1] = labelMapSize[2];
+        
+    unsigned char region;
+        
+    LabelMapIteratorType it( labelMap, labelMap->GetBufferedRegion() );
+        
+    it.GoToBegin();
+    while ( !it.IsAtEnd() )
+      {
+	if ( it.Get() > 0 )
+	  {
+	    projectionIndex[0] = projectionSize[0] - it.GetIndex()[0] - 1;
+	    projectionIndex[1] = projectionSize[1] - it.GetIndex()[2] - 1;
+                
+	    if ( projectionImage->GetPixel( projectionIndex ) == 0 )
+	      {
+		region = conventions.GetChestRegionFromValue( it.Get() );
+                    
+		if ( region == cip::LEFTUPPERTHIRD || region == cip::WHOLELUNG || 
+		     region == cip::LEFTLUNG )
+		  { 
+		    projectionImage->SetPixel( projectionIndex, 1*36 );
+		  }
+		else if ( region == cip::LEFTMIDDLETHIRD )
+		  { 
+		    projectionImage->SetPixel( projectionIndex, 2*36 );
+		  }
+		else if ( region == cip::LEFTLOWERTHIRD )
+		  { 
+		    projectionImage->SetPixel( projectionIndex, 3*36 );
+		  }
+		else if ( region == cip::RIGHTUPPERTHIRD )
+		  { 
+		    projectionImage->SetPixel( projectionIndex, 4*36 );
+		  }
+		else if ( region == cip::RIGHTMIDDLETHIRD )
+		  { 
+		    projectionImage->SetPixel( projectionIndex, 5*36 );
+		  }
+		else if ( region == cip::RIGHTLOWERTHIRD || region == cip::RIGHTLUNG )
+		  { 
+		    projectionImage->SetPixel( projectionIndex, 6*36 );
+		  }
+		else if ( region == cip::LOWERTHIRD )
+		  {
+		    projectionImage->SetPixel( projectionIndex, 1*64 );
+		  }
+		else if ( region == cip::MIDDLETHIRD )
+		  {
+		    projectionImage->SetPixel( projectionIndex, 2*64 );
+		  }
+		else if ( region == cip::UPPERTHIRD )
+		  {
+		    projectionImage->SetPixel( projectionIndex, 3*64 );
+		  }
+	      }
+	  }
+            
+	++it;
+      }
+  }
+    
+} //end namespace
+
+
+
 
 int main( int argc, char *argv[] )
 {
@@ -427,95 +433,49 @@ int main( int argc, char *argv[] )
   //std::string ctFileName                    = "NA";
   //std::string lungProjectionImageFileName   = "NA";
   //std::string airwayProjectionImageFileName = "NA";
-  //std::vector< std::string > leftLungLobeFileNameVec;
- 
-    
+
+
+  PARSE_ARGS; 
+
+  std::vector< std::string > leftLungLobeFileNameVec;   
   std::vector< std::string > rightLungLobeFileNameVec;
   std::vector< std::string > leftLungCTFileNameVec;
-  std::vector< std::string > rightLungCTFileNameVec;
+  std::vector< std::string > rightLungCTFileNameVec; 
 
-  PARSE_ARGS;  
-  // Descriptions of the program and inputs for user help 
-
-
-//  std::string lungProjectionImageFileNameDescription   = "Lung projection image output image file name";
-//  std::string airwayProjectionImageFileNameDescription = "Airway projection output image file name";
-//  std::string leftLungLobeFileNameVecDescription = "Left lung lobe images. Multiple can be supplied, and the number of supplied\
-images will determine how many equally spaced output images will be generated. You must also\
-supply a CT image file name when using this flag";
-//  std::string rightLungLobeFileNameVecDescription = "Right lung lobe images. Multiple can be supplied, and the number of supplied\
-images will determine how many equally spaced output images will be generated. You must also\
-supply a CT image file name when using this flag";
-//  std::string leftLungCTFileNameVecDescription = "Left lung CT images. Multiple can be supplied, and the number of supplied images\
-will determine how many equally spaced output images will be generated. You must also\
-supply a CT image file name. These are meant to correspond to the images specified with\
-the -e flag so that overlay images and non overlay images can be compared";
-//  std::string rightLungCTFileNameVecDescription = "Right lung CT images. Multiple can be supplied, and the number of supplied images\
-will determine how many equally spaced output images will be generated. You must also\
-supply a CT image file name. These are meant to correspond to the images specified with\
-the -r flag so that overlay images and non overlay images can be compared";
-
-  // Parse the input arguments
- // try
- //   {
-
-
-
-    //TCLAP::ValueArg<std::string> lungProjectionImageFileNameArg ( "u", "lungProj", lungProjectionImageFileNameDescription, false, lungProjectionImageFileName, "string", cl );
-        
-  //  TCLAP::ValueArg<std::string> airwayProjectionImageFileNameArg ( "a", "airwayProj", airwayProjectionImageFileNameDescription, false, airwayProjectionImageFileName, "string", cl );
-   // TCLAP::MultiArg<std::string> leftLungLobeFileNameVecArg ( "e", "leftLobe", leftLungLobeFileNameVecDescription, false, "string", cl );
-   // TCLAP::MultiArg<std::string> rightLungLobeFileNameVecArg ( "r", "rightLobe", rightLungLobeFileNameVecDescription, false, "string", cl );
-   // TCLAP::MultiArg<std::string> leftLungCTFileNameVecArg ( "f", "leftCT", leftLungCTFileNameVecDescription, false, "string", cl );
-    //TCLAP::MultiArg<std::string> rightLungCTFileNameVecArg ( "i", "rightCT", rightLungCTFileNameVecDescription, false, "string", cl );
-
-    //cl.parse( argc, argv );
-
-   // labelMapFileName              = labelMapFileNameArg.getValue();
-   // ctFileName                    = ctFileNameArg.getValue();
-   // lungProjectionImageFileName   = lungProjectionImageFileNameArg.getValue();
-   // airwayProjectionImageFileName = airwayProjectionImageFileNameArg.getValue();
-
-    for ( unsigned int i=0; i<leftLungLobeFileNameVecArg..size(); i++ )
-      {
-      leftLungLobeFileNameVec.push_back( leftLungLobeFileNameVecArg[i] );
-      }
-
-    for ( unsigned int i=0; i<rightLungLobeFileNameVecArg.size(); i++ )
-      {
-      rightLungLobeFileNameVec.push_back( rightLungLobeFileNameVecArg[i] );
-      }
-
-    for ( unsigned int i=0; i<rightLungCTFileNameVecArg.size(); i++ )
-      {
-      rightLungCTFileNameVec.push_back( rightLungCTFileNameVecArg[i] );
-      }
-
-    for ( unsigned int i=0; i<leftLungCTFileNameVecArg.size(); i++ )
-      {
-      leftLungCTFileNameVec.push_back( leftLungCTFileNameVecArg[i] );
-      }
-    }
-  catch ( TCLAP::ArgException excp )
+  for ( unsigned int i=0; i<leftLungLobeFileNameVecArg.size(); i++ )
     {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
+      leftLungLobeFileNameVec.push_back( leftLungLobeFileNameVecArg[i] );
+    }
+
+  for ( unsigned int i=0; i<rightLungLobeFileNameVecArg.size(); i++ )
+    {
+      rightLungLobeFileNameVec.push_back( rightLungLobeFileNameVecArg[i] );
+    }
+
+  for ( unsigned int i=0; i<rightLungCTFileNameVecArg.size(); i++ )
+    {
+      rightLungCTFileNameVec.push_back( rightLungCTFileNameVecArg[i] );
+    }
+
+  for ( unsigned int i=0; i<leftLungCTFileNameVecArg.size(); i++ )
+    {
+      leftLungCTFileNameVec.push_back( leftLungCTFileNameVecArg[i] );
     }
 
   // Read the label map
   std::cout << "Reading label map image..." << std::endl;
   cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
-    labelMapReader->SetFileName( labelMapFileName );
+  labelMapReader->SetFileName( labelMapFileName );
   try
     {
-    labelMapReader->Update();
+      labelMapReader->Update();
     }
   catch (itk::ExceptionObject &excp)
     {
-    std::cerr << "Exception caught while reading label map:";
-    std::cerr << excp << std::endl;
+      std::cerr << "Exception caught while reading label map:";
+      std::cerr << excp << std::endl;
 
-    return cip::LABELMAPREADFAILURE;
+      return cip::LABELMAPREADFAILURE;
     }
 
   //
@@ -525,12 +485,12 @@ the -r flag so that overlay images and non overlay images can be compared";
   cip::LabelMapType::SpacingType labelMapSpacing = labelMapReader->GetOutput()->GetSpacing(); 
 
   ProjectionImageType::SizeType projectionSize;
-    projectionSize[0] = labelMapSize[0];
-    projectionSize[1] = labelMapSize[2];
+  projectionSize[0] = labelMapSize[0];
+  projectionSize[1] = labelMapSize[2];
 
   ProjectionImageType::SpacingType projectionSpacing;
-    projectionSpacing[0] = labelMapSpacing[0];
-    projectionSpacing[1] = labelMapSpacing[2];
+  projectionSpacing[0] = labelMapSpacing[0];
+  projectionSpacing[1] = labelMapSpacing[2];
 
   //  
   // Create the lung projection image if requested
@@ -540,13 +500,13 @@ the -r flag so that overlay images and non overlay images can be compared";
 
   if ( lungProjectionImageFileName.compare( "q" ) != 0 )
     {
-    lungProjectionImage->SetRegions( projectionSize );
-    lungProjectionImage->Allocate();
-    lungProjectionImage->FillBuffer( 0 );
-    lungProjectionImage->SetSpacing( projectionSpacing );
+      lungProjectionImage->SetRegions( projectionSize );
+      lungProjectionImage->Allocate();
+      lungProjectionImage->FillBuffer( 0 );
+      lungProjectionImage->SetSpacing( projectionSpacing );
 
-    std::cout << "Getting lung projection image..." << std::endl;
-    GetLungProjectionImage( labelMapReader->GetOutput(), lungProjectionImage );
+      std::cout << "Getting lung projection image..." << std::endl;
+      GetLungProjectionImage( labelMapReader->GetOutput(), lungProjectionImage );
     }
 
   //
@@ -554,13 +514,13 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( airwayProjectionImageFileName.compare( "q" ) != 0 )
     {
-    airwayProjectionImage->SetRegions( projectionSize );
-    airwayProjectionImage->Allocate();
-    airwayProjectionImage->FillBuffer( 0 );
-    airwayProjectionImage->SetSpacing( projectionSpacing );
+      airwayProjectionImage->SetRegions( projectionSize );
+      airwayProjectionImage->Allocate();
+      airwayProjectionImage->FillBuffer( 0 );
+      airwayProjectionImage->SetSpacing( projectionSpacing );
 
-    std::cout << "Getting airway projection image..." << std::endl;
-    GetAirwayProjectionImage( labelMapReader->GetOutput(), airwayProjectionImage );
+      std::cout << "Getting airway projection image..." << std::endl;
+      GetAirwayProjectionImage( labelMapReader->GetOutput(), airwayProjectionImage );
     }
 
   cip::CTType::Pointer ctImage = cip::CTType::New();
@@ -570,22 +530,22 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( ctFileName.compare( "q" ) != 0 )
     {
-    std::cout << "Reading CT image..." << std::endl;
-    cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
+      std::cout << "Reading CT image..." << std::endl;
+      cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
       ctReader->SetFileName( ctFileName );
-    try
-      {
-      ctReader->Update();
-      }
-    catch ( itk::ExceptionObject &excp )
-      {
-      std::cerr << "Exception caught reading CT image:";
-      std::cerr << excp << std::endl;
+      try
+	{
+	  ctReader->Update();
+	}
+      catch ( itk::ExceptionObject &excp )
+	{
+	  std::cerr << "Exception caught reading CT image:";
+	  std::cerr << excp << std::endl;
 
-      return cip::NRRDREADFAILURE;
-      }
+	  return cip::NRRDREADFAILURE;
+	}
 
-    ctImage = ctReader->GetOutput();
+      ctImage = ctReader->GetOutput();
     }
 
   //
@@ -596,21 +556,21 @@ the -r flag so that overlay images and non overlay images can be compared";
   std::vector< OverlayType::Pointer > leftCTVec;
 
   std::vector< unsigned int > leftLungRegions;
-    leftLungRegions.push_back( cip::LEFTSUPERIORLOBE );
-    leftLungRegions.push_back( cip::LEFTINFERIORLOBE );
+  leftLungRegions.push_back( cip::LEFTSUPERIORLOBE );
+  leftLungRegions.push_back( cip::LEFTINFERIORLOBE );
 
   if ( leftLungLobeFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
     {
-    std::cout << "Generating left lung overlay images..." << std::endl;
-    GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, leftLungLobeFileNameVec.size(), &leftOverlayVec, 
-                                   leftLungRegions, 0.3 );
+      std::cout << "Generating left lung overlay images..." << std::endl;
+      GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, leftLungLobeFileNameVec.size(), &leftOverlayVec, 
+				     leftLungRegions, 0.3 );
     }
 
   if ( leftLungCTFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
     {
-    std::cout << "Generating left lung CT images..." << std::endl;
-    GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, leftLungCTFileNameVec.size(), &leftCTVec, 
-                                   leftLungRegions, 0.0 );
+      std::cout << "Generating left lung CT images..." << std::endl;
+      GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, leftLungCTFileNameVec.size(), &leftCTVec, 
+				     leftLungRegions, 0.0 );
     }
 
   //
@@ -621,22 +581,22 @@ the -r flag so that overlay images and non overlay images can be compared";
   std::vector< OverlayType::Pointer > rightCTVec;
 
   std::vector< unsigned int > rightLungRegions;
-    rightLungRegions.push_back( cip::RIGHTSUPERIORLOBE );
-    rightLungRegions.push_back( cip::RIGHTMIDDLELOBE );
-    rightLungRegions.push_back( cip::RIGHTINFERIORLOBE );
+  rightLungRegions.push_back( cip::RIGHTSUPERIORLOBE );
+  rightLungRegions.push_back( cip::RIGHTMIDDLELOBE );
+  rightLungRegions.push_back( cip::RIGHTINFERIORLOBE );
 
   if ( rightLungLobeFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
     {
-    std::cout << "Generating right lung overlay images..." << std::endl;
-    GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, rightLungLobeFileNameVec.size(), &rightOverlayVec,
-                                   rightLungRegions, 0.3 );
+      std::cout << "Generating right lung overlay images..." << std::endl;
+      GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, rightLungLobeFileNameVec.size(), &rightOverlayVec,
+				     rightLungRegions, 0.3 );
     }
 
   if ( rightLungCTFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
     {
-    std::cout << "Generating right lung CT images..." << std::endl;
-    GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, rightLungCTFileNameVec.size(), &rightCTVec,
-                                   rightLungRegions, 0.0 );
+      std::cout << "Generating right lung CT images..." << std::endl;
+      GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, rightLungCTFileNameVec.size(), &rightCTVec,
+				     rightLungRegions, 0.0 );
     }
 
   //
@@ -644,21 +604,21 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( lungProjectionImageFileName.compare( "q" ) != 0 )
     {
-    std::cout << "Writing lung projection image..." << std::endl;
-    ProjectionWriterType::Pointer lungProjectionWriter = ProjectionWriterType::New();
+      std::cout << "Writing lung projection image..." << std::endl;
+      ProjectionWriterType::Pointer lungProjectionWriter = ProjectionWriterType::New();
       lungProjectionWriter->SetFileName( lungProjectionImageFileName );
       lungProjectionWriter->SetInput( lungProjectionImage );
-    try
-      {
-      lungProjectionWriter->Update();
-      }
-    catch ( itk::ExceptionObject &excp )
-      {
-      std::cerr << "Exception caught writing lung projection image:";
-      std::cerr << excp << std::endl;
+      try
+	{
+	  lungProjectionWriter->Update();
+	}
+      catch ( itk::ExceptionObject &excp )
+	{
+	  std::cerr << "Exception caught writing lung projection image:";
+	  std::cerr << excp << std::endl;
 
-      return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
-      }
+	  return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
+	}
     }
 
   //
@@ -666,21 +626,21 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( airwayProjectionImageFileName.compare( "q" ) != 0 )
     {
-    std::cout << "Writing airway projection image..." << std::endl;
-    ProjectionWriterType::Pointer airwayProjectionWriter = ProjectionWriterType::New();
+      std::cout << "Writing airway projection image..." << std::endl;
+      ProjectionWriterType::Pointer airwayProjectionWriter = ProjectionWriterType::New();
       airwayProjectionWriter->SetFileName( airwayProjectionImageFileName );
       airwayProjectionWriter->SetInput( airwayProjectionImage );
-    try
-      {
-      airwayProjectionWriter->Update();
-      }
-    catch ( itk::ExceptionObject &excp )
-      {
-      std::cerr << "Exception caught writing airway projection image:";
-      std::cerr << excp << std::endl;
+      try
+	{
+	  airwayProjectionWriter->Update();
+	}
+      catch ( itk::ExceptionObject &excp )
+	{
+	  std::cerr << "Exception caught writing airway projection image:";
+	  std::cerr << excp << std::endl;
 
-      return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
-      }
+	  return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
+	}
     }
   
   //
@@ -688,24 +648,24 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( leftLungLobeFileNameVec.size() > 0 )
     {
-    for ( unsigned int i=0; i<leftLungLobeFileNameVec.size(); i++ )
-      {
-      std::cout << "Writing left overlay image..." << std::endl;
-      OverlayWriterType::Pointer leftOverlayWriter = OverlayWriterType::New();
-        leftOverlayWriter->SetInput( leftOverlayVec[i] );
-        leftOverlayWriter->SetFileName( leftLungLobeFileNameVec[i] );
-      try
-        {
-        leftOverlayWriter->Update();
-        }
-      catch ( itk::ExceptionObject &excp )
-        {
-        std::cerr << "Exception caught writing left overlay image:";
-        std::cerr << excp << std::endl;
+      for ( unsigned int i=0; i<leftLungLobeFileNameVec.size(); i++ )
+	{
+	  std::cout << "Writing left overlay image..." << std::endl;
+	  OverlayWriterType::Pointer leftOverlayWriter = OverlayWriterType::New();
+	  leftOverlayWriter->SetInput( leftOverlayVec[i] );
+	  leftOverlayWriter->SetFileName( leftLungLobeFileNameVec[i] );
+	  try
+	    {
+	      leftOverlayWriter->Update();
+	    }
+	  catch ( itk::ExceptionObject &excp )
+	    {
+	      std::cerr << "Exception caught writing left overlay image:";
+	      std::cerr << excp << std::endl;
 
-        return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
-        }
-      }
+	      return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
+	    }
+	}
     }
 
   //
@@ -713,24 +673,24 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( leftLungCTFileNameVec.size() > 0 )
     {
-    for ( unsigned int i=0; i<leftLungCTFileNameVec.size(); i++ )
-      {
-      std::cout << "Writing left CT image..." << std::endl;
-      OverlayWriterType::Pointer leftOverlayWriter = OverlayWriterType::New();
-        leftOverlayWriter->SetInput( leftCTVec[i] );
-        leftOverlayWriter->SetFileName( leftLungCTFileNameVec[i] );
-      try
-        {
-        leftOverlayWriter->Update();
-        }
-      catch ( itk::ExceptionObject &excp )
-        {
-        std::cerr << "Exception caught writing left overlay image:";
-        std::cerr << excp << std::endl;
+      for ( unsigned int i=0; i<leftLungCTFileNameVec.size(); i++ )
+	{
+	  std::cout << "Writing left CT image..." << std::endl;
+	  OverlayWriterType::Pointer leftOverlayWriter = OverlayWriterType::New();
+	  leftOverlayWriter->SetInput( leftCTVec[i] );
+	  leftOverlayWriter->SetFileName( leftLungCTFileNameVec[i] );
+	  try
+	    {
+	      leftOverlayWriter->Update();
+	    }
+	  catch ( itk::ExceptionObject &excp )
+	    {
+	      std::cerr << "Exception caught writing left overlay image:";
+	      std::cerr << excp << std::endl;
 
-        return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
-        }
-      }
+	      return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
+	    }
+	}
     }
 
   //
@@ -738,24 +698,24 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( rightLungLobeFileNameVec.size() > 0 )
     {
-    for ( unsigned int i=0; i<rightLungLobeFileNameVec.size(); i++ )
-      {
-      std::cout << "Writing right overlay image..." << std::endl;
-      OverlayWriterType::Pointer rightOverlayWriter = OverlayWriterType::New();
-        rightOverlayWriter->SetInput( rightOverlayVec[i] );
-        rightOverlayWriter->SetFileName( rightLungLobeFileNameVec[i] );
-      try
-        {
-        rightOverlayWriter->Update();
-        }
-      catch ( itk::ExceptionObject &excp )
-        {
-        std::cerr << "Exception caught writing right overlay image:";
-        std::cerr << excp << std::endl;
+      for ( unsigned int i=0; i<rightLungLobeFileNameVec.size(); i++ )
+	{
+	  std::cout << "Writing right overlay image..." << std::endl;
+	  OverlayWriterType::Pointer rightOverlayWriter = OverlayWriterType::New();
+	  rightOverlayWriter->SetInput( rightOverlayVec[i] );
+	  rightOverlayWriter->SetFileName( rightLungLobeFileNameVec[i] );
+	  try
+	    {
+	      rightOverlayWriter->Update();
+	    }
+	  catch ( itk::ExceptionObject &excp )
+	    {
+	      std::cerr << "Exception caught writing right overlay image:";
+	      std::cerr << excp << std::endl;
 
-        return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
-        }
-      }
+	      return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
+	    }
+	}
     }
 
   //
@@ -763,24 +723,24 @@ the -r flag so that overlay images and non overlay images can be compared";
   //
   if ( rightLungCTFileNameVec.size() > 0 )
     {
-    for ( unsigned int i=0; i<rightLungCTFileNameVec.size(); i++ )
-      {
-      std::cout << "Writing right CT image..." << std::endl;
-      OverlayWriterType::Pointer rightOverlayWriter = OverlayWriterType::New();
-        rightOverlayWriter->SetInput( rightCTVec[i] );
-        rightOverlayWriter->SetFileName( rightLungCTFileNameVec[i] );
-      try
-        {
-        rightOverlayWriter->Update();
-        }
-      catch ( itk::ExceptionObject &excp )
-        {
-        std::cerr << "Exception caught writing right overlay image:";
-        std::cerr << excp << std::endl;
+      for ( unsigned int i=0; i<rightLungCTFileNameVec.size(); i++ )
+	{
+	  std::cout << "Writing right CT image..." << std::endl;
+	  OverlayWriterType::Pointer rightOverlayWriter = OverlayWriterType::New();
+	  rightOverlayWriter->SetInput( rightCTVec[i] );
+	  rightOverlayWriter->SetFileName( rightLungCTFileNameVec[i] );
+	  try
+	    {
+	      rightOverlayWriter->Update();
+	    }
+	  catch ( itk::ExceptionObject &excp )
+	    {
+	      std::cerr << "Exception caught writing right overlay image:";
+	      std::cerr << excp << std::endl;
 
-        return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
-        }
-      }
+	      return cip::QUALITYCONTROLIMAGEWRITEFAILURE;
+	    }
+	}
     }
 
   std::cout << "DONE." << std::endl;
