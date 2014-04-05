@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>GenerateStatisticsForAirwayGenerationLabeling</title>
     <description><![CDATA[This program computes statistics needed as inputs to the 
         LabelAirwayParticlesByGeneration program. It computes these statistics

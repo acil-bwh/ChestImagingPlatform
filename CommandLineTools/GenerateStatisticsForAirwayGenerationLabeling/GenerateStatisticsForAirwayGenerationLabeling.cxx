@@ -43,7 +43,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -62,6 +61,7 @@
 #include <cfloat>
 #include <math.h>
 #include <fstream>
+#include "GenerateStatisticsForAirwayGenerationLabelingCLP.h"
 
 namespace
 {
