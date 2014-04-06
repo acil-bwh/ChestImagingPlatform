@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Segmentation</category>
+  <title>GenerateStatisticsForAirwayGenerationLabeling</title>
+    <description><![CDATA[This program reads a label map and splits the left and\
+        right lungs so that they are uniquely labeled. If the input is\
+        already split, the output will be identical to the input.]]></description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+  <label>I/O</label>
+      <image type="label">
+          <name>inLabelMapFileName</name>
+          <label>input LabelMap FileName</label>
+          <channel>input</channel>
+          <flag>i</flag>
+          <longflag>in</longflag>
+          <description><![CDATA["Input label map file name]]></description>
+          <default>q</default>
+      </image>
+      <image type="label">
+          <name>outLabelMapFileName</name>
+          <label>output LabelMap FileName</label>
+          <channel>output</channel>
+          <flag>o</flag>
+          <longflag>out</longflag>
+          <description><![CDATA["Output label map file name]]></description>
+          <default>q</default>
+      </image>
+      
+    </parameters>
+
+    <parameters>
+    <label>Parameters</label>
+    <double>
+      <name>exponentialTimeConstant</name>
+      <label>exponential Time Constant</label>
+      <channel>input</channel>
+      <flag>t</flag>
+      <longflag>timeConst</longflag>
+        <description><![CDATA[Exponential time constant ]]></description>
+      <default>-700</default>
+    </double>
+        
+    <double>
+        <name>exponentialCoefficient</name>
+        <label>emission Prob Distance Threshold</label>
+        <channel>input</channel>
+        <flag>c</flag>
+        <longflag>coefficient</longflag>
+        <description><![CDATA[Exponential coefficient.]]></description>
+        <default>200.0;</default>   
+    </double>
+        
+  </parameters>
+</executable>

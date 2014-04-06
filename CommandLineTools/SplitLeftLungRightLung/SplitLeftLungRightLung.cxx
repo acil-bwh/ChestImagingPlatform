@@ -12,56 +12,61 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkCIPSplitLeftLungRightLungImageFilter.h"
- 
+#include "SplitLeftLungRightLungCLP.h"
+
+namespace
+{
  //typedef itk::Image< short, 3 >                                    cip::CTType;
  typedef itk::Image< unsigned short, 3 >                           LabelMapType;
  typedef itk::ImageFileReader< LabelMapType >                      ReaderType;
  typedef itk::ImageFileWriter< LabelMapType >                      WriterType;
 typedef itk::CIPSplitLeftLungRightLungImageFilter< cip::CTType >   SplitterType;
+}
 
 int main( int argc, char *argv[] )
 {
+    
+    PARSE_ARGS;
    //
    // Begin by defining the arguments to be passed
    //
-   std::string inLabelMapFileName  = "NA";
-   std::string outLabelMapFileName = "NA";
-   double exponentialTimeConstant  = -700;
-   double exponentialCoefficient   = 200.0;
+   //std::string inLabelMapFileName  = "NA";
+  // std::string outLabelMapFileName = "NA";
+  // double exponentialTimeConstant  = -700;
+  // double exponentialCoefficient   = 200.0;
 
    //
    // Descriptions for user help
    //
-   std::string programDescription = "This program reads a label map and splits the left and\
+ //  std::string programDescription = "This program reads a label map and splits the left and\
  right lungs so that they are uniquely labeled. If the input is\
  already split, the output will be identical to the input.";
 
-   std::string inLabelMapFileNameDescription = "Input label map file name";
-   std::string outLabelMapFileNameDescription = "Output label map file name";
-   std::string exponentialTimeConstantDescription = "Exponential time constant (-700 by default)";
-   std::string exponentialCoefficientDescription = "Exponential coefficient (200 by default)";
+  // std::string inLabelMapFileNameDescription = "Input label map file name";
+  // std::string outLabelMapFileNameDescription = "Output label map file name";
+  // std::string exponentialTimeConstantDescription = "Exponential time constant (-700 by default)";
+ //  std::string exponentialCoefficientDescription = "Exponential coefficient (200 by default)";
 
    //
    // Parse the input arguments
    //
-   try
+  /* try
      {
-     TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 93 $" );
+     //TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 93 $" );
 
-     TCLAP::ValueArg<std::string> inLabelMapFileNameArg( "i", "in", inLabelMapFileNameDescription, true, inLabelMapFileName, "string", cl );
-     TCLAP::ValueArg<std::string> outLabelMapFileNameArg( "o", "out", outLabelMapFileNameDescription, true, outLabelMapFileName, "string", cl );
-     TCLAP::ValueArg<double> exponentialTimeConstantArg( "t", "timeConst", exponentialTimeConstantDescription, false, exponentialTimeConstant, "double", cl );
-     TCLAP::ValueArg<double> exponentialCoefficientArg( "c", "coefficient", exponentialCoefficientDescription, false, exponentialCoefficient, "double", cl );
+     //TCLAP::ValueArg<std::string> inLabelMapFileNameArg( "i", "in", inLabelMapFileNameDescription, true, inLabelMapFileName, "string", cl );
+     //TCLAP::ValueArg<std::string> outLabelMapFileNameArg( "o", "out", outLabelMapFileNameDescription, true, outLabelMapFileName, "string", cl );
+     //TCLAP::ValueArg<double> exponentialTimeConstantArg( "t", "timeConst", exponentialTimeConstantDescription, false, exponentialTimeConstant, "double", cl );
+    // TCLAP::ValueArg<double> exponentialCoefficientArg( "c", "coefficient", exponentialCoefficientDescription, false, exponentialCoefficient, "double", cl );
 
-     cl.parse( argc, argv );
+     //cl.parse( argc, argv );
 
-     inLabelMapFileName      = inLabelMapFileNameArg.getValue();
+     //inLabelMapFileName      = inLabelMapFileNameArg.getValue();
      outLabelMapFileName     = outLabelMapFileNameArg.getValue();
      exponentialTimeConstant = exponentialTimeConstantArg.getValue();
      exponentialCoefficient  = exponentialCoefficientArg.getValue();
@@ -71,7 +76,8 @@ int main( int argc, char *argv[] )
      std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
      return cip::ARGUMENTPARSINGERROR;
      }
-
+*/
+    
    std::cout << "Reading label map..." << std::endl;
    ReaderType::Pointer labelMapReader = ReaderType::New();
      labelMapReader->SetFileName( inLabelMapFileName );
