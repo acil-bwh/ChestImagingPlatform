@@ -19,7 +19,7 @@ class VesselParticlesPipeline:
   def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',\
                 lth=-125,sth=-100,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
 
-    assert init_method == 'Frangi' or init_method == 'Threshold'
+    assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy'
 
     self._ct_file_name=ct_file_name
     self._pl_file_name=pl_file_name
@@ -168,7 +168,19 @@ class VesselParticlesPipeline:
                 #subprocess.call( tmpCommand, shell=True )
 
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
+                print tmpCommand
+                subprocess.call( tmpCommand , shell=True)
+            elif self._init_method == 'StrainEnergy':
+                tmpCommand = "ComputeFeatureStrength -i %(in)s -m StrainEnergy -f RidgeLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.2 --beta 0.1 --kappa 0.5 --nu 0.1 -o %(out)s"
+                tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
+                tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
+                print tmpCommand
+                subprocess.call( tmpCommand, shell=True )
+                    
+                #Hist equalization, threshold Feature strength and masking
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
                 tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
                 print tmpCommand
                 subprocess.call( tmpCommand , shell=True)
@@ -187,8 +199,12 @@ class VesselParticlesPipeline:
 
         # Vessel Particles For the Region
         if self._multires==False:
-            particlesGenerator = VesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth)
+            particlesGenerator = VesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth,min_intensity=-950,max_intensity=100)
             particlesGenerator._clean_tmp_dir=self._clean_cache
+            particlesGenerator._interations_phase3 = 70
+            particlesGenerator._irad_phase3 = 0.9
+            particlesGenerator._srad_phase3 = 4
+            particlesGenerator._verbose = 0
             particlesGenerator.execute()
         else:
             particlesGenerator = MultiResVesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
@@ -230,7 +246,7 @@ if __name__ == "__main__":
       exit()
 
   op  = parser.parse_args()
-  assert op.init_method == 'Frangi' or op.init_method == 'Threshold'
+  assert op.init_method == 'Frangi' or op.init_method == 'Threshold' or op.init_method == 'StrainEnergy'
 
   #region = [2,3]
   #region=[2]
