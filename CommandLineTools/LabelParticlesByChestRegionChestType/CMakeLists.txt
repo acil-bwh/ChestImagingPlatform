@@ -2,10 +2,18 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( LabelParticlesByChestRegionChestType )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+SET ( MODULE_NAME LabelParticlesByChestRegionChestType )
 
-SET ( LabelParticlesByChestRegionChestType_SOURCE LabelParticlesByChestRegionChestType.cxx )
+SET ( MODULE_TARGET_LIBRARIES
+  ${VTK_LIBRARIES}
+  )
 
-ADD_EXECUTABLE ( LabelParticlesByChestRegionChestType ${LabelParticlesByChestRegionChestType_SOURCE} )
-TARGET_LINK_LIBRARIES ( LabelParticlesByChestRegionChestType CIPCommon ${VTK_LIBRARIES} ${ITK_LIBRARIES} )
+SET ( MODULE_SRCS LabelParticlesByChestRegionChestType.cxx )
+
+cipMacroBuildCLI(
+    NAME ${MODULE_NAME}
+    ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+    ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+    SRCS ${MODULE_SRCS}
+    )
+
