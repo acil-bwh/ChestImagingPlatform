@@ -2,7 +2,8 @@
 #define _itkCIPPartialLungLabelMapImageFilter_txx
 
 #include "itkCIPPartialLungLabelMapImageFilter.h"
-#include "itkImageFileWriter.h"
+#include "itkImageFileWriter.h" //DEB
+#include "cipConventions.h" //DEB
 
 namespace itk
 {
@@ -23,6 +24,9 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   this->m_HeadFirst                   = true;
   this->m_Supine                      = true;
 
+  this->m_AirwayMinIntensityThresholdSet = false;
+  this->m_AirwayMaxIntensityThresholdSet = false;
+
   this->m_AirwayLabelMap = LabelMapType::New();
 }
 
@@ -32,50 +36,80 @@ void
 CIPPartialLungLabelMapImageFilter< TInputImage >
 ::GenerateData()
 {  
-/*   cip::ChestConventions conventions; */
+  if ( !this->m_AirwayMaxIntensityThresholdSet )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, "CIPPartialLungLabelMapImageFilter::GenerateData()", 
+				  "Max airway intensity threshold not set" );
+    }
+  if ( !this->m_AirwayMinIntensityThresholdSet )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, "CIPPartialLungLabelMapImageFilter::GenerateData()", 
+				  "Min airway intensity threshold not set" );
+    }
 
-/*   LabelMapType::SpacingType spacing = this->GetInput()->GetSpacing(); */
+  cip::ChestConventions conventions;
 
-/*   typedef itk::ImageFileWriter< LabelMapType > WriterType; */
+  LabelMapType::SpacingType spacing = this->GetInput()->GetSpacing();
 
-/*   // Allocate space for the output image */
-/*   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput(); */
-/*   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0); */
-/*     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() ); */
-/*     outputPtr->SetBufferedRegion( inputPtr->GetBufferedRegion() ); */
-/*     outputPtr->SetLargestPossibleRegion( inputPtr->GetLargestPossibleRegion() ); */
-/*     outputPtr->Allocate(); */
-/*     outputPtr->FillBuffer( 0 ); */
+  typedef itk::ImageFileWriter< LabelMapType > WriterType;
 
-/*   if ( this->m_HelperMask.IsNull() ) */
-/*     { */
-/*     // */
-/*     // Apply Otsu threshold */
-/*     // */
-/*     this->ApplyOtsuThreshold(); */
-/*     } */
-/*   else */
-/*     { */
-/*     // */
-/*     // Apply the helper mask */
-/*     // */
-/*     this->ApplyHelperMask(); */
-/*     } */
+  // Allocate space for the output image
+  typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
+  typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
+    outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
+    outputPtr->SetBufferedRegion( inputPtr->GetBufferedRegion() );
+    outputPtr->SetLargestPossibleRegion( inputPtr->GetLargestPossibleRegion() );
+    outputPtr->Allocate();
+    outputPtr->FillBuffer( 0 );
 
+  if ( this->m_HelperMask.IsNull() )
+    {
+    // Apply Otsu threshold
+    this->ApplyOtsuThreshold();
+    }
+  else
+    {
+    // Apply the helper mask
+    this->ApplyHelperMask();
+    }
 
-/*   // Identify airways */
-/*   std::vector< OutputImageType::IndexType > airwaySeedVec = this->GetAirwaySeeds(); */
+  // Identify airways
+  std::vector< OutputImageType::IndexType > airwaySeedVec = this->GetAirwaySeeds();
 
-/*   std::cout << "---Segmenting airways..." << std::endl; */
-/*   typename AirwaySegmentationType::Pointer airwaySegmenter = AirwaySegmentationType::New(); */
-/*     airwaySegmenter->SetInput( this->GetInput() );     */
-/*     airwaySegmenter->SetMinIntensityThreshold( this->m_AirwayMinIntensityThreshold ); */
-/*     airwaySegmenter->SetMaxIntensityThreshold( this->m_AirwayMaxIntensityThreshold ); */
-/*   for ( unsigned int i=0; i<airwaySeedVec.size(); i++ ) */
-/*     { */
-/*     airwaySegmenter->AddSeed( airwaySeedVec[i] ); */
-/*     }           */
-/*     airwaySegmenter->Update(); */
+  // Now segment the airway tree
+  typename AirwaySegmentationType::Pointer airwaySegmenter = AirwaySegmentationType::New();
+    airwaySegmenter->SetInput( this->GetInput() );
+    airwaySegmenter->SetMinIntensityThreshold( this->m_AirwayMinIntensityThreshold );
+    airwaySegmenter->SetMaxIntensityThreshold( this->m_AirwayMaxIntensityThreshold );
+  for ( unsigned int i=0; i<airwaySeedVec.size(); i++ )
+    {
+    airwaySegmenter->AddSeed( airwaySeedVec[i] );
+    }
+    airwaySegmenter->Update();
+
+  LabelMapIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() ); 
+  LabelMapIteratorType aIt( airwaySegmenter->GetOutput(), airwaySegmenter->GetOutput()->GetBufferedRegion() );
+
+  oIt.GoToBegin();
+  aIt.GoToBegin();
+  while ( !aIt.IsAtEnd() )
+    {
+      if ( aIt.Get() != 0 )
+	{
+	  oIt.Set( 0 );
+	}
+
+      ++oIt;
+      ++aIt;
+    }
+
+  std::cout << "Writing foo..." << std::endl;
+  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+  writer->SetInput( this->GetOutput() );
+  writer->UseCompressionOn();
+  writer->SetFileName( "/Users/jross/tmp/foo.nhdr" );
+  writer->Update();
+
 
 /* //   std::cout << "---Removing trachea and main bronchi..." << std::endl; */
 /* //   this->RemoveTracheaAndMainBronchi(); */
@@ -795,9 +829,7 @@ void
 CIPPartialLungLabelMapImageFilter< TInputImage >
 ::ApplyHelperMask()
 {
-  //
   // Set the output to the helper mask 
-  //
   LabelMapIteratorType mIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
   LabelMapIteratorType hIt( this->m_HelperMask, this->m_HelperMask->GetBufferedRegion() );
 
@@ -811,11 +843,9 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     ++hIt;
     }
 
-  //
   // The 'ApplyOtsuThreshold' routine typically sets the otsu
   // threshold. Because it is not called in favor of calling this
   // method, we have to set the threshold to a reasonable level
-  //
   this->m_OtsuThreshold = -400;  
 }
 
@@ -823,132 +853,29 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 /**
  * This method will apply Otsu thresholding to the input image and
  * store the result in the 'output' image.  Border objects will be
- * removed.  Also, this method makes the assumption that the lungs and
- * airways are connected to each other and that this single 3D object
- * is the largest foreground object in the image.  Any foreground
- * object not connected to this large object will be set to
- * background. 
+ * removed. 
  */
 template < class TInputImage >
 void
 CIPPartialLungLabelMapImageFilter< TInputImage >
 ::ApplyOtsuThreshold()
 {
-  //
-  // The first step is to run Otsu threshold on the input data.  This
-  // classifies each voxel as either "body" or "air"
-  //
-  typename OtsuThresholdType::Pointer otsuThreshold = OtsuThresholdType::New();
-    otsuThreshold->SetInput( this->GetInput() );
-    otsuThreshold->Update();
+  typename OtsuCastType::Pointer segmenter = OtsuCastType::New();
+    segmenter->SetInput( this->GetInput() );
+    segmenter->Update();
 
-  this->m_OtsuThreshold = otsuThreshold->GetThreshold();
-
-  int ctXDim = (this->GetInput()->GetBufferedRegion().GetSize())[0];
-  int ctYDim = (this->GetInput()->GetBufferedRegion().GetSize())[1];
-
-  this->GraftOutput( otsuThreshold->GetOutput() );
-
-  //
-  // The next step is to identify all connected components in the
-  // thresholded image
-  //
-  ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();
-    connectedComponent->SetInput( otsuThreshold->GetOutput() );
-
-  //
-  // Relabel the connected components
-  //
-  Relabel3DType::Pointer relabelComponent = Relabel3DType::New();
-    relabelComponent->SetInput( connectedComponent->GetOutput() );
-    relabelComponent->Update();  
-
-  //
-  // Now we want to identify the component labels that correspond to
-  // the left lung and the right lung. In some cases, they might not
-  // be connected, that's why we need to do a separate search for
-  // each.
-  //
-  std::vector< int >  lungHalf1ComponentCounter;
-  std::vector< int >  lungHalf2ComponentCounter;
-  for ( unsigned int i=0; i<=relabelComponent->GetNumberOfObjects(); i++ )
-    {
-    lungHalf1ComponentCounter.push_back( 0 );
-    lungHalf2ComponentCounter.push_back( 0 );
-    }
-
-  ComponentIteratorType rIt( relabelComponent->GetOutput(), relabelComponent->GetOutput()->GetBufferedRegion() );
-
-  int lowerYBound = static_cast< int >( 0.45*static_cast< double >( ctYDim ) );
-  int upperYBound = static_cast< int >( 0.55*static_cast< double >( ctYDim ) );
-
-  int lowerXBound = static_cast< int >( 0.20*static_cast< double >( ctXDim ) );
-  int upperXBound = static_cast< int >( 0.80*static_cast< double >( ctXDim ) );
-
-  int middleX =  static_cast< int >( 0.5*static_cast< double >( ctXDim ) );
-
-  rIt.GoToBegin();
-  while ( !rIt.IsAtEnd() )
-    {
-    if ( rIt.Get() != 0 )
-      {
-      LabelMapType::IndexType index = rIt.GetIndex();
-
-      if ( index[1] >= lowerYBound && index[1] <= upperYBound )
-        {
-        int whichComponent = static_cast< int >( rIt.Get() );
-
-        if ( index[0] >= lowerXBound && index[0] <= middleX )
-          {
-          lungHalf1ComponentCounter[whichComponent] = lungHalf1ComponentCounter[whichComponent]+1;
-          }
-        else if ( index[0] < upperXBound && index[0] > middleX )
-          {
-          lungHalf2ComponentCounter[whichComponent] = lungHalf2ComponentCounter[whichComponent]+1;
-          }
-        }
-      }
-
-    ++rIt;
-    }
-
-  unsigned short lungHalf1Label;
-  unsigned short lungHalf2Label;
-  int maxLungHalf1Count = 0;
-  int maxLungHalf2Count = 0;
-  for ( unsigned int i=0; i<=relabelComponent->GetNumberOfObjects(); i++ )
-    {
-    if ( lungHalf1ComponentCounter[i] > maxLungHalf1Count )
-      {
-      maxLungHalf1Count = lungHalf1ComponentCounter[i];
-
-      lungHalf1Label = static_cast< unsigned short >( i );
-      }
-    if ( lungHalf2ComponentCounter[i] > maxLungHalf2Count )
-      {
-      maxLungHalf2Count = lungHalf2ComponentCounter[i];
-
-      lungHalf2Label = static_cast< unsigned short >( i );
-      }
-    }
-
+  // Set the output to the helper mask 
   LabelMapIteratorType mIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
+  LabelMapIteratorType hIt( segmenter->GetOutput(), segmenter->GetOutput()->GetBufferedRegion() );
 
   mIt.GoToBegin();
-  rIt.GoToBegin();
+  hIt.GoToBegin();
   while ( !mIt.IsAtEnd() )
     {
-    if ( rIt.Get() == lungHalf1Label || rIt.Get() == lungHalf2Label )
-      {
-      mIt.Set( cip::WHOLELUNG );
-      }
-    else 
-      {
-      mIt.Set( 0 );
-      }
+    mIt.Set( hIt.Get() );
 
     ++mIt;
-    ++rIt;
+    ++hIt;
     }
 }
 

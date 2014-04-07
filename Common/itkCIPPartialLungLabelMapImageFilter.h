@@ -1,3 +1,15 @@
+/** \class CIPPartialLungLabelMapImageFilter
+ * \brief This filter produces a lung label map given a grayscale
+ * input image. The designation 'Partial' is meant to emphasize that
+ * certain structures (namely airways and vessels) are only roughly
+ * generated and that other structures (e.g. the lobes) are not produced
+ * at all. This filter will attempt to produce a lung label map with
+ * the left and right lungs labeled by thirds. If no left-right
+ * distinction can be made (i.e. if the lungs can't be separated), 
+ * then the output labeling will consist only the lung region labeled
+ * by thirds but with no left-right distinction.
+ */
+
 #ifndef __itkCIPPartialLungLabelMapImageFilter_h
 #define __itkCIPPartialLungLabelMapImageFilter_h
 
@@ -17,20 +29,10 @@
 #include "itkBinaryBallStructuringElement.h"
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
-
+#include "itkCIPOtsuLungCastImageFilter.h"
 
 namespace itk
 {
-/** \class CIPPartialLungLabelMapImageFilter
- * \brief This filter produces a lung label map given a grayscale
- * input image.  The designation 'Partial' is meant to emphasize that
- * certain structures (namely airways and vessels) are only roughly
- * generated and that other structures (e.g. the lobes) are produced
- * at all. This filter will attempt to produce a lung label map with
- * the left and right lungs labeled by thirds. If no left-right
- * distinction can be made (i.e. if the lungs are connected), then the
- * output labeling will consist only of WHOLELUNG region.
- */
 template <class TInputImage>
 class ITK_EXPORT CIPPartialLungLabelMapImageFilter :
     public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
@@ -64,14 +66,6 @@ public:
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
   typedef typename InputImageType::SizeType            InputSizeType;
 
-  /** Reasonable airway segmentations have been empiracally found to
-      have volumes of at least 10.0 cc (default).  The value set by
-      this method indicates the minimum airway volume expected in cc.
-      This value is used during airway segmentation (when trying to
-      find the best threshold for connected threshold segmentation) */
-  itkSetMacro( MinAirwayVolume, double );
-  itkGetMacro( MinAirwayVolume, double );
-
   /** Region growing can "explode slowly". That is, the lung region
    *  can slowly be filled by the region growing algorithm in a way
    *  that goes undetected by the other explosion control
@@ -79,19 +73,6 @@ public:
    *  we enable an additional check to safegaurd against explosions. */
   itkSetMacro( MaxAirwayVolume, double );
   itkGetMacro( MaxAirwayVolume, double );
-
-  /** MaxAirwayVolumeIncreaseRate is used during airway segmentation
-      while trying to find the optimal threshold to use with the
-      connected threshold algorithm. Change in airway volume over
-      change in threshold increment less than 2.0 (default) has been
-      empirically found to be stable.  Leakage typically produces
-      values much larger than 2.0.  If you see a little leakage in the
-      airway segmentation output, it is likely due to "slow" leakage.
-      Decreasing from 2.0 might fix the problem in this
-      case. Satisfactory values for this parameter will likely be
-      quite close to 2.0. */
-  itkSetMacro( MaxAirwayVolumeIncreaseRate, double );
-  itkGetMacro( MaxAirwayVolumeIncreaseRate, double );
 
   /** This variable indicates whether or not the patient was scanned
    *  in the supine position (default is true) */
@@ -154,6 +135,20 @@ public:
    *  morphological closing (3 dimensions) */
   void SetClosingNeighborhood( unsigned long * );
 
+  /** Set the maximum threshold value to use during airway region growing 
+   *  segmentation. This is a required value -- if no value is 
+   *  specified, an exception will be thrown. For CT images, this value
+   *  should be in the neighborhood of -800 HU. */
+  void SetMaxIntensityThreshold( InputPixelType );
+  itkGetMacro( MaxIntensityThreshold, InputPixelType );
+
+  /** Set the minimum threshold value to use during airway region growing 
+   *  segmentation. This is a required value -- if no value is 
+   *  specified, an exception will be thrown. For CT images, this value
+   *  should probably be -1024 HU. */
+  void SetMinIntensityThreshold( InputPixelType );
+  itkGetMacro( MinIntensityThreshold, InputPixelType );
+
   /** This function allows to set a "helper" mask. This mask is
    *  assumed to be binary, with 1 as the foreground. It is assumed
    *  that the lung region has been reasonably well threshold, and the
@@ -186,6 +181,7 @@ protected:
   typedef itk::BinaryBallStructuringElement< LabelMapPixelType, 3 >                   Element3DType;
   typedef itk::BinaryDilateImageFilter< LabelMapType, LabelMapType, Element3DType >   Dilate3DType;
   typedef itk::BinaryErodeImageFilter< LabelMapType, LabelMapType, Element3DType >    Erode3DType;
+  typedef itk::CIPOtsuLungCastImageFilter< InputImageType >                           OtsuCastType;
 
   CIPPartialLungLabelMapImageFilter();
   virtual ~CIPPartialLungLabelMapImageFilter() {}
@@ -213,6 +209,11 @@ private:
 
   LabelMapType::Pointer m_AirwayLabelMap;
   LabelMapType::Pointer m_HelperMask;
+
+  InputPixelType         m_MaxIntensityThreshold;
+  bool                   m_MaxIntensityThresholdSet;
+  InputPixelType         m_MinIntensityThreshold;
+  bool                   m_MinIntensityThresholdSet;
 
   double           m_MinAirwayVolume;
   double           m_MaxAirwayVolume;
