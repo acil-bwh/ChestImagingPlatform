@@ -38,8 +38,8 @@ ENDIF ( VTK_FOUND )
 FIND_PACKAGE ( Teem )
 IF ( Teem_FOUND )
   INCLUDE(${Teem_USE_FILE})
-ELSE ( VTK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
+ELSE ( Teem_FOUND )
+  MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
 ENDIF ( Teem_FOUND )
 
 #---------------------------------------------------------------------
