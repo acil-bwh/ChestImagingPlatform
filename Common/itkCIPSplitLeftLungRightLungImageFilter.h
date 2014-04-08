@@ -20,7 +20,7 @@
 #include "itkImageToGraphFilter.h"
 #include "itkCIPDijkstraImageToGraphFunctor.h"
 #include "itkCIPDijkstraMinCostPathGraphToGraphFilter.h"
-
+#include "itkThresholdImageFilter.h"
 
 namespace itk
 {
@@ -38,7 +38,7 @@ public:
   typedef itk::Image< unsigned short, 3 >   OutputImageType;
 
   /** Standard class typedefs. */
-  typedef CIPSplitLeftLungRightLungImageFilter                      Self;
+  typedef CIPSplitLeftLungRightLungImageFilter                   Self;
   typedef ImageToImageFilter< InputImageType, OutputImageType >  Superclass;
   typedef SmartPointer< Self >                                   Pointer;
   typedef SmartPointer< const Self >                             ConstPointer;
@@ -62,7 +62,7 @@ public:
    *  assumptions to make the process as fast as possible.  In some
    *  cases, however, this can result in left and right lungs that are
    *  still merged.  By setting 'AggressiveLeftRightSplitter' to true,
-   *  the splitting routing will take longer, but will be more robust. */
+   *  the splitting routine will take longer, but will be more robust. */
   itkSetMacro( AggressiveLeftRightSplitter, bool ); 
   itkGetMacro( AggressiveLeftRightSplitter, bool );
 
@@ -123,6 +123,7 @@ protected:
   typedef itk::ImageToGraphFilter< InputSliceType, GraphType >                                   GraphFilterType;
   typedef itk::CIPDijkstraImageToGraphFunctor< InputSliceType, GraphType >                       FunctorType;
   typedef itk::CIPDijkstraMinCostPathGraphToGraphFilter< GraphType, GraphType >                  MinPathType;
+  typedef itk::ThresholdImageFilter< InputImageType >                                            ThresholdType;
 
   CIPSplitLeftLungRightLungImageFilter();
   virtual ~CIPSplitLeftLungRightLungImageFilter() {}
@@ -132,9 +133,21 @@ protected:
 
   void ExtractLabelMapSlice( LabelMapType::Pointer, LabelMapSliceType::Pointer, int );
 
-  std::vector< LabelMapSliceIndexType > GetMinCostPath( InputSlicePointerType, LabelMapSliceIndexType, LabelMapSliceIndexType );
+  void FindMinCostPath();
 
   bool GetLungsMergedInSliceRegion( int, int, int, int, int );
+
+  /** Given a min cost path through a slice, this function will erase
+      all pixels that fall on the path (including those with a specified
+      radius of each path pixl). The function also records those slice
+      indices that were actualy erased for later use. */
+  void EraseConnection( unsigned int );
+
+  /** */
+  void SetDefaultGraphROIAndSearchIndices( unsigned int );
+
+  /** */
+  void SetLocalGraphROIAndSearchIndices( unsigned int );
 
   void GenerateData();
 
@@ -142,14 +155,21 @@ private:
   CIPSplitLeftLungRightLungImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  LabelMapType::Pointer m_LungLabelMap;
+  LabelMapType::Pointer  m_LungLabelMap;
+  cip::ChestConventions  m_LungConventions;
 
-  std::vector< LabelMapType::IndexType >  m_RemovedIndices;
-  cip::ChestConventions                   m_LungConventions;
-  double                                  m_ExponentialCoefficient;
-  double                                  m_ExponentialTimeConstant;
-  bool                                    m_AggressiveLeftRightSplitter;
-  int                                     m_LeftRightLungSplitRadius;
+  double  m_ExponentialCoefficient;
+  double  m_ExponentialTimeConstant;
+  bool    m_AggressiveLeftRightSplitter;
+  int     m_LeftRightLungSplitRadius;
+
+  std::vector< LabelMapSliceType::IndexType >  m_MinCostPathIndices;
+  std::vector< LabelMapSliceType::IndexType >  m_ErasedSliceIndices;
+  LabelMapType::IndexType                      m_StartSearchIndex;
+  LabelMapType::IndexType                      m_EndSearchIndex;
+  typename InputImageType::SizeType            m_GraphROISize;
+  typename InputImageType::IndexType           m_GraphROIStartIndex;
+  bool                                         m_UseLocalGraphROI;
 };
   
 } // end namespace itk
