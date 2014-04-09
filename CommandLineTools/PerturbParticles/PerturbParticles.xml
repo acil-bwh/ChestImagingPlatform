@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform.Toolkit.Particles</category>
+    <title>FilterAirwayParticleData</title>
+    <description><![CDATA[This program can used to perturb a particles dataset. This kind of operation can be useful for experimentation purposes. Currently, the program simply translates the particles dataset by a random offset in the x, y, and z directions. The user can control the magnitude of the random offset that is used.]]>
+    </description>
+    <version>0.0.1</version>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+        <geometry type="model">
+            <name>inFileName</name>
+            <label>Input Particles FileName</label>
+            <channel>input</channel>
+            <flag>i</flag>
+            <longflag>input</longflag>
+            <description><![CDATA[Input particles file name.]]></description>
+            <default>q</default>
+        </geometry>
+        <geometry type="model">
+            <name>outFileName</name>
+            <label>Output Particles FileName</label>
+            <channel>output</channel>
+            <flag>o</flag>
+            <longflag>output</longflag>
+            <description><![CDATA[Output particles file name.]]></description>
+            <default>q</default>
+        </geometry>
+      </parameters>
+      <parameters>
+         <label>Parameters</label>
+          <double>
+              <name>offsetMagnitude</name>
+              <label>offset Magnitude</label>
+              <flag>m</flag>
+              <longflag>mag</longflag>
+              <channel>input</channel>
+              <description>Random offsets are drawn from the uniform distribution. This parameter controls the magnitude of the translation by scaling the uniform distribution by the specified amount. </description>
+              <default>1.0</default>
+          </double>
+      </parameters>
+</executable>
