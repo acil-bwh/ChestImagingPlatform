@@ -2,10 +2,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( GenerateStenciledLabelMapFromParticles )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+SET ( MODULE_NAME GenerateStenciledLabelMapFromParticles )
 
-SET ( GenerateStenciledLabelMapFromParticles_SOURCE GenerateStenciledLabelMapFromParticles.cxx )
+SET ( MODULE_TARGET_LIBRARIES
+  ${VTK_LIBRARIES}
+  )
 
-ADD_EXECUTABLE ( GenerateStenciledLabelMapFromParticles ${GenerateStenciledLabelMapFromParticles_SOURCE} )
-TARGET_LINK_LIBRARIES ( GenerateStenciledLabelMapFromParticles ${VTK_LIBRARIES} ${ITK_LIBRARIES} CIPCommon )
+SET ( MODULE_SRCS GenerateStenciledLabelMapFromParticles.cxx )
+
+cipMacroBuildCLI(
+    NAME ${MODULE_NAME}
+    ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+    ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+    SRCS ${MODULE_SRCS}
+    )
