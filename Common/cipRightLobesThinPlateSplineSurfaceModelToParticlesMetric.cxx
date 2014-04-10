@@ -9,6 +9,7 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "cipHelper.h"
+#include "cipExceptionObject.h"
 
 cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric
 ::cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric()
@@ -44,6 +45,42 @@ cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric
 // call. 
 double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vector< double >* const params )
 {
+  if ( this->MeanPoints.size() == 0 )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const std::vector< double >* const params )", 
+				  "Mean surface points are not set" );
+    }
+
+  assert ( this->MeanPoints.size() == this->NumberOfSurfacePoints );
+
+  // If the right oblique / horizontal points have not yet been set, set them now. Notice
+  // that we assume the first half of the surface points correspond to the right
+  // oblique boundary, and the second half correspond to the right horizontal
+  // boundary
+  if ( this->RightObliqueSurfacePoints.size() == 0 )
+    {
+      for ( unsigned int i=0; i<this->NumberOfSurfacePoints/2; i++ )
+	{
+	  this->RightObliqueSurfacePoints.push_back( this->MeanPoints[i] );
+	}
+    }
+
+  unsigned int index;
+  if ( this->RightHorizontalSurfacePoints.size() == 0 )
+    {
+      for ( unsigned int i=0; i<this->NumberOfSurfacePoints/2; i++ )
+	{
+	  index = i + this->NumberOfSurfacePoints/2;
+	  this->RightObliqueSurfacePoints.push_back( this->MeanPoints[index] );
+	}
+    }
+
+  assert ( this->RightObliqueSurfacePoints.size() == this->NumberOfSurfacePoints/2 );
+  assert ( this->RightHorizontalSurfacePoints.size() == this->NumberOfSurfacePoints/2 );
+  assert ( this->Eigenvalues.size() == this->NumberOfModes );
+  assert ( this->Eigenvectors.size() == this->NumberOfModes );
+
   // First we must construct the TPS surface given the param values. Note that we assume the first
   // half of the surface points correspond to the right oblique surface, and the second half
   // correspond to the right horizontal surface.

@@ -23,45 +23,9 @@
         Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
         and does not necessarily represent the official views of the National Institutes of Health.</acknowledgements>
   <parameters>
-    <string-vector>
-      <name>regionVec</name>
-      <label>Chest Regions</label>
-      <channel>input</channel>
-      <flag>r</flag>
-      <longflag>--regions</longflag>
-      <description><![CDATA[Specify a chest you want to extract]]></description>
-    </string-vector>  
-
-    <string-vector>
-      <name>typeVec</name>
-      <label>Chest Types</label>
-      <channel>input</channel>
-      <flag>t</flag>
-      <longflag>--types</longflag>
-      <description><![CDATA[Specify a chest type you want to extract]]></description>
-    </string-vector>  
-
-    <string-vector>
-      <name>regionPairVec</name>
-      <label>Chest Region-Type Pair Region</label>
-      <channel>input</channel>
-      <longflag>--regionPair</longflag>
-      <description><![CDATA[Specify a region in a region-type pair you want to extract]]></description>
-    </string-vector>  
-
-    <string-vector>
-      <name>typePairVec</name>
-      <label>Chest Region-Type Pair Type</label>
-      <channel>input</channel>
-      <longflag>--typePair</longflag>
-      <description><![CDATA[Specify a type in a region-type pair you want to extract]]></description>
-    </string-vector>  
-  </parameters>
-
-  <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <image>
+    <image type="label">
       <name>inFileName</name>
       <label>Input label map file name</label>
       <channel>input</channel>
@@ -69,9 +33,9 @@
       <longflag>--inFileName</longflag>
       <description><![CDATA[Input label map file name]]></description>
       <default>NA</default>
-    </image>  
-
-    <image>
+    </image>
+    
+    <image type="label">
       <name>outFileName</name>
       <label>Output label map file name</label>
       <channel>output</channel>
@@ -79,7 +43,48 @@
       <longflag>--outFileName</longflag>
       <description><![CDATA[Output label map file name]]></description>
       <default>NA</default>
-    </image>  
+    </image>
+  </parameters>
+  
+  <parameters>
+    <label> Region Type </label>
+    <description>Selection of Region/Type to extract</description>
+    
+    <string-vector>
+      <name>regionVec</name>
+      <label>Chest Regions</label>
+      <channel>input</channel>
+      <flag>r</flag>
+      <longflag>regions</longflag>
+      <description><![CDATA[Specify a chest region/regions name you want to extract (ex: LeftUpperLobe)]]></description>
+    </string-vector>
+
+    <string-vector>
+      <name>typeVec</name>
+      <label>Chest Types</label>
+      <channel>input</channel>
+      <flag>t</flag>
+      <longflag>types</longflag>
+      <description><![CDATA[Specify a chest type/types name you want to extract (ex: Airway)]]></description>
+    </string-vector>
+
+    <string-vector>
+      <name>regionPairVec</name>
+      <label>Chest Region-Type Pair Region</label>
+      <channel>input</channel>
+      <flag>b</flag>
+      <longflag>regionPair</longflag>
+      <description><![CDATA[Specify a region name in a region-type pair you want to extract]]></description>
+    </string-vector>
+
+    <string-vector>
+      <name>typePairVec</name>
+      <label>Chest Region-Type Pair Type</label>
+      <channel>input</channel>
+      <flag>w</flag>
+      <longflag>typePair</longflag>
+      <description><![CDATA[Specify a type name in a region-type pair you want to extract]]></description>
+    </string-vector>
   </parameters>
 
 </executable>

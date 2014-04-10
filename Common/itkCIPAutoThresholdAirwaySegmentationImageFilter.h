@@ -1,15 +1,10 @@
 /** \class CIPAutoThresholdAirwaySegmentationImageFilter
- * \brief This filter segments the airways with an algorithm that
- * consists of region growing in which the threshold is adapted to
- * find the best result without leakage.  The starting threshold value
- * is the darkest value among the seeds.  The threshold is increased
- * until leakage is detected; the final threshold value is then
- * selected to be the value that is just below the value producing
- * leakage. After region growing, morphological closing is performed
- * to fill in holes.
- *  $Date:  $
- *  $Revision: $
- *  $Author: $
+ *  \brief This filter segments the airways with a region growing
+ *  algorithm. The thresholds used by the algorithm are automatically
+ *  adjusted between two pre-defined extremes until an airway volume
+ *  is achieved that is a close to possible as a maximum specified
+ *  volume without going over. After region growing, morphological 
+ *  closing is performed to fill in holes.
  */
 
 #ifndef __itkCIPAutoThresholdAirwaySegmentationImageFilter_h
@@ -62,34 +57,27 @@ public:
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
   typedef typename InputImageType::SizeType            InputSizeType;
 
-  /** Reasonable airway segmentations have been empiracally found to
-      have volumes of at least 10.0 cc (default).  The value set by
-      this method indicates the minimum airway volume expected in cc.
-      This value is used during airway segmentation (when trying to
-      find the best threshold for connected threshold segmentation) */
-  itkSetMacro( MinAirwayVolume, double );
-  itkGetMacro( MinAirwayVolume, double );
-
-  /** Region growing can "explode slowly". That is, the lung region
-   *  can slowly be filled by the region growing algorithm in a way
-   *  that goes undetected by the other explosion control
-   *  mechanism. By setting the max volume of the airway segmentation,
-   *  we enable an additional check to safegaurd against explosions. */
+  /** The algorithm performs region growing to find a threshold that
+   *  produces an airway tree with a volume as close to this specified
+   *  value as possible, without going over. This is an optional input
+   *  and is set to a reasonable value by default. The volume should
+   *  be specified in mm^3 (not to be confused with milliliters) */
   itkSetMacro( MaxAirwayVolume, double );
   itkGetMacro( MaxAirwayVolume, double );
 
-  /** MaxAirwayVolumeIncreaseRate is used during airway segmentation
-      while trying to find the optimal threshold to use with the
-      connected threshold algorithm. Change in airway volume over
-      change in threshold increment less than 2.0 (default) has been
-      empirically found to be stable.  Leakage typically produces
-      values much larger than 2.0.  If you see a little leakage in the
-      airway segmentation output, it is likely due to "slow" leakage.
-      Decreasing from 2.0 might fix the problem in this
-      case. Satisfactory values for this parameter will likely be
-      quite close to 2.0. */
-  itkSetMacro( MaxAirwayVolumeIncreaseRate, double );
-  itkGetMacro( MaxAirwayVolumeIncreaseRate, double );
+  /** Set the maximum threshold value to use during region growing 
+   *  segmentation. This is a required value -- if no value is 
+   *  specified, an exception will be thrown. For CT images, this value
+   *  should be in the neighborhood of -800 HU. */
+  void SetMaxIntensityThreshold( InputPixelType );
+  itkGetMacro( MaxIntensityThreshold, InputPixelType );
+
+  /** Set the minimum threshold value to use during region growing 
+   *  segmentation. This is a required value -- if no value is 
+   *  specified, an exception will be thrown. For CT images, this value
+   *  should probably be -1024 HU. */
+  void SetMinIntensityThreshold( InputPixelType );
+  itkGetMacro( MinIntensityThreshold, InputPixelType );
 
   /** Set a seed (multiple seeds may be specified) for the region
    * growing */
@@ -118,9 +106,11 @@ private:
   std::vector< OutputImageType::IndexType > m_SeedVec;
 
   cip::ChestConventions  m_ChestConventions;
-  double                 m_MinAirwayVolume;
   double                 m_MaxAirwayVolume;
-  double                 m_MaxAirwayVolumeIncreaseRate;
+  InputPixelType         m_MaxIntensityThreshold;
+  bool                   m_MaxIntensityThresholdSet;
+  InputPixelType         m_MinIntensityThreshold;
+  bool                   m_MinIntensityThresholdSet;
 };
   
 } // end namespace itk

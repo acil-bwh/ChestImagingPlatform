@@ -74,6 +74,19 @@ class VesselParticles(ChestParticles):
 
         self._mode_thresh = -0.5
         self._population_control_period = 6
+  
+        self._iterations_phase1 = 10
+        self._iterations_phase2 = 20
+        self._iterations_phase3 = 50
+  
+        self._irad_phase1 = 1.7
+        self._irad_phase2 = 1.15
+        self._irad_phase3 = 1.15
+  
+        self._srad_phase1 = 1.2
+        self._srad_phase2 = 2
+        self._srad_phase3 = 4
+  
 
     def execute(self):
         #Pre-processing
@@ -117,9 +130,9 @@ class VesselParticles(ChestParticles):
         self._inter_particle_enery_type = "uni"
         self._beta  = 0.7 # Irrelevant for pass 1
         self._alpha = 1.0
-        self._irad = 1.7
-        self._srad = 1.2
-        self._iterations = 10
+        self._irad = self._irad_phase1
+        self._srad = self._srad_phase1
+        self._iterations = self._iterations_phase1
 
         #Build parameters and run
         print "resetting param groups\n"
@@ -145,11 +158,11 @@ class VesselParticles(ChestParticles):
         # Controls blending in scale and space with respect to
         # function psi_2
         self._beta = 0.5
-        self._irad = 1.15
-        self._srad = 2
+        self._irad = self._irad_phase2
+        self._srad = self._srad_phase2
         self._use_strength = True
 
-        self._iterations = 20
+        self._iterations = self._iterations_phase2
 
         # Build parameters and run
         self.reset_params()
@@ -168,11 +181,11 @@ class VesselParticles(ChestParticles):
         self._alpha = 0.25
         self._beta = 0.25
         self._gamma = 0.002
-        self._irad = 1.15
-        self._srad = 4
+        self._irad = self._irad_phase3
+        self._srad = self._srad_phase3
         self._use_strength = True
         self._use_mode_th = True
-        self._iterations = 50
+        self._iterations = self._iterations_phase3
 
         # Build parameters and run
         self.reset_params()

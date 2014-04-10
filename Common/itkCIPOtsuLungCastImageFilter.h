@@ -1,6 +1,10 @@
-/*=========================================================================
+/** \class CIPOtsuLungCastImageFilter
+ *  \brief This filter produces a segmentation of the lungs and
+ *  airways using the Otsu thresholding approach. This filter is 
+ *  so named because the output is a "cast" from which more 
+ *  refined segmentations can be derived.
+ */
 
-=========================================================================*/
 #ifndef __itkCIPOtsuLungCastImageFilter_h
 #define __itkCIPOtsuLungCastImageFilter_h
 
@@ -11,12 +15,8 @@
 #include "itkRelabelComponentImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
 
-
 namespace itk
 {
-/** \class CIPOtsuLungCastImageFilter
- * \brief Brief description here
- */
 template <class TInputImage>
 class ITK_EXPORT CIPOtsuLungCastImageFilter :
     public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
@@ -49,7 +49,6 @@ public:
   typedef typename InputImageType::RegionType          InputImageRegionType;
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
   typedef typename InputImageType::SizeType            InputSizeType;
-
 
   void PrintSelf( std::ostream& os, Indent indent ) const;
 

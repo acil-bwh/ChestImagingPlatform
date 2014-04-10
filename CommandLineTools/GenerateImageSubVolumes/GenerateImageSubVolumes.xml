@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>GenerateStenciledLabelMapFromParticles</title>
+    <description><![CDATA[This program accepts as input a CT image and a corresponding label map. It produces a collection of subvolumes of the CT image and (optionally) of the label map image. The user specifies the size of the sub-volume to extract and can optionally supply an overlap value (the amount of overlap between sub-volumes). Sub-volumes over a given region of the image will only be extracted provided that there is at least one foreground label map voxel in that region. The user only specifies an output prefix; each of the subvolumes written will have a numerical suffix attached to it.]]></description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+ 
+      <image type="label">
+          <name>labelMapFileName</name>
+          <label>labelMapFileName</label>
+          <channel>input</channel>
+          <flag>l</flag>
+          <longflag>lm</longflag>
+          <description><![CDATA[Label map file name]]></description>
+          <default>q</default>
+      </image>      
+      <image>
+          <name>ctFileName</name>
+          <label>ctFileName</label>
+          <channel>input</channel>
+          <flag>c</flag>
+          <longflag>ct</longflag>
+          <description><![CDATA[CT file name]]></description>
+          <default>q</default>
+      </image>
+      
+      <string>
+          <name>ctSubVolumeFileNamePrefix</name>
+          <label>ctSubVolumeFileNamePrefix</label>
+          <channel>input</channel>
+          <longflag>ctPre</longflag>
+          <description><![CDATA[CT sub-volume file name prefix. Each sub-volume extracted will be written to file. The file name used will be this prefix plus a numerical identifier followed by the .nhdr file extension.]]></description>
+          <default>q</default>
+      </string>
+      
+      <string>
+          <name>labelMapSubVolumeFileNamePrefix</name>
+          <label>labelMapSubVolumeFileNamePrefix</label>
+          <channel>input</channel>
+          <longflag>lmPre</longflag>
+          <description><![CDATA[Label map sub-volume file name prefix. This is an optional argument and will have no effect unless the --wls flag is set to 1. Each sub-volume extracted will be written to file. The file name used will be this prefix plus a numerical identifier followed by the .nhdr file extension.]]></description>
+          <default>q</default>
+      </string>
+      <boolean>
+          <name>writeLabelMapSubVolumes</name>
+          <label>writeLabelMapSubVolumes</label>
+          <channel>input</channel>
+          <longflag>wls</longflag>
+          <description><![CDATA[Boolean flag to indicate whether label map sub-volumes should be written in addition to the CT sub-volumes. Default: False.]]></description>
+          <default>false</default>
+      </boolean>
+  </parameters>
+    <parameters>
+        <label>Parameters</label>
+      
+      <integer>
+          <name>roiLengthInt</name>
+          <label>roi Length Int</label>
+          <flag>r</flag>
+          <longflag>roi</longflag>
+          <description>Length in voxels of sub-volume edge to extract. </description>
+          <default>31</default>
+      </integer>
+      <integer>
+          <name>overlapInt</name>
+          <label>overlap Int</label>
+          <flag>o</flag>
+          <longflag>overlap</longflag>
+          <description>Length in voxels of overlap between sub-volume regions. </description>
+          <default>0</default>
+      </integer>
+      
+
+    </parameters>        
+</executable>

@@ -21,7 +21,6 @@ typedef itk::CIPPartialLungLabelMapImageFilter< ShortImageType >  PartialLungTyp
 typedef itk::GDCMImageIO                                          ImageIOType;
 typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
 typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
-typedef itk::MedianImageFilter< ShortImageType, ShortImageType > MedianType;
 
 void LowerClipImage( ShortImageType::Pointer, short, short );
 void UpperClipImage( ShortImageType::Pointer, short, short );
@@ -32,9 +31,7 @@ int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  //
   // Read the CT image
-  //
   ShortImageType::Pointer ctImage = ShortImageType::New();
 
   if ( ctDir.compare("NA") != 0 )
@@ -54,16 +51,16 @@ int main( int argc, char *argv[] )
     return 0;
     }
 
-  ShortImageType::SpacingType spacing = ctImage->GetSpacing();
+  // ShortImageType::SpacingType spacing = ctImage->GetSpacing();
   
-  unsigned long closingNeighborhood[3];
-    closingNeighborhood[0] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[0] ) );
-    closingNeighborhood[1] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[1] ) );
-    closingNeighborhood[2] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[2] ) );
+  // unsigned long closingNeighborhood[3];
+  //   closingNeighborhood[0] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[0] ) );
+  //   closingNeighborhood[1] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[1] ) );
+  //   closingNeighborhood[2] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[2] ) );
 
-  closingNeighborhood[0] = closingNeighborhood[0]>0 ? closingNeighborhood[0] : 1;
-  closingNeighborhood[1] = closingNeighborhood[1]>0 ? closingNeighborhood[1] : 1;
-  closingNeighborhood[2] = closingNeighborhood[2]>0 ? closingNeighborhood[2] : 1;
+  // closingNeighborhood[0] = closingNeighborhood[0]>0 ? closingNeighborhood[0] : 1;
+  // closingNeighborhood[1] = closingNeighborhood[1]>0 ? closingNeighborhood[1] : 1;
+  // closingNeighborhood[2] = closingNeighborhood[2]>0 ? closingNeighborhood[2] : 1;
 
   std::cout << "Clipping low CT image values..." << std::endl;
   LowerClipImage( ctImage, lowerClipValue, lowerReplacementValue );
@@ -74,39 +71,11 @@ int main( int argc, char *argv[] )
   std::cout << "Clipping upper CT image values..." << std::endl;
   UpperClipImage( ctImage, upperClipValue, upperReplacementValue );
 
-  {
-  ShortImageType::SizeType medianRadius;
-    medianRadius[0] = 1;
-    medianRadius[1] = 1;
-    medianRadius[2] = 1;
-
-  std::cout << "Executing median filter..." << std::endl;
-  MedianType::Pointer median = MedianType::New();
-    median->SetInput( ctImage );
-    median->SetRadius( medianRadius );
-    median->Update();
-
-  ShortIteratorType gIt( ctImage, ctImage->GetBufferedRegion() );
-  ShortIteratorType mIt( median->GetOutput(), median->GetOutput()->GetBufferedRegion() );
-
-  gIt.GoToBegin();
-  mIt.GoToBegin();
-  while ( !gIt.IsAtEnd() )
-    {
-    gIt.Set( mIt.Get() );
-
-    ++gIt;
-    ++mIt;
-    }
-  }
-
   std::cout << "Executing partial lung filter..." << std::endl;
   PartialLungType::Pointer partialLungFilter = PartialLungType::New();
     partialLungFilter->SetInput( ctImage );
-  if ( aggressiveLungSplitting == 1 )
-    {
-    partialLungFilter->SetAggressiveLeftRightSplitter( true );
-    }
+    partialLungFilter->SetAirwayMinIntensityThreshold( -1024 );
+    partialLungFilter->SetAirwayMaxIntensityThreshold( -800 );
   if ( headFirst == 1 )
     {
     partialLungFilter->SetHeadFirst( true );
@@ -115,86 +84,33 @@ int main( int argc, char *argv[] )
     {
     partialLungFilter->SetHeadFirst( false );
     }
-    partialLungFilter->SetMaxAirwayVolumeIncreaseRate( airwayVolumeIncreaseRate );
     partialLungFilter->SetLeftRightLungSplitRadius( lungSplitRadius );
-    partialLungFilter->SetMinAirwayVolume( minAirwayVolume );
-    partialLungFilter->SetMaxAirwayVolume( maxAirwayVolume );
-    partialLungFilter->SetClosingNeighborhood( closingNeighborhood );
-  //
-  // Read the helper mask if specified
-  //
-  if ( helperMaskFileName.compare("NA") != 0 )
-    {
-    std::cout << "Reading helper mask..." << std::endl;
-    UShortReaderType::Pointer helperReader = UShortReaderType::New();
-      helperReader->SetFileName( helperMaskFileName );
-    try
-      {
-      helperReader->Update();
-      }
-    catch ( itk::ExceptionObject &excp )
-      {
-      std::cerr << "Exception caught reading helper mask:";
-      std::cerr << excp << std::endl;
-      }
-    partialLungFilter->SetHelperMask( helperReader->GetOutput() );
-    }
     partialLungFilter->Update();
 
-  // Before writing, label by thirds. Here we are only concerned about upper, middle, 
-  // and lower, regardless of left right.
-  cip::ChestConventions conventions;
-  unsigned int totVoxels = 0;
+  // //
+  // // Read the helper mask if specified
+  // //
+  // if ( helperMaskFileName.compare("NA") != 0 )
+  //   {
+  //   std::cout << "Reading helper mask..." << std::endl;
+  //   UShortReaderType::Pointer helperReader = UShortReaderType::New();
+  //     helperReader->SetFileName( helperMaskFileName );
+  //   try
+  //     {
+  //     helperReader->Update();
+  //     }
+  //   catch ( itk::ExceptionObject &excp )
+  //     {
+  //     std::cerr << "Exception caught reading helper mask:";
+  //     std::cerr << excp << std::endl;
+  //     }
+  //   partialLungFilter->SetHelperMask( helperReader->GetOutput() );
+  //   }
+  //   partialLungFilter->Update();
 
-  UShortIteratorType lIt( partialLungFilter->GetOutput(), partialLungFilter->GetOutput()->GetBufferedRegion() );
-
-  lIt.GoToBegin();
-  while ( !lIt.IsAtEnd() )
-    {
-      if ( lIt.Get() != 0 )
-	{
-	  if ( conventions.GetChestRegionFromValue( lIt.Get() ) > 0 )
-	    {
-	      totVoxels++;
-	    }
-	}
-
-      ++lIt;
-    }
-
-  unsigned int inc = 0;
-
-  lIt.GoToBegin();
-  while ( !lIt.IsAtEnd() )
-    {
-      if ( lIt.Get() != 0 )
-	{
-	  unsigned char cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-	  unsigned char cipType   = conventions.GetChestTypeFromValue( lIt.Get() );
-	  if ( cipRegion > 0 )
-	    {
-	      inc++;
-
-	      if ( double(inc)/double(totVoxels) < 1.0/3.0 )
-		{
-		  lIt.Set( conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::LOWERTHIRD), cipType ) );
-		}
-	      else if ( double(inc)/double(totVoxels) < 2.0/3.0 )
-		{
-		  lIt.Set( conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::MIDDLETHIRD), cipType ) );
-		}
-	      else 
-		{
-		  lIt.Set( conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::UPPERTHIRD), cipType ) );
-		}
-	    }
-	}      
-
-      ++lIt;
-    }
 
   std::cout << "Writing lung mask image..." << std::endl;
-  UShortWriterType::Pointer maskWriter = UShortWriterType::New(); 
+  cip::LabelMapWriterType::Pointer maskWriter = cip::LabelMapWriterType::New(); 
     maskWriter->SetInput( partialLungFilter->GetOutput() );
     maskWriter->SetFileName( outputLungMaskFileName );
     maskWriter->UseCompressionOn();
@@ -278,7 +194,7 @@ ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
 
 ShortImageType::Pointer ReadCTFromFile( std::string fileName )
 {
-  ShortReaderType::Pointer reader = ShortReaderType::New();
+  cip::CTReaderType::Pointer reader = cip::CTReaderType::New();
     reader->SetFileName( fileName );
   try
     {

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
+  <title>ScourParticleData</title>
+    <description><![CDATA[This program can be used to scour an input particles data set, removing specified field data arrays.]]></description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+
+      <geometry type="model">
+          <name>inParticlesFileName</name>
+          <label>inParticles FileName</label>
+          <channel>input</channel>
+          <flag>i</flag>
+          <longflag>in</longflag>
+          <description><![CDATA[Input particles file name.]]></description>
+          <default>q</default>
+      </geometry>
+      
+      <geometry type="model">
+          <name>outParticlesFileName</name>
+          <label>outParticles FileName</label>
+          <channel>input</channel>
+          <flag>o</flag>
+          <longflag>out</longflag>
+          <description><![CDATA[Output particles file name.]]></description>
+          <default>q</default>
+      </geometry>
+      
+
+      
+    </parameters>
+    
+    
+    <parameters>
+    <label>Parameters</label>
+    <string-vector>
+        <name>dataArrayNames</name>
+        <label>Data ArrayNames</label>
+        <channel>input</channel>
+        <flag>n</flag>
+        <longflag> name</longflag>
+        <description><![CDATA[Specify the name(s) of the arrays to be removed]]></description>
+    </string-vector>
+
+
+  </parameters>
+</executable>

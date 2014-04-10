@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform.Toolkit.Processing</category>
+    <title>QualityControl</title>
+    <description><![CDATA[This program can be used to produce quality control projection (2D) images for multiple forms of input label map images. Currently supported use cases include label map images designating lung labelings by thirds, whole lung labelings, airway labelings, and lung lobe labelings.]]>
+    </description>
+    <version>0.0.1</version>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+        <image>
+            <name>ctFileName</name>
+            <label>Input CT FileName</label>
+            <channel>input</channel>
+            <flag>c</flag>
+            <longflag>ct</longflag>
+            <description><![CDATA[Input CT image file name. Only needs to be specified if you intend to create lung lobe QC images]]></description>
+            <default>q</default>
+        </image>
+        <image type="label">
+            <name>labelMapFileName</name>
+            <label>Label Map File Name</label>
+            <channel>input</channel>
+            <flag>l</flag>
+            <longflag>labelMap</longflag>
+            <description><![CDATA[Input label map file name]]></description>
+            <default>q</default>
+        </image>
+  
+        <image>
+            <name>lungProjectionImageFileName</name>
+            <label>lung Projection Image FileName</label>
+            <channel>output</channel>
+            <flag>u</flag>
+            <longflag>lungProj</longflag>
+            <description><![CDATA[Lung projection image output image file name]]></description>
+            <default>q</default>
+        </image>
+
+        <image>
+            <name>airwayProjectionImageFileName</name>
+            <label>airway Projection Image FileName</label>
+            <channel>output</channel>
+            <flag>a</flag>
+            <longflag>airwayProj</longflag>
+            <description><![CDATA[Airway projection output image file name]]></description>
+            <default>q</default>
+        </image>
+        
+        <string-vector>
+            <name>leftLungLobeFileNameVecArg</name>
+            <longflag>leftLobe</longflag>
+            <flag>e</flag>
+            <label>left Lung Lobe FileName Vector</label>
+            <channel>input</channel>
+            <description><![CDATA[Left lung lobe images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name when using this flag.]]>
+            </description>
+        </string-vector>
+        
+        
+        <string-vector>
+            <name>rightLungLobeFileNameVecArg</name>
+            <longflag>rightLobe</longflag>
+            <flag>r</flag>
+            <label>right Lung Lobe FileName Vector</label>
+            <channel>input</channel>
+            <description><![CDATA[Right lung lobe images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name when using this flag.]]></description>
+        </string-vector>
+        
+        <string-vector>
+            <name>leftLungCTFileNameVecArg</name>
+            <longflag>leftCT</longflag>
+            <flag>f</flag>
+            <label>left Lung CT FileName Vector</label>
+            <channel>input</channel>
+            <description><![CDATA[Left lung CT images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name. These are meant to correspond to the images specified with the -e flag so that overlay images and non overlay images can be compared]]></description>
+        </string-vector>
+        
+        <string-vector>
+            <name>rightLungCTFileNameVecArg</name>
+            <longflag>rightCT</longflag>
+            <flag>f</flag>
+            <label>right Lung CT FileName Vector</label>
+            <channel>input</channel>
+            <description><![CDATA[Right lung CT images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name. These are meant to correspond to the images specified with the -r flag so that overlay images and non overlay images can be compared]]></description>
+        </string-vector>
+ 
+    </parameters>
+
+       
+</executable>

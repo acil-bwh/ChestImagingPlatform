@@ -38,8 +38,8 @@ ENDIF ( VTK_FOUND )
 FIND_PACKAGE ( Teem )
 IF ( Teem_FOUND )
   INCLUDE(${Teem_USE_FILE})
-ELSE ( VTK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
+ELSE ( Teem_FOUND )
+  MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
 ENDIF ( Teem_FOUND )
 
 #---------------------------------------------------------------------
@@ -82,9 +82,11 @@ set( CIP_INCLUDE_DIRECTORIES
   "${CIP_SOURCE_DIR}/Common"
   "${CIP_SOURCE_DIR}/Utilities/ITK"
   "${CIP_SOURCE_DIR}/Utilities/VTK"
+  "${CIP_SOURCE_DIR}/IO"
   "${CMAKE_BINARY_DIR}/Common"
   "${CMAKE_BINARY_DIR}/Utilities/VTK"
   "${CMAKE_BINARY_DIR}/Utilities/ITK"
+  "${CMAKE_BINARY_DIR}/IO"
 )
 
 include_directories( ${CIP_INCLUDE_DIRECTORIES} )
@@ -106,14 +108,20 @@ endif()
 #---------------------------------------------------------------------
 # Testing
 
-set( CIP_BUILD_TESTING OFF CACHE BOOL
-  "Perform some tests on basic functionality of CIP." )
+set( CIP_BUILD_TESTING OFF CACHE BOOL "Perform some tests on basic functionality of CIP." )
 
 if ( CIP_BUILD_TESTING )
   enable_testing()
-  #add_subdirectory( ${CIP_SOURCE_DIR}/Testing ${CIP_BINARY_DIR}/Testing )
   include( CTest )
-endif()
+  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE")
+  SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON")
+else( CIP_BUILD_TESTING )
+  #SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE")
+  #SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON")
+endif( CIP_BUILD_TESTING )
+
+#---------------------------------------------------------------------
+set( CIP_BUILD_CLI_EXECUTABLEONLY ON CACHE BOOL "Build CLIs only with executables and not shared libraries+executables.")
 
 #---------------------------------------------------------------------
 # Compilation options
@@ -152,6 +160,12 @@ IF ( CIP_BUILD_TESTING )
  SUBDIRS ( cip_python )
 ENDIF( CIP_BUILD_TESTING ) 
 
+#-----------------------------------------------------------------------------
+# CMake Function(s) and Macro(s)
+#-----------------------------------------------------------------------------
+include(cipMacroBuildCLI)
+
+
 #----------------------------------------------------------------------
 # Make it easier to include cip functionality in other programs.
 # See UseFile.cmake for instructions.
@@ -161,13 +175,13 @@ ENDIF( CIP_BUILD_TESTING )
 #EXPORT( TARGETS ${CIP_LIBRARIES} FILE ${CIP_LIBRARY_DEPENDS_FILE} )
 
 # The "use" file.
-SET( CIP_USE_FILE ${CIP_SOURCE_DIR}/UseFile.cmake )
+SET( CIP_USE_FILE ${CIP_CMAKE_DIR}/UseFile.cmake )
 
 # Create the config file. It defines some variables, and by placing
 # this in the binary directory, the find_package command will recognise
 # the CIP package.
 
-CONFIGURE_FILE( ${CIP_SOURCE_DIR}/CIPConfig.cmake.in
+CONFIGURE_FILE( ${CIP_CMAKE_DIR}/CIPConfig.cmake.in
  ${CIP_BINARY_DIR}/CIPConfig.cmake @ONLY )
 
 # Store the current build directory in the CMake user package registry

@@ -173,7 +173,7 @@ void cipNelderMeadSimplexOptimizer::UpdateRankings()
     this->OptimalParams[i] = this->SimplexVertices[this->BestIndex].coordinates[i];
     }
 
-  std::cout << this->BestValue << std::endl;
+  std::cout << "val:\t" << this->BestValue << std::endl;
 }
 
 
@@ -182,46 +182,33 @@ void cipNelderMeadSimplexOptimizer::UpdateRankings()
 //
 void cipNelderMeadSimplexOptimizer::Update()
 {
-  //
   // We'll need a couple of boolean variables to keep track of
   // attempted contractions. Declare them here
-  //
   bool insideContractionSuccessful;
   bool outsideContractionSuccessful;
 
-  //
   // Construct the initial simplex
-  //
   this->InitializeSimplex();
 
-  //
   // Evalute the metric at each of these points. In the process,
   // identify the "worst" point, the "best" point, and keep a list of
   // the metric values at each vertex that we can sort after all the
   // computations N
-  //
   for ( unsigned int i=0; i<this->Dimension+1; i++ )
-    { 
-    this->SimplexVertices[i].value = this->Metric->GetValue( &(this->SimplexVertices[i].coordinates) );
+    {       
+      this->SimplexVertices[i].value = this->Metric->GetValue( &(this->SimplexVertices[i].coordinates) );
     }
 
-  //
   // Now determine the ranking of each of these vertices wrt to the
   // objective function value
-  //
   this->UpdateRankings();
 
-  //
   // Following is the Nelder-Mead simplex reflection
   // algorithm. Iterate for the number of iterations specified by the
   // user 
-  //
   for ( unsigned int it=0; it<this->NumberOfIterations; it++ )
     {
-    //
     // Compute the center of gravity of the n best vertices 
-    //
-
     std::vector< double > xBar;
     for ( unsigned int i=0; i<this->Dimension; i++ )
       {
@@ -238,9 +225,7 @@ void cipNelderMeadSimplexOptimizer::Update()
       xBar[i] /= static_cast< double >( this->Dimension );
       }
 
-    //
     // Now compute 'xBarNeg1'
-    //
     std::vector< double > xBarNeg1;
     for ( unsigned int i=0; i<this->Dimension; i++ )
       {
@@ -248,17 +233,13 @@ void cipNelderMeadSimplexOptimizer::Update()
       xBarNeg1.push_back( temp );
       }
 
-    //
     // Evaluate at 'xBarNeg1'
-    //
     double fNeg1 = this->Metric->GetValue( &xBarNeg1 );
 
     if ( this->BestValue <= fNeg1 && fNeg1 < this->WorstRunnerUpValue )
       {
-      //
       // 'fNeg1' is neither the best value nor the worst. Replace the
       // worst coordinates with the coordinates at 'xBarNeg1'
-      //
       for ( unsigned int i=0; i<this->Dimension; i++ )
         {
         this->SimplexVertices[this->WorstIndex].coordinates[i] = xBarNeg1[i];
@@ -268,10 +249,8 @@ void cipNelderMeadSimplexOptimizer::Update()
       }
     else if ( fNeg1 < this->BestValue )
       {
-      //
       // 'fNeg1' is better than our current best, so try to go farther
       // in this direction. Compute 'xBarNeg1'
-      //
       std::vector< double > xBarNeg2;
       for ( unsigned int i=0; i<this->Dimension; i++ )
         {
@@ -279,17 +258,13 @@ void cipNelderMeadSimplexOptimizer::Update()
         xBarNeg2.push_back( temp );
         }
       
-      //
       // Now evaluate at 'xBarNeg2'
-      //
       double fNeg2 = this->Metric->GetValue( &xBarNeg2 );
       
       if ( fNeg2 < fNeg1 )
         {
-        //
         // 'fNeg2' is even better than 'fNeg1', so replace our worst
         // coordinates with the coordinates at 'xBarNeg2'
-        //
 
         for ( unsigned int i=0; i<this->Dimension; i++ )
           {
@@ -297,15 +272,12 @@ void cipNelderMeadSimplexOptimizer::Update()
           }
 
         this->SimplexVertices[this->WorstIndex].value = fNeg2;
-
         this->UpdateRankings();
         }
       else
         { 
-        //
         // 'fNeg2' is not better than 'fNeg1', so just replace the worst
         // coordinates with 'xBarNeg1'
-        //
         for ( unsigned int i=0; i<this->Dimension; i++ )
           {
           this->SimplexVertices[this->WorstIndex].coordinates[i] = xBarNeg1[i];
@@ -316,18 +288,14 @@ void cipNelderMeadSimplexOptimizer::Update()
       }
     else if ( fNeg1 >= this->WorstRunnerUpValue )
       {
-      //
       // The reflected point, 'xBarNeg1', is still the worst, so
       // contract
-      //
       outsideContractionSuccessful = false;
       insideContractionSuccessful  = false;
 
       if ( this->WorstRunnerUpValue <= fNeg1 && fNeg1 < this->WorstValue )
         {
-        //
         // Try "outside" contraction
-        //        
         std::vector< double > xBarNegHalf;
         for ( unsigned int i=0; i<this->Dimension; i++ )
           {
@@ -335,19 +303,15 @@ void cipNelderMeadSimplexOptimizer::Update()
           xBarNegHalf.push_back( temp );
           }
         
-        //
         // Now evaluate at 'xBarNegHalf'
-        //
         double fNegHalf = this->Metric->GetValue( &xBarNegHalf );
         
         if ( fNegHalf <= fNeg1 )
           {
           outsideContractionSuccessful = true;
                     
-          //
           // 'fNegHalf' is better than 'fNeg1', so replace the worst 
           // coordinates with 'xBarNegHalf'
-          //
           for ( unsigned int i=0; i<this->Dimension; i++ )
             {
             this->SimplexVertices[this->WorstIndex].coordinates[i] = xBarNegHalf[i];
@@ -358,9 +322,7 @@ void cipNelderMeadSimplexOptimizer::Update()
         }
       else
         {
-        //
         // Try "inside" contraction
-        //        
         std::vector< double > xBarPosHalf;
         for ( unsigned int i=0; i<this->Dimension; i++ )
           {
@@ -368,9 +330,7 @@ void cipNelderMeadSimplexOptimizer::Update()
           xBarPosHalf.push_back( temp );
           }
         
-        //
         // Now evaluate at 'xBarPosHalf'
-        //
         double fPosHalf = this->Metric->GetValue( &xBarPosHalf );
         
         if ( fPosHalf < this->WorstValue )
@@ -385,13 +345,11 @@ void cipNelderMeadSimplexOptimizer::Update()
           this->UpdateRankings();
           }
         }
-      
+
       if ( !insideContractionSuccessful && !outsideContractionSuccessful )
         {
-        //
         // Neither "inside" nor "outside" contraction was successful, so
         // shrink all points towards the current best
-        //
         for ( unsigned int j=0; j<this->Dimension+1; j++ )
           {        
           if ( j != this->BestIndex )

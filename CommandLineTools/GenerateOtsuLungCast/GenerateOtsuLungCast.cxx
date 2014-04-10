@@ -62,8 +62,10 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkCIPOtsuLungCastImageFilter.h"
 #include "GenerateOtsuLungCastCLP.h"
-namespace
-{
+#include "itkGDCMImageIO.h"
+#include "itkGDCMSeriesFileNames.h"
+#include "itkImageSeriesReader.h"
+
 typedef itk::Image< unsigned short, 3 >                           UShortImageType;
 typedef itk::Image< short, 3 >                                    ShortImageType;
 typedef itk::ImageFileReader< UShortImageType >                   UShortReaderType;
@@ -71,79 +73,55 @@ typedef itk::ImageFileReader< ShortImageType >                    ShortReaderTyp
 typedef itk::ImageFileWriter< UShortImageType >                   UShortWriterType;
 typedef itk::ImageRegionIteratorWithIndex< ShortImageType >       ShortIteratorType;
 typedef itk::CIPOtsuLungCastImageFilter< ShortImageType >         CIPOtsuCastType;
+typedef itk::GDCMImageIO                                          ImageIOType;
+typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
+typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
 
+ShortImageType::Pointer ReadCTFromFile( std::string );
+ShortImageType::Pointer ReadCTFromDirectory( std::string );
+void LowerClipImage( ShortImageType::Pointer, short, short );
+void UpperClipImage( ShortImageType::Pointer, short, short  );
 
-void LowerClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
-{
-    ShortIteratorType iIt( image, image->GetBufferedRegion() );
-    
-    iIt.GoToBegin();
-    while ( !iIt.IsAtEnd() )
-    {
-        if ( iIt.Get() < clipValue )
-        {
-            iIt.Set( replacementValue );
-        }
-        
-        ++iIt;
-    }
-}
-
-
-void UpperClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
-{
-    ShortIteratorType iIt( image, image->GetBufferedRegion() );
-    
-    iIt.GoToBegin();
-    while ( !iIt.IsAtEnd() )
-    {
-        if ( iIt.Get() > clipValue )
-        {
-            iIt.Set( replacementValue );
-        }
-        
-        ++iIt;
-    }
-}
-
-}
 int main( int argc, char *argv[] )
 {
 
-  //
   // Parse the input arguments
-  //
-    PARSE_ARGS;
+  PARSE_ARGS;
 
-    short lowerClipValue        = (short)lowerClipValueTemp;
-    short lowerReplacementValue = (short)lowerReplacementValueTemp;
-    short upperClipValue        = (short) upperClipValueTemp;
-    short upperReplacementValue = (short) upperReplacementValueTemp;
-  //
+  short lowerClipValue        = (short)lowerClipValueTemp;
+  short lowerReplacementValue = (short)lowerReplacementValueTemp;
+  short upperClipValue        = (short)upperClipValueTemp;
+  short upperReplacementValue = (short)upperReplacementValueTemp;
+
   // Read the CT image
-  //
-  std::cout << "Reading CT..." << std::endl;
-  ShortReaderType::Pointer ctReader = ShortReaderType::New();
-    ctReader->SetFileName( ctFileName );
-  try
+  ShortImageType::Pointer ctImage = ShortImageType::New();
+
+  if ( ctDir.compare("NA") != 0 )
     {
-    ctReader->Update();
+    std::cout << "Reading CT from directory..." << std::endl;
+    ctImage = ReadCTFromDirectory( ctDir );
     }
-  catch ( itk::ExceptionObject &excp )
+  else if ( ctFileName.compare("NA") != 0 )
     {
-    std::cerr << "Exception caught reading CT:";
-    std::cerr << excp << std::endl;
+    std::cout << "Reading CT from file..." << std::endl;
+    ctImage = ReadCTFromFile( ctFileName );
+    }
+  else
+    {
+    std::cerr << "ERROR: No CT image specified" << std::endl;
+    
+    return 0;
     }
 
   std::cout << "Clipping low CT image values..." << std::endl;
-  LowerClipImage( ctReader->GetOutput(), lowerClipValue, lowerReplacementValue );
+  LowerClipImage( ctImage, lowerClipValue, lowerReplacementValue );
 
   std::cout << "Clipping upper CT image values..." << std::endl;
-  UpperClipImage( ctReader->GetOutput(), upperClipValue, upperReplacementValue );
+  UpperClipImage( ctImage, upperClipValue, upperReplacementValue );
 
   std::cout << "Getting Otsu lung cast..." << std::endl;
   CIPOtsuCastType::Pointer castFilter = CIPOtsuCastType::New();
-    castFilter->SetInput( ctReader->GetOutput() );
+    castFilter->SetInput( ctImage );
     castFilter->Update();
 
   std::cout << "Writing Otsu lung cast..." << std::endl;
@@ -166,6 +144,79 @@ int main( int argc, char *argv[] )
   return 0;
 }
 
+ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
+{
+  ImageIOType::Pointer gdcmIO = ImageIOType::New();
+
+  std::cout << "---Getting file names..." << std::endl;
+  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
+    namesGenerator->SetInputDirectory( ctDir );
+
+  const SeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
+
+  std::cout << "---Reading DICOM image..." << std::endl;
+  SeriesReaderType::Pointer dicomReader = SeriesReaderType::New();
+    dicomReader->SetImageIO( gdcmIO );
+    dicomReader->SetFileNames( filenames );
+  try
+    {
+    dicomReader->Update();
+    }
+  catch (itk::ExceptionObject &excp)
+    {
+    std::cerr << "Exception caught while reading dicom:";
+    std::cerr << excp << std::endl;
+    }  
+
+  return dicomReader->GetOutput();
+}
 
 
+ShortImageType::Pointer ReadCTFromFile( std::string fileName )
+{
+  ShortReaderType::Pointer reader = ShortReaderType::New();
+    reader->SetFileName( fileName );
+  try
+    {
+    reader->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught reading CT image:";
+    std::cerr << excp << std::endl;
+    }
 
+  return reader->GetOutput();
+}
+
+void LowerClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
+{
+    ShortIteratorType iIt( image, image->GetBufferedRegion() );
+    
+    iIt.GoToBegin();
+    while ( !iIt.IsAtEnd() )
+    {
+        if ( iIt.Get() < clipValue )
+        {
+            iIt.Set( replacementValue );
+        }
+        
+        ++iIt;
+    }
+}
+
+void UpperClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
+{
+    ShortIteratorType iIt( image, image->GetBufferedRegion() );
+    
+    iIt.GoToBegin();
+    while ( !iIt.IsAtEnd() )
+    {
+        if ( iIt.Get() > clipValue )
+        {
+            iIt.Set( replacementValue );
+        }
+        
+        ++iIt;
+    }
+}

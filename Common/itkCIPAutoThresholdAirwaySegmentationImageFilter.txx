@@ -1,8 +1,5 @@
 /**
  *
- *  $Date:  $
- *  $Revision:  $
- *  $Author: $
  *
  */
 
@@ -11,6 +8,8 @@
 #define _itkCIPAutoThresholdAirwaySegmentationImageFilter_txx
 
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"
+#include "itkNumericTraits.h"
+#include "cipExceptionObject.h"
 
 namespace itk
 {
@@ -19,9 +18,14 @@ template < class TInputImage >
 CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 ::CIPAutoThresholdAirwaySegmentationImageFilter()
 {
-  this->m_MinAirwayVolume             = 10.0;
-  this->m_MaxAirwayVolume             = 500.0;
-  this->m_MaxAirwayVolumeIncreaseRate = 2.0; 
+  // We manually segmented the airway trees from twenty five 
+  // inspiratory CT scans acquired from healthy individuals. 
+  // 30,000 mm^3 is approximately the smallest of the airway
+  // volumes we computed
+  this->m_MaxAirwayVolume = 30000;
+ 
+  this->m_MinIntensityThresholdSet = false;
+  this->m_MaxIntensityThresholdSet = false;
 }
 
 
@@ -30,9 +34,18 @@ void
 CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 ::GenerateData()
 {
-  //
+  if ( !this->m_MaxIntensityThresholdSet )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, "CIPAutoThresholdAirwaySegmentationImageFilter::GenerateData()", 
+				  "Max intensity threshold not set" );
+    }
+  if ( !this->m_MinIntensityThresholdSet )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, "CIPAutoThresholdAirwaySegmentationImageFilter::GenerateData()", 
+				  "Min intensity threshold not set" );
+    }
+
   // Allocate space for the output image
-  //
   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
   typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
@@ -41,297 +54,112 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
     outputPtr->Allocate();
     outputPtr->FillBuffer( 0 );
 
-  this->Test();
-
-//   unsigned short airwayLabel = this->m_ChestConventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAY );
-
-//   typename InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
-
-//   //
-//   // Find the darkest value among the seeds
-//   //
-//   InputPixelType darkestSeedPixel = itk::NumericTraits< InputPixelType >::max();
-
-//   for ( unsigned int i=0; i<this->m_SeedVec.size(); i++ )
-//     {
-//     InputPixelType value = this->GetInput()->GetPixel( this->m_SeedVec[i] );
-
-//     if ( value < darkestSeedPixel )
-//       {
-//       darkestSeedPixel = value;
-//       }
-//     }
-
-//   //
-//   // Set up the connected threshold airway segmentation filter
-//   //
-//   typename SegmentationType::Pointer segmentationFilter = SegmentationType::New();
-//     segmentationFilter->SetInput( this->GetInput() );
-//     segmentationFilter->SetLower( itk::NumericTraits< InputPixelType >::min() );
-//     segmentationFilter->SetReplaceValue( airwayLabel );
-
-//   for ( unsigned int s=0; s<this->m_SeedVec.size(); s++ )
-//     {
-//     segmentationFilter->AddSeed( this->m_SeedVec[s] );
-//     }
-
-
-//   short  finalThreshold  = darkestSeedPixel;
-//   short  threshold       = darkestSeedPixel;
-//   short  thresholdInc    = 32;
-//   double lastVolume      = -1;
-//   bool   leakageDetected = false;
-
-//   while ( !leakageDetected )
-//     {
-//     segmentationFilter->SetUpper( threshold );
-//     segmentationFilter->Update();
-
-//     //
-//     // Compute the volume of the tree
-//     //
-//     int count = 0;
-
-//     LabelMapIteratorType sIt( segmentationFilter->GetOutput(), segmentationFilter->GetOutput()->GetBufferedRegion() );
-
-//     sIt.GoToBegin();
-//     while ( !sIt.IsAtEnd() )
-//       {
-//       if ( sIt.Get() == airwayLabel )
-//         {
-//         count++;
-//         }
-
-//       ++sIt;
-//       }
-
-//     double volume = static_cast< double >( count )*spacing[0]*spacing[1]*spacing[2]/1000.0;
-
-//     if ( volume > this->m_MaxAirwayVolume )
-//       {
-//       leakageDetected = true;
-
-//       finalThreshold = threshold - thresholdInc;
-//       }
-//     else if ( volume > this->m_MinAirwayVolume && lastVolume == -1 && thresholdInc != 1 )
-//       {
-//       threshold -= thresholdInc;
-      
-//       thresholdInc = thresholdInc/2;
-//       }
-//     else if ( volume > this->m_MinAirwayVolume )
-//       {
-//       if ( lastVolume == -1 )
-//         {
-//         lastVolume = volume;
-
-//         thresholdInc = 32;
-//         }
-//       else
-//         {
-//         if ( (volume-lastVolume)/static_cast< double >( thresholdInc ) > this->m_MaxAirwayVolumeIncreaseRate )
-//           {
-//           if ( thresholdInc != 1 )
-//             {
-//             threshold -= thresholdInc;
-
-//             thresholdInc = thresholdInc/2;
-//             }
-//           else
-//             {
-//             leakageDetected = true;
-
-//             finalThreshold = threshold-1;
-//             }
-//           }
-//         else
-//           {          
-//           lastVolume = volume;
-//           }
-//         }
-//       }
-
-//     threshold += thresholdInc;
-//     }
-
-//   segmentationFilter->SetUpper( finalThreshold );
-//   try
-//     {
-//   segmentationFilter->Update();
-//     }
-//   catch ( itk::ExceptionObject &excp )
-//     {
-//     std::cerr << "Exception caught while running airway segmentation:";
-//     std::cerr << excp << std::endl;
-//     }
-
-//   //
-//   // Fill holes that might be in the airway mask by performing
-//   // morphological closing
-//   //
-//   ElementType structuringElement;
-//     structuringElement.SetRadius( 1 );
-//     structuringElement.CreateStructuringElement();
-
-//   typename DilateType::Pointer dilater = DilateType::New();
-//     dilater->SetInput( segmentationFilter->GetOutput() );
-//     dilater->SetKernel( structuringElement );
-//     dilater->SetDilateValue( airwayLabel );
-//   try
-//     {
-//     dilater->Update();
-//     }
-//   catch ( itk::ExceptionObject &excp )
-//     {
-//     std::cerr << "Exception caught dilating:";
-//     std::cerr << excp << std::endl;
-//     }
-
-//   typename ErodeType::Pointer eroder = ErodeType::New();
-//     eroder->SetInput( dilater->GetOutput() );
-//     eroder->SetKernel( structuringElement );
-//     eroder->SetErodeValue( airwayLabel );
-//   try
-//     {
-//     eroder->Update();
-//     }
-//   catch ( itk::ExceptionObject &excp )
-//     {
-//     std::cerr << "Exception caught eroding:";
-//     std::cerr << excp << std::endl;
-//     }
-
-//   this->GraftOutput( eroder->GetOutput() );
-}
-
-
-template < class TInputImage >
-void
-CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
-::Test()
-{
   unsigned short airwayLabel = this->m_ChestConventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAY );
 
   typename InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
 
-  unsigned int numVoxels = 0; // Will keep track of the number of
-                              // voxels as we add to the vector of
-                              // indices to go in the output
-
-  //
-  // 'indicesVecFinal' will be a container for our final collection of
-  // indices to set to foreground in our output label
-  // map. 'indicesVecTemp' will be a temporary container that will
-  // collect new indices during the iterative process below. After a
-  // given iteration, the indices in 'indicesVecTemp' will be dumped
-  // into 'indicesVecFinal' (provided we don't go over the max number
-  // of allowable indices as deteremined by the 'm_MaxAirwayVolume'.
-  //
-  std::vector< OutputImageType::IndexType > indicesVecFinal;
-  std::vector< OutputImageType::IndexType > indicesVecTemp;
-
-  //
-  // Find the darkest value among the seeds
-  //
-  InputPixelType darkestSeedPixel = itk::NumericTraits< InputPixelType >::max();
-
-  for ( unsigned int i=0; i<this->m_SeedVec.size(); i++ )
+  // Set up the connected threshold airway segmentation filter
+  typename SegmentationType::Pointer segmentationFilter = SegmentationType::New();
+    segmentationFilter->SetInput( this->GetInput() );
+    segmentationFilter->SetLower( this->m_MinIntensityThreshold );
+    segmentationFilter->SetReplaceValue( airwayLabel );
+  for ( unsigned int s=0; s<this->m_SeedVec.size(); s++ )
     {
-    numVoxels++;
+    segmentationFilter->AddSeed( this->m_SeedVec[s] );
+    }
 
-    this->GetOutput()->SetPixel( this->m_SeedVec[i], airwayLabel );
+  InputPixelType currentThresh   = this->m_MaxIntensityThreshold;
+  InputPixelType lastUpperThresh = this->m_MaxIntensityThreshold;
+  InputPixelType lastLowerThresh = this->m_MinIntensityThreshold;
 
-    indicesVecFinal.push_back( this->m_SeedVec[i] );
+  assert( lastLowerThresh < lastUpperThresh );
 
-    InputPixelType value = this->GetInput()->GetPixel( this->m_SeedVec[i] );
+  unsigned int inc = 0;
+  while ( lastUpperThresh - lastLowerThresh > 5 )
+    {
+    inc++;
+    assert( inc < this->m_MaxIntensityThreshold - itk::NumericTraits< InputPixelType >::min() );
 
-    if ( value < darkestSeedPixel )
+    segmentationFilter->SetUpper( currentThresh );
+    segmentationFilter->Update();
+
+    // Compute the volume of the tree
+    int count = 0;
+    LabelMapIteratorType sIt( segmentationFilter->GetOutput(), segmentationFilter->GetOutput()->GetBufferedRegion() );
+
+    sIt.GoToBegin();
+    while ( !sIt.IsAtEnd() )
       {
-      darkestSeedPixel = value;
+      if ( sIt.Get() == airwayLabel )
+        {
+        count++;
+        }
+
+      ++sIt;
+      }
+
+    double volume = static_cast< double >( count )*spacing[0]*spacing[1]*spacing[2];
+
+    if ( volume > this->m_MaxAirwayVolume )
+      {
+	InputPixelType tmp = (lastLowerThresh + currentThresh)/2;
+	lastUpperThresh = currentThresh;
+	currentThresh = tmp;
+      }
+    else
+      {
+	InputPixelType tmp = (currentThresh + lastUpperThresh)/2;
+	lastLowerThresh = currentThresh;
+	currentThresh = tmp;
       }
     }
 
-  //
-  // Out strategy will be to grow the airway region until the max
-  // volume is exactly reached. We will do this be considering 3x3x3
-  // neighborhoods of the current set of seed points using the
-  // darkestSeedPixel value as our initial threshold value. We will
-  // keep adding indices to our label map until the max volume is
-  // reached. If after considering all neighborhoods in our current
-  // set of indices no new indices are added and the max volume has
-  // not been reached, increment the threshold value.
-  //
-  //short threshold = darkestSeedPixel;
-  short threshold=-960; //sila
-  unsigned int maxNumberVoxels = static_cast< unsigned int >( this->m_MaxAirwayVolume/(spacing[0]*spacing[1]*spacing[2]) );
-  unsigned int minNumberVoxels = static_cast< unsigned int >( this->m_MinAirwayVolume/(spacing[0]*spacing[1]*spacing[2]) );
-
-  OutputImageType::IndexType index;
-
-  bool add, addedNew;
-
-  while ( numVoxels < minNumberVoxels )
+  segmentationFilter->SetUpper( lastLowerThresh );
+  try
     {
-    indicesVecTemp.clear();
-
-    addedNew = false;
-
-    for ( unsigned int i=0; i<indicesVecFinal.size(); i++ )
-      {
-      for ( int x=-1; x<=1; x++ )
-        {
-        index[0] = indicesVecFinal[i][0] + x;
-        
-        for ( int y=-1; y<=1; y++ )
-          {
-          index[1] = indicesVecFinal[i][1] + y;
-          
-          for ( int z=-1; z<=1; z++ )
-            {
-            index[2] = indicesVecFinal[i][2] + z;
-
-            if ( this->GetInput()->GetBufferedRegion().IsInside( index ) )
-              {
-              if ( this->GetOutput()->GetPixel( index ) == 0 && this->GetInput()->GetPixel( index ) <= threshold )
-                {
-                add = true;
-                for ( unsigned int j=0; j<indicesVecTemp.size(); j++ )
-                  {
-                  if ( indicesVecTemp[j][0] == index[0] && indicesVecTemp[j][1] == index[1] && indicesVecTemp[j][2] == index[2] )
-                    {
-                    add = false;
-                    break;
-                    }
-                  }
-                if ( add && numVoxels < maxNumberVoxels )
-                  {
-                  indicesVecTemp.push_back( index );
-                  numVoxels++;
-
-                  addedNew = true;
-                  }
-                }
-              }
-            }
-          }
-        }
-      } 
-  
-    if ( addedNew )
-      {
-      for ( unsigned int k=0; k<indicesVecTemp.size(); k++ )
-        {
-        indicesVecFinal.push_back( indicesVecTemp[k] );
-
-        this->GetOutput()->SetPixel( indicesVecTemp[k], airwayLabel );
-        }
-      }
-    else if ( numVoxels < maxNumberVoxels )
-      {
-      threshold += 10; 
-      }
+      segmentationFilter->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+      std::cerr << "Exception caught while running airway segmentation:";
+      std::cerr << excp << std::endl;
     }
 
+  // Fill holes that might be in the airway mask by performing
+  // morphological closing
+  ElementType structuringElement;
+    structuringElement.SetRadius( 1 );
+    structuringElement.CreateStructuringElement();
+
+  typename DilateType::Pointer dilater = DilateType::New();
+    dilater->SetInput( segmentationFilter->GetOutput() );
+    dilater->SetKernel( structuringElement );
+    dilater->SetDilateValue( airwayLabel );
+  try
+    {
+    dilater->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught dilating:";
+    std::cerr << excp << std::endl;
+    }
+
+  typename ErodeType::Pointer eroder = ErodeType::New();
+    eroder->SetInput( dilater->GetOutput() );
+    eroder->SetKernel( structuringElement );
+    eroder->SetErodeValue( airwayLabel );
+  try
+    {
+    eroder->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught eroding:";
+    std::cerr << excp << std::endl;
+    }
+
+  this->GraftOutput( eroder->GetOutput() );
 }
 
 
@@ -344,6 +172,26 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 }
   
 
+template < class TInputImage >
+void
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
+::SetMaxIntensityThreshold( InputPixelType threshold ) 
+{
+  this->m_MaxIntensityThreshold = threshold;
+  this->m_MaxIntensityThresholdSet = true;
+}
+
+
+template < class TInputImage >
+void
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
+::SetMinIntensityThreshold( InputPixelType threshold ) 
+{
+  this->m_MinIntensityThreshold = threshold;
+  this->m_MinIntensityThresholdSet = true;
+}
+
+
 /**
  * Standard "PrintSelf" method
  */
@@ -354,8 +202,11 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 {
   Superclass::PrintSelf( os, indent );
   os << indent << "Printing itkCIPAutoThresholdAirwaySegmentationImageFilter: " << std::endl;
-  os << indent << "MinAirwayVolume:\t" << this->m_MinAirwayVolume << std::endl;
-  os << indent << "MaxAirwayVolumeIncreaseRate:\t" << this->m_MaxAirwayVolumeIncreaseRate << std::endl;
+  os << indent << "m_MaxAirwayVolume:\t" << this->m_MaxAirwayVolume << std::endl;
+  os << indent << "m_MinIntensityThreshold:\t" << m_MinIntensityThreshold << std::endl;
+  os << indent << "m_MaxIntensityThreshold:\t" << m_MaxIntensityThreshold << std::endl;
+  os << indent << "m_MinIntensityThresholdSet:\t" << m_MinIntensityThresholdSet << std::endl;
+  os << indent << "m_MaxIntensityThresholdSet:\t" << m_MaxIntensityThresholdSet << std::endl;
   for ( unsigned int i=0; i<this->m_SeedVec.size(); i++ )
     {
     os << indent << "Seed " << i << ":\t" << this->m_SeedVec[i] << std::endl;

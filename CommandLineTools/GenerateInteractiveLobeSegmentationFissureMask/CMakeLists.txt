@@ -2,17 +2,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT(GenerateInteractiveLobeSegmentationFissureMask )
 
-FIND_PACKAGE ( ITK )
-IF ( ITK_FOUND )
-  INCLUDE(${ITK_USE_FILE})
-ELSE ( ITK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
-ENDIF ( ITK_FOUND )
+SET ( MODULE_NAME GenerateInteractiveLobeSegmentationFissureMask )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+SET ( MODULE_SRCS GenerateInteractiveLobeSegmentationFissureMask.cxx )
 
-SET ( GenerateInteractiveLobeSegmentationFissureMask_SOURCE GenerateInteractiveLobeSegmentationFissureMask.cxx )
-
-ADD_EXECUTABLE ( GenerateInteractiveLobeSegmentationFissureMask ${GenerateInteractiveLobeSegmentationFissureMask_SOURCE} )
-TARGET_LINK_LIBRARIES ( GenerateInteractiveLobeSegmentationFissureMask ${ITK_LIBRARIES} )
+cipMacroBuildCLI(
+    NAME ${MODULE_NAME}
+    ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+    ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+    SRCS ${MODULE_SRCS}
+    )

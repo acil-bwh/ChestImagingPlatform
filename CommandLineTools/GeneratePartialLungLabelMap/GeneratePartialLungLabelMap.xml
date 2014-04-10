@@ -2,8 +2,7 @@
 <executable>
   <category>Chest Imaging Platform.Toolkit.Segmentation</category>
   <title>GeneratePartialLungLabelMap</title>
-  <description><![CDATA[Segment a CT image into lung regions with approximate aiway and vessel \
-  segmentations.]]>
+  <description><![CDATA[Segment a CT image into lung regions with an approximate aiway segmentation.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
@@ -101,55 +100,12 @@
       <default>3</default>
     </integer>
 
-    <double>
-      <name>closingRadius</name>
-      <longflag>cr</longflag>
-      <description>The radius used for morphological closing in physical units (mm). The structuring \
-      element is created so that the number of voxels in each direction covers no less \
-      than the specified amount</description>
-      <label>Morphological closing radius</label>
-      <default>5.0</default>
-    </double>
-
-    <double>
-      <name>minAirwayVolume</name>
-      <longflag>min</longflag>
-      <description>Minimum airway volume</description>
-      <default>0.0</default>
-      <label>Minimum airway volume</label>
-    </double>
-
-    <double>
-      <name>maxAirwayVolume</name>
-      <longflag>max</longflag>
-      <description>Maximum airway volume</description>
-      <default>50.0</default>
-      <label>Maximum airway volume</label>
-    </double>
-
-    <double>
-      <name>airwayVolumeIncreaseRate</name>
-      <longflag>ir</longflag>
-      <description>Maximum rate at which the airway is volume is permitted to increase as threshold \
-      is lowered during airway segmentation.</description>
-      <default>2.0</default>
-      <label>Airway volume increase rate</label>
-    </double>
-
     <boolean>
       <name>headFirst</name>
       <longflag>hf</longflag>
       <description>Indicates if scan is head first.</description>
       <label>Head first</label>
       <default>true</default>
-    </boolean>
-
-    <boolean>
-      <name>aggressiveLungSplitting</name>
-      <longflag>agg</longflag>
-      <description>Use aggressive lung splitting to split the left and right lungs.</description>
-      <label>Aggressive lung splitting</label>
-      <default>0</default>
     </boolean>
 
   </parameters>

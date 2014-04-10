@@ -163,23 +163,29 @@ int main( int argc, char *argv[] )
 
       std::cout << "Executing Nelder-Mead optimizer (left lung)..." << std::endl;
       cipNelderMeadSimplexOptimizer* leftOptimizer = new cipNelderMeadSimplexOptimizer( numberLeftModesUsed );
+	std::cout << "a" << std::endl;
         leftOptimizer->SetInitialParameters( leftInitialParameters );
+	std::cout << "b" << std::endl;
 	leftOptimizer->SetMetric( leftMetric );
+	std::cout << "c" << std::endl;
 	leftOptimizer->SetNumberOfIterations( numIters );
+	std::cout << "d" << std::endl;
 	leftOptimizer->Update();
+	std::cout << "e" << std::endl;
 	leftOptimizer->GetOptimalParameters( leftOptimalParameters );
-
+	std::cout << "1" << std::endl;
       for ( unsigned int i=0; i<numberLeftModesUsed; i++ )
 	{
 	  (*leftModelIO->GetOutput()->GetModeWeights())[i] = leftOptimalParameters[i];
 	}
-
+	std::cout << "2" << std::endl;
       if ( outLeftModelFileName.compare( "NA" ) != 0 )
 	{
 	  std::cout << "Writing shape model to file (left lung)..." << std::endl;
 	  leftModelIO->SetFileName( outLeftModelFileName );
 	  leftModelIO->Write();
 	}
+	std::cout << "3" << std::endl;
     }
 
   // Now optimize the right surface model to fit the provided particles.

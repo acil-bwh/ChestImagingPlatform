@@ -16,7 +16,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
+#include "PerturbParticlesCLP.h"
 #include "cipConventions.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
@@ -30,52 +30,13 @@
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Define arguments
-  //
-  std::string inFileName    = "NA";
-  std::string outFileName   = "NA";
-  double offsetMagnitude    = 1.0;
 
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDesc = "This program can used to perturb a particles \
-dataset. This kind of operation can be useful for \
-experimentation purposes. Currently, the program simply \
-translates the particles dataset by a random offset in \
-the x, y, and z directions. The user can control the \
-magnitude of the random offset that is used.";
-
-  std::string inFileNameDesc  = "Input particles file name";
-  std::string outFileNameDesc = "Output particles file name";
-  std::string offsetMagnitudeDesc  = "Random offsets are drawn from the \
-uniform distribution. This parameter controls the magnitude of the translation \
-by scaling the uniform distribution by the specified amount.";
 
   //
   // Parse the input arguments
   //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 386 $" );
-
-    TCLAP::ValueArg<std::string> inFileNameArg( "i", "input", inFileNameDesc, true, inFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outFileNameArg( "o", "output", outFileNameDesc, true, outFileName, "string", cl );
-    TCLAP::ValueArg<double> offsetMagnitudeArg( "m", "mag", offsetMagnitudeDesc, false, offsetMagnitude, "double", cl );
-
-    cl.parse( argc, argv );
-
-    inFileName      = inFileNameArg.getValue();
-    outFileName     = outFileNameArg.getValue();
-    offsetMagnitude = offsetMagnitudeArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
-
+  PARSE_ARGS;
+    
   //
   // Read the poly data
   //

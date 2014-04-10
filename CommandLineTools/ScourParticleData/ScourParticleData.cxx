@@ -36,7 +36,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
 #include "vtkFloatArray.h"
@@ -44,53 +43,30 @@
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
 #include "cipConventions.h"
-
+#include "ScourParticleDataCLP.h"
 
 int main( int argc, char *argv[] )
 {
   //
   // Begin by defining the arguments to be passed
   //
-  std::string inParticlesFileName  = "NA";
-  std::string outParticlesFileName = "NA";
-  std::vector< std::string > dataArrayNames;
+  
+  //std::vector< std::string > dataArrayNames;
 
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDesc = "This program can be used to scour an input particles data set, \
-removing specified field data arrays.";
 
-  std::string inParticlesFileNameDesc  = "Input particles file name";
-  std::string outParticlesFileNameDesc = "Output particles file name";
-  std::string dataArrayNamesDesc       = "Specify the name(s) of the arrays to be removed";
 
+  
   //
   // Parse the input arguments
   //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 184 $" );
 
-    TCLAP::ValueArg<std::string> inParticlesFileNameArg( "i", "in", inParticlesFileNameDesc, true, inParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outParticlesFileNameArg( "o", "out", outParticlesFileNameDesc, true, outParticlesFileName, "string", cl );
-    TCLAP::MultiArg<std::string> dataArrayNamesArg( "n", "name", dataArrayNamesDesc, false, "string", cl );
-
-    cl.parse( argc, argv );
-
-    inParticlesFileName    = inParticlesFileNameArg.getValue();
-    outParticlesFileName   = outParticlesFileNameArg.getValue();
-    for ( unsigned int i=0; i<dataArrayNamesArg.getValue().size(); i++ )
+/*    for ( unsigned int i=0; i<dataArrayNamesArg.getValue().size(); i++ )
       {
       dataArrayNames.push_back( dataArrayNamesArg.getValue()[i] );
-      }
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
-
+      }*/
+   
+    PARSE_ARGS;
+    
   std::cout << "Reading particles ..." << std::endl;
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
     reader->SetFileName( inParticlesFileName.c_str() );
