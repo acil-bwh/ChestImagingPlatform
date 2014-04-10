@@ -71,7 +71,6 @@ int main( int argc, char* argv[] )
     }
 
   double dice = 2.0*double(intCount)/double(refCount + segCount);
-  std::cout << dice << std::endl;
 
   if ( dice > 0.99 )
     {
