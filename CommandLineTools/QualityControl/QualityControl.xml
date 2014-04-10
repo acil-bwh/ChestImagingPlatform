@@ -6,7 +6,7 @@
     </description>
     <version>0.0.1</version>
     <license>Slicer</license>
-    <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
     
@@ -84,7 +84,7 @@
         <string-vector>
             <name>rightLungCTFileNameVecArg</name>
             <longflag>rightCT</longflag>
-            <flag>f</flag>
+            <flag>g</flag>
             <label>right Lung CT FileName Vector</label>
             <channel>input</channel>
             <description><![CDATA[Right lung CT images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name. These are meant to correspond to the images specified with the -r flag so that overlay images and non overlay images can be compared]]></description>
