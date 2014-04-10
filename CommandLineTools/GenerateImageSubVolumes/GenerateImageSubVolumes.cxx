@@ -74,6 +74,7 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkExtractImageFilter.h"
 #include <sstream>
+#include "GenerateImageSubVolumesCLP.h"
 
 typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >          LabelMapIteratorType;
 typedef itk::ExtractImageFilter< cip::CTType, cip::CTType >             CTExtractorType; 
@@ -85,57 +86,46 @@ void WriteSubVolume( cip::CTType::Pointer, cip::LabelMapType::Pointer, cip::CTTy
 
 int main( int argc, char *argv[] )
 {
+    PARSE_ARGS;
   //
   // Definiton of command line argument variables
   //
-  std::string   ctFileName                       = "NA";
-  std::string   labelMapFileName                 = "NA";
-  std::string   ctSubVolumeFileNamePrefix        = "NA";
-  std::string   labelMapSubVolumeFileNamePrefix  = "NA";
-  bool          writeLabelMapSubVolumes          = false;
-  unsigned int  roiLength                        = 31;
-  unsigned int  overlap                          = 0;
+  //std::string   ctFileName                       = "NA";
+  //std::string   labelMapFileName                 = "NA";
+  //std::string   ctSubVolumeFileNamePrefix        = "NA";
+  //std::string   labelMapSubVolumeFileNamePrefix  = "NA";
+  //bool          writeLabelMapSubVolumes          = false;
+    unsigned int  roiLength                        = (unsigned int) roiLengthInt; //31;
+    unsigned int  overlap                          = (unsigned int) overlapInt;
 
   //
   // Descriptions on inputs for user help
   //
-  std::string programDescription = "This program accepts as input a CT image and a corresponding label \
-map. It produces a collection of subvolumes of the CT image and (optionally) \
-of the label map image. The user specifies the size of the sub-volume \
-to extract and can optionally supply an overlap value (the amount of \
-overlap between sub-volumes). Sub-volumes over a given region of the image \
-will only be extracted provided that there is at least one foreground \
-label map voxel in that region. The user only specifies an output prefix; \
-each of the subvolumes written will have a numerical suffix attached to it.";
 
-  std::string ctFileNameDesc = "CT file name";
-  std::string labelMapFileNameDesc = "Label map file name";
-  std::string ctSubVolumeFileNamePrefixDesc = "CT sub-volume file name prefix. Each sub-volume extracted \
+  //std::string ctFileNameDesc = "";
+ // std::string ctSubVolumeFileNamePrefixDesc = "CT sub-volume file name prefix. Each sub-volume extracted \
 will be written to file. The file name used will be this prefix plus a numerical identifier followed by the \
 .nhdr file extension.";
-  std::string labelMapSubVolumeFileNamePrefixDesc = "Label map sub-volume file name prefix. This is an \
-optional argument and will have no effect unless the --wls flag is set to 1. Each sub-volume extracted \
-will be written to file. The file name used will be this prefix plus a numerical identifier followed by the \
-.nhdr file extension.";
-  std::string writeLabelMapSubVolumesDesc = "Boolean flag to indicate whether label map sub-volumes should be \
+ // std::string labelMapSubVolumeFileNamePrefixDesc = "";
+//  std::string writeLabelMapSubVolumesDesc = "Boolean flag to indicate whether label map sub-volumes should be \
 written in addition to the CT sub-volumes";
-  std::string roiLengthDesc = "Length in voxels of sub-volume edge to extract";
-  std::string overlapDesc = "Length in voxels of overlap between sub-volume regions";
+ // std::string roiLengthDesc = "Length in voxels of sub-volume edge to extract";
+//  std::string overlapDesc = "Length in voxels of overlap between sub-volume regions";
 
   //
   // Parse the input arguments
   //
-  try
+/*  try
     {
     TCLAP::CmdLine cl( programDescription,  ' ', "$Revision: 383 $" );
       
-    TCLAP::ValueArg<std::string>   ctFileNameArg ( "c", "ct", ctFileNameDesc, true, ctFileName,"string", cl );
-    TCLAP::ValueArg<std::string>   labelMapFileNameArg ( "l", "lm", labelMapFileNameDesc, true, labelMapFileName,"string", cl );
-    TCLAP::ValueArg<std::string>   ctSubVolumeFileNamePrefixArg ( "", "ctPre", ctSubVolumeFileNamePrefixDesc, true, ctSubVolumeFileNamePrefix, "string", cl );
-    TCLAP::ValueArg<std::string>   labelMapSubVolumeFileNamePrefixArg ( "", "lmPre", labelMapSubVolumeFileNamePrefixDesc, false, labelMapSubVolumeFileNamePrefix, "string", cl );    
-    TCLAP::ValueArg<unsigned int>  roiLengthArg ( "r", "roi", roiLengthDesc, false, roiLength, "unsigned int", cl );    
-    TCLAP::ValueArg<unsigned int>  overlapArg ( "o", "overlap", overlapDesc, false, overlap, "unsigned int", cl );    
-    TCLAP::SwitchArg               writeLabelMapSubVolumesArg( "", "wls", writeLabelMapSubVolumesDesc, cl, false );
+    //TCLAP::ValueArg<std::string>   ctFileNameArg ( "c", "ct", ctFileNameDesc, true, ctFileName,"string", cl );
+    //TCLAP::ValueArg<std::string>   labelMapFileNameArg ( "l", "lm", labelMapFileNameDesc, true, labelMapFileName,"string", cl );
+    //TCLAP::ValueArg<std::string>   ctSubVolumeFileNamePrefixArg ( "", "ctPre", ctSubVolumeFileNamePrefixDesc, true, ctSubVolumeFileNamePrefix, "string", cl );
+   // TCLAP::ValueArg<std::string>   labelMapSubVolumeFileNamePrefixArg ( "", "lmPre", labelMapSubVolumeFileNamePrefixDesc, false, labelMapSubVolumeFileNamePrefix, "string", cl );
+   // TCLAP::ValueArg<unsigned int>  roiLengthArg ( "r", "roi", roiLengthDesc, false, roiLength, "unsigned int", cl );
+   // TCLAP::ValueArg<unsigned int>  overlapArg ( "o", "overlap", overlapDesc, false, overlap, "unsigned int", cl );
+   // TCLAP::SwitchArg               writeLabelMapSubVolumesArg( "", "wls", writeLabelMapSubVolumesDesc, cl, false );
 
     cl.parse( argc, argv );
     
@@ -152,7 +142,7 @@ written in addition to the CT sub-volumes";
       std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
       return cip::ARGUMENTPARSINGERROR;
     }   
-
+*/
   //
   // Read the CT image
   //
