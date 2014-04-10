@@ -64,7 +64,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -104,11 +103,11 @@ int main( int argc, char *argv[] )
 
   //std::string ctFileNameDesc = "";
  // std::string ctSubVolumeFileNamePrefixDesc = "CT sub-volume file name prefix. Each sub-volume extracted \
-will be written to file. The file name used will be this prefix plus a numerical identifier followed by the \
-.nhdr file extension.";
+    //will be written to file. The file name used will be this prefix plus a numerical identifier followed by the \
+    .//nhdr file extension.";
  // std::string labelMapSubVolumeFileNamePrefixDesc = "";
 //  std::string writeLabelMapSubVolumesDesc = "Boolean flag to indicate whether label map sub-volumes should be \
-written in addition to the CT sub-volumes";
+      //written in addition to the CT sub-volumes";
  // std::string roiLengthDesc = "Length in voxels of sub-volume edge to extract";
 //  std::string overlapDesc = "Length in voxels of overlap between sub-volume regions";
 
@@ -148,7 +147,7 @@ written in addition to the CT sub-volumes";
   //
   std::cout << "Reading CT from file..." << std::endl;
   cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
-    ctReader->SetFileName( ctFileName );
+  ctReader->SetFileName( ctFileName );
   try
     {
     ctReader->Update();
