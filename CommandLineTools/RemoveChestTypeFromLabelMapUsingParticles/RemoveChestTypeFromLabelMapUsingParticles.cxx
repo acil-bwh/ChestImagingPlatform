@@ -6,8 +6,8 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
+#include "RemoveChestTypeFromLabelMapUsingParticlesCLP.h"
 // #include "itkImage.h"
 // #include "itkImageFileReader.h"
 // #include "itkImageFileWriter.h"
@@ -26,6 +26,8 @@
 
 int main( int argc, char *argv[] )
 {
+    
+    PARSE_ARGS;
 //   //
 //   // Begin by defining the arguments to be passed
 //   //
