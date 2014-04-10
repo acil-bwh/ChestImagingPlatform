@@ -110,7 +110,7 @@ int main( int argc, char *argv[] )
 
 
   std::cout << "Writing lung mask image..." << std::endl;
-  cip::CTWriterType::Pointer maskWriter = cip::CTWriterType::New(); 
+  cip::LabelMapWriterType::Pointer maskWriter = cip::LabelMapWriterType::New(); 
     maskWriter->SetInput( partialLungFilter->GetOutput() );
     maskWriter->SetFileName( outputLungMaskFileName );
     maskWriter->UseCompressionOn();
