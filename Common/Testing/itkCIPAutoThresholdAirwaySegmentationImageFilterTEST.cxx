@@ -22,9 +22,9 @@ int main( int argc, char* argv[] )
     }
 
   cip::CTType::IndexType seed;
-    seed[0] = 252;
-    seed[1] = 304;
-    seed[2] = 449;
+    seed[0] = atoi( argv[2] );
+    seed[1] = atoi( argv[3] );
+    seed[2] = atoi( argv[4] );
 
   std::cout << "Segmenting..." << std::endl;
   AirwaySegmentationType::Pointer segmenter = AirwaySegmentationType::New();
@@ -34,10 +34,20 @@ int main( int argc, char* argv[] )
     segmenter->SetMaxIntensityThreshold( -800 );
     segmenter->Update();
 
+  if ( argc > 6 )
+    {
+      std::cout << "Writing cast..." << std::endl;
+      cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+        writer->SetFileName( argv[6] );
+	writer->SetInput( segmenter->GetOutput() );
+	writer->UseCompressionOn();
+	writer->Update();
+    }
+
   // Read the reference label mape
   std::cout << "Reading reference..." << std::endl;
   cip::LabelMapReaderType::Pointer referenceReader = cip::LabelMapReaderType::New();
-    referenceReader->SetFileName( argv[2] );
+    referenceReader->SetFileName( argv[5] );
   try
     {
     referenceReader->Update();
@@ -86,5 +96,6 @@ int main( int argc, char* argv[] )
       return 0;
     }
 
+  std::cout << "FAILED" << std::endl;
   return 1;
 }

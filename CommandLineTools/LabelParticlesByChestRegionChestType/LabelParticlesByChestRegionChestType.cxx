@@ -44,7 +44,6 @@
  *
  */
 
-#include <tclap/CmdLine.h>
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"

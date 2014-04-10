@@ -14,7 +14,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_interactiveAirwaySegmentation.nhdr)
+  ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD.nhdr 252 304 449 ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_interactiveAirwaySegmentation.nhdr)
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
@@ -71,7 +71,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPSplitLeftLungRightLungImageFilterTEST COMMAND itkCIPSplitLeftLungRightLungImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_preLeftRightSplit.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_partialLungLabelMap.nhdr  ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_postLeftRightSplitLabeled.nhdr )
+  ADD_TEST( NAME itkCIPSplitLeftLungRightLungImageFilterTEST COMMAND itkCIPSplitLeftLungRightLungImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_preLeftRightSplit.nhdr  ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_postLeftRightSplitLabeled.nhdr )
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
