@@ -20,7 +20,6 @@
 #include "itkImageToGraphFilter.h"
 #include "itkCIPDijkstraImageToGraphFunctor.h"
 #include "itkCIPDijkstraMinCostPathGraphToGraphFilter.h"
-#include "itkThresholdImageFilter.h"
 
 namespace itk
 {
@@ -58,14 +57,6 @@ public:
   typedef OutputImageType::RegionType           OutputImageRegionType;
   typedef typename InputImageType::SizeType     InputSizeType;
 
-  /** By default, the left-right lung splitting routine makes
-   *  assumptions to make the process as fast as possible.  In some
-   *  cases, however, this can result in left and right lungs that are
-   *  still merged.  By setting 'AggressiveLeftRightSplitter' to true,
-   *  the splitting routine will take longer, but will be more robust. */
-  itkSetMacro( AggressiveLeftRightSplitter, bool ); 
-  itkGetMacro( AggressiveLeftRightSplitter, bool );
-
   /** In order to split the left and right lungs, a min cost path
    *  algorithm is used.  To do this, a section of the image is
    *  converted to a graph and weights are assigned to the indices
@@ -94,12 +85,6 @@ public:
   itkSetMacro( LeftRightLungSplitRadius, int );
   itkGetMacro( LeftRightLungSplitRadius, int );
 
-  /** Use this method to get the vector of indices that were removed
-   *  during the splitting process. Pass a pointer to an empty
-   *  vector. This function will fill the vector with the erased
-   *  indices */
-  void GetRemovedIndices( std::vector< LabelMapType::IndexType >* );
-
   void SetLungLabelMap( LabelMapType::Pointer );
 
   void PrintSelf( std::ostream& os, Indent indent ) const;
@@ -123,13 +108,9 @@ protected:
   typedef itk::ImageToGraphFilter< InputSliceType, GraphType >                                   GraphFilterType;
   typedef itk::CIPDijkstraImageToGraphFunctor< InputSliceType, GraphType >                       FunctorType;
   typedef itk::CIPDijkstraMinCostPathGraphToGraphFilter< GraphType, GraphType >                  MinPathType;
-  typedef itk::ThresholdImageFilter< InputImageType >                                            ThresholdType;
 
   CIPSplitLeftLungRightLungImageFilter();
   virtual ~CIPSplitLeftLungRightLungImageFilter() {}
-
-  void SetRegion( OutputImageType::IndexType, int );
-  unsigned char GetType( OutputImageType::IndexType );
 
   void ExtractLabelMapSlice( LabelMapType::Pointer, LabelMapSliceType::Pointer, int );
 
@@ -156,11 +137,9 @@ private:
   void operator=(const Self&); //purposely not implemented
 
   LabelMapType::Pointer  m_LungLabelMap;
-  cip::ChestConventions  m_LungConventions;
 
   double  m_ExponentialCoefficient;
   double  m_ExponentialTimeConstant;
-  bool    m_AggressiveLeftRightSplitter;
   int     m_LeftRightLungSplitRadius;
 
   std::vector< LabelMapSliceType::IndexType >  m_MinCostPathIndices;

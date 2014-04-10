@@ -1,11 +1,11 @@
 #include "cipConventions.h"
-#include "itkCIPOtsuLungCastImageFilter.h"
+#include "itkCIPPartialLungLabelMapImageFilter.h"
 #include "itkImageRegionIterator.h"
 
 int main( int argc, char* argv[] )
 {
-  typedef itk::CIPOtsuLungCastImageFilter< cip::CTType > CIPOtsuCastType;
-  typedef itk::ImageRegionIterator< cip::LabelMapType >  IteratorType;
+  typedef itk::CIPPartialLungLabelMapImageFilter< cip::CTType > PartialLungType;
+  typedef itk::ImageRegionIterator< cip::LabelMapType >         IteratorType;
 
   // Read the CT image
   std::cout << "Reading CT..." << std::endl;
@@ -21,9 +21,11 @@ int main( int argc, char* argv[] )
     std::cerr << excp << std::endl;
     }
 
-  std::cout << "Getting cast..." << std::endl;
-  CIPOtsuCastType::Pointer segmenter = CIPOtsuCastType::New();
+  std::cout << "Segmenting..." << std::endl;
+  PartialLungType::Pointer segmenter = PartialLungType::New();
     segmenter->SetInput( reader->GetOutput() );
+    segmenter->SetAirwayMinIntensityThreshold( -1024 );
+    segmenter->SetAirwayMaxIntensityThreshold( -800 );
     segmenter->Update();
 
   // Read the reference label mape
@@ -59,7 +61,7 @@ int main( int argc, char* argv[] )
   	{
   	  segCount++;
   	}
-      if ( refIt.Get() !=0 && segIt.Get() != 0 )
+      if ( refIt.Get() !=0 && (segIt.Get() == refIt.Get()) )
   	{
   	  intCount++;
   	}
@@ -69,12 +71,14 @@ int main( int argc, char* argv[] )
     }
 
   double dice = 2.0*double(intCount)/double(refCount + segCount);
+  std::cout << dice << std::endl;
 
-  if ( dice == 1.0 )
+  if ( dice > 0.99 )
     {
       std::cout << "PASSED" << std::endl;
       return 0;
     }
 
+  std::cout << "FAILED" << std::endl;
   return 1;
 }

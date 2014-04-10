@@ -113,7 +113,7 @@ CIPLabelLungRegionsImageFilter
 
   if ( this->m_LabelLungThirds || this->m_LabelLeftAndRightLungs )
     {
-    this->m_LabelingSuccess = this->LabelLeftAndRightLungs();
+      this->m_LabelingSuccess = this->LabelLeftAndRightLungs();
     }
   if ( this->m_LabelLungThirds && this->m_LabelingSuccess )
     {
@@ -221,206 +221,108 @@ bool
 CIPLabelLungRegionsImageFilter
 ::LabelLeftAndRightLungs()
 {
-  //
-  // First test if the input is already split into left and right. For
-  // this condition to be true, all voxel regions must be labeled as
-  // either left or right. If this is true, simply transfer the labels
-  // to the output image.  
-  //
-  InputIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
-  LabelMapIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
+  cip::ChestConventions conventions;
 
-  bool leftLungFound     = false;
-  bool rightLungFound    = false;
-  bool nonLeftRightFound = false;
-
-  iIt.GoToBegin();
-  while ( !iIt.IsAtEnd() )
-    {
-    if ( iIt.Get() != 0 )
-      {
-      if ( iIt.Get() == static_cast< unsigned short >( cip::LEFTLUNG ) )
-        {
-        leftLungFound = true;
-        }
-      else if ( iIt.Get() == static_cast< unsigned short >( cip::RIGHTLUNG ) )
-        {
-        rightLungFound = true;
-        }
-      else
-        {
-        nonLeftRightFound = true;
-        }
-      }
-
-    ++iIt;
-    }
-
-  if ( leftLungFound && rightLungFound && !nonLeftRightFound )
-    {
-    oIt.GoToBegin();
-    iIt.GoToBegin();
-    while ( !oIt.IsAtEnd() )
-      {
-      oIt.Set( iIt.Get() );
-
-      ++oIt;
-      ++iIt;
-      }
-
-//    std::cout << "---Appears to already be left lung / right lung..." << std::endl;
-
-    return true;
-    }
-
-  LabelMapType::SizeType size = this->GetInput()->GetBufferedRegion().GetSize();
-
-  //
-  // Perform connected component analysis.
-  //
   ConnectedComponentType::Pointer connectedComponent = ConnectedComponentType::New();
     connectedComponent->SetInput( this->GetOutput() );
-    connectedComponent->FullyConnectedOn();
     connectedComponent->Update();
 
-  RelabelComponentType::Pointer relabelComponent = RelabelComponentType::New();
-    relabelComponent->SetInput( connectedComponent->GetOutput() );
-    relabelComponent->Update();
-
-  if ( relabelComponent->GetNumberOfObjects() <= 1 )
+  RelabelComponentType::Pointer relabeler = RelabelComponentType::New();
+    relabeler->SetInput( connectedComponent->GetOutput() );
+  try
     {
-//    std::cout << "---Only found one component..." << std::endl;
+    relabeler->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught relabeling:";
+    std::cerr << excp << std::endl;
+    }
+
+  if ( relabeler->GetNumberOfObjects() < 2 )
+    {
+    return false;
+    }
+
+  unsigned int total = 0;
+  for ( unsigned int i=0; i<relabeler->GetNumberOfObjects(); i++ )
+    {
+    total += relabeler->GetSizeOfObjectsInPixels()[i];
+    }
+
+  //
+  // If the second largest object doesn't comprise at least 30%
+  // (arbitrary) of the foreground region, assume the lungs are
+  // connected 
+  //
+  if ( static_cast< double >( relabeler->GetSizeOfObjectsInPixels()[1] )/static_cast< double >( total ) < 0.3 )
+    {
     return false;
     }
 
   //
-  // The following containter will keep track of the x-coordinates for
-  // all the components. Once tallied, we'll determine the center of
-  // mass along the x-direction for each component. We will then
-  // assign each component to left or right depending on whether it is
-  // closer to the left or right edge of the bounding box.
+  // If we're here, we assume that the left and right have been
+  // separated, so label them. First, we need to get the relabel
+  // component corresponding to the left and the right. We assume that
+  // the relabel component value = 1 corresponds to one of the two
+  // lungs and a value of 2 corresponds to the other. Find the
+  // left-most and right-most component value. Assuming the scan is
+  // supine, head-first, the component value corresponding to the
+  // smallest x-index will be the left lung and the other major
+  // component will be the right lung.
   //
-  std::vector< std::vector< unsigned short > > componentLocations;
+  unsigned int minX = relabeler->GetOutput()->GetBufferedRegion().GetSize()[0];
+  unsigned int maxX = 0;
 
-  //
-  // Begin by initializing the container. We want to have a vector for
-  // each component in order to contain the x coordinates for each
-  // component. 
-  //
-  for ( unsigned int i=0; i<relabelComponent->GetNumberOfObjects(); i++ )
-    {
-    std::vector< unsigned short > temp;
-    componentLocations.push_back( temp );
-    }
+  unsigned int smallIndexComponentLabel, largeIndexComponentLabel;
 
-  //
-  // Now loop over the relabled image and collect the x-coordinates for
-  // each of the components. At the same time, determine the min and
-  // max x coordinates.
-  //
-  unsigned short minX = size[0];
-  unsigned short maxX = 0;
-
-  LabelMapIteratorType rIt( relabelComponent->GetOutput(), relabelComponent->GetOutput()->GetBufferedRegion() );
+  LabelMapIteratorType rIt( relabeler->GetOutput(), relabeler->GetOutput()->GetBufferedRegion() );
 
   rIt.GoToBegin();
   while ( !rIt.IsAtEnd() )
     {
-    if ( rIt.Get() != 0 )
+    if ( rIt.Get() == 1 || rIt.Get() == 2 )
       {
-      componentLocations[rIt.Get()-1].push_back( rIt.GetIndex()[0] );
-
       if ( rIt.GetIndex()[0] < minX )
         {
+        smallIndexComponentLabel = rIt.Get();
         minX = rIt.GetIndex()[0];
         }
       if ( rIt.GetIndex()[0] > maxX )
         {
+        largeIndexComponentLabel = rIt.Get();
         maxX = rIt.GetIndex()[0];
         }
       }
 
     ++rIt;
     }
-  
-//   std::cout << "---Min x:\t" << minX << std::endl;
-//   std::cout << "---Max x:\t" << maxX << std::endl;
 
-  //
-  // Now compute the center of mass for each component and assign lung
-  // region values for each component value
-  //
-  std::map<unsigned short, unsigned char> componentToLungRegionMap;
-
-  for ( unsigned int i=0; i<relabelComponent->GetNumberOfObjects(); i++ )
+  unsigned int leftLungComponentLabel, rightLungComponentLabel;
+  if ( (this->m_HeadFirst && this->m_Supine) || (!this->m_HeadFirst && !this->m_Supine) )
     {
-    double xInc = 0;
-
-    for ( unsigned int x=0; x<componentLocations[i].size(); x++ )
-      {
-      xInc += static_cast< double >( componentLocations[i][x] );
-      }
-
-    double massCenter = xInc/static_cast<double>(componentLocations[i].size());
-
-    //
-    // We'll assign the component as left or right lung depending on
-    // which bounding box edge it is closer to
-    //
-    if ( (this->m_HeadFirst && this->m_Supine) || (!this->m_HeadFirst && !this->m_Supine) )
-      {
-      if ( vcl_abs(massCenter-static_cast<double>(minX)) <= vcl_abs(massCenter-static_cast<double>(maxX)) )
-        {
-//        std::cout << "---Setting component " << i+1 << " to right lung (mass center is: " << massCenter << "..." << std::endl;
-        componentToLungRegionMap[i+1] = static_cast<unsigned char>(cip::RIGHTLUNG);
-        }
-      else
-        {
-//        std::cout << "---Setting component " << i+1 << " to left lung (mass center is: " << massCenter << "..." << std::endl;
-        componentToLungRegionMap[i+1] = static_cast<unsigned char>(cip::LEFTLUNG);
-        }
-      }
-    else
-      {
-      if ( vcl_abs(massCenter-static_cast<double>(minX)) <= vcl_abs(massCenter-static_cast<double>(maxX)) )
-        {
-        componentToLungRegionMap[i+1] = static_cast<unsigned char>(cip::LEFTLUNG);
-        }
-      else
-        {
-        componentToLungRegionMap[i+1] = static_cast<unsigned char>(cip::RIGHTLUNG);
-        }
-      }
+    leftLungComponentLabel  = largeIndexComponentLabel;
+    rightLungComponentLabel = smallIndexComponentLabel;
+    }
+  else
+    {
+    leftLungComponentLabel  = smallIndexComponentLabel;
+    rightLungComponentLabel = largeIndexComponentLabel;
     }
 
-  //
-  // Now that we have the mapping from component value to lung region,
-  // we can populate the output
-  //
-  unsigned short rightLungLabel = this->m_LungConventions.GetValueFromChestRegionAndType( cip::RIGHTLUNG, cip::UNDEFINEDTYPE );
-  unsigned short leftLungLabel  = this->m_LungConventions.GetValueFromChestRegionAndType( cip::LEFTLUNG, cip::UNDEFINEDTYPE );
+  LabelMapIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
 
-//   std::cout << "---Right lung label:\t" << rightLungLabel << std::endl;
-//   std::cout << "---Left lung label:\t" << leftLungLabel << std::endl;
-
-  rIt.GoToBegin();
   oIt.GoToBegin();
+  rIt.GoToBegin();
   while ( !oIt.IsAtEnd() )
     {
-    if ( rIt.Get() != 0 )
+    if ( rIt.Get() == leftLungComponentLabel )
       {
-      if ( componentToLungRegionMap[rIt.Get()] == static_cast<unsigned char>(cip::LEFTLUNG) )
-        {
-        oIt.Set( leftLungLabel );
-        }
-      else if ( componentToLungRegionMap[rIt.Get()] == static_cast<unsigned char>(cip::RIGHTLUNG) )
-        {
-        oIt.Set( rightLungLabel );
-        }
+	oIt.Set( (unsigned short)( cip::LEFTLUNG ) );
       }
-    else
+    if ( rIt.Get() == rightLungComponentLabel )
       {
-      oIt.Set( 0 );
+	oIt.Set( (unsigned short)( cip::RIGHTLUNG ) );
       }
 
     ++rIt;
