@@ -26,7 +26,17 @@ int main( int argc, char* argv[] )
     segmenter->SetInput( reader->GetOutput() );
     segmenter->Update();
 
-  // Read the reference label mape
+  if ( argc > 3 )
+    {
+      std::cout << "Writing cast..." << std::endl;
+      cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+        writer->SetFileName( argv[3] );
+	writer->SetInput( segmenter->GetOutput() );
+	writer->UseCompressionOn();
+	writer->Update();
+    }
+
+  // Read the reference label map
   std::cout << "Reading reference..." << std::endl;
   cip::LabelMapReaderType::Pointer referenceReader = cip::LabelMapReaderType::New();
     referenceReader->SetFileName( argv[2] );
@@ -75,6 +85,7 @@ int main( int argc, char* argv[] )
       std::cout << "PASSED" << std::endl;
       return 0;
     }
-
+  
+  std::cout << "FAILED" << std::endl;
   return 1;
 }
