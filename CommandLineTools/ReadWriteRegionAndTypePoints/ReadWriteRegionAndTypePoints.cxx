@@ -35,7 +35,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
