@@ -72,6 +72,7 @@ int main( int argc, char* argv[] )
 
   if ( dice == 1.0 )
     {
+      std::cout << "PASSED" << std::endl;
       return 0;
     }
 

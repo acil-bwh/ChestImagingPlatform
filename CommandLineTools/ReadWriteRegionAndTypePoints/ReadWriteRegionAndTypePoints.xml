@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform.Toolkit.Particles</category>
+    <title>FilterAirwayParticleData</title>
+    <description><![CDATA[This program converts region and type points between csv and vtk file formats.]]>
+    </description>
+    <version>0.0.1</version>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+        <file>
+            <name>inputFileName</name>
+            <label>Input FileName</label>
+            <channel>input</channel>
+            <flag>i</flag>
+            <longflag>input</longflag>
+            <description><![CDATA[Input region and type points file name (either csv or vtk).]]></description>
+            <default>q</default>
+        </file>
+        <file>
+            <name>outputFileName</name>
+            <label>Output FileName</label>
+            <channel>output</channel>
+            <flag>o</flag>
+            <longflag>output</longflag>
+            <description><![CDATA[Output region and type points file name (either csv or vtk).]]></description>
+            <default>q</default>
+        </file>
+      </parameters>
+</executable>

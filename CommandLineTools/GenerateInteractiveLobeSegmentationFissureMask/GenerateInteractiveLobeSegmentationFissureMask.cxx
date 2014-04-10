@@ -7,7 +7,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
+#include "GenerateInteractiveLobeSegmentationFissureMaskCLP.h"
 #include "cipConventions.h"
 #include "itkResampleImageFilter.h"
 #include "itkImage.h"
@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
   //
   // Begin by defining the arguments to be passed
   //
-  std::string   inLabelMapFileName   = "NA";
+/*  std::string   inLabelMapFileName   = "NA";
   std::string   outLabelMapFileName  = "NA";
   int           radius               = 5;
   
@@ -41,9 +41,9 @@ int main( int argc, char *argv[] )
     {
     TCLAP::CmdLine cl( "", ' ', "$Revision: 153 $" );
 
-    TCLAP::ValueArg<std::string>  inLabelMapFileNameArg ( "i", "in", "", true, inLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string>  outLabelMapFileNameArg ( "o", "out", "", true, outLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<int>          radiusArg ( "r", "radius", "", false, radius, "int", cl );
+    //::ValueArg<std::string>  inLabelMapFileNameArg ( "i", "in", "", true, inLabelMapFileName, "string", cl );
+    //TCLAP::ValueArg<std::string>  outLabelMapFileNameArg ( "o", "out", "", true, outLabelMapFileName, "string", cl );
+   // TCLAP::ValueArg<int>          radiusArg ( "r", "radius", "", false, radius, "int", cl );
 
     cl.parse( argc, argv );
 
@@ -56,7 +56,7 @@ int main( int argc, char *argv[] )
     std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
     return cip::ARGUMENTPARSINGERROR;
     }  
-
+*/
   //
   // Instantiate ChestConventions for convenience
   //

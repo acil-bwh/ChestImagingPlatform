@@ -10,62 +10,34 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
+#include "ReadVidaWriteCIPCLP.h"
 #include "cipConventions.h"
 #include "itkImageRegionIteratorWithIndex.h"
 
-typedef itk::Image< unsigned char, 3 >                VidaLabelMapType;
-typedef itk::ImageFileReader< VidaLabelMapType >      VidaReaderType;
-typedef itk::ImageRegionIterator< VidaLabelMapType >  VidaIteratorType;
-typedef itk::ImageRegionIterator< cip::LabelMapType > CIPIteratorType;
+namespace
+{
+   typedef itk::Image< unsigned char, 3 >                VidaLabelMapType;
+   typedef itk::ImageFileReader< VidaLabelMapType >      VidaReaderType;
+   typedef itk::ImageRegionIterator< VidaLabelMapType >  VidaIteratorType;
+   typedef itk::ImageRegionIterator< cip::LabelMapType > CIPIteratorType;
+}
 
 int main( int argc, char *argv[] )
 {
-  // Begin by defining the arguments to be passed
-  std::string   inLabelMapFileName    = "NA";
-  std::string   inRefLabelMapFileName = "NA";
-  std::string   outLabelMapFileName   = "NA";
   unsigned char cipRegion             = cip::UNDEFINEDREGION;
   unsigned char cipType               = cip::UNDEFINEDTYPE;
 
-  //
-  // Input argument descriptions for user help
-  //
-  std::string programDesc = "This ...";
-
-  std::string inLabelMapFileNameDesc  = "Input label map file name in Vida format";
-  std::string inRefLabelMapFileNameDesc = "Input label map for transferring proper origin and \
-spacing information to the converted labelmap";
-  std::string outLabelMapFileNameDesc = "Output label map file name in CIP format";
-  std::string cipRegionDesc = "The CIP chest region of the structure contained in the Vida label map";
-  std::string cipTypeDesc = "The CIP chest type of the structure contained in the Vida label map";
 
   //
   // Parse the input arguments
   //
-  try
-    {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision$" );
+    PARSE_ARGS;
+    
+    if (cipRegionArg > -1)
+        cipRegion              = cipRegionArg;
+    if (cipTypeArg > -1)
+        cipType                = cipTypeArg;
 
-    TCLAP::ValueArg<std::string> inLabelMapFileNameArg ( "i", "in", inLabelMapFileNameDesc, true, inLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> inRefLabelMapFileNameArg ( "r", "ref", inRefLabelMapFileNameDesc, true, inRefLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outLabelMapFileNameArg ( "o", "out", outLabelMapFileNameDesc, true, outLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<int> cipRegionArg ( "", "region", cipRegionDesc, true, cipRegion, "unsigned char", cl );
-    TCLAP::ValueArg<int> cipTypeArg ( "", "type", cipTypeDesc, true, cipType, "unsigned char", cl );
-
-    cl.parse( argc, argv );
-
-    inLabelMapFileName     = inLabelMapFileNameArg.getValue();
-    inRefLabelMapFileName  = inRefLabelMapFileNameArg.getValue();
-    outLabelMapFileName    = outLabelMapFileNameArg.getValue();
-    cipRegion              = cipRegionArg.getValue();
-    cipType                = cipTypeArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
 
   cip::ChestConventions conventions;
   

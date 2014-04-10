@@ -77,12 +77,12 @@ int main( int argc, char* argv[] )
     }
 
   double dice = 2.0*double(intCount)/double(refCount + segCount);
-  std::cout << dice << std::endl;
 
   // The output segmentation with the above parameters was visually inspected
   // and seen to be reasonable. The resulting dice score was over 0.75.
   if ( dice > 0.75 )
     {
+      std::cout << "PASSED" << std::endl;
       return 0;
     }
 

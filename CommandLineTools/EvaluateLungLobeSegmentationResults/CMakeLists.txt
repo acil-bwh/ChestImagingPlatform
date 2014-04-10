@@ -2,11 +2,18 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( EvaluateLungLobeSegmentationResults )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/IO )
+set(MODULE_NAME EvaluateLungLobeSegmentationResults)
 
-SET ( EvaluateLungLobeSegmentationResults_SOURCE EvaluateLungLobeSegmentationResults.cxx )
+set(MODULE_TARGET_LIBRARIES
+  ${VTK_LIBRARIES}
+  )
 
-ADD_EXECUTABLE ( EvaluateLungLobeSegmentationResults ${EvaluateLungLobeSegmentationResults_SOURCE} )
-TARGET_LINK_LIBRARIES ( EvaluateLungLobeSegmentationResults ${ITK_LIBRARIES} ${VTK_LIBRARIES} CIPCommon CIPIO )
+set(MODULE_SRCS
+  )
+
+cipMacroBuildCLI(
+    NAME ${MODULE_NAME}
+    ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+    ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+    SRCS ${MODULE_SRCS}
+    )

@@ -38,8 +38,8 @@ ENDIF ( VTK_FOUND )
 FIND_PACKAGE ( Teem )
 IF ( Teem_FOUND )
   INCLUDE(${Teem_USE_FILE})
-ELSE ( VTK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
+ELSE ( Teem_FOUND )
+  MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
 ENDIF ( Teem_FOUND )
 
 #---------------------------------------------------------------------
@@ -82,9 +82,11 @@ set( CIP_INCLUDE_DIRECTORIES
   "${CIP_SOURCE_DIR}/Common"
   "${CIP_SOURCE_DIR}/Utilities/ITK"
   "${CIP_SOURCE_DIR}/Utilities/VTK"
+  "${CIP_SOURCE_DIR}/IO"
   "${CMAKE_BINARY_DIR}/Common"
   "${CMAKE_BINARY_DIR}/Utilities/VTK"
   "${CMAKE_BINARY_DIR}/Utilities/ITK"
+  "${CMAKE_BINARY_DIR}/IO"
 )
 
 include_directories( ${CIP_INCLUDE_DIRECTORIES} )

@@ -2,18 +2,12 @@
 <executable>
   <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>GenerateStatisticsForAirwayGenerationLabeling</title>
-    <description><![CDATA[This program computes statistics needed as inputs to the 
-        LabelAirwayParticlesByGeneration program. It computes these statistics
-        over (possibly) multiple, labeled input airway particles datasets. The
-        user must specify information needed to construct the minimum spanning
-        tree (which encodes topology over the particles). This information should
-        be the same that is used for the LabelAirwayParticlesByGeneration program.]]></description>
+    <description><![CDATA[This program computes statistics needed as inputs to the LabelAirwayParticlesByGeneration program. It computes these statistics over (possibly) multiple, labeled input airway particles datasets. The user must specify information needed to construct the minimum spanning tree (which encodes topology over the particles). This information should be the same that is used for the LabelAirwayParticlesByGeneration program.]]>
+    </description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
-  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
@@ -59,11 +53,7 @@
           <label>Trans Probs FileName</label>
           <channel>output</channel>
           <longflag>tp</longflag>
-          <description><![CDATA[csv file in which to write the transition \
-              probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' \
-              generation and the columns represent the 'to' generation. The probabilities are \
-              computed simply by counting the number of times a given transition occurs and \
-              then normalizing.]]></description>
+          <description><![CDATA[csv file in which to write the transition probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' generation and the columns represent the 'to' generation. The probabilities are computed simply by counting the number of times a given transition occurs and then normalizing.]]></description>
           <default>q</default>
       </file>
     </parameters>

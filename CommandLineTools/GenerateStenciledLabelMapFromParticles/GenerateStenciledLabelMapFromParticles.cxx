@@ -89,7 +89,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
+#include "GenerateStenciledLabelMapFromParticlesCLP.h"
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
@@ -116,70 +116,16 @@ int main( int argc, char *argv[] )
   //
   // Begin by defining the arguments to be passed
   //
-  std::string inLabelMapFileName  = "NA";
-  std::string outLabelMapFileName = "NA";
-  std::string particlesFileName   = "NA";
-  double      ctPointSpreadSigma  = 0.0;
-  double      radius              = 1.0;
-  double      height              = 1.0;
-  bool        areVessels          = false;
-  bool        areAirways          = false;
-  bool        areFissures         = false;
-  bool        useSphereStencil    = false;
-  bool        useCylinderStencil  = false;
-  bool        scaleStencil        = false;
-
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDescription = "This program reads a particles dataset and creates a \
-stenciled label map corresponding to them. An input label map is \
-used simply to get spacing, origin, and dimensions of the output \
-label map. Particles can correspond to vessels, airways, or \
-fissures. Currently, sphere and cylinder stencils are \
-supported. The user has the option of scaling the stencil pattern \
-using the particle scale. Scaling in this case means scaling the \
-radius for both the sphere and cylinder stencils. The height of \
-the cylinder stencil remains fixed.";
-
-  std::string inLabelMapFileNameDescription = "Input label map file name. Used to retrieve \
-spacing, origin, and dimensions for creating output label map";
-  std::string outLabelMapFileNameDescription = "Output label map file name";
-  std::string particlesFileNameDescription  = "Input particles file name";
-  std::string areVesselsDescription = "Set this flag to indicate that in the input particles correspond to vessels";
-  std::string areAirwaysDescription = "Set this flag to indicate that in the input particles correspond to airways";
-  std::string areFissuresDescription = "Set this flag to indicate that in the input particles correspond to fissures";
-  std::string useSphereStencilDescription = "Set this flag to indicate that the sphere stencil should be used";
-  std::string useCylinderStencilDescription = "Set this flag to indicate that the cylinder stencil should be used";
-  std::string ctPointSpreadSigmaDescription = "The CT scanner point spread function sigma. 0.0 by default.";
-  std::string scaleStencilDescription = "Setting this flag will cause the stencil pattern to be scaled according to \
-particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be \
-performed using predetermined equations relating particle scale and CT point spread function sigma (set \
-using the -ctSigma flag)";
-  std::string radiusDescription = "Stencil radius in mm";
-  std::string heightDescription = "Cylinder stencil height in mm. Default is 1mm. This should typically be \
-set to the inter-particle distance.";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( programDescription, ' ', "$Revision: 155 $" );
-
-    TCLAP::ValueArg<std::string> inLabelMapFileNameArg( "l", "inLabelMap", inLabelMapFileNameDescription, true, inLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outLabelMapFileNameArg( "o", "outLabelMap", outLabelMapFileNameDescription, true, outLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> particlesFileNameArg( "p", "particles", particlesFileNameDescription, true, particlesFileName, "string", cl );
-    TCLAP::ValueArg<double>      ctPointSpreadSigmaArg( "", "ctSigma", ctPointSpreadSigmaDescription, false, ctPointSpreadSigma, "double", cl );
-    TCLAP::ValueArg<double>      radiusArg( "r", "radius", radiusDescription, false, radius, "double", cl );
-    TCLAP::ValueArg<double>      heightArg( "", "height", heightDescription, false, height, "double", cl );
-    TCLAP::SwitchArg             areVesselsArg( "v", "vessel", areVesselsDescription, false );
-    TCLAP::SwitchArg             areFissuresArg( "f", "fissure", areFissuresDescription, false );
-    TCLAP::SwitchArg             areAirwaysArg( "a", "airway", areAirwaysDescription, false );
-    TCLAP::SwitchArg             useSphereStencilArg( "s", "sphere", useSphereStencilDescription, false );
-    TCLAP::SwitchArg             useCylinderStencilArg( "c", "cylinder", useCylinderStencilDescription, false );
-    TCLAP::SwitchArg             scaleStencilArg( "", "scale", scaleStencilDescription, cl, false );
-
+    //TCLAP::ValueArg<double>      ctPointSpreadSigmaArg( "", "ctSigma", ctPointSpreadSigmaDescription, false, ctPointSpreadSigma, "double", cl );
+    //TCLAP::ValueArg<double>      radiusArg( "r", "radius", radiusDescription, false, radius, "double", cl );
+    //TCLAP::ValueArg<double>      heightArg( "", "height", heightDescription, false, height, "double", cl );
+    //TCLAP::SwitchArg             areVesselsArg( "v", "vessel", areVesselsDescription, false );
+    //TCLAP::SwitchArg             areFissuresArg( "f", "fissure", areFissuresDescription, false );
+    //TCLAP::SwitchArg             areAirwaysArg( "a", "airway", areAirwaysDescription, false );
+   // TCLAP::SwitchArg             useSphereStencilArg( "s", "sphere", useSphereStencilDescription, false );
+    //TCLAP::SwitchArg             useCylinderStencilArg( "c", "cylinder", useCylinderStencilDescription, false );
+  //  TCLAP::SwitchArg             scaleStencilArg( "", "scale", scaleStencilDescription, cl, false );
+/*
     std::vector< TCLAP::Arg* > particlesTypeXorList;
       particlesTypeXorList.push_back( &areVesselsArg );
       particlesTypeXorList.push_back( &areAirwaysArg ); 
@@ -228,7 +174,9 @@ set to the inter-particle distance.";
     std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
     return cip::ARGUMENTPARSINGERROR;
     }
-
+*/
+    
+    PARSE_ARGS;
   // Read the particles
   std::cout << "Reading particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();

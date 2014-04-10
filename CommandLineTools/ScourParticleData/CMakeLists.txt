@@ -2,20 +2,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( ScourParticleData )
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Utilities )
+SET ( MODULE_NAME ScourParticleData )
 
-SET ( VTK_LIBS
-vtkCommon 
-vtkImaging 
-vtkFiltering 
-vtkGraphics 
-vtkRendering 
-vtkWidgets 
-vtkHybrid
-)
+SET ( MODULE_TARGET_LIBRARIES
+  ${VTK_LIBRARIES}
+  )
 
-SET ( ScourParticleData_SOURCE ScourParticleData.cxx )
+SET ( MODULE_SRCS ScourParticleData.cxx )
 
-ADD_EXECUTABLE ( ScourParticleData ${ScourParticleData_SOURCE})
-TARGET_LINK_LIBRARIES ( ScourParticleData ${VTK_LIBS} ${ITK_LIBRARIES} )
+cipMacroBuildCLI(
+    NAME ${MODULE_NAME}
+    ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+    ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+    SRCS ${MODULE_SRCS}
+    )
