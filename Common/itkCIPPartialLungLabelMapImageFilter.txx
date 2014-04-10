@@ -183,13 +183,6 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       ++rIt;
     }
 
-  std::cout << "writing..." << std::endl;
-  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-  writer->SetInput( this->GetOutput() );
-  writer->SetFileName( "/Users/jross/tmp/foo.nhdr" );
-  writer->UseCompressionOn();
-  writer->Update();
-
   // Now split label map so that the left and right lungs can be labeled
   typename SplitterType::Pointer splitter = SplitterType::New();
     splitter->SetInput( this->GetInput() );
