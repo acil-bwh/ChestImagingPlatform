@@ -57,7 +57,6 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
 #include "cipConventions.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
@@ -68,55 +67,46 @@
 #include "vtkFieldData.h"
 #include "vtkPolyData.h"
 #include "vtkIndent.h"
-
+#include "TransferFieldDataToFromPointDataCLP.h"
 int main( int argc, char *argv[] )
 {
   //
   // Define arguments
   //
-  std::string inFileName    = "NA";
-  std::string outFileName   = "NA";
-  bool        maintainField = true;
-  bool        maintainPoint = true;
-  bool        fieldToPoint  = true;
-  bool        pointToField  = false;
+ // std::string inFileName    = "NA";
+ // std::string outFileName   = "NA";
+ // bool        maintainField = true;
+//  bool        maintainPoint = true;
+//  bool        fieldToPoint  = true;
+ // bool        pointToField  = false;
 
   //
   // Program and argument descriptions for user help
   //
-  std::string programDesc = "This program can be used to transfer the contents \
-of a VTK polydata's field data to point data and vice-versa. Generally, field \
-data applies to a dataset as a whole and need not have a one-to-one correspondence \
-with the points. However, this may be the case in some instances (esp. with the \
-particles datasets). In those cases it may be helpful to have the data contained in \
-field data arrays also stored in point data arrays (e.g. for rendering purposes). \
-Field data will only be transferred provided that the number of tuples in the \
-field data array is the same as the number of points.";
+//  std::string programDesc = "";
 
-  std::string inFileNameDesc  = "Input VTK polydata file name";
-  std::string outFileNameDesc = "Output VTK polydata file name";
-  std::string maintainFieldDesc  = "Setting this to true will maintain the field data. \
+  //std::string inFileNameDesc  = "";
+//  std::string outFileNameDesc = "Output VTK polydata file name";
+ // std::string maintainFieldDesc  = "";
+ // std::string maintainPointDesc  = "Setting this to true will maintain the field data. \
 Setting it to false will eliminate the field data from the output. Only relevant if \
 requesting to transfer field data to point data";
-  std::string maintainPointDesc  = "Setting this to true will maintain the field data. \
-Setting it to false will eliminate the field data from the output. Only relevant if \
-requesting to transfer field data to point data";
-  std::string fieldToPointDesc = "Set to true to transfer field data to point data";
-  std::string pointToFieldDesc = "Set to true to transfer point data to field data";
+ // std::string fieldToPointDesc = "Set to true to transfer field data to point data";
+//  std::string pointToFieldDesc = "Set to true to transfer point data to field data";
 
   //
   // Parse the input arguments
   //
-  try
+/*  try
     {
-    TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 383 $" );
+    //TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 383 $" );
 
-    TCLAP::ValueArg<std::string> inFileNameArg( "i", "input", inFileNameDesc, true, inFileName, "string", cl );
-    TCLAP::ValueArg<std::string> outFileNameArg( "o", "output", outFileNameDesc, true, outFileName, "string", cl );
-    TCLAP::ValueArg<bool> fieldToPointArg( "", "fp", fieldToPointDesc, false, fieldToPoint, "bool", cl );
+   // TCLAP::ValueArg<std::string> inFileNameArg( "i", "input", inFileNameDesc, true, inFileName, "string", cl );
+    //TCLAP::ValueArg<std::string> outFileNameArg( "o", "output", outFileNameDesc, true, outFileName, "string", cl );
+    //TCLAP::ValueArg<bool> fieldToPointArg( "", "fp", fieldToPointDesc, false, fieldToPoint, "bool", cl );
     TCLAP::ValueArg<bool> pointToFieldArg( "", "pf", pointToFieldDesc, false, pointToField, "bool", cl );
-    TCLAP::ValueArg<bool> maintainFieldArg( "", "mf", maintainFieldDesc, false, maintainField, "bool", cl );
-    TCLAP::ValueArg<bool> maintainPointArg( "", "mp", maintainPointDesc, false, maintainPoint, "bool", cl );
+    //TCLAP::ValueArg<bool> maintainFieldArg( "", "mf", maintainFieldDesc, false, maintainField, "bool", cl );
+   // TCLAP::ValueArg<bool> maintainPointArg( "", "mp", maintainPointDesc, false, maintainPoint, "bool", cl );
 
     cl.parse( argc, argv );
 
@@ -132,7 +122,9 @@ requesting to transfer field data to point data";
     std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
     return cip::ARGUMENTPARSINGERROR;
     }
-
+*/
+    
+    PARSE_ARGS;
   //
   // Read the poly data
   //
