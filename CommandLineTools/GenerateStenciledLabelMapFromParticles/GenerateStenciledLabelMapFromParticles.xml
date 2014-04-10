@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <title>GenerateStenciledLabelMapFromParticles</title>
+    <description><![CDATA[This program reads a particles dataset and creates a stenciled label map corresponding to them. An input label map is used simply to get spacing, origin, and dimensions of the output label map. Particles can correspond to vessels, airways, or fissures. Currently, sphere and cylinder stencils are supported. The user has the option of scaling the stencil pattern using the particle scale. Scaling in this case means scaling the radius for both the sphere and cylinder stencils. The height of the cylinder stencil remains fixed.]]></description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+ 
+      <image type="label">
+          <name>inLabelMapFileName</name>
+          <label>inLabelMapFileName</label>
+          <channel>input</channel>
+          <flag>l</flag>
+          <longflag>inLabelMap</longflag>
+          <description><![CDATA[Input label map file name. Used to retrieve spacing, origin, and dimensions for creating output label map]]></description>
+          <default>q</default>
+      </image>      
+      <image type="label">
+          <name>outLabelMapFileName</name>
+          <label>outLabelMapFileName</label>
+          <channel>output</channel>
+          <flag>o</flag>
+          <longflag>outLabelMap</longflag>
+          <description><![CDATA[Output label map file name]]></description>
+          <default>q</default>
+      </image>
+      <geometry type="model">
+          <name>particlesFileName</name>
+          <label>Particles FileName</label>
+          <channel>input</channel>
+          <flag>p</flag>
+          <longflag>particles</longflag>
+          <description><![CDATA[Input particles file name]]></description>
+          <default>q</default>
+      </geometry>
+      
+      <double>
+          <name>ctPointSpreadSigma</name>
+          <longflag>ctSigma</longflag>
+          <description>The CT scanner point spread function sigma. 0.0 by default.</description>
+          <label>Vessel Sigma Distance</label>
+          <default>0.0</default>
+      </double>
+      
+      <double>
+          <name>radius</name>
+          <longflag>radius</longflag>
+          <flag>r</flag>
+          <description>Stencil radius in mm.</description>
+          <label>radius</label>
+          <default>1.0</default>
+      </double>
+      <double>
+          <name>height</name>
+          <longflag>height</longflag>
+          <description>Cylinder stencil height in mm. Default is 1mm. This should typically be set to the inter-particle distance.</description>
+          <label>radius</label>
+          <default>1.0</default>
+      </double>
+      
+      <boolean>
+          <name>areVessels</name>
+          <label>areVessels</label>
+          <channel>input</channel>
+          <flag>v</flag>
+          <longflag>vessel</longflag>
+          <description><![CDATA[Set this flag to indicate that in the input particles correspond to vessels. Default: False.]]></description>
+          <default>false</default>
+      </boolean>
+      <boolean>
+          <name>areAirways</name>
+          <label>areVessels</label>
+          <channel>input</channel>
+          <flag>a</flag>
+          <longflag>airway</longflag>
+          <description><![CDATA[Set this flag to indicate that in the input particles correspond to airways. Default: False.]]></description>
+          <default>false</default>
+      </boolean>
+      <boolean>
+          <name>areFissures</name>
+          <label>areFissures</label>
+          <channel>input</channel>
+          <flag>f</flag>
+          <longflag>fissure</longflag>
+          <description><![CDATA[Set this flag to indicate that in the input particles correspond to fissures. Default: False.]]></description>
+          <default>false</default>
+      </boolean>
+      <boolean>
+          <name>useSphereStencil</name>
+          <label>useSphereStencil</label>
+          <channel>input</channel>
+          <flag>s</flag>
+          <longflag>sphere</longflag>
+          <description><![CDATA[Set this flag to indicate that the sphere stencil should be used. Default: False.]]></description>
+          <default>false</default>
+      </boolean>
+      <boolean>
+          <name>useCylinderStencil</name>
+          <label>useCylinderStencil</label>
+          <channel>input</channel>
+          <flag>c</flag>
+          <longflag>cylinder</longflag>
+          <description><![CDATA[Set this flag to indicate that the cylinder stencil should be used. Default: False.]]></description>
+          <default>false</default>
+      </boolean>
+      <boolean>
+          <name>scaleStencil</name>
+          <label>scaleStencil</label>
+          <channel>input</channel>
+          <longflag>scale</longflag>
+          <description><![CDATA[Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag). Default: False.]]></description>
+          <default>false</default>
+      </boolean>
+    </parameters>
+
+</executable>

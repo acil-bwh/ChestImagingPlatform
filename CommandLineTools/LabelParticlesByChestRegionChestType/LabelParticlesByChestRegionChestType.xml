@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <title>GetTransformationSimilarityMetric</title>
+    <description><![CDATA[This program is used to label particles datasets by chest region and chest type. The user must specify the type of the input particles, but the chest region can either be determined by an input label map or be specified at the command line.]]></description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+
+      <geometry type="model">
+          <name>inParticlesFileName</name>
+          <label>inParticles FileName</label>
+          <channel>input</channel>
+          <flag>i</flag>
+          <longflag>inParticles</longflag>
+          <description><![CDATA[Input particles file name.]]></description>
+          <default>q</default>
+      </geometry>
+      
+      <geometry type="model">
+          <name>outParticlesFileName</name>
+          <label>outParticles FileName</label>
+          <channel>input</channel>
+          <flag>o</flag>
+          <longflag>outParticles</longflag>
+          <description><![CDATA[Output particles file name.]]></description>
+          <default>q</default>
+      </geometry>
+      
+      <image type="label">
+          <name>labelMapFileName</name>
+          <label>LabelMap FileName</label>
+          <channel>input</channel>
+          <flag>l</flag>
+          <longflag>labelMap</longflag>
+          <description><![CDATA[Input label map file name. If specified the 'ChestRegion' value will be determined from the label map]]></description>
+          <default>q</default>
+      </image>
+      
+      
+    </parameters>
+    
+    
+    <parameters>
+    <label>Parameters</label>
+    <integer>
+        <name>cipRegionArg</name>
+        <label>Chest Region</label>
+        <channel>input</channel>
+        <flag>r</flag>
+        <longflag>region</longflag>
+        <description><![CDATA[Chest region for particles labeling. UNDEFINEDREGION by default]]></description>
+        <default>-1</default>
+    </integer>
+    <integer>
+        <name>cipTypeArg</name>
+        <label>Chest Type</label>
+        <channel>input</channel>
+        <flag>t</flag>
+        <longflag>type</longflag>
+        <description><![CDATA[Chest type for particles labeling. UNDEFINEDTYPE by default]]></description>
+        <default>-1</default>
+    </integer>
+
+  </parameters>
+</executable>

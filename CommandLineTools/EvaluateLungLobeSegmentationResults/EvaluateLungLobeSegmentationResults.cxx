@@ -19,7 +19,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include <tclap/CmdLine.h>
+#include "EvaluateLungLobeSegmentationResultsCLP.h"
 #include "cipConventions.h"
 #include "cipChestRegionChestTypeLocationsIO.h"
 #include "cipLobeSurfaceModelIO.h"
@@ -54,103 +54,14 @@ int main( int argc, char *argv[] )
   //
   // Begin by defining the arguments to be passed
   //
-  std::string gtLabelMapFileName   = "NA";
-  std::string autoLabelMapFileName = "NA";
-
-  std::string regionAndTypePointsFileName  = "NA";
 
   std::string loShapeModelFileName = "NA";
   std::string roShapeModelFileName = "NA";
   std::string rhShapeModelFileName = "NA";
 
-  std::string loParticlesFileName = "NA";
-  std::string roParticlesFileName = "NA";
-  std::string rhParticlesFileName = "NA";
 
-  std::string loGTParticlesFileName = "NA";
-  std::string roGTParticlesFileName = "NA";
-  std::string rhGTParticlesFileName = "NA";
+  PARSE_ARGS;     
 
-  //
-  // Program and argument descriptions for user help
-  //
-  std::string programDescription = "This program is used to evaluate lung lobe \
-segmentation results. There are various ways in which a user can specify the \
-lobe segmentation to evaluate. If lobe segmentation mask and a ground truth \
-lobe segmentation mask are both specified, Dice scores will be calculated. \
-\
-If the user specifies the particles that were used to generate the \
-automatic lobe segmentation, then the user must also specify a set of \
-ground truth points (e.g. particles) at which to measure the boundary \
-discrepancies. The same lambda (smoothing) value used to generate the lobe \
-boundaries should also be specified in order to reproduce the same \
-TPS boundary surface from the particles. \
-\
-If the user specifies shape model files defining the lobe boundary, they \
-will be used to generate the lobe boundaries to evaluate. Again, the user \
-must indicate the set of ground truth points to use for evaluation.";
-
-  std::string gtLabelMapFileNameDesc = "Ground truth lung lobe label map used \
-to compute Dice scores. Specifying has no effect if the automatic lung lobe \
-label map is not also specified (with the --autoLabelMap flag)";
-  std::string autoLabelMapFileNameDesc = "Automatic lung lobe label map used \
-to compute Dice scores. Specifying has no effect if the ground truth lobe \
-label map is not also specified (with the --gtLabelMap flag)";
-
-  std::string regionAndTypePointsFileNameDesc  = "Region and type points file \
-name. If specified, the ground truth lobe boundary surfaces will be computed \
-with respect to the fissure points indicated in this file. Point-wise surface \
-descrepancies between the ground truth surface and the automaticly segmented \
-lobe surfaces will be computed with the points specified in this file. \
-Additionally, full surface discrepancy measures will also be computed.";
-
-  std::string loShapeModelFileNameDesc = "NA";
-  std::string roShapeModelFileNameDesc = "NA";
-  std::string rhShapeModelFileNameDesc = "NA";
-
-  std::string loParticlesFileNameDesc = "NA";
-  std::string roParticlesFileNameDesc = "NA";
-  std::string rhParticlesFileNameDesc = "NA";
-
-  std::string loGTParticlesFileNameDesc = "NA";
-  std::string roGTParticlesFileNameDesc = "NA";
-  std::string rhGTParticlesFileNameDesc = "NA";
-
-  //
-  // Parse the input arguments
-  //
-  try
-    {
-    TCLAP::CmdLine cl( "", ' ', "$Revision$" );
-
-    TCLAP::ValueArg<std::string> gtLabelMapFileNameArg( "", "gtLabelMap", gtLabelMapFileNameDesc, false, gtLabelMapFileName, "string", cl );
-    TCLAP::ValueArg<std::string> autoLabelMapFileNameArg( "", "autoLabelMap", autoLabelMapFileNameDesc, false, autoLabelMapFileName, "string", cl );
-
-    TCLAP::ValueArg<std::string> regionAndTypePointsFileNameArg ( "i", "", "", true, regionAndTypePointsFileName, "string", cl );
-    TCLAP::ValueArg<std::string> loParticlesFileNameArg ( "", "lo", "", true, loParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> roParticlesFileNameArg ( "", "ro", "", true, roParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> rhParticlesFileNameArg ( "", "rh", "", true, rhParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> loGTParticlesFileNameArg( "", "loGT", "", true, loGTParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> roGTParticlesFileNameArg( "", "roGT", "", true, roGTParticlesFileName, "string", cl );
-    TCLAP::ValueArg<std::string> rhGTParticlesFileNameArg( "", "rhGT", "", true, rhGTParticlesFileName, "string", cl );
-
-    cl.parse( argc, argv );
-
-    autoLabelMapFileName        = autoLabelMapFileNameArg.getValue();
-    gtLabelMapFileName          = gtLabelMapFileNameArg.getValue();
-    regionAndTypePointsFileName = regionAndTypePointsFileNameArg.getValue();
-    loParticlesFileName         = loParticlesFileNameArg.getValue();
-    roParticlesFileName         = roParticlesFileNameArg.getValue();
-    rhParticlesFileName         = rhParticlesFileNameArg.getValue();
-    loGTParticlesFileName       = loGTParticlesFileNameArg.getValue();
-    roGTParticlesFileName       = roGTParticlesFileNameArg.getValue();
-    rhGTParticlesFileName       = rhGTParticlesFileNameArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
 
   //
   // Instantiate conventions for general use
@@ -210,7 +121,7 @@ Additionally, full surface discrepancy measures will also be computed.";
 
   std::cout << "Reading right horizontal ground truth particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > rhGTParticlesReader = vtkPolyDataReader::New();
-    rhGTParticlesReader->SetFileName( rhGTParticlesFileName.c_str() );
+    rhGTParticlesReader->SetFileName( rhGTParticlesFileName.c_str());
     rhGTParticlesReader->Update();    
 
   std::cout << rhGTParticlesReader->GetOutput()->GetNumberOfPoints() << std::endl;
@@ -220,7 +131,7 @@ Additionally, full surface discrepancy measures will also be computed.";
   //
   std::cout << "Reading left oblique particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > loParticlesReader = vtkPolyDataReader::New();
-    loParticlesReader->SetFileName( loParticlesFileName.c_str() );
+    loParticlesReader->SetFileName( loParticlesFileName.c_str());
     loParticlesReader->Update();    
 
   std::cout << loParticlesReader->GetOutput()->GetNumberOfPoints() << std::endl;

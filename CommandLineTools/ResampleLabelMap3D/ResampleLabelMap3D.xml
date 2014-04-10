@@ -52,14 +52,15 @@
     </parameters>
     <parameters>
     <label>Resampling parameters</label>
-    <boolean>
-      <name>isInvertTransformation</name>
-      <label>Invert Transformation</label>
-      <channel>input</channel>
-      <flag>f</flag>
-      <longflag>invertTransformation</longflag>
-      <description><![CDATA[Uses the inverse transformation if set to True. Default: False.]]></description>
-      <default>false</default>
-    </boolean> 
+        <boolean>
+            <name>isInvertTransformation</name>
+            <label>Invert Transformation</label>
+            <channel>input</channel>
+            <flag>f</flag>
+            <longflag>invertTransformation</longflag>
+            <description><![CDATA[Uses the inverse transformation if set to True. Default: False.]]></description>
+            <default>false</default>
+        </boolean>
+ 
   </parameters>
 </executable>
