@@ -65,9 +65,6 @@ int main( int argc, char *argv[] )
   std::cout << "Clipping low CT image values..." << std::endl;
   LowerClipImage( ctImage, lowerClipValue, lowerReplacementValue );
 
-  std::cout << "Clipping low CT image values (enforcing -1024 lower bound)..." << std::endl;
-  LowerClipImage( ctImage, -1024, -1024 );
-
   std::cout << "Clipping upper CT image values..." << std::endl;
   UpperClipImage( ctImage, upperClipValue, upperReplacementValue );
 
@@ -76,7 +73,7 @@ int main( int argc, char *argv[] )
     partialLungFilter->SetInput( ctImage );
     partialLungFilter->SetAirwayMinIntensityThreshold( -1024 );
     partialLungFilter->SetAirwayMaxIntensityThreshold( -800 );
-  if ( headFirst == 1 )
+  if ( headFirst == true )
     {
     partialLungFilter->SetHeadFirst( true );
     }
