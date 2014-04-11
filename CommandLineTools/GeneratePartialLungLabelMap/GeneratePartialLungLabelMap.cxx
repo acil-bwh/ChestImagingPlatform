@@ -71,8 +71,8 @@ int main( int argc, char *argv[] )
   std::cout << "Executing partial lung filter..." << std::endl;
   PartialLungType::Pointer partialLungFilter = PartialLungType::New();
     partialLungFilter->SetInput( ctImage );
-    partialLungFilter->SetAirwayMinIntensityThreshold( -1024 );
-    partialLungFilter->SetAirwayMaxIntensityThreshold( -800 );
+    partialLungFilter->SetAirwayMinIntensityThreshold( airwayMinThreshold );
+    partialLungFilter->SetAirwayMaxIntensityThreshold( airwayMaxThreshold );
   if ( headFirst == true )
     {
     partialLungFilter->SetHeadFirst( true );
