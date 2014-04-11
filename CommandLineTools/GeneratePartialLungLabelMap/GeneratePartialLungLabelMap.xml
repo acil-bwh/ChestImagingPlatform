@@ -99,12 +99,37 @@
       <label>Lung split radius</label>
       <default>1</default>
     </integer>
+    
+    <integer>
+      <name>airwayMinThreshold</name>
+      <longflag>al</longflag>
+      <description>Lower intensity thresold for airways</description>
+      <label>Airway lower intensity threshold</label>
+      <default>-1024</default>
+    </integer>
+
+    <integer>
+      <name>airwayMaxThreshold</name>
+      <longflag>au</longflag>
+      <description>Upper intensity thresold for airways</description>
+      <label>Airway upper intensity threshold</label>
+      <default>-800</default>
+    </integer>
+    
+    <integer>
+      <name>leftRightLungSplitRadius</name>
+      <longflag>radius</longflag>
+      <description>Radius used for left-right lung splitting. Larger values lead to more aggressive \
+      splitting, but may slightly degrade the quality of the seqmentation in the splitting region</description>
+      <label>Left-right lung split radius</label>
+      <default>1</default>
+    </integer>
 
     <boolean>
-      <name>headFirst</name>
-      <longflag>hf</longflag>
-      <description>Indicates if scan is head first.</description>
-      <label>Head first</label>
+      <name>feetFirst</name>
+      <longflag>ff</longflag>
+      <description>Indicates if scan is feet first.</description>
+      <label>Feet first</label>
     </boolean>
 
   </parameters>
