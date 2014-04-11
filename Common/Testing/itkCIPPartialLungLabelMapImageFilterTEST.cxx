@@ -28,6 +28,16 @@ int main( int argc, char* argv[] )
     segmenter->SetAirwayMaxIntensityThreshold( -800 );
     segmenter->Update();
 
+  if ( argc > 3 )
+    {
+      std::cout << "Writing partial lung label map... " << std::endl;
+      cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+        writer->SetFileName( argv[3] );
+	writer->SetInput( segmenter->GetOutput() );
+	writer->UseCompressionOn();
+	writer->Update();       
+    }
+
   // Read the reference label mape
   std::cout << "Reading reference..." << std::endl;
   cip::LabelMapReaderType::Pointer referenceReader = cip::LabelMapReaderType::New();

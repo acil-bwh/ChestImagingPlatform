@@ -155,6 +155,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
 
   LabelMapExtractorType::Pointer sliceROI = LabelMapExtractorType::New();
     sliceROI->SetInput( this->GetOutput() );
+    sliceROI->SetDirectionCollapseToIdentity();
     sliceROI->SetExtractionRegion( sliceRegion );
     sliceROI->Update();
 
@@ -424,6 +425,7 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
 
   typename InputExtractorType::Pointer roiExtractor = InputExtractorType::New();
     roiExtractor->SetInput( this->GetInput() );
+    roiExtractor->SetDirectionCollapseToIdentity();
     roiExtractor->SetExtractionRegion( roiRegion );
     roiExtractor->Update();
   

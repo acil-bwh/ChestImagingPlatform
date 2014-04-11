@@ -1,4 +1,3 @@
 IF ( CIP_BUILD_TESTING )
- SUBDIRS ( particles )
- SUBDIRS ( phenotypes )
+ SUBDIRS ( tests )
 ENDIF( CIP_BUILD_TESTING ) 
