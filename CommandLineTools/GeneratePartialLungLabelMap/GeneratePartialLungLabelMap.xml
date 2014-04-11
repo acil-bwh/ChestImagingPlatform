@@ -99,7 +99,23 @@
       <label>Lung split radius</label>
       <default>1</default>
     </integer>
+    
+    <integer>
+      <name>airwayMinThreshold</name>
+      <longflag>al</longflag>
+      <description>Lower intensity thresold for airways</description>
+      <label>Airway lower intensity threshold</label>
+      <default>-1024</default>
+    </integer>
 
+    <integer>
+      <name>airwayMaxThreshold</name>
+      <longflag>au</longflag>
+      <description>Upper intensity thresold for airways</description>
+      <label>Airway upper intensity threshold</label>
+      <default>-800</default>
+    </integer>
+    
     <boolean>
       <name>headFirst</name>
       <longflag>hf</longflag>
