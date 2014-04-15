@@ -83,7 +83,15 @@ int main( int argc, char *argv[] )
     partialLungFilter->SetHeadFirst( true );
     }
     partialLungFilter->SetLeftRightLungSplitRadius( lungSplitRadius );
-    partialLungFilter->Update();
+  try
+    {
+      partialLungFilter->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+      std::cerr << "Exception caught segmenting lungs:";
+      std::cerr << excp << std::endl;
+    }
 
   // //
   // // Read the helper mask if specified
