@@ -157,15 +157,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     sliceROI->SetInput( this->GetOutput() );
     sliceROI->SetDirectionCollapseToIdentity();
     sliceROI->SetExtractionRegion( sliceRegion );
-    try
-      {
     sliceROI->Update();
-      }
-    catch ( itk::ExceptionObject &excp )
-      {
-	std::cerr << "Exception caught: CIPSplitLeftLungRightLungImageFilter::GetLungsMergedInSliceRegion:";
-	std::cerr << excp << std::endl;
-      }
 
   LabelMapSliceType::SizeType roiSize = sliceROI->GetOutput()->GetBufferedRegion().GetSize();
 
@@ -253,9 +245,11 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
   // Set the start and end search indices
   this->m_StartSearchIndex[0] = (maxX + minX)/2;
   this->m_StartSearchIndex[1] = minY;
+  this->m_StartSearchIndex[2] = 0; // Value not used except for assert statements below
 
   this->m_EndSearchIndex[0] = (maxX + minX)/2;
   this->m_EndSearchIndex[1] = maxY;
+  this->m_EndSearchIndex[2] = 0; // Value not used except for assert statements below
 
   // Set the start index of the graph ROI
   int tmp;
@@ -287,9 +281,9 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
     {
       this->m_GraphROISize[0] = 0;
     }	  
-  else if ( tmp >= size[0] )
+  else if ( tmp > size[0] )
     {
-      this->m_GraphROISize[0] = size[0] - 1;
+      this->m_GraphROISize[0] = size[0];
     }
   else
     {
@@ -301,9 +295,9 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
     {
       this->m_GraphROISize[1] = 0;
     }
-  else if ( tmp >= size[1] )
+  else if ( tmp > size[1] )
     {
-      this->m_GraphROISize[1] = size[1] - 1;
+      this->m_GraphROISize[1] = size[1];
     }
   else
     {
@@ -312,8 +306,8 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
   
   assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_StartSearchIndex ) );
   assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_EndSearchIndex ) );
-  assert( this->m_GraphROIStartIndex[0] + this->m_GraphROISize[0] < size[0] );
-  assert( this->m_GraphROIStartIndex[1] + this->m_GraphROISize[1] < size[1] );
+  assert( this->m_GraphROIStartIndex[0] + this->m_GraphROISize[0] <= size[0] );
+  assert( this->m_GraphROIStartIndex[1] + this->m_GraphROISize[1] <= size[1] );
 
   this->m_GraphROISize[2] = 0;        
 }
@@ -476,15 +470,7 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
     roiExtractor->SetInput( this->GetInput() );
     roiExtractor->SetDirectionCollapseToIdentity();
     roiExtractor->SetExtractionRegion( roiRegion );
-    try
-      {
     roiExtractor->Update();
-      }
-    catch ( itk::ExceptionObject &excp )
-      {
-	std::cerr << "Exception caught in CIPSplitLeftLungRightLungImageFilter::FindMinCostPath:";
-	std::cerr << excp << std::endl;
-      }
 
   InputPixelType lowerThreshold = itk::NumericTraits< InputPixelType >::NonpositiveMin();
   InputPixelType upperThreshold = itk::NumericTraits< InputPixelType >::max();
