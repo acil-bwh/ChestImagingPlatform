@@ -26,7 +26,20 @@ int main( int argc, char* argv[] )
     segmenter->SetInput( reader->GetOutput() );
     segmenter->SetAirwayMinIntensityThreshold( -1024 );
     segmenter->SetAirwayMaxIntensityThreshold( -800 );
+  try
+    {
     segmenter->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught segmenting:";
+    std::cerr << excp << std::endl;
+    }
+  catch ( cip::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught segmenting:";
+    std::cerr << excp << std::endl;
+    }
 
   if ( argc > 3 )
     {

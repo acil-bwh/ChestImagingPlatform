@@ -23,7 +23,7 @@
             <label>Label map file name</label>
             <channel>input</channel>
             <flag>l</flag>
-            <longflag>--labelMap</longflag>
+            <longflag>labelMap</longflag>
             <default>NA</default>
             <description><![CDATA[Input label map file name]]></description>
         </string>
@@ -32,7 +32,7 @@
             <label>Distance map file name</label>
             <channel>output</channel>
             <flag>d</flag>
-            <longflag>--distanceMap</longflag>
+            <longflag>distanceMap</longflag>
             <default>q</default>
             <description><![CDATA[Output distance map file name]]></description>
         </string>
@@ -49,7 +49,7 @@
         <boolean>
             <name>interiorIsPositive</name>
             <flag>p</flag>
-            <longflag>downsample</longflag>
+            <longflag>positive</longflag>
             <description>Set this flag to indicate that the interior \
                 of the structure of interest should be assigned positive distance values.</description>
             <label>Interior Is Positive</label>

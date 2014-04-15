@@ -92,3 +92,10 @@ IF ( CIP_BUILD_TESTING_LARGE )
 
   ADD_TEST( NAME itkCIPLabelLungRegionsImageFilterTEST COMMAND itkCIPLabelLungRegionsImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_postLeftRightSplit.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_postLeftRightSplitLabeled.nhdr)
 ENDIF( CIP_BUILD_TESTING_LARGE )
+
+#----------------------------------------------
+# itkCIPOtsuLungCastImageFilterTEST2
+#----------------------------------------------
+IF ( CIP_BUILD_TESTING_LARGE )
+  ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST2 COMMAND itkCIPOtsuLungCastImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/21094A_INSP_STD_NJC_COPD.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/21094A_INSP_STD_NJC_COPD_otsuLungCast.nhdr)
+ENDIF( CIP_BUILD_TESTING_LARGE )

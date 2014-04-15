@@ -42,6 +42,10 @@ CIPOtsuLungCastImageFilter< TInputImage >
 
   this->GraftOutput( otsuThreshold->GetOutput() );
 
+  // Go slice-by-slice and remove all objects touching one of the four
+  // corners
+  this->RemoveCornerObjects();  
+
   // The next step is to identify all connected components in the
   // thresholded image
   ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();
@@ -137,6 +141,88 @@ CIPOtsuLungCastImageFilter< TInputImage >
 
     ++mIt;
     ++rIt;
+    }
+}
+
+template< class TInputImage >
+void CIPOtsuLungCastImageFilter< TInputImage >
+::RemoveCornerObjects()
+{
+  OutputImageType::SizeType size = this->GetOutput()->GetBufferedRegion().GetSize();
+
+  LabelMapType::SizeType sliceExtractorSize;
+    sliceExtractorSize[0] = size[0];
+    sliceExtractorSize[1] = size[1];
+    sliceExtractorSize[2] = 0;
+
+  LabelMapType::IndexType sliceStartIndex;
+    sliceStartIndex[0] = 0;
+    sliceStartIndex[1] = 0;
+
+  LabelMapType::RegionType sliceExtractorRegion;
+    sliceExtractorRegion.SetSize( sliceExtractorSize );
+
+  LabelMapExtractorType::Pointer sliceExtractor = LabelMapExtractorType::New();
+    sliceExtractor->SetInput( this->GetOutput() );
+    sliceExtractor->SetDirectionCollapseToIdentity();
+
+  ConnectedComponent2DType::Pointer connectedComponents = ConnectedComponent2DType::New();
+
+  ComponentSliceType::IndexType sliceIndex;
+  OutputImageType::IndexType index;
+
+  for ( unsigned int z=0; z<size[2]; z++ )
+    {
+      sliceStartIndex[2] = z;
+      sliceExtractorRegion.SetIndex( sliceStartIndex );
+
+      sliceExtractor->SetExtractionRegion( sliceExtractorRegion );
+      sliceExtractor->Update();
+
+      connectedComponents->SetInput( sliceExtractor->GetOutput() );
+      connectedComponents->Update();
+
+      std::vector< unsigned long > cornerLabels;
+
+      sliceIndex[0] = 0;
+      sliceIndex[1] = 0;
+      cornerLabels.push_back( connectedComponents->GetOutput()->GetPixel( sliceIndex ) );
+
+      sliceIndex[0] = 0;
+      sliceIndex[1] = size[1] - 1;
+      cornerLabels.push_back( connectedComponents->GetOutput()->GetPixel( sliceIndex ) );
+
+      sliceIndex[0] = size[0] - 1;
+      sliceIndex[1] = 0;
+      cornerLabels.push_back( connectedComponents->GetOutput()->GetPixel( sliceIndex ) );
+
+      sliceIndex[0] = size[0] - 1;
+      sliceIndex[1] = size[1] - 1;
+      cornerLabels.push_back( connectedComponents->GetOutput()->GetPixel( sliceIndex ) );
+
+      ComponentSliceIteratorType cIt( connectedComponents->GetOutput(), connectedComponents->GetOutput()->GetBufferedRegion() );
+
+      cIt.GoToBegin();
+      while ( !cIt.IsAtEnd() )
+	{
+	  if ( cIt.Get() != 0 )
+	    {
+	      for ( unsigned int i=0; i<cornerLabels.size(); i++ )
+		{
+		  if ( cIt.Get() == cornerLabels[i] )
+		    {
+		      index[0] = cIt.GetIndex()[0];
+		      index[1] = cIt.GetIndex()[1];
+		      index[2] = z;
+
+		      this->GetOutput()->SetPixel( index, 0 );
+		      break;
+		    }
+		}
+	    }
+
+	  ++cIt;
+	}
     }
 }
   

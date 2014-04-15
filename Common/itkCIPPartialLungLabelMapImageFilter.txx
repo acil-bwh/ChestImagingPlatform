@@ -116,15 +116,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     dilater->SetInput( airwaySegmenter->GetOutput() );
     dilater->SetKernel( structuringElement );
     dilater->SetDilateValue( airwayLabel );
-  try
-    {
     dilater->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught dilating:";
-    std::cerr << excp << std::endl;
-    }
 
   // Remove the airways from the output label map
   LabelMapIteratorType dIt( dilater->GetOutput(), dilater->GetOutput()->GetBufferedRegion() );
