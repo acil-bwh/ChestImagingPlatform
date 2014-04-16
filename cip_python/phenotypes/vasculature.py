@@ -105,7 +105,7 @@ class VasculaturePhenotypes(Phenotypes):
       n_points=len(array_v['scale'][region_mask])
       p_csa=kde.gaussian_kde(np.pi*self.vessel_radius_from_sigma(array_v['scale'][region_mask])**2)
       if self.plot==True:
-        profiles.append([region_name,type_name,p_csa])
+        profiles.append([region_name,type_name,p_csa,n_points])
 
       tbv[rr_id]=self.integrate_volume(p_csa,self.min_csa,self.max_csa,n_points,self._dx)
       self.add_pheno([region_name,type_name],'TBV',tbv[rr_id])
@@ -127,6 +127,7 @@ class VasculaturePhenotypes(Phenotypes):
       csa=np.arange(self.min_csa,self.max_csa,0.1)
       for ii,values in enumerate(profiles):
         p_csa=values[2]
+        n_points=values[3]
         ax1=fig.add_subplot(n_plots,1,ii+1)
         ax1.plot(csa,self._dx*n_points*p_csa.evaluate(csa))
         ax1.grid(True)
