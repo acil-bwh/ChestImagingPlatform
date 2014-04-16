@@ -1,6 +1,7 @@
 import numpy as np
 
-from sklearn.cluster import DBSCAN, MiniBatchKMeans, KMeans
+from sklearn.cluster import DBSCAN, MiniBatchKMeans, KMeans, SpectralClustering
+from sklearn.decomposition import PCA
 from sklearn import metrics
 from sklearn.datasets.samples_generator import make_blobs
 from sklearn.preprocessing import StandardScaler
@@ -11,7 +12,7 @@ from vtk.util.numpy_support import numpy_to_vtkIdTypeArray
 
 class ClusterParticles:
 
-  def __init__(self,in_particles,out_particles_collection,method='DBSCAN'):
+  def __init__(self,in_particles,out_particles_collection,method='DBSCAN',feature_extractor=None):
     assert method 
     self._in_vtk=in_particles
     self._out_vtk_collection=out_particles_collection
@@ -19,27 +20,37 @@ class ClusterParticles:
     self._method = 'DBSCAN'
     self._centroids=np.array([])
     self._unique_labels=np.array([])
+    if feature_extractor == None:
+      self._feature_extractor=self.feature_extractor
+    else:
+      self._feature_extractor=feature_extractor
   
   def execute(self):
     
     #Get points from vtk file as numpy array
-    points = vtk_to_numpy(self._in_vtk.GetPoints().GetData())
+    features=self._feature_extractor()
     
-    points=StandardScaler().fit_transform(points)
+    features=StandardScaler().fit_transform(features)
     #Clustering
     if self._method == 'DBSCAN':
-      db=DBSCAN(eps=0.3, min_samples=10).fit(points)
+      db=DBSCAN(eps=0.3, min_samples=10).fit(features)
       core_samples = db.core_sample_indices_
       labels = db.labels_
     elif self._method == 'KMeans':
-      kmean= KMeans(init='k-means++',n_clusters=self._number_of_clusters,n_init=10).fit(points)
+      kmean= KMeans(init='k-means++',n_clusters=self._number_of_clusters,n_init=10).fit(features)
       core_samples = kmeans.cluster_centers_
       labels = kmeans.labels_
     elif self._method == 'MiniBatchKMeans':
       mbk =  MiniBatchKMeans(init='k-means++', n_clusters=self._number_of_clusters, batch_size=20,
-                             n_init=10, max_no_improvement=10, verbose=0).fit(points)
+                             n_init=20, max_no_improvement=10, verbose=0).fit(features)
       labels = mbk.labels_
-      core_samples = mbk.cluster_centers_
+      core_samples =  mbk.cluster_centers_
+    elif self._method == 'SpectralClustering':
+      sc = SpectralClustering(n_clusters=self._number_of_clusters).fit(features)
+      labels = mbk.labels_
+      core_samples=np.zeros([self._number_of_clusters,features.shape[1]])
+      for ii in self._number_of_clusters:
+        core_samples[ii,:] = np.means(features[labels,:],axis=0)
 
     unique_labels=set(labels)
     self._centroids = core_samples
@@ -49,6 +60,10 @@ class ClusterParticles:
     for k in unique_labels:
       ids = np.argwhere(labels == k).flatten()
       self._out_vtk_collection.AddItem(self.extract_particles(ids))
+
+  def feature_extractor(self):
+    points = vtk_to_numpy(self._in_vtk.GetPoints().GetData())
+    return points
 
   def extract_particles(self,ids):
     data=vtk.vtkPolyData()
@@ -113,9 +128,10 @@ class LeftRightParticleLabeling():
 
   def execute(self):
     output_collection = vtk.vtkCollection()
-    cluster=ClusterParticles(input,output_collection)
+    cluster=ClusterParticles(input,output_collection,feature_extractor=self.feature_extractor)
     cluster._number_of_clusters=2
     cluster._method='MiniBatchKMeans'
+    #cluster._method='SpectralClustering'
 
     cluster.execute()
 
@@ -150,7 +166,15 @@ class LeftRightParticleLabeling():
     self._out_vtk['both']=append.GetOutput()
     return self._out_vtk
 
-      
+  def feature_extractor(self):
+    points = vtk_to_numpy(self._in_vtk.GetPoints().GetData())
+    #vec= vtk_to_numpy(self._in_vtk.GetPointData().GetArray("hevec0"))
+    #features =np.concatenate((points, vec),axis=1)
+    features = points
+    pca = PCA(n_components=3)
+    pca.fit(features)
+    features_t=pca.transform(features)
+    return features_t[:,0:2]
 
 if __name__ == "__main__":
   desc = """Cluster particles points"""
