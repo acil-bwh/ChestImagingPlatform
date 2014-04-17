@@ -53,6 +53,7 @@ class ClusterParticles:
         core_samples[ii,:] = np.means(features[labels,:],axis=0)
 
     unique_labels=set(labels)
+    self._labels=labels
     self._centroids = core_samples
     self._unique_labels = unique_labels
     
@@ -134,8 +135,14 @@ class LeftRightParticleLabeling():
     #cluster._method='SpectralClustering'
 
     cluster.execute()
+    
+    points = vtk_to_numpy(input.GetPoints().GetData())
+    
+    p_centroids = np.zeros([2,3])
+    for ii,ll in enumerate(cluster._unique_labels):
+      p_centroids[ii,:]=np.mean(points[cluster._labels==ll,:],axis=0)
 
-    if cluster._centroids[0,0] > cluster._centroids[1,0]:
+    if p_centroids[0,0] > p_centroids[1,0]:
       tags=['left','right']
       chest_region=[3,2]
       chest_type=[3,3]
@@ -151,9 +158,9 @@ class LeftRightParticleLabeling():
       chest_region_arr.SetName('ChestRegion')
       chest_type_arr = vtk.vtkUnsignedCharArray()
       chest_type_arr.SetName('ChestType')
-      np = self._out_vtk[tag].GetNumberOfPoints()
-      chest_region_arr.SetNumberOfTuples(np)
-      chest_type_arr.SetNumberOfTuples(np)
+      n_p = self._out_vtk[tag].GetNumberOfPoints()
+      chest_region_arr.SetNumberOfTuples(n_p)
+      chest_type_arr.SetNumberOfTuples(n_p)
       for ii in xrange(self._out_vtk[tag].GetNumberOfPoints()):
         chest_region_arr.SetValue(ii,cr)
         chest_type_arr.SetValue(ii,ct)
