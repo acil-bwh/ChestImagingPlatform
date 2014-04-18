@@ -48,7 +48,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
-#include "vtkFloatArray.h"
+#include "vtkUnsignedCharArray.h"
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
 #include "itkImage.h"
@@ -91,38 +91,46 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
         // The 'chestRegionArray' and 'chestTypeArray' defined here will
         // only be used if they have not already been found in 'particles'
         //
-        vtkSmartPointer< vtkFloatArray > chestRegionArray = vtkSmartPointer< vtkFloatArray >::New();
-        chestRegionArray->SetNumberOfComponents( 1 );
-        chestRegionArray->SetName( "ChestRegion" );
-        
-        vtkSmartPointer< vtkFloatArray > chestTypeArray = vtkSmartPointer< vtkFloatArray >::New();
-        chestTypeArray->SetNumberOfComponents( 1 );
-        chestTypeArray->SetName( "ChestType" );
-        
+        vtkSmartPointer< vtkUnsignedCharArray > chestRegionArray = vtkSmartPointer< vtkUnsignedCharArray >::New();
+        vtkSmartPointer< vtkUnsignedCharArray > chestTypeArray = vtkSmartPointer< vtkUnsignedCharArray >::New();
+
+        if ( !foundChestRegionArray)
+          {
+          chestRegionArray->SetNumberOfComponents( 1 );
+          chestRegionArray->SetNumberOfTuples(numberParticles);
+          chestRegionArray->SetName( "ChestRegion" );
+          }
+
+        if ( !foundChestTypeArray)
+          {
+          chestTypeArray->SetNumberOfComponents( 1 );
+          chestTypeArray->SetNumberOfTuples(numberParticles);
+          chestTypeArray->SetName( "ChestType" );
+          }
         //
         // Now loop through the particles to initialize the arrays
         //
-        float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
-        float cipType   = static_cast< float >( cip::UNDEFINEDTYPE );
+        unsigned char cipRegion = static_cast< unsigned char >( cip::UNDEFINEDREGION );
+        unsigned char cipType   = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
         
         for ( unsigned int i=0; i<numberParticles; i++ )
         {
             if ( foundChestRegionArray )
             {
-                particles->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
+                dynamic_cast <vtkUnsignedCharArray*> (particles->GetPointData()->GetArray( "ChestRegion" ))->SetValue( i, cipRegion );
             }
             else
             {
-                chestRegionArray->InsertTuple( i, &cipRegion );
+                chestRegionArray->SetValue( i, cipRegion );
             }
             
             if ( foundChestTypeArray )
             {
-                particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+                dynamic_cast <vtkUnsignedCharArray*> (particles->GetPointData()->GetArray( "ChestType" ))->SetValue( i, cipType );
             }
             else
             {
-                chestTypeArray->InsertTuple( i, &cipType );
+                chestTypeArray->SetValue( i, cipType );
             }
         }
         
@@ -148,13 +156,13 @@ int main( int argc, char *argv[] )
     
   PARSE_ARGS;
     
-  float       cipRegion            = static_cast< float >( cip::UNDEFINEDREGION );
-  float       cipType              = static_cast< float >( cip::UNDEFINEDTYPE );
+  unsigned char       cipRegion            = static_cast< unsigned char >( cip::UNDEFINEDREGION );
+  unsigned char       cipType              = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
 
   if (  cipRegionArg > -1 )
-      cipRegion            =  static_cast< float >(cipRegionArg);
+      cipRegion            =  static_cast< unsigned char >(cipRegionArg);
   if ( cipTypeArg > -1 )
-        cipType            =  static_cast< float >(cipTypeArg);
+      cipType            =  static_cast< unsigned char >(cipTypeArg);
     
 
   //
@@ -179,10 +187,17 @@ int main( int argc, char *argv[] )
   std::cout << "Initializing chest-region chest-type arrays..." << std::endl;
   InitializeParticleChestRegionChestTypeArrays( particlesReader->GetOutput() );
 
+  
+  //
+  // Get arrays from data
+  //
+  vtkSmartPointer< vtkUnsignedCharArray > chestRegionArray = dynamic_cast <vtkUnsignedCharArray*> (particlesReader->GetOutput()->GetPointData()->GetArray("ChestRegion"));
+  vtkSmartPointer< vtkUnsignedCharArray > chestTypeArray = dynamic_cast <vtkUnsignedCharArray*> (particlesReader->GetOutput()->GetPointData()->GetArray("ChestType"));
+  
   //
   // If specified, read the input label map
   //
-  if ( labelMapFileName.compare( "NA" ) != 0 )
+  if ( labelMapFileName.compare( "q" ) != 0 )
     {
     std::cout << "Reading label map..." << std::endl;
     ReaderType::Pointer labelMapReader = ReaderType::New();
@@ -215,10 +230,10 @@ int main( int argc, char *argv[] )
 
       unsigned short labelValue = labelMapReader->GetOutput()->GetPixel( index );
 
-      cipRegion  = static_cast< float >( conventions.GetChestRegionFromValue( labelValue ) );
+      cipRegion  = static_cast< unsigned char >( conventions.GetChestRegionFromValue( labelValue ) );
 
-      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
-      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+      chestRegionArray->SetValue( i, cipRegion );
+      chestTypeArray->SetValue( i, cipType );
       }
     }
   else
@@ -230,8 +245,8 @@ int main( int argc, char *argv[] )
     //
     for ( unsigned int i=0; i<particlesReader->GetOutput()->GetNumberOfPoints(); i++ )
       {
-      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
-      particlesReader->GetOutput()->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+      chestRegionArray->SetValue( i, cipRegion );
+      chestTypeArray->SetValue( i, cipType );
       }
     }
 
