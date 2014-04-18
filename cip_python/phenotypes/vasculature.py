@@ -35,9 +35,12 @@ class VasculaturePhenotypes(Phenotypes):
     self.max_csa = max_csa
     self.csa_th=np.arange(5,self.max_csa+0.001,5)
     self.spacing = spacing
+    self._sigma0 = 1/np.sqrt(2)/2;
+    #Sigma due to the limited pixel resolution (half of 1 pixel)
+    self._sigmap = 1/np.sqrt(2)/2
     self._dx = None
     self._number_test_points=1000
-    self.factor=0.12
+    self.factor=0.16
     
     Phenotypes.__init__(self,cid)
       
@@ -71,6 +74,8 @@ class VasculaturePhenotypes(Phenotypes):
     
     #Compute interparticle distance
     self._dx = self.interparticle_distance()
+  
+    print "DX: "+str(self._dx)
     
     tbv=dict()
     bv=dict()
@@ -165,10 +170,16 @@ class VasculaturePhenotypes(Phenotypes):
       if (norm1-norm2)/(norm1+norm2) < 0.2:
         distance[pos]=(norm1+norm2)/2
       
-    return np.mean(distance[distance>0])
+    return np.median(distance[distance>0])
       
-  def vessel_radius_from_sigma(self,sigma):
-      return self.spacing*math.sqrt(2)*sigma
+  def vessel_radius_from_sigma(self,scale):
+    #return self.spacing*math.sqrt(2)*sigma
+    mask = scale< (2/np.sqrt(2)*self._sigma0)
+    rad=np.zeros(mask.shape)
+    rad[mask]=np.sqrt(2)*(np.sqrt((scale[mask]*self.spacing)**2 + (self._sigma0*self.spacing)**2) -0.5*self._sigma0*self.spacing)
+    rad[~mask]=np.sqrt(2)*(np.sqrt((scale[~mask]*self.spacing)**2 + (self._sigmap*self.spacing)**2) -0.5*self._sigmap*self.spacing)
+    return rad
+
 
 
 from optparse import OptionParser
