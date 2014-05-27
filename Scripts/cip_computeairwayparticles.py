@@ -9,7 +9,7 @@ import nrrd
 from cip_python.particles.airway_particles import AirwayParticles
 from cip_python.particles.multires_airway_particles import MultiResAirwayParticles
 
-class VesselParticlesPipeline:
+class AirwayParticlesPipeline:
   """Class that implements a vessel particle extraction pipeline for a given region
      This tools currently depends on Teem, ITKTools and CIP
   Parameters
@@ -119,7 +119,7 @@ class VesselParticlesPipeline:
         ct_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + ".nhdr")
         featureMapFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_featureMap.nhdr")
         maskFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_mask.nhdr")
-        particlesFileNameRegion = os.path.join(self._output_prefix+ "_" + rtag + "VesselParticles.vtk")
+        particlesFileNameRegion = os.path.join(self._output_prefix+ "_" + rtag + "AirwayParticles.vtk")
 
         if self._justparticles == False:
 
@@ -161,14 +161,14 @@ class VesselParticlesPipeline:
 
             # Compute Frangi
             if self._init_method == 'Frangi':
-                tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f ValleyLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.5 --beta 0.5 --C 250 -o %(out)s"
+                tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f ValleyLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.5 --beta 0.5 --C 50 -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
                 tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
                 print tmpCommand
                 subprocess.call( tmpCommand, shell=True )
 
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op lt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
                 tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
                 print tmpCommand
                 subprocess.call( tmpCommand , shell=True)
@@ -180,7 +180,7 @@ class VesselParticlesPipeline:
                 subprocess.call( tmpCommand, shell=True )
                     
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op lt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
                 tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
                 print tmpCommand
                 subprocess.call( tmpCommand , shell=True)
@@ -204,7 +204,7 @@ class VesselParticlesPipeline:
             particlesGenerator._interations_phase3 = 70
             particlesGenerator._irad_phase3 = 0.9
             particlesGenerator._srad_phase3 = 4
-            particlesGenerator._verbose = 0
+            particlesGenerator._verbose = 1
             particlesGenerator.execute()
         else:
             particlesGenerator = MultiResAirwayParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
@@ -254,7 +254,7 @@ if __name__ == "__main__":
   crop = [int(kk) for kk in str.split(op.crop,',')]
   regions = [kk for kk in str.split(op.regions,',')]
 
-  vp=VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,\
+  ap=AirwayParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,\
                              op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
 
-  vp.execute()
+  ap.execute()
