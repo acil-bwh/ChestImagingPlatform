@@ -58,7 +58,8 @@ class AirwayParticles(ChestParticles):
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, max_scale=6., live_thresh=50.,
-                 seed_thresh=40., scale_samples=5, down_sample_rate=1, min_intensity=-1100, max_intensity=-400):
+                 seed_thresh=40., scale_samples=5, down_sample_rate=1,
+                 min_intensity=-1100, max_intensity=-400):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
@@ -74,6 +75,18 @@ class AirwayParticles(ChestParticles):
         self._down_sample_rate = down_sample_rate
 
         self._population_control_period = 6
+  
+        self._iterations_phase1 = 10
+        self._iterations_phase2 = 20
+        self._iterations_phase3 = 50
+      
+        self._irad_phase1 = 1.7
+        self._irad_phase2 = 1.15
+        self._irad_phase3 = 1.15
+      
+        self._srad_phase1 = 1.2
+        self._srad_phase2 = 2
+        self._srad_phase3 = 4
 
     def execute(self):
         #Pre-processing
@@ -85,25 +98,24 @@ class AirwayParticles(ChestParticles):
             	downsampled_mask = os.path.join(self._tmp_dir, \
                                                 "mask-down.nrrd")
             	self.down_sample(self._mask_file_name, \
-                                 downsampled_mask, "cheap",self._down_sample_rate)
+                                 downsampled_mask, "cheap",
+                                 self._down_sample_rate)
             	self._tmp_mask_file_name = downsampled_mask
             
         else:
             downsampled_vol = self._in_file_name
             self._tmp_mask_file_name = self._mask_file_name
 
-        print "2"
         deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampled_vol, deconvolved_vol)
         print "finished deconvolution\n"
-        print "loc1\n"
+
         #Setting member variables that will not change
         self._tmp_in_file_name = deconvolved_vol
-        print "loc2\n"
         
         # Temporary nrrd particles points
         out_particles = os.path.join(self._tmp_dir, "pass%d.nrrd")
-        print "loc3\n"
+
         #Pass 1
         #Init params
         self._use_strength = False
@@ -117,7 +129,9 @@ class AirwayParticles(ChestParticles):
         self._inter_particle_enery_type = "uni"
         self._beta  = 0.7 # Irrelevant for pass 1
         self._alpha = 1.0
-        self._iterations = 10
+        self._irad = self._irad_phase1
+        self._srad = self._srad_phase1
+        self._iterations = self._iterations_phase1
 
         #Build parameters and run
         print "resetting param groups\n"
@@ -132,7 +146,6 @@ class AirwayParticles(ChestParticles):
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
-        self._use_mask = True #TODO: was 0
 
         # Energy
         # Radial energy function (psi_2 in the paper).
@@ -143,11 +156,11 @@ class AirwayParticles(ChestParticles):
         # Controls blending in scale and space with respect to
         # function psi_2
         self._beta = 0.5
-        self._irad = 1.15
-        self._srad = 4
+        self._irad = self._irad_phase2
+        self._srad = self._srad_phase2
         self._use_strength = True
 
-        self._iterations = 20
+        self._iterations = self._iterations_phase2
 
         # Build parameters and run
         self.reset_params()
@@ -159,18 +172,17 @@ class AirwayParticles(ChestParticles):
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
-        self._use_mask = True # TODO: was 0
 
         # Energy
         self._inter_particle_energy_type = "add"
         self._alpha = 0.5
         self._beta = 0.5
         self._gamma = 0.000002
-        self._irad = 1.15
-        self._srad = 4
+        self._irad = self._irad_phase3
+        self._srad = self._srad_phase3
         self._use_strength = True
 
-        self._iterations = 50
+        self._iterations = self._iterations_phase3
 
         # Build parameters and run
         self.reset_params()
@@ -193,27 +205,34 @@ class AirwayParticles(ChestParticles):
         #Clean tmp Directory
         self.clean_tmp_dir()
 
-if __name__ == "__main__":
-  
+if __name__ == "__main__":  
   parser = OptionParser()
   parser.add_option("-i", help='input CT scan', dest="input_ct")
-  parser.add_option("-m", help='input mask for seeding', dest="input_mask")
-  parser.add_option("-o", help='output particles (vtk format)', dest="output_particles")
+  parser.add_option("-m", help='input mask for seeding', dest="input_mask",
+                    default=None)
+  parser.add_option("-o", help='output particles (vtk format)',
+                    dest="output_particles")
   parser.add_option("-t", help='tmp directory', dest="tmp_dir")
-  parser.add_option("-s", help='max scale', dest="max_scale",default=6.0)
-  parser.add_option("-r", help='down sampling rate (>=1)', dest="down_sample_rate",default=1.0)
-  parser.add_option("-n", help='number of scale volumes', dest="scale_samples",default=5)
-  parser.add_option("--lth", help='live threshold (>0)', dest="live_th",default=50)
-  parser.add_option("--sth", help='seed threshold (>0)', dest="seed_th",default=40)
-  parser.add_option("--minI", help='min intensity for feature', dest="min_intensity",default=-1100)
-  parser.add_option("--maxI", help='max intensity for feature', dest="max_intensity",default=-400)
+  parser.add_option("-s", help='max scale', dest="max_scale", default=6.0)
+  parser.add_option("-r", help='down sampling rate (>=1)',
+                    dest="down_sample_rate", default=1.0)
+  parser.add_option("-n", help='number of scale volumes',
+                    dest="scale_samples", default=5)
+  parser.add_option("--lth", help='live threshold (>0)', dest="live_th",
+                    default=50)
+  parser.add_option("--sth", help='seed threshold (>0)', dest="seed_th",
+                    default=40)
+  parser.add_option("--minI", help='min intensity for feature',
+                    dest="min_intensity", default=-1100)
+  parser.add_option("--maxI", help='max intensity for feature',
+                    dest="max_intensity", default=-400)
 
-  
   (op, args) = parser.parse_args()
-  print op.max_scale
   
-  ap=AirwayParticles(op.input_ct,op.output_particles,op.tmp_dir,op.input_mask,float(op.max_scale),\
-                     float(op.live_th),float(op.seed_th),int(op.scale_samples),float(op.down_sample_rate),\
-                     float(op.min_intensity),float(op.max_intensity))
+  ap = AirwayParticles(op.input_ct, op.output_particles, op.tmp_dir,
+                       op.input_mask, float(op.max_scale), float(op.live_th),
+                       float(op.seed_th), int(op.scale_samples),
+                       float(op.down_sample_rate), float(op.min_intensity),
+                       float(op.max_intensity))
   ap.execute()
 

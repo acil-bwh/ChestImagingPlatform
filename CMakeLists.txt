@@ -156,9 +156,9 @@ IF(BUILD_SANDBOX)
   SUBDIRS (Sandbox)
 ENDIF(BUILD_SANDBOX)
 
-IF ( CIP_BUILD_TESTING )
+IF ( CIP_BUILD_TESTING_PYTHON )
  SUBDIRS ( cip_python )
-ENDIF( CIP_BUILD_TESTING ) 
+ENDIF( CIP_BUILD_TESTING_PYTHON ) 
 
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)

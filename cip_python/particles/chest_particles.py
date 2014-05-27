@@ -98,8 +98,12 @@ class ChestParticles:
         # Options: Random, Halton, Particles, PerVoxel:
         self._init_mode = "Random"
         # Run at a single scale vs a full scale-space exploration:
-        self._single_scale = 0 
-        self._use_mask = True
+        if self._mask_file_name is not None:
+            self._use_mask = True
+        else:
+            self._use_mask = False
+
+        self._single_scale = 0            
         self._max_scale = max_scale
         self._scale_samples = scale_samples
         self._iterations = 50
@@ -162,7 +166,7 @@ class ChestParticles:
             self._volParams = " -vol " + self._tmp_in_file_name + \
                 ":scalar:V"
 
-        if self._use_mask == True:
+        if self._use_mask == True and self._tmp_mask_file_name is not None:
             self._volParams += " " + self._tmp_mask_file_name + ":scalar:M"
 
         if self._permissive == True:
@@ -346,7 +350,7 @@ class ChestParticles:
         if os.path.exists(self._tmp_in_file_name) == False:
             return False
 
-        if self._use_mask==True:
+        if self._use_mask==True and self._tmp_mask_file_name is not None:
             if os.path.exists(self._tmp_mask_file_name) == False:
                 return False
 
@@ -355,7 +359,7 @@ class ChestParticles:
                 " -s x1 x1 x1 -k dgauss:" + str(self._max_scale) + \
                 ",3 -t float -o " + self._tmp_in_file_name
 
-            subprocess.call( tmp_command, shell=True)
+            subprocess.call(tmp_command, shell=True)
 
         tmp_command = "puller -sscp " + self._tmp_dir + \
             " -cbst true " + self._volParams + " " + self._miscParams + " " + \
@@ -365,7 +369,8 @@ class ChestParticles:
             str(self._iterations)
         if self._verbose > 0:
                 print tmp_command
-        subprocess.call( tmp_command, shell=True )
+
+        subprocess.call(tmp_command, shell=True)
 
         # Trick to add scale value
         if self._single_scale == 1:
@@ -486,7 +491,7 @@ class ChestParticles:
 
         for ii in range(len(quantities)):
             file = os.path.join(self._tmp_dir,"%s.nrrd" % quantities[ii])
-            reader_writer.add_file_name_array_name_pair( file, tags[ii] )
+            reader_writer.add_file_name_array_name_pair(file, tags[ii])
 
         reader_writer.execute()
 
@@ -501,22 +506,26 @@ class ChestParticles:
         for input_particles in input_list:
             particles = particles + " " + str(input_particles)
         tmp_command = "unu join -a 1 -i " + particles + " -o "+ output_merged
-        subprocess.call( tmp_command, shell=True )
+        subprocess.call(tmp_command, shell=True)
 
-    def differential_mask (self, current_down_rate,previous_down_rate,output_mask):
+    def differential_mask (self, current_down_rate, previous_down_rate,
+                           output_mask):
         if self._use_mask == True:
             downsampled_mask_prev = os.path.join(self._tmp_dir, \
                                          "mask-down-previous.nrrd")
             #Down-sampling previous level
             self.down_sample(self._mask_file_name, \
-                     downsampled_mask_prev, "cheap",previous_down_rate)
+                     downsampled_mask_prev, "cheap", previous_down_rate)
             #Up-sampling previous level
             self.down_sample(downsampled_mask_prev, \
-                     downsampled_mask_prev, "cheap",1.0/previous_down_rate)
+                     downsampled_mask_prev, "cheap", 1.0/previous_down_rate)
             #Down-sampling current level    
             self.down_sample(self._mask_file_name, \
                      output_mask, "cheap",current_down_rate)
-            tmp_command="unu 2op - %(current)s %(previous)s | unu 1op abs -i - | unu 2op gt - 0 -o %(out)s"
-            tmp_command= tmp_command % {'current':output_mask,'previous':downsampled_mask_prev,'out':output_mask}
+            tmp_command = "unu 2op - %(current)s %(previous)s | unu 1op abs \
+                           -i - | unu 2op gt - 0 -o %(out)s"
+            tmp_command = tmp_command % {'current':output_mask,
+                                         'previous':downsampled_mask_prev,
+                                         'out':output_mask}
 
-            subprocess.call( tmp_command, shell=True)
+            subprocess.call(tmp_command, shell=True)
