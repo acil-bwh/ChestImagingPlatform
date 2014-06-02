@@ -10,6 +10,9 @@ from vtk.util.numpy_support import vtk_to_numpy
 from vtk.util.numpy_support import numpy_to_vtk
 from vtk.util.numpy_support import numpy_to_vtkIdTypeArray
 
+import matplotlib
+import matplotlib.pyplot as plt
+
 class ClusterParticles:
 
   def __init__(self,in_particles,out_particles_collection,method='DBSCAN',feature_extractor=None):
@@ -28,18 +31,19 @@ class ClusterParticles:
   def execute(self):
     
     #Get points from vtk file as numpy array
-    features=self._feature_extractor()
-    
+    features=self._feature_extractor(self._in_vtk)
     features=StandardScaler().fit_transform(features)
+
     #Clustering
     if self._method == 'DBSCAN':
       db=DBSCAN(eps=0.3, min_samples=10).fit(features)
       core_samples = db.core_sample_indices_
       labels = db.labels_
     elif self._method == 'KMeans':
-      kmean= KMeans(init='k-means++',n_clusters=self._number_of_clusters,n_init=10).fit(features)
+      kmeans= KMeans(init='k-means++',n_clusters=self._number_of_clusters,n_init=50).fit(features)
       core_samples = kmeans.cluster_centers_
       labels = kmeans.labels_
+
     elif self._method == 'MiniBatchKMeans':
       mbk =  MiniBatchKMeans(init='k-means++', n_clusters=self._number_of_clusters, batch_size=20,
                              n_init=20, max_no_improvement=10, verbose=0).fit(features)
@@ -56,14 +60,24 @@ class ClusterParticles:
     self._labels=labels
     self._centroids = core_samples
     self._unique_labels = unique_labels
-    
+          
+    fig=plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_aspect('equal')
+    ax.scatter(features[:,0],features[:,1],c=labels,marker='.',cmap=plt.cm.jet,linewidth=0)
+    ax.grid(True)
+    fig.savefig('test.png')
+
     #Save data for each cluster as a vtkPolyData
     for k in unique_labels:
       ids = np.argwhere(labels == k).flatten()
+      print labels.shape[0]
+      print ids.shape[0]
+      print self._in_vtk.GetNumberOfPoints()
       self._out_vtk_collection.AddItem(self.extract_particles(ids))
 
-  def feature_extractor(self):
-    points = vtk_to_numpy(self._in_vtk.GetPoints().GetData())
+  def feature_extractor(self,in_vtk):
+    points = vtk_to_numpy(in_vtk.GetPoints().GetData())
     return points
 
   def extract_particles(self,ids):
@@ -119,40 +133,87 @@ class ClusterParticles:
       sel_filter.Update()
       return sel_filter.GetOutput()
 
-class LeftRightParticleLabeling():
+class LobeParticleLabeling():
   def __init__(self,in_vtk):
     self._in_vtk = in_vtk
     self._out_vtk=dict()
-    self._out_vtk['left'] = None
-    self._out_vtk['right']= None
-    self._out_vtk['both']= None
+    self._out_vtk['LUL']= None
+    self._out_vtk['LLL']= None
+    self._out_vtk['RUL']= None
+    self._out_vtk['RLL']= None
+    self._out_vtk['RML']= None
+    self.cluster_tags=list()
+    
 
   def execute(self):
-    output_collection = vtk.vtkCollection()
-    cluster=ClusterParticles(input,output_collection,feature_extractor=self.feature_extractor)
-    cluster._number_of_clusters=2
-    cluster._method='MiniBatchKMeans'
-    #cluster._method='SpectralClustering'
 
+    chest_region = list()
+    chest_type = list()
+
+    output_collection = vtk.vtkCollection()
+    
+    left_right_splitter = LeftRightParticleLabeling(input)
+    leftright_output=left_right_splitter.execute()
+    
+    #Right splitter
+    print "Right splitter"
+    cluster=ClusterParticles(leftright_output['right'],output_collection,feature_extractor=self.feature_extractor_right)
+    cluster._number_of_clusters=3
+    #cluster._method='MiniBatchKMeans'
+    cluster._method='KMeans'
+    
     cluster.execute()
     
-    points = vtk_to_numpy(input.GetPoints().GetData())
+    points = vtk_to_numpy(leftright_output['right'].GetPoints().GetData())
+    
+    p_centroids = np.zeros([3,3])
+    for ii,ll in enumerate(cluster._unique_labels):
+      p_centroids[ii,:]=np.mean(points[cluster._labels==ll,:],axis=0)
+  
+    #Sort centroids and get values
+    sortval = np.sort(p_centroids[:,2])
+    indices = np.array(range(0,cluster._number_of_clusters))
+    region_labels=['RLL','RML','RUL']
+    region_values=[6,5,4]
+  
+    for ii,ll in enumerate(cluster._unique_labels):
+      idx_region = indices[sortval==p_centroids[ii,2]][0]
+      self.cluster_tags.append(region_labels[idx_region])
+      chest_region.append(region_values[idx_region])
+      chest_type.append(3)
+  
+    #Left splitter
+    print "Left splitter"
+    print leftright_output['left'].GetNumberOfPoints()
+    cluster=ClusterParticles(leftright_output['left'],output_collection,feature_extractor=self.feature_extractor_left)
+    cluster._number_of_clusters=2
+    #cluster._method='MiniBatchKMeans'
+    cluster._method='KMeans'
+    
+    cluster.execute()
+    
+    print "Done left clustering"
+    points = vtk_to_numpy(leftright_output['left'].GetPoints().GetData())
     
     p_centroids = np.zeros([2,3])
     for ii,ll in enumerate(cluster._unique_labels):
       p_centroids[ii,:]=np.mean(points[cluster._labels==ll,:],axis=0)
-
-    if p_centroids[0,0] > p_centroids[1,0]:
-      tags=['left','right']
-      chest_region=[3,2]
-      chest_type=[3,3]
-    else:
-      tags=['right','left']
-      chest_region=[2,3]
-      chest_type=[3,3]
+    
+    #Sort centroids and get values
+    sortval = np.sort(p_centroids[:,2])
+    indices = np.array(range(0,cluster._number_of_clusters))
+    region_labels=['LLL','LUL']
+    region_values=[8,7]
+    
+    for ii,ll in enumerate(cluster._unique_labels):
+      idx_region = indices[sortval==p_centroids[ii,2]][0]
+      self.cluster_tags.append(region_labels[idx_region])
+      chest_region.append(region_values[idx_region])
+      chest_type.append(3)
+    
 
     append=vtk.vtkAppendPolyData()
-    for k,tag,cr,ct in zip([0,1],tags,chest_region,chest_type):
+    for k,tag,cr,ct in zip([0,1],self.cluster_tags,chest_region,chest_type):
       self._out_vtk[tag]=output_collection.GetItemAsObject(k)
       chest_region_arr = vtk.vtkUnsignedCharArray()
       chest_region_arr.SetName('ChestRegion')
@@ -170,18 +231,102 @@ class LeftRightParticleLabeling():
       append.AddInput(self._out_vtk[tag])
 
     append.Update()
-    self._out_vtk['both']=append.GetOutput()
+    self._out_vtk['all']=append.GetOutput()
     return self._out_vtk
 
-  def feature_extractor(self):
-    points = vtk_to_numpy(self._in_vtk.GetPoints().GetData())
-    #vec= vtk_to_numpy(self._in_vtk.GetPointData().GetArray("hevec0"))
-    #features =np.concatenate((points, vec),axis=1)
+  def feature_extractor_left(self,in_vtk):
+    points = vtk_to_numpy(in_vtk.GetPoints().GetData())
+    vec= vtk_to_numpy(in_vtk.GetPointData().GetArray("hevec0"))
+    #features =np.concatenate((points, vec[:,0:1]),axis=1)
     features = points
-    pca = PCA(n_components=3)
+    #features=StandardScaler().fit_transform(features)
+    pca = PCA(n_components=4)
     pca.fit(features)
     features_t=pca.transform(features)
-    return features_t[:,0:2]
+    return features_t[:,[0,1]]
+    #return features[:,[0,2]]
+
+  def feature_extractor_right(self,in_vtk):
+    points = vtk_to_numpy(in_vtk.GetPoints().GetData())
+    vec= vtk_to_numpy(in_vtk.GetPointData().GetArray("hevec0"))
+    features =np.concatenate((points, vec[:,[0,1,2]]),axis=1)
+    #features = points
+    #features=StandardScaler().fit_transform(features)
+    pca = PCA(n_components=4)
+    pca.fit(features)
+    features_t=pca.transform(features)
+    return features_t
+    #return features[:,[0,2]]
+
+class LeftRightParticleLabeling():
+  def __init__(self,in_vtk):
+    self._in_vtk = in_vtk
+    self._out_vtk=dict()
+    self._out_vtk['left'] = None
+    self._out_vtk['right']= None
+    self._out_vtk['both']= None
+    self.cluster_tags=list()
+  
+  def execute(self):
+    output_collection = vtk.vtkCollection()
+    cluster=ClusterParticles(input,output_collection,feature_extractor=self.feature_extractor)
+    cluster._number_of_clusters=2
+    #cluster._method='MiniBatchKMeans'
+    cluster._method='KMeans'
+    
+    cluster.execute()
+    
+    points = vtk_to_numpy(input.GetPoints().GetData())
+    
+    p_centroids = np.zeros([2,3])
+    for ii,ll in enumerate(cluster._unique_labels):
+      p_centroids[ii,:]=np.mean(points[cluster._labels==ll,:],axis=0)
+    
+    if p_centroids[0,0] > p_centroids[1,0]:
+      self.cluster_tags=['left','right']
+      chest_region=[3,2]
+      chest_type=[3,3]
+    else:
+      self.cluster_tags=['right','left']
+      chest_region=[2,3]
+      chest_type=[3,3]
+    
+    append=vtk.vtkAppendPolyData()
+    for k,tag,cr,ct in zip([0,1],self.cluster_tags,chest_region,chest_type):
+      self._out_vtk[tag]=output_collection.GetItemAsObject(k)
+      chest_region_arr = vtk.vtkUnsignedCharArray()
+      chest_region_arr.SetName('ChestRegion')
+      chest_type_arr = vtk.vtkUnsignedCharArray()
+      chest_type_arr.SetName('ChestType')
+      n_p = self._out_vtk[tag].GetNumberOfPoints()
+      chest_region_arr.SetNumberOfTuples(n_p)
+      chest_type_arr.SetNumberOfTuples(n_p)
+      for ii in xrange(self._out_vtk[tag].GetNumberOfPoints()):
+        chest_region_arr.SetValue(ii,cr)
+        chest_type_arr.SetValue(ii,ct)
+      self._out_vtk[tag].GetPointData().AddArray(chest_region_arr)
+      self._out_vtk[tag].GetPointData().AddArray(chest_type_arr)
+      
+      append.AddInput(self._out_vtk[tag])
+    
+    append.Update()
+    self._out_vtk['all']=append.GetOutput()
+    return self._out_vtk
+  
+  def feature_extractor(self,in_vtk):
+    points = vtk_to_numpy(in_vtk.GetPoints().GetData())
+    vec= vtk_to_numpy(in_vtk.GetPointData().GetArray("hevec0"))
+    #features =np.concatenate((points, vec[:,0:1]),axis=1)
+    features = points
+    #features=StandardScaler().fit_transform(features)
+    pca = PCA(n_components=4)
+    pca.fit(features)
+    features_t=pca.transform(features)
+    return features_t[:,[0,1]]
+#return features[:,[0,2]]
+
+
+
 
 if __name__ == "__main__":
   desc = """Cluster particles points"""
@@ -196,7 +341,9 @@ if __name__ == "__main__":
                     dest='output_suffix',metavar='<string>',default='.vtk')
   parser.add_argument('-s',help='Split particles in left/right lung',
                       dest='split_flag',action="store_true",default=False)
-  parser.add_argument('-l',help='save left/rigth particles in a single vtk with region/type PointData array',
+  parser.add_argument('-l',help='Split particles in lobes',
+                      dest='lobe_flag',action="store_true",default=False)
+  parser.add_argument('--pd',help='save  particles in a single vtk with region/type PointData array',
                       dest='label_flag',default=False,action="store_true")
   
   op =  parser.parse_args()
@@ -206,18 +353,22 @@ if __name__ == "__main__":
   reader.Update()
   
   input=reader.GetOutput()
-  
-  if op.split_flag == True:
-    labeler = LeftRightParticleLabeling(input)
+
+  if op.split_flag or op.lobe_flag == True:
+    if op.split_flag == True:
+      labeler = LeftRightParticleLabeling(input)
+    else:
+      labeler = LobeParticleLabeling(input)
+
     output = labeler.execute()
     if op.label_flag == True:
       writer=vtk.vtkPolyDataWriter()
-      writer.SetInput(output['both'])
+      writer.SetInput(output['all'])
       writer.SetFileTypeToBinary()
       writer.SetFileName(op.output_prefix + op.output_suffix)
       writer.Update()
     else:
-      for tag in ['right','left']:
+      for tag in labeler.cluster_tags:
         writer=vtk.vtkPolyDataWriter()
         writer.SetInput(output[tag])
         writer.SetFileName(op.output_prefix + '_%s%s' % (tag,op.output_suffix))

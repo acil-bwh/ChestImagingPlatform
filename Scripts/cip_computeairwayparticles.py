@@ -6,10 +6,10 @@ import subprocess
 import os
 import nrrd
 
-from cip_python.particles.vessel_particles import VesselParticles
-from cip_python.particles.multires_vessel_particles import MultiResVesselParticles
+from cip_python.particles.airway_particles import AirwayParticles
+from cip_python.particles.multires_airway_particles import MultiResAirwayParticles
 
-class VesselParticlesPipeline:
+class AirwayParticlesPipeline:
   """Class that implements a vessel particle extraction pipeline for a given region
      This tools currently depends on Teem, ITKTools and CIP
   Parameters
@@ -17,7 +17,7 @@ class VesselParticlesPipeline:
 
   """
   def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',\
-                lth=-125,sth=-100,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
+                lth=100,sth=80,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
 
     assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy'
 
@@ -43,10 +43,10 @@ class VesselParticlesPipeline:
     #Internal params
     #Distance from wall that we don't want to consider in the initialization (negative= inside the lung, positive= outside the lung)
     self._distance_from_wall = -2
-    #Threshold on the vesselness map (for particles initialization mask)
-    self._vesselness_th = 0.5
+    #Threshold on the airwayness map (for particles initialization mask)
+    self._airwayness_th = 0.5
     #Intensity threshold (for particles initialization mask)
-    self._intensity_th = -700
+    self._intensity_th = -800
 
   def execute(self):
 
@@ -119,12 +119,12 @@ class VesselParticlesPipeline:
         ct_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + ".nhdr")
         featureMapFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_featureMap.nhdr")
         maskFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_mask.nhdr")
-        particlesFileNameRegion = os.path.join(self._output_prefix+ "_" + rtag + "VesselParticles.vtk")
+        particlesFileNameRegion = os.path.join(self._output_prefix+ "_" + rtag + "AirwayParticles.vtk")
 
         if self._justparticles == False:
 
             #Create SubVolume Region
-            tmpCommand ="CropLung -r %(region)s -m 0 -v -1000 -i %(ct-in)s --plf %(lm-in)s -o %(ct-out)s --opl %(lm-out)s"
+            tmpCommand ="CropLung -r %(region)s -m 0 -v -1200 -i %(ct-in)s --plf %(lm-in)s -o %(ct-out)s --opl %(lm-out)s"
             tmpCommand = tmpCommand % {'region':ii,'ct-in':ct_file_name,'lm-in':pl_file_name,'ct-out':ct_file_nameRegion,'lm-out':pl_file_nameRegion}
             tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
             print tmpCommand
@@ -161,15 +161,15 @@ class VesselParticlesPipeline:
 
             # Compute Frangi
             if self._init_method == 'Frangi':
-                tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f RidgeLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.5 --beta 0.5 --C 250 -o %(out)s"
+                tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f ValleyLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.5 --beta 0.5 --C 50 -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
                 tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
                 print tmpCommand
-                #subprocess.call( tmpCommand, shell=True )
+                subprocess.call( tmpCommand, shell=True )
 
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
-                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
                 print tmpCommand
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'StrainEnergy':
@@ -180,12 +180,12 @@ class VesselParticlesPipeline:
                 subprocess.call( tmpCommand, shell=True )
                     
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
-                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
                 print tmpCommand
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'Threshold':
-                tmpCommand = "unu 2op gt %(in)s %(intensity_th)f | unu 2op x - %(mask)s -o %(out)s"
+                tmpCommand = "unu 2op lt %(in)s %(intensity_th)f | unu 2op x - %(mask)s -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'mask':pl_file_nameRegion,'intensity_th':self._intensity_th,'out':maskFileNameRegion}
                 print tmpCommand
                 subprocess.call( tmpCommand , shell=True)
@@ -199,15 +199,15 @@ class VesselParticlesPipeline:
 
         # Vessel Particles For the Region
         if self._multires==False:
-            particlesGenerator = VesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth,min_intensity=-950,max_intensity=100)
+            particlesGenerator = AirwayParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth,min_intensity=-1100,max_intensity=-500)
             particlesGenerator._clean_tmp_dir=self._clean_cache
             particlesGenerator._interations_phase3 = 70
             particlesGenerator._irad_phase3 = 0.9
             particlesGenerator._srad_phase3 = 4
-            particlesGenerator._verbose = 0
+            particlesGenerator._verbose = 1
             particlesGenerator.execute()
         else:
-            particlesGenerator = MultiResVesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
+            particlesGenerator = MultiResAirwayParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
             particlesGenerator._clean_tmp_dir=self._clean_cache
             particlesGenerator.execute()
 
@@ -217,14 +217,14 @@ class VesselParticlesPipeline:
 if __name__ == "__main__":
   import argparse
 
-  parser = argparse.ArgumentParser(description='Vessel particle extraction pipeline')
+  parser = argparse.ArgumentParser(description='Airway particle extraction pipeline')
   parser.add_argument("-i", dest="ct_file_name",required=True)
   parser.add_argument("-l",dest="pl_file_name",required=True)
   parser.add_argument("-o",dest="output_prefix",required=True)
   parser.add_argument("--tmpDir", dest="tmp_dir",required=True)
   parser.add_argument("-r",dest="regions",required=True)
-  parser.add_argument("--liveTh",dest="lth",type=float,default=-125)
-  parser.add_argument("--seedTh",dest="sth",type=float,default=-100)
+  parser.add_argument("--liveTh",dest="lth",type=float,default=100)
+  parser.add_argument("--seedTh",dest="sth",type=float,default=80)
   parser.add_argument("-s", dest="voxel_size",type=float,default=0)
   parser.add_argument("--crop",dest="crop",default="0")
   parser.add_argument("--rate",dest="rate",type=float,default=1)
@@ -254,7 +254,7 @@ if __name__ == "__main__":
   crop = [int(kk) for kk in str.split(op.crop,',')]
   regions = [kk for kk in str.split(op.regions,',')]
 
-  vp=VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,\
+  ap=AirwayParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,\
                              op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
 
-  vp.execute()
+  ap.execute()
