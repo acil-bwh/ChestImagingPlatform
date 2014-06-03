@@ -328,11 +328,11 @@ int main( int argc, char *argv[] )
   initializer2D->SetFixedImage(fixedLabelMap2D );
   initializer2D->SetMovingImage( movingLabelMap2D);
   initializer2D->MomentsOn();
-  initializer2D->InitializeTransform(); //this makes it work
+  initializer2D->InitializeTransform(); 
 
 
-  //std::cout << "Initial transform..." << std::endl;
-  //std::cout << transform2D << std::endl;
+  std::cout << "Initial transform..." << std::endl;
+  std::cout << transform2D << std::endl;
 
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
@@ -342,7 +342,6 @@ int main( int argc, char *argv[] )
 
   typedef OptimizerType::ScalesType OptimizerScalesType; 
   OptimizerScalesType optimizerScales(transform2D->GetNumberOfParameters()); 
-  optimizer->SetNumberOfIterations(20);
     
   optimizerScales[0] =  1.0; 
   optimizerScales[1] =  1.0; 
@@ -352,9 +351,9 @@ int main( int argc, char *argv[] )
   optimizerScales[5] =  translationScale; 
  
   optimizer->SetScales(optimizerScales);
-  optimizer->SetMaximumStepLength(1); 
+  optimizer->SetMaximumStepLength(0.1); 
   optimizer->SetMinimumStepLength(0.01); 
-  optimizer->SetNumberOfIterations(20);
+  optimizer->SetNumberOfIterations(30);
   
   registration->SetMetric( metric );
   registration->SetFixedImage( fixedLabelMap2D );
@@ -385,9 +384,9 @@ int main( int argc, char *argv[] )
   OptimizerType::ParametersType finalParams;
   TransformType2D::Pointer finalTransform2D = TransformType2D::New();
   finalParams = registration->GetLastTransformParameters();
-  finalTransform2D->SetParameters( finalParams );
+  finalTransform2D->SetParameters(finalParams );
   finalTransform2D->SetCenter( transform2D->GetCenter() );
-    
+  std::cout << finalTransform2D << std::endl;  
   std::cout<<"writing final transform"<<std::endl;
 
   if ( strcmp(outputTransformFileName.c_str(), "q") != 0 )
