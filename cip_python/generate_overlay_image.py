@@ -3,7 +3,7 @@ from scipy import ndimage
 
 
 
-def generate_overlayed_image(ct_slice, labelmap_slice, window_width= None, 
+def generate_overlay_image(ct_slice, labelmap_slice, window_width= None, 
     window_level= None, opacity= None):
     """ This function that takes as input a 2D ct slice and a labelmap and 
     returns an overlay
