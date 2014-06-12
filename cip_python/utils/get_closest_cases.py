@@ -4,7 +4,7 @@ from cip_python.utils.get_mi_similarity_vec \
     import getMISimilarityVec
     
 def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
-    similarity, num_closest_cases):
+    similarity, num_closest_cases, threshold = None):
     """Get the closest cases to the test case using some similarity metric and
        given a list of files that contain the similarity value. 
 
@@ -21,6 +21,10 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
         
     num_closest_cases : int
         The number of closest cases to return
+        
+    threshold : float
+        an optional minimum similarity value constrained on the  closest 
+        cases to be returned
         ...
         
     Returns
@@ -36,29 +40,38 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
     num_training_cases = len(list_of_label_files)
     
     #Read the similarity values 
+    #print(list_of_similarity_xml_files)
     similarity_values = getMISimilarityVec(list_of_similarity_xml_files)
-    print(similarity_values)
 
     #find highest matches    
     indexes=[]
     for i in range(num_training_cases):
+        #heapq.heappush(indexes, (i, similarity_values[i]))
         indexes.append(i)
-    if (similarity == "NCC"):
+        
+    print(similarity_values[i])    
+    if (similarity == "ncc"):
         nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
-            i: abs(float(similarity_values[i]))) #take (from 0 to 10, assuming testint is not in trainng)
+            i: abs((similarity_values[i]))) #take (from 0 to 10, assuming testint is not in trainng)
     else:
         nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
             i: (similarity_values[i])) #take (from 0 to 10, assuming testint is not in trainng)        
     print(nlargestvalues)
     patient_atlas_labelmaps = [""]*num_closest_cases
-    patient_atlas_similarity = [1.0]*num_closest_cases
+    patient_atlas_similarity = [0.0]*num_closest_cases
     
     #Now store the num_cases in a 2D list
     for i in range(num_closest_cases): 
-        patient_atlas_labelmaps[i] = list_of_label_files[nlargestvalues[i]]
-        print(patient_atlas_labelmaps[i])
-        patient_atlas_similarity[i] = similarity_values[nlargestvalues[i]]
-    
+        if (abs(float(similarity_values[nlargestvalues[i]])) > threshold):
+            patient_atlas_labelmaps[i] = list_of_label_files[nlargestvalues[i]]
+            print(patient_atlas_labelmaps[i])
+            patient_atlas_similarity[i] = abs(float(similarity_values[nlargestvalues[i]]))
+            print(patient_atlas_similarity[i])
+    if (patient_atlas_similarity[0] == 0.0):
+        patient_atlas_labelmaps[0] = list_of_label_files[nlargestvalues[0]]
+        patient_atlas_similarity[0] = abs(float(similarity_values[nlargestvalues[0]]))
+
+
     closest_cases = np.vstack((patient_atlas_labelmaps, patient_atlas_similarity))
     return closest_cases
 

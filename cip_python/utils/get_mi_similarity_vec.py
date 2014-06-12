@@ -61,5 +61,5 @@ def getMISimilarityVec(list_of_similarity_files):
     for i in range(num_images): 
         #Read the xml file and extract the similarity value
         tree = etree.parse(list_of_similarity_files[i])
-        similarity_vec[i] = tree.find('SimilarityValue').text
+        similarity_vec[i] = float(tree.find('SimilarityValue').text)
     return similarity_vec

@@ -472,6 +472,10 @@ def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_
     for distclass_index in PecClasses:
  
         for givenclass_index in AllClasses:
+            if(givenclass_index == "rightmajor"):
+                givenclass_index_debug = "leftmajor"
+            if(givenclass_index == "rightminor"):
+                givenclass_index_debug = "leftminor"    
             if(distclass_index == givenclass_index):                           
                 likelihoods[distclass_index, givenclass_index]= compute_gauss_intensities_exp_distance_likelihood(input_image, distance_maps[distclass_index] , alpha_p_distance_given_class[distclass_index, givenclass_index], d0params[distclass_index, givenclass_index]) 
             elif(givenclass_index == "nonpec"):
