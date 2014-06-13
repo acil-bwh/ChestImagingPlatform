@@ -56,6 +56,7 @@
 #include "itkTransformFileWriter.h"
 #include "itkIdentityTransform.h"
 #include "itkQuaternionRigidTransform.h"
+#include "itkLBFGSOptimizer.h"
 
 #include "RegisterCT2DCLP.h"
 #include "cipConventions.h"
@@ -68,8 +69,8 @@ namespace
 {
 #define MY_ENCODING "ISO-8859-1"
   typedef itk::Image< unsigned short, 2 >                                                           LabelMapType2D; 
-  typedef itk::RegularStepGradientDescentOptimizer                                                  OptimizerType;
-    
+  //typedef itk::RegularStepGradientDescentOptimizer                                                  OptimizerType;
+  typedef itk::LBFGSOptimizer       OptimizerType;  
   typedef itk::GradientDescentOptimizer GradOptimizerType;
     
   typedef OptimizerType::ScalesType                                                                 OptimizerScalesType;
@@ -393,10 +394,10 @@ int main( int argc, char *argv[] )
   typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
   MaskReaderType::Pointer  maskReader = MaskReaderType::New();
     
-  /*  if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+    if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
-      std::cout<<"reading fixed label map "<<fixedLabelmapFileName.c_str() <<std::endl;
-      maskReader->SetFileName(fixedLabelmapFileName.c_str() );
+      std::cout<<"reading fixed label map "<<movingLabelmapFileName.c_str() <<std::endl;
+      maskReader->SetFileName(movingLabelmapFileName.c_str() );
         
       try
         {
@@ -409,10 +410,10 @@ int main( int argc, char *argv[] )
 	  return EXIT_FAILURE;
         }
       spatialObjectMask->SetImage(maskReader->GetOutput());
-      nc_metric->SetFixedImageMask( spatialObjectMask );
+      nc_metric->SetMovingImageMask( spatialObjectMask );
         
     }
-  */
+  
         
     
   TransformType2D::Pointer transform2D = TransformType2D::New();
@@ -433,9 +434,10 @@ int main( int argc, char *argv[] )
     
   GaussianFilterType::Pointer fixedSmoother  = GaussianFilterType::New();
   GaussianFilterType::Pointer movingSmoother = GaussianFilterType::New();
-  fixedSmoother->SetVariance( 1.5 );
+  fixedSmoother->SetVariance( 1.5 ); 
   movingSmoother->SetVariance( 1.5 );
-
+  //fixedSmoother->SetVariance( 0.0 );
+  //movingSmoother->SetVariance( 0.0 );
   if(isIntensity != true)
     {
       initializer2D->SetTransform( transform2D );
@@ -457,9 +459,10 @@ int main( int argc, char *argv[] )
       fixedNormalizer->Update();
       movingNormalizer->Update();
       initializer2DIntensity->SetTransform( transform2D );
-      initializer2DIntensity->SetFixedImage(fixedNormalizer->GetOutput());
-      initializer2DIntensity->SetMovingImage(movingNormalizer->GetOutput()  );
-      //initializer2DIntensity->MomentsOn();
+      initializer2DIntensity->SetFixedImage(fixedNormalizer->GetOutput());//fixedCT2D);//normalizer ruins it fixedNormalizer->GetOutput());
+    initializer2DIntensity->SetMovingImage(movingNormalizer->GetOutput());//movingCT2D);// movingNormalizer->GetOutput()  );
+      //initializer2DIntensity->MomentsOn(); // needed to make it work better for 10465Y_INSP_STD_NJC_COPD , needed to remove it to work
+      // 10476D_INSP_STD_UAB_COPD 
       initializer2DIntensity->InitializeTransform();
     }
 
@@ -472,12 +475,18 @@ int main( int argc, char *argv[] )
     optimizerScales[4] =  translationScale; 
     optimizerScales[5] =  translationScale; 
 
-    
+    /*
     optimizer->SetScales(optimizerScales);
-    //optimizer->SetMaximumStepLength(0.1); 
+    optimizer->SetMaximumStepLength(0.1); 
     //optimizer->SetMinimumStepLength(0.0001); 
-    optimizer->SetNumberOfIterations(30);
-       
+    optimizer->SetNumberOfIterations(200);
+    */
+
+  optimizer->SetGradientConvergenceTolerance( 1.6 );
+  optimizer->SetLineSearchAccuracy( 0.9 );
+  optimizer->SetDefaultStepLength( .08 );
+  optimizer->TraceOn();
+  optimizer->SetMaximumNumberOfFunctionEvaluations( 1000 ); 
 
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
   CTInterpolatorType::Pointer CTinterpolator = CTInterpolatorType::New();      
@@ -515,7 +524,7 @@ int main( int argc, char *argv[] )
 	}
       
       //get all params to output to file
-      numberOfIterations = optimizer->GetCurrentIteration();
+      numberOfIterations = 0;//optimizer->GetCurrentIteration();
       bestValue = optimizer->GetValue();
       
       std::cout <<" best similarity value = " <<bestValue<<std::endl;
@@ -549,7 +558,7 @@ int main( int argc, char *argv[] )
 	}
       
       //get all params to output to file
-      numberOfIterations = optimizer->GetCurrentIteration();
+      //numberOfIterations = optimizer->GetCurrentIteration();
       bestValue = optimizer->GetValue();
       
       std::cout <<" best similarity value = " <<bestValue<<std::endl;
