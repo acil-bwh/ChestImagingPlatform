@@ -50,11 +50,11 @@
       <default>q</default>
     </image>
     <image type="label">
-          <name>fixedLabelmapFileName</name>
-          <label>fixed LabelMap FileName</label>
+          <name>movingLabelmapFileName</name>
+          <label>moving LabelMap FileName</label>
           <channel>input</channel>
-          <longflag>--fixedLabelmapFileName</longflag>
-          <description><![CDATA[fixed LabelMap FileName]]></description>
+          <longflag>--movingLabelmapFileName</longflag>
+          <description><![CDATA[moving LabelMap FileName]]></description>
           <default>q</default>
      </image>
     <string>
