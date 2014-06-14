@@ -339,24 +339,26 @@ int main( int argc, char *argv[] )
     optimizerScales[4] =  translationScale; 
     optimizerScales[5] =  translationScale; 
 
-    /*
+   
   OptimizerType::Pointer optimizer = OptimizerType::New(); 
     optimizer->SetScales(optimizerScales);
     optimizer->SetMaximumStepLength(0.1); 
     optimizer->SetMinimumStepLength(0.0001); 
-    optimizer->SetNumberOfIterations(300);
-    */    
-
+    unsigned int maxNumberOfIterations = 300;
+    optimizer->SetNumberOfIterations(maxNumberOfIterations);
+       
+    /*
   AmoebaOptimizerType::Pointer optimizer = AmoebaOptimizerType::New();
   optimizer->SetScales( optimizerScales );
   optimizer->SetParametersConvergenceTolerance( 0.00001 ); // reasonable defaults
   optimizer->SetFunctionConvergenceTolerance( 0.0001 );
-
+    
   double steplength = 0.1;
 
   unsigned int maxNumberOfIterations = 1500;
 
   optimizer->SetMaximumNumberOfIterations( maxNumberOfIterations );
+    */
   optimizer->MinimizeOn();
 
 

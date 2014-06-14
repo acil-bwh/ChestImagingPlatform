@@ -483,17 +483,17 @@ def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_
             else:
                 likelihoods[distclass_index, givenclass_index]= gaussian_rician.gauss_noncentered_rician_pdf(input_image, distance_maps[distclass_index], non_diagonals_classifier_params[distclass_index, givenclass_index])                 
 
-            #im=axarr[i, j].imshow(np.squeeze(likelihoods[distclass_index, givenclass_index]), interpolation='nearest')
-            #axarr[i, j].set_title(distclass_index +'| '+givenclass_index)
+            im=axarr[i, j].imshow(np.squeeze(likelihoods[distclass_index, givenclass_index]), interpolation='nearest')
+            axarr[i, j].set_title(distclass_index +'| '+givenclass_index)
             ### show range
             j=j+1
         i=i+1
         j=0  
-    #cax = f.add_axes([0.2, 0.08, 0.6, 0.04])
-    #f.colorbar(im, cax, orientation='horizontal')
-    #
-    #plt.show() 
-    #
+    cax = f.add_axes([0.2, 0.08, 0.6, 0.04])
+    f.colorbar(im, cax, orientation='horizontal')
+    
+    plt.show() 
+    
     #Add up all distclass likelihoods for a given class
     likelihoods_sum = dict()
     for givenclass_index in AllClasses:
@@ -545,27 +545,27 @@ def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_
             
    
 #   # #p(I,d = distclass_index )
-#    for distclass_index in PecClasses:
-#        #marginals[distclass_index]= np.zeros_like(likelihoods[distclass_index, "nonpec"]).astype(np.float)#((length, width,1)).astype(np.float)
-#        #for givenclass_index in AllClasses:
-#        #    marginals[distclass_index] = np.add(marginals[distclass_index],\
-#        #        np.multiply(likelihoods[distclass_index, givenclass_index], \
-#        #        probabilistic_atlases[givenclass_index])) 
-#        #zero_indeces = (marginals[distclass_index] == 0)
-#        ##marginals[distclass_index][zero_indeces] = 0.000000000000000000000001
-#        
-#        print("max,min marginals for: "+distclass_index+": "+\
-#            str(marginal.max())+", "+str(marginal.min()))
-#
-##        im2 = axarr[i].imshow(np.squeeze(probabilistic_atlases[distclass_index]), interpolation='nearest')
-##        axarr[i].set_title(distclass_index+ "  marginals" )
-##        i=i+1
-##        
-##    cax2 = f_mar.add_axes([0.2, 0.08, 0.6, 0.04])
-##    f_mar.colorbar(im2, cax2, orientation='horizontal')
-##
-##    plt.show() 
-#
+    for distclass_index in PecClasses:
+        #marginals[distclass_index]= np.zeros_like(likelihoods[distclass_index, "nonpec"]).astype(np.float)#((length, width,1)).astype(np.float)
+        #for givenclass_index in AllClasses:
+        #    marginals[distclass_index] = np.add(marginals[distclass_index],\
+        #        np.multiply(likelihoods[distclass_index, givenclass_index], \
+        #        probabilistic_atlases[givenclass_index])) 
+        #zero_indeces = (marginals[distclass_index] == 0)
+        ##marginals[distclass_index][zero_indeces] = 0.000000000000000000000001
+        
+        #print("max,min marginals for: "+distclass_index+": "+\
+        #    str(marginal.max())+", "+str(marginal.min()))
+
+    #    im2 = axarr[i].imshow(np.squeeze(probabilistic_atlases[distclass_index]), interpolation='nearest')
+    #    axarr[i].set_title(distclass_index+ "  marginals" )
+    #    i=i+1
+    #    
+    #cax2 = f_mar.add_axes([0.2, 0.08, 0.6, 0.04])
+    #f_mar.colorbar(im2, cax2, orientation='horizontal')
+
+    plt.show() 
+
 
 
 
