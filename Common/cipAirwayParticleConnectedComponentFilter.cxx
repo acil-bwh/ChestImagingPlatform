@@ -19,6 +19,8 @@ cipAirwayParticleConnectedComponentFilter::cipAirwayParticleConnectedComponentFi
 {
   this->ScaleRatioThreshold       = 1.0;
   this->ParticleDistanceThreshold = this->InterParticleSpacing;
+  this->MaxAllowableScale         = DBL_MAX;
+  this->MinAllowableScale         = 0;
 }
 
 
@@ -32,6 +34,15 @@ void cipAirwayParticleConnectedComponentFilter::SetScaleRatioThreshold( double t
   this->ScaleRatioThreshold = threshold;
 }
 
+void cipAirwayParticleConnectedComponentFilter::SetMaximumAllowableScale( double maxScale )
+{
+  this->MaxAllowableScale = maxScale;
+}
+
+void cipAirwayParticleConnectedComponentFilter::SetMinimumAllowableScale( double minScale )
+{
+  this->MinAllowableScale = minScale;
+}
 
 double cipAirwayParticleConnectedComponentFilter::GetScaleRatioThreshold()
 {
@@ -46,6 +57,16 @@ bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
   double scale1 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex1 )[0];
   double scale2 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex2 )[0];
 
+  if ( scale1 < this->MinAllowableScale ||  scale2 < this->MinAllowableScale)
+  {
+    return false;
+  }
+  
+  if ( scale1 > this->MaxAllowableScale || scale2 > this->MaxAllowableScale )
+  {
+    return false;
+  }
+  
   double maxScale;  (scale1>scale2) ? (maxScale = scale1) : (maxScale = scale2);
 
   if ( vcl_abs(scale1 - scale2)/maxScale > this->ScaleRatioThreshold )
