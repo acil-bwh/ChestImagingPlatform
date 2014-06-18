@@ -22,7 +22,7 @@
     </acknowledgements>
     
     <parameters>
-        <label>IO</label>
+      <label>IO</label>
         <description>Input/output parameters</description>
         <string>
             <name>inParticlesFileName</name>
@@ -33,7 +33,20 @@
             <description><![CDATA[Input particles file name]]></description>
             <default>q</default>
         </string>
-        
+      
+        <string>
+          <name>outParticlesFileName</name>
+          <label>Output Particles File Name</label>
+          <channel>output</channel>
+          <flag>o</flag>
+          <longflag>out</longflag>
+          <description><![CDATA[OOutput particles file name]]></description>
+          <default>q</default>
+        </string>
+      </parameters>
+  
+    <parameters>
+      <label>Parameters</label>
         <double>
             <name>interParticleSpacing</name>
             <label>Inter Particle Spacing</label>
@@ -99,16 +112,24 @@
                 will be retained in the output. </description>
             <default>0</default>
         </integer>
+      
+        <double>
+          <name>maxAllowableScale</name>
+          <longflag>maxScale</longflag>
+          <description>Max allowable scale. No connection will be made between two particles if either of them \
+            have a scale that exceeds this amount.</description>
+          <label>Maximum allowable scale</label>
+          <default>1.79769e+308</default>
+        </double>
         
-        <string>
-            <name>outParticlesFileName</name>
-            <label>Output Particles File Name</label>
-            <channel>output</channel>
-            <flag>o</flag>
-            <longflag>out</longflag>
-            <description><![CDATA[OOutput particles file name]]></description>
-            <default>q</default>
-        </string>
-
+        <double>
+          <name>minAllowableScale</name>
+          <longflag>minScale</longflag>
+          <description>Min  allowable scale. No connection will be made between two particles if either of them \
+            have a scale that exceeds this amount.</description>
+          <label>Minimum allowable scale</label>
+          <default>0</default>
+        </double>
+      
     </parameters>
 </executable>
