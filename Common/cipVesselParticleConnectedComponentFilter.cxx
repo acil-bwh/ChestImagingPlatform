@@ -20,6 +20,7 @@ cipVesselParticleConnectedComponentFilter::cipVesselParticleConnectedComponentFi
   this->ScaleRatioThreshold       = 1.0;
   this->ParticleDistanceThreshold = this->InterParticleSpacing;
   this->MaxAllowableScale         = DBL_MAX;
+  this->MinAllowableScale         = 0;
 }
 
 
@@ -38,6 +39,11 @@ void cipVesselParticleConnectedComponentFilter::SetMaximumAllowableScale( double
   this->MaxAllowableScale = maxScale;
 }
 
+void cipVesselParticleConnectedComponentFilter::SetMinimumAllowableScale( double minScale )
+{
+  this->MinAllowableScale = minScale;
+}
+
 double cipVesselParticleConnectedComponentFilter::GetScaleRatioThreshold()
 {
   return this->ScaleRatioThreshold;
@@ -51,6 +57,11 @@ bool cipVesselParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
   double scale1 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex1 )[0];
   double scale2 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex2 )[0];
 
+  if ( scale1 < this->MinAllowableScale ||  scale2 < this->MinAllowableScale)
+    {
+      return false;
+    }
+  
   if ( scale1 > this->MaxAllowableScale || scale2 > this->MaxAllowableScale )
     {
       return false;
