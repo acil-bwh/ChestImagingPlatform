@@ -44,14 +44,11 @@ if(NOT DEFINED Teem_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       )
   endif()
 
-  set(teem_URL http://svn.slicer.org/Slicer3-lib-mirrors/trunk/teem-1.10.0-src.tar.gz)
-  set(teem_MD5 efe219575adc89f6470994154d86c05b)
+  set(teem_repo https://teem.svn.sourceforge.net/svnroot/teem/teem/trunk)
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
-    URL ${teem_URL}
-    URL_MD5 ${teem_MD5}
-    DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}
+    SVN_REPOSITORY ${teem_repo}
     SOURCE_DIR teem
     BINARY_DIR teem-build
     CMAKE_CACHE_ARGS

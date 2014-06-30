@@ -35,6 +35,9 @@
  *
  */
 
+#define METAIO_FOR_ITK
+#undef METAIO_FOR_VTK
+
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -44,7 +47,7 @@
 #include "itkMatrix.h"
 #include "itkTransformFileReader.h"
 #include "itkResampleImageFilter.h"
-#include "itkMetaImageIO.h"
+//#include "itkMetaImageIO.h" // not needed (fix build error)
 #include "ResampleLabelMap3DCLP.h"
 #include <itkCompositeTransform.h>
 
