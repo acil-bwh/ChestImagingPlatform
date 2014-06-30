@@ -35,9 +35,6 @@
  *
  */
 
-#define METAIO_FOR_ITK
-#undef METAIO_FOR_VTK
-
 #include "cipConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
