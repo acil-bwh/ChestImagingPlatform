@@ -4,7 +4,9 @@ PROJECT(RegisterCT2D)
 
 set(MODULE_NAME RegisterCT2D)
 
-find_package(LibXml2 REQUIRED)
+if (NOT WIN32)
+  find_package(LibXml2, REQUIRED)
+endif()
 
  set (UUID_LIBS -luuid)
  

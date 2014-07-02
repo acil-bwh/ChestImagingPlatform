@@ -160,7 +160,7 @@ CIPLabelLungRegionsImageFilter
 
   for ( int i=15; i>=0; i-- )
     {
-    int power = static_cast< int >( pow( 2, i ) );
+    int power = static_cast< int >( pow( 2.0, i ) );
 
     if ( power <= currentValue )
       {
@@ -183,7 +183,7 @@ CIPLabelLungRegionsImageFilter
 
   for ( int i=7; i>=0; i-- )
     {
-    int power = static_cast< int >( pow( 2, i ) );
+    int power = static_cast< int >( pow( 2.0, i ) );
 
     if ( power <= typeValue )
       {
@@ -202,11 +202,11 @@ CIPLabelLungRegionsImageFilter
     {
     if ( i < 8 )
       {
-      newValue += static_cast< unsigned short >( currentPlaces[i] )*static_cast< unsigned short >( pow( 2, i ) );
+      newValue += static_cast< unsigned short >( currentPlaces[i] )*static_cast< unsigned short >( pow( 2.0, i ) );
       }
     else
       {
-      newValue += static_cast< unsigned short >( typePlaces[i-8] )*static_cast< unsigned short >( pow( 2, i ) );
+      newValue += static_cast< unsigned short >( typePlaces[i-8] )*static_cast< unsigned short >( pow( 2.0, i ) );
       }
     }
 

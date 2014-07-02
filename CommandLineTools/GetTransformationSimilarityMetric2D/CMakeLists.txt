@@ -4,8 +4,9 @@ PROJECT(GetTransformationSimilarityMetric2D)
 
 set(MODULE_NAME GetTransformationSimilarityMetric2D)
 
-find_package(LibXml2 REQUIRED)
-
+if (NOT WIN32)
+  find_package(LibXml2, REQUIRED)
+endif()
 
  FIND_PACKAGE( VTK REQUIRED )
 

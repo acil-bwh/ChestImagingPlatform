@@ -96,7 +96,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     // If the current slice is merged and we're not supposed to use the
     // local search region, then set the default search region for
     // this slice.
-    if ( merged and !this->m_UseLocalGraphROI ) 
+    if ( merged && !this->m_UseLocalGraphROI ) 
       {
 	this->SetDefaultGraphROIAndSearchIndices( i );
       }
@@ -114,7 +114,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
 	    this->SetLocalGraphROIAndSearchIndices( i+1 );
 	    slicesSinceLastSplit = 0;
 	  }
-	else if ( merged and this->m_UseLocalGraphROI )
+	else if ( merged && this->m_UseLocalGraphROI )
 	  {
 	    this->SetDefaultGraphROIAndSearchIndices( i );
 	  }

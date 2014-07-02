@@ -28,6 +28,10 @@
 #include "vtkPolyData.h"
 #include "vtkIndent.h"
 
+#ifdef WIN32
+#include <time.h>
+#endif
+
 int main( int argc, char *argv[] )
 {
 

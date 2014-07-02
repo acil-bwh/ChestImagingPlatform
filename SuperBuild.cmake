@@ -218,6 +218,9 @@ set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 #------------------------------------------------------------------------------
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
+if (WIN32) # libxml2 is a prerequisite for other platforms
+  set(LIBXML2_EXTERNAL_NAME LibXml2)
+endif()
 
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
 set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
@@ -226,6 +229,7 @@ set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   ${VTK_EXTERNAL_NAME}
   Boost
   teem
+  ${LIBXML2_EXTERNAL_NAME}
   )
 
 #-----------------------------------------------------------------------------

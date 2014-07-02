@@ -5,7 +5,7 @@
 
 #cmakedefine BUILD_SHARED_LIBS
 #ifndef BUILD_SHARED_LIBS
-#define VTKCIP_STATIC
+#define VTKCIPUtilities_STATIC
 #endif
 
 #if defined(WIN32) && !defined(VTKCIPUtilities_STATIC)
