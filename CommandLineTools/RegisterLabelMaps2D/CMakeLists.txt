@@ -5,7 +5,7 @@ PROJECT(RegisterLabelMaps2D)
 set(MODULE_NAME RegisterLabelMaps2D)
 
 if (NOT WIN32)
-  find_package(LibXml2, REQUIRED)
+  find_package(LibXml2 REQUIRED)
 endif()
 
  set (UUID_LIBS -luuid)
