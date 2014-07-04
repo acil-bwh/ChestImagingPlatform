@@ -7,8 +7,6 @@ SET ( MODULE_NAME RemoveParticlesFromParticlesDataSet )
 FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
 INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
 
-FIND_PACKAGE( CIP REQUIRED )
-
 SET ( MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
   )
