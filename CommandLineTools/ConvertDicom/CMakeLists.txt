@@ -14,3 +14,7 @@ cipMacroBuildCLI(
     SRCS ${MODULE_SRCS}
     )
 
+if( CIP_BUILD_TESTING )
+  subdirs( Testing )
+endif( CIP_BUILD_TESTING )
+

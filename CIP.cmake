@@ -105,7 +105,7 @@ endif()
 #---------------------------------------------------------------------
 # Testing
 
-set( CIP_BUILD_TESTING OFF CACHE BOOL "Perform some tests on basic functionality of CIP." )
+set( CIP_BUILD_TESTING ON CACHE BOOL "Perform some tests on basic functionality of CIP." )
 
 if ( CIP_BUILD_TESTING )
   enable_testing()
