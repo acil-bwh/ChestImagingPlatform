@@ -171,6 +171,11 @@ include(cipMacroBuildCLI)
 #SET( CIP_LIBRARY_DEPENDS_FILE ${CIP_BINARY_DIR}/CIPLibraries.cmake )
 #EXPORT( TARGETS ${CIP_LIBRARIES} FILE ${CIP_LIBRARY_DEPENDS_FILE} )
 
+# Added to provide a way to find CIPConfig.cmake from internal sub-projects
+# Usually this is achieved by export command (below) but it sometime fails
+# to create package registry (under .cmake directory) for some reason...
+SET( CIP_DIR ${CIP_BINARY_DIR} )
+
 # The "use" file.
 SET( CIP_USE_FILE ${CIP_CMAKE_DIR}/UseFile.cmake )
 
