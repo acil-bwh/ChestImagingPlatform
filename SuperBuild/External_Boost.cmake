@@ -24,7 +24,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- End Project specific additions
 # SVN is too slow SVN_REPOSITORY http://svn.boost.org/svn/boost/trunk
 # SVN is too slow SVN_REVISION -r "82586"
-  set(${proj}_URL http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz )
+  set(${proj}_URL http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.gz )
   set(${proj}_MD5 93780777cfbf999a600f62883bd54b17 )
   if(CMAKE_COMPILER_IS_CLANGXX)
     set(CLANG_ARG -DCMAKE_COMPILER_IS_CLANGXX:BOOL=ON)
