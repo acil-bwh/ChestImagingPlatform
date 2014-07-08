@@ -4,9 +4,7 @@ PROJECT(GetTransformationSimilarityMetric3D)
 
 set(MODULE_NAME GetTransformationSimilarityMetric3D)
 
-if (NOT WIN32)
-  find_package(LibXml2 REQUIRED)
-endif()
+find_package(LibXml2 REQUIRED)
 
 #set (UUID_LIBS -luuid)
  
