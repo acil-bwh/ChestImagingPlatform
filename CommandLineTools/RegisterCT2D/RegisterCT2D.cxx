@@ -46,6 +46,7 @@
 //registration
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkGradientDescentOptimizer.h"
+#include "itkImageRegistrationMethodv4.h"
 #include "itkImageRegistrationMethod.h"
 #include "itkCenteredTransformInitializer.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
@@ -55,6 +56,9 @@
 #include "itkTransformFileWriter.h"
 #include "itkIdentityTransform.h"
 #include "itkQuaternionRigidTransform.h"
+#include "itkSimilarity2DTransform.h"
+#include "itkMeanSquaresImageToImageMetric.h"
+//#include "itkRegularStepGradientDescentOptimizerv4.h"
 
 #include "RegisterCT2DCLP.h"
 #include "cipConventions.h"
@@ -66,54 +70,55 @@
 namespace
 {
 #define MY_ENCODING "ISO-8859-1"
+
+  //image
   typedef itk::Image< unsigned short, 2 >                                                           LabelMapType2D; 
-  typedef itk::RegularStepGradientDescentOptimizer                                                  OptimizerType;
-    
-  typedef itk::GradientDescentOptimizer GradOptimizerType;
-    
-  typedef OptimizerType::ScalesType                                                                 OptimizerScalesType;
- 
-  typedef itk::IdentityTransform< double, 2 >                                                       IdentityType;
-  typedef itk::CIPExtractChestLabelMapImageFilter                                                   LabelMapExtractorType;
- 
+  typedef itk::Image< short, 2 >                                                                    ShortImageType2D;
+
   typedef itk::GDCMImageIO                                                                          ImageIOType;
   typedef itk::GDCMSeriesFileNames                                                                  NamesGeneratorType;
- 
-  typedef itk::Image< short, 2 >                                                                    ShortImageType2D;
-  typedef itk::ResampleImageFilter< LabelMapType2D, LabelMapType2D >                                ResampleFilterType;
+  typedef itk::ImageFileReader< LabelMapType2D >                                                    LabelMap2DReaderType;
+  typedef itk::ImageFileReader< ShortImageType2D >                                                  ShortReaderType;
+  typedef itk::ImageFileWriter< ShortImageType2D >                                                  ImageWriterType;
+
+  typedef itk::CIPExtractChestLabelMapImageFilter                                                   LabelMapExtractorType;
+  typedef itk::ImageMaskSpatialObject< 2 >                                                          MaskType;
+  typedef itk::Image< unsigned char, 2 >                                                            ImageMaskType;
+  typedef itk::ImageFileReader< ImageMaskType >                                                     MaskReaderType;
+  typedef itk::ImageRegionIteratorWithIndex< LabelMapType2D >                                       LabelMapIteratorType;
+    
+  typedef itk::DiscreteGaussianImageFilter< ShortImageType2D, ShortImageType2D >                    GaussianFilterType;  
+  typedef itk::NormalizeImageFilter<ShortImageType2D,ShortImageType2D>                              FixedNormalizeFilterType;
+  typedef itk::NormalizeImageFilter<ShortImageType2D,ShortImageType2D>                              MovingNormalizeFilterType;
+
+
+  //similarity
+  typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType2D, ShortImageType2D  >        ncMetricType;
+  typedef itk::MeanSquaresImageToImageMetric<ShortImageType2D, ShortImageType2D  >        meanSquaredMetricType;
+
+  //typedef itk::MeanSquaresImageToImageMetricv4<
+  //                                  ShortImageType2D,
+  //                                  ShortImageType2D >         ncMetricType;
+
+
+  //transformations   
+  typedef itk::IdentityTransform< double, 2 >                                                       IdentityType;  
+  typedef itk::AffineTransform<double, 2 >                                                          AffineTransformType2D;
+  typedef itk::Similarity2DTransform< double>                                                       RigidTransformType;
+  //typedef itk::VersorRigid2DTransform< double > RigidTransformType;
+  typedef itk::CenteredTransformInitializer< RigidTransformType, ShortImageType2D, ShortImageType2D >  RigidInitializerType2DIntensity;
+  //typedef itk::CenteredTransformInitializer< SimilarityTransformType2D, ShortImageType2D, ShortImageType2D >  SimilarityInitializerType2DIntensity;
   
-    
-  typedef itk::AffineTransform<double, 2 >                                                          TransformType2D;
-  //typedef itk::QuaternionRigidTransform<double>                                                     RigidTransformType;
+  //registration
+  //typedef itk::RegularStepGradientDescentOptimizer                                                  OptimizerType;   
+  typedef itk::RegularStepGradientDescentOptimizer  OptimizerType;
 
-  typedef itk::CenteredTransformInitializer< TransformType2D, LabelMapType2D, LabelMapType2D >      InitializerType2D;
-  typedef itk::CenteredTransformInitializer< TransformType2D, ShortImageType2D, ShortImageType2D >  InitializerType2DIntensity;
-    
-  typedef itk::ImageFileReader< LabelMapType2D >                                               LabelMap2DReaderType;
-  typedef itk::ImageFileReader< ShortImageType2D >                                               ShortReaderType;
-    
-  typedef itk::ImageRegistrationMethod<LabelMapType2D,LabelMapType2D >                         RegistrationType;
-  typedef itk::ImageRegistrationMethod<ShortImageType2D,ShortImageType2D >                         CTRegistrationType;
+  typedef itk::GradientDescentOptimizer                                                             GradOptimizerType;
+  typedef OptimizerType::ScalesType                                                                 OptimizerScalesType;
 
-    
-  typedef itk::KappaStatisticImageToImageMetric<LabelMapType2D, LabelMapType2D >               MetricType;
-  typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType2D, ShortImageType2D  >       ncMetricType;
-    
-  typedef itk::NearestNeighborInterpolateImageFunction< LabelMapType2D, double >               InterpolatorType;
-  typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType2D, double >               CTInterpolatorType;
-    
-    
-  typedef itk::ImageRegionIteratorWithIndex< LabelMapType2D >                                  IteratorType;
-  typedef itk::ImageFileWriter< LabelMapType2D >                                               ImageWriterType;
-  typedef itk::ResampleImageFilter< LabelMapType2D, LabelMapType2D >                           ResampleType;
-  typedef itk::ImageRegionIteratorWithIndex< LabelMapType2D >                                  LabelMapIteratorType;
-    
-  typedef itk::DiscreteGaussianImageFilter< ShortImageType2D, ShortImageType2D > GaussianFilterType;
-    
-  typedef itk::NormalizeImageFilter<ShortImageType2D,ShortImageType2D> FixedNormalizeFilterType;
-  typedef itk::NormalizeImageFilter<ShortImageType2D,ShortImageType2D> MovingNormalizeFilterType;
-  typedef itk::ImageMaskSpatialObject< 2 >   MaskType;
-   
+  typedef itk::ImageRegistrationMethod<ShortImageType2D,ShortImageType2D >                          CTRegistrationType;
+  typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType2D, double >                  CTInterpolatorType;
+  typedef itk::ResampleImageFilter< ShortImageType2D, ShortImageType2D >                            ResampleFilterType;
 
 
   struct REGIONTYPEPAIR
@@ -134,7 +139,7 @@ namespace
     int transformationIndex;
   };
 
-  void WriteTransformFile( TransformType2D::Pointer transform, char* fileName )
+  void WriteTransformFile( AffineTransformType2D::Pointer transform, char* fileName )
   {
     itk::TransformFileWriter::Pointer transformWriter =
       itk::TransformFileWriter::New();
@@ -300,48 +305,6 @@ int main( int argc, char *argv[] )
   ShortImageType2D::Pointer fixedCT2D = ShortImageType2D::New();
   ShortImageType2D::Pointer movingCT2D = ShortImageType2D::New();
     
-  if(isIntensity != true)
-    {
-      try
-	{
-          std::cout << "Reading label map from file..." << std::endl;
-
-          fixedLabelMap2D = ReadLabelMap2DFromFile( fixedImageFileName );
-          if (fixedLabelMap2D.GetPointer() == NULL)
-	    {
-              return cip::LABELMAPREADFAILURE;
-	    }
-	}
-      catch (cip::ExceptionObject &exep)
-	{
-	  std::cerr << "Error: No lung label map specified" << std::endl;
-	  std::cerr << exep << std::endl;
-          return cip::EXITFAILURE;
-	}
-
- 
-      //Read in moving image label map
-      try
-	{
-          std::cout << "Reading label map from file..." << std::endl;
-          movingLabelMap2D = ReadLabelMap2DFromFile( movingImageFileName );
-
-          if (movingLabelMap2D.GetPointer() == NULL)
-	    {
-	      throw cip::ExceptionObject( __FILE__, __LINE__, "RegisterLabelMaps2D::main()", "Problem opening file" );
-              return cip::LABELMAPREADFAILURE;
-	    }
-	}
-      catch (cip::ExceptionObject &exep)
-	{
-          std::cerr << "Error: No lung label map specified" << std::endl;
-	  std::cerr << exep << std::endl;
-          return cip::EXITFAILURE;
-	}
-    }
-    
-  else //intensity based registration, load CT images
-    {
       try 
         {
 	  std::cout << "Reading CT from file..." << std::endl;
@@ -380,22 +343,18 @@ int main( int argc, char *argv[] )
 	  std::cerr << exep << std::endl;
 	  return cip::EXITFAILURE;
         }
-    }
     
+    
+  ncMetricType::Pointer nc_metric_affine = ncMetricType::New();
+  meanSquaredMetricType::Pointer nc_metric = meanSquaredMetricType::New();
 
-  MetricType::Pointer metric = MetricType::New();
-  metric->SetForegroundValue( 1);    //because we are minimizing as opposed to maximizing
-  ncMetricType::Pointer nc_metric = ncMetricType::New();
-
-  typedef itk::Image< unsigned char, 2 >   ImageMaskType;
   MaskType::Pointer  spatialObjectMask = MaskType::New();
-  typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
   MaskReaderType::Pointer  maskReader = MaskReaderType::New();
     
-  /*  if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+     if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
-      std::cout<<"reading fixed label map "<<fixedLabelmapFileName.c_str() <<std::endl;
-      maskReader->SetFileName(fixedLabelmapFileName.c_str() );
+      std::cout<<"reading moving label map "<<movingLabelmapFileName.c_str() <<std::endl;
+      maskReader->SetFileName(movingLabelmapFileName.c_str() );
         
       try
         {
@@ -408,160 +367,181 @@ int main( int argc, char *argv[] )
 	  return EXIT_FAILURE;
         }
       spatialObjectMask->SetImage(maskReader->GetOutput());
-      nc_metric->SetFixedImageMask( spatialObjectMask );
+      nc_metric_affine->SetMovingImageMask( spatialObjectMask );
+      //nc_metric->SetMovingImageMask( spatialObjectMask );
         
     }
-  */
-        
-    
-  TransformType2D::Pointer transform2D = TransformType2D::New();
- 
+  
+
   std::cout<<"initializing transform"<<std::endl;
-    
-
-    
-  InitializerType2D::Pointer initializer2D = InitializerType2D::New();
-  InitializerType2DIntensity::Pointer initializer2DIntensity = InitializerType2DIntensity::New();
-   
-    
-  OptimizerType::Pointer optimizer = OptimizerType::New();
-  GradOptimizerType::Pointer grad_optimizer = GradOptimizerType::New();
-   
-  FixedNormalizeFilterType::Pointer fixedNormalizer =FixedNormalizeFilterType::New();
-  MovingNormalizeFilterType::Pointer movingNormalizer =MovingNormalizeFilterType::New();
-    
+  /*
   GaussianFilterType::Pointer fixedSmoother  = GaussianFilterType::New();
-  GaussianFilterType::Pointer movingSmoother = GaussianFilterType::New();
   fixedSmoother->SetVariance( 1.5 );
+  fixedSmoother->SetInput( fixedCT2D );
+  fixedSmoother->Update();
+
+  GaussianFilterType::Pointer movingSmoother = GaussianFilterType::New();
   movingSmoother->SetVariance( 1.5 );
+  movingSmoother->SetInput( movingCT2D);
+  movingSmoother->Update();
 
-  if(isIntensity != true)
-    {
-      initializer2D->SetTransform( transform2D );
-      initializer2D->SetFixedImage(fixedLabelMap2D );
-      initializer2D->SetMovingImage( movingLabelMap2D);
-      initializer2D->MomentsOn();
-      initializer2D->InitializeTransform(); //this makes it work
-    }
-  else
-    {
-      std::cout<<"initializing intensity transform.."<<std::endl;
-      fixedSmoother->SetInput( fixedCT2D );
-      fixedSmoother->Update();
-      movingSmoother->SetInput( movingCT2D);
-      movingSmoother->Update();
-      
-      fixedNormalizer->SetInput(  fixedSmoother->GetOutput() );
-      movingNormalizer->SetInput( movingSmoother->GetOutput() );
-      fixedNormalizer->Update();
-      movingNormalizer->Update();
-      initializer2DIntensity->SetTransform( transform2D );
-      initializer2DIntensity->SetFixedImage(fixedCT2D);//fixedNormalizer->GetOutput());
-      initializer2DIntensity->SetMovingImage(movingCT2D);//movingNormalizer->GetOutput()  );
-      //initializer2DIntensity->MomentsOn();
-      initializer2DIntensity->InitializeTransform();
-    }
+  FixedNormalizeFilterType::Pointer fixedNormalizer =FixedNormalizeFilterType::New();      
+    fixedNormalizer->SetInput(  fixedSmoother->GetOutput() );
+    fixedNormalizer->Update();
 
-  typedef OptimizerType::ScalesType OptimizerScalesType; 
-  OptimizerScalesType optimizerScales(transform2D->GetNumberOfParameters());     
-    optimizerScales[0] =  1.0; 
-    optimizerScales[1] =  1.0; 
-    optimizerScales[2] =  1.0; 
-    optimizerScales[3] =  1.0; 
-    optimizerScales[4] =  translationScale; 
-    optimizerScales[5] =  translationScale; 
+  MovingNormalizeFilterType::Pointer movingNormalizer =MovingNormalizeFilterType::New();
+  movingNormalizer->SetInput( movingSmoother->GetOutput() );
+  movingNormalizer->Update();
+  */
+  //initial registration with a similarity transform
+  RigidTransformType::Pointer  rigidTransform = RigidTransformType::New();
+  RigidInitializerType2DIntensity::Pointer rigidInitializer = RigidInitializerType2DIntensity::New();
 
+  rigidInitializer->SetTransform( rigidTransform );
+  rigidInitializer->SetFixedImage(fixedCT2D);//fixedNormalizer->GetOutput());
+  rigidInitializer->SetMovingImage(movingCT2D);//movingNormalizer->GetOutput()  );
+  rigidInitializer->MomentsOn();
+  rigidInitializer->InitializeTransform();
+
+  OptimizerScalesType rigidOptimizerScales(rigidTransform->GetNumberOfParameters());     
+    rigidOptimizerScales[0] =  1.0; 
+    rigidOptimizerScales[1] =  1.0; 
+    rigidOptimizerScales[2] =  1.0; 
+    translationScale = 1.0 / 1000.0;
+    rigidOptimizerScales[3] =  translationScale; 
+    rigidOptimizerScales[4] =  translationScale; 
+    rigidOptimizerScales[5] =  translationScale; 
+
+
+
+  OptimizerType::Pointer rigid_optimizer = OptimizerType::New();
+  //GradOptimizerType::Pointer grad_optimizer = GradOptimizerType::New();    
+    rigid_optimizer->SetScales(rigidOptimizerScales);
+    rigid_optimizer->SetMaximumStepLength(0.2); 
+    rigid_optimizer->SetMinimumStepLength(0.0001); 
+    rigid_optimizer->SetNumberOfIterations(500);
+
+  CTInterpolatorType::Pointer CTinterpolator = CTInterpolatorType::New();  
+  CTRegistrationType::Pointer registration = CTRegistrationType::New();  
+  //nc_metric->SetNumberOfSpatialSamples( 10000L );
     
-    optimizer->SetScales(optimizerScales);
-    //optimizer->SetMaximumStepLength(0.1); 
-    //optimizer->SetMinimumStepLength(0.0001); 
-    optimizer->SetNumberOfIterations(30);
-       
+  std::cout<< " setting registration parameters "<<std::endl;
+  ShortImageType2D::RegionType fixedRegion = fixedCT2D->GetBufferedRegion();
 
-  InterpolatorType::Pointer interpolator = InterpolatorType::New();
-  CTInterpolatorType::Pointer CTinterpolator = CTInterpolatorType::New();      
-
-  std::cout << "Starting CT registration..." << std::endl;
-
-  RegistrationType::Pointer registration = RegistrationType::New();
-  CTRegistrationType::Pointer CTregistration = CTRegistrationType::New();
-  double bestValue;
-  TransformType2D::Pointer finalTransform2D = TransformType2D::New();
-    
-  if (isIntensity == true)
+  registration->SetMetric( nc_metric );
+  registration->SetFixedImage(fixedCT2D  ); //fixedSmoother->GetOutput()
+  registration->SetMovingImage(movingCT2D); //movingSmoother->GetOutput()
+  //registration->SetFixedImageRegion( fixedRegion );
+  registration->SetOptimizer( rigid_optimizer );
+  registration->SetInterpolator( CTinterpolator );
+  registration->SetTransform( rigidTransform );
+      
+  registration->SetInitialTransformParameters( rigidTransform->GetParameters());
+  /*
+  CTRegistrationType::ShrinkFactorsArrayType shrinkFactorsPerLevel;
+  shrinkFactorsPerLevel.SetSize( 3 );
+  shrinkFactorsPerLevel[0] = 4;
+  shrinkFactorsPerLevel[1] = 2;
+  shrinkFactorsPerLevel[2] = 1;
+  CTRegistrationType::SmoothingSigmasArrayType smoothingSigmasPerLevel;
+  smoothingSigmasPerLevel.SetSize( 3 );
+  smoothingSigmasPerLevel[0] = 8;
+  smoothingSigmasPerLevel[1] = 4;
+  smoothingSigmasPerLevel[2] = 1;
+  registration->SetNumberOfLevels ( numberOfLevels );
+  registration->SetSmoothingSigmasPerLevel( smoothingSigmasPerLevel );
+  registration->SetShrinkFactorsPerLevel( shrinkFactorsPerLevel );
+  */
+  std::cout<< "  registrating "<<std::endl;    
+  try
     {
-      CTregistration->SetMetric( nc_metric );
-      CTregistration->SetFixedImage( fixedSmoother->GetOutput() );
-      CTregistration->SetMovingImage(movingSmoother->GetOutput());
-      
-      CTregistration->SetOptimizer( optimizer );
-      CTregistration->SetInterpolator( CTinterpolator );
-      CTregistration->SetTransform( transform2D );
-      
-      CTregistration->SetInitialTransformParameters( transform2D->GetParameters());
-      
-      try
-	{
-          CTregistration->Initialize();
-          CTregistration->Update();
-	}
-      catch( itk::ExceptionObject &excp )
-	{
-          std::cerr << "ExceptionObject caught while executing registration" <<
-	    std::endl;
-          
-          std::cerr << excp << std::endl;
-	}
-      
-      //get all params to output to file
-      numberOfIterations = optimizer->GetCurrentIteration();
-      bestValue = optimizer->GetValue();
-      
-      std::cout <<" best similarity value = " <<bestValue<<std::endl;
-      
-      GradOptimizerType::ParametersType finalParams;
-      finalParams =CTregistration->GetLastTransformParameters();
-      finalTransform2D->SetParameters( finalParams );
+      registration->Initialize();
+      registration->Update();
     }
-      
-  else
+  catch( itk::ExceptionObject &excp )
     {
-      registration->SetMetric( metric );
-      registration->SetFixedImage( fixedLabelMap2D );
-      registration->SetMovingImage(movingLabelMap2D);
-      
-      registration->SetOptimizer( optimizer );
-      registration->SetInterpolator( interpolator );
-      registration->SetTransform( transform2D );
-      
-      registration->SetInitialTransformParameters( transform2D->GetParameters());
-      
-      try
-	{
-          registration->Initialize();
-          registration->Update();
-	}
-      catch( itk::ExceptionObject &excp )
-	{
-          std::cerr << "ExceptionObject caught while executing registration" <<std::endl;
-          std::cerr << excp << std::endl;
-	}
-      
-      //get all params to output to file
-      numberOfIterations = optimizer->GetCurrentIteration();
-      bestValue = optimizer->GetValue();
-      
-      std::cout <<" best similarity value = " <<bestValue<<std::endl;
-      
-      OptimizerType::ParametersType finalParams;
-      finalParams =registration->GetLastTransformParameters();
-      finalTransform2D->SetParameters( finalParams );
+      std::cerr << "ExceptionObject caught while executing registration" <<
+      std::endl;
+      std::cerr << excp << std::endl;
+     }
+
+ std::cout << "Optimizer stop condition = "
+              << registration->GetOptimizer()->GetStopConditionDescription()
+              << std::endl;
+
+  rigidTransform->SetParameters( registration->GetLastTransformParameters() );
+  /****
+  Now for the affine registration
+  ****/
+  
+  std::cout<<"affine registration" <<std::endl;
+  
+  AffineTransformType2D::Pointer affineTransform2D = AffineTransformType2D::New();
+    affineTransform2D->SetCenter( rigidTransform->GetCenter() );
+    affineTransform2D->SetTranslation( rigidTransform->GetTranslation() );
+  affineTransform2D->SetMatrix( rigidTransform->GetMatrix() );
+  
+  registration->SetTransform( affineTransform2D );
+  registration->SetInitialTransformParameters( affineTransform2D->GetParameters() );
+
+  //translationScale = 0.000001;
+  OptimizerScalesType optimizerScales(affineTransform2D->GetNumberOfParameters());     
+  optimizerScales[0] = 1.0;
+  optimizerScales[1] = 1.0;
+  optimizerScales[2] = 1.0;
+  optimizerScales[3] = 1.0;
+  optimizerScales[4] = 1.0;
+  optimizerScales[5] = 1.0;
+  optimizerScales[6] = 1.0;
+  optimizerScales[7] = 1.0;
+  optimizerScales[8] = 1.0;
+  optimizerScales[9]  = translationScale;
+  optimizerScales[10] = translationScale;
+  optimizerScales[11] = translationScale;
+  rigid_optimizer->SetScales( optimizerScales );
+  rigid_optimizer->SetMaximumStepLength( 0.2000  );
+  rigid_optimizer->SetMinimumStepLength( 0.0001 );
+  rigid_optimizer->SetNumberOfIterations( 300 );
+  //
+  // The Affine transform has 12 parameters we use therefore a more samples to run
+  // this stage.
+  //
+  // Regulating the number of samples in the Metric is equivalent to performing
+  // multi-resolution registration because it is indeed a sub-sampling of the
+  // image.
+  //nc_metric->SetNumberOfSpatialSamples( 50000L );
+
+  std::cout << "Starting CT affine registration..." << std::endl;
+     
+  try
+    {
+      registration->Initialize();
+      registration->Update();
     }
+  catch( itk::ExceptionObject &excp )
+    {
+      std::cerr << "ExceptionObject caught while executing registration" <<
+      std::endl;
+      std::cerr << excp << std::endl;
+     }
+  
+   //get all params to output to file
+   numberOfIterations = rigid_optimizer->GetCurrentIteration();
+   double bestValue;
+   bestValue = rigid_optimizer->GetValue();
+      
+   std::cout <<" best similarity value = " <<bestValue<<std::endl;
+   affineTransform2D->SetParameters(registration->GetLastTransformParameters());
+   /*
+   GradOptimizerType::ParametersType finalParams;
+     finalParams =registration->GetLastTransformParameters();
 
-
-
-  finalTransform2D->SetCenter( transform2D->GetCenter() );
-    
+   std::cout <<finalParams<<std::endl;
+  
+   AffineTransformType2D::Pointer finalTransform2D = AffineTransformType2D::New();
+   finalTransform2D->SetParameters( finalParams);//affineTransform2D->GetParameters());//finalParams );
+    finalTransform2D->SetCenter( rigidTransform->GetCenter() );
+   */
   std::cout<<"writing final transform"<<std::endl;
 
   if ( strcmp(outputTransformFileName.c_str(), "q") != 0 )
@@ -575,7 +555,7 @@ int main( int argc, char *argv[] )
 
       REGISTRATION_XML_DATA labelMapRegistrationXMLData;
       labelMapRegistrationXMLData.similarityValue = (float)(bestValue);
-      const char *similarity_type = metric->GetNameOfClass();
+      const char *similarity_type = nc_metric->GetNameOfClass();
       labelMapRegistrationXMLData.similarityMeasure.assign(similarity_type);
         
       //labelMapRegistrationXMLData.image_type.assign("leftLungRightLung");
@@ -621,7 +601,7 @@ int main( int argc, char *argv[] )
 
       std::cout << "Writing transform..." << std::endl;
       itk::TransformFileWriter::Pointer transformWriter = itk::TransformFileWriter::New();
-      transformWriter->SetInput( finalTransform2D );
+      transformWriter->SetInput( affineTransform2D );
 
    
       transformWriter->SetFileName( outputTransformFileName );

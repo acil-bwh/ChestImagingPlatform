@@ -8,9 +8,6 @@
  *  USAGE: 
 ./GetTransformationSimilarityMetric --fixedLabelMapFileName ~/Documents/Data/COPDGene/14388A/14388A_INSP_STD_HAR_COPD/14388A_INSP_STD_HAR_COPD_leftLungRightLung.nhdr --movingLabelMapFileName ~/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/14988Y_INSP_STD_UAB_COPD_leftLungRightLung.nhdr --regionVec 1 --fixedCTFileName ~/Documents/Data/COPDGene/14388A/14388A_INSP_STD_HAR_COPD/14388A_INSP_STD_HAR_COPD.nhdr --movingCTFileName ~/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/14988Y_INSP_STD_UAB_COPD.nhdr --inputTransform ~/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/registrationData/14988Y_INSP_STD_UAB_COPD_to_14388A_INSP_STD_HAR_COPD.tfm
 
-
-
-
  *
  *  $Date: $
  *  $Revision: $
@@ -38,6 +35,8 @@
 #include <itkCompositeTransform.h>
 #include <itkAffineTransform.h>
 #include "itkCenteredTransformInitializer.h"
+#include "itkTranslationTransform.h"
+#include "itkResampleImageFilter.h"
 
 //similarity
 #include "itkMutualInformationImageToImageMetric.h"
@@ -77,12 +76,14 @@ typedef itk::ImageFileReader< ShortImageType >                                  
   //registration
 typedef itk::RegularStepGradientDescentOptimizer                                                       OptimizerType;
 typedef itk::ImageRegistrationMethod< ShortImageType, ShortImageType >                                 RegistrationType;
-typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType, double >                         InterpolatorType;
+typedef itk::LinearInterpolateImageFunction< ShortImageType, double >                         InterpolatorType;
 typedef itk::AffineTransform<double, 2 >                                                               TransformType;
 typedef itk::CenteredTransformInitializer< TransformType, ShortImageType, ShortImageType >             InitializerType;
 typedef OptimizerType::ScalesType                                                                      OptimizerScalesType;
 typedef itk::IdentityTransform< double, 2 >                                                            IdentityType;
 typedef itk::CompositeTransform< double, 2 > CompositeTransformType;
+typedef itk::TranslationTransform< double, 2 >  TranslationTransformType;
+typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >           ResampleType;
 
   //similarity metrics
 typedef itk::MutualInformationImageToImageMetric<ShortImageType, ShortImageType >                      MIMetricType;
@@ -102,7 +103,7 @@ struct REGIONTYPEPAIR
 //struct for saving the xml file wih similarity information
   struct SIMILARITY_XML_DATA
   {
-    float similarityValue;
+    double similarityValue;
     std::string transformationLink[5];
     std::string transformation_isInverse[5];
     unsigned int transformation_order[5];
@@ -238,8 +239,6 @@ int main( int argc, char *argv[] )
    std::vector< unsigned char >  typePairVec;
    const char* similarity_type;
   
-  // std::cout<< "about to parse args"<<std::endl;
-
   PARSE_ARGS;
 
   //fill out the isInvertTransform vector
@@ -324,10 +323,16 @@ int main( int argc, char *argv[] )
   //parse transform arg  and join transforms together
   
    //last transform applied first, so make last transform
+  TransformType::Pointer transformTemp = TransformType::New();
+  TransformType::Pointer transformTempInv = TransformType::New();
+
+  CompositeTransformType::Pointer test_inverse_transform = CompositeTransformType::New();
   CompositeTransformType::Pointer transform = CompositeTransformType::New();
+   transform->SetAllTransformsToOptimizeOn();
+
   for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
-      TransformType::Pointer transformTemp = TransformType::New();
+     
       transformTemp = GetTransformFromFile(inputTransformFileName[i] );
       // Invert the transformation if specified by command like argument. Only inverting the first transformation
       if(isInvertTransform[i] == true)
@@ -337,25 +342,79 @@ int main( int argc, char *argv[] )
           transform->AddTransform(transformTemp);
         }          
       else
-	transform->AddTransform(transformTemp); 
+	{
+	transform->AddTransform(transformTemp);
+	transformTempInv->SetMatrix( transformTemp->GetInverseMatrix());
+	test_inverse_transform->AddTransform(transformTempInv);
+	}
+      transform->SetAllTransformsToOptimizeOn();
+      test_inverse_transform->SetAllTransformsToOptimizeOn();
     }
-  transform->SetAllTransformsToOptimizeOn();
  
-  std::cout<<"initializing optimizer"<<std::endl;
+  CompositeTransformType::Pointer transform_forsim = CompositeTransformType::New();
+  TransformType::Pointer id_transform = TransformType::New();
+  id_transform->SetIdentity();
+  transform_forsim->AddTransform(id_transform);
+  transform_forsim->SetAllTransformsToOptimizeOn();
+
+  std::cout << " transforms read. "<<std::endl;
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
-  OptimizerType::Pointer optimizer = OptimizerType::New();
-  optimizer->SetNumberOfIterations( 0 ); 
-        
-  RegistrationType::Pointer registration = RegistrationType::New();
-  registration->SetOptimizer( optimizer );
-  registration->SetInterpolator( interpolator );
-  registration->SetTransform(transform);
-  registration->SetFixedImage( ctFixedImage);
-  registration->SetMovingImage(ctMovingImage);
-  registration->SetInitialTransformParameters( transform->GetParameters());
+  double similarityValue;
+
+  std::cout << "Resampling..." << std::endl;
+  ResampleType::Pointer resampler = ResampleType::New();
+    resampler->SetTransform( transform );
+    resampler->SetInterpolator( interpolator );
+    resampler->SetInput( ctMovingImage);
+    resampler->SetSize( ctFixedImage->GetLargestPossibleRegion().GetSize() );
+    resampler->SetOutputSpacing( ctFixedImage->GetSpacing() );
+    resampler->SetOutputOrigin( ctFixedImage->GetOrigin() );
+    resampler->SetOutputDirection( ctFixedImage->GetDirection() );
+  try
+    {
+    resampler->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught resampling:";
+    std::cerr << excp << std::endl;
+
+    return cip::RESAMPLEFAILURE;
+    }
 
   //initialize metric 
-    if (similarityMetric =="NMI")
+  if (similarityMetric =="nc")
+      {
+         ncMetricType::Pointer metric = ncMetricType::New();
+	 transform->SetAllTransformsToOptimizeOn();
+	 std::cout<<transform<<std::endl;
+	 metric->SetInterpolator( interpolator );
+	 metric->SetTransform(transform_forsim);//transform);
+	 metric->SetFixedImage( ctFixedImage );
+	 metric->SetMovingImage( resampler->GetOutput() );
+	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 metric->SetFixedImageRegion(fixedRegion);
+	 metric->Initialize();
+	 
+	 std::cout<<metric<<std::endl;
+	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
+	   metric->SetMovingImageMask( movingSpatialObjectMask );
+	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	 metric->SetFixedImageMask( fixedSpatialObjectMask );  
+
+	 ncMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+	 zero_params = transform_forsim->GetParameters();
+	 //should be set to identity, not zero
+
+	 //for(int i = 0; i< transform->GetNumberOfParameters(); i++)
+	 //    zero_params[i]=0;
+
+	 similarityValue = metric->GetValue(zero_params );
+	 std::cout<<"the ncc value is: "<<similarityValue<<std::endl;
+
+	 similarity_type = "NCC";
+      }
+  else if (similarityMetric =="NMI")
     {
       NMIMetricType::Pointer metric = NMIMetricType::New();
       NMIMetricType::HistogramType::SizeType histogramSize;
@@ -368,33 +427,26 @@ int main( int argc, char *argv[] )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetFixedImageMask( fixedSpatialObjectMask );     
-      registration->SetMetric( metric );
      
+      similarity_type = "NMI";
     }
     else if (similarityMetric =="msqr")
       {
 	msqrMetricType::Pointer metric = msqrMetricType::New();
         if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-            metric->SetFixedImageMask( fixedSpatialObjectMask );          
-        registration->SetMetric( metric );
+            metric->SetFixedImageMask( fixedSpatialObjectMask );   
+
+	similarity_type = "msqr";
       }
-    else if (similarityMetric =="nc")
-      {
-         ncMetricType::Pointer metric = ncMetricType::New();
-      if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetMovingImageMask( movingSpatialObjectMask );
-      if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );         
-      registration->SetMetric( metric );
-      }
+     
     else if (similarityMetric =="gd")
       {
 	gdMetricType::Pointer metric = gdMetricType::New();
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );              
-        registration->SetMetric( metric );
+	metric->SetFixedImageMask( fixedSpatialObjectMask );       
+      similarity_type = "gd";
       }
    else //MI is default
      {
@@ -405,28 +457,11 @@ int main( int argc, char *argv[] )
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );              
-       registration->SetMetric( metric );   	
+	metric->SetFixedImageMask( fixedSpatialObjectMask );      
+      similarity_type = "MI";
      }
  
-    similarity_type = registration->GetMetric()->GetNameOfClass();
  
-  try
-    {
-        registration->Initialize();
-        registration->Update();
-    }
-  catch( itk::ExceptionObject &excp )
-    {
-    std::cerr << "ExceptionObject caught while executing registration" << std::endl;
-    std::cerr << excp << std::endl;
-    }
-
-
-  OptimizerType::ParametersType finalParams = registration->GetLastTransformParameters();
-  int numberOfIterations2 = optimizer->GetCurrentIteration();
-  const double similarityValue = registration->GetMetric()->GetValue(finalParams);
-  std::cout<<" iteration = "<<numberOfIterations2<<"  metric="<<similarityValue<<std::endl;
 
   //Write data to xml file if necessary
   if ( strcmp(outputXMLFileName.c_str(), "q") != 0 ) 
