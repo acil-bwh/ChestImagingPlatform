@@ -131,7 +131,7 @@
       <flag>t</flag>
       <longflag>--translationScale</longflag>
       <description><![CDATA[translationScale]]></description>
-      <default>0.001</default>
+      <default>0.0000001</default>
     </float>  
   <integer-vector>
       <name>regionVecArg</name>

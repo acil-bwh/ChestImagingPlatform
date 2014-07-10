@@ -52,7 +52,7 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
     print(similarity_values[i])    
     if (similarity == "ncc"):
         nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
-            i: abs((similarity_values[i]))) #take (from 0 to 10, assuming testint is not in trainng)
+            i: (-(similarity_values[i]))) #take (from 0 to 10, assuming testint is not in trainng)
     else:
         nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
             i: (similarity_values[i])) #take (from 0 to 10, assuming testint is not in trainng)        
