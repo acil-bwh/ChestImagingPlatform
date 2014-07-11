@@ -44,7 +44,7 @@ if(NOT DEFINED Teem_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       )
   endif()
 
-  set(teem_repo https://svn.code.sf.net/p/teem/code/teem/trunk)
+  set(teem_repo http://svn.code.sf.net/p/teem/code/teem/branches/Teem-1.11.1)
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
