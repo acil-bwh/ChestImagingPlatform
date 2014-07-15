@@ -340,8 +340,8 @@ cip::ChestConventions::ChestConventions()
   double* t048 = new double[3]; t048[0] = 0.01; t048[1] = 0.50; t048[2] = 0.50; ChestTypeColors.push_back( t048 ); //AIRWAYGENERATION9
   double* t049 = new double[3]; t049[0] = 0.45; t049[1] = 0.44; t049[2] = 0.44; ChestTypeColors.push_back( t049 ); //AIRWAYGENERATION10
   double* t050 = new double[3]; t050[0] = 0.51; t050[1] = 0.51; t050[2] = 0.51; ChestTypeColors.push_back( t050 ); //CALCIFICATION
-  double* t051 = new double[3]; t051[0] = 0.40; t051[1] = 0.50; t051[2] = 0.50; ChestTypeColors.push_back( t051 ); //ARTERY
-  double* t052 = new double[3]; t052[0] = 0.49; t052[1] = 0.49; t052[2] = 0.49; ChestTypeColors.push_back( t052 ); //VEIN
+  double* t051 = new double[3]; t051[0] = 0.00; t051[1] = 0.00; t051[2] = 0.99; ChestTypeColors.push_back( t051 ); //ARTERY
+  double* t052 = new double[3]; t052[0] = 0.99; t052[1] = 0.00; t052[2] = 0.00; ChestTypeColors.push_back( t052 ); //VEIN
   double* t053 = new double[3]; t053[0] = 0.48; t053[1] = 0.48; t053[2] = 0.48; ChestTypeColors.push_back( t053 ); //PECTORALISMINOR
   double* t054 = new double[3]; t054[0] = 0.47; t054[1] = 0.47; t054[2] = 0.47; ChestTypeColors.push_back( t054 ); //PECTORALISMAJOR
   double* t055 = new double[3]; t055[0] = 0.46; t055[1] = 0.46; t055[2] = 0.46; ChestTypeColors.push_back( t055 ); //ANTERIORSCALENE
