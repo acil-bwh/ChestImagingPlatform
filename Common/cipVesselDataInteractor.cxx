@@ -1,8 +1,8 @@
 /**
  *
- *  $Date: 2012-09-17 21:03:47 -0400 (Mon, 17 Sep 2012) $
- *  $Revision: 272 $
- *  $Author: jross $
+ *  $Date$
+ *  $Revision$
+ *  $Author$
  *
  *  TODO:
  *
@@ -12,13 +12,16 @@
 #include "vtkSmartPointer.h"
 #include "vtkPropPicker.h"
 #include "vtkRendererCollection.h"
-#include "vtkTriangleStrip.h"
-#include "vtkUnstructuredGrid.h"
 #include "vtkDataSetMapper.h"
-#include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "vtkProperty.h"
-
+#include "vtkExtractSelectedGraph.h"
+#include "vtkDoubleArray.h"
+#include "cipHelper.h"
+#include "vtkFloatArray.h"
+#include "vtkDijkstraGraphGeodesicPath.h"
+#include "vtkGraphToPolyData.h"
+#include "vtkIdList.h"
 
 cipVesselDataInteractor::cipVesselDataInteractor()
 {
@@ -26,115 +29,256 @@ cipVesselDataInteractor::cipVesselDataInteractor()
   this->InteractorCallbackCommand->SetCallback( InteractorKeyCallback );
   this->InteractorCallbackCommand->SetClientData( (void*)this );
 
-  //
   // cipVesselDataInteractor inherits from cipChestDataViewer. The
   // cipChestDataViewer constructor is called before the
   // cipVesselDataInteractor constructor, and in the parent constructor,
   // the ViewerCallbackCommand is set. We want to remove it and set
   // the InteractorCallbackCommand in order for the key bindings
   // specific to interaction can take effect
-  //
   this->RenderWindowInteractor->RemoveObserver( this->ViewerCallbackCommand );
   this->RenderWindowInteractor->AddObserver( vtkCommand::KeyPressEvent, this->InteractorCallbackCommand );
+
+  this->SelectedChestRegion = (unsigned char)(cip::UNDEFINEDREGION);
+  this->SelectedChestType   = (unsigned char)(cip::UNDEFINEDTYPE);
+
+  this->NumberInputParticles      = 0;
+  this->NumberOfPointDataArrays   = 0;
+  this->EdgeWeightAngleSigma      = 1.0;
+  this->ParticleDistanceThreshold = 3.0;
+  this->ActorColor                = new double[3];
+
+  this->VesselModelActor = vtkSmartPointer< vtkActor >::New();
+  this->VesselModel = vtkSmartPointer< vtkPolyData >::New();
+  this->VesselModelShowing = false;
 }
 
+void cipVesselDataInteractor::SetRootNode( vtkActor* actor )
+{
+  this->MinimumSpanningTreeRootNode = this->ActorToParticleIDMap[actor];
+}
+
+void cipVesselDataInteractor::UpdateVesselBranchCode( char c )
+{
+  std::stringstream ss;
+  std::string code;
+  ss << c;
+  ss >> code;
+
+  if ( code.compare( "a" ) == 0 )
+    {
+    this->Conventions->GetChestTypeColor( (unsigned char)(cip::ARTERY), this->ActorColor );
+    this->SelectedChestRegion = (unsigned char)(cip::UNDEFINEDREGION);
+    this->SelectedChestType   = (unsigned char)(cip::ARTERY);
+    }
+  if ( code.compare( "v" ) == 0 )
+    {
+    this->Conventions->GetChestTypeColor( (unsigned char)(cip::VEIN), this->ActorColor );
+    this->SelectedChestRegion = (unsigned char)(cip::UNDEFINEDREGION);
+    this->SelectedChestType   = (unsigned char)(cip::VEIN);
+    }
+}
+
+void cipVesselDataInteractor::UndoAndRender()
+{
+  unsigned int lastModification = this->LabeledParticleIDs.size() - 1;
+
+  float tmpRegion = float(cip::UNDEFINEDREGION);
+  float tmpType   = float(cip::UNDEFINEDTYPE);
+
+  for ( unsigned int i=0; i<this->LabeledParticleIDs[lastModification].size(); i++ )
+    {
+    unsigned int id = this->LabeledParticleIDs[lastModification][i];
+    this->VesselParticles->GetPointData()->GetArray("ChestType")->SetTuple( id, &tmpType );
+    this->VesselParticles->GetPointData()->GetArray("ChestRegion")->SetTuple( id, &tmpRegion );
+
+    this->ParticleIDToActorMap[id]->GetProperty()->SetColor( 1.0, 1.0, 1.0 );
+    }
+
+  this->LabeledParticleIDs[lastModification].clear();
+  this->LabeledParticleIDs.erase( this->LabeledParticleIDs.end() );
+
+  this->RenderWindow->Render();
+}
+
+void cipVesselDataInteractor::SetIntermediateNode( vtkActor* actor )
+{
+  this->MinimumSpanningTreeIntermediateNode = this->ActorToParticleIDMap[actor];  
+
+  // vtkSmartPointer< vtkGraphToPolyData > graphToPolyData = vtkSmartPointer< vtkGraphToPolyData >::New();
+  //   graphToPolyData->SetInput( this->MinimumSpanningTree );
+  //   graphToPolyData->Update();
+ 
+  vtkSmartPointer< vtkDijkstraGraphGeodesicPath > dijkstra = vtkSmartPointer< vtkDijkstraGraphGeodesicPath >::New();
+  //dijkstra->SetInputConnection( graphToPolyData->GetOutputPort() );
+    dijkstra->SetInput( this->VesselParticles );
+    dijkstra->SetStartVertex( this->MinimumSpanningTreeIntermediateNode );
+    dijkstra->SetEndVertex( this->MinimumSpanningTreeRootNode );
+    dijkstra->Update();
+  
+  vtkIdList* idList = dijkstra->GetIdList();
+
+  // The following will store particle IDs that are being
+  // labeled. We'll need this in case we want to undo the labeling.
+  std::vector< unsigned int > labeledIDs;
+  
+  double* refVec = new double[3];
+  for ( unsigned int i=0; i<idList->GetNumberOfIds(); i++ )
+    {
+      if ( this->VesselParticles->GetPointData()->GetArray("ChestType")->GetTuple(idList->GetId(i))[0] == float(cip::UNDEFINEDTYPE) )
+	{
+	  float tmpRegion = (float)(this->SelectedChestRegion);
+	  float tmpType   = (float)(this->SelectedChestType);
+	  this->ParticleIDToActorMap[idList->GetId(i)]->GetProperty()->SetColor( this->ActorColor[0], this->ActorColor[1], this->ActorColor[2] );
+	  this->VesselParticles->GetPointData()->GetArray("ChestRegion")->SetTuple(idList->GetId(i), &tmpRegion );
+	  this->VesselParticles->GetPointData()->GetArray("ChestType")->SetTuple(idList->GetId(i), &tmpType );
+	  labeledIDs.push_back(idList->GetId(i));
+	  
+	  // Re-orient the particle's minor eigenvector. This is necessary for other algorithms
+	  // (specifically, some particles registration algorithms) which require that all the 
+	  // particles be oriented in a consistent manner -- in this case, all minor eigenvectors
+	  // will point from leaf node to root node.     
+	  if ( i < idList->GetNumberOfIds() - 1 )
+	    {
+	      refVec[0] = this->VesselParticles->GetPoint(idList->GetId(i+1))[0] - this->VesselParticles->GetPoint(idList->GetId(i))[0];
+	      refVec[1] = this->VesselParticles->GetPoint(idList->GetId(i+1))[1] - this->VesselParticles->GetPoint(idList->GetId(i))[1];
+	      refVec[2] = this->VesselParticles->GetPoint(idList->GetId(i+1))[2] - this->VesselParticles->GetPoint(idList->GetId(i))[2];
+	    }
+	  else
+	    {
+	      refVec[0] = this->VesselParticles->GetPoint(idList->GetId(i))[0] - this->VesselParticles->GetPoint(idList->GetId(i-1))[0];
+	      refVec[1] = this->VesselParticles->GetPoint(idList->GetId(i))[1] - this->VesselParticles->GetPoint(idList->GetId(i-1))[1];
+	      refVec[2] = this->VesselParticles->GetPoint(idList->GetId(i))[2] - this->VesselParticles->GetPoint(idList->GetId(i-1))[2];
+	    }
+	  
+	  this->OrientParticle( idList->GetId(i), refVec );
+	}
+    }
+  
+  this->LabeledParticleIDs.push_back( labeledIDs );  
+  this->RenderWindow->Render();
+}
+
+// This function re-orients a particle's minor eigenvector so that it is more parallel than
+// anti-parallel to the specified reference vector. This function is used during the labeling
+// process to ensure that all labeled particles have minor eigenvectors oriented in a consistent
+// way, which is necessary for some registration routines that take as input the labeled
+// particles datasets.
+void cipVesselDataInteractor::OrientParticle( unsigned int particleID, double* refVec )
+{
+  double angle = cip::GetAngleBetweenVectors( this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID ),
+					      refVec, false );
+
+  float* hevec0 = new float[3];
+  if ( angle > vnl_math::pi/2.0 )
+    {
+      hevec0[0] = -this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[0];
+      hevec0[1] = -this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[1];
+      hevec0[2] = -this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[2];
+
+      this->VesselParticles->GetPointData()->GetArray("hevec0")->SetTuple( particleID, hevec0 );
+    }
+}
 
 void cipVesselDataInteractor::UpdateVesselGenerationAndRender( vtkActor* actor, int generation )
 {
-  // Save data to undo stack    
-  this->m_UndoState.actor = actor;
-  actor->GetProperty()->GetColor( this->m_UndoState.color );
-  this->m_UndoState.opacity = actor->GetProperty()->GetOpacity(); 
+  // // Save data to undo stack    
+  // this->m_UndoState.actor = actor;
+  // actor->GetProperty()->GetColor( this->m_UndoState.color );
+  // this->m_UndoState.opacity = actor->GetProperty()->GetOpacity(); 
     
-  std::map< std::string, vtkActor* >::iterator it = this->VesselParticlesActorMap.begin();
+  // std::map< std::string, vtkActor* >::iterator it = this->VesselParticlesActorMap.begin();
 
-  double* color = new double[3];
+  // double* color = new double[3];
 
-  while ( it != this->VesselParticlesActorMap.end() )
-    {
-    if ( it->second == actor )
-      {
-      if ( generation == 0 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION0 ), color );
-        }
-      if ( generation == 1 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION1 ), color );
-        }
-      if ( generation == 2 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION2 ), color );
-        }
-      if ( generation == 3 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION3 ), color );
-        }
-      if ( generation == 4 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION4 ), color );
-        }
-      if ( generation == 5 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION5 ), color );
-        }
-      if ( generation == 6 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION6 ), color );
-        }
-      if ( generation == 7 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION7 ), color );
-        }
-      if ( generation == 8 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION8 ), color );
-        }
-      if ( generation == 9 )
-        {
-        this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::VESSELGENERATION9 ), color );
-        }
+  // while ( it != this->VesselParticlesActorMap.end() )
+  //   {
+  //   if ( it->second == actor )
+  //     {
+  //     if ( generation == 0 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::TRACHEA ), color );
+  //       }
+  //     if ( generation == 1 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::MAINBRONCHUS ), color );
+  //       }
+  //     if ( generation == 2 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::UPPERLOBEBRONCHUS ), color );
+  //       }
+  //     if ( generation == 3 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION3 ), color );
+  //       }
+  //     if ( generation == 4 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION4 ), color );
+  //       }
+  //     if ( generation == 5 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION5 ), color );
+  //       }
+  //     if ( generation == 6 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION6 ), color );
+  //       }
+  //     if ( generation == 7 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION7 ), color );
+  //       }
+  //     if ( generation == 8 )
+  //       {
+  //       this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION8 ), color );
+  //       }
+  //     if ( generation == 9 )
+  //       {
+  // 	this->Conventions->GetChestTypeColor( static_cast< unsigned char >( cip::AIRWAYGENERATION9 ), color );
+  //       }
 
-      actor->GetProperty()->SetColor( color[0], color[1], color[2] );
-      actor->GetProperty()->SetOpacity( 1.0 );
+  //     actor->GetProperty()->SetColor( color[0], color[1], color[2] );
+  //     actor->GetProperty()->SetOpacity( 1.0 );
 
-      break;
-      }
+  //     break;
+  //     }
 
-    ++it;
-    }
+  //   ++it;
+  //   }
   
-  delete[] color;
+  // delete[] color;
 
-  this->RenderWindow->Render();
+  // this->RenderWindow->Render();
 }
 
-
-void cipVesselDataInteractor::UpdateVeinParticlesAndRender( vtkActor* actor )
+void cipVesselDataInteractor::SetVesselModel( vtkSmartPointer< vtkPolyData > model )
 {
-  // Save data to undo stack
-  this->m_UndoState.actor = actor;
-  actor->GetProperty()->GetColor( this->m_UndoState.color );
-  this->m_UndoState.opacity = actor->GetProperty()->GetOpacity();  
-  // Update actor  
-  actor->GetProperty()->SetColor( 1, 0, 0 );
-  actor->GetProperty()->SetOpacity( 1.0 );
+  this->VesselModel = model;
+  this->VesselModelActor = this->SetPolyData( model, "vesselModel" );
+  this->SetActorColor( "vesselModel", 1.0, 1.0, 1.0 );
+  this->SetActorOpacity( "vesselModel", 0.3 );
 
-  this->RenderWindow->Render();
+  this->VesselModelShowing = true;
 }
 
-
-void cipVesselDataInteractor::UpdateArteryParticlesAndRender( vtkActor* actor )
+void cipVesselDataInteractor::ShowVesselModel()
 {
-  // Save data to undo stack
-  this->m_UndoState.actor = actor;
-  actor->GetProperty()->GetColor( this->m_UndoState.color );
-  this->m_UndoState.opacity = actor->GetProperty()->GetOpacity(); 
-  // Update actor   
-  actor->GetProperty()->SetColor( 0, 0, 1 );
-  actor->GetProperty()->SetOpacity( 1.0 );
+  if ( !this->VesselModelShowing )
+    {
+      this->VesselModelShowing = true;
 
-  this->RenderWindow->Render();
+      this->Renderer->AddActor( this->VesselModelActor);
+      this->RenderWindow->Render();
+    }
+}
+
+void cipVesselDataInteractor::HideVesselModel()
+{
+  if ( this->VesselModelShowing )
+    {
+      this->VesselModelShowing = false;
+
+      this->Renderer->RemoveActor( this->VesselModelActor );
+      this->RenderWindow->Render();
+    }
 }
 
 void cipVesselDataInteractor::UndoUpdateAndRender()
@@ -164,13 +308,177 @@ void cipVesselDataInteractor::RemoveActorAndRender( vtkActor* actor )
 }
 
 
+void cipVesselDataInteractor::SetConnectedVesselParticles( vtkSmartPointer< vtkPolyData > particles, 
+							   double particleSize )
+{
+  this->VesselParticles = particles;
+
+  this->NumberInputParticles    = particles->GetNumberOfPoints();
+  this->NumberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
+
+  // First create a minimum spanning tree representation
+  //this->InitializeMinimumSpanningTree( particles );
+
+  // Now we want to loop over all particles and create an individual
+  // actor for each.
+
+  for ( unsigned int p = 0; p < this->NumberInputParticles; p++ )
+    {
+    vtkPolyData* tmpPolyData = vtkPolyData::New();
+
+    vtkPoints* point  = vtkPoints::New();
+      point->InsertNextPoint( particles->GetPoint(p) );
+ 
+    std::stringstream stream;
+    stream << p;
+    std::string name = stream.str();
+
+    std::vector< vtkFloatArray* > arrayVec;
+
+    for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
+      {
+      vtkFloatArray* array = vtkFloatArray::New();
+        array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+        array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
+
+      arrayVec.push_back( array );
+      arrayVec[i]->InsertTuple( 0, particles->GetPointData()->GetArray(i)->GetTuple(p) );
+      }
+
+    tmpPolyData->SetPoints( point );
+    for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
+      {
+      tmpPolyData->GetPointData()->AddArray( arrayVec[j] );
+      }
+
+    vtkActor* actor = this->SetVesselParticlesAsDiscs( tmpPolyData, particleSize, name );
+      this->SetActorColor( name, 1.0, 1.0, 1.0 );
+      this->SetActorOpacity( name, 1.0 );
+      
+    this->ActorToParticleIDMap[actor] = p;
+    this->ParticleIDToActorMap[p]     = actor;
+    }
+}
+
+
+void cipVesselDataInteractor::InitializeMinimumSpanningTree( vtkSmartPointer< vtkPolyData > particles )
+{
+  // Now create the weighted graph that will be passed to the minimum 
+  // spanning tree filter
+  std::map< unsigned int, unsigned int > particleIDToNodeIDMap;
+  std::map< unsigned int, unsigned int > nodeIDToParticleIDMap;
+
+  vtkSmartPointer< vtkMutableUndirectedGraph > weightedGraph = vtkSmartPointer< vtkMutableUndirectedGraph >::New();
+
+  for ( unsigned int i=0; i<this->NumberInputParticles; i++ )
+    {
+      vtkIdType nodeID = weightedGraph->AddVertex();
+
+      particleIDToNodeIDMap[i]      = nodeID;
+      nodeIDToParticleIDMap[nodeID] = i;
+    }
+
+  vtkSmartPointer< vtkDoubleArray > edgeWeights = vtkSmartPointer< vtkDoubleArray >::New();
+    edgeWeights->SetNumberOfComponents( 1 );
+    edgeWeights->SetName( "Weights" );
+
+  for ( unsigned int i=0; i<this->NumberInputParticles; i++ )
+    {
+    for ( unsigned int j=i+1; j<this->NumberInputParticles; j++ )
+      {
+      double weight;
+      
+      if ( this->GetEdgeWeight( i, j, particles, &weight ) )
+        {
+        weightedGraph->AddEdge( particleIDToNodeIDMap[i], particleIDToNodeIDMap[j] );
+        edgeWeights->InsertNextValue( weight );
+        }
+      }
+    }
+  weightedGraph->GetEdgeData()->AddArray( edgeWeights );
+  weightedGraph->SetPoints( particles->GetPoints() );
+
+  vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree > minimumSpanningTreeFilter = vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree >::New();
+    minimumSpanningTreeFilter->SetInput( weightedGraph );
+    minimumSpanningTreeFilter->SetEdgeWeightArrayName( "Weights" );
+    minimumSpanningTreeFilter->Update();
+
+  vtkSmartPointer< vtkExtractSelectedGraph > extractSelection = vtkSmartPointer< vtkExtractSelectedGraph >::New();
+    extractSelection->SetInput( 0, weightedGraph );
+    extractSelection->SetInput( 1, minimumSpanningTreeFilter->GetOutput()) ;
+    extractSelection->Update();
+
+  this->MinimumSpanningTree = vtkMutableUndirectedGraph::SafeDownCast( extractSelection->GetOutput() );
+
+  //cip::ViewGraphAsPolyData( this->MinimumSpanningTree );
+}
+
+
+bool cipVesselDataInteractor::GetEdgeWeight( unsigned int particleID1, unsigned int particleID2, 
+                                             vtkSmartPointer< vtkPolyData > particles, double* weight )
+{
+  // Determine the vector connecting the two particles
+  double point1[3];
+    point1[0] = particles->GetPoint( particleID1 )[0];
+    point1[1] = particles->GetPoint( particleID1 )[1];
+    point1[2] = particles->GetPoint( particleID1 )[2];
+
+  double point2[3];
+    point2[0] = particles->GetPoint( particleID2 )[0];
+    point2[1] = particles->GetPoint( particleID2 )[1];
+    point2[2] = particles->GetPoint( particleID2 )[2];
+
+  double connectingVec[3];
+    connectingVec[0] = point1[0] - point2[0];
+    connectingVec[1] = point1[1] - point2[1];
+    connectingVec[2] = point1[2] - point2[2];
+
+  double connectorMagnitude = cip::GetVectorMagnitude( connectingVec );
+
+  if ( connectorMagnitude > this->ParticleDistanceThreshold )
+    {
+    return false;
+    }
+
+  double particle1Hevec0[3];
+    particle1Hevec0[0] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID1 )[0];
+    particle1Hevec0[1] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID1 )[1];
+    particle1Hevec0[2] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID1 )[2];
+
+  double particle2Hevec0[3];
+    particle2Hevec0[0] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID2 )[0];
+    particle2Hevec0[1] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID2 )[1];
+    particle2Hevec0[2] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID2 )[2];
+
+  double angle1 =  cip::GetAngleBetweenVectors( particle1Hevec0, connectingVec, true );
+  double angle2 =  cip::GetAngleBetweenVectors( particle2Hevec0, connectingVec, true );
+
+  if ( angle1 < angle2 )
+    {
+      //*weight = 2.0*(10.0/15.0)*connectorMagnitude + (10.0/45.0)*angle1;
+      *weight = connectorMagnitude*(1.0 + 1.1*exp(-pow( (90.0 - angle1)/this->EdgeWeightAngleSigma, 2 )));
+    }
+  else
+    {
+      //*weight = 2.0*(10.0/15.0)*connectorMagnitude + (10.0/45.0)*angle2;
+      *weight = connectorMagnitude*(1.0 + 1.1*exp(-pow( (90.0 - angle2)/this->EdgeWeightAngleSigma, 2 )));
+    }
+
+  return true;
+}
+
+
 void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, void* d )
 {
   cipVesselDataInteractor* dataInteractor = reinterpret_cast< cipVesselDataInteractor* >( clientData );
 
   char pressedKey = dataInteractor->GetRenderWindowInteractor()->GetKeyCode(); 
 
-  if ( pressedKey == 'k' )
+  if ( pressedKey == 'a' || pressedKey == 'v' )
+    {
+      dataInteractor->UpdateVesselBranchCode( pressedKey );
+    }
+  else if ( pressedKey == 'k' )
     {
     int* clickPos = dataInteractor->GetRenderWindowInteractor()->GetEventPosition();
 
@@ -186,19 +494,31 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       dataInteractor->RemoveActorAndRender( actor );
       }
     }
-  
-  if ( pressedKey == '!' || pressedKey == '@' || pressedKey == '#' || pressedKey == '$' || pressedKey == '%' || 
-       pressedKey == '^' || pressedKey == '&' || pressedKey == '*' || pressedKey == '(' || pressedKey == ')' )
+  else if ( pressedKey == 's' )
+    {
+      dataInteractor->ShowVesselModel();
+    }
+  else if ( pressedKey == 'h' )
+    {
+      dataInteractor->HideVesselModel();
+    }
+  else if ( pressedKey == 'u' )
+    {
+    dataInteractor->UndoAndRender();
+    }
+  else if ( pressedKey == '!' || pressedKey == '@' || pressedKey == '#' || pressedKey == '$' || pressedKey == '%' || 
+       pressedKey == '^' || pressedKey == '&' || pressedKey == '*' || pressedKey == '(' || pressedKey == ')' ||
+       pressedKey == 'o' || pressedKey == 'm' )
     {
     int* clickPos = dataInteractor->GetRenderWindowInteractor()->GetEventPosition();
-    
+
     vtkSmartPointer< vtkPropPicker > picker = vtkSmartPointer< vtkPropPicker >::New();
-    
+
     picker->Pick( clickPos[0], clickPos[1], 0, 
                   dataInteractor->GetRenderWindowInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer() );
-    
+
     vtkActor* actor = picker->GetActor();
-    
+
     if ( actor != NULL )
       {
       if ( pressedKey == '!' )
@@ -241,6 +561,14 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
         {
         dataInteractor->UpdateVesselGenerationAndRender( actor, 0 );
         }
+      if ( pressedKey == 'o' )
+        {
+        dataInteractor->SetRootNode( actor );
+        }
+      if ( pressedKey == 'm' )
+        {
+        dataInteractor->SetIntermediateNode( actor );
+        }
       }
     }
 
@@ -278,45 +606,6 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
       {
       dataInteractor->SetPlaneWidgetZShowing( true );
       }
-    }
-  
-  if ( pressedKey == 'a' )
-    {
-    int* clickPos = dataInteractor->GetRenderWindowInteractor()->GetEventPosition();
-    
-    vtkSmartPointer< vtkPropPicker > picker = vtkSmartPointer< vtkPropPicker >::New();
-    
-    picker->Pick( clickPos[0], clickPos[1], 0, 
-                  dataInteractor->GetRenderWindowInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer() );
-    
-    vtkActor* actor = picker->GetActor();
-    
-    if ( actor != NULL )
-      {
-      dataInteractor->UpdateArteryParticlesAndRender( actor );
-      }
-    }
-  
-  if ( pressedKey == 'v' )
-    {
-    int* clickPos = dataInteractor->GetRenderWindowInteractor()->GetEventPosition();
-    
-    vtkSmartPointer< vtkPropPicker > picker = vtkSmartPointer< vtkPropPicker >::New();
-    
-    picker->Pick( clickPos[0], clickPos[1], 0, 
-                  dataInteractor->GetRenderWindowInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer() );
-    
-    vtkActor* actor = picker->GetActor();
-    
-    if ( actor != NULL )
-      {
-      dataInteractor->UpdateVeinParticlesAndRender( actor );
-      }
-    }
-  
-  if ( pressedKey == 'u' )
-    {
-    dataInteractor->UndoUpdateAndRender();  
-    }
+    }  
 }
 

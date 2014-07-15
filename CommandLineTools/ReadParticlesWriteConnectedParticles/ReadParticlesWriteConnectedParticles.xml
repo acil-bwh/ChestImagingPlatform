@@ -52,6 +52,14 @@
   </parameters>
 
   <parameters>
+    <boolean>
+      <name>visualize</name>
+      <label>visualize</label>
+      <channel>input</channel>
+      <longflag>vis</longflag>
+      <description><![CDATA[Visualize the connected polydata]]></description>
+    </boolean>
+
     <double>
       <name>particleDistanceThreshold</name>
       <flag>d</flag>

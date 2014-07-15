@@ -49,7 +49,7 @@
 
 #include "vtkSmartPointer.h"
 #include "vtkPolyData.h"
-#include "vtkFieldData.h"
+#include "vtkPointData.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
 #include "vtkGraphToPolyData.h"
@@ -97,8 +97,11 @@ int main( int argc, char *argv[] )
   vtkSmartPointer<vtkMutableUndirectedGraph> minimumSpanningTree = 
     GetMinimumSpanningTree(particlesReader->GetOutput(), particleDistanceThreshold, particlesType);
 
-  std::cout << "Visualizing graph..." << std::endl;
-  cip::ViewGraphAsPolyData(minimumSpanningTree);
+  if (visualize)
+    {
+      std::cout << "Visualizing graph..." << std::endl;
+      cip::ViewGraphAsPolyData(minimumSpanningTree);
+    }
 
   // If the user has specified an output file name, write the
   // connected particles to fiel
@@ -108,6 +111,8 @@ int main( int argc, char *argv[] )
     vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
       graphToPolyData->SetInput(minimumSpanningTree);
       graphToPolyData->Update();
+
+    cip::GraftPointDataArrays( particlesReader->GetOutput(), graphToPolyData->GetOutput() );
 
     std::cout << "Writing connected particles..." << std::endl;
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
@@ -215,14 +220,14 @@ bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartP
     }
 
   double particle1Hevec2[3];
-    particle1Hevec2[0] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID1)[0];
-    particle1Hevec2[1] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID1)[1];
-    particle1Hevec2[2] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID1)[2];
+    particle1Hevec2[0] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID1)[0];
+    particle1Hevec2[1] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID1)[1];
+    particle1Hevec2[2] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID1)[2];
 
   double particle2Hevec2[3];
-    particle2Hevec2[0] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID2)[0];
-    particle2Hevec2[1] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID2)[1];
-    particle2Hevec2[2] = particles->GetFieldData()->GetArray(vecName.c_str())->GetTuple(particleID2)[2];
+    particle2Hevec2[0] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID2)[0];
+    particle2Hevec2[1] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID2)[1];
+    particle2Hevec2[2] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID2)[2];
 
   double angle1 = cip::GetAngleBetweenVectors(particle1Hevec2, connectingVec, true);
   double angle2 = cip::GetAngleBetweenVectors(particle2Hevec2, connectingVec, true);
