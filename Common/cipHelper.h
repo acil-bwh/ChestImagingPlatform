@@ -89,6 +89,11 @@ namespace cip {
       If the particles don't have these arrays, they are assigned with default entries UNDEFINEDREGION and 
       UNDEFINEDTYPE */
   void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > );
+
+  /** This function will transfer all the point data arrays from the first polydata to the second. In the case
+      when an array has the same name in both the "from" polydata and the "to" polydata, nothing will be done. 
+      Both data sets must have the same number of points. */
+  void GraftPointDataArrays( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 }  
 
 #endif
