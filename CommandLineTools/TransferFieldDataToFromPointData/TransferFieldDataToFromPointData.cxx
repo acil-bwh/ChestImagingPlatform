@@ -70,64 +70,9 @@
 #include "TransferFieldDataToFromPointDataCLP.h"
 int main( int argc, char *argv[] )
 {
-  //
-  // Define arguments
-  //
- // std::string inFileName    = "NA";
- // std::string outFileName   = "NA";
- // bool        maintainField = true;
-//  bool        maintainPoint = true;
-//  bool        fieldToPoint  = true;
- // bool        pointToField  = false;
+  PARSE_ARGS;
 
-  //
-  // Program and argument descriptions for user help
-  //
-//  std::string programDesc = "";
-
-  //std::string inFileNameDesc  = "";
-//  std::string outFileNameDesc = "Output VTK polydata file name";
- // std::string maintainFieldDesc  = "";
- // std::string maintainPointDesc  = "Setting this to true will maintain the field data. \
-Setting it to false will eliminate the field data from the output. Only relevant if \
-requesting to transfer field data to point data";
- // std::string fieldToPointDesc = "Set to true to transfer field data to point data";
-//  std::string pointToFieldDesc = "Set to true to transfer point data to field data";
-
-  //
-  // Parse the input arguments
-  //
-/*  try
-    {
-    //TCLAP::CmdLine cl( programDesc, ' ', "$Revision: 383 $" );
-
-   // TCLAP::ValueArg<std::string> inFileNameArg( "i", "input", inFileNameDesc, true, inFileName, "string", cl );
-    //TCLAP::ValueArg<std::string> outFileNameArg( "o", "output", outFileNameDesc, true, outFileName, "string", cl );
-    //TCLAP::ValueArg<bool> fieldToPointArg( "", "fp", fieldToPointDesc, false, fieldToPoint, "bool", cl );
-    TCLAP::ValueArg<bool> pointToFieldArg( "", "pf", pointToFieldDesc, false, pointToField, "bool", cl );
-    //TCLAP::ValueArg<bool> maintainFieldArg( "", "mf", maintainFieldDesc, false, maintainField, "bool", cl );
-   // TCLAP::ValueArg<bool> maintainPointArg( "", "mp", maintainPointDesc, false, maintainPoint, "bool", cl );
-
-    cl.parse( argc, argv );
-
-    inFileName    = inFileNameArg.getValue();
-    outFileName   = outFileNameArg.getValue();
-    fieldToPoint  = fieldToPointArg.getValue();
-    pointToField  = pointToFieldArg.getValue();
-    maintainField = maintainFieldArg.getValue();
-    maintainPoint = maintainPointArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-    std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
-*/
-    
-    PARSE_ARGS;
-  //
   // Read the poly data
-  //
   std::cout << "Reading VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > reader = vtkSmartPointer< vtkPolyDataReader >::New();
     reader->SetFileName( inFileName.c_str() );
@@ -139,17 +84,13 @@ requesting to transfer field data to point data";
 
   vtkSmartPointer< vtkPoints > outputPoints = vtkSmartPointer< vtkPoints >::New();
 
-  //
   // Create a new polydata to contain the output
-  //
   vtkSmartPointer< vtkPolyData > outPolyData = vtkSmartPointer< vtkPolyData >::New();
     outPolyData->SetPoints( reader->GetOutput()->GetPoints() );
 
-  //
   // First create a list of the point data already stored in the input polydata.
   // We will only transfer field data provided there is not already corresponding
   // point data. Do the same for the field data array names.
-  //
   std::vector< std::string > pointDataArrayNames;
   for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
@@ -163,9 +104,7 @@ requesting to transfer field data to point data";
       fieldDataArrayNames.push_back(name);
     }
 
-  //
   // Transfer the field data to point data if requested
-  //
   if ( fieldToPoint )
     {
       bool alreadyPresent;
@@ -184,9 +123,7 @@ requesting to transfer field data to point data";
 
 	  if ( !alreadyPresent )
 	    {
-	      //
 	      // The number of array tuples must be the same as the number of points
-	      //
 	      if ( reader->GetOutput()->GetFieldData()->GetArray(i)->GetNumberOfTuples() == numberOfPoints )
 		{
 		  outPolyData->GetPointData()->AddArray( reader->GetOutput()->GetFieldData()->GetArray(i) );
@@ -195,12 +132,10 @@ requesting to transfer field data to point data";
 	}
     }
 
-  //
   // Transfer the point data to field data if requested. Note that this is not the
   // "preferred" direction to go in, but we support it so that code in the cip
   // that depends on field data storage can be accomodated. Eventually, all point-
   // specific data should be recorded as point data.
-  //
   if ( pointToField )
     {
       bool alreadyPresent;
@@ -224,9 +159,7 @@ requesting to transfer field data to point data";
 	}
     }
 
-  //
   // Add the field data to the output if requested
-  //
   if ( maintainField )
     {
       for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
@@ -235,9 +168,7 @@ requesting to transfer field data to point data";
 	}
     }
 
-  //
   // Add the point data to the output if requested
-  //
   if ( maintainPoint )
     {
       for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
@@ -246,9 +177,7 @@ requesting to transfer field data to point data";
 	}
     }
 
-  //
   // Write the poly data
-  //
   std::cout << "Writing VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );
