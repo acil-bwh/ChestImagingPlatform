@@ -102,6 +102,7 @@ int main( int argc, char *argv[] )
     filter->SetScaleRatioThreshold( scaleRatioThreshold );
     filter->SetMaximumComponentSize( maxComponentSize );
     filter->SetMaximumAllowableScale( maxAllowableScale );
+    filter->SetMinimumAllowableScale( minAllowableScale );
     filter->SetInput( reader->GetOutput() );
     filter->Update();
 

@@ -96,7 +96,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
     // If the current slice is merged and we're not supposed to use the
     // local search region, then set the default search region for
     // this slice.
-    if ( merged and !this->m_UseLocalGraphROI ) 
+    if ( merged && !this->m_UseLocalGraphROI ) 
       {
 	this->SetDefaultGraphROIAndSearchIndices( i );
       }
@@ -114,7 +114,7 @@ CIPSplitLeftLungRightLungImageFilter< TInputImage >
 	    this->SetLocalGraphROIAndSearchIndices( i+1 );
 	    slicesSinceLastSplit = 0;
 	  }
-	else if ( merged and this->m_UseLocalGraphROI )
+	else if ( merged && this->m_UseLocalGraphROI )
 	  {
 	    this->SetDefaultGraphROIAndSearchIndices( i );
 	  }
@@ -245,44 +245,70 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
   // Set the start and end search indices
   this->m_StartSearchIndex[0] = (maxX + minX)/2;
   this->m_StartSearchIndex[1] = minY;
+  this->m_StartSearchIndex[2] = 0; // Value not used except for assert statements below
 
   this->m_EndSearchIndex[0] = (maxX + minX)/2;
   this->m_EndSearchIndex[1] = maxY;
+  this->m_EndSearchIndex[2] = 0; // Value not used except for assert statements below
 
   // Set the start index of the graph ROI
-  this->m_GraphROIStartIndex[0] = minX - 10;        
-  if ( this->m_GraphROIStartIndex[0] < 0 )
+  int tmp;
+  tmp = minX - 10;
+  if ( tmp < 0 )
     {
       this->m_GraphROIStartIndex[0] = 0;
-    }        
-  this->m_GraphROIStartIndex[1] = minY - 10;
-  if ( this->m_GraphROIStartIndex[1] < 0 )
+    }
+  else
+    {
+      this->m_GraphROIStartIndex[0] = tmp;
+    }
+  tmp  = minY - 10;
+  if ( tmp < 0 )
     {
       this->m_GraphROIStartIndex[1] = 0;
     }
+  else
+    {
+      this->m_GraphROIStartIndex[1] = tmp;
+    }
   this->m_GraphROIStartIndex[2] = z;
 
+  assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_GraphROIStartIndex ) );
+
   // Now set the size of the graph ROI
-  this->m_GraphROISize[0] = maxX - minX + 20;
-  if ( maxX - minX + 20 < 0 )
+  tmp  = maxX - minX + 20;
+  if ( tmp < 0 )
     {
       this->m_GraphROISize[0] = 0;
-    }
-  if ( this->m_GraphROISize[0] > size[0] )
+    }	  
+  else if ( tmp > size[0] )
     {
       this->m_GraphROISize[0] = size[0];
     }
-  
-  this->m_GraphROISize[1] = maxY - minY + 20;
-  if ( maxY - minY + 20 < 0 )
+  else
+    {
+      this->m_GraphROISize[0] = tmp;
+    }
+
+  tmp  = maxY - minY + 20;
+  if ( tmp < 0 )
     {
       this->m_GraphROISize[1] = 0;
     }
-  if ( this->m_GraphROISize[1] > size[1] )
+  else if ( tmp > size[1] )
     {
       this->m_GraphROISize[1] = size[1];
-    }   
+    }
+  else
+    {
+      this->m_GraphROISize[1] = tmp;
+    }
   
+  assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_StartSearchIndex ) );
+  assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_EndSearchIndex ) );
+  assert( this->m_GraphROIStartIndex[0] + this->m_GraphROISize[0] <= size[0] );
+  assert( this->m_GraphROIStartIndex[1] + this->m_GraphROISize[1] <= size[1] );
+
   this->m_GraphROISize[2] = 0;        
 }
 
@@ -323,17 +349,29 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
     }
 
   // Set the start index of the graph ROI
-  this->m_GraphROIStartIndex[0] = minX - 10;        
-  if ( this->m_GraphROIStartIndex[0] < 0 )
+  int tmp;
+  tmp = minX - 10;
+  if ( tmp < 0 )
     {
       this->m_GraphROIStartIndex[0] = 0;
-    }        
-  this->m_GraphROIStartIndex[1] = minY - 10;
-  if ( this->m_GraphROIStartIndex[1] < 0 )
+    }
+  else
+    {
+      this->m_GraphROIStartIndex[0] = tmp;
+    }
+  tmp = minY - 10;
+  if ( tmp < 0 )
     {
       this->m_GraphROIStartIndex[1] = 0;
     }
+  else
+    {
+      this->m_GraphROIStartIndex[1] = tmp;
+    }
   this->m_GraphROIStartIndex[2] = z;
+
+  assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_GraphROIStartIndex ) );
+
   this->m_StartSearchIndex[1] = this->m_GraphROIStartIndex[1];
 
   // Now set the size of the graph ROI
@@ -342,9 +380,9 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
     {
       this->m_GraphROISize[0] = 0;
     }
-  if ( this->m_GraphROISize[0] > size[0] )
+  if ( this->m_GraphROISize[0] >= size[0] )
     {
-      this->m_GraphROISize[0] = size[0];
+      this->m_GraphROISize[0] = size[0] - 1;
     }
   
   this->m_GraphROISize[1] = maxY - minY + 20;
@@ -352,11 +390,16 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
     {
       this->m_GraphROISize[1] = 0;
     }
-  if ( this->m_GraphROISize[1] > size[1] )
+  if ( this->m_GraphROISize[1] >= size[1] )
     {
-      this->m_GraphROISize[1] = size[1];
+      this->m_GraphROISize[1] = size[1] - 1;
     }   
   this->m_EndSearchIndex[1] = this->m_GraphROIStartIndex[1] + this->m_GraphROISize[1] - 1;
+
+  assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_StartSearchIndex ) );
+  assert( this->GetOutput()->GetBufferedRegion().IsInside( this->m_EndSearchIndex ) );
+  assert( this->m_GraphROIStartIndex[0] + this->m_GraphROISize[0] < size[0] );
+  assert( this->m_GraphROIStartIndex[1] + this->m_GraphROISize[1] < size[1] );
 
   this->m_GraphROISize[2] = 0;
 }
@@ -428,7 +471,7 @@ void CIPSplitLeftLungRightLungImageFilter< TInputImage >
     roiExtractor->SetDirectionCollapseToIdentity();
     roiExtractor->SetExtractionRegion( roiRegion );
     roiExtractor->Update();
-  
+
   InputPixelType lowerThreshold = itk::NumericTraits< InputPixelType >::NonpositiveMin();
   InputPixelType upperThreshold = itk::NumericTraits< InputPixelType >::max();
 

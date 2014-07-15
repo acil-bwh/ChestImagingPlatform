@@ -47,10 +47,9 @@ def construct_probabilistic_atlas(label_maps, normalize=True, weights=None,
     
     # Get the number of labelmaps
     num_labelmaps = len(label_maps)
-    
     #for number of labelmaps, add label_maps*weight to atlas
     for i in range(0, num_labelmaps):
-        atlas = np.add(atlas, np.multiply(label_maps[i], \
+        atlas = np.add(atlas, np.multiply(label_maps[i].astype(np.float), \
                 weights[i].astype(np.float)))
         
     return atlas

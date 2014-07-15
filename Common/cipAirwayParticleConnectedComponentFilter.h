@@ -41,6 +41,16 @@ public:
   void   SetScaleRatioThreshold( double );
   double GetScaleRatioThreshold();
 
+  /** When considering the connectedness between two particles, if either
+   *  of them has a scale greater than the max allowable scale, no connection
+   *  will be formed */
+  void SetMaximumAllowableScale( double );
+  
+  /** When considering the connectedness between two particles, if either
+   *  of them has a scale smaller than the min allowable scale, no connection
+   *  will be formed */
+  void SetMinimumAllowableScale( double );
+  
   vtkPolyData* GetOutput();
 
 private:
@@ -48,6 +58,7 @@ private:
 
   double ScaleRatioThreshold;
   double MaxAllowableScale;
+  double MinAllowableScale;
 };
 
 #endif

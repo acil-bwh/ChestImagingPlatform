@@ -46,6 +46,7 @@
   </parameters>
 
   <parameters>
+    <label>Parameters</label>
     <double>
       <name>interParticleSpacing</name>
       <longflag>spacing</longflag>
@@ -114,6 +115,14 @@
       <label>Maximum allowable scale</label>
       <default>1.79769e+308</default>
     </double>
-
+    
+    <double>
+      <name>minAllowableScale</name>
+      <longflag>minScale</longflag>
+      <description>Min  allowable scale. No connection will be made between two particles if either of them \
+        have a scale that exceeds this amount.</description>
+      <label>Minimum allowable scale</label>
+      <default>0</default>
+    </double>
   </parameters>
 </executable>

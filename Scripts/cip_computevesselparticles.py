@@ -165,7 +165,7 @@ class VesselParticlesPipeline:
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
                 tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
                 print tmpCommand
-                subprocess.call( tmpCommand, shell=True )
+                #subprocess.call( tmpCommand, shell=True )
 
                 #Hist equalization, threshold Feature strength and masking
                 tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"

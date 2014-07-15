@@ -1,16 +1,20 @@
+import sys
+#sys.path.append("/Users/rolaharmouche/Library/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/")
+#~/Slicer4-SuperBuild-Debug/Cython-0.16/
+#sys.path.append("/Users/rolaharmouche/Documents/Code/gco_python-new/gco_src")
 import numpy as np
-from scipy import ndimage
-from scipy import stats
+import scipy
+#import scipy.scipy.ndimage as scipy.ndimage
+#from scipy import stats
 #from scipy.stats import multivariate_normal
 from pygco import cut_from_graph
 from cip_python.utils.weighted_feature_map_densities \
     import ExpWeightedFeatureMapDensity
 from cip_python.utils.feature_maps import PolynomialFeatureMap
-import nrrd
-import pylab as plt
-import sys
-import gaussian_rician
+#import pylab as plt
+import cip_python.gaussian_rician as gc
 import math
+import scipy.ndimage.morphology as scimorph
 
 def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
     """Segment structures using atlas data and likelihoods. 
@@ -40,13 +44,16 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
     # For all structures of interest, compute the posterior energy 
     print("computing posterior probabilities\n")
     num_classes = np.shape(priors)[0]
-    posterior_probabilities = np.zeros(np.shape(priors), dtype=np.float)
-    label_map=np.zeros(np.shape(priors), dtype=np.int)
+    posterior_probabilities = np.zeros(np.squeeze(np.shape(priors)), dtype=np.float)
+    label_map=np.zeros(np.squeeze(np.shape(priors)), dtype=np.int)
     
     posterior_probabilities = \
-       compute_structure_posterior_probabilities(likelihoods, priors, \
-                                                  normalization_constants)
-      
+       compute_structure_posterior_probabilities(np.squeeze(likelihoods), np.squeeze(priors), \
+                                                  np.squeeze(normalization_constants))
+
+    #posterior_probabilities = \
+    #   compute_structure_posterior_probabilities(likelihoods, priors, \
+    #                                              normalization_constants)      
     
     print("getting graph cuts segmentations\n")
     #  For each structure separately, input the posterior energies into
@@ -65,8 +72,12 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
         not_class_posteriors = np.ones_like(posterior_probabilities[i]).astype(np.float)-\
             posterior_probabilities[i]
           
-        not_class_posterior_energies = ( -np.log(np.maximum(not_class_posteriors,0.0000000000001))*integer_precision).astype(np.int32)
-          
+        not_class_posterior_energies = ( -np.log(np.maximum(not_class_posteriors,\
+            0.0000000000001))*integer_precision).astype(np.int32)
+        
+        print("shape of energies")
+        print(np.shape(not_class_posterior_energies))  
+        print(np.shape(class_posterior_energies))     
         label_map[i]=obtain_graph_cuts_segmentation( \
           not_class_posterior_energies, class_posterior_energies)
           
@@ -74,10 +85,12 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
     #    axarr2[i].set_title("labelmap # "+ str(i))           
     #plt.show() 
 
-    for i in range(0, num_classes):
-        label_map[i] = ndimage.binary_fill_holes(label_map[i]).astype(int)
-        label_map[i] = ndimage.binary_fill_holes(label_map[i]).astype(int)              
+    #for i in range(0, num_classes):
+    #    label_map[i] = scipy.ndimage.binary_fill_holes(label_map[i]).astype(int)
+    #    label_map[i] = scipy.ndimage.binary_fill_holes(label_map[i]).astype(int)              
 
+    print("label map shape")
+    print(np.shape(label_map))
     return label_map, posterior_probabilities
 
 def segment_lung_with_atlas_gaussian(input_image, probabilistic_atlases, gauss_parameters): 
@@ -114,9 +127,9 @@ def segment_lung_with_atlas_gaussian(input_image, probabilistic_atlases, gauss_p
     ones_indeces_thresholding = lungPrior > 0.34 
     lungPriorSlicedialated[ones_indeces_thresholding] = 1.0
 
-    lungPriorSlicedialated = ndimage.binary_dilation(lungPriorSlicedialated, \
+    lungPriorSlicedialated = scipy.ndimage.binary_dilation(lungPriorSlicedialated, \
       iterations=2)
-    ndimage.morphology.binary_fill_holes(lungPriorSlicedialated, \
+    scipy.ndimage.morphology.binary_fill_holes(lungPriorSlicedialated, \
       structure=None, output=lungPriorSlicedialated, origin=0)
     tozero_indeces_intensities = lungPriorSlicedialated < 1
     
@@ -211,9 +224,9 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases, exponential_para
     ones_indeces_thresholding = lungPrior > 0.34 
     lungPriorSlicedialated[ones_indeces_thresholding] = 1.0
 
-    lungPriorSlicedialated = ndimage.binary_dilation(lungPriorSlicedialated, \
+    lungPriorSlicedialated = scipy.ndimage.binary_dilation(lungPriorSlicedialated, \
       iterations=2)
-    ndimage.morphology.binary_fill_holes(lungPriorSlicedialated, \
+    scipy.ndimage.morphology.binary_fill_holes(lungPriorSlicedialated, \
       structure=None, output=lungPriorSlicedialated, origin=0)
     tozero_indeces_intensities = lungPriorSlicedialated < 1
     
@@ -420,478 +433,9 @@ def segment_lung_with_atlas(input_image, probabilistic_atlases, exponential_para
        [p_I_dleft.astype(np.float), p_I_dright.astype(np.float)])
     
     return segmented_labels
-    
-
-def segment_pec_with_atlas(input_image, probabilistic_atlases, exponential_parameters): 
-    #TODO: and command line option to this command
-    
-    """Segment pecs using training labeled data. 
-
-    Parameters
-    ----------
-    input_image : float array, shape (L, M, N)
-
-    probabilistic_atlases : list of float arrays, shape (L, M, N)
-        Atlas to use as segmentation prior. Each voxel should have a value in
-        the interval [0, 1], indicating the probability of the class.
-        
-    exponential_parameters: Parameters of the exponential likelihood distribution
-        ...
-        
-    Returns
-    -------
-    label_map : array, shape (L, M, N)
-        Segmented image with labels adhering to CIP conventions
-    """
-    
-    #compute feature vectors for left and right lungs
-    ### TODO: replace with likelihood params for class 0.
-
-
-    length  = np.shape(probabilistic_atlases[0])[0]
-    width = np.shape(probabilistic_atlases[0])[1]
-    
-    #Define pec area to segment
-    pecPrior = probabilistic_atlases[0] + probabilistic_atlases[1] +\
-       + probabilistic_atlases[2]+ probabilistic_atlases[3]
-    zero_indeces_thresholding = pecPrior < 0.25 
-    pecPriorSlicedialated = pecPrior
-    pecPriorSlicedialated[zero_indeces_thresholding] = 0.0
-    
-    ones_indeces_thresholding = pecPrior > 0.24 
-    pecPriorSlicedialated[ones_indeces_thresholding] = 1.0
-
-    pecPriorSlicedialated = ndimage.binary_dilation(pecPriorSlicedialated, \
-      iterations=8)
-    ndimage.morphology.binary_fill_holes(pecPriorSlicedialated, \
-      structure=None, output=pecPriorSlicedialated, origin=0)
-    tozero_indeces_intensities = pecPriorSlicedialated < 1
-           
-    left_major_distance_map = compute_distance_to_atlas(probabilistic_atlases[0].astype(float))
-    left_minor_distance_map = compute_distance_to_atlas(probabilistic_atlases[1].astype(float))     
-    right_major_distance_map = compute_distance_to_atlas(probabilistic_atlases[2].astype(float))
-    right_minor_distance_map = compute_distance_to_atlas(probabilistic_atlases[3].astype(float))
- 
-         
-    left_major_polynomial_feature_map = PolynomialFeatureMap( [input_image, \
-      left_major_distance_map],[0,1,2] )  
-    left_major_polynomial_feature_map.compute_num_terms()
-    
-    right_major_polynomial_feature_map = PolynomialFeatureMap( [input_image, \
-      right_major_distance_map],[0,1,2] )  
-    right_major_polynomial_feature_map.compute_num_terms()
-
-
-    left_minor_polynomial_feature_map = PolynomialFeatureMap( [input_image, \
-      left_minor_distance_map],[0,1,2] )  
-    left_minor_polynomial_feature_map.compute_num_terms()
-    
-    right_minor_polynomial_feature_map = PolynomialFeatureMap( [input_image, \
-      right_minor_distance_map],[0,1,2] )  
-    right_minor_polynomial_feature_map.compute_num_terms()
-    
-    
-    #define the weights
-    print("defining the weights, atlas shape is:")     
-    print(np.shape(probabilistic_atlases))
-    print(np.shape(input_image))
-    
-    alpha_dleftmajor_given_leftmajor=exponential_parameters[0]
-    alpha_dleftminor_given_leftmajor=exponential_parameters[1]
-    alpha_drightmajor_given_leftmajor=exponential_parameters[2]
-    alpha_drightminor_given_leftmajor=exponential_parameters[3]
-    alpha_dleftmajor_given_leftminor=exponential_parameters[4]
-    alpha_dleftminor_given_leftminor=exponential_parameters[5]
-    alpha_drightmajor_given_leftminor=exponential_parameters[6]
-    alpha_drightminor_given_leftminor=exponential_parameters[7]
-    alpha_dleftmajor_given_rightmajor=exponential_parameters[8]
-    alpha_dleftminor_given_rightmajor=exponential_parameters[9]
-    alpha_drightmajor_given_rightmajor=exponential_parameters[10]
-    alpha_drightminor_given_rightmajor=exponential_parameters[11]
-    alpha_dleftmajor_given_rightminor=exponential_parameters[12]
-    alpha_dleftminor_given_rightminor=exponential_parameters[13]
-    alpha_drightmajor_given_rightminor=exponential_parameters[14]
-    alpha_drightminor_given_rightminor=exponential_parameters[15]
-    alpha_dleftmajor_given_non=exponential_parameters[16]
-    alpha_dleftminor_given_non=exponential_parameters[17]
-    alpha_drightmajor_given_non=exponential_parameters[18]
-    alpha_drightminor_given_non=exponential_parameters[19]
-    #left major
-    
-    
-    ##something wrongwith this first one
-    left_major_weights = [alpha_dleftmajor_given_leftmajor[2]*alpha_dleftmajor_given_leftmajor[2], \
-                   2*alpha_dleftmajor_given_leftmajor[0]*alpha_dleftmajor_given_leftmajor[2], \
-                    2*alpha_dleftmajor_given_leftmajor[1]*alpha_dleftmajor_given_leftmajor[2], \
-                    alpha_dleftmajor_given_leftmajor[0]*alpha_dleftmajor_given_leftmajor[0], \
-                    2*alpha_dleftmajor_given_leftmajor[0]*alpha_dleftmajor_given_leftmajor[1], \
-                    alpha_dleftmajor_given_leftmajor[1]*alpha_dleftmajor_given_leftmajor[1] ]
-    left_major_lambda = 1.0
-    left_major_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_major_distance_map], left_major_weights, \
-       left_major_polynomial_feature_map, left_major_lambda)
-    left_majorlikelihood = left_major_weighted_density.compute()
-    
-    left_major_weights_given_left_minor  = [alpha_dleftmajor_given_leftminor[2]*\
-                   alpha_dleftmajor_given_leftminor[2], \
-                   2*alpha_dleftmajor_given_leftminor[0]*alpha_dleftmajor_given_leftminor[2], \
-                    2*alpha_dleftmajor_given_leftminor[1]*alpha_dleftmajor_given_leftminor[2], \
-                    alpha_dleftmajor_given_leftminor[0]*alpha_dleftmajor_given_leftminor[0], \
-                    2*alpha_dleftmajor_given_leftminor[0]*alpha_dleftmajor_given_leftminor[1], \
-                    alpha_dleftmajor_given_leftminor[1]*alpha_dleftmajor_given_leftminor[1] ]
-    left_major_lambda = 1.0
-    left_major_given_leftminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_major_distance_map], left_major_weights_given_left_minor, \
-       left_major_polynomial_feature_map, left_major_lambda)
-    leftMajorIgivenLeftMinor = left_major_given_leftminor_weighted_density.compute()
-    
-    print("conditional shapes are") 
-    print(np.shape(leftMajorIgivenLeftMinor))   
-    print(np.shape(left_majorlikelihood))     
-    print(left_major_weights)
-    left_major_weights_given_right_major = [alpha_dleftmajor_given_rightmajor[2]*\
-                    alpha_dleftmajor_given_rightmajor[2], \
-                    2*alpha_dleftmajor_given_rightmajor[0]*alpha_dleftmajor_given_rightmajor[2], \
-                    2*alpha_dleftmajor_given_rightmajor[1]*alpha_dleftmajor_given_rightmajor[2], \
-                    alpha_dleftmajor_given_rightmajor[0]*alpha_dleftmajor_given_rightmajor[0], \
-                    2*alpha_dleftmajor_given_rightmajor[0]*alpha_dleftmajor_given_rightmajor[1], \
-                    alpha_dleftmajor_given_rightmajor[1]*alpha_dleftmajor_given_rightmajor[1] ]
-    leftmajor_given_rightmajor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_major_distance_map], 
-       left_major_weights_given_right_major, left_major_polynomial_feature_map, left_major_lambda)
-    leftMajorIgivenRightMajor = leftmajor_given_rightmajor_weighted_density.compute()
-    
-    left_major_weights_given_right_minor = [alpha_dleftmajor_given_rightminor[2]*\
-                    alpha_dleftmajor_given_rightminor[2], \
-                    2*alpha_dleftmajor_given_rightminor[0]*alpha_dleftmajor_given_rightminor[2], \
-                    2*alpha_dleftmajor_given_rightminor[1]*alpha_dleftmajor_given_rightminor[2], \
-                    alpha_dleftmajor_given_rightminor[0]*alpha_dleftmajor_given_rightminor[0], \
-                    2*alpha_dleftmajor_given_rightminor[0]*alpha_dleftmajor_given_rightminor[1], \
-                    alpha_dleftmajor_given_rightminor[1]*alpha_dleftmajor_given_rightminor[1] ]
-    leftmajor_given_rightminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_major_distance_map], 
-       left_major_weights_given_right_minor, left_major_polynomial_feature_map, left_major_lambda)
-    leftMajorIgivenRightMinor = leftmajor_given_rightminor_weighted_density.compute()
-    
-    left_major_weights_given_non = [alpha_dleftmajor_given_non[2]*\
-                    alpha_dleftmajor_given_non[2], \
-                    2*alpha_dleftmajor_given_non[0]*alpha_dleftmajor_given_non[2], \
-                    2*alpha_dleftmajor_given_non[1]*alpha_dleftmajor_given_non[2], \
-                    alpha_dleftmajor_given_non[0]*alpha_dleftmajor_given_non[0], \
-                    2*alpha_dleftmajor_given_non[0]*alpha_dleftmajor_given_non[1], \
-                    alpha_dleftmajor_given_non[1]*alpha_dleftmajor_given_non[1] ]
-    leftmajor_given_non_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_major_distance_map], 
-       left_major_weights_given_non, left_major_polynomial_feature_map, left_major_lambda)
-    leftMajorIgivenNon = leftmajor_given_non_weighted_density.compute()
-    
-    #left minor
-    left_minor_weights_given_left_major = [alpha_dleftminor_given_leftmajor[2]*alpha_dleftminor_given_leftmajor[2], \
-                   2*alpha_dleftminor_given_leftmajor[0]*alpha_dleftminor_given_leftmajor[2], \
-                    2*alpha_dleftminor_given_leftmajor[1]*alpha_dleftminor_given_leftmajor[2], \
-                    alpha_dleftminor_given_leftmajor[0]*alpha_dleftminor_given_leftmajor[0], \
-                    2*alpha_dleftminor_given_leftmajor[0]*alpha_dleftminor_given_leftmajor[1], \
-                    alpha_dleftminor_given_leftmajor[1]*alpha_dleftminor_given_leftmajor[1] ]
-    left_minor_lambda = 1.0
-    left_minor_given_left_major_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_minor_distance_map], left_minor_weights_given_left_major, \
-       left_minor_polynomial_feature_map, left_minor_lambda)
-    leftMinorIgivenLeftMajor = left_minor_given_left_major_weighted_density.compute()
-    
-    
-    left_minor_weights = [alpha_dleftminor_given_leftminor[2]*\
-                   alpha_dleftminor_given_leftminor[2], \
-                   2*alpha_dleftminor_given_leftminor[0]*alpha_dleftminor_given_leftminor[2], \
-                    2*alpha_dleftminor_given_leftminor[1]*alpha_dleftminor_given_leftminor[2], \
-                    alpha_dleftminor_given_leftminor[0]*alpha_dleftminor_given_leftminor[0], \
-                    2*alpha_dleftminor_given_leftminor[0]*alpha_dleftminor_given_leftminor[1], \
-                    alpha_dleftminor_given_leftminor[1]*alpha_dleftminor_given_leftminor[1] ]
-    left_minor_lambda = 1.0
-    left_minor_given_leftminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_minor_distance_map], left_minor_weights, \
-       left_minor_polynomial_feature_map, left_minor_lambda)
-    left_minorlikelihood = left_minor_given_leftminor_weighted_density.compute()
-        
-
-    left_minor_weights_given_right_major = [alpha_dleftminor_given_rightmajor[2]*\
-                    alpha_dleftminor_given_rightmajor[2], \
-                    2*alpha_dleftminor_given_rightmajor[0]*alpha_dleftminor_given_rightmajor[2], \
-                    2*alpha_dleftminor_given_rightmajor[1]*alpha_dleftminor_given_rightmajor[2], \
-                    alpha_dleftminor_given_rightmajor[0]*alpha_dleftminor_given_rightmajor[0], \
-                    2*alpha_dleftminor_given_rightmajor[0]*alpha_dleftminor_given_rightmajor[1], \
-                    alpha_dleftminor_given_rightmajor[1]*alpha_dleftminor_given_rightmajor[1] ]
-    leftminor_given_rightmajor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_minor_distance_map], 
-       left_minor_weights_given_right_major, left_minor_polynomial_feature_map, left_minor_lambda)
-    leftMinorIgivenRightMajor = leftminor_given_rightmajor_weighted_density.compute()
-    
-    left_minor_weights_given_right_minor = [alpha_dleftminor_given_rightminor[2]*\
-                    alpha_dleftminor_given_rightminor[2], \
-                    2*alpha_dleftminor_given_rightminor[0]*alpha_dleftminor_given_rightminor[2], \
-                    2*alpha_dleftminor_given_rightminor[1]*alpha_dleftminor_given_rightminor[2], \
-                    alpha_dleftminor_given_rightminor[0]*alpha_dleftminor_given_rightminor[0], \
-                    2*alpha_dleftminor_given_rightminor[0]*alpha_dleftminor_given_rightminor[1], \
-                    alpha_dleftminor_given_rightminor[1]*alpha_dleftminor_given_rightminor[1] ]
-    leftminor_given_rightminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_minor_distance_map], 
-       left_minor_weights_given_right_minor, left_minor_polynomial_feature_map, left_minor_lambda)
-    leftMinorIgivenRightMinor = leftminor_given_rightminor_weighted_density.compute()
-
-    left_minor_weights_given_non = [alpha_dleftminor_given_non[2]*\
-                    alpha_dleftminor_given_non[2], \
-                    2*alpha_dleftminor_given_non[0]*alpha_dleftminor_given_non[2], \
-                    2*alpha_dleftminor_given_non[1]*alpha_dleftminor_given_non[2], \
-                    alpha_dleftminor_given_non[0]*alpha_dleftminor_given_non[0], \
-                    2*alpha_dleftminor_given_non[0]*alpha_dleftminor_given_non[1], \
-                    alpha_dleftminor_given_non[1]*alpha_dleftminor_given_non[1] ]
-    leftminor_given_non_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_minor_distance_map], 
-       left_minor_weights_given_non, left_minor_polynomial_feature_map, left_minor_lambda)
-    leftMinorIgivenNon = leftminor_given_non_weighted_density.compute()          
-
-    #right major
-    
-    right_major_weights_given_left_major = [alpha_drightmajor_given_leftmajor[2]*alpha_drightmajor_given_leftmajor[2], \
-                   2*alpha_drightmajor_given_leftmajor[0]*alpha_drightmajor_given_leftmajor[2], \
-                    2*alpha_drightmajor_given_leftmajor[1]*alpha_drightmajor_given_leftmajor[2], \
-                    alpha_drightmajor_given_leftmajor[0]*alpha_drightmajor_given_leftmajor[0], \
-                    2*alpha_drightmajor_given_leftmajor[0]*alpha_drightmajor_given_leftmajor[1], \
-                    alpha_drightmajor_given_leftmajor[1]*alpha_drightmajor_given_leftmajor[1] ]
-    right_major_lambda = 1.0
-    rightmajor_given_leftmajor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_major_distance_map], right_major_weights_given_left_major, \
-       right_major_polynomial_feature_map, right_major_lambda)
-    rightMajorIgivenLeftMajor = rightmajor_given_leftmajor_weighted_density.compute()
-    
-    right_major_weights_given_left_minor  = [alpha_drightmajor_given_leftminor[2]*\
-                   alpha_drightmajor_given_leftminor[2], \
-                   2*alpha_drightmajor_given_leftminor[0]*alpha_drightmajor_given_leftminor[2], \
-                    2*alpha_drightmajor_given_leftminor[1]*alpha_drightmajor_given_leftminor[2], \
-                    alpha_drightmajor_given_leftminor[0]*alpha_drightmajor_given_leftminor[0], \
-                    2*alpha_drightmajor_given_leftminor[0]*alpha_drightmajor_given_leftminor[1], \
-                    alpha_drightmajor_given_leftminor[1]*alpha_drightmajor_given_leftminor[1] ]
-    right_major_lambda = 1.0
-    right_major_given_leftminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_major_distance_map], right_major_weights_given_left_minor, \
-       left_major_polynomial_feature_map, right_major_lambda)
-    rightMajorIgivenLeftMinor = right_major_given_leftminor_weighted_density.compute()
-    
-          
-
-    right_major_weights = [alpha_drightmajor_given_rightmajor[2]*\
-                    alpha_drightmajor_given_rightmajor[2], \
-                    2*alpha_drightmajor_given_rightmajor[0]*alpha_dleftmajor_given_rightmajor[2], \
-                    2*alpha_drightmajor_given_rightmajor[1]*alpha_drightmajor_given_rightmajor[2], \
-                    alpha_drightmajor_given_rightmajor[0]*alpha_drightmajor_given_rightmajor[0], \
-                    2*alpha_drightmajor_given_rightmajor[0]*alpha_drightmajor_given_rightmajor[1], \
-                    alpha_drightmajor_given_rightmajor[1]*alpha_drightmajor_given_rightmajor[1] ]
-    rightmajor_given_rightmajor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_major_distance_map], 
-       right_major_weights, right_major_polynomial_feature_map, right_major_lambda)
-    right_majorlikelihood = rightmajor_given_rightmajor_weighted_density.compute()
-    
-    
-    right_major_weights_given_right_minor = [alpha_drightmajor_given_rightminor[2]*\
-                    alpha_drightmajor_given_rightminor[2], \
-                    2*alpha_drightmajor_given_rightminor[0]*alpha_drightmajor_given_rightminor[2], \
-                    2*alpha_drightmajor_given_rightminor[1]*alpha_drightmajor_given_rightminor[2], \
-                    alpha_drightmajor_given_rightminor[0]*alpha_drightmajor_given_rightminor[0], \
-                    2*alpha_drightmajor_given_rightminor[0]*alpha_drightmajor_given_rightminor[1], \
-                    alpha_drightmajor_given_rightminor[1]*alpha_drightmajor_given_rightminor[1] ]
-    rightmajor_given_rightminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_major_distance_map], 
-       right_major_weights_given_right_minor, right_major_polynomial_feature_map, right_major_lambda)
-    rightMajorIgivenRightMinor = rightmajor_given_rightminor_weighted_density.compute()
-    
-    right_major_weights_given_non = [alpha_drightmajor_given_non[2]*\
-                    alpha_drightmajor_given_non[2], \
-                    2*alpha_drightmajor_given_non[0]*alpha_drightmajor_given_non[2], \
-                    2*alpha_drightmajor_given_non[1]*alpha_drightmajor_given_non[2], \
-                    alpha_drightmajor_given_non[0]*alpha_drightmajor_given_non[0], \
-                    2*alpha_drightmajor_given_non[0]*alpha_drightmajor_given_non[1], \
-                    alpha_drightmajor_given_non[1]*alpha_drightmajor_given_non[1] ]
-    rightmajor_given_non_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_major_distance_map], 
-       right_major_weights_given_non, right_major_polynomial_feature_map, right_major_lambda)
-    rightMajorIgivenNon = rightmajor_given_non_weighted_density.compute()
-        
-   #right minor
-    right_minor_weights_given_left_major = [alpha_drightminor_given_leftmajor[2]*alpha_drightminor_given_leftmajor[2], \
-                   2*alpha_drightminor_given_leftmajor[0]*alpha_drightminor_given_leftmajor[2], \
-                    2*alpha_drightminor_given_leftmajor[1]*alpha_drightminor_given_leftmajor[2], \
-                    alpha_drightminor_given_leftmajor[0]*alpha_drightminor_given_leftmajor[0], \
-                    2*alpha_drightminor_given_leftmajor[0]*alpha_drightminor_given_leftmajor[1], \
-                    alpha_drightminor_given_leftmajor[1]*alpha_drightminor_given_leftmajor[1] ]
-    right_minor_lambda = 1.0
-    right_minor_given_left_major_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_minor_distance_map], right_minor_weights_given_left_major, \
-       right_minor_polynomial_feature_map, right_minor_lambda)
-    rightMinorIgivenLeftMajor = right_minor_given_left_major_weighted_density.compute()
-    
- 
-    right_minor_weights_given_left_minor = [alpha_drightminor_given_leftminor[2]*\
-                   alpha_drightminor_given_leftminor[2], \
-                   2*alpha_drightminor_given_leftminor[0]*alpha_drightminor_given_leftminor[2], \
-                    2*alpha_drightminor_given_leftminor[1]*alpha_drightminor_given_leftminor[2], \
-                    alpha_drightminor_given_leftminor[0]*alpha_drightminor_given_leftminor[0], \
-                    2*alpha_drightminor_given_leftminor[0]*alpha_drightminor_given_leftminor[1], \
-                    alpha_drightminor_given_leftminor[1]*alpha_drightminor_given_leftminor[1] ]
-    right_minor_lambda = 1.0
-    right_minor_given_leftminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),left_minor_distance_map], right_minor_weights_given_left_minor, \
-       right_minor_polynomial_feature_map, right_minor_lambda)
-    rightMinorIgivenLeftMinor = right_minor_given_leftminor_weighted_density.compute()
-        
-
-    right_minor_weights_given_right_major = [alpha_drightminor_given_rightmajor[2]*\
-                    alpha_drightminor_given_rightmajor[2], \
-                    2*alpha_drightminor_given_rightmajor[0]*alpha_drightminor_given_rightmajor[2], \
-                    2*alpha_drightminor_given_rightmajor[1]*alpha_drightminor_given_rightmajor[2], \
-                    alpha_drightminor_given_rightmajor[0]*alpha_drightminor_given_rightmajor[0], \
-                    2*alpha_drightminor_given_rightmajor[0]*alpha_drightminor_given_rightmajor[1], \
-                    alpha_drightminor_given_rightmajor[1]*alpha_drightminor_given_rightmajor[1] ]
-    rightminor_given_rightmajor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_minor_distance_map], 
-       right_minor_weights_given_right_major, right_minor_polynomial_feature_map, right_minor_lambda)
-    rightMinorIgivenRightMajor = rightminor_given_rightmajor_weighted_density.compute()
-    
-    right_minor_weights_given_right_minor = [alpha_drightminor_given_rightminor[2]*\
-                    alpha_drightminor_given_rightminor[2], \
-                    2*alpha_drightminor_given_rightminor[0]*alpha_drightminor_given_rightminor[2], \
-                    2*alpha_drightminor_given_rightminor[1]*alpha_drightminor_given_rightminor[2], \
-                    alpha_drightminor_given_rightminor[0]*alpha_drightminor_given_rightminor[0], \
-                    2*alpha_drightminor_given_rightminor[0]*alpha_drightminor_given_rightminor[1], \
-                    alpha_drightminor_given_rightminor[1]*alpha_drightminor_given_rightminor[1] ]
-    rightminor_given_rightminor_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_minor_distance_map], 
-       left_minor_weights_given_right_minor, right_minor_polynomial_feature_map, right_minor_lambda)
-    right_minorlikelihood = rightminor_given_rightminor_weighted_density.compute()
   
-    right_minor_weights_given_non = [alpha_drightminor_given_non[2]*\
-                    alpha_drightminor_given_non[2], \
-                    2*alpha_drightminor_given_non[0]*alpha_drightminor_given_non[2], \
-                    2*alpha_drightminor_given_non[1]*alpha_drightminor_given_non[2], \
-                    alpha_drightminor_given_non[0]*alpha_drightminor_given_non[0], \
-                    2*alpha_drightminor_given_non[0]*alpha_drightminor_given_non[1], \
-                    alpha_drightminor_given_non[1]*alpha_drightminor_given_non[1] ]
-    rightminor_given_non_weighted_density = ExpWeightedFeatureMapDensity([\
-       input_image.astype(np.float),right_minor_distance_map], 
-       right_minor_weights_given_non, right_minor_polynomial_feature_map, right_minor_lambda)
-    rightMinorIgivenNon = rightminor_given_non_weighted_density.compute()
-   
-    print("computing probabilities")
-    lungPrior = np.ones((length, width,1)).astype(np.float)
-    lungPrior = np.add(probabilistic_atlases[0],probabilistic_atlases[1])
-    lungPrior = np.add(lungPrior,probabilistic_atlases[2])
-    lungPrior = np.add(lungPrior,probabilistic_atlases[3])
-    
-    notLungPrior = np.ones((length, width,1)).astype(np.float)
-    notLungPrior = notLungPrior - lungPrior;
-    
-    print(np.shape(probabilistic_atlases[0]))
-    print(np.shape(left_majorlikelihood))
-    print(np.shape(leftMajorIgivenLeftMinor))
-    print(np.shape(leftMajorIgivenRightMinor))
-    print(np.shape(leftMajorIgivenRightMinor))
-    print(np.shape(leftMajorIgivenNon))
-    print("PI")    
-    p_I_dleftmajor = np.add(
-         np.multiply(left_majorlikelihood.astype(np.float), \
-         probabilistic_atlases[0].astype(np.float)),
-         np.multiply( leftMajorIgivenLeftMinor.astype(np.float),\
-         probabilistic_atlases[1].astype(np.float)))
-    print(np.shape(p_I_dleftmajor))
-    p_I_dleftmajor = np.add(p_I_dleftmajor,              
-         np.multiply( leftMajorIgivenRightMajor.astype(np.float),
-         probabilistic_atlases[2].astype(np.float)))
-    print(np.shape(p_I_dleftmajor))
-    p_I_dleftmajor = np.add(p_I_dleftmajor,                   
-         np.multiply( leftMajorIgivenRightMinor.astype(np.float),\
-         probabilistic_atlases[3].astype(np.float)))  
-    print(np.shape(p_I_dleftmajor))       
-    p_I_dleftmajor = np.add(p_I_dleftmajor, 
-         np.multiply(leftMajorIgivenNon.astype(np.float), \
-         notLungPrior.astype(np.float))
-         )  
 
-    print(np.shape(p_I_dleftmajor))
-    p_I_dleftminor = np.add(np.multiply(leftMinorIgivenLeftMajor.astype(np.float), \
-         probabilistic_atlases[0].astype(np.float)),np.multiply( \
-         left_minorlikelihood.astype(np.float),probabilistic_atlases[1].astype( \
-         np.float)))
-    p_I_dleftminor = np.add(p_I_dleftminor, np.multiply( \
-         leftMinorIgivenRightMajor.astype(np.float),probabilistic_atlases[2].astype( \
-         np.float)))      
-    p_I_dleftminor = np.add(p_I_dleftminor,      np.multiply( \
-         leftMinorIgivenRightMinor.astype(np.float),probabilistic_atlases[3].astype( \
-         np.float)))
-    p_I_dleftminor = np.add(p_I_dleftminor, np.multiply(leftMinorIgivenNon.astype(np.float), \
-         notLungPrior.astype(np.float)))           
-               
-    p_I_drightmajor = np.add(np.multiply(rightMajorIgivenLeftMajor.astype(np.float), \
-         probabilistic_atlases[0].astype(np.float)),np.multiply( \
-         rightMajorIgivenLeftMinor.astype(np.float),probabilistic_atlases[1].astype( \
-         np.float)))         
-    p_I_drightmajor = np.add(p_I_drightmajor,     np.multiply( \
-         right_majorlikelihood.astype(np.float),probabilistic_atlases[2].astype( \
-         np.float)))
-         
-    p_I_drightmajor = np.add(p_I_drightmajor,      np.multiply( \
-         rightMajorIgivenRightMinor.astype(np.float),probabilistic_atlases[3].astype( \
-         np.float)))
-         
-    p_I_drightmajor = np.add(p_I_drightmajor,np.multiply(rightMajorIgivenNon.astype(np.float), \
-         notLungPrior.astype(np.float)))                      
-                                   
-    p_I_drightminor = np.add(np.multiply(rightMinorIgivenLeftMajor.astype(np.float), \
-         probabilistic_atlases[0].astype(np.float)),np.multiply( \
-         rightMinorIgivenLeftMinor.astype(np.float),probabilistic_atlases[1].astype( \
-         np.float)))
-    p_I_drightminor = np.add(p_I_drightminor,     
-         np.multiply( \
-         leftMinorIgivenRightMinor.astype(np.float),probabilistic_atlases[2].astype( \
-         np.float)))
-    p_I_drightminor = np.add(p_I_drightminor, np.multiply( \
-         right_minorlikelihood.astype(np.float),probabilistic_atlases[3].astype( \
-         np.float)))
-         
-    p_I_drightminor = np.add(p_I_drightminor, np.multiply(rightMajorIgivenNon.astype(np.float), \
-         notLungPrior.astype(np.float)))             
-    
-    zero_indeces = (p_I_dleftmajor == 0)
-    p_I_dleftmajor[zero_indeces] = 0.000000000000000000000001
-   
-    zero_indeces = (p_I_dleftminor == 0)
-    p_I_dleftminor[zero_indeces] = 0.000000000000000000000001
-    
-    zero_indeces = (p_I_drightmajor == 0)
-    p_I_drightmajor[zero_indeces] = 0.000000000000000000000001
-   
-    zero_indeces = (p_I_drightminor == 0)
-    p_I_drightminor[zero_indeces] = 0.000000000000000000000001
-    
-    left_majorlikelihood[tozero_indeces_intensities]=0
-    right_majorlikelihood[tozero_indeces_intensities]=0
-    left_minorlikelihood[tozero_indeces_intensities]=0
-    right_minorlikelihood[tozero_indeces_intensities]=0
-   
-   
-    right_atlas_filename_major = "/Users/rolaharmouche/Documents/Data/COPDGene/10004O/10004O_INSP_STD_BWH_COPD/10004O_INSP_STD_BWH_COPD_leftPecMajorlikelihood.nrrd"
-    nrrd.write(right_atlas_filename_major, left_majorlikelihood)       
-
-    print("array shapes are:")
-    print(np.shape(left_majorlikelihood))
-    print(np.shape(p_I_dleftminor))
-    print(np.shape(probabilistic_atlases))
-    #segment given feature vectors
-    segmented_labels = segment_chest_with_atlas([left_majorlikelihood.astype( \
-       np.float), left_minorlikelihood.astype(np.float), right_majorlikelihood.astype(np.float), right_minorlikelihood.astype(np.float)], probabilistic_atlases, \
-       [p_I_dleftmajor.astype(np.float), p_I_dleftminor.astype(np.float),p_I_drightmajor.astype(np.float), p_I_drightminor.astype(np.float)])
-    
-    return segmented_labels
-    
-
-def segment_pec_with_atlas_newfun(input_image, probabilistic_atlases, alpha_p_distance_given_class, d0params, nonpec_classifier_params, non_diagonals_classifier_params, PecClasses, AllClasses): 
+def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_given_class, d0params, nonpec_classifier_params, non_diagonals_classifier_params, PecClasses, AllClasses): 
     #TODO: and command line option to this command
     
     """Segment pecs using training labeled data. 
@@ -918,65 +462,63 @@ def segment_pec_with_atlas_newfun(input_image, probabilistic_atlases, alpha_p_di
 
     length  = np.shape(probabilistic_atlases["leftmajor"])[0]
     width = np.shape(probabilistic_atlases["leftmajor"])[1]
-    
-    #this needs to change to be intensity threshold dependent
-    
-    #tozero_indeces_intensities = (input_image > 90)  & (input_image < -50)
            
     distance_maps = dict()
     likelihoods = dict()
     marginals = dict()
     
-    f, axarr = plt.subplots(len(PecClasses), len(AllClasses)) 
-
-    i=0
-    j=0 
+#    f, axarr = plt.subplots(len(PecClasses), len(AllClasses)) 
+#
+#    i=0
+#    j=0 
     
     
   
     for class_index in PecClasses:
         distance_maps[class_index] = compute_distance_to_atlas(probabilistic_atlases[class_index].astype(float))
-  
+        distance_name =  "/Users/rolaharmouche/Documents/Data/distance_"+class_index+".nrrd"
+        #nrrd.write(distance_name, distance_maps[class_index]) 
+ 
     #p(I,d = distclass_index | givenclass_index)
     for distclass_index in PecClasses:
- 
         for givenclass_index in AllClasses:
-            if(distclass_index == givenclass_index):                           
-                likelihoods[distclass_index, givenclass_index]= compute_new_likelihood(input_image, distance_maps[distclass_index] , alpha_p_distance_given_class[distclass_index, givenclass_index], d0params[distclass_index, givenclass_index]) 
-            elif(givenclass_index == "nonpec"):
-                likelihoods[distclass_index, givenclass_index] = compute_non_pec_likelihood(input_image, distance_maps[distclass_index], nonpec_classifier_params[distclass_index, givenclass_index])   
-            else:
-                #var = multivariate_normal([nonpec_classifier_params[distclass_index, givenclass_index[0]],nonpec_classifier_params[distclass_index, givenclass_index[1]]], cov=nonpec_classifier_params[distclass_index, givenclass_index[2]])                
-                #likelihoods[distclass_index, givenclass_index]= np.reshape(var.pdf([np.ravel(input_image),np.ravel( distance_maps[distclass_index])]), (np.shape(input_image)[0],np.shape(input_image)[1],np.shape(input_image)[2]))
-                #feats = np.asarray([np.ravel(input_image),np.ravel( distance_maps[distclass_index])])
-                #print(non_diagonals_classifier_params[distclass_index, givenclass_index][1])
-                #means = np.asarray([non_diagonals_classifier_params[distclass_index, givenclass_index][0],non_diagonals_classifier_params[distclass_index, givenclass_index][1]])
-                #print("means are "+str(means))
-                #imshape = np.shape(input_image)
-                #
-                #likelihoods[distclass_index, givenclass_index]= np.reshape(norm_pdf_multivariate(feats, means,
-                #             non_diagonals_classifier_params[distclass_index, givenclass_index][2]), imshape)
-                likelihoods[distclass_index, givenclass_index]= gaussian_rician.gauss_noncentered_rician_pdf(input_image, distance_maps[distclass_index], non_diagonals_classifier_params[distclass_index, givenclass_index])                 
+            if(distclass_index == givenclass_index):                                
+                likelihoods[distclass_index, givenclass_index]= compute_gauss_intensities_exp_distance_likelihood(\
+                    input_image, distance_maps[distclass_index] , alpha_p_distance_given_class[distclass_index, givenclass_index], \
+                    d0params[distclass_index, givenclass_index]) 
 
-            #im=axarr[i, j].imshow(np.squeeze(likelihoods[distclass_index, givenclass_index]), interpolation='nearest')
-            #axarr[i, j].set_title(distclass_index +'| '+givenclass_index)
-            ### show range
-            j=j+1
-        i=i+1
-        j=0  
+            elif(givenclass_index == "nonpec"):
+                likelihoods[distclass_index, givenclass_index] = compute_non_pec_likelihood(input_image, distance_maps[distclass_index], \
+                    nonpec_classifier_params[distclass_index, givenclass_index])   
+            else:
+                print("intensity and distance ")
+                print(np.shape(input_image))
+                print(np.shape(distance_maps[distclass_index]))
+                likelihoods[distclass_index, givenclass_index]= gc.gauss_noncentered_rician_pdf(input_image, distance_maps[distclass_index], \
+                    non_diagonals_classifier_params[distclass_index, givenclass_index])                 
+                
+    #        im=axarr[i, j].imshow(np.squeeze(likelihoods[distclass_index, givenclass_index]), interpolation='nearest')
+    #        axarr[i, j].set_title(distclass_index +'| '+givenclass_index)
+    #        ### show range
+    #        j=j+1
+    #    i=i+1
+    #    j=0  
     #cax = f.add_axes([0.2, 0.08, 0.6, 0.04])
     #f.colorbar(im, cax, orientation='horizontal')
     #
     #plt.show() 
-    #
+    
     #Add up all distclass likelihoods for a given class
     likelihoods_sum = dict()
     for givenclass_index in AllClasses:
         likelihoods_sum[givenclass_index]=np.zeros_like(likelihoods["leftmajor", givenclass_index]).astype(np.float)
         for distclass_index in PecClasses:           
             likelihoods_sum[givenclass_index] = np.add(likelihoods_sum[givenclass_index],likelihoods[distclass_index, givenclass_index])
-        likelihoods_sum[givenclass_index] = np.multiply(likelihoods[distclass_index, givenclass_index], 0.25) 
-    
+            likelihood_name =  "/Users/rolaharmouche/Documents/Data/likelihood_"+distclass_index+"_given"+givenclass_index+".nrrd"
+            #nrrd.write(likelihood_name, likelihoods[distclass_index, givenclass_index])            
+        likelihoods_sum[givenclass_index] = np.multiply(likelihoods[distclass_index, givenclass_index], 0.25) #0.25
+        likelihood_name =  "/Users/rolaharmouche/Documents/Data/likelihood_"+givenclass_index+".nrrd"
+        #nrrd.write(likelihood_name, likelihoods_sum[givenclass_index])
     
     
     
@@ -1018,29 +560,31 @@ def segment_pec_with_atlas_newfun(input_image, probabilistic_atlases, alpha_p_di
             np.multiply(likelihoods_sum[givenclass_index], \
             probabilistic_atlases[givenclass_index])) 
             
-   
+
+               
 #   # #p(I,d = distclass_index )
-#    for distclass_index in PecClasses:
-#        #marginals[distclass_index]= np.zeros_like(likelihoods[distclass_index, "nonpec"]).astype(np.float)#((length, width,1)).astype(np.float)
-#        #for givenclass_index in AllClasses:
-#        #    marginals[distclass_index] = np.add(marginals[distclass_index],\
-#        #        np.multiply(likelihoods[distclass_index, givenclass_index], \
-#        #        probabilistic_atlases[givenclass_index])) 
-#        #zero_indeces = (marginals[distclass_index] == 0)
-#        ##marginals[distclass_index][zero_indeces] = 0.000000000000000000000001
-#        
-#        print("max,min marginals for: "+distclass_index+": "+\
-#            str(marginal.max())+", "+str(marginal.min()))
-#
-##        im2 = axarr[i].imshow(np.squeeze(probabilistic_atlases[distclass_index]), interpolation='nearest')
-##        axarr[i].set_title(distclass_index+ "  marginals" )
-##        i=i+1
-##        
-##    cax2 = f_mar.add_axes([0.2, 0.08, 0.6, 0.04])
-##    f_mar.colorbar(im2, cax2, orientation='horizontal')
-##
-##    plt.show() 
-#
+    for distclass_index in PecClasses:
+        marginals[distclass_index]= np.zeros_like(likelihoods[distclass_index, "nonpec"]).astype(np.float)#((length, width,1)).astype(np.float)
+        for givenclass_index in AllClasses:
+            marginals[distclass_index] = np.add(marginals[distclass_index],\
+                np.multiply(likelihoods[distclass_index, givenclass_index], \
+                probabilistic_atlases[givenclass_index])) 
+        zero_indeces = (marginals[distclass_index] == 0)
+        marginals[distclass_index][zero_indeces] = 0.000000000000000000000001
+ 
+     
+        #print("max,min marginals for: "+distclass_index+": "+\
+        #    str(marginal.max())+", "+str(marginal.min()))
+
+    #    im2 = axarr[i].imshow(np.squeeze(probabilistic_atlases[distclass_index]), interpolation='nearest')
+    #    axarr[i].set_title(distclass_index+ "  marginals" )
+    #    i=i+1
+    #    
+    #cax2 = f_mar.add_axes([0.2, 0.08, 0.6, 0.04])
+    #f_mar.colorbar(im2, cax2, orientation='horizontal')
+
+    #plt.show() 
+
 
 
 
@@ -1054,7 +598,7 @@ def segment_pec_with_atlas_newfun(input_image, probabilistic_atlases, alpha_p_di
     #    likelihoods[class_index,class_index][tozero_indeces_intensities]=0 
 
     #segment given feature vectors
-    #segmented_labels = segment_chest_with_atlas([likelihoods["leftmajor", "leftmajor"].astype( \
+    #segmented_labels, posteriors = segment_chest_with_atlas([likelihoods["leftmajor", "leftmajor"].astype( \
     #   np.float), likelihoods["leftminor", "leftminor"].astype(np.float),\
     #   likelihoods["rightmajor", "rightmajor"].astype(np.float), \
     #   likelihoods["rightminor", "rightminor"].astype(np.float)], \
@@ -1064,6 +608,16 @@ def segment_pec_with_atlas_newfun(input_image, probabilistic_atlases, alpha_p_di
     #   marginals["rightmajor"].astype(np.float), marginals["rightminor"].astype(np.float)])
     
        
+       
+    #segmented_labels, posteriors= segment_chest_with_atlas([likelihoods_sum["leftmajor"].astype( \
+    #   np.float), likelihoods_sum["leftminor"].astype(np.float),\
+    #   likelihoods_sum["rightmajor"].astype(np.float), \
+    #   likelihoods_sum["rightminor"].astype(np.float)], \
+    #   [probabilistic_atlases["leftmajor"],probabilistic_atlases["leftminor"],\
+    #   probabilistic_atlases["rightmajor"],probabilistic_atlases["rightminor"]     ], \
+    #   [marginal,marginal,marginal,marginal])
+
+    print("new labels")
     segmented_labels, posteriors= segment_chest_with_atlas([likelihoods_sum["leftmajor"].astype( \
        np.float), likelihoods_sum["leftminor"].astype(np.float),\
        likelihoods_sum["rightmajor"].astype(np.float), \
@@ -1071,7 +625,7 @@ def segment_pec_with_atlas_newfun(input_image, probabilistic_atlases, alpha_p_di
        [probabilistic_atlases["leftmajor"],probabilistic_atlases["leftminor"],\
        probabilistic_atlases["rightmajor"],probabilistic_atlases["rightminor"]     ], \
        [marginal,marginal,marginal,marginal])
-
+       
     return segmented_labels, posteriors
             
 def compute_structure_posterior_probabilities(likelihoods, priors, \
@@ -1112,10 +666,10 @@ def compute_structure_posterior_probabilities(likelihoods, priors, \
     
     for d in range(0, num_classes):
         #create a mask for when the likelihoods are really low
-        zero_indeces = (normalization_constants[0] < 0.000001)
+        zero_indeces = (normalization_constants[d] < 0.0000000000000000001) #0.0000000000000000001 pre namic
         normalization_constants[d][zero_indeces] = 0.0000000000000000001#*np.max(likelihoods[d])  
         threashold = 0.000000001*np.max(likelihoods[d])        
-        posteriors[d] = likelihoods[d].astype(np.float)*priors[d].astype(np.float) /(normalization_constants[d]).astype(np.float)
+        posteriors[d] = likelihoods[d].astype(np.float)*priors[d].astype(np.float) /((normalization_constants[d]).astype(np.float))
         #mask = (posteriors[d]<threashold)
         
         #mask2 =(posteriors[d] <0) 
@@ -1160,11 +714,25 @@ def obtain_graph_cuts_segmentation(structure_posterior_energy, \
     
     for slice_num in range(0, num_slices):
         print("graph cut slice" +str(slice_num))
-        source_slice = structure_posterior_energy[:,:,slice_num: \
-           (slice_num+1)].squeeze().astype(np.int32) 
-        sink_slice = not_structure_posterior_energy[:,:,slice_num: \
-           (slice_num+1)].squeeze().astype(np.int32) 
+        print(np.shape(structure_posterior_energy))
 
+        source_slice_temp = structure_posterior_energy[:,:].squeeze().astype(np.int32) # mode='c' 
+        sink_slice_temp = not_structure_posterior_energy[:,:].squeeze().astype(np.int32) 
+        
+        m_shape = np.shape(source_slice_temp)                
+        #source_slice = np.memmap(source_slice_temp, dtype='int32', mode='c', shape=(m_shape[0],m_shape[1]))
+        #sink_slice = np.memmap(sink_slice_temp, dtype='int32', mode='c', shape=(m_shape[0],m_shape[1]))
+        
+        source_slice = np.reshape(source_slice_temp, np.shape(source_slice_temp), order = 'C')
+        sink_slice = np.reshape(sink_slice_temp, np.shape(sink_slice_temp),order = 'C')
+        #source_slice = structure_posterior_energy[:,:].squeeze().astype(np.int32) # mode='c' 
+        #sink_slice = not_structure_posterior_energy[:,:].squeeze().astype(np.int32) 
+
+        #source_slice = structure_posterior_energy[:,:,slice_num: \
+        #   (slice_num+1)].squeeze().astype(np.int32) 
+        #sink_slice = not_structure_posterior_energy[:,:,slice_num: \
+        #   (slice_num+1)].squeeze().astype(np.int32) 
+           
         imageIndexArray =  np.arange(numNodes).reshape(np.shape( \
            source_slice)[0], np.shape(source_slice)[1])
  
@@ -1177,27 +745,30 @@ def obtain_graph_cuts_segmentation(structure_posterior_energy, \
         #all rows, not first col, make to 1d
         edges = np.vstack([horz, vert]).astype(np.int32) 
         #horz is first element, vert is 
-        theweights = np.ones((np.shape(edges))).astype(np.int32) ##*18
+        theweights = np.ones((np.shape(edges))).astype(np.int32)*30#*50#*150 ##*180
         edges = np.hstack((edges,theweights))[:,0:3].astype(np.int32) 
         #stack the weight value hor next to edge indeces
     
-    #    #3rd order neighbours, good for lung
-    #    horz = np.c_[inds[:, :-2].ravel(), inds[:,2:].ravel()] 
-    #    #all rows, not last col make to 1d
-    #    vert = np.c_[inds[:-2, :].ravel(), inds[2:, :].ravel()] 
-    #    #all rows, not first col, make to 1d
-    #    edges2 = np.vstack([horz, vert]).astype(np.int32) 
-    #    #horz is first element, vert is 
-    #    theweights2 = np.ones((np.shape(edges2))).astype(np.int32)
-    #    edges2 = np.hstack((edges2,theweights2))[:,0:3].astype(np.int32)
-    #
-    #    edges = np.vstack([edges,edges2]).astype(np.int32)
-
-        pairwise_cost = np.array([[0, 1], [1, 0]], dtype = np.int32)
+    ##    #3rd order neighbours, good for lung
+        horz = np.c_[inds[:, :-2].ravel(), inds[:,2:].ravel()] 
+        #all rows, not last col make to 1d
+        vert = np.c_[inds[:-2, :].ravel(), inds[2:, :].ravel()] 
+        #all rows, not first col, make to 1d
+        edges2 = np.vstack([horz, vert]).astype(np.int32) 
+        #horz is first element, vert is 
+        theweights2 = np.ones((np.shape(edges2))).astype(np.int32)*5#*30
+        edges2 = np.hstack((edges2,theweights2))[:,0:3].astype(np.int32)
+        print("edge shape")
+        print(np.shape(edges))
+        edges_temp = np.vstack([edges,edges2]).astype(np.int32)
+        edges = np.reshape(edges_temp, np.shape(edges_temp), order = 'C')
+        pairwise_cost = np.array([[0, 125], [125, 0]], dtype = np.int32, order = 'C')
     
-        energies = np.dstack((np.array(source_slice).astype(np.int32).flatten(), \
+        energies_temp = np.dstack((np.array(source_slice).astype(np.int32).flatten(), \
         np.array(sink_slice).astype(np.int32).flatten())).squeeze()
 
+        energies = np.ascontiguousarray(np.reshape(energies_temp, np.shape(energies_temp), order = 'C'))
+        print(np.shape(energies))
         segmented_slice = cut_from_graph(edges, energies, pairwise_cost, 3, \
           'expansion') 
         segmented_image[:,:,slice_num] = segmented_slice.reshape(length,width)
@@ -1223,12 +794,17 @@ def compute_distance_to_atlas(atlas):
     leftLungPriorthres[atlas < 0.5] = 1.0    
     leftLungPriorthres[atlas >= 0.5] = 0.0      
     atlas_distance_map = \
-        ndimage.morphology.distance_transform_edt(leftLungPriorthres)
+        scimorph.distance_transform_edt(leftLungPriorthres)
                
     return atlas_distance_map
 
-def compute_new_likelihood(intensity_data, distance_data, x, d0x):
-    
+
+def compute_gauss_intensities_exp_distance_likelihood(intensity_data, distance_data, x, d0x):
+    """
+    computes a  an exponential distribution in distance and a gaussian \
+    distribution in intensities with means and variances linearly depending
+    on distance
+    """
     imshape = np.shape(intensity_data)
     intensity_vec = np.ravel(intensity_data).astype(np.float)
     distance_vec = np.ravel(distance_data).astype(np.float)
@@ -1237,29 +813,16 @@ def compute_new_likelihood(intensity_data, distance_data, x, d0x):
     #    mask=distance_vec<-1
     #else:
     #    mask = distance_vec < 0.2
+    
     mask=distance_vec<-1
 
     myfun2 = np.zeros_like(intensity_vec)
     
-    #case for distance >0
-    #pow1 = pow((intensity_vec - (x[0]*distance_vec+x[1])),2)
     numerator = np.exp(-(pow((intensity_vec[~mask]- (x[0]*distance_vec[~mask]+x[1])),2)/\
           (2*pow((x[2]*distance_vec[~mask]+x[3]),2)) + x[4]*distance_vec[~mask])  )
     denom = (x[2]+x[3]*x[4])*np.sqrt(2*np.pi)/(x[4])*(x[4])
     myfun2[~mask] = numerator/denom
-    
-    ##case for distance = 0
-    
-    gausFun = stats.norm.pdf(intensity_vec, loc=d0x[0], scale=d0x[1])
-
-    #myfun2[(distance_vec < 0.002  )] = gausFun[(distance_vec < 0.002 )]  
-    #
-    #case for intensities larger than threshold
-    #intensity_threshold = ((intensity_vec >= 90)  | (distance_vec <= -50))
-    #print(np.shape(intensity_threshold))
-    #zerolikelihood = np.ones_like(myfun2)*0.0000000000000000000000001
-    #myfun2[intensity_threshold] = zerolikelihood[intensity_threshold]
-    
+        
     myfun3 = np.reshape(myfun2, (imshape[0],imshape[1],imshape[2]))
     return myfun3
     

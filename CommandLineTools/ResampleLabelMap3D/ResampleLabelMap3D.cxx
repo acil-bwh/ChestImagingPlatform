@@ -44,7 +44,7 @@
 #include "itkMatrix.h"
 #include "itkTransformFileReader.h"
 #include "itkResampleImageFilter.h"
-#include "itkMetaImageIO.h"
+//#include "itkMetaImageIO.h" // not needed (fix build error)
 #include "ResampleLabelMap3DCLP.h"
 #include <itkCompositeTransform.h>
 
