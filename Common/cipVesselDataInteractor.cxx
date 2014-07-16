@@ -22,6 +22,7 @@
 #include "vtkDijkstraGraphGeodesicPath.h"
 #include "vtkGraphToPolyData.h"
 #include "vtkIdList.h"
+#include "vtkPolyDataWriter.h"
 
 cipVesselDataInteractor::cipVesselDataInteractor()
 {
@@ -55,6 +56,11 @@ cipVesselDataInteractor::cipVesselDataInteractor()
 void cipVesselDataInteractor::SetRootNode( vtkActor* actor )
 {
   this->MinimumSpanningTreeRootNode = this->ActorToParticleIDMap[actor];
+}
+
+void cipVesselDataInteractor::SetFileName( std::string fileName )
+{
+  this->FileName = fileName;
 }
 
 void cipVesselDataInteractor::UpdateVesselBranchCode( char c )
@@ -114,7 +120,7 @@ void cipVesselDataInteractor::SetIntermediateNode( vtkActor* actor )
     dijkstra->SetStartVertex( this->MinimumSpanningTreeIntermediateNode );
     dijkstra->SetEndVertex( this->MinimumSpanningTreeRootNode );
     dijkstra->Update();
-  
+
   vtkIdList* idList = dijkstra->GetIdList();
 
   // The following will store particle IDs that are being
@@ -358,6 +364,16 @@ void cipVesselDataInteractor::SetConnectedVesselParticles( vtkSmartPointer< vtkP
     this->ActorToParticleIDMap[actor] = p;
     this->ParticleIDToActorMap[p]     = actor;
     }
+
+  vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
+    mapper->SetInput( particles );
+
+  vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
+    actor->SetMapper( mapper );
+    actor->GetProperty()->SetColor( 0.0, 0.0, 0.0 );
+
+  this->ActorMap["vesselParticles"] = actor;
+  this->Renderer->AddActor( this->ActorMap["vesselParticles"] );
 }
 
 
@@ -413,6 +429,15 @@ void cipVesselDataInteractor::InitializeMinimumSpanningTree( vtkSmartPointer< vt
   //cip::ViewGraphAsPolyData( this->MinimumSpanningTree );
 }
 
+void cipVesselDataInteractor::Write()
+{
+  std::cout << "---Writing labeled particles..." << std::endl;
+  vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
+    writer->SetFileName( this->FileName.c_str() );
+    writer->SetInput( this->VesselParticles );
+    writer->SetFileTypeToASCII();
+    writer->Write();  
+}
 
 bool cipVesselDataInteractor::GetEdgeWeight( unsigned int particleID1, unsigned int particleID2, 
                                              vtkSmartPointer< vtkPolyData > particles, double* weight )
@@ -474,6 +499,10 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
 
   char pressedKey = dataInteractor->GetRenderWindowInteractor()->GetKeyCode(); 
 
+  if ( pressedKey == 'f' )
+    {
+      dataInteractor->Write();
+    }
   if ( pressedKey == 'a' || pressedKey == 'v' )
     {
       dataInteractor->UpdateVesselBranchCode( pressedKey );

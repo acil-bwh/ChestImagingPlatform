@@ -56,6 +56,11 @@ public:
   void HideVesselModel();
   void ShowVesselModel();
 
+  /** Set the output file name. The user can safe work to this file
+   *  as he/she goes along. */
+  void SetFileName( std::string );
+  void Write();
+
   bool VesselModelShowing;
 
 private:
@@ -82,6 +87,8 @@ private:
   unsigned char SelectedChestRegion;
   unsigned char SelectedChestType;
   std::vector< std::vector< unsigned int > > LabeledParticleIDs;
+
+  std::string FileName;
 
   double* ActorColor;
   std::string VesselBranchCode;

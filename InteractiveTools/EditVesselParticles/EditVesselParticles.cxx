@@ -330,6 +330,10 @@ the user to label groups of particles according to their vessel generation.";
   std::cout << "Asserting ChestRegion and ChestType array existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
 
+  // Give the output file name to the interactor. This will allow the user to
+  // save work as he/she goes along.
+  interactor.SetFileName( genParticlesFileName.c_str() );
+
   if ( label )
     {
       // Now add the particles. They will be used to create a minimum
