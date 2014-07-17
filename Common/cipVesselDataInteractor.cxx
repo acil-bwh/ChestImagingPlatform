@@ -499,10 +499,6 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
 
   char pressedKey = dataInteractor->GetRenderWindowInteractor()->GetKeyCode(); 
 
-  if ( pressedKey == 'f' )
-    {
-      dataInteractor->Write();
-    }
   if ( pressedKey == 'a' || pressedKey == 'v' )
     {
       dataInteractor->UpdateVesselBranchCode( pressedKey );
@@ -525,7 +521,7 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
     }
   else if ( pressedKey == 's' )
     {
-      dataInteractor->ShowVesselModel();
+      dataInteractor->Write();
     }
   else if ( pressedKey == 'h' )
     {
