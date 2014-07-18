@@ -21,8 +21,8 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <math.h>
-#include <vnl/vnl_math.h>
+#include <cmath>
+//#include <vnl/vnl_math.h>
 
 #include <iostream>
 
