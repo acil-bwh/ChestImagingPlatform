@@ -36,7 +36,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyData.h"
 #include "vtkPolyDataReader.h"

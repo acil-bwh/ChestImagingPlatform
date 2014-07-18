@@ -106,7 +106,7 @@
 #include "vtkSmartPointer.h"
 #include "cipVesselDataInteractor.h"
 #include "vtkFloatArray.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "vtkPointData.h"
 #include "itkImage.h"

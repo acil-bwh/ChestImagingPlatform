@@ -40,7 +40,7 @@
 #include "itkConnectedComponentImageFilter.h"
 #include "itkRelabelComponentImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 
 
 namespace itk

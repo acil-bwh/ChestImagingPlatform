@@ -1,4 +1,5 @@
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "itkCIPOtsuLungCastImageFilter.h"
 #include "itkImageRegionIterator.h"
 

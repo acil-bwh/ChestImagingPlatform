@@ -124,7 +124,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipThinPlateSplineSurface.h"
 #include "itkNrrdImageIO.h"
 #include "itkImage.h"

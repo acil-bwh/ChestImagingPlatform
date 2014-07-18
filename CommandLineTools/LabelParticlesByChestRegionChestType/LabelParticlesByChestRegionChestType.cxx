@@ -53,7 +53,7 @@
 #include "vtkPointData.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "LabelParticlesByChestRegionChestTypeCLP.h"
 
 namespace

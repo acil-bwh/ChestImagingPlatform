@@ -11,7 +11,8 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "ReadVidaWriteCIPCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "itkImageRegionIteratorWithIndex.h"
 
 namespace

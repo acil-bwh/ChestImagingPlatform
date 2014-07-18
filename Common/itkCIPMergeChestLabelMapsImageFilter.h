@@ -5,7 +5,7 @@
 #include "itkImage.h"
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 
 namespace itk

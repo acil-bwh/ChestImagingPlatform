@@ -1,6 +1,6 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkCIPMergeChestLabelMapsImageFilter.h"
 #include "cipHelper.h"
 #include "MergeChestLabelMapsCLP.h"

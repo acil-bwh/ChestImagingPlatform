@@ -14,7 +14,7 @@
 #include "itkConnectedComponentImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkExtractImageFilter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkCIPDijkstraGraphTraits.h"
 #include "itkGraph.h" 
 #include "itkImageToGraphFilter.h"

@@ -14,12 +14,11 @@
 #include "itkImage.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkConnectedThresholdImageFilter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryBallStructuringElement.h"
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
-
 
 namespace itk
 {

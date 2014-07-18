@@ -2,7 +2,7 @@
  *  \class cipLabelMapToLungLobeLabelMapImageFilter
  *  \ingroup common
  *  \brief This filter takes as input a label map image (adhering to
- *  the labeling conventions laid out in cipConventions) as well as
+ *  the labeling conventions laid out in cipChestConventions) as well as
  *  information needed to define thin plate spline boundary surfaces
  *  and produces a label map image with the lung lobes defined.
  *
@@ -25,7 +25,7 @@
 #include "itkImage.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageRegionConstIterator.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkConnectedComponentImageFilter.h"
 #include "cipThinPlateSplineSurface.h"
 

@@ -43,7 +43,7 @@
 #include "vtkPolyDataWriter.h"
 #include "vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.h"
 #include "itkIdentityTransform.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
 #include <cfloat>

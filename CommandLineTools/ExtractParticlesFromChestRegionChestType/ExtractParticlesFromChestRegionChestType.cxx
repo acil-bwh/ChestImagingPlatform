@@ -67,7 +67,7 @@
 #include "vtkFloatArray.h"
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "ExtractParticlesFromChestRegionChestTypeCLP.h"
 

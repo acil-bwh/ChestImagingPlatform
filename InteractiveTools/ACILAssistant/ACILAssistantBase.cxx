@@ -1,5 +1,5 @@
 #include "ACILAssistantBase.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipLabelMapToLungLobeLabelMapImageFilter.h"
 #include <fstream>
 #include <time.h>

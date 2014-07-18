@@ -80,7 +80,7 @@
 #include "vtkPointData.h"
 #include "cipAirwayParticleConnectedComponentFilter.h"
 #include "itkNumericTraits.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkIndent.h"
 #include "FilterAirwayParticleDataCLP.h"
 

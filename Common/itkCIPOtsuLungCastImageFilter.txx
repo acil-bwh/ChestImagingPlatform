@@ -5,7 +5,7 @@
 #define _itkCIPOtsuLungCastImageFilter_txx
 
 #include "itkCIPOtsuLungCastImageFilter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 
 namespace itk
 {

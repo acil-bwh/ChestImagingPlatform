@@ -1,4 +1,4 @@
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 
 cip::ChestConventions::ChestConventions()
 {
@@ -7,167 +7,165 @@ cip::ChestConventions::ChestConventions()
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
-  //
   // For the hierarchical relationships, leftness and rightness
   // are respected before any relationship that transcends
   // leftness or rightness. For example left lower third maps to
   // left lung, not lower third, etc. The exception to this rule
   // is that both left and right lungs are subordinate to
   // WHOLELUNG, not LEFT and RIGHT
-  //
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( LEFTSUPERIORLOBE ), 
-					       static_cast< unsigned char >( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( LEFTINFERIORLOBE ), 
-					       static_cast< unsigned char >( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( RIGHTSUPERIORLOBE ), 
-					       static_cast< unsigned char >( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( RIGHTMIDDLELOBE ), 
-					       static_cast< unsigned char >( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( RIGHTINFERIORLOBE ), 
-					       static_cast< unsigned char >( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( LEFTLUNG ), 
-					       static_cast< unsigned char >( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( RIGHTLUNG ), 
-					       static_cast< unsigned char >( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( LEFTUPPERTHIRD ), 
-					       static_cast< unsigned char >( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( LEFTMIDDLETHIRD ), 
-					       static_cast< unsigned char >( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( LEFTLOWERTHIRD ), 
-					       static_cast< unsigned char >( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( RIGHTUPPERTHIRD ), 
-					       static_cast< unsigned char >( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( RIGHTMIDDLETHIRD ), 
-					       static_cast< unsigned char >( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( RIGHTLOWERTHIRD ), 
-					       static_cast< unsigned char >( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( WHOLELUNG ), 
-					       static_cast< unsigned char >( UNDEFINEDREGION ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( MEDIASTINUM ), 
-					       static_cast< unsigned char >( WHOLEHEART ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( MEDIASTINUM ), 
-					       static_cast< unsigned char >( AORTA ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( MEDIASTINUM ), 
-					       static_cast< unsigned char >( PULMONARYARTERY ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( LOWERTHIRD ), 
-					       static_cast< unsigned char >( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( MIDDLETHIRD ), 
-					       static_cast< unsigned char >( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( static_cast< unsigned char >( UPPERTHIRD ), 
-					       static_cast< unsigned char >( WHOLELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTSUPERIORLOBE ), 
+					       (unsigned char)( LEFTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTINFERIORLOBE ), 
+					       (unsigned char)( LEFTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTSUPERIORLOBE ), 
+					       (unsigned char)( RIGHTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMIDDLELOBE ), 
+					       (unsigned char)( RIGHTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTINFERIORLOBE ), 
+					       (unsigned char)( RIGHTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTLUNG ), 
+					       (unsigned char)( WHOLELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTLUNG ), 
+					       (unsigned char)( WHOLELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTUPPERTHIRD ), 
+					       (unsigned char)( LEFTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTMIDDLETHIRD ), 
+					       (unsigned char)( LEFTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTLOWERTHIRD ), 
+					       (unsigned char)( LEFTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTUPPERTHIRD ), 
+					       (unsigned char)( RIGHTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMIDDLETHIRD ), 
+					       (unsigned char)( RIGHTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTLOWERTHIRD ), 
+					       (unsigned char)( RIGHTLUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLELUNG ), 
+					       (unsigned char)( UNDEFINEDREGION ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ), 
+					       (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ), 
+					       (unsigned char)( AORTA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ), 
+					       (unsigned char)( PULMONARYARTERY ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LOWERTHIRD ), 
+					       (unsigned char)( WHOLELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MIDDLETHIRD ), 
+					       (unsigned char)( WHOLELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( UPPERTHIRD ), 
+					       (unsigned char)( WHOLELUNG ) ) );
   
-  ChestRegions.push_back( static_cast< unsigned char >( UNDEFINEDREGION ) );
-  ChestRegions.push_back( static_cast< unsigned char >( WHOLELUNG ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHTLUNG ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LEFTLUNG ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHTSUPERIORLOBE ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHTMIDDLELOBE ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHTINFERIORLOBE ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LEFTSUPERIORLOBE ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LEFTINFERIORLOBE ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LEFTUPPERTHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LEFTMIDDLETHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LEFTLOWERTHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHTUPPERTHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHTMIDDLETHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHTLOWERTHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( MEDIASTINUM ) );
-  ChestRegions.push_back( static_cast< unsigned char >( WHOLEHEART ) );
-  ChestRegions.push_back( static_cast< unsigned char >( AORTA ) );
-  ChestRegions.push_back( static_cast< unsigned char >( PULMONARYARTERY ) );
-  ChestRegions.push_back( static_cast< unsigned char >( PULMONARYVEIN ) );
-  ChestRegions.push_back( static_cast< unsigned char >( UPPERTHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( MIDDLETHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LOWERTHIRD ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LEFT ) );
-  ChestRegions.push_back( static_cast< unsigned char >( RIGHT ) );
-  ChestRegions.push_back( static_cast< unsigned char >( LIVER ) );
-  ChestRegions.push_back( static_cast< unsigned char >( SPLEEN ) );
-  ChestRegions.push_back( static_cast< unsigned char >( ABDOMEN ) );
-  ChestRegions.push_back( static_cast< unsigned char >( PARAVERTEBRAL ) );
+  ChestRegions.push_back( (unsigned char)( UNDEFINEDREGION ) );
+  ChestRegions.push_back( (unsigned char)( WHOLELUNG ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTLUNG ) );
+  ChestRegions.push_back( (unsigned char)( LEFTLUNG ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTSUPERIORLOBE ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTMIDDLELOBE ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTINFERIORLOBE ) );
+  ChestRegions.push_back( (unsigned char)( LEFTSUPERIORLOBE ) );
+  ChestRegions.push_back( (unsigned char)( LEFTINFERIORLOBE ) );
+  ChestRegions.push_back( (unsigned char)( LEFTUPPERTHIRD ) );
+  ChestRegions.push_back( (unsigned char)( LEFTMIDDLETHIRD ) );
+  ChestRegions.push_back( (unsigned char)( LEFTLOWERTHIRD ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTUPPERTHIRD ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTMIDDLETHIRD ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTLOWERTHIRD ) );
+  ChestRegions.push_back( (unsigned char)( MEDIASTINUM ) );
+  ChestRegions.push_back( (unsigned char)( WHOLEHEART ) );
+  ChestRegions.push_back( (unsigned char)( AORTA ) );
+  ChestRegions.push_back( (unsigned char)( PULMONARYARTERY ) );
+  ChestRegions.push_back( (unsigned char)( PULMONARYVEIN ) );
+  ChestRegions.push_back( (unsigned char)( UPPERTHIRD ) );
+  ChestRegions.push_back( (unsigned char)( MIDDLETHIRD ) );
+  ChestRegions.push_back( (unsigned char)( LOWERTHIRD ) );
+  ChestRegions.push_back( (unsigned char)( LEFT ) );
+  ChestRegions.push_back( (unsigned char)( RIGHT ) );
+  ChestRegions.push_back( (unsigned char)( LIVER ) );
+  ChestRegions.push_back( (unsigned char)( SPLEEN ) );
+  ChestRegions.push_back( (unsigned char)( ABDOMEN ) );
+  ChestRegions.push_back( (unsigned char)( PARAVERTEBRAL ) );
   
-  ChestTypes.push_back( static_cast< unsigned char >( UNDEFINEDTYPE ) );
-  ChestTypes.push_back( static_cast< unsigned char >( NORMALPARENCHYMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAY ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSEL ) );
-  ChestTypes.push_back( static_cast< unsigned char >( EMPHYSEMATOUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( GROUNDGLASS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( RETICULAR ) );
-  ChestTypes.push_back( static_cast< unsigned char >( NODULAR ) ); 
-  ChestTypes.push_back( static_cast< unsigned char >( OBLIQUEFISSURE ) ); 
-  ChestTypes.push_back( static_cast< unsigned char >( HORIZONTALFISSURE ) ); 
-  ChestTypes.push_back( static_cast< unsigned char >( MILDPARASEPTALEMPHYSEMA ) ); 
-  ChestTypes.push_back( static_cast< unsigned char >( MODERATEPARASEPTALEMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( SEVEREPARASEPTALEMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MILDBULLA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MODERATEBULLA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( SEVEREBULLA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MILDCENTRILOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MODERATECENTRILOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( SEVERECENTRILOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MILDPANLOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MODERATEPANLOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( SEVEREPANLOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYWALLTHICKENING ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYCYLINDRICALDILATION ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VARICOSEBRONCHIECTASIS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( CYSTICBRONCHIECTASIS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( CENTRILOBULARNODULE ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MOSAICING ) );
-  ChestTypes.push_back( static_cast< unsigned char >( EXPIRATORYMALACIA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( SABERSHEATH ) );
-  ChestTypes.push_back( static_cast< unsigned char >( OUTPOUCHING ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MUCOIDMATERIAL ) );
-  ChestTypes.push_back( static_cast< unsigned char >( PATCHYGASTRAPPING ) );
-  ChestTypes.push_back( static_cast< unsigned char >( DIFFUSEGASTRAPPING ) );
-  ChestTypes.push_back( static_cast< unsigned char >( LINEARSCAR ) );
-  ChestTypes.push_back( static_cast< unsigned char >( CYST ) );
-  ChestTypes.push_back( static_cast< unsigned char >( ATELECTASIS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( HONEYCOMBING ) );
-  ChestTypes.push_back( static_cast< unsigned char >( TRACHEA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MAINBRONCHUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( UPPERLOBEBRONCHUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION3 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION4 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION5 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION6 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION7 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION8 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION9 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AIRWAYGENERATION10 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( CALCIFICATION ) );
-  ChestTypes.push_back( static_cast< unsigned char >( ARTERY ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VEIN ) );
-  ChestTypes.push_back( static_cast< unsigned char >( PECTORALISMINOR ) );
-  ChestTypes.push_back( static_cast< unsigned char >( PECTORALISMAJOR ) );
-  ChestTypes.push_back( static_cast< unsigned char >( ANTERIORSCALENE ) );
-  ChestTypes.push_back( static_cast< unsigned char >( FISSURE ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION0 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION1 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION2 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION3 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION4 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION5 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION6 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION7 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION8 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION9 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VESSELGENERATION10 ) );
-  ChestTypes.push_back( static_cast< unsigned char >( PARASEPTALEMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( CENTRILOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( PANLOBULAREMPHYSEMA ) );
-  ChestTypes.push_back( static_cast< unsigned char >( SUBCUTANEOUSFAT ) );
-  ChestTypes.push_back( static_cast< unsigned char >( VISCERALFAT ) );
-  ChestTypes.push_back( static_cast< unsigned char >( INTERMEDIATEBRONCHUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( LOWERLOBEBRONCHUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( SUPERIORDIVISIONBRONCHUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( LINGULARBRONCHUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MIDDLELOBEBRONCHUS ) );
-  ChestTypes.push_back( static_cast< unsigned char >( BRONCHIECTATICAIRWAY ) );
-  ChestTypes.push_back( static_cast< unsigned char >( NONBRONCHIECTATICAIRWAY ) );
-  ChestTypes.push_back( static_cast< unsigned char >( AMBIGUOUSBRONCHIECTATICAIRWAY ) );
-  ChestTypes.push_back( static_cast< unsigned char >( MUSCLE ) );
-  ChestTypes.push_back( static_cast< unsigned char >( DIAPHRAGM ) );
+  ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
+  ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAY ) );
+  ChestTypes.push_back( (unsigned char)( VESSEL ) );
+  ChestTypes.push_back( (unsigned char)( EMPHYSEMATOUS ) );
+  ChestTypes.push_back( (unsigned char)( GROUNDGLASS ) );
+  ChestTypes.push_back( (unsigned char)( RETICULAR ) );
+  ChestTypes.push_back( (unsigned char)( NODULAR ) ); 
+  ChestTypes.push_back( (unsigned char)( OBLIQUEFISSURE ) ); 
+  ChestTypes.push_back( (unsigned char)( HORIZONTALFISSURE ) ); 
+  ChestTypes.push_back( (unsigned char)( MILDPARASEPTALEMPHYSEMA ) ); 
+  ChestTypes.push_back( (unsigned char)( MODERATEPARASEPTALEMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( SEVEREPARASEPTALEMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( MILDBULLA ) );
+  ChestTypes.push_back( (unsigned char)( MODERATEBULLA ) );
+  ChestTypes.push_back( (unsigned char)( SEVEREBULLA ) );
+  ChestTypes.push_back( (unsigned char)( MILDCENTRILOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( MODERATECENTRILOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( SEVERECENTRILOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( MILDPANLOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( MODERATEPANLOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( SEVEREPANLOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYWALLTHICKENING ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYCYLINDRICALDILATION ) );
+  ChestTypes.push_back( (unsigned char)( VARICOSEBRONCHIECTASIS ) );
+  ChestTypes.push_back( (unsigned char)( CYSTICBRONCHIECTASIS ) );
+  ChestTypes.push_back( (unsigned char)( CENTRILOBULARNODULE ) );
+  ChestTypes.push_back( (unsigned char)( MOSAICING ) );
+  ChestTypes.push_back( (unsigned char)( EXPIRATORYMALACIA ) );
+  ChestTypes.push_back( (unsigned char)( SABERSHEATH ) );
+  ChestTypes.push_back( (unsigned char)( OUTPOUCHING ) );
+  ChestTypes.push_back( (unsigned char)( MUCOIDMATERIAL ) );
+  ChestTypes.push_back( (unsigned char)( PATCHYGASTRAPPING ) );
+  ChestTypes.push_back( (unsigned char)( DIFFUSEGASTRAPPING ) );
+  ChestTypes.push_back( (unsigned char)( LINEARSCAR ) );
+  ChestTypes.push_back( (unsigned char)( CYST ) );
+  ChestTypes.push_back( (unsigned char)( ATELECTASIS ) );
+  ChestTypes.push_back( (unsigned char)( HONEYCOMBING ) );
+  ChestTypes.push_back( (unsigned char)( TRACHEA ) );
+  ChestTypes.push_back( (unsigned char)( MAINBRONCHUS ) );
+  ChestTypes.push_back( (unsigned char)( UPPERLOBEBRONCHUS ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION3 ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION4 ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION5 ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION6 ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION7 ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION8 ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION9 ) );
+  ChestTypes.push_back( (unsigned char)( AIRWAYGENERATION10 ) );
+  ChestTypes.push_back( (unsigned char)( CALCIFICATION ) );
+  ChestTypes.push_back( (unsigned char)( ARTERY ) );
+  ChestTypes.push_back( (unsigned char)( VEIN ) );
+  ChestTypes.push_back( (unsigned char)( PECTORALISMINOR ) );
+  ChestTypes.push_back( (unsigned char)( PECTORALISMAJOR ) );
+  ChestTypes.push_back( (unsigned char)( ANTERIORSCALENE ) );
+  ChestTypes.push_back( (unsigned char)( FISSURE ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION0 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION1 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION2 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION3 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION4 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION5 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION6 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION7 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION8 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION9 ) );
+  ChestTypes.push_back( (unsigned char)( VESSELGENERATION10 ) );
+  ChestTypes.push_back( (unsigned char)( PARASEPTALEMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( CENTRILOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( PANLOBULAREMPHYSEMA ) );
+  ChestTypes.push_back( (unsigned char)( SUBCUTANEOUSFAT ) );
+  ChestTypes.push_back( (unsigned char)( VISCERALFAT ) );
+  ChestTypes.push_back( (unsigned char)( INTERMEDIATEBRONCHUS ) );
+  ChestTypes.push_back( (unsigned char)( LOWERLOBEBRONCHUS ) );
+  ChestTypes.push_back( (unsigned char)( SUPERIORDIVISIONBRONCHUS ) );
+  ChestTypes.push_back( (unsigned char)( LINGULARBRONCHUS ) );
+  ChestTypes.push_back( (unsigned char)( MIDDLELOBEBRONCHUS ) );
+  ChestTypes.push_back( (unsigned char)( BRONCHIECTATICAIRWAY ) );
+  ChestTypes.push_back( (unsigned char)( NONBRONCHIECTATICAIRWAY ) );
+  ChestTypes.push_back( (unsigned char)( AMBIGUOUSBRONCHIECTATICAIRWAY ) );
+  ChestTypes.push_back( (unsigned char)( MUSCLE ) );
+  ChestTypes.push_back( (unsigned char)( DIAPHRAGM ) );
   
   ChestRegionNames.push_back( "UNDEFINEDREGION" );
   ChestRegionNames.push_back( "WHOLELUNG" ); 
@@ -463,21 +461,21 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( uns
   // the relationship between a defined region and and undefined
   // region. Therefore return false.
   //
-  if ( subordinate == static_cast< unsigned char >( UNDEFINEDREGION ) ||
-       superior == static_cast< unsigned char >( UNDEFINEDREGION ) )
+  if ( subordinate == (unsigned char)( UNDEFINEDREGION ) ||
+       superior == (unsigned char)( UNDEFINEDREGION ) )
     {
       return false;
     }
   
-  if ( superior == static_cast< unsigned char >( WHOLELUNG ) )
+  if ( superior == (unsigned char)( WHOLELUNG ) )
     {
       return true;
     }
   
   unsigned char subordinateTemp = subordinate;
   
-  while ( subordinateTemp != static_cast< unsigned char >( WHOLELUNG ) && 
-	  subordinateTemp != static_cast< unsigned char >( UNDEFINEDREGION ) )
+  while ( subordinateTemp != (unsigned char)( WHOLELUNG ) && 
+	  subordinateTemp != (unsigned char)( UNDEFINEDREGION ) )
     {
       if ( ChestRegionHierarchyMap[subordinateTemp] == superior )
 	{
@@ -500,7 +498,7 @@ unsigned char cip::ChestConventions::GetChestRegionFromValue( unsigned short val
   
   for ( int i=15; i>=0; i-- )
     {
-      int power = static_cast< int >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+      int power = int( std::pow( float(2), float(i) ) );
       
       if ( power <= value )
 	{
@@ -527,10 +525,10 @@ unsigned char cip::ChestConventions::GetChestTypeFromColor( double* color ) cons
       if ( ChestTypeColors[i][0] == color[0] && ChestTypeColors[i][1] == color[1] && 
   	   ChestTypeColors[i][2] == color[2] )          
   	{
-          return static_cast< unsigned char >( i );
+          return (unsigned char)( i );
   	}
     }
-  return static_cast< unsigned char >( UNDEFINEDTYPE );
+  return (unsigned char)( UNDEFINEDTYPE );
 }
 
 /** The 'color' param is assumed to have three components, each in
@@ -558,13 +556,13 @@ unsigned char cip::ChestConventions::GetChestTypeFromValue( unsigned short value
   
   for ( int i=15; i>=0; i-- )
     {
-      int power = static_cast< int >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+      int power = int( std::pow( float(2), float(i) ) );
       
       if ( power <= value )
 	{
           if ( i >= 8 )
             {
-	      typeValue += static_cast< unsigned char >( vcl_pow( static_cast< float >(2), static_cast< float >(i-8) ) );
+	      typeValue += (unsigned char)( std::pow( float(2), float(i-8) ) );
             }
 	  
           value = value % power;
@@ -578,12 +576,12 @@ unsigned char cip::ChestConventions::GetChestTypeFromValue( unsigned short value
  *  method will return the string name equivalent. */
 std::string cip::ChestConventions::GetChestTypeName( unsigned char whichType ) const
 {
-  if ( static_cast< int >( whichType ) > m_NumberOfEnumeratedChestTypes-1 )
+  if ( int( whichType ) > m_NumberOfEnumeratedChestTypes-1 )
     {
       return "UNDEFINEDTYPE";
     }
   
-  return ChestTypeNames[static_cast< int >( whichType )];
+  return ChestTypeNames[int( whichType )];
 }
 
 
@@ -636,12 +634,12 @@ void cip::ChestConventions::GetColorFromChestRegionChestType(unsigned char which
  *  method will return the string name equivalent. */
 std::string cip::ChestConventions::GetChestRegionName( unsigned char whichRegion ) const
 {
-  if ( static_cast< int >( whichRegion ) > m_NumberOfEnumeratedChestRegions-1 )
+  if ( int( whichRegion ) > m_NumberOfEnumeratedChestRegions-1 )
     {
       return "UNDEFINEDREGION";
     }
   
-  return ChestRegionNames[static_cast< int >( whichRegion )];
+  return ChestRegionNames[int( whichRegion )];
 }
 
 /** Given an unsigned short value, this method will return the
@@ -652,7 +650,7 @@ std::string cip::ChestConventions::GetChestRegionNameFromValue( unsigned short v
   
   for ( int i=15; i>=0; i-- )
     {
-      int power = static_cast< int >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+      int power = int( std::pow( float(2), float(i) ) );
       
       if ( power <= value )
 	{
@@ -665,7 +663,7 @@ std::string cip::ChestConventions::GetChestRegionNameFromValue( unsigned short v
 	}
     }
   
-  return ChestRegionNames[static_cast< int >( regionValue )];
+  return ChestRegionNames[int( regionValue )];
 };
 
 /** Given an unsigned short value, this method will return the
@@ -676,28 +674,26 @@ std::string cip::ChestConventions::GetChestTypeNameFromValue( unsigned short val
   
   for ( int i=15; i>=0; i-- )
     {
-      int power = static_cast< int >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+      int power = int( std::pow( float(2), float(i) ) );
       
       if ( power <= value )
 	{
           if ( i >= 8 )
             {
-	      typeValue += static_cast< unsigned char >( vcl_pow( static_cast< float >(2), static_cast< float >(i-8) ) );
+	      typeValue += (unsigned char)( std::pow( float(2), float(i-8) ) );
             }
 	  
           value = value % power;
 	}
     }
   
-  return ChestTypeNames[static_cast< int >( typeValue )];
+  return ChestTypeNames[int( typeValue )];
 }
 
 unsigned short cip::ChestConventions::GetValueFromChestRegionAndType( unsigned char region, unsigned char type ) const
 {
-  //
   // Get the binary representation of the region to set
-  //
-  int regionValue = static_cast< int >( region );
+  int regionValue = int( region );
   
   int regionPlaces[8];
   for ( int i=0; i<8; i++ )
@@ -707,7 +703,7 @@ unsigned short cip::ChestConventions::GetValueFromChestRegionAndType( unsigned c
   
   for ( int i=7; i>=0; i-- )
     {
-      int power = static_cast< int >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+      int power = int( std::pow( float(2), float(i) ) );
       
       if ( power <= regionValue )
 	{
@@ -717,10 +713,8 @@ unsigned short cip::ChestConventions::GetValueFromChestRegionAndType( unsigned c
 	}
     }
   
-  //
   // Get the binary representation of the type to set
-  //
-  int typeValue = static_cast< int >( type );
+  int typeValue = int( type );
   
   int typePlaces[8];
   for ( int i=0; i<8; i++ )
@@ -730,7 +724,7 @@ unsigned short cip::ChestConventions::GetValueFromChestRegionAndType( unsigned c
   
   for ( int i=7; i>=0; i-- )
     {
-      int power = static_cast< int >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+      int power = int( std::pow( float(2), float(i) ) );
       
       if ( power <= typeValue )
 	{
@@ -740,20 +734,18 @@ unsigned short cip::ChestConventions::GetValueFromChestRegionAndType( unsigned c
 	}
     }
   
-  //
   // Compute the new value to assign to the label map voxel 
-  //
   unsigned short combinedValue = 0;
   
   for ( int i=0; i<16; i++ )
     {
       if ( i < 8 )
 	{
-	  combinedValue += static_cast< unsigned short >( regionPlaces[i] )*static_cast< unsigned short >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+	  combinedValue += (unsigned short)( regionPlaces[i] )*(unsigned short)( std::pow( float(2), float(i) ) );
 	}
       else
 	{
-	  combinedValue += static_cast< unsigned short >( typePlaces[i-8] )*static_cast< unsigned short >( vcl_pow( static_cast< float >(2), static_cast< float >(i) ) );
+	  combinedValue += (unsigned short)( typePlaces[i-8] )*(unsigned short)( std::pow( float(2), float(i) ) );
 	}
     }
   
@@ -773,7 +765,7 @@ unsigned char cip::ChestConventions::GetChestRegionValueFromName( std::string re
 	}
     }
   
-  return static_cast< unsigned char >( UNDEFINEDREGION );
+  return (unsigned char)( UNDEFINEDREGION );
 }
 
 /** Given a string identifying one of the enumerated chest types,
@@ -789,17 +781,17 @@ unsigned char cip::ChestConventions::GetChestTypeValueFromName( std::string type
 	}
     }
   
-  return static_cast< unsigned char >( UNDEFINEDTYPE );
+  return (unsigned char)( UNDEFINEDTYPE );
 }
 
 /** Get the ith chest region */
 unsigned char cip::ChestConventions::GetChestRegion( unsigned int i ) const
 {
-  return static_cast< unsigned char >( ChestRegions[i] );
+  return (unsigned char)( ChestRegions[i] );
 }
 
 /** Get the ith chest type */
 unsigned char cip::ChestConventions::GetChestType( unsigned int i ) const
 {
-  return static_cast< unsigned char >( ChestTypes[i] );
+  return (unsigned char)( ChestTypes[i] );
 }

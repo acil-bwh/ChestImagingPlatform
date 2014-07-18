@@ -47,7 +47,7 @@
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
 #include "vtkPolyData.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"

@@ -9,7 +9,8 @@
  */
 
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "GetStructuresInLabelMapCLP.h"
 
 typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;

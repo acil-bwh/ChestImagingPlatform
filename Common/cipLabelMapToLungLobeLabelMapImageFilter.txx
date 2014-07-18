@@ -2,7 +2,7 @@
 #define _cipLabelMapToLungLobeLabelMapImageFilter_txx
 
 #include "cipLabelMapToLungLobeLabelMapImageFilter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 
 
 cipLabelMapToLungLobeLabelMapImageFilter

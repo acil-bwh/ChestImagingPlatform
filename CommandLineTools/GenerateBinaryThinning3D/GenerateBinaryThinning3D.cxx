@@ -9,7 +9,7 @@
 
 #include "GenerateBinaryThinning3DCLP.h"
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"

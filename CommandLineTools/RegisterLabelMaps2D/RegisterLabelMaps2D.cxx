@@ -59,7 +59,7 @@
 #include "itkQuaternionRigidTransform.h"
 
 #include "RegisterLabelMaps2DCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include <sstream>
 #include "cipExceptionObject.h"

@@ -42,7 +42,7 @@
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "ScourParticleDataCLP.h"
 
 int main( int argc, char *argv[] )

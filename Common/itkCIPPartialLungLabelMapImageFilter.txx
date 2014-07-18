@@ -3,7 +3,7 @@
 
 #include "itkCIPPartialLungLabelMapImageFilter.h"
 #include "itkImageFileWriter.h" //DEB
-#include "cipConventions.h" //DEB
+#include "cipChestConventions.h" //DEB
 
 namespace itk
 {

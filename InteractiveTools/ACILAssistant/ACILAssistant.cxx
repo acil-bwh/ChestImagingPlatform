@@ -15,7 +15,7 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkColorTable.h"
 #include "itkImageFileWriter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkImage.h"
 #include <FL/Fl_File_Chooser.H>
 #include <iostream>

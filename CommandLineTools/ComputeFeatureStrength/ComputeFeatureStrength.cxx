@@ -13,7 +13,8 @@
  *
  */
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -34,7 +35,7 @@
 
 namespace
 {
-typedef itk::ImageFileReader< cip::CTType >                                       CTFileReaderType;
+typedef itk::ImageFileReader< cip::CTType >  CTFileReaderType;
 
   
 cip::CTType::Pointer ReadCTFromFile( std::string  );

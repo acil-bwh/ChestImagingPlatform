@@ -3,7 +3,7 @@
 
 #include "itkCIPChestLabelMapToChestLobeLabelMapImageFilter.h"
 #include "itkExtractLungLabelMapImageFilter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 
 
 namespace itk

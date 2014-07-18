@@ -12,13 +12,26 @@
 #ifndef __cipHelper_h
 #define __cipHelper_h
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkSmartPointer.h"
 #include "vtkMutableDirectedGraph.h"
 #include "vtkMutableUndirectedGraph.h" 
 #include "vtkPolyData.h"
+#include "itkImage.h"
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
 
 namespace cip {
+  /**
+   *  Define typedefs used throughout the cip
+   */
+  typedef itk::Image< unsigned short, 3 >       LabelMapType;
+  typedef itk::Image< short, 3 >                CTType;
+  typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
+  typedef itk::ImageFileWriter< LabelMapType >  LabelMapWriterType;
+  typedef itk::ImageFileReader< CTType >        CTReaderType;
+  typedef itk::ImageFileWriter< CTType >        CTWriterType;
+
   /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and 
    * a pointer to a LabelMapType, and returns a pointer to a downsampled LabelMapType. */
   cip::LabelMapType::Pointer DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
@@ -76,8 +89,8 @@ namespace cip {
   /** Get the bounding with respect to a specified chest region - chest type combination. The bounding
    * box is returned as an ITK image region. */
   cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
-										 unsigned char cipRegion = (unsigned char)(UNDEFINEDREGION), 
-										 unsigned char cipType = (unsigned char)(UNDEFINEDTYPE));
+										 unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
+										 unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE));
 
   /** Similar to GetLabelMapChestRegionChestTypeBoundingBoxRegion, but this function will return an ITK bounding box region
    * padded according to the specified x, y, and z radii. The region is determined with respect to the specifed chest-region
