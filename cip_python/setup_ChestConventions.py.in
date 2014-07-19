@@ -3,17 +3,21 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-cip_dir = '/Users/jross/Downloads/ChestImagingPlatformPrivate/'
-cip_build_dir = '/Users/jross/Downloads/ChestImagingPlatformPrivate-superbuild/'
+cip_dir = '@CIP_SOURCE_DIR@'
+
+# kluge: ${CIP_BINARY_DIR} is a sub-directory CIP-build under root build dir
+# this one needs to be replaced with proper variable later
+cip_build_dir = '@CIP_BINARY_DIR@/../'
+source_dir = cip_dir + '/cip_python'
 
 os.environ["CC"] = "/usr/bin/cc"
 os.environ["CXX"] = "/usr/bin/c++"
 
-sources = ['wrap_ChestConventions.pyx']
+sources = [source_dir + '/wrap_ChestConventions.pyx']
 libraries = ["ChestConventions"]
-library_dirs = [cip_build_dir + 'lib/']
+library_dirs = [cip_build_dir + '/lib/']
 runtime_library_dirs = library_dirs
-include_dirs = [cip_dir + 'Common/']
+include_dirs = [cip_dir + '/Common/']
 
 setup(
     cmdclass = {'build_ext': build_ext},    
