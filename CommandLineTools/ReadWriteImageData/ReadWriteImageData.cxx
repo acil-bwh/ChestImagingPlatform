@@ -41,7 +41,8 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "ReadWriteImageDataCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 
 int main( int argc, char *argv[] )
 {

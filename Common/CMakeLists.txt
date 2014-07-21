@@ -93,6 +93,11 @@ target_link_libraries(${LIB_NAME}
 #  ${Teem_LIBRARIES}
   )
 
+# --------------------------------------------------------------------------
+# Create separate library for the cipChestConventions. This will enable easy wrapping in python
+# --------------------------------------------------------------------------
+add_library( ChestConventions cipChestConventions.cxx )
+
 IF ( CIP_BUILD_TESTING )
  SUBDIRS ( Testing )
 ENDIF( CIP_BUILD_TESTING ) 

@@ -35,8 +35,7 @@
 #include "itkImage.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageRegionConstIterator.h"
-#include "cipConventions.h"
-
+#include "cipChestConventions.h"
 
 namespace itk
 {

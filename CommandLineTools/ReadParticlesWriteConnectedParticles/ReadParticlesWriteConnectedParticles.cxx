@@ -58,7 +58,7 @@
 #include "vtkMutableUndirectedGraph.h"
 #include "vtkDataSetAttributes.h"
 #include "vtkDoubleArray.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "ReadParticlesWriteConnectedParticlesCLP.h"
 

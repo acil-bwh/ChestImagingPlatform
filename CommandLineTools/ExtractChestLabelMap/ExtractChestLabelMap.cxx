@@ -54,7 +54,8 @@
 #include "itkImageFileWriter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
 #include "itkImageRegionIterator.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "ExtractChestLabelMapCLP.h"
 
 typedef itk::CIPExtractChestLabelMapImageFilter       LabelMapExtractorType;

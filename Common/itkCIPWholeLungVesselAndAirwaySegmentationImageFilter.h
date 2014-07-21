@@ -19,7 +19,7 @@
 #include "itkConnectedComponentImageFilter.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkExtractImageFilter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryBallStructuringElement.h"
 #include "itkBinaryThresholdImageFilter.h"

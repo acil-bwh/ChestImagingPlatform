@@ -51,7 +51,7 @@
 #include <libxml/xmlmemory.h>
 
 #include "GetTransformationSimilarityMetric3DCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include <sstream>
 #include <fstream>

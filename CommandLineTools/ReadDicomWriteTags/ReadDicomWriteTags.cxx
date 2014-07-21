@@ -39,7 +39,7 @@
  *     Displays usage information and exits.
  */
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"

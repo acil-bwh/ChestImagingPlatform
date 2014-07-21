@@ -2,7 +2,7 @@
  *  \ingroup commandLineTools 
  *  \details This program can be used to compute a distance map from an
  *  input label map (that adheres to the CIP label map conventions
- *  laid out in cipConventions.h). The user must specify which
+ *  laid out in cipChestConventions.h). The user must specify which
  *  structure of interest the distance map should be computed with
  *  respect to by indicating the chest region and/or chest type. If
  *  the chest type is not specified, any voxel meeting the indicated
@@ -58,7 +58,8 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <GenerateDistanceMapFromLabelMapCLP.h>
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "itkResampleImageFilter.h"
 #include "itkImage.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"

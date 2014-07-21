@@ -106,7 +106,7 @@
 #include "vtkSmartPointer.h"
 #include "cipAirwayDataInteractor.h"
 #include "vtkFloatArray.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkPointData.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"

@@ -106,7 +106,7 @@
 #include "vtkSmartPointer.h"
 #include "cipVesselDataInteractor.h"
 #include "vtkFloatArray.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "vtkPointData.h"
 #include "itkImage.h"
@@ -329,6 +329,10 @@ the user to label groups of particles according to their vessel generation.";
   // add them
   std::cout << "Asserting ChestRegion and ChestType array existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
+
+  // Give the output file name to the interactor. This will allow the user to
+  // save work as he/she goes along.
+  interactor.SetFileName( genParticlesFileName.c_str() );
 
   if ( label )
     {

@@ -36,7 +36,7 @@
 #include "vtkImageImport.h"
 #include "vtkImageData.h"
 #include "vtkCallbackCommand.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkSmartPointer.h"
 
 void ViewerKeyCallback( vtkObject*, unsigned long, void*, void* );

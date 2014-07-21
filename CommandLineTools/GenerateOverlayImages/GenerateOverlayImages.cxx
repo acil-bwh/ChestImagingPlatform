@@ -85,7 +85,7 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "cipHelper.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkRGBPixel.h"
 #include "GenerateOverlayImagesCLP.h"

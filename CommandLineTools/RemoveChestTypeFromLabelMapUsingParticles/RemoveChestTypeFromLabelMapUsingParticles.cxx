@@ -6,7 +6,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "RemoveChestTypeFromLabelMapUsingParticlesCLP.h"
 // #include "itkImage.h"
 // #include "itkImageFileReader.h"
@@ -47,7 +47,7 @@ int main( int argc, char *argv[] )
 //   std::string outLabelMapFileNameDescription = "Output label map file name";
 //   std::string cipTypeDescription = "The ChestType to be removed. This should correspond to the type\
 // of particles being read in. The passed value should be an unsigned short and should\
-// conform to the conventions layed out in cipConventions.h";
+// conform to the conventions layed out in cipChestConventions.h";
 
 //   //
 //   // Parse the input arguments

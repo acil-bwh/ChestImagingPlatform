@@ -8,7 +8,7 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "GenerateInteractiveLobeSegmentationFissureMaskCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkResampleImageFilter.h"
 #include "itkImage.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"

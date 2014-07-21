@@ -81,7 +81,7 @@
 #include "vtkPointData.h"
 #include "cipVesselParticleConnectedComponentFilter.h"
 #include "itkNumericTraits.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "FilterVesselParticleDataCLP.h"
 
 int main( int argc, char *argv[] )
