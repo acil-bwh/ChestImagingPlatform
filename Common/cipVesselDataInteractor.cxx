@@ -314,6 +314,14 @@ void cipVesselDataInteractor::RemoveActorAndRender( vtkActor* actor )
 }
 
 
+void cipVesselDataInteractor::ColorActorByChestTypeAndRender( vtkActor* actor, unsigned char cipType )
+{
+  double color[3];
+  this->Conventions->GetColorFromChestRegionChestType((unsigned char)(cip::UNDEFINEDREGION), cipType, color);
+  actor->GetProperty()->SetColor( color[0], color[1], color[2] );
+  this->RenderWindow->Render();
+}
+
 void cipVesselDataInteractor::SetConnectedVesselParticles( vtkSmartPointer< vtkPolyData > particles, 
 							   double particleSize )
 {
@@ -499,11 +507,7 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
 
   char pressedKey = dataInteractor->GetRenderWindowInteractor()->GetKeyCode(); 
 
-  if ( pressedKey == 'a' || pressedKey == 'v' )
-    {
-      dataInteractor->UpdateVesselBranchCode( pressedKey );
-    }
-  else if ( pressedKey == 'k' )
+  if ( pressedKey == 'k' || pressedKey == 'a' || pressedKey == 'v' )
     {
     int* clickPos = dataInteractor->GetRenderWindowInteractor()->GetEventPosition();
 
@@ -516,21 +520,32 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
 
     if ( actor != NULL )
       {
-      dataInteractor->RemoveActorAndRender( actor );
+	if ( pressedKey == 'k' )
+	  {
+	    dataInteractor->RemoveActorAndRender( actor );
+	  }
+	else if ( pressedKey == 'a' )
+	  {
+	    dataInteractor->ColorActorByChestTypeAndRender( actor, (unsigned char)(cip::ARTERY) );
+	  }
+	else
+	  {
+	    dataInteractor->ColorActorByChestTypeAndRender( actor, (unsigned char)(cip::VEIN) );
+	  }
       }
     }
-  else if ( pressedKey == 's' )
-    {
-      dataInteractor->Write();
-    }
+  // else if ( pressedKey == 's' )
+  //   {
+  //     //dataInteractor->Write();
+  //   }
   else if ( pressedKey == 'h' )
     {
       dataInteractor->HideVesselModel();
     }
-  else if ( pressedKey == 'u' )
-    {
-    dataInteractor->UndoAndRender();
-    }
+  // else if ( pressedKey == 'u' )
+  //   {
+  //     //dataInteractor->UndoAndRender();
+  //   }
   else if ( pressedKey == '!' || pressedKey == '@' || pressedKey == '#' || pressedKey == '$' || pressedKey == '%' || 
        pressedKey == '^' || pressedKey == '&' || pressedKey == '*' || pressedKey == '(' || pressedKey == ')' ||
        pressedKey == 'o' || pressedKey == 'm' )
