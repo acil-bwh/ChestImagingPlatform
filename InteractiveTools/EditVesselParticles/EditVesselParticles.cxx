@@ -521,12 +521,12 @@ void AddSpecifiedParticlesToInteractor( cipVesselDataInteractor* interactor, vtk
       
       arrayVec.push_back( array );
     }
-  
+
   unsigned int inc = 0;
   for ( unsigned int p=0; p<numberParticles; p++ )
     {
       float val = *(particles->GetPointData()->GetArray( specifiedArrayName.c_str() )->GetTuple(p));
-      
+
       if ( val == specifiedArrayVal )
 	{
 	  // Get the particle's type in order to retrieve color later. We're assuming that all particles
@@ -535,32 +535,45 @@ void AddSpecifiedParticlesToInteractor( cipVesselDataInteractor* interactor, vtk
 	  cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(p)) );
 
 	  points->InsertNextPoint( particles->GetPoint(p) );
-	  
+
 	  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
 	    {
 	      arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(p) );
 	    }
-	  
+
 	  inc++;
 	}
     }
   
-  double* color = new double[3];
-  conventions.GetChestTypeColor( cipType, color );
-  
-  double r = color[0];
-  double g = color[1];
-  double b = color[2];
-  
-  polyData->SetPoints( points );
-  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
+  if ( inc > 0 )
     {
+    double* color = new double[3];
+    double r, g, b;
+    if ( cipType == (unsigned char)(cip::UNDEFINEDTYPE) )
+      {
+      r = 0.0;
+      g = 1.0;
+      b = 0.0;
+      }
+    else
+      {
+      conventions.GetChestTypeColor( cipType, color );
+
+      r = color[0];
+      g = color[1];
+      b = color[2];
+      }
+
+    polyData->SetPoints( points );
+    for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
+      {
       polyData->GetPointData()->AddArray( arrayVec[j] );
+      }
+
+    interactor->SetVesselParticlesAsDiscs( polyData, particleSize, interactorActorName ); 
+    interactor->SetActorColor( interactorActorName, r, g, b );
+    interactor->SetActorOpacity( interactorActorName, 1 );  
     }
-  
-  interactor->SetVesselParticlesAsDiscs( polyData, particleSize, interactorActorName ); 
-  interactor->SetActorColor( interactorActorName, r, g, b );
-  interactor->SetActorOpacity( interactorActorName, 1 );  
 }
 
 // Iterate over all particles, get the particle's component, get the
