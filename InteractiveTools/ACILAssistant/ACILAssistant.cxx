@@ -521,6 +521,7 @@ void SessionFile_CB( Fl_Widget*, void* ) {
         std::string patientID;
         std::string study;
         std::string caseName;
+	std::string ctFileName;
         std::string ctFileNameHeader;
         std::string ctFileNameRaw;
         std::string ctTmpDirAndFileNameHeader;
@@ -543,11 +544,17 @@ void SessionFile_CB( Fl_Widget*, void* ) {
         int patientIDStop  = grayscaleEntry.find( '/', patientIDStart + 1);
         patientID = grayscaleEntry.substr( patientIDStart+1, patientIDStop - patientIDStart - 1);
         
-        int caseNameStart  = grayscaleEntry.find_last_of('/');;
-        int extensionStart = grayscaleEntry.find( '.', 0 );  
-        caseName = grayscaleEntry.substr( caseNameStart + 1, extensionStart - caseNameStart - 1);
-
+	int firstSlash  = grayscaleEntry.find( '/' );  
+	int secondSlash = grayscaleEntry.find( '/', firstSlash + 1 );  
+        int thirdSlash  = grayscaleEntry.find_last_of('/');
+        caseName = grayscaleEntry.substr( secondSlash + 1, thirdSlash - secondSlash - 1);
         study = grayscaleEntry.substr(0, patientIDStart);
+
+	int extensionStart = thirdSlash + caseName.length() + 1;
+
+	int ctFileNameStart = thirdSlash;
+	int ctFileNameEnd   = grayscaleEntry.find_last_of('.');
+	ctFileName = grayscaleEntry.substr( ctFileNameStart + 1, ctFileNameEnd - ctFileNameStart - 1);
 
         std::stringstream tmpStream1;
         tmpStream1 << "/var/tmp/" << study << "/";
@@ -562,11 +569,11 @@ void SessionFile_CB( Fl_Widget*, void* ) {
         caseTmpDir = tmpStream3.str();
       
         std::stringstream stream1;
-        stream1 << caseName << ".nhdr";
+        stream1 << ctFileName << ".nhdr";
         ctFileNameHeader = stream1.str();
-        
+
         std::stringstream stream2;
-        stream2 << caseName << ".raw.gz";
+        stream2 << ctFileName << ".raw.gz";
         ctFileNameRaw = stream2.str();
 
         std::stringstream stream3;
