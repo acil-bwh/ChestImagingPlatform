@@ -521,7 +521,7 @@ void SessionFile_CB( Fl_Widget*, void* ) {
         std::string patientID;
         std::string study;
         std::string caseName;
-	std::string ctFileName;
+        std::string ctFileName;
         std::string ctFileNameHeader;
         std::string ctFileNameRaw;
         std::string ctTmpDirAndFileNameHeader;
@@ -1218,12 +1218,12 @@ void CopySessionDataFromMAD( SESSIONDATA data )
 
   // Now copy over the CT data
   std::stringstream headerStream;
-  headerStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.caseName << ".nhdr " << data.caseTmpDir;
+  headerStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr " << data.caseTmpDir;
   std::string cpCTheader = headerStream.str();
   system( cpCTheader.c_str() );
 
   std::stringstream rawStream;
-  rawStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.caseName << ".raw.gz " << data.caseTmpDir;
+  rawStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".raw.gz " << data.caseTmpDir;
   std::string cpCTraw = rawStream.str();
   system( cpCTraw.c_str() );
 
