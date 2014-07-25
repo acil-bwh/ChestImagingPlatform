@@ -27,6 +27,7 @@ struct SESSIONDATA
   std::string patientID;
   std::string study;
   std::string caseName;
+  std::string ctFileName;
   std::string ctFileNameHeader;
   std::string ctFileNameRaw;
   std::string ctTmpDirAndFileNameHeader;
@@ -676,6 +677,7 @@ void SessionFile_CB( Fl_Widget*, void* ) {
           data.patientID = patientID;
           data.study = study;
           data.caseName = caseName;
+          data.ctFileName = ctFileName;
           data.ctFileNameHeader = ctFileNameHeader;
           data.ctFileNameRaw = ctFileNameRaw;
           data.ctTmpDirAndFileNameHeader = ctTmpDirAndFileNameHeader;
