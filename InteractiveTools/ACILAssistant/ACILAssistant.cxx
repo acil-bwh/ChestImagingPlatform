@@ -27,6 +27,7 @@ struct SESSIONDATA
   std::string patientID;
   std::string study;
   std::string caseName;
+  std::string ctFileName;
   std::string ctFileNameHeader;
   std::string ctFileNameRaw;
   std::string ctTmpDirAndFileNameHeader;
