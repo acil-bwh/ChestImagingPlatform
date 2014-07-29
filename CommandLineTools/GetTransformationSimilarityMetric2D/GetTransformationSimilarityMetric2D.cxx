@@ -57,7 +57,7 @@
 #include <libxml/xmlwriter.h>
 
 #include "GetTransformationSimilarityMetric2DCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include <sstream>
 #include <fstream>

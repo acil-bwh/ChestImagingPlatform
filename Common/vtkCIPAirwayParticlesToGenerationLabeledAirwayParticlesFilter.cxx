@@ -8,7 +8,7 @@
 
 #include "vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.h"
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkMath.h"
 #include "vtkIdTypeArray.h"
 #include "vtkSelectionNode.h"

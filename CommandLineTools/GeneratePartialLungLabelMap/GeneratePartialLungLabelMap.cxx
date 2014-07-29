@@ -7,7 +7,8 @@
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "GeneratePartialLungLabelMapCLP.h"
 
 typedef itk::Image< unsigned short, 3 >                           UShortImageType;

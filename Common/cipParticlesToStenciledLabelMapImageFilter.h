@@ -22,7 +22,7 @@
 #include "itkImageRegionIteratorWithIndex.h"
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipStencil.h"
 
 template < class TInputImage >

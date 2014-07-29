@@ -4,7 +4,6 @@ project(ResampleLabelMap3D )
 
 set(MODULE_NAME ResampleLabelMap3D)
 
-
 find_package(LibXml2 REQUIRED)
 
  set (UUID_LIBS -luuid)

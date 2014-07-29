@@ -35,7 +35,8 @@
  *
  */
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -44,7 +45,7 @@
 #include "itkMatrix.h"
 #include "itkTransformFileReader.h"
 #include "itkResampleImageFilter.h"
-#include "itkMetaImageIO.h"
+//#include "itkMetaImageIO.h" // not needed (fix build error)
 #include "ResampleLabelMap3DCLP.h"
 #include <itkCompositeTransform.h>
 

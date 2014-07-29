@@ -21,7 +21,6 @@
 #include "vtkDecimatePro.h"
 #include "vtkProperty.h"
 #include "itkImageRegionIteratorWithIndex.h"
-#include "cipConventions.h"
 #include "vtkPoints.h"
 #include "vtkPointData.h"
 #include "vtkGlyph3D.h"

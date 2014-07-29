@@ -43,7 +43,8 @@
  */
 
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "itkResampleImageFilter.h"
 #include "itkImage.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"

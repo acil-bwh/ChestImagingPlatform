@@ -10,7 +10,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "itkImageRegionIterator.h"
 #include "PerformMorphologicalCLP.h"

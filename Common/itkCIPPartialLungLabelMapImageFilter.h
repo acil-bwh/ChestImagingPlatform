@@ -15,7 +15,7 @@
 
 #include "itkImageToImageFilter.h"
 #include "itkImage.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkCIPSplitLeftLungRightLungImageFilter.h"
 #include "itkCIPLabelLungRegionsImageFilter.h"
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"

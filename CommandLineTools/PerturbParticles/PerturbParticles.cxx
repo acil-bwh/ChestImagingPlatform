@@ -17,7 +17,7 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "PerturbParticlesCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -27,6 +27,10 @@
 #include "vtkFieldData.h"
 #include "vtkPolyData.h"
 #include "vtkIndent.h"
+
+#ifdef WIN32
+#include <time.h>
+#endif
 
 int main( int argc, char *argv[] )
 {

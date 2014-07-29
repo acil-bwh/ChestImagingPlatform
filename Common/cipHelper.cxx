@@ -871,3 +871,32 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypePaddedBounding
 
   return roiPadded;
 }
+
+void cip::GraftPointDataArrays( vtkSmartPointer< vtkPolyData > fromPoly, vtkSmartPointer< vtkPolyData > toPoly )
+{
+  assert( fromPoly->GetNumberOfPoints() == toPoly->GetNumberOfPoints() );
+
+  unsigned int numFromArrays = fromPoly->GetPointData()->GetNumberOfArrays();
+  unsigned int numToArrays   = toPoly->GetPointData()->GetNumberOfArrays();
+
+  bool alreadyPresent;
+  for ( unsigned int i=0; i<numFromArrays; i++ )
+    {
+      alreadyPresent = false;
+      std::string fromArrayName = fromPoly->GetPointData()->GetArray(i)->GetName();
+      for ( unsigned int j=0; j<numToArrays; j++ )
+	{
+	  std::string toArrayName = toPoly->GetPointData()->GetArray(j)->GetName();
+	  if ( fromArrayName.compare( toArrayName ) == 0 )
+	    {
+	      alreadyPresent = true;
+	      break;
+	    }
+	}
+      
+      if ( !alreadyPresent )
+	{
+	  toPoly->GetPointData()->AddArray( fromPoly->GetPointData()->GetArray(i) );
+	}
+    }
+}

@@ -171,6 +171,5 @@ int main( int argc, char *argv[] )
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
-}
-
+    }
 #endif

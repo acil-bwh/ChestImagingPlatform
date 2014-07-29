@@ -950,7 +950,7 @@ void vtkSimpleLungMask::FindTracheaTopCoordinates(vtkImageData *in,int initZ, in
         int countkp1=this->CountPixels(conkp1->GetOutput(),cckp1);
 	cout<<"Count for that centroid: "<<countkp1<<endl;
 	
-	if ((fabs(countkp1-countk)/(0.5*(countkp1+countk)) < 0.2) & (countkp1 * sp[0]*sp[1] <= this->TracheaAreaTh) & (countkp1 > 10) ) {
+	if ((fabs(double(countkp1-countk))/(0.5*(countkp1+countk)) < 0.2) & (countkp1 * sp[0]*sp[1] <= this->TracheaAreaTh) & (countkp1 > 10) ) {
 	  cout<<"Trachea found at "<<k<<endl;
 	  C[2]=k;
 	  delete [] hist;

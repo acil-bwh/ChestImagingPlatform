@@ -15,30 +15,18 @@
  *
  */
 
-#ifndef __itkcipConventions_h
-#define __itkcipConventions_h
+#ifndef __cipChestConventions_h
+#define __cipChestConventions_h
 
 #include <string>
 #include <map>
 #include <vector>
-#include <math.h>
-#include <vnl/vnl_math.h>
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
+#include <cmath>
+//#include <vnl/vnl_math.h>
 
 #include <iostream>
 
 namespace cip {
-/**
- *  Define typedefs used throughout the cip
- */
-typedef itk::Image< unsigned short, 3 >       LabelMapType;
-typedef itk::Image< short, 3 >                CTType;
-typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
-typedef itk::ImageFileWriter< LabelMapType >  LabelMapWriterType;
-typedef itk::ImageFileReader< CTType >        CTReaderType;
-typedef itk::ImageFileWriter< CTType >        CTWriterType;
 
 /**
  *  Note that chest regions are inherently hierarchical. If you add a

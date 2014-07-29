@@ -55,7 +55,8 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkImageRegionIterator.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "GenerateRegionHistogramsAndParenchymaPhenotypesCLP.h"
 
 namespace

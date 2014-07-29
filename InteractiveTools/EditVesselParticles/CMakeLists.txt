@@ -35,5 +35,9 @@ vtkHybrid
 
 SET ( EditVesselParticles_SOURCE EditVesselParticles.cxx )
 
-ADD_EXECUTABLE ( EditVesselParticles ${EditVesselParticles_SOURCE})
+IF ( APPLE )
+   ADD_EXECUTABLE ( EditVesselParticles  MACOSX_BUNDLE ${EditVesselParticles_SOURCE})
+ELSE ( APPLE )
+   ADD_EXECUTABLE ( EditVesselParticles  ${EditVesselParticles_SOURCE})
+ENDIF ( APPLE )
 TARGET_LINK_LIBRARIES ( EditVesselParticles ${ITK_LIBRARIES} ${VTK_LIBS} CIPUtilities CIPCommon )

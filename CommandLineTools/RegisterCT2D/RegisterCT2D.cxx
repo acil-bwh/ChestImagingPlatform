@@ -61,7 +61,7 @@
 //#include "itkRegularStepGradientDescentOptimizerv4.h"
 
 #include "RegisterCT2DCLP.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include <sstream>
 #include "cipExceptionObject.h"

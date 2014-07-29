@@ -18,7 +18,7 @@
 #ifndef __cipChestRegionChestTypeLocations_h
 #define __cipChestRegionChestTypeLocations_h
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 #include <vector>

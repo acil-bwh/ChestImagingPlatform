@@ -100,7 +100,7 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipParticlesToStenciledLabelMapImageFilter.h"
 #include "cipSphereStencil.h"
 #include "cipCylinderStencil.h"

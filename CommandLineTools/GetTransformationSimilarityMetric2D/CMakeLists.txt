@@ -6,7 +6,6 @@ set(MODULE_NAME GetTransformationSimilarityMetric2D)
 
 find_package(LibXml2 REQUIRED)
 
-
  FIND_PACKAGE( VTK REQUIRED )
 
  set (UUID_LIBS -luuid)

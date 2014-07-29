@@ -67,7 +67,7 @@
 #include "vtkFloatArray.h"
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "ExtractParticlesFromChestRegionChestTypeCLP.h"
 
@@ -78,21 +78,6 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
-
-
-    // if ( cipRegionsArg.getValue().size() == 0 )
-    //   {
-    // 	cipRegions.push_back( (unsigned char)(cip::UNDEFINEDREGION) );
-    //   }
-    // for ( unsigned int i=0; i<cipRegionsArg.getValue().size(); i++ )
-    //   {
-    // 	cipRegions.push_back( (unsigned char)(cipRegionsArg.getValue()[i]) );
-    //   }
-    // for ( unsigned int i=0; i<cipTypesArg.getValue().size(); i++ )
-    //   {
-    // 	cipTypes.push_back( (unsigned char)(cipTypesArg.getValue()[i]) );
-    //   }
-    // }
 
   vtkSmartPointer< vtkPolyData > outParticles = vtkSmartPointer< vtkPolyData >::New();
 
@@ -221,8 +206,7 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
   unsigned int numberPointDataArrays = inParticles->GetPointData()->GetNumberOfArrays();
   unsigned int numberParticles       = inParticles->GetNumberOfPoints();
 
-  vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();
-  
+  vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();  
   std::vector< vtkSmartPointer< vtkFloatArray > > pointArrayVec;
 
   for ( unsigned int i=0; i<numberPointDataArrays; i++ )
@@ -239,8 +223,26 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
     {
       for ( unsigned int j=0; j<cipTypes.size(); j++ )
 	{
-	  unsigned char cipType = conventions.GetChestRegionValueFromName( cipTypes[j] );
-	  if ( static_cast< int >( inParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0] ) == cipType )
+	  int cipType   = int(conventions.GetChestTypeValueFromName( cipTypes[j] ));
+
+	  if ( int( inParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0] ) == cipType )
+	    {
+	      outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
+
+	      for ( unsigned int j=0; j<numberPointDataArrays; j++ )
+		{
+		  pointArrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
+		}
+
+	      inc++;
+	    }
+	}
+
+      for ( unsigned int j=0; j<cipRegions.size(); j++ )
+	{
+	  int cipRegion = int(conventions.GetChestRegionValueFromName( cipRegions[j] ));
+
+	  if ( int( inParticles->GetPointData()->GetArray( "ChestRegion" )->GetTuple(i)[0] ) == cipRegion )
 	    {
 	      outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
 

@@ -12,7 +12,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "ConvertLabelMapValueToChestRegionChestTypeCLP.h"
 
 int main( int argc, char *argv[] )

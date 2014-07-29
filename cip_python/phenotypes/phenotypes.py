@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import os
 import datetime
 import pandas
@@ -17,15 +15,15 @@ class Phenotypes:
     ----------
     cid: case id for the phenotypes that will be generated
   """
-  def __init__(self,cid):
+  def __init__(self, cid):
     
     self.cid = cid
-    self.pheno_dict=dict()
-    self.pheno_function=dict()
-    self._pheno_static_names=list()
-    self._pheno_static_functions=list()
+    self.pheno_dict = dict()
+    self.pheno_function = dict()
+    self._pheno_static_names = list()
+    self._pheno_static_functions = list()
     self._pheno_keys_names=['Region','Type']
-    self._pheno_quantities_names=list()
+    self._pheno_quantities_names = list()
       
     self._empty_val='NA'
 
@@ -35,8 +33,8 @@ class Phenotypes:
   
   
     #Temp code until we unified cipConventions with cpython
-    self._region_hierarchy_top_bottom=dict()
-    self._region_hierarchy_bottom_top=dict()
+    self._region_hierarchy_top_bottom = dict()
+    self._region_hierarchy_bottom_top = dict()
     self.__create_region_hierarchy()
     self.__create_region_type_list()
   
@@ -69,22 +67,23 @@ class Phenotypes:
     self._pheno_static_names.append('Run_TimeStamp')
     self._pheno_static_functions.append(self.run_timestamp)
     
-    for key,function in zip(self._pheno_static_names,self._pheno_static_functions):
-      self.pheno_dict[key]=list()
+    for key, function in zip(self._pheno_static_names,
+                             self._pheno_static_functions):
+      self.pheno_dict[key] = list()
       self.pheno_function[key]=function
     
   def declare_key_cols(self):
     for key in self._pheno_keys_names:
-      self.pheno_dict[key]=list()
-      self.pheno_dict[key]=list()
+      self.pheno_dict[key] = list()
+      self.pheno_dict[key] = list()
   
-  def declare_pheno_cols(self,cols):
+  def declare_pheno_cols(self, cols):
     for name in cols:
-      self.pheno_dict[name]=list()
+      self.pheno_dict[name] = list()
       self._pheno_quantities_names.append(name)
 
   def declare_quantities(self):
-    cols=list()
+    cols = list()
     return cols
 
   def generator(self):
@@ -115,35 +114,38 @@ class Phenotypes:
   def run_timestamp(self):
     return datetime.datetime.now().isoformat()
 
-  def add_pheno(self,key_values,pheno_name,pheno_val):
+  def add_pheno(self, key_values, pheno_name, pheno_val):
 
     if len(key_values) != len(self._pheno_keys_names):
       raise "Wrong number of keys in tuple"
-    #Find entry location (loc) by searching whether the key_values already exists in list.
-    index_set=set()
-    for key_name,key_value in zip(self._pheno_keys_names,key_values):
-      test=set([i for i, x in enumerate(self.pheno_dict[key_name]) if x == key_value])
-      if len(test)==0:
+    
+    # Find entry location (loc) by searching whether the key_values already
+    # exists in list.
+    index_set = set()
+    for key_name, key_value in zip(self._pheno_keys_names,key_values):
+      test = set([i for i, x in enumerate(self.pheno_dict[key_name]) \
+                  if x == key_value])
+      if len(test) == 0:
         break
       
-      if len(index_set)==0:
-        index_set=test
+      if len(index_set) == 0:
+        index_set = test
       else:
-        index_set=index_set.intersection(test)
+        index_set = index_set.intersection(test)
 
     if len(index_set) == 0:
       loc=self.add_new_row(key_values)
     else:
       loc=index_set.pop()
         
-    self.pheno_dict[pheno_name][loc]=pheno_val
+    self.pheno_dict[pheno_name][loc] = pheno_val
     
-  def add_new_row(self,key_values):
+  def add_new_row(self, key_values):
 
     for name in self._pheno_static_names:
       self.pheno_dict[name].append(self.pheno_function[name]())
 
-    for key,key_val in zip(self._pheno_keys_names,key_values):
+    for key, key_val in zip(self._pheno_keys_names, key_values):
       self.pheno_dict[key].append(key_val)
     for name in self._pheno_quantities_names:
       self.pheno_dict[name].append(self._empty_val)
@@ -153,64 +155,64 @@ class Phenotypes:
   
   def get_pheno_data_frame(self):
 
-    cols=list()
+    cols = list()
     cols.extend(self._pheno_static_names)
     cols.extend(self._pheno_keys_names)
     cols.extend(self._pheno_quantities_names)
     
-    df = pandas.DataFrame(self.pheno_dict,columns=cols)
+    df = pandas.DataFrame(self.pheno_dict, columns=cols)
 
     return df
 
-  def save_to_csv(self,filename):
+  def save_to_csv(self, filename):
     df = self.get_pheno_data_frame()
-    df.to_csv(filename,index=False)
+    df.to_csv(filename, index=False)
   
   def execute(self):
     pass
   
-  def region_has(self,region_value):
+  def region_has(self, region_value):
     if self._region_hierarchy_top_bottom.has_key(region_value):
       return self._region_hierarchy_top_bottom[region_value]
     else:
       return []
 
-  def region_belongs(self,region_value):
+  def region_belongs(self, region_value):
     if self._region_hierarchy_bottom_top.has_key(region_value):
       return self._region_hierarchy_bottom_top[region_value]
     else:
       return []
 
   def __create_region_hierarchy(self):
-    #In the meantime, this give us a working structure all within python
-    #Multiple lists indicate and "or" relation
-    self._region_hierarchy_top_bottom[1]=[[2,3],[20,21,22]]
-    self._region_hierarchy_top_bottom[2]=[[4,5,6],[14,13,12]]
-    self._region_hierarchy_top_bottom[3]=[[7,8],[9,10,11]]
-    self._region_hierarchy_top_bottom[20]=[[9,12]]
-    self._region_hierarchy_top_bottom[21]=[[10,13]]
-    self._region_hierarchy_top_bottom[22]=[[11,14]]
+    # In the meantime, this give us a working structure all within python
+    # Multiple lists indicate and "or" relation
+    self._region_hierarchy_top_bottom[1] = [[2, 3], [20, 21, 22]]
+    self._region_hierarchy_top_bottom[2] = [[4, 5, 6], [14, 13, 12]]
+    self._region_hierarchy_top_bottom[3] = [[7, 8], [9, 10, 11]]
+    self._region_hierarchy_top_bottom[20] = [[9, 12]]
+    self._region_hierarchy_top_bottom[21] = [[10, 13]]
+    self._region_hierarchy_top_bottom[22] = [[11, 14]]
     
-    self._region_hierarchy_bottom_top[2]=1
-    self._region_hierarchy_bottom_top[3]=1
-    self._region_hierarchy_bottom_top[4]=2
-    self._region_hierarchy_bottom_top[5]=2
-    self._region_hierarchy_bottom_top[6]=2
-    self._region_hierarchy_bottom_top[7]=3
-    self._region_hierarchy_bottom_top[8]=3
-    self._region_hierarchy_bottom_top[9]=[3,20]
-    self._region_hierarchy_bottom_top[10]=[3,21]
-    self._region_hierarchy_bottom_top[11]=[3,22]
-    self._region_hierarchy_bottom_top[12]=[2,20]
-    self._region_hierarchy_bottom_top[13]=[2,21]
-    self._region_hierarchy_bottom_top[14]=[2,22]
+    self._region_hierarchy_bottom_top[2] = 1
+    self._region_hierarchy_bottom_top[3] = 1
+    self._region_hierarchy_bottom_top[4] = 2
+    self._region_hierarchy_bottom_top[5] = 2
+    self._region_hierarchy_bottom_top[6] = 2
+    self._region_hierarchy_bottom_top[7] = 3
+    self._region_hierarchy_bottom_top[8] = 3
+    self._region_hierarchy_bottom_top[9] = [3, 20]
+    self._region_hierarchy_bottom_top[10] = [3, 21]
+    self._region_hierarchy_bottom_top[11] = [3, 22]
+    self._region_hierarchy_bottom_top[12] = [2, 20]
+    self._region_hierarchy_bottom_top[13] = [2, 21]
+    self._region_hierarchy_bottom_top[14] = [2, 22]
     
-    self._region_hierarchy_bottom_top[20]=1
-    self._region_hierarchy_bottom_top[21]=1
-    self._region_hierarchy_bottom_top[22]=1
+    self._region_hierarchy_bottom_top[20] = 1
+    self._region_hierarchy_bottom_top[21] = 1
+    self._region_hierarchy_bottom_top[22] = 1
 
   def __create_region_type_list(self):
-    self._region_name=list()
+    self._region_name = list()
     self._region_name.append( "UNDEFINEDREGION" )
     self._region_name.append( "WHOLELUNG" )
     self._region_name.append( "RIGHTLUNG" )
@@ -241,7 +243,7 @@ class Phenotypes:
     self._region_name.append( "ABDOMEN" )
     self._region_name.append( "PARAVERTEBRAL" )
     
-    self._type_name=list()
+    self._type_name = list()
     self._type_name.append( "UNDEFINEDTYPE" )
     self._type_name.append( "NORMALPARENCHYMA" )
     self._type_name.append( "AIRWAY" )

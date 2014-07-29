@@ -6,3 +6,7 @@ bin
 ITKIOFactoryRegistration
 .DS_Store
 CIPConfig.cmake
+*.pyc
+*-orig
+*_orig
+DartConfiguration.tcl

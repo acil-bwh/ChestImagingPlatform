@@ -2,7 +2,7 @@
  *  \class itkCIPChestLabelMapToChestLobeLabelMapImageFilter
  *  \ingroup common
  *  \brief This class reads a label map (conforming to labeling
- *  schemes outlined in cipConventions.h) and produces a label map
+ *  schemes outlined in cipChestConventions.h) and produces a label map
  *  with the lobes of the lung labeled.
  *
  *  Detailed description 
@@ -21,7 +21,7 @@
 #include "itkImage.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageRegionConstIterator.h"
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkConnectedComponentImageFilter.h"
 #include "cipThinPlateSplineSurface.h"
 
