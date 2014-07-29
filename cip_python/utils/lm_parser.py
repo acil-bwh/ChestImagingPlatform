@@ -52,11 +52,11 @@ class LMParser():
             chest-type query. The chest region hierarchy is honored.
         """
         if chest_region is not None:
-            if type(chest_region) != int:
+            if type(chest_region) != int and type(chest_region) != np.int64:
                 raise ValueError(
                     'chest_region must be an int between 0 and 255 inclusive')
         if chest_type is not None:
-            if type(chest_type) != int:
+            if type(chest_type) != int and type(chest_type) != np.int64:
                 raise ValueError(
                     'chest_type must be an int between 0 and 255 inclusive')        
         
@@ -173,34 +173,4 @@ class LMParser():
 
         pairs = np.array(tmp, dtype=int)
         return pairs
-
-    def get_all_entities(self):
-        """Get all the entities in the label map: all regions, all types, and
-        all region-type pairs
-
-        Returns
-        -------
-        entities : array, shape ( N, 2 )
-            All N entities in the label map (regions, types, and region-type
-            pairs). This includes regions implied by the region hierarchy.
-        """
-        types = self.get_chest_types()
-        regions = self.get_all_chest_regions()
-        pairs = self.get_all_pairs()
-
-        tmp = []
-        for t in types:
-            if (0, t) not in tmp:
-                tmp.append((0, t))
-        for r in regions:
-            if (r, 0) not in tmp:
-                tmp.append((r, 0))
-        for p in pairs:
-            if (p[0], p[1]) not in tmp:
-                tmp.append((p[0], p[1]))
-
-        entities = np.array(tmp, dtype=int)
-        return entities
-
-
 
