@@ -1,4 +1,5 @@
 from libcpp.string cimport string
+from libcpp cimport bool
 
 cdef extern from "cipChestConventions.h" namespace "cip":
     cdef cppclass _ChestConventions "cip::ChestConventions":
@@ -14,6 +15,7 @@ cdef extern from "cipChestConventions.h" namespace "cip":
         unsigned short GetValueFromChestRegionAndType(unsigned char region, unsigned char type) const
         unsigned char GetChestRegionValueFromName(string regionString) const
         unsigned char GetChestTypeValueFromName(string typeString) const
+        bool CheckSubordinateSuperiorChestRegionRelationship(unsigned char subordinate, unsigned char superior)
 
 cdef class ChestConventions:
     cdef _ChestConventions *thisptr
@@ -56,3 +58,6 @@ cdef class ChestConventions:
 
     cpdef unsigned char GetChestTypeValueFromName(self, string typeString):
         return self.thisptr.GetChestTypeValueFromName(typeString)
+
+    cpdef bool CheckSubordinateSuperiorChestRegionRelationship(self, unsigned char subordinate, unsigned char superior):    
+        return self.thisptr.CheckSubordinateSuperiorChestRegionRelationship(subordinate, superior)

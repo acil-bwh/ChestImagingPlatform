@@ -235,6 +235,9 @@ int main( int argc, char *argv[] )
     std::cout << "Writing results to file..." << std::endl;
     
     std::ofstream file(outFileName.c_str());
+        
+    // Title
+    file<<"File,Region,Type,Mean,STD,Min,Max,Median"<<std::endl;
 
     // First write the name of label map
     file << labelMapFileName << ",";
@@ -245,31 +248,14 @@ int main( int argc, char *argv[] )
       {
       std::string regionName = conventions.GetChestRegionNameFromValue( mapIt->first );
       std::string typeName   = conventions.GetChestTypeNameFromValue( mapIt->first );
-      file << regionName << " " << typeName << " Mean,";
-      file << regionName << " " << typeName << " STD,";
-      file << regionName << " " << typeName << " Min,";
-      file << regionName << " " << typeName << " Max,";
-      file << regionName << " " << typeName << " Median,";
-
+      file << regionName << "," << typeName << mapIt->second.mean << ",";
+      file << mapIt->second.std <<",";
+      file << mapIt->second.min <<",";
+      file << mapIt->second.max <<",";
+      file << mapIt->second.median << std::endl;
       ++mapIt;
       }
-
-    // Now write the stats themselves. We need a leading comma to
-    // account for the case name
-    file << std::endl;
-    file << ",";
-    mapIt = labelToStatsMap.begin();
-    while (mapIt != labelToStatsMap.end())
-      {
-      file << mapIt->second.mean   << ",";
-      file << mapIt->second.std    << ",";
-      file << mapIt->second.min    << ",";
-      file << mapIt->second.max    << ",";
-      file << mapIt->second.median << ",";
-
-      ++mapIt;
-      }
-    file << std::endl;
+    
     file.close();
     }
 

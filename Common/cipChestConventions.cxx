@@ -494,24 +494,7 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( uns
  *  8-bit region value corresponding to the input */
 unsigned char cip::ChestConventions::GetChestRegionFromValue( unsigned short value ) const
 {
-  unsigned char regionValue = 0;
-  
-  for ( int i=15; i>=0; i-- )
-    {
-      int power = int( std::pow( float(2), float(i) ) );
-      
-      if ( power <= value )
-	{
-          if ( i < 8 )
-            {
-	      regionValue += power;
-            }
-	  
-          value = value % power;
-	}
-    }
-  
-  return regionValue;
+  return value - ((value >> 8) << 8);
 }
 
 /** The 'color' param is assumed to have three components, each in
@@ -552,24 +535,7 @@ unsigned char cip::ChestConventions::GetChestRegionFromColor(double* color) cons
  *  8-bit type value corresponding to the input */
 unsigned char cip::ChestConventions::GetChestTypeFromValue( unsigned short value ) const
 {
-  unsigned char typeValue = 0;
-  
-  for ( int i=15; i>=0; i-- )
-    {
-      int power = int( std::pow( float(2), float(i) ) );
-      
-      if ( power <= value )
-	{
-          if ( i >= 8 )
-            {
-	      typeValue += (unsigned char)( std::pow( float(2), float(i-8) ) );
-            }
-	  
-          value = value % power;
-	}
-    }
-  
-  return typeValue;
+  return (value >> 8);
 }
 
 /** Given an unsigned char value corresponding to a chest type, this

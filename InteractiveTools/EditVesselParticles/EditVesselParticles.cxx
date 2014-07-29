@@ -116,12 +116,13 @@
 typedef itk::Image< short, 3 >             ImageType;
 typedef itk::ImageFileReader< ImageType >  ReaderType;
 void AddComponentsToInteractor( cipVesselDataInteractor*, vtkSmartPointer< vtkPolyData >, std::string, 
-                                std::map< unsigned short, std::string >*, double );
+                                std::map< unsigned short, std::string >*, double, double, double );
 vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteractor*, vtkSmartPointer< vtkPolyData >, 
                                                           std::map< unsigned short, std::string >*  );
 void AddRegionTypePointsAsSpheresToInteractor( cipVesselDataInteractor*, std::string, std::vector< unsigned char >, std::vector< unsigned char >, 
 					       std::vector< double >, std::vector< double >, std::vector< double >, std::vector< double >, 
 					       std::vector< double > );
+void AddSpecifiedParticlesToInteractor( cipVesselDataInteractor*, vtkSmartPointer< vtkPolyData >, std::string, float, std::string, double );
 
 int main( int argc, char *argv[] )
 {
@@ -131,6 +132,8 @@ int main( int argc, char *argv[] )
   std::string  vesselModelFileName     = "NA";
   std::string  ctFileName              = "NA";
   double       particleSize            = 1.0;
+  double       scaleThresh             = 0.0;
+  double       distThresh              = std::numeric_limits<double>::max();
   // Arguments for optional region-type points file input
   std::string regionTypePointsFileName = "NA";
   std::vector< unsigned char > regionTypePointsRegions;
@@ -140,8 +143,8 @@ int main( int argc, char *argv[] )
   std::vector< double > regionTypePointsBlue;
   std::vector< double > regionTypePointsOpacity;
   std::vector< double > regionTypePointsScale;
-  bool prune;
-  bool label;
+  bool prune = false;
+  bool label = false;
 
   // Input descriptions for user convenience
   std::string programDesc = "This program can be used to label vessel particles \
@@ -185,6 +188,10 @@ rendering. Must be used with the --rtpRegions, --rtpTypes, --rtpRed, --rtpGreen,
 the user to remove particles with the k key";
   std::string labelDesc   = "Set this flag to indicated that the editor should be used in label mode, which allows \
 the user to label groups of particles according to their vessel generation.";
+  std::string scaleThreshDesc = "A connected component must contain a particle with scale at least this big in order for the \
+component to be rendered";
+  std::string distThreshDesc = "A connected component must contain a particle at least this close to a labeled particle in order \
+for the component to be rendered";
 
   // Parse the input arguments
   try
@@ -196,6 +203,8 @@ the user to label groups of particles according to their vessel generation.";
     TCLAP::ValueArg<std::string> ctFileNameArg( "c", "ct", ctFileNameDesc, false, ctFileName, "string", cl );
     TCLAP::ValueArg<std::string> vesselModelFileNameArg( "m", "model", vesselModelFileNameDesc, false, vesselModelFileName, "string", cl );
     TCLAP::ValueArg<double>      particleSizeArg( "s", "pSize", particleSizeDesc, false, particleSize, "double", cl );
+    TCLAP::ValueArg<double>      scaleThreshArg( "", "sThresh", scaleThreshDesc, false, scaleThresh, "double", cl );
+    TCLAP::ValueArg<double>      distThreshArg( "", "dThresh", distThreshDesc, false, distThresh, "double", cl );
     TCLAP::SwitchArg             pruneArg( "", "prune", pruneDesc, cl, false );
     TCLAP::SwitchArg             labelArg( "", "label", labelDesc, cl, false );
     // Region-type args:
@@ -224,6 +233,8 @@ the user to label groups of particles according to their vessel generation.";
     ctFileName              = ctFileNameArg.getValue();
     vesselModelFileName     = vesselModelFileNameArg.getValue();
     particleSize            = particleSizeArg.getValue();
+    scaleThresh             = scaleThreshArg.getValue();
+    distThresh              = distThreshArg.getValue();
     // Region-type points
     regionTypePointsFileName = regionTypePointsFileNameArg.getValue();
     if ( regionTypePointsFileName.compare( "NA" ) != 0  &&
@@ -276,7 +287,6 @@ the user to label groups of particles according to their vessel generation.";
     }
 
   cip::ChestConventions conventions;
-
   cipVesselDataInteractor interactor;               
   
   if ( ctFileName.compare( "NA" ) != 0 )
@@ -353,9 +363,10 @@ the user to label groups of particles according to their vessel generation.";
 	writer->Write();  
     }
   else if ( prune )
-    {
+    {      
       std::cout << "Adding components to interactor..." << std::endl;
-      AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "vesselParticles", &componentLabelToNameMap, particleSize );
+      AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "vesselParticles", &componentLabelToNameMap, 
+				 particleSize, distThresh, scaleThresh );
 
       std::cout << "Rendering..." << std::endl;  
       interactor.Render();
@@ -368,9 +379,9 @@ the user to label groups of particles according to their vessel generation.";
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
         writer->SetFileName( genParticlesFileName.c_str() );
-	writer->SetInput( outParticles );
-	//writer->SetFileTypeToASCII();
-	writer->Write();  
+      	writer->SetInput( outParticles );
+      	//writer->SetFileTypeToASCII();
+      	writer->Write();  
     }
 
   std::cout << "DONE." << std::endl;
@@ -380,10 +391,9 @@ the user to label groups of particles according to their vessel generation.";
 
 
 void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles, std::string whichLung, 
-                                std::map< unsigned short, std::string >* componentLabelToNameMap, double particleSize )  
+                                std::map< unsigned short, std::string >* componentLabelToNameMap, double particleSize,
+				double distThresh, double scaleThresh )  
 {
-  cip::ChestConventions conventions;
-
   unsigned int numberParticles         = particles->GetNumberOfPoints();
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
@@ -391,164 +401,239 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
   std::vector< unsigned short > componentVec;
   std::vector< unsigned char > cipTypeVec;
 
+  // First get all previously labeled vein and artery particles
+  std::vector< unsigned int > labeledIDs;
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
-    component = static_cast< unsigned short >( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)) );
+      if ( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::ARTERY) ||
+	   *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::VEIN) )
+	{
+	  labeledIDs.push_back( i );
+	}
+    }
 
-    // The input particles may already be labeled. Get the ChestType
-    // recorded for thie component. By default we will color according
-    // to this type
-    unsigned char cipType = static_cast< unsigned char >( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) );
+  AddSpecifiedParticlesToInteractor( interactor, particles, "ChestType", float(cip::ARTERY), "artery", particleSize );
+  AddSpecifiedParticlesToInteractor( interactor, particles, "ChestType", float(cip::VEIN), "vein", particleSize );
 
-    bool addComponent = true;
+  for ( unsigned int i=0; i<numberParticles; i++ )
+    {
+      double point1[3];
+        point1[0] = particles->GetPoint( i )[0];
+	point1[1] = particles->GetPoint( i )[1];
+	point1[2] = particles->GetPoint( i )[2];
 
-    for ( unsigned int j=0; j<componentVec.size(); j++ )
-      {
-      if ( component == componentVec[j] )
-        {
-        addComponent = false;
-        
-        break;
-        }
-      }
-    if ( addComponent )
-      {
-      componentVec.push_back( component );
-      cipTypeVec.push_back( cipType );
-      }
+      bool considerParticle = false;
+      if ( *(particles->GetPointData()->GetArray( "scale" )->GetTuple(i)) >= scaleThresh )
+	{
+	  considerParticle = true;
+	}
+      if ( !considerParticle )
+	{
+	  for ( unsigned int j=0; j<labeledIDs.size(); j++ )
+	    {
+	      double point2[3];
+	        point2[0] = particles->GetPoint( labeledIDs[j] )[0];
+		point2[1] = particles->GetPoint( labeledIDs[j] )[1];
+		point2[2] = particles->GetPoint( labeledIDs[j] )[2];
+		
+	      double vec[3];
+		vec[0] = point1[0] - point2[0];
+		vec[1] = point1[1] - point2[1];
+		vec[2] = point1[2] - point2[2];
+
+	      if ( cip::GetVectorMagnitude( vec ) < distThresh )
+		{
+		  considerParticle = true;
+		  break;
+		}
+	    }
+	}
+
+      if ( considerParticle )
+	{
+	  if ( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) != float(cip::ARTERY) &&
+	       *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) != float(cip::VEIN) )
+	    {
+	      component = (unsigned short)( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)) );
+
+	      // The input particles may already be labeled. Get the ChestType
+	      // recorded for thie component. By default we will color according
+	      // to this type
+	      unsigned char cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) );
+	      
+	      bool addComponent = true;
+	  
+	      for ( unsigned int j=0; j<componentVec.size(); j++ )
+		{
+		  if ( component == componentVec[j] )
+		    {
+		      addComponent = false;
+		      
+		      break;
+		    }
+		}
+	      if ( addComponent )
+		{
+		  componentVec.push_back( component );
+		  cipTypeVec.push_back( cipType );
+		}
+	    }
+	}
     }
 
   // Now create the different poly data for the different components
   // and add them to the editor
   for ( unsigned int c=0; c<componentVec.size(); c++ )
     {
-    vtkPolyData* polyData = vtkPolyData::New();
-    vtkPoints* points  = vtkPoints::New();
-    std::vector< vtkFloatArray* > arrayVec;
+      std::stringstream stream;
+      stream << componentVec[c];
+      
+      std::string actorName = stream.str();
+      actorName.append( whichLung );
 
-    for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
-      {
-      vtkFloatArray* array = vtkFloatArray::New();
+      (*componentLabelToNameMap)[componentVec[c]] = actorName;
+
+      AddSpecifiedParticlesToInteractor( interactor, particles, "unmergedComponents", componentVec[c], actorName, particleSize );
+    }  
+}
+
+
+void AddSpecifiedParticlesToInteractor( cipVesselDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles,
+					std::string specifiedArrayName, float specifiedArrayVal, std::string interactorActorName,
+					double particleSize )
+{
+  cip::ChestConventions conventions;
+
+  unsigned char cipType; // Used to determine actor color
+
+  unsigned int numberParticles         = particles->GetNumberOfPoints();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
+
+  vtkSmartPointer< vtkPolyData > polyData = vtkSmartPointer< vtkPolyData >::New();
+  vtkSmartPointer< vtkPoints > points  = vtkSmartPointer< vtkPoints >::New();
+  std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
+  
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
+    {
+      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
         array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
-        array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
-
+	array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
+      
       arrayVec.push_back( array );
-      }
+    }
 
-    unsigned int inc = 0;
-    for ( unsigned int p=0; p<numberParticles; p++ )
-      {
-      component = static_cast< unsigned short >( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(p)) );
+  unsigned int inc = 0;
+  for ( unsigned int p=0; p<numberParticles; p++ )
+    {
+      float val = *(particles->GetPointData()->GetArray( specifiedArrayName.c_str() )->GetTuple(p));
 
-      if ( component == componentVec[c] )
-        {
-        points->InsertNextPoint( particles->GetPoint(p) );
+      if ( val == specifiedArrayVal )
+	{
+	  // Get the particle's type in order to retrieve color later. We're assuming that all particles
+	  // for the specification have the same type, so we can grab the type of any one of them for the
+	  // color.
+	  cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(p)) );
 
-        for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
-          {
-          arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(p) );
-          }
+	  points->InsertNextPoint( particles->GetPoint(p) );
 
-        inc++;
-        }
-      }
+	  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
+	    {
+	      arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(p) );
+	    }
 
-    std::stringstream stream;
-    stream << componentVec[c];
-
-    std::string name = stream.str();
-    name.append( whichLung );
-
+	  inc++;
+	}
+    }
+  
+  if ( inc > 0 )
+    {
     double* color = new double[3];
-    conventions.GetChestTypeColor( cipTypeVec[c], color );
+    double r, g, b;
+    if ( cipType == (unsigned char)(cip::UNDEFINEDTYPE) )
+      {
+      r = 0.0;
+      g = 1.0;
+      b = 0.0;
+      }
+    else
+      {
+      conventions.GetChestTypeColor( cipType, color );
 
-    double r = color[0];
-    double g = color[1];
-    double b = color[2];
-    
+      r = color[0];
+      g = color[1];
+      b = color[2];
+      }
+
     polyData->SetPoints( points );
     for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
       {
       polyData->GetPointData()->AddArray( arrayVec[j] );
       }
 
-    interactor->SetVesselParticlesAsDiscs( polyData, particleSize, name ); 
-    interactor->SetActorColor( name, r, g, b );
-    interactor->SetActorOpacity( name, 1 );
-
-    (*componentLabelToNameMap)[componentVec[c]] = name;
+    interactor->SetVesselParticlesAsDiscs( polyData, particleSize, interactorActorName ); 
+    interactor->SetActorColor( interactorActorName, r, g, b );
+    interactor->SetActorOpacity( interactorActorName, 1 );  
     }
 }
 
+// Iterate over all particles, get the particle's component, get the
+// component's name, using the name get the component color, with the
+// color assign the proper generation label
+vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles, 
+                                                          std::map< unsigned short, std::string >* componentLabelToNameMap )
+{
+  cip::ChestConventions conventions;
 
-// //
-// // Iterate over all particles, get the particle's component, get the
-// // component's name, using the name get the component color, with the
-// // color assign the proper generation label
-// //
-// vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles, 
-//                                                           std::map< unsigned short, std::string >* componentLabelToNameMap )
-// {
-//   cip::ChestConventions conventions;
+  unsigned int numberParticles         = particles->GetNumberOfPoints();
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
-//   unsigned int numberParticles         = particles->GetNumberOfPoints();
-//   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
+  double* actorColor = new double[3];
 
-//   double* actorColor = new double[3];
-
-//   vtkSmartPointer< vtkPolyData > outPolyData = vtkSmartPointer< vtkPolyData >::New();
-//   vtkSmartPointer< vtkPoints >   outPoints   = vtkSmartPointer< vtkPoints >::New();
+  vtkSmartPointer< vtkPolyData > outPolyData = vtkSmartPointer< vtkPolyData >::New();
+  vtkSmartPointer< vtkPoints >   outPoints   = vtkSmartPointer< vtkPoints >::New();
  
-//   std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
+  std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
 
-//   for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
-//     {
-//     vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-//       array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
-//       array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
+    {
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+      array->SetNumberOfComponents( particles->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+      array->SetName( particles->GetPointData()->GetArray(i)->GetName() );
 
-//     arrayVec.push_back( array );
-//     }
+    arrayVec.push_back( array );
+    }
  
-//   unsigned int inc = 0;
-//   for ( unsigned int i=0; i<numberParticles; i++ )
-//     {
-//     unsigned short componentLabel = particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)[0];
-//     std::string    name           = (*componentLabelToNameMap)[componentLabel];
+  unsigned int inc = 0;
+  for ( unsigned int i=0; i<numberParticles; i++ )
+    {
+    unsigned short componentLabel = particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)[0];
+    std::string name = (*componentLabelToNameMap)[componentLabel];
+    
+    if ( interactor->Exists( name ) )
+      {
+	interactor->GetActorColor( name, actorColor ); 
+	float cipType = float( conventions.GetChestTypeFromColor( actorColor ) );
+	particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+      }
 
-//     if ( interactor->Exists( name ) )
-//       {
-//       interactor->GetActorColor( name, actorColor ); 
-      
-//       float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
-//       float cipType   = static_cast< float >( conventions.GetChestTypeFromColor( actorColor ) );
-      
-//       particles->GetPointData()->GetArray( "ChestRegion" )->SetTuple( i, &cipRegion );
-//       particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+    outPoints->InsertNextPoint( particles->GetPoint(i) );
+    for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
+      {
+        arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(i) );
+      }
 
-//       //
-//       // TODO: Something fishy here. With this block in, the
-//       // interactor re-renders...
-//       //
-//       outPoints->InsertNextPoint( particles->GetPoint(i) );
-//       for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
-//         {
-//         arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(i) );
-//         }
+    inc++;      
+    }
 
-//       inc++;
-//       }
-//     }
+  outPolyData->SetPoints( outPoints );
+  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
+    {
+    arrayVec[j];
+    outPolyData->GetPointData()->AddArray( arrayVec[j] );
+    }
 
-//   outPolyData->SetPoints( outPoints );
-//   for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
-//     {
-//     arrayVec[j];
-//     outPolyData->GetPointData()->AddArray( arrayVec[j] );
-//     }
-
-//   return outPolyData;
-// }
+  return outPolyData;
+}
 
 
 void AddRegionTypePointsAsSpheresToInteractor( cipVesselDataInteractor* interactor, std::string regionTypePointsFileName, std::vector< unsigned char > regionTypePointsRegions, 
