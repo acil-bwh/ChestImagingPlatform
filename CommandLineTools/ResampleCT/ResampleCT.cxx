@@ -52,15 +52,14 @@
 
 namespace
 {
-typedef itk::Image< short, 2 >                                               ShortImageType;
+typedef itk::Image< short, 2 >                                                  ShortImageType;
 typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType, double >  InterpolatorType;
-typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >           ResampleType;
-typedef itk::AffineTransform< double, 2 >                                          TransformType;
-typedef itk::CompositeTransform< double, 2 >                                   CompositeTransformType;
-typedef itk::ImageFileWriter< ShortImageType >  ShortWriterType2D;
-typedef itk::ImageFileReader< ShortImageType >                                               ShortReaderType;
-typedef itk::ImageRegistrationMethod<ShortImageType,ShortImageType >                         CTRegistrationType;
-
+typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >               ResampleType;
+typedef itk::AffineTransform< double, 2 >                                       TransformType;
+typedef itk::CompositeTransform< double, 2 >                                    CompositeTransformType;
+typedef itk::ImageFileWriter< ShortImageType >                                  ShortWriterType2D;
+typedef itk::ImageFileReader< ShortImageType >                                  ShortReaderType;
+typedef itk::ImageRegistrationMethod<ShortImageType,ShortImageType >            CTRegistrationType;
 
 //TransformType::Pointer GetTransformFromFile( std::string );
 
