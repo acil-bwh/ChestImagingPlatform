@@ -72,6 +72,7 @@ typedef itk::ImageFileReader< LabelMapType2D >  LabelMapReaderType2D;
 typedef itk::Image< short, 2 >                ShortImageType;
 typedef itk::ImageFileReader< ShortImageType > ShortReaderType;
 typedef itk::ImageFileReader< ShortImageType >                                                            CTFileReaderType;
+typedef itk::ImageFileWriter< ShortImageType >  ShortWriterType2D;
 
   //registration
 typedef itk::RegularStepGradientDescentOptimizer                                                       OptimizerType;
@@ -245,10 +246,8 @@ int main( int argc, char *argv[] )
   bool *isInvertTransform = new bool[inputTransformFileName.size()];
   for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
-      std::cout<<inputTransformFileName[i]<<std::endl;
       isInvertTransform[i] = false;
     }   
-  std::cout<<invertTransform.size()<<std::endl;
   for ( unsigned int i=0; i<invertTransform.size(); i++ )
     {
       isInvertTransform[invertTransform[i]] = true;
@@ -357,11 +356,9 @@ int main( int argc, char *argv[] )
   transform_forsim->AddTransform(id_transform);
   transform_forsim->SetAllTransformsToOptimizeOn();
 
-  std::cout << " transforms read. "<<std::endl;
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
   double similarityValue;
 
-  std::cout << "Resampling..." << std::endl;
   ResampleType::Pointer resampler = ResampleType::New();
     resampler->SetTransform( transform );
     resampler->SetInterpolator( interpolator );
@@ -382,25 +379,40 @@ int main( int argc, char *argv[] )
     return cip::RESAMPLEFAILURE;
     }
 
+ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
+  writer->SetFileName("/Users/rolaharmouche/Documents/Data/test_resampled.nrrd");
+    writer->UseCompressionOn();
+    writer->SetInput( resampler->GetOutput() );
+  try
+    {
+    writer->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught writing label map:";
+    std::cerr << excp << std::endl;
+    
+    return cip::LABELMAPWRITEFAILURE;
+    }
+
+
   //initialize metric 
   if (similarityMetric =="nc")
       {
          ncMetricType::Pointer metric = ncMetricType::New();
-	 transform->SetAllTransformsToOptimizeOn();
-	 std::cout<<transform<<std::endl;
+	 transform_forsim->SetAllTransformsToOptimizeOn();
 	 metric->SetInterpolator( interpolator );
-	 metric->SetTransform(transform_forsim);//transform);
+	 metric->SetTransform(transform_forsim);
 	 metric->SetFixedImage( ctFixedImage );
 	 metric->SetMovingImage( resampler->GetOutput() );
 	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
 	 metric->SetFixedImageRegion(fixedRegion);
 	 metric->Initialize();
 	 
-	 std::cout<<metric<<std::endl;
 	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetMovingImageMask( movingSpatialObjectMask );
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	 metric->SetFixedImageMask( fixedSpatialObjectMask );  
+	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
 
 	 ncMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
 	 zero_params = transform_forsim->GetParameters();
@@ -432,32 +444,89 @@ int main( int argc, char *argv[] )
     }
     else if (similarityMetric =="msqr")
       {
+
 	msqrMetricType::Pointer metric = msqrMetricType::New();
-        if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-            metric->SetFixedImageMask( fixedSpatialObjectMask );   
+
+	 transform_forsim->SetAllTransformsToOptimizeOn();
+	 metric->SetInterpolator( interpolator );
+	 metric->SetTransform(transform_forsim);//transform);
+	 metric->SetFixedImage( ctFixedImage );
+	 metric->SetMovingImage(resampler->GetOutput() );
+
+	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
+	   metric->SetMovingImageMask( movingSpatialObjectMask );
+	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
+
+	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 metric->SetFixedImageRegion(fixedRegion);
+	 metric->Initialize();
+
+	 msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+	 zero_params = transform_forsim->GetParameters();
+
+	 similarityValue = metric->GetValue(zero_params );
+	 std::cout<<"the msqr value is: "<<similarityValue<<std::endl;
 
 	similarity_type = "msqr";
       }
      
     else if (similarityMetric =="gd")
       {
-	gdMetricType::Pointer metric = gdMetricType::New();
-      if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetMovingImageMask( movingSpatialObjectMask );
-      if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );       
-      similarity_type = "gd";
+
+	 gdMetricType::Pointer metric = gdMetricType::New();
+
+	 transform->SetAllTransformsToOptimizeOn();
+	 metric->SetInterpolator( interpolator );
+	 metric->SetTransform(transform_forsim);
+	 metric->SetFixedImage( ctFixedImage );
+	 metric->SetMovingImage(resampler->GetOutput() );
+
+	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
+	   metric->SetMovingImageMask( movingSpatialObjectMask );
+	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
+	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
+
+	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 metric->SetFixedImageRegion(fixedRegion);
+	 metric->Initialize();
+
+	 gdMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+	 zero_params = transform_forsim->GetParameters();
+
+	 similarityValue = metric->GetValue(zero_params );
+	 std::cout<<"the gd value is: "<<similarityValue<<std::endl;
+       
+	 similarity_type = "gd";
       }
    else //MI is default
      {
      
       MIMetricType::Pointer metric = MIMetricType::New();
+      transform->SetAllTransformsToOptimizeOn();
+      transform_forsim->SetAllTransformsToOptimizeOn();
+
       metric->SetFixedImageStandardDeviation( 13.5 );
       metric->SetMovingImageStandardDeviation( 13.5 );
+      metric->SetInterpolator( interpolator );
+      metric->SetTransform(transform_forsim);//transform);
+      metric->SetFixedImage( ctFixedImage );
+      metric->SetMovingImage( resampler->GetOutput() );
+      
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );      
+	metric->SetFixedImageMask( fixedSpatialObjectMask );  
+      
+      ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+      metric->SetFixedImageRegion(fixedRegion);
+      metric->Initialize();
+           
+      msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+      zero_params = transform_forsim->GetParameters();
+     
+      similarityValue = metric->GetValue(zero_params );
+      std::cout<<"the mi value is: "<<similarityValue<<std::endl;
       similarity_type = "MI";
      }
  
@@ -512,7 +581,6 @@ int main( int argc, char *argv[] )
       int pathLength = 0, pos=0, next=0; 
       next = ctSimilarityXMLData.extention.find('.', next+1);
       ctSimilarityXMLData.extention.erase(0,next);
-      std::cout<<ctSimilarityXMLData.extention<<std::endl;
 	
       //remove path from output transformation file before storing in xml
       //For each transformation       
