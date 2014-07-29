@@ -192,7 +192,7 @@ int main( int argc, char *argv[] )
   ResampleType::Pointer resampler = ResampleType::New();
     resampler->SetTransform( transform );
     resampler->SetInterpolator( interpolator );
-    resampler->SetInput( labelMapReader->GetOutput() );
+    resampler->SetInput( shortReader->GetOutput() );
     resampler->SetSize( size );
     resampler->SetOutputSpacing( spacing );
     resampler->SetOutputOrigin( origin );
