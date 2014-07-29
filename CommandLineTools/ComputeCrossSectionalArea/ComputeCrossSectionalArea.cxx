@@ -38,7 +38,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#include "cipConventions.h"
+#include "cipChestConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageRegionIterator.h"
