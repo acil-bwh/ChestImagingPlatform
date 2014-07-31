@@ -17,7 +17,7 @@ def test_execute_1():
     laa = LAAPhenotypes()    
     df = laa.execute(ct, lm, 'simple')
 
-    for i in xrange(0, 18):
+    for i in xrange(0, 14):
         r = df['Region'].iloc[i]
         t = df['Type'].iloc[i]
         val_950 = df['LAA-950'].iloc[i]
@@ -55,9 +55,8 @@ def test_execute_1():
             assert np.isclose(val_856, 0.0), 'Phenotype not as expected'
 
 def test_execute_2():
-    laa = LAAPhenotypes()    
-    df = laa.execute(ct, lm, 'simple', chest_regions=np.array([1]),
-                     threshs=np.array([-960]))
+    laa = LAAPhenotypes(threshs=np.array([-960]))    
+    df = laa.execute(ct, lm, 'simple', chest_regions=np.array([1]))
     assert np.isclose(df['LAA-960'].iloc[0], 0.055555), \
         'Phenotype is not as expected'
 
