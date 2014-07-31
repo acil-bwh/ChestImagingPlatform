@@ -14,7 +14,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD.nhdr 252 304 449 ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_interactiveAirwaySegmentation.nhdr)
+  ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000.nhdr 252 304 449 ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_interactiveAirwaySegmentation.nhdr)
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
@@ -33,7 +33,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST COMMAND itkCIPOtsuLungCastImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_otsuLungCast.nhdr)
+  ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST COMMAND itkCIPOtsuLungCastImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_otsuLungCast.nhdr)
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
@@ -52,7 +52,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPPartialLungLabelMapImageFilterTEST COMMAND itkCIPPartialLungLabelMapImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_partialLungLabelMap.nhdr)
+  ADD_TEST( NAME itkCIPPartialLungLabelMapImageFilterTEST COMMAND itkCIPPartialLungLabelMapImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_partialLungLabelMap.nhdr)
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
@@ -71,7 +71,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPSplitLeftLungRightLungImageFilterTEST COMMAND itkCIPSplitLeftLungRightLungImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_preLeftRightSplit.nhdr  ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_postLeftRightSplitLabeled.nhdr )
+  ADD_TEST( NAME itkCIPSplitLeftLungRightLungImageFilterTEST COMMAND itkCIPSplitLeftLungRightLungImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_preLeftRightSplit.nhdr  ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_postLeftRightSplitLabeled.nhdr )
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
@@ -90,12 +90,12 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPLabelLungRegionsImageFilterTEST COMMAND itkCIPLabelLungRegionsImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_postLeftRightSplit.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/18501Q_INSP_STD_BWH_COPD_postLeftRightSplitLabeled.nhdr)
+  ADD_TEST( NAME itkCIPLabelLungRegionsImageFilterTEST COMMAND itkCIPLabelLungRegionsImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_postLeftRightSplit.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_postLeftRightSplitLabeled.nhdr)
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
 # itkCIPOtsuLungCastImageFilterTEST2
 #----------------------------------------------
 IF ( CIP_BUILD_TESTING_LARGE )
-  ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST2 COMMAND itkCIPOtsuLungCastImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/21094A_INSP_STD_NJC_COPD.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/21094A_INSP_STD_NJC_COPD_otsuLungCast.nhdr)
+  ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST2 COMMAND itkCIPOtsuLungCastImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case001.nhdr ${CIP_SOURCE_DIR}/Testing/Data/Large/Case001_otsuLungCast.nhdr)
 ENDIF( CIP_BUILD_TESTING_LARGE )
