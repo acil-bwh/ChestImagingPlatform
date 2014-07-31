@@ -490,6 +490,11 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( uns
   return false;
 }
 
+std::string cip::ChestConventions::GetChestWildCardName() const
+{
+  return std::string("NaN");
+}
+
 /** Given an unsigned short value, this method will compute the
  *  8-bit region value corresponding to the input */
 unsigned char cip::ChestConventions::GetChestRegionFromValue( unsigned short value ) const
