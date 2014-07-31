@@ -45,25 +45,30 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
 
     #find highest matches    
     indexes=[]
-    for i in range(num_training_cases):
+    for ii in range(num_training_cases):
         #heapq.heappush(indexes, (i, similarity_values[i]))
-        indexes.append(i)
-        
-    print(similarity_values[i])    
+        indexes.append(ii)
+    print("number of training cases  "+str(num_training_cases))    
+    print("similarity values : ")    
+    print(similarity_values[1])   
+    print(similarity_values[num_training_cases-1])    
     if (similarity == "ncc"):
         nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
             i: (-(similarity_values[i]))) #take (from 0 to 10, assuming testint is not in trainng)
     else:
         nlargestvalues = heapq.nlargest(num_closest_cases, indexes, key=lambda \
-            i: (similarity_values[i])) #take (from 0 to 10, assuming testint is not in trainng)        
+            i: (similarity_values[i])) #take (from 0 to 10, assuming testint is not in trainng)     
+    print("n largst values")           
     print(nlargestvalues)
     patient_atlas_labelmaps = [""]*num_closest_cases
     patient_atlas_similarity = [0.0]*num_closest_cases
     
     #Now store the num_cases in a 2D list
-    for i in range(num_closest_cases): 
+    for i in range(0,num_closest_cases): 
+        print("threashold is "+str(threshold))
         if (abs(float(similarity_values[nlargestvalues[i]])) > threshold):
             patient_atlas_labelmaps[i] = list_of_label_files[nlargestvalues[i]]
+            print("labelmap")
             print(patient_atlas_labelmaps[i])
             patient_atlas_similarity[i] = abs(float(similarity_values[nlargestvalues[i]]))
             print(patient_atlas_similarity[i])
@@ -73,7 +78,13 @@ def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
 
 
     closest_cases = np.vstack((patient_atlas_labelmaps, patient_atlas_similarity))
+    
+    print("in get_closest_cases: ")
+    print(num_closest_cases)
+    print(closest_cases)   
+
     return closest_cases
+    
 
 def getRandomCases(list_of_label_files, num_closest_cases):  
     

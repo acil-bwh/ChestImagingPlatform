@@ -81,10 +81,3 @@ def test_get_all_pairs():
     assert np.sum(parser.get_all_pairs() == gt_pairs) == 22, \
         "Retrieved pairs are not as expected"
 
-def test_get_all_entities():
-    gt_entities = np.array([[0, 0], [0, 2], [0, 3], [1, 0], [2, 0], [3, 0],
-                            [1, 2], [2, 2], [3, 2], [1, 3], [2, 3], [3, 3]])
-
-    assert np.sum(parser.get_all_entities() == gt_entities) == 24, \
-        "Retrieved entities are not as expected"
-    

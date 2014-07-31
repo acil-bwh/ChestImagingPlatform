@@ -1,328 +1,249 @@
 import os
 import datetime
-import pandas
+import numpy as np
+import pandas as pd
+from cip_python.ChestConventions import ChestConventions
+
+import pdb
 
 class Phenotypes:
-  """Base class for phenotype genearting classes.
+    """Base class for phenotype genearting classes.
     
-    Subclasses should overload the declare_quantities method to list the
-    phenotypes quantities that the subclass is going to produce.
-    Optionally, the subclass can overload the cid_generator method if
-    the subclass has an internal way to generate the case id that
-    identifies that phenotype.
-    
-    Parameters
+    Attributes
     ----------
-    cid: case id for the phenotypes that will be generated
-  """
-  def __init__(self, cid):
-    
-    self.cid = cid
-    self.pheno_dict = dict()
-    self.pheno_function = dict()
-    self._pheno_static_names = list()
-    self._pheno_static_functions = list()
-    self._pheno_keys_names=['Region','Type']
-    self._pheno_quantities_names = list()
-      
-    self._empty_val='NA'
+    pheno_names_ : list of strings
+        The names of the phenotypes
 
-    self.declare_static_cols()
-    self.declare_key_cols()
-    self.declare_pheno_cols(self.declare_quantities())
-  
-  
-    #Temp code until we unified cipConventions with cpython
-    self._region_hierarchy_top_bottom = dict()
-    self._region_hierarchy_bottom_top = dict()
-    self.__create_region_hierarchy()
-    self.__create_region_type_list()
-  
-  def declare_static_cols(self):
-    
-    self._pheno_static_names.append('CID')
-    self._pheno_static_functions.append(self.cid_generator)
-    
-    self._pheno_static_names.append('Generator')
-    self._pheno_static_functions.append(self.generator)
-    
-    self._pheno_static_names.append('Version')
-    self._pheno_static_functions.append(self.version)
-    
-    self._pheno_static_names.append('Machine')
-    self._pheno_static_functions.append(self.machine)
-    
-    self._pheno_static_names.append('OS_Name')
-    self._pheno_static_functions.append(self.os_name)
-    
-    self._pheno_static_names.append('OS_Version')
-    self._pheno_static_functions.append(self.os_version)
-    
-    self._pheno_static_names.append('OS_Kernel')
-    self._pheno_static_functions.append(self.os_kernel)
-    
-    self._pheno_static_names.append('OS_Arch')
-    self._pheno_static_functions.append(self.os_arch)
-    
-    self._pheno_static_names.append('Run_TimeStamp')
-    self._pheno_static_functions.append(self.run_timestamp)
-    
-    for key, function in zip(self._pheno_static_names,
-                             self._pheno_static_functions):
-      self.pheno_dict[key] = list()
-      self.pheno_function[key]=function
-    
-  def declare_key_cols(self):
-    for key in self._pheno_keys_names:
-      self.pheno_dict[key] = list()
-      self.pheno_dict[key] = list()
-  
-  def declare_pheno_cols(self, cols):
-    for name in cols:
-      self.pheno_dict[name] = list()
-      self._pheno_quantities_names.append(name)
+    key_names_ : list of strings
+        The names of the keys that are associated with each of the phenotype
+        values.
 
-  def declare_quantities(self):
-    cols = list()
-    return cols
+    valid_key_values_ : dictionary
+        The keys of the dictionary are the key names. Each dictionary key
+        maps to a list of valid DB key values that each key name can
+        assume
 
-  def generator(self):
-    return self.__class__.__name__
-  
-  def cid_generator(self):
-    return self.cid
-  
-  def version(self):
-    #Find how to grab git hashtag
-    return 0
+    Notes
+    -----
+    This class is meant to be inherited from in order to compute actual
+    phenotype values. Subclasses are meant to:
+    1) Overload the 'declare_pheno_names' method which should return a
+    list of strings indicating the phenotype names
+    2) Overload the 'execute' method which is expected to return the pandas
+    dataframe, self._df
+    3) Overload 'get_cid' in order to return a string value indicating the
+    case ID (CID) associated with the case on which the phenotypes are
+    executed.
+    4) It is expected that within an inheriting classes 'execute' implementation
+    the calls will be made to the 'add_pheno' method, which is implemented in
+    this base class. 'add_pheno' handles all the heavy lifting to make sure that
+    the dataframe is properly updated. After all desired calls to 'add_pheno'
+    have been made, simply returning self._df should be sufficient for the
+    class to behave properly.
+    """
+    def __init__(self):
+        """
+        """
+        self.pheno_names_ = self.declare_pheno_names()
+        self.key_names_ = self.declare_key_names()
+        self.valid_key_values_ = self.valid_key_values()
 
-  def os_name(self):
-    return os.uname()[0]
+        self.static_names_handler_ = {'Version': self.get_version,
+                                      'Machine': self.get_machine,
+                                      'OS_Name': self.get_os_name,
+                                      'OS_Version': self.get_os_version,
+                                      'OS_Kernel': self.get_os_kernel,
+                                      'OS_Arch': self.get_os_arch,
+                                      'Run_TimeStamp': self.get_run_time_stamp,
+                                      'Generator': self.get_generator,
+                                      'CID': self.get_cid}
 
-  def machine(self):
-    return os.uname()[1]
+        # Intializes the dataframe with static column names, key names, and
+        # phenotype names.
+        cols = self.static_names_handler_.keys()
+        for n in self.key_names_:
+            cols.append(n)
 
-  def os_kernel(self):
-    return os.uname()[2]
-
-  def os_version(self):
-    return os.uname()[3]
-
-  def os_arch(self):
-    return os.uname()[4]
-
-  def run_timestamp(self):
-    return datetime.datetime.now().isoformat()
-
-  def add_pheno(self, key_values, pheno_name, pheno_val):
-
-    if len(key_values) != len(self._pheno_keys_names):
-      raise "Wrong number of keys in tuple"
+        for p in self.pheno_names_:
+            cols.append(p)
     
-    # Find entry location (loc) by searching whether the key_values already
-    # exists in list.
-    index_set = set()
-    for key_name, key_value in zip(self._pheno_keys_names,key_values):
-      test = set([i for i, x in enumerate(self.pheno_dict[key_name]) \
-                  if x == key_value])
-      if len(test) == 0:
-        break
-      
-      if len(index_set) == 0:
-        index_set = test
-      else:
-        index_set = index_set.intersection(test)
+        self._df = pd.DataFrame(columns=cols)    
+    
+    def get_generator(self):
+        """Get the name of phenotype class that is producing the phenotype data
 
-    if len(index_set) == 0:
-      loc=self.add_new_row(key_values)
-    else:
-      loc=index_set.pop()
+        Returns
+        -------
+        generator : string
+            Name of phenotype class that is producing the phenotype data
+        """
+        return self.__class__.__name__
+
+    def get_version(self):
+        """Get the code version used to generate the phenotype data
+
+        Returns
+        -------
+        version : string
+            The git commit version used to generate the phenotype data
+
+        TODO
+        ----
+        Need to figure out how to obtain this!
+        """
+        return 'NaN'
+
+    def get_run_time_stamp(self):
+        """Get the run-time stamp.
+
+        Returns
+        -------
+        run_time_stamp : string
+            The run-time stamp
+        """
+        return datetime.datetime.now().isoformat()
+
+    def get_os_arch(self):
+        """Get the OS architecture on which the phenotype data is generated.
+
+        Returns
+        -------
+        os_arch : string
+            The OS architecture on which the phenotype data is generated.
+        """
+        return os.uname()[2]
+
+    def get_os_kernel(self):
+        """Get the OS kernel on which the phenotype data is generated.
+    
+        Returns
+        -------
+        os_kernel : string
+            The OS kernel on which the phenotype data is generated.
+        """
+        return os.uname()[2]
+
+    def get_os_version(self):
+        """Get the OS version on which the phenotype data is generated.
+    
+        Returns
+        -------
+        os_version : string
+            The OS version on which the phenotype data is generated.
+        """
+        return os.uname()[3]
+
+    def get_os_name(self):
+        """Get the OS name on which the phenotype data is generated.
+    
+        Returns
+        -------
+        os_name : string
+            The OS name on which the phenotype data is generated.
+        """
+        return os.uname()[0]
+
+    def get_machine(self):
+        """Get the machine name on which the phenotype data is generated.
+    
+        Returns
+        -------
+        machine : string
+            The machine name on which the phenotype data is generated.
+        """
+        return os.uname()[1]
+
+    def declare_pheno_names(self):
+        """
+        """
+        pass
+
+    def declare_key_names(self):
+        """
+        """
+        return ['Region', 'Type']
+
+    def valid_key_values(self):
+        """Get the valid DB key values that each DB key can assume.
+    
+        Returns
+        -------
+        valid_values : dictionary
+            The returned dictionary keys are the valid DB key names. Each dictionary
+            key value maps to a list of valid names that the DB key can assume.
+        """
+        c = ChestConventions()
+        valid_values = dict()
+    
+        region_names = [c.GetChestWildCardName()]
+        for i in xrange(0, c.GetNumberOfEnumeratedChestRegions()):
+            region_names.append(c.GetChestRegionName(i))
+        valid_values['Region'] = region_names
+
+        type_names = [c.GetChestWildCardName()]
+        for i in xrange(0, c.GetNumberOfEnumeratedChestTypes()):
+            type_names.append(c.GetChestTypeName(i))
+        valid_values['Type'] = type_names
         
-    self.pheno_dict[pheno_name][loc] = pheno_val
-    
-  def add_new_row(self, key_values):
-
-    for name in self._pheno_static_names:
-      self.pheno_dict[name].append(self.pheno_function[name]())
-
-    for key, key_val in zip(self._pheno_keys_names, key_values):
-      self.pheno_dict[key].append(key_val)
-    for name in self._pheno_quantities_names:
-      self.pheno_dict[name].append(self._empty_val)
-
-    return len(self.pheno_dict[name])-1
+        return valid_values
   
+    def get_cid(self):
+        """To be implemented by inheriting classes
+        """
+        return None
+
+    def add_pheno(self, key_value, pheno_name, pheno_value):
+        """Add a phenotype.
+    
+        Parameters
+        ----------
+        key_value : list of strings
+            This list indicates the specific DB key values that will be
+            associated with the phenotype. E.g. ['WHOLELUNG', 'UNDEFINEDTYPE']
+
+        pheno_name : string
+            The name of the phenotype. E.g. 'LAA-950'
+
+        pheno_value : object
+            The phenotype value. Can be a numerical value, string, etc
+        """
+        num_keys = len(key_value)
+    
+        # Make sure CID has been set
+        assert self.static_names_handler_['CID'] is not None, \
+            "CID has not been set"
+        
+        # Check if key is valid
+        for i in xrange(0, num_keys):
+            assert key_value[i] in self.valid_key_values_[self.key_names_[i]], \
+                "Invalid key: %s" % key_value[i]
+    
+        # Check if pheno_name is valid
+        assert pheno_name in self.pheno_names_, \
+            "Invalid phenotype name: %s" % pheno_name
+          
+        # Check if key already exists, otherwise add entry to data frame
+        key_exists = True
+        key_row = np.ones(len(self._df.index), dtype=bool)
+        for i in xrange(0, len(self.key_names_)):
+            key_row = \
+                np.logical_and(key_row, \
+                               self._df[self.key_names_[i]] == key_value[i])
+
+        if np.sum(key_row) == 0:
+            tmp = dict()
+            for k in self.static_names_handler_.keys():
+                tmp[k] = self.static_names_handler_[k]()
+            tmp[pheno_name] = pheno_value
+            for i in xrange(0, num_keys):
+                tmp[self.key_names_[i]] = key_value[i]
+            self._df = self._df.append(tmp, ignore_index=True)
+        else:
+            self._df[pheno_name][np.where(key_row==True)[0][0]] = pheno_value
+        
+    def save_to_csv(self, filename):
+        self._df.to_csv(filename, index=False)
   
-  def get_pheno_data_frame(self):
-
-    cols = list()
-    cols.extend(self._pheno_static_names)
-    cols.extend(self._pheno_keys_names)
-    cols.extend(self._pheno_quantities_names)
-    
-    df = pandas.DataFrame(self.pheno_dict, columns=cols)
-
-    return df
-
-  def save_to_csv(self, filename):
-    df = self.get_pheno_data_frame()
-    df.to_csv(filename, index=False)
+    def execute(self):
+        pass
   
-  def execute(self):
-    pass
-  
-  def region_has(self, region_value):
-    if self._region_hierarchy_top_bottom.has_key(region_value):
-      return self._region_hierarchy_top_bottom[region_value]
-    else:
-      return []
-
-  def region_belongs(self, region_value):
-    if self._region_hierarchy_bottom_top.has_key(region_value):
-      return self._region_hierarchy_bottom_top[region_value]
-    else:
-      return []
-
-  def __create_region_hierarchy(self):
-    # In the meantime, this give us a working structure all within python
-    # Multiple lists indicate and "or" relation
-    self._region_hierarchy_top_bottom[1] = [[2, 3], [20, 21, 22]]
-    self._region_hierarchy_top_bottom[2] = [[4, 5, 6], [14, 13, 12]]
-    self._region_hierarchy_top_bottom[3] = [[7, 8], [9, 10, 11]]
-    self._region_hierarchy_top_bottom[20] = [[9, 12]]
-    self._region_hierarchy_top_bottom[21] = [[10, 13]]
-    self._region_hierarchy_top_bottom[22] = [[11, 14]]
-    
-    self._region_hierarchy_bottom_top[2] = 1
-    self._region_hierarchy_bottom_top[3] = 1
-    self._region_hierarchy_bottom_top[4] = 2
-    self._region_hierarchy_bottom_top[5] = 2
-    self._region_hierarchy_bottom_top[6] = 2
-    self._region_hierarchy_bottom_top[7] = 3
-    self._region_hierarchy_bottom_top[8] = 3
-    self._region_hierarchy_bottom_top[9] = [3, 20]
-    self._region_hierarchy_bottom_top[10] = [3, 21]
-    self._region_hierarchy_bottom_top[11] = [3, 22]
-    self._region_hierarchy_bottom_top[12] = [2, 20]
-    self._region_hierarchy_bottom_top[13] = [2, 21]
-    self._region_hierarchy_bottom_top[14] = [2, 22]
-    
-    self._region_hierarchy_bottom_top[20] = 1
-    self._region_hierarchy_bottom_top[21] = 1
-    self._region_hierarchy_bottom_top[22] = 1
-
-  def __create_region_type_list(self):
-    self._region_name = list()
-    self._region_name.append( "UNDEFINEDREGION" )
-    self._region_name.append( "WHOLELUNG" )
-    self._region_name.append( "RIGHTLUNG" )
-    self._region_name.append( "LEFTLUNG" )
-    self._region_name.append( "RIGHTSUPERIORLOBE" )
-    self._region_name.append( "RIGHTMIDDLELOBE" )
-    self._region_name.append( "RIGHTINFERIORLOBE" )
-    self._region_name.append( "LEFTSUPERIORLOBE" )
-    self._region_name.append( "LEFTINFERIORLOBE" )
-    self._region_name.append( "LEFTUPPERTHIRD" )
-    self._region_name.append( "LEFTMIDDLETHIRD" )
-    self._region_name.append( "LEFTLOWERTHIRD" )
-    self._region_name.append( "RIGHTUPPERTHIRD" )
-    self._region_name.append( "RIGHTMIDDLETHIRD" )
-    self._region_name.append( "RIGHTLOWERTHIRD" )
-    self._region_name.append( "MEDIASTINUM" )
-    self._region_name.append( "WHOLEHEART" )
-    self._region_name.append( "AORTA" )
-    self._region_name.append( "PULMONARYARTERY" )
-    self._region_name.append( "PULMONARYVEIN" )
-    self._region_name.append( "UPPERTHIRD" )
-    self._region_name.append( "MIDDLETHIRD" )
-    self._region_name.append( "LOWERTHIRD" )
-    self._region_name.append( "LEFT" )
-    self._region_name.append( "RIGHT" )
-    self._region_name.append( "LIVER" )
-    self._region_name.append( "SPLEEN" )
-    self._region_name.append( "ABDOMEN" )
-    self._region_name.append( "PARAVERTEBRAL" )
-    
-    self._type_name = list()
-    self._type_name.append( "UNDEFINEDTYPE" )
-    self._type_name.append( "NORMALPARENCHYMA" )
-    self._type_name.append( "AIRWAY" )
-    self._type_name.append( "VESSEL" )
-    self._type_name.append( "EMPHYSEMATOUS" )
-    self._type_name.append( "GROUNDGLASS" )
-    self._type_name.append( "RETICULAR" )
-    self._type_name.append( "NODULAR" )
-    self._type_name.append( "OBLIQUEFISSURE" )
-    self._type_name.append( "HORIZONTALFISSURE" )
-    self._type_name.append( "MILDPARASEPTALEMPHYSEMA" )
-    self._type_name.append( "MODERATEPARASEPTALEMPHYSEMA" )
-    self._type_name.append( "SEVEREPARASEPTALEMPHYSEMA" )
-    self._type_name.append( "MILDBULLA" )
-    self._type_name.append( "MODERATEBULLA" )
-    self._type_name.append( "SEVEREBULLA" )
-    self._type_name.append( "MILDCENTRILOBULAREMPHYSEMA" )
-    self._type_name.append( "MODERATECENTRILOBULAREMPHYSEMA" )
-    self._type_name.append( "SEVERECENTRILOBULAREMPHYSEMA" )
-    self._type_name.append( "MILDPANLOBULAREMPHYSEMA" )
-    self._type_name.append( "MODERATEPANLOBULAREMPHYSEMA" )
-    self._type_name.append( "SEVEREPANLOBULAREMPHYSEMA" )
-    self._type_name.append( "AIRWAYWALLTHICKENING" )
-    self._type_name.append( "AIRWAYCYLINDRICALDILATION" )
-    self._type_name.append( "VARICOSEBRONCHIECTASIS" )
-    self._type_name.append( "CYSTICBRONCHIECTASIS" )
-    self._type_name.append( "CENTRILOBULARNODULE" )
-    self._type_name.append( "MOSAICING" )
-    self._type_name.append( "EXPIRATORYMALACIA" )
-    self._type_name.append( "SABERSHEATH" )
-    self._type_name.append( "OUTPOUCHING" )
-    self._type_name.append( "MUCOIDMATERIAL" )
-    self._type_name.append( "PATCHYGASTRAPPING" )
-    self._type_name.append( "DIFFUSEGASTRAPPING" )
-    self._type_name.append( "LINEARSCAR" )
-    self._type_name.append( "CYST" )
-    self._type_name.append( "ATELECTASIS" )
-    self._type_name.append( "HONEYCOMBING" )
-    self._type_name.append( "TRACHEA" )
-    self._type_name.append( "MAINBRONCHUS" )
-    self._type_name.append( "UPPERLOBEBRONCHUS" )
-    self._type_name.append( "AIRWAYGENERATION3" )
-    self._type_name.append( "AIRWAYGENERATION4" )
-    self._type_name.append( "AIRWAYGENERATION5" )
-    self._type_name.append( "AIRWAYGENERATION6" )
-    self._type_name.append( "AIRWAYGENERATION7" )
-    self._type_name.append( "AIRWAYGENERATION8" )
-    self._type_name.append( "AIRWAYGENERATION9" )
-    self._type_name.append( "AIRWAYGENERATION10" )
-    self._type_name.append( "CALCIFICATION" )
-    self._type_name.append( "ARTERY" )
-    self._type_name.append( "VEIN" )
-    self._type_name.append( "PECTORALISMINOR" )
-    self._type_name.append( "PECTORALISMAJOR" )
-    self._type_name.append( "ANTERIORSCALENE" )
-    self._type_name.append( "FISSURE" )
-    self._type_name.append( "VESSELGENERATION0" )
-    self._type_name.append( "VESSELGENERATION1" )
-    self._type_name.append( "VESSELGENERATION2" )
-    self._type_name.append( "VESSELGENERATION3" )
-    self._type_name.append( "VESSELGENERATION4" )
-    self._type_name.append( "VESSELGENERATION5" )
-    self._type_name.append( "VESSELGENERATION6" )
-    self._type_name.append( "VESSELGENERATION7" )
-    self._type_name.append( "VESSELGENERATION8" )
-    self._type_name.append( "VESSELGENERATION9" )
-    self._type_name.append( "VESSELGENERATION10" )
-    self._type_name.append( "PARASEPTALEMPHYSEMA" )
-    self._type_name.append( "CENTRILOBULAREMPHYSEMA" )
-    self._type_name.append( "PANLOBULAREMPHYSEMA" )
-    self._type_name.append( "SUBCUTANEOUSFAT" )
-    self._type_name.append( "VISCERALFAT" )
-    self._type_name.append( "INTERMEDIATEBRONCHUS" )
-    self._type_name.append( "LOWERLOBEBRONCHUS" )
-    self._type_name.append( "SUPERIORDIVISIONBRONCHUS" )
-    self._type_name.append( "LINGULARBRONCHUS" )
-    self._type_name.append( "MIDDLELOBEBRONCHUS" )
-    self._type_name.append( "BRONCHIECTATICAIRWAY" )
-    self._type_name.append( "NONBRONCHIECTATICAIRWAY" )
-    self._type_name.append( "AMBIGUOUSBRONCHIECTATICAIRWAY" )
-    self._type_name.append( "MUSCLE" )
-    self._type_name.append( "DIAPHRAGM" )

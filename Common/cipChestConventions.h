@@ -223,6 +223,12 @@ public:
   /** Given an unsigned short value, this method will compute the
    *  8-bit type value corresponding to the input */
   unsigned char GetChestTypeFromValue( unsigned short value ) const;
+  
+  /** A label map voxel value consists of a chest-region designation
+   *  and a chest-type designation. For the purposes of representing a
+   *  wild card entry (e.g. when using regions and types as keys for 
+   *  populating a database), this method is provided. */
+  std::string GetChestWildCardName() const;
 
   /** Given an unsigned char value corresponding to a chest type, this
    *  method will return the string name equivalent. */

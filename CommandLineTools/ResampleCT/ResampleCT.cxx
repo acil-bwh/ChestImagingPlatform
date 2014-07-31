@@ -52,16 +52,14 @@
 
 namespace
 {
-typedef itk::Image< short, 2 >                                               ShortImageType;
+typedef itk::Image< short, 2 >                                                  ShortImageType;
 typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType, double >  InterpolatorType;
-typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >           ResampleType;
-typedef itk::AffineTransform< double, 2 >                                          TransformType;
-typedef itk::CompositeTransform< double, 2 >                                   CompositeTransformType;
-typedef itk::ImageFileReader< ShortImageType >  LabelMap2DReaderType;
-typedef itk::ImageFileWriter< ShortImageType >  LabelMapWriterType2D;
-typedef itk::ImageFileReader< ShortImageType >                                               ShortReaderType;
-typedef itk::ImageRegistrationMethod<ShortImageType,ShortImageType >                         CTRegistrationType;
-
+typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >               ResampleType;
+typedef itk::AffineTransform< double, 2 >                                       TransformType;
+typedef itk::CompositeTransform< double, 2 >                                    CompositeTransformType;
+typedef itk::ImageFileWriter< ShortImageType >                                  ShortWriterType2D;
+typedef itk::ImageFileReader< ShortImageType >                                  ShortReaderType;
+typedef itk::ImageRegistrationMethod<ShortImageType,ShortImageType >            CTRegistrationType;
 
 //TransformType::Pointer GetTransformFromFile( std::string );
 
@@ -125,7 +123,7 @@ int main( int argc, char *argv[] )
   ShortImageType::PointType   origin;
   
   std::cout << "Reading destination information..." << std::endl;
-  LabelMap2DReaderType::Pointer destinationReader = LabelMap2DReaderType::New();
+  ShortReaderType::Pointer destinationReader = ShortReaderType::New();
     destinationReader->SetFileName( destinationFileName.c_str() );
   try
     {
@@ -145,14 +143,14 @@ int main( int argc, char *argv[] )
   
 
   //
-  // Read the label map image
+  // Read the ct image
   //
-  std::cout << "Reading label map image..." << std::endl;
-  LabelMap2DReaderType::Pointer labelMapReader = LabelMap2DReaderType::New();
-    labelMapReader->SetFileName( labelMapFileName.c_str() );
+  std::cout << "Reading ct image..." << std::endl;
+  ShortReaderType::Pointer shortReader = ShortReaderType::New();
+    shortReader->SetFileName( labelMapFileName.c_str() );
   try
     {
-    labelMapReader->Update();
+    shortReader->Update();
     }
   catch ( itk::ExceptionObject &excp )
     {
@@ -165,19 +163,6 @@ int main( int argc, char *argv[] )
   //
   // Read the transform
   //
-   
-    // good for non-composite
-    /*
-  TransformType::Pointer transform = GetTransformFromFile( transformFileName );
-
-  //
-  // Invert the transformation if specified by command like argument
-   if (isInvertTransformation == true)
-    {
-      std::cout<<"inverting transform"<<std::endl;
-       transform->GetInverse( transform );
-    }
-  */
     
     //last transform applied first, so make last transform
     CompositeTransformType::Pointer transform = CompositeTransformType::New();
@@ -207,7 +192,7 @@ int main( int argc, char *argv[] )
   ResampleType::Pointer resampler = ResampleType::New();
     resampler->SetTransform( transform );
     resampler->SetInterpolator( interpolator );
-    resampler->SetInput( labelMapReader->GetOutput() );
+    resampler->SetInput( shortReader->GetOutput() );
     resampler->SetSize( size );
     resampler->SetOutputSpacing( spacing );
     resampler->SetOutputOrigin( origin );
@@ -229,7 +214,7 @@ int main( int argc, char *argv[] )
   //
   std::cout << "Writing resampled label map..." << std::endl;
 
-  LabelMapWriterType2D::Pointer writer = LabelMapWriterType2D::New();
+  ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
   writer->SetFileName( resampledFileName.c_str());
     writer->UseCompressionOn();
     writer->SetInput( resampler->GetOutput() );
