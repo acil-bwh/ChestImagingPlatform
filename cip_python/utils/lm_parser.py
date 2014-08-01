@@ -19,7 +19,7 @@ class LMParser():
 
     def __init__(self, lm):        
         self._lm = lm
-        assert len(lm.shape) == 3, "Label map is not 3D"
+        assert len(lm.shape) > 0, "Label map is not nD array"
 
         self.labels_ = np.unique(self._lm)
 
@@ -61,11 +61,7 @@ class LMParser():
                     'chest_type must be an int between 0 and 255 inclusive')        
         
         conventions = ChestConventions()
-
-        X = self._lm.shape[0]
-        Y = self._lm.shape[1]
-        Z = self._lm.shape[2]        
-        
+             
         mask_labels = []
         for l in self.labels_:
             r = conventions.GetChestRegionFromValue(l)
@@ -84,8 +80,8 @@ class LMParser():
                     chest_region):
                     mask_labels.append(l)
 
-        mask = np.empty([X, Y, Z], dtype=bool)
-        mask[:, :, :] = False
+        mask = np.empty(self._lm.shape, dtype=bool)
+        mask[:] = False
 
         for ml in mask_labels:
             mask = np.logical_or(mask, self._lm == ml)
