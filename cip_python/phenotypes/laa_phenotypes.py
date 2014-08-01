@@ -1,7 +1,7 @@
 import numpy as np
 import phenotypes
 from cip_python.phenotypes.phenotypes import Phenotypes
-from cip_python.utils.lm_parser import LMParser
+from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.ChestConventions import ChestConventions
 
 import pdb
@@ -163,7 +163,7 @@ class LAAPhenotypes(Phenotypes):
         elif self.pairs_ is not None:
             ps = self.pairs_
 
-        parser = LMParser(lm)
+        parser = RegionTypeParser(lm)
         if rs == None and ts == None and ps == None:
             rs = parser.get_all_chest_regions()
             ts = parser.get_chest_types()

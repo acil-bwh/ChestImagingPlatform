@@ -3,28 +3,31 @@ from cip_python.ChestConventions import ChestConventions
 
 import pdb
 
-class LMParser():
-    """Parses the label information for a specified label map
+class RegionTypeParser():
+    """Parses the chest-region chest-type input data to identify all existing
+    chest regions, chest types, and region-type pairs.
 
     Parameters
     ----------
-    lm : array, shape ( X, Y, Z )
-        The 3D label map array
+    data : ND array
+        The input data. Each value is assumed to be an unsigned short (16 bit)
+        data type, where the least significant 8 bits encode the chest region,
+        and the most significant 8 bits encode the chest type.
 
     Attributes
     ----------
-    labels_ : array, shape ( N )
-        The N unique labels in the label map
+    labels_ : array, shape ( M )
+        The M unique labels in the data set
     """
 
-    def __init__(self, lm):        
-        self._lm = lm
-        assert len(lm.shape) > 0, "Label map is not nD array"
+    def __init__(self, data):        
+        self._data = data
+        assert len(data.shape) > 0, "Empty data set"
 
-        self.labels_ = np.unique(self._lm)
+        self.labels_ = np.unique(self._data)
 
     def get_mask(self, chest_region=None, chest_type=None):
-        """Get's boolean mask of all lm indices that match the chest-region
+        """Get's boolean mask of all data indices that match the chest-region
         chest-type query.
 
         If only a chest region is specified, then all voxels in that region
@@ -48,7 +51,7 @@ class LMParser():
         Returns
         -------
         mask : array, shape ( X, Y, Z )
-            Boolean mask of all lm indices that match the chest-region
+            Boolean mask of all data indices that match the chest-region
             chest-type query. The chest region hierarchy is honored.
         """
         if chest_region is not None:
@@ -80,21 +83,21 @@ class LMParser():
                     chest_region):
                     mask_labels.append(l)
 
-        mask = np.empty(self._lm.shape, dtype=bool)
+        mask = np.empty(self._data.shape, dtype=bool)
         mask[:] = False
 
         for ml in mask_labels:
-            mask = np.logical_or(mask, self._lm == ml)
+            mask = np.logical_or(mask, self._data == ml)
 
         return mask
 
     def get_chest_regions(self):
-        """Get the explicit list of chest regions in the label map.
+        """Get the explicit list of chest regions in the data set.
 
         Returns
         -------
         chest_regions : array, shape ( N )
-            Explicit list of the N chest regions in the label map
+            Explicit list of the N chest regions in the data set
         """
         conventions = ChestConventions()
 
@@ -106,13 +109,13 @@ class LMParser():
         return chest_regions
 
     def get_all_chest_regions(self):
-        """Get all the chest regions in the label map, including those
+        """Get all the chest regions in the data set, including those
         implicitly present as a result of the region hierarchy.
 
         Returns
         -------
         chest_regions : array, shape ( N )
-            All chest regions in the label map
+            All chest regions in the data set
         """
         c = ChestConventions()
         num_regions = c.GetNumberOfEnumeratedChestRegions()
@@ -129,12 +132,12 @@ class LMParser():
         return chest_regions
 
     def get_chest_types(self):
-        """Get the chest types in the label map
-
+        """Get the chest types in the data set
+        
         Returns
         -------
         chest_types : array, shape ( N )
-            All N chest types in the label map
+            All N chest types in the data set
         """
         c = ChestConventions()
 
@@ -151,7 +154,7 @@ class LMParser():
         Returns
         -------
         pairs : array, shape ( N, 2 )
-            All N chest-region chest-type pairs in the label map, including
+            All N chest-region chest-type pairs in the data set, including
             those implied by the region hierarchy. The first column indicates
             the chest region, and the second column represents the chest type.
         """
