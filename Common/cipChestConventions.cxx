@@ -197,7 +197,6 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "Abdomen" );
   ChestRegionNames.push_back( "Paravertebral" );
   
-  // TODO: Change to camel case
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );
   ChestTypeNames.push_back( "Airway" );
@@ -281,6 +280,45 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "Muscle" );
   ChestTypeNames.push_back( "Diaphragm" );
   
+  BodyCompositionPhenotypeNames.push_back( "AxialCSA" );
+  BodyCompositionPhenotypeNames.push_back( "CoronalCSA" );
+  BodyCompositionPhenotypeNames.push_back( "SagittalCSA" );
+  BodyCompositionPhenotypeNames.push_back( "HUMean" );
+  BodyCompositionPhenotypeNames.push_back( "HUStd" );
+  BodyCompositionPhenotypeNames.push_back( "HUKurtosis" );
+  BodyCompositionPhenotypeNames.push_back( "HUSkewness" );
+  BodyCompositionPhenotypeNames.push_back( "HUMode" );
+  BodyCompositionPhenotypeNames.push_back( "HUMedian" );
+  BodyCompositionPhenotypeNames.push_back( "HUMin" );
+  BodyCompositionPhenotypeNames.push_back( "HUMax" );
+
+  ParenchymaPhenotypeNames.push_back( "LAA950" );
+  ParenchymaPhenotypeNames.push_back( "LAA910" );
+  ParenchymaPhenotypeNames.push_back( "LAA856" );
+  ParenchymaPhenotypeNames.push_back( "HAA700" );
+  ParenchymaPhenotypeNames.push_back( "HAA600" );
+  ParenchymaPhenotypeNames.push_back( "HAA500" );
+  ParenchymaPhenotypeNames.push_back( "HAA250" );
+  ParenchymaPhenotypeNames.push_back( "Perc15" );
+  ParenchymaPhenotypeNames.push_back( "HUMean" );
+  ParenchymaPhenotypeNames.push_back( "HUStd" );
+  ParenchymaPhenotypeNames.push_back( "HUKurtosis" );
+  ParenchymaPhenotypeNames.push_back( "HUSkewness" );
+  ParenchymaPhenotypeNames.push_back( "HUMode" );
+  ParenchymaPhenotypeNames.push_back( "HUMedian" );
+  ParenchymaPhenotypeNames.push_back( "HUMin" );
+  ParenchymaPhenotypeNames.push_back( "HUMax" );
+  ParenchymaPhenotypeNames.push_back( "HUMean500" );
+  ParenchymaPhenotypeNames.push_back( "HUStd500" );
+  ParenchymaPhenotypeNames.push_back( "HUKurtosis500" );
+  ParenchymaPhenotypeNames.push_back( "HUSkewness500" );
+  ParenchymaPhenotypeNames.push_back( "HUMode500" );
+  ParenchymaPhenotypeNames.push_back( "HUMedian500" );
+  ParenchymaPhenotypeNames.push_back( "HUMin500" );
+  ParenchymaPhenotypeNames.push_back( "HUMax500" );
+  ParenchymaPhenotypeNames.push_back( "Volume" );
+  ParenchymaPhenotypeNames.push_back( "Mass" );
+
   //
   // Each type is associated with a color. This is generally
   // useful for the interactors for users, e.g. when manually
@@ -766,4 +804,34 @@ unsigned char cip::ChestConventions::GetChestRegion( unsigned int i ) const
 unsigned char cip::ChestConventions::GetChestType( unsigned int i ) const
 {
   return (unsigned char)( ChestTypes[i] );
+}
+
+/** Returns true if the passed string name is among the allowed body composition 
+ *  phenotype names and returns false otherwise */
+bool cip::ChestConventions::IsBodyCompositionPhenotype( std::string pheno ) const
+{  
+  for ( int i=0; i<this->BodyCompositionPhenotypeNames.size(); i++ )
+    {
+      if ( !this->BodyCompositionPhenotypeNames[i].compare( pheno ) )
+	{
+	  return true;
+	}
+    }
+  
+  return false;
+}
+
+/** Returns true if the passed string name is among the allowed parenchyma
+ *  phenotype names and returns false otherwise */
+bool cip::ChestConventions::IsParenchymaPhenotype( std::string pheno ) const
+{  
+  for ( int i=0; i<this->ParenchymaPhenotypeNames.size(); i++ )
+    {
+      if ( !this->ParenchymaPhenotypeNames[i].compare( pheno ) )
+	{
+	  return true;
+	}
+    }
+  
+  return false;
 }

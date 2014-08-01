@@ -7,12 +7,6 @@
  *  class which provides convenience methods for dealing with the
  *  chest region and type labels.
  *
- *  $Date: 2013-04-02 12:04:01 -0400 (Tue, 02 Apr 2013) $
- *  $Revision: 399 $
- *  $Author: jross $
- *
- *  TODO:
- *
  */
 
 #ifndef __cipChestConventions_h
@@ -331,6 +325,13 @@ public:
   /** Get the ith chest type */
   unsigned char GetChestType( unsigned int i ) const;
 
+  /** Returns true if the passed string name is among the allowed body composition 
+   *  phenotype names and returns false otherwise */
+  bool IsBodyCompositionPhenotype( std::string ) const;
+
+  /** Returns true if the passed string name is among the allowed parenchyma
+   *  phenotype names and returns false otherwise */
+  bool IsParenchymaPhenotype( std::string ) const;
 
 public:
   std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;
@@ -338,13 +339,15 @@ public:
   std::vector< unsigned char >              ChestTypes;
   std::vector< std::string >                ChestRegionNames;
   std::vector< std::string >                ChestTypeNames;
-  //std::vector< std::string >                Bo
   std::vector< double* >                    ChestRegionColors;
   std::vector< double* >                    ChestTypeColors;
 
+  std::vector< std::string >                BodyCompositionPhenotypeNames;
+  std::vector< std::string >                ParenchymaPhenotypeNames;
+
 private:
   unsigned char m_NumberOfEnumeratedChestRegions;
-  unsigned char m_NumberOfEnumeratedChestTypes;
+  unsigned char m_NumberOfEnumeratedChestTypes;  
 };
 
 } // namespace cip
