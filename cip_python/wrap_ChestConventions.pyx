@@ -12,6 +12,7 @@ cdef extern from "cipChestConventions.h" namespace "cip":
         string GetChestRegionName(unsigned char whichType) const
         string GetChestRegionNameFromValue(unsigned short value) const
         string GetChestTypeNameFromValue(unsigned short value) const
+        string GetChestWildCardName() const
         unsigned short GetValueFromChestRegionAndType(unsigned char region, unsigned char type) const
         unsigned char GetChestRegionValueFromName(string regionString) const
         unsigned char GetChestTypeValueFromName(string typeString) const
@@ -37,6 +38,9 @@ cdef class ChestConventions:
 
     cpdef unsigned char GetChestTypeFromValue(self, unsigned short value):
         return self.thisptr.GetChestTypeFromValue(value)
+
+    cpdef string GetChestWildCardName(self):
+        return self.thisptr.GetChestWildCardName()
 
     cpdef string GetChestTypeName(self, unsigned char whichType):
         return self.thisptr.GetChestTypeName(whichType)

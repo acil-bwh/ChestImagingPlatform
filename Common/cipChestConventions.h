@@ -181,6 +181,58 @@ enum ReturnCode {
   GENERATEDISTANCEMAPFAILURE,
 };
 
+ /* enum PhenotypeGroups { */
+ /*   PARENCHYMA, */
+ /*   HISTOGRAM, */
+ /*   BODYCOMPOSITION, */
+ /*   VASCULARPOINT, */
+ /*   AIRWAYPOINT    */
+ /* }; */
+
+ /* enum BodyCompositionPhenotypes { */
+ /*   AXIALCSA, */
+ /*   CORONALCSA, */
+ /*   SAGITTALCSA, */
+ /*   HUMEAN, */
+ /*   HUSTD, */
+ /*   HUKURTOSIS, */
+ /*   HUSKEWNESS, */
+ /*   HUMODE, */
+ /*   HUMEDIAN, */
+ /*   HUMIN, */
+ /*   HUMAX, */
+ /* }; */
+
+ /* enum ParenchymaPhenotypes { */
+ /*   LAA950, */
+ /*   LAA910, */
+ /*   LAA856, */
+ /*   HAA700, */
+ /*   HAA600, */
+ /*   HAA500, */
+ /*   HAA250, */
+ /*   PERC15, */
+ /*   PERC10, */
+ /*   HUMEAN, */
+ /*   HUSTD, */
+ /*   HUKURTOSIS, */
+ /*   HUSKEWNESS, */
+ /*   HUMODE, */
+ /*   HUMEDIAN, */
+ /*   HUMIN, */
+ /*   HUMAX, */
+ /*   HUMEAN500, */
+ /*   HUSTD500, */
+ /*   HUKURTOSIS500, */
+ /*   HUSKEWNESS500, */
+ /*   HUMODE500, */
+ /*   HUMEDIAN500, */
+ /*   HUMIN500, */
+ /*   HUMAX500, */
+ /*   VOLUME, */
+ /*   MASS, */
+ /* }; */
+
 /**
  *  The following class will define the hierarchy among the various
  *  regions defined in 'ChestRegion' above.  If a new region is added
@@ -223,6 +275,12 @@ public:
   /** Given an unsigned short value, this method will compute the
    *  8-bit type value corresponding to the input */
   unsigned char GetChestTypeFromValue( unsigned short value ) const;
+  
+  /** A label map voxel value consists of a chest-region designation
+   *  and a chest-type designation. For the purposes of representing a
+   *  wild card entry (e.g. when using regions and types as keys for 
+   *  populating a database), this method is provided. */
+  std::string GetChestWildCardName() const;
 
   /** Given an unsigned char value corresponding to a chest type, this
    *  method will return the string name equivalent. */
@@ -280,6 +338,7 @@ public:
   std::vector< unsigned char >              ChestTypes;
   std::vector< std::string >                ChestRegionNames;
   std::vector< std::string >                ChestTypeNames;
+  //std::vector< std::string >                Bo
   std::vector< double* >                    ChestRegionColors;
   std::vector< double* >                    ChestTypeColors;
 

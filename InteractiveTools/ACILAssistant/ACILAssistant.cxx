@@ -678,6 +678,7 @@ void SessionFile_CB( Fl_Widget*, void* ) {
           data.study = study;
           data.ctFileName = ctFileName;
           data.caseName = caseName;
+          data.ctFileName = ctFileName;
           data.ctFileNameHeader = ctFileNameHeader;
           data.ctFileNameRaw = ctFileNameRaw;
           data.ctTmpDirAndFileNameHeader = ctTmpDirAndFileNameHeader;

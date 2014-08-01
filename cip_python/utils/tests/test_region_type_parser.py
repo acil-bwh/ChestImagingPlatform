@@ -1,5 +1,5 @@
 import os.path
-from cip_python.utils.lm_parser import *
+from cip_python.utils.region_type_parser import *
 import nrrd
 import pdb
 
@@ -9,7 +9,7 @@ np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
 this_dir = os.path.dirname(os.path.realpath(__file__))
 file_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
 im, header = nrrd.read(file_name) 
-parser = LMParser(im)
+parser = RegionTypeParser(im)
 
 gt_labels = np.array([0, 2, 3, 512, 514, 515, 770, 771])
 

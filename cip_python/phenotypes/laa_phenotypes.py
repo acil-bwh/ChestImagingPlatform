@@ -1,7 +1,7 @@
 import numpy as np
 import phenotypes
 from cip_python.phenotypes.phenotypes import Phenotypes
-from cip_python.utils.lm_parser import LMParser
+from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.ChestConventions import ChestConventions
 
 import pdb
@@ -56,20 +56,40 @@ class LAAPhenotypes(Phenotypes):
             if np.max(chest_types) > 255 or np.min(chest_types) < 0:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
-        
-        Phenotypes.__init__(self)
-        self.generator_ = self.__class__.__name__        
-        self._df['Generator'] = self.generator_
-        
+                
         self.chest_regions_ = chest_regions
         self.chest_types_ = chest_types
         self.pairs_ = pairs
 
+        self.threshs_ = None
         if threshs is None:
             self.threshs_ = np.array([-950, -910, -856], dtype=int)
+        else:
+            self.threshs_ = threshs
 
-    def execute(self, ct, lm, cid, threshs=None, chest_regions=None,
-                chest_types=None, pairs=None):
+        Phenotypes.__init__(self)
+
+    def declare_pheno_names(self):
+        """Creates the names of the phenotypes to compute
+
+        Returns
+        -------
+        names : list of strings
+            Phenotype names
+        """
+        names = []
+        for t in self.threshs_:
+            names.append('LAA'+str(int(np.round(t))))
+
+        return names
+
+    def get_cid(self):
+        """Get the case ID (CID)
+        """
+        return self.cid_
+
+    def execute(self, ct, lm, cid, chest_regions=None, chest_types=None,
+                pairs=None):
         """Compute the phenotypes for the specified structures for the
         specified threshold values.
 
@@ -83,12 +103,7 @@ class LAAPhenotypes(Phenotypes):
 
         cid : string
             Case ID
-
-        threshs : array, shape ( N ), optional
-            Array of threshold values for computing low attenuating areas. If
-            none specified, an array of standard values (-950, -910, -856)
-            will be used.
-        
+            
         chest_regions : array, shape ( R ), optional
             Array of integers, with each element in the interval [0, 255],
             indicating the chest regions over which to compute the LAA. If none
@@ -130,9 +145,7 @@ class LAAPhenotypes(Phenotypes):
                 "Disagreement in CT and label map dimension"
 
         assert type(cid) == str, "cid must be a string"
-        
-        assert len(self._df.index) == 1, \
-            "Dataframe has unexecpected number of rows"
+        self.cid_ = cid
 
         rs = None
         ts = None
@@ -150,64 +163,43 @@ class LAAPhenotypes(Phenotypes):
         elif self.pairs_ is not None:
             ps = self.pairs_
 
-        if threshs == None:
-            threshs = self.threshs_
-        
-        parser = LMParser(lm)
+        parser = RegionTypeParser(lm)
         if rs == None and ts == None and ps == None:
             rs = parser.get_all_chest_regions()
             ts = parser.get_chest_types()
             ps = parser.get_all_pairs()
 
-        # Duplicate rows for each of the entities we're interested in
-        num_entities = 0
-        if rs is not None:
-            num_entities += rs.shape[0]
-        if ts is not None:
-            num_entities += ts.shape[0]
-        if ps is not None:
-            num_entities += ps.shape[0]
-
-        for i in xrange(0, num_entities-1):
-          self._df = self._df.append(self._df.iloc[[0]], ignore_index=True)
-
-        self._df['Region'] = 'NaN'
-        self._df['Type'] = 'NaN'
-
-        # Create columns for each of the thresholds
-        for t in threshs:
-            self._df['LAA'+str(int(np.round(t)))] = 'NaN'
-
         # Now compute the phenotypes and populate the data frame
-        inc = 0 # Will keep track of data frame row index
         c = ChestConventions()
         if rs is not None:
             for r in rs:
-                self._df['Region'][inc] = c.GetChestRegionName(r)            
                 if r != 0:
                     mask = parser.get_mask(chest_region=r)
-                    for tt in threshs:
-                        self._df['LAA'+str(int(np.round(tt)))][inc] = \
-                            float(np.sum(ct[mask] <= tt))/np.sum(mask)
-                inc += 1
+                    for tt in self.threshs_:
+                        pheno_name = 'LAA' + str(int(np.round(tt)))
+                        pheno_val = float(np.sum(ct[mask] <= tt))/np.sum(mask)
+                        self.add_pheno([c.GetChestRegionName(r),
+                                        c.GetChestWildCardName()],
+                                        pheno_name, pheno_val)                        
         if ts is not None:
             for t in ts:
-                self._df['Type'][inc] = c.GetChestTypeName(t)            
                 if t != 0:
                     mask = parser.get_mask(chest_type=t)
-                    for tt in threshs:
-                        self._df['LAA'+str(int(np.round(tt)))][inc] = \
-                            float(np.sum(ct[mask] <= tt))/np.sum(mask)
-                inc += 1
+                    for tt in self.threshs_:
+                        pheno_name = 'LAA' + str(int(np.round(tt)))
+                        pheno_val = float(np.sum(ct[mask] <= tt))/np.sum(mask)
+                        self.add_pheno([c.GetChestWildCardName(),
+                                        c.GetChestTypeName(t)],
+                                        pheno_name, pheno_val)                            
         if ps is not None:
-            for p in ps:
-                self._df['Region'][inc] = c.GetChestRegionName(p[0])                
-                self._df['Type'][inc] = c.GetChestTypeName(p[1])            
+            for p in ps:            
                 if not (p[0] == 0 and p[1] == 0):
                     mask = parser.get_mask(chest_region=p[0], chest_type=p[1])
-                    for tt in threshs:
-                        self._df['LAA'+str(int(np.round(tt)))][inc] = \
-                            float(np.sum(ct[mask] <= tt))/np.sum(mask)
-                inc += 1
+                    for tt in self.threshs_:
+                        pheno_name = 'LAA'+str(int(np.round(tt)))
+                        pheno_val = float(np.sum(ct[mask] <= tt))/np.sum(mask)
+                        self.add_pheno([c.GetChestRegionName(p[0]),
+                                        c.GetChestTypeName(p[1])],
+                                        pheno_name, pheno_val)
 
         return self._df
