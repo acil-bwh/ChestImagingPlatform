@@ -240,15 +240,16 @@ int main( int argc, char *argv[] )
     file<<"File,Region,Type,Mean,STD,Min,Max,Median"<<std::endl;
 
     // First write the name of label map
-    file << labelMapFileName << ",";
+    //file << labelMapFileName << ",";
 
     // First write the header
     mapIt = labelToStatsMap.begin();
     while ( mapIt != labelToStatsMap.end() )
       {
+	file << labelMapFileName << ",";
       std::string regionName = conventions.GetChestRegionNameFromValue( mapIt->first );
       std::string typeName   = conventions.GetChestTypeNameFromValue( mapIt->first );
-      file << regionName << "," << typeName << mapIt->second.mean << ",";
+      file << regionName << "," << typeName << "," << mapIt->second.mean << ",";
       file << mapIt->second.std <<",";
       file << mapIt->second.min <<",";
       file << mapIt->second.max <<",";
