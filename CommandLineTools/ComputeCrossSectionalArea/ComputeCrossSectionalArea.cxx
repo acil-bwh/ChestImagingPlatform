@@ -146,11 +146,11 @@ int main( int argc, char *argv[] )
     // Title
     writer<<"File,Region,Type,Area (mm^2)"<<std::endl;
         
-    writer << inFileName << ",";
+    //writer << inFileName << ",";
     for ( mapIt = labelValueToCountsMap.begin(); mapIt != labelValueToCountsMap.end(); mapIt++ )
       {
-      writer << conventions.GetChestRegionNameFromValue( (*mapIt).first ) << " "
-             << conventions.GetChestTypeNameFromValue( (*mapIt).first ) << "(mmˆ2),";
+      writer << inFileName << "," << conventions.GetChestRegionNameFromValue( (*mapIt).first ) << ", "
+             << conventions.GetChestTypeNameFromValue( (*mapIt).first ) << ",";
       double area = spacing[0]*spacing[1]*static_cast< double >( (*mapIt).second );
       writer << area <<std::endl;
       }

@@ -618,7 +618,12 @@ def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_
     #   [marginal,marginal,marginal,marginal])
 
     print("new labels")
-    segmented_labels, posteriors= segment_chest_with_atlas([likelihoods_sum["leftmajor"].astype( \
+    segmented_labels = dict()
+    posteriors = dict()
+    [segmented_labels["leftmajor"],segmented_labels["leftminor"],segmented_labels["rightmajor"],\
+        segmented_labels["rightminor"]], [posteriors["leftmajor"], posteriors["leftminor"],\
+        posteriors["rightmajor"], posteriors["rightminor"]] = segment_chest_with_atlas(
+        [likelihoods_sum["leftmajor"].astype( \
        np.float), likelihoods_sum["leftminor"].astype(np.float),\
        likelihoods_sum["rightmajor"].astype(np.float), \
        likelihoods_sum["rightminor"].astype(np.float)], \
