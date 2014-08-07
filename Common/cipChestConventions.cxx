@@ -299,6 +299,7 @@ cip::ChestConventions::ChestConventions()
   ParenchymaPhenotypeNames.push_back( "HAA600" );
   ParenchymaPhenotypeNames.push_back( "HAA500" );
   ParenchymaPhenotypeNames.push_back( "HAA250" );
+  ParenchymaPhenotypeNames.push_back( "Perc10" );
   ParenchymaPhenotypeNames.push_back( "Perc15" );
   ParenchymaPhenotypeNames.push_back( "HUMean" );
   ParenchymaPhenotypeNames.push_back( "HUStd" );
@@ -531,7 +532,7 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( uns
 
 std::string cip::ChestConventions::GetChestWildCardName() const
 {
-  return std::string("NaN");
+  return std::string("WildCard");
 }
 
 /** Given an unsigned short value, this method will compute the
@@ -808,7 +809,7 @@ unsigned char cip::ChestConventions::GetChestType( unsigned int i ) const
 
 /** Returns true if the passed string name is among the allowed body composition 
  *  phenotype names and returns false otherwise */
-bool cip::ChestConventions::IsBodyCompositionPhenotype( std::string pheno ) const
+bool cip::ChestConventions::IsBodyCompositionPhenotypeName( std::string pheno ) const
 {  
   for ( int i=0; i<this->BodyCompositionPhenotypeNames.size(); i++ )
     {
@@ -823,11 +824,42 @@ bool cip::ChestConventions::IsBodyCompositionPhenotype( std::string pheno ) cons
 
 /** Returns true if the passed string name is among the allowed parenchyma
  *  phenotype names and returns false otherwise */
-bool cip::ChestConventions::IsParenchymaPhenotype( std::string pheno ) const
+bool cip::ChestConventions::IsParenchymaPhenotypeName( std::string pheno ) const
 {  
   for ( int i=0; i<this->ParenchymaPhenotypeNames.size(); i++ )
     {
       if ( !this->ParenchymaPhenotypeNames[i].compare( pheno ) )
+	{
+	  return true;
+	}
+    }
+  
+  return false;
+}
+
+/** Returns true if the passed string name is among the allowed 
+ *  phenotype names and returns false otherwise */
+bool cip::ChestConventions::IsPhenotypeName( std::string pheno ) const
+{  
+  for ( int i=0; i<this->ParenchymaPhenotypeNames.size(); i++ )
+    {
+      if ( !this->ParenchymaPhenotypeNames[i].compare( pheno ) )
+	{
+	  return true;
+	}
+    }
+
+  for ( int i=0; i<this->BodyCompositionPhenotypeNames.size(); i++ )
+    {
+      if ( !this->BodyCompositionPhenotypeNames[i].compare( pheno ) )
+	{
+	  return true;
+	}
+    }
+
+  for ( int i=0; i<this->HistogramPhenotypeNames.size(); i++ )
+    {
+      if ( !this->HistogramPhenotypeNames[i].compare( pheno ) )
 	{
 	  return true;
 	}

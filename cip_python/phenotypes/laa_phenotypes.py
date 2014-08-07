@@ -79,7 +79,7 @@ class LAAPhenotypes(Phenotypes):
         """
         names = []
         for t in self.threshs_:
-            names.append('LAA'+str(int(np.round(t))))
+            names.append('LAA'+str(int(np.abs(np.round(t)))))
 
         return names
 
@@ -176,7 +176,7 @@ class LAAPhenotypes(Phenotypes):
                 if r != 0:
                     mask = parser.get_mask(chest_region=r)
                     for tt in self.threshs_:
-                        pheno_name = 'LAA' + str(int(np.round(tt)))
+                        pheno_name = 'LAA' + str(int(np.abs(np.round(tt))))
                         pheno_val = float(np.sum(ct[mask] <= tt))/np.sum(mask)
                         self.add_pheno([c.GetChestRegionName(r),
                                         c.GetChestWildCardName()],
@@ -186,7 +186,7 @@ class LAAPhenotypes(Phenotypes):
                 if t != 0:
                     mask = parser.get_mask(chest_type=t)
                     for tt in self.threshs_:
-                        pheno_name = 'LAA' + str(int(np.round(tt)))
+                        pheno_name = 'LAA' + str(int(np.abs(np.round(tt))))
                         pheno_val = float(np.sum(ct[mask] <= tt))/np.sum(mask)
                         self.add_pheno([c.GetChestWildCardName(),
                                         c.GetChestTypeName(t)],
@@ -196,7 +196,7 @@ class LAAPhenotypes(Phenotypes):
                 if not (p[0] == 0 and p[1] == 0):
                     mask = parser.get_mask(chest_region=p[0], chest_type=p[1])
                     for tt in self.threshs_:
-                        pheno_name = 'LAA'+str(int(np.round(tt)))
+                        pheno_name = 'LAA'+str(int(np.abs(np.round(tt))))
                         pheno_val = float(np.sum(ct[mask] <= tt))/np.sum(mask)
                         self.add_pheno([c.GetChestRegionName(p[0]),
                                         c.GetChestTypeName(p[1])],

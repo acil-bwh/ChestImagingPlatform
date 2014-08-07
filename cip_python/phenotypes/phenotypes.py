@@ -207,11 +207,17 @@ class Phenotypes:
         pheno_value : object
             The phenotype value. Can be a numerical value, string, etc
         """
+        c = ChestConventions()
+
         num_keys = len(key_value)
     
         # Make sure CID has been set
         assert self.static_names_handler_['CID'] is not None, \
             "CID has not been set"
+
+        # Make sure the pheno name is valid
+        assert c.IsPhenotypeName(pheno_name) or pheno_name == \
+            c.GetChestWildCardName(), "Invalid phenotype name"
         
         # Check if key is valid
         for i in xrange(0, num_keys):
@@ -241,7 +247,7 @@ class Phenotypes:
         else:
             self._df[pheno_name][np.where(key_row==True)[0][0]] = pheno_value
         
-    def save_to_csv(self, filename):
+    def to_csv(self, filename):
         self._df.to_csv(filename, index=False)
   
     def execute(self):

@@ -327,11 +327,15 @@ public:
 
   /** Returns true if the passed string name is among the allowed body composition 
    *  phenotype names and returns false otherwise */
-  bool IsBodyCompositionPhenotype( std::string ) const;
+  bool IsBodyCompositionPhenotypeName( std::string ) const;
 
   /** Returns true if the passed string name is among the allowed parenchyma
    *  phenotype names and returns false otherwise */
-  bool IsParenchymaPhenotype( std::string ) const;
+  bool IsParenchymaPhenotypeName( std::string ) const;
+
+  /** Returns true if the passed string name is among the allowed
+   *  phenotype names and returns false otherwise */
+  bool IsPhenotypeName( std::string ) const;
 
 public:
   std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;
@@ -342,8 +346,9 @@ public:
   std::vector< double* >                    ChestRegionColors;
   std::vector< double* >                    ChestTypeColors;
 
-  std::vector< std::string >                BodyCompositionPhenotypeNames;
-  std::vector< std::string >                ParenchymaPhenotypeNames;
+  std::vector< std::string >  BodyCompositionPhenotypeNames;
+  std::vector< std::string >  ParenchymaPhenotypeNames;
+  std::vector< std::string >  HistogramPhenotypeNames;
 
 private:
   unsigned char m_NumberOfEnumeratedChestRegions;
