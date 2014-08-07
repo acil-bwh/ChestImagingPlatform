@@ -112,6 +112,7 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "cipChestRegionChestTypeLocationsIO.h"
+#include "cipVesselParticleConnectedComponentFilter.h"
 
 typedef itk::Image< short, 3 >             ImageType;
 typedef itk::ImageFileReader< ImageType >  ReaderType;
@@ -145,6 +146,15 @@ int main( int argc, char *argv[] )
   std::vector< double > regionTypePointsScale;
   bool prune = false;
   bool label = false;
+  // Filter parameters
+  double interParticleSpacing = 1.5;
+  double scaleRatioThreshold = std::numeric_limits<double>::max();
+  double maxAllowableScale = std::numeric_limits<double>::max();
+  double minAllowableScale = 0.0;
+  double maxAllowableDistance = 3.0; 
+  double particleAngleThreshold = 20.0;
+  unsigned int maxComponentSize = std::numeric_limits<unsigned int>::max();
+  unsigned int componentSizeThreshold = 1;
 
   // Input descriptions for user convenience
   std::string programDesc = "This program can be used to label vessel particles \
@@ -192,6 +202,15 @@ the user to label groups of particles according to their vessel generation.";
 component to be rendered";
   std::string distThreshDesc = "A connected component must contain a particle at least this close to a labeled particle in order \
 for the component to be rendered";
+  std::string maxAllowableDistanceDesc = "Maximum inter-particle distance. Two particles must be at least this close \
+together to be considered for connectivity";
+  std::string particleAngleThresholdDesc = "Particle angle threshold used to test the connectivity between two particles (in degrees). \
+The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \
+eigenvector pointing in the direction of the vessel axis is then considered. For both particles, this angle must be below \
+the specified threshold for the particles to be connected";
+  std::string maxComponentSizeDesc = "Maximum component size. No component will be larger than the specified size";
+  std::string componentSizeThresholdDesc = "Component size cardinality threshold. Only components with this many particles or more \
+will be retained in the output";
 
   // Parse the input arguments
   try
@@ -216,6 +235,11 @@ for the component to be rendered";
     TCLAP::MultiArg<double>        regionTypePointsBlueArg( "", "rtpBlue", regionTypePointsBlueDesc, false, "double", cl );
     TCLAP::MultiArg<double>        regionTypePointsOpacityArg( "", "rtpOp", regionTypePointsOpacityDesc, false, "double", cl );
     TCLAP::MultiArg<double>        regionTypePointsScaleArg( "", "rtpSc", regionTypePointsScaleDesc, false, "double", cl );
+    // Filter args:
+    TCLAP::ValueArg<double>        maxAllowableDistanceArg( "d", "", maxAllowableDistanceDesc, false, maxAllowableDistance, "double", cl );
+    TCLAP::ValueArg<double>        particleAngleThresholdArg( "", "angle", particleAngleThresholdDesc, false, particleAngleThreshold, "double", cl );
+    TCLAP::ValueArg<unsigned int>  maxComponentSizeArg( "", "mcs", maxComponentSizeDesc, false, maxComponentSize, "unsigned int", cl );
+    TCLAP::ValueArg<unsigned int>  componentSizeThresholdArg( "", "cs", componentSizeThresholdDesc, false, componentSizeThreshold, "unsigned int", cl );
 
     cl.parse( argc, argv );
 
@@ -227,6 +251,11 @@ for the component to be rendered";
       {
       label = true;
       }
+
+    maxAllowableDistance   = maxAllowableDistanceArg.getValue();
+    particleAngleThreshold = particleAngleThresholdArg.getValue();
+    maxComponentSize       = maxComponentSizeArg.getValue();
+    componentSizeThreshold = componentSizeThresholdArg.getValue();
 
     inParticlesFileName     = inParticlesFileNameArg.getValue();
     genParticlesFileName    = genParticlesFileNameArg.getValue();
@@ -340,6 +369,20 @@ for the component to be rendered";
   std::cout << "Asserting ChestRegion and ChestType array existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
 
+  // Optionally filter particles
+  std::cout << "Filtering particles..." << std::endl;
+  cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
+    filter->SetInterParticleSpacing( interParticleSpacing );
+    filter->SetComponentSizeThreshold( componentSizeThreshold );
+    filter->SetParticleDistanceThreshold( maxAllowableDistance );
+    filter->SetParticleAngleThreshold( particleAngleThreshold );
+    filter->SetScaleRatioThreshold( scaleRatioThreshold );
+    filter->SetMaximumComponentSize( maxComponentSize );
+    filter->SetMaximumAllowableScale( maxAllowableScale );
+    filter->SetMinimumAllowableScale( minAllowableScale );
+    filter->SetInput( particlesReader->GetOutput() );
+    filter->Update();
+
   // Give the output file name to the interactor. This will allow the user to
   // save work as he/she goes along.
   interactor.SetFileName( genParticlesFileName.c_str() );
@@ -350,7 +393,7 @@ for the component to be rendered";
       // spanning tree, and this tree will be used in order to label
       // particles between specified root and intermediate nodes /
       // particles 
-      interactor.SetConnectedVesselParticles( particlesReader->GetOutput(), particleSize );
+      interactor.SetConnectedVesselParticles( filter->GetOutput(), particleSize );
 
       std::cout << "Rendering..." << std::endl;  
       interactor.Render();
@@ -358,14 +401,14 @@ for the component to be rendered";
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
         writer->SetFileName( genParticlesFileName.c_str() );
-	writer->SetInput( particlesReader->GetOutput() );
+	writer->SetInput( filter->GetOutput() );
 	//writer->SetFileTypeToASCII();
 	writer->Write();  
     }
   else if ( prune )
     {      
       std::cout << "Adding components to interactor..." << std::endl;
-      AddComponentsToInteractor( &interactor, particlesReader->GetOutput(), "vesselParticles", &componentLabelToNameMap, 
+      AddComponentsToInteractor( &interactor, filter->GetOutput(), "vesselParticles", &componentLabelToNameMap, 
 				 particleSize, distThresh, scaleThresh );
 
       std::cout << "Rendering..." << std::endl;  
@@ -374,7 +417,7 @@ for the component to be rendered";
       vtkSmartPointer< vtkPolyData > outParticles = vtkSmartPointer< vtkPolyData >::New();
 
       std::cout << "Retrieving labeled particles..." << std::endl;
-      outParticles = GetLabeledVesselParticles( &interactor, particlesReader->GetOutput(), &componentLabelToNameMap ); 
+      outParticles = GetLabeledVesselParticles( &interactor, filter->GetOutput(), &componentLabelToNameMap ); 
 
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
