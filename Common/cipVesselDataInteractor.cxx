@@ -313,6 +313,11 @@ void cipVesselDataInteractor::RemoveActorAndRender( vtkActor* actor )
   this->RenderWindow->Render();
 }
 
+void cipVesselDataInteractor::HideActorAndRender( vtkActor* actor )
+{
+  actor->GetProperty()->SetOpacity( 0.0 );
+  this->RenderWindow->Render();
+}
 
 void cipVesselDataInteractor::ColorActorByChestTypeAndRender( vtkActor* actor, unsigned char cipType )
 {
@@ -507,7 +512,7 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
 
   char pressedKey = dataInteractor->GetRenderWindowInteractor()->GetKeyCode(); 
 
-  if ( pressedKey == 'k' || pressedKey == 'a' || pressedKey == 'v' )
+  if ( pressedKey == 'k' || pressedKey == 'a' || pressedKey == 'v' || pressedKey == 'h' )
     {
     int* clickPos = dataInteractor->GetRenderWindowInteractor()->GetEventPosition();
 
@@ -520,6 +525,10 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
 
     if ( actor != NULL )
       {
+	if ( pressedKey == 'h' )
+	  {
+	    dataInteractor->HideActorAndRender( actor );
+	  }
 	if ( pressedKey == 'k' )
 	  {
 	    dataInteractor->RemoveActorAndRender( actor );
@@ -538,10 +547,10 @@ void InteractorKeyCallback( vtkObject* obj, unsigned long b, void* clientData, v
   //   {
   //     //dataInteractor->Write();
   //   }
-  else if ( pressedKey == 'h' )
-    {
-      dataInteractor->HideVesselModel();
-    }
+  // else if ( pressedKey == 'h' )
+  //   {
+  //     dataInteractor->HideVesselModel();
+  //   }
   // else if ( pressedKey == 'u' )
   //   {
   //     //dataInteractor->UndoAndRender();
