@@ -1,3 +1,18 @@
+# IMPORTANT: CIP testing depends on MIDAS server to download the data files
+
+  
+# Login in MIDAS and save the token in midas_api_token
+# If there is a problem with the token, token = 0, and it won't be used
+midas_api_login(
+    MIDAS_REST_URL ${MIDAS_REST_URL}
+    MIDAS_USER_EMAIL ${MIDAS_USER_EMAIL}
+    MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
+    RESULT_VARNAME token
+)
+message("Token (result from login): ${token}")
+#SET (token "LlXLKgvHtNvWBLFiu7D5Y8gDCq3iMJDzQD7wLyqO")
+# SET (token "0")
+
 #----------------------------------------------
 # itkCIPAutoThresholdAirwaySegmentationImageFilterTEST
 #----------------------------------------------
@@ -14,7 +29,8 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000.nhdr 252 304 449 ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_interactiveAirwaySegmentation.nhdr)
+  #ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000.nhdr 252 304 449 ${CIP_SOURCE_DIR}/Testing/Data/Large/Case000_interactiveAirwaySegmentation.nhdr)
+  midas_add_test( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000.nhdr.md5} 252 304 449 MIDAS{Case000_interactiveAirwaySegmentation.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_interactiveAirwaySegmentation.raw.gz.md5})
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
