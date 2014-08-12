@@ -105,8 +105,8 @@ endif()
 #---------------------------------------------------------------------
 # MIDAS configuration (used in Testing to store data files)
 set(MIDAS_REST_URL "http://midas.airwayinspector.org/rest" CACHE STRING "The MIDAS server where testing data resides")
-set(MIDAS_KEY_DIR "${CMAKE_SOURCE_DIR}/Testing/Data/MIDAS_Keys" CACHE STRING "Directory where hash files are stored (included in Source code)")
-set(MIDAS_DATA_DIR "${CIP_BINARY_DIR}/Testing/Data/MIDAS_Data" CACHE STRING "Directory where downloaded files are stored (local directory)")
+set(MIDAS_KEY_DIR "${CMAKE_SOURCE_DIR}/Testing/Data/Large/MIDAS_Keys" CACHE STRING "Directory where hash files are stored (included in Source code)")
+set(MIDAS_DATA_DIR "${CIP_BINARY_DIR}/Testing/Data/Large/MIDAS_Data" CACHE STRING "Directory where downloaded files are stored (local directory)")
 # Login 
 set(MIDAS_USER_EMAIL "public_user@acil-bwh.org" CACHE STRING "Email used to authenticate MIDAS server")
 set(MIDAS_USER_APIKEY "SL1di53twednww4kV6I8V1O9wcyuBcgX" CACHE STRING "API key of the user used to authenticate MIDAS server")

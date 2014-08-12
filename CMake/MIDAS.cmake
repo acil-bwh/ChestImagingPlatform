@@ -69,11 +69,11 @@ function(midas_add_test)
   endif(NOT DEFINED MIDAS_REST_URL)
 
   if(NOT DEFINED MIDAS_KEY_DIR)
-    set(MIDAS_KEY_DIR "${PROJECT_SOURCE_DIR}/MIDAS_Keys")
+    message(FATAL_ERROR "MIDAS_KEY_DIR is not defined. You mus set the directory where MIDAS keys will be stored")
   endif(NOT DEFINED MIDAS_KEY_DIR)
 
   if(NOT DEFINED MIDAS_DATA_DIR)
-    set(MIDAS_DATA_DIR "${PROJECT_BINARY_DIR}/MIDAS_Data")
+    message(FATAL_ERROR "MIDAS_DATA_DIR is not defined. You mus set the directory where MIDAS data will be stored")
   endif(NOT DEFINED MIDAS_DATA_DIR)
   file(MAKE_DIRECTORY "${MIDAS_DATA_DIR}/MIDAS_FetchScripts")
   file(MAKE_DIRECTORY "${MIDAS_DATA_DIR}/MIDAS_Hashes")
