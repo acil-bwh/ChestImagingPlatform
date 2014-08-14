@@ -10,3 +10,7 @@ CIPConfig.cmake
 *-orig
 *_orig
 DartConfiguration.tcl
+
+cip_python/ChestConventions.so
+
+cip_python/wrap_ChestConventions.cpp
