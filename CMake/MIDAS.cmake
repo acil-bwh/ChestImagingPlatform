@@ -167,7 +167,6 @@ macro(_process_keyfile keyFile testName extractTgz tokenId)
     message(FATAL_ERROR "MIDAS key file ${MIDAS_KEY_DIR}/${keyFile} does not exist.")
   endif(NOT EXISTS "${MIDAS_KEY_DIR}/${keyFile}")
 
-  #set (tokenId2 "LlXLKgvHtNvWBLFiu7D5Y8gDCq3iMJDzQD7wLyqO")
   if (tokenId)
      set(token_param "&token=${tokenId}")
   else()

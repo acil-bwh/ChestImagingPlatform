@@ -14,3 +14,5 @@ ChestConventions.so
 wrap_ChestConventions.cpp
 *18501*
 *MC201*
+cip_python/ChestConventions.so
+cip_python/wrap_ChestConventions.cpp
