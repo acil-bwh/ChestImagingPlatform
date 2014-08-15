@@ -10,3 +10,7 @@ CIPConfig.cmake
 *-orig
 *_orig
 DartConfiguration.tcl
+ChestConventions.so
+wrap_ChestConventions.cpp
+*18501*
+*MC201*
