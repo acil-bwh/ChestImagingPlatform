@@ -37,6 +37,7 @@ public:
   cipVesselDataInteractor();
 
   void RemoveActorAndRender( vtkActor* );
+  void HideActorAndRender( vtkActor* );
   void ColorActorByChestTypeAndRender( vtkActor*, unsigned char );
   void UpdateVesselGenerationAndRender( vtkActor*, int );
   void UndoUpdateAndRender();

@@ -33,6 +33,7 @@ if(${PRIMARY_PROJECT_NAME}_SUPERBUILD)
   return()
 endif()
 
+message("----------- PHASE 2 ------------")
 message("Configuring ${PRIMARY_PROJECT_NAME}...")
 include("${CMAKE_CURRENT_SOURCE_DIR}/${PRIMARY_PROJECT_NAME}.cmake")
 message("----------- DONE ------------")

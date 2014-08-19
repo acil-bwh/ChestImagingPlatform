@@ -29,12 +29,17 @@ int main( int argc, char* argv[] )
 
   if ( argc > 3 )
     {
-      std::cout << "Writing cast..." << std::endl;
-      cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-        writer->SetFileName( argv[3] );
-	writer->SetInput( segmenter->GetOutput() );
-	writer->UseCompressionOn();
-	writer->Update();
+      // Check the 3rd param is not "EXTRAFILES" reserved word, 
+      // because in this test it would mean more input files
+      if (strncmp(argv[3], "EXTRAFILES", 10) != 0)
+	{
+	  std::cout << "Writing cast..." << std::endl;
+	  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+	    writer->SetFileName( argv[3] );
+	    writer->SetInput( segmenter->GetOutput() );
+	    writer->UseCompressionOn();
+	    writer->Update();
+	}
     }
 
   // Read the reference label map

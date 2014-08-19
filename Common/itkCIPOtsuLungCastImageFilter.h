@@ -18,9 +18,9 @@
 
 namespace itk
 {
-template <class TInputImage>
+template <class TInputImage, class TOutputImage = itk::Image<unsigned short, 3> >
 class ITK_EXPORT CIPOtsuLungCastImageFilter :
-    public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
+    public ImageToImageFilter< TInputImage, TOutputImage >
 {
 public:
   /** Extract dimension from input and output image. */
@@ -28,8 +28,8 @@ public:
   itkStaticConstMacro( OutputImageDimension, unsigned int, 3 );
 
   /** Convenient typedefs for simplifying declarations. */
-  typedef TInputImage                       InputImageType;
-  typedef itk::Image< unsigned short, 3 >   OutputImageType;
+  typedef TInputImage    InputImageType;
+  typedef TOutputImage   OutputImageType;
 
   /** Standard class typedefs. */
   typedef CIPOtsuLungCastImageFilter                             Self;
@@ -44,7 +44,6 @@ public:
   itkTypeMacro(CIPOtsuLungCastImageFilter, ImageToImageFilter);
   
   /** Image typedef support. */
-  typedef unsigned short                               LabelMapPixelType;
   typedef typename InputImageType::PixelType           InputPixelType;
   typedef typename OutputImageType::PixelType          OutputPixelType;
   typedef typename InputImageType::RegionType          InputImageRegionType;
@@ -54,18 +53,17 @@ public:
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
 protected:
-  typedef itk::Image< unsigned long, 3 >                                               ComponentImageType;
-  typedef itk::Image< unsigned long, 2 >                                               ComponentSliceType;
-  typedef itk::Image< LabelMapPixelType, 3 >                                           LabelMapType;
-  typedef itk::Image< LabelMapPixelType, 2 >                                           LabelMapSliceType;
-  typedef itk::OtsuThresholdImageFilter< InputImageType, OutputImageType >             OtsuThresholdType;
-  typedef itk::ConnectedComponentImageFilter< LabelMapType, ComponentImageType >       ConnectedComponent3DType;
-  typedef itk::ConnectedComponentImageFilter< LabelMapSliceType, ComponentSliceType >  ConnectedComponent2DType;
-  typedef itk::RelabelComponentImageFilter< ComponentImageType, ComponentImageType >   Relabel3DType;
-  typedef itk::ImageRegionIteratorWithIndex< ComponentImageType >                      ComponentIteratorType;
-  typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                            LabelMapIteratorType;
-  typedef itk::ExtractImageFilter< LabelMapType, LabelMapSliceType >                   LabelMapExtractorType;
-  typedef itk::ImageRegionIteratorWithIndex< ComponentSliceType >                      ComponentSliceIteratorType;
+  typedef itk::Image< unsigned short, 3 >                                                ComponentImageType;
+  typedef itk::Image< unsigned short, 2 >                                                ComponentSliceType;
+  typedef itk::Image< OutputPixelType, 2 >                                               OutputImageSliceType;
+  typedef itk::OtsuThresholdImageFilter< InputImageType, OutputImageType >               OtsuThresholdType;
+  typedef itk::ConnectedComponentImageFilter< OutputImageType, ComponentImageType >      ConnectedComponent3DType;
+  typedef itk::ConnectedComponentImageFilter< OutputImageSliceType, ComponentSliceType > ConnectedComponent2DType;
+  typedef itk::RelabelComponentImageFilter< ComponentImageType, ComponentImageType >     Relabel3DType;
+  typedef itk::ImageRegionIteratorWithIndex< ComponentImageType >                        ComponentIteratorType;
+  typedef itk::ImageRegionIteratorWithIndex< OutputImageType >                           OutputIteratorType;
+  typedef itk::ExtractImageFilter< OutputImageType, OutputImageSliceType >               OutputImageExtractorType;
+  typedef itk::ImageRegionIteratorWithIndex< ComponentSliceType >                        ComponentSliceIteratorType;
 
   CIPOtsuLungCastImageFilter();
   virtual ~CIPOtsuLungCastImageFilter() {}

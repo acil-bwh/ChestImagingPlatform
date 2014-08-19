@@ -4,7 +4,12 @@
  *  adjusted between two pre-defined extremes until an airway volume
  *  is achieved that is a close to possible as a maximum specified
  *  volume without going over. After region growing, morphological 
- *  closing is performed to fill in holes.
+ *  closing is performed to fill in holes. The foreground value of
+ *  the output depends on the output image type: if unsigned short,
+ *  the value will correspond to (UndefinedRegion, Airway); if
+ *  unsigned char, the value will correspond to Airway. See the
+ *  cipChestConventions for details about the corresponding numerical
+ *  values.
  */
 
 #ifndef __itkCIPAutoThresholdAirwaySegmentationImageFilter_h
@@ -23,9 +28,9 @@
 namespace itk
 {
 
-template <class TInputImage>
+template <class TInputImage, class TOutputImage = itk::Image<unsigned short, 3> >
 class ITK_EXPORT CIPAutoThresholdAirwaySegmentationImageFilter :
-    public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
+  public ImageToImageFilter< TInputImage, TOutputImage >
 {
 public:
   /** Extract dimension from input and output image. */
@@ -33,11 +38,11 @@ public:
   itkStaticConstMacro( OutputImageDimension, unsigned int, 3 );
 
   /** Convenient typedefs for simplifying declarations. */
-  typedef TInputImage                       InputImageType;
-  typedef itk::Image< unsigned short, 3 >   OutputImageType;
+  typedef TInputImage  InputImageType;
+  typedef TOutputImage OutputImageType;
 
   /** Standard class typedefs. */
-  typedef CIPAutoThresholdAirwaySegmentationImageFilter             Self;
+  typedef CIPAutoThresholdAirwaySegmentationImageFilter          Self;
   typedef ImageToImageFilter< InputImageType, OutputImageType >  Superclass;
   typedef SmartPointer< Self >                                   Pointer;
   typedef SmartPointer< const Self >                             ConstPointer;
@@ -80,17 +85,18 @@ public:
 
   /** Set a seed (multiple seeds may be specified) for the region
    * growing */
-  void AddSeed( OutputImageType::IndexType );
+  void AddSeed( typename TOutputImage::IndexType );
 
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
 protected:
-  typedef itk::Image< LabelMapPixelType, 3 >                                         LabelMapType;
-  typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                          LabelMapIteratorType;
-  typedef itk::ConnectedThresholdImageFilter< InputImageType, OutputImageType >      SegmentationType;
-  typedef itk::BinaryBallStructuringElement< LabelMapPixelType, 3 >                  ElementType;
-  typedef itk::BinaryDilateImageFilter< LabelMapType, LabelMapType, ElementType >    DilateType;
-  typedef itk::BinaryErodeImageFilter< LabelMapType, LabelMapType, ElementType >     ErodeType;
+  typedef itk::Image< LabelMapPixelType, 3 >                                             LabelMapType;
+  typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                              LabelMapIteratorType;
+  typedef itk::ImageRegionIteratorWithIndex< OutputImageType >                           OutputIteratorType;
+  typedef itk::ConnectedThresholdImageFilter< InputImageType, OutputImageType >          SegmentationType;
+  typedef itk::BinaryBallStructuringElement< OutputPixelType, 3 >                        ElementType;
+  typedef itk::BinaryDilateImageFilter< OutputImageType, OutputImageType, ElementType >  DilateType;
+  typedef itk::BinaryErodeImageFilter< OutputImageType, OutputImageType, ElementType >   ErodeType;
 
   CIPAutoThresholdAirwaySegmentationImageFilter();
   virtual ~CIPAutoThresholdAirwaySegmentationImageFilter() {}
@@ -102,7 +108,7 @@ private:
   CIPAutoThresholdAirwaySegmentationImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  std::vector< OutputImageType::IndexType > m_SeedVec;
+  std::vector< typename OutputImageType::IndexType > m_SeedVec;
 
   cip::ChestConventions  m_ChestConventions;
   double                 m_MaxAirwayVolume;

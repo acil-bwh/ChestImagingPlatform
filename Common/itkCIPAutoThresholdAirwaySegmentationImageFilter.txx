@@ -10,12 +10,13 @@
 #include "itkCIPAutoThresholdAirwaySegmentationImageFilter.h"
 #include "itkNumericTraits.h"
 #include "cipExceptionObject.h"
+#include <typeinfo>
 
 namespace itk
 {
 
-template < class TInputImage >
-CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
+template < class TInputImage, class TOutputImage >
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage, TOutputImage >
 ::CIPAutoThresholdAirwaySegmentationImageFilter()
 {
   // We manually segmented the airway trees from twenty five 
@@ -29,9 +30,9 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 }
 
 
-template< class TInputImage >
+template< class TInputImage, class TOutputImage >
 void
-CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage, TOutputImage >
 ::GenerateData()
 {
   if ( !this->m_MaxIntensityThresholdSet )
@@ -44,6 +45,12 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
       throw cip::ExceptionObject( __FILE__, __LINE__, "CIPAutoThresholdAirwaySegmentationImageFilter::GenerateData()", 
 				  "Min intensity threshold not set" );
     }
+  if ( (typeid(OutputPixelType) != typeid(unsigned short)) && 
+       (typeid(OutputPixelType) != typeid(unsigned char)) )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, "CIPAutoThresholdAirwaySegmentationImageFilter::GenerateData()", 
+				  "Unsupported output pixel type. Must be unsigned short or unsigned char." );
+    }
 
   // Allocate space for the output image
   typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
@@ -54,7 +61,8 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
     outputPtr->Allocate();
     outputPtr->FillBuffer( 0 );
 
-  unsigned short airwayLabel = this->m_ChestConventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAY );
+  unsigned short ushortAirwayLabel = this->m_ChestConventions.GetValueFromChestRegionAndType( cip::UNDEFINEDREGION, cip::AIRWAY );
+  unsigned char  ucharAirwayLabel  = (unsigned char)(cip::AIRWAY);
 
   typename InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
 
@@ -62,7 +70,14 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
   typename SegmentationType::Pointer segmentationFilter = SegmentationType::New();
     segmentationFilter->SetInput( this->GetInput() );
     segmentationFilter->SetLower( this->m_MinIntensityThreshold );
-    segmentationFilter->SetReplaceValue( airwayLabel );
+  if ( typeid(OutputPixelType) == typeid(unsigned short) )
+    {
+    segmentationFilter->SetReplaceValue( ushortAirwayLabel );
+    }
+  if ( typeid(OutputPixelType) == typeid(unsigned char) )
+    {
+    segmentationFilter->SetReplaceValue( ucharAirwayLabel );
+    }
   for ( unsigned int s=0; s<this->m_SeedVec.size(); s++ )
     {
     segmentationFilter->AddSeed( this->m_SeedVec[s] );
@@ -85,15 +100,25 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 
     // Compute the volume of the tree
     int count = 0;
-    LabelMapIteratorType sIt( segmentationFilter->GetOutput(), segmentationFilter->GetOutput()->GetBufferedRegion() );
+    OutputIteratorType sIt( segmentationFilter->GetOutput(), segmentationFilter->GetOutput()->GetBufferedRegion() );
 
     sIt.GoToBegin();
     while ( !sIt.IsAtEnd() )
       {
-      if ( sIt.Get() == airwayLabel )
-        {
-        count++;
-        }
+	if ( typeid(OutputPixelType) == typeid(unsigned short) )
+	  {
+	    if ( sIt.Get() == ushortAirwayLabel )
+	      {
+		count++;
+	      }
+	  }
+	if ( typeid(OutputPixelType) == typeid(unsigned char) )
+	  {
+	    if ( sIt.Get() == ucharAirwayLabel )
+	      {
+		count++;
+	      }
+	  }
 
       ++sIt;
       }
@@ -134,7 +159,14 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
   typename DilateType::Pointer dilater = DilateType::New();
     dilater->SetInput( segmentationFilter->GetOutput() );
     dilater->SetKernel( structuringElement );
-    dilater->SetDilateValue( airwayLabel );
+  if ( typeid(OutputPixelType) == typeid(unsigned char) )
+    {
+    dilater->SetDilateValue( ucharAirwayLabel );
+    }
+  if ( typeid(OutputPixelType) == typeid(unsigned short) )
+    {
+    dilater->SetDilateValue( ushortAirwayLabel );
+    }
   try
     {
     dilater->Update();
@@ -148,7 +180,14 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
   typename ErodeType::Pointer eroder = ErodeType::New();
     eroder->SetInput( dilater->GetOutput() );
     eroder->SetKernel( structuringElement );
-    eroder->SetErodeValue( airwayLabel );
+  if ( typeid(OutputPixelType) == typeid(unsigned char) )
+    {
+    eroder->SetErodeValue( ucharAirwayLabel );
+    }
+  if ( typeid(OutputPixelType) == typeid(unsigned short) )
+    {
+    eroder->SetErodeValue( ushortAirwayLabel );
+    }
   try
     {
     eroder->Update();
@@ -163,18 +202,18 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 }
 
 
-template < class TInputImage >
+template < class TInputImage, class TOutputImage >
 void
-CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
-::AddSeed( OutputImageType::IndexType seed )
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage, TOutputImage >
+::AddSeed( typename TOutputImage::IndexType seed )
 {
   this->m_SeedVec.push_back( seed );
 }
   
 
-template < class TInputImage >
+template < class TInputImage, class TOutputImage >
 void
-CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage, TOutputImage >
 ::SetMaxIntensityThreshold( InputPixelType threshold ) 
 {
   this->m_MaxIntensityThreshold = threshold;
@@ -182,9 +221,9 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 }
 
 
-template < class TInputImage >
+template < class TInputImage, class TOutputImage >
 void
-CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage, TOutputImage >
 ::SetMinIntensityThreshold( InputPixelType threshold ) 
 {
   this->m_MinIntensityThreshold = threshold;
@@ -195,9 +234,9 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
 /**
  * Standard "PrintSelf" method
  */
-template < class TInputImage >
+template < class TInputImage, class TOutputImage >
 void
-CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage >
+CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage, TOutputImage >
 ::PrintSelf( std::ostream& os, Indent indent ) const
 {
   Superclass::PrintSelf( os, indent );

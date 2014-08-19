@@ -7,9 +7,9 @@
 
 int main( int argc, char* argv[] )
 {
-  typedef itk::CIPSplitLeftLungRightLungImageFilter< cip::CTType > SplitterType;
-  typedef itk::ImageRegionIterator< cip::LabelMapType >            IteratorType;
-  typedef itk::CIPLabelLungRegionsImageFilter                      LungRegionLabelerType;
+  typedef itk::CIPSplitLeftLungRightLungImageFilter< cip::CTType >                     SplitterType;
+  typedef itk::ImageRegionIterator< cip::LabelMapType >                                IteratorType;
+  typedef itk::CIPLabelLungRegionsImageFilter< cip::LabelMapType, cip::LabelMapType >  LungRegionLabelerType;
 
   // Read the CT image
   std::cout << "Reading CT..." << std::endl;

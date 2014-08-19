@@ -333,6 +333,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
 #    )
 #endif()
 
+
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_EP_ARGS})
 set(extProjName ${PRIMARY_PROJECT_NAME})
@@ -426,7 +427,7 @@ endif()
 #-----------------------------------------------------------------------------
 # CTestCustom
 #-----------------------------------------------------------------------------
-if(BUILD_TESTING AND NOT Slicer_BUILD_${PROJECT_NAME})
+if(BUILD_TESTING AND NOT Slicer_BUILD_${PROJECT_NAME})  
   configure_file(
     CMake/CTestCustom.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake
