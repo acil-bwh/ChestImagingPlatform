@@ -9,9 +9,7 @@ midas_api_login(
     MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
     RESULT_VARNAME token
 )
-message("Token (result from login): ${token}")
-#SET (token "LlXLKgvHtNvWBLFiu7D5Y8gDCq3iMJDzQD7wLyqO")
-# SET (token "0")
+#message("Authentication Token for user ${MIDAS_USER_EMAIL: ${token}")
 
 #----------------------------------------------
 # itkCIPAutoThresholdAirwaySegmentationImageFilterTEST

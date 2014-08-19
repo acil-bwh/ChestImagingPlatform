@@ -184,7 +184,9 @@ macro(_process_keyfile keyFile testName extractTgz tokenId)
   endif()
   file(WRITE "${MIDAS_DATA_DIR}/MIDAS_FetchScripts/fetch_${checksum}_${base_filename}.cmake"
 # Start file content
-"message(STATUS \"Data is here: ${MIDAS_REST_URL}/bitstream/download?checksum=${checksum}${token_param}\")
+"if (CMAKE_VERBOSE_MAKEFILE)
+  message(STATUS \"Data is here: ${MIDAS_REST_URL}/bitstream/download?checksum=${checksum}${token_param}\")
+endif()
 if(NOT EXISTS \"${MIDAS_DATA_DIR}/MIDAS_Hashes/${checksum}\")
   file(DOWNLOAD \"${MIDAS_REST_URL}/bitstream/download?checksum=${checksum}${token_param}\" \"${MIDAS_DATA_DIR}/MIDAS_Hashes/\${midas_test_name}_${checksum}\" ${MIDAS_DOWNLOAD_TIMEOUT_STR} STATUS status)
   list(GET status 0 exitCode)
