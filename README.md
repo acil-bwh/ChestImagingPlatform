@@ -13,6 +13,15 @@ Dependencies
 * teem 
 * FLTK (needed for ACILAssistant)
 
+Python Dependencies
+-------------------
+* numpy
+* scipy
+* pynrrd
+* pandas
+* cython
+* nose
+
 Information for Developers
 ==========================
 
