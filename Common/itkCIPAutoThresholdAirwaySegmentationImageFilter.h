@@ -23,9 +23,9 @@
 namespace itk
 {
 
-template <class TInputImage>
+template <class TInputImage, class TOutputImage = itk::Image<unsigned short, 3> >
 class ITK_EXPORT CIPAutoThresholdAirwaySegmentationImageFilter :
-    public ImageToImageFilter< TInputImage, itk::Image< unsigned short, 3 > >
+    public ImageToImageFilter< TInputImage, TOutputImage >
 {
 public:
   /** Extract dimension from input and output image. */
@@ -37,7 +37,7 @@ public:
   typedef itk::Image< unsigned short, 3 >   OutputImageType;
 
   /** Standard class typedefs. */
-  typedef CIPAutoThresholdAirwaySegmentationImageFilter             Self;
+  typedef CIPAutoThresholdAirwaySegmentationImageFilter          Self;
   typedef ImageToImageFilter< InputImageType, OutputImageType >  Superclass;
   typedef SmartPointer< Self >                                   Pointer;
   typedef SmartPointer< const Self >                             ConstPointer;
@@ -80,7 +80,7 @@ public:
 
   /** Set a seed (multiple seeds may be specified) for the region
    * growing */
-  void AddSeed( OutputImageType::IndexType );
+  void AddSeed( typename TOutputImage::IndexType );
 
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
