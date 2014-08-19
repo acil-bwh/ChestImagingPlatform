@@ -4,7 +4,12 @@
  *  adjusted between two pre-defined extremes until an airway volume
  *  is achieved that is a close to possible as a maximum specified
  *  volume without going over. After region growing, morphological 
- *  closing is performed to fill in holes.
+ *  closing is performed to fill in holes. The foreground value of
+ *  the output depends on the output image type: if unsigned short,
+ *  the value will correspond to (UndefinedRegion, Airway); if
+ *  unsigned char, the value will correspond to Airway. See the
+ *  cipChestConventions for details about the corresponding numerical
+ *  values.
  */
 
 #ifndef __itkCIPAutoThresholdAirwaySegmentationImageFilter_h
