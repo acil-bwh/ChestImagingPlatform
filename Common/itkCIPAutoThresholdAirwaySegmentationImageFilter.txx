@@ -100,7 +100,7 @@ CIPAutoThresholdAirwaySegmentationImageFilter< TInputImage, TOutputImage >
 
     // Compute the volume of the tree
     int count = 0;
-    LabelMapIteratorType sIt( segmentationFilter->GetOutput(), segmentationFilter->GetOutput()->GetBufferedRegion() );
+    OutputIteratorType sIt( segmentationFilter->GetOutput(), segmentationFilter->GetOutput()->GetBufferedRegion() );
 
     sIt.GoToBegin();
     while ( !sIt.IsAtEnd() )

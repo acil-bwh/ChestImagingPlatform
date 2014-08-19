@@ -1,16 +1,15 @@
-
-
 #ifndef _itkCIPLabelLungRegionsImageFilter_txx
 #define _itkCIPLabelLungRegionsImageFilter_txx
 
 #include "itkCIPLabelLungRegionsImageFilter.h"
 #include "itkImageFileWriter.h"
-
+#include <typeinfo>
 
 namespace itk
 {
 
-CIPLabelLungRegionsImageFilter
+template < class TInputImage, class TOutputImage >
+CIPLabelLungRegionsImageFilter< TInputImage, TOutputImage >
 ::CIPLabelLungRegionsImageFilter()
 {
   this->m_HeadFirst               =  true;
@@ -21,96 +20,63 @@ CIPLabelLungRegionsImageFilter
   this->m_NumberLungVoxels        =  0;
 }
 
-
+template < class TInputImage, class TOutputImage >
 void
-CIPLabelLungRegionsImageFilter
+CIPLabelLungRegionsImageFilter< TInputImage, TOutputImage >
 ::GenerateData()
 {
-  //
+  if ( (typeid(OutputPixelType) != typeid(unsigned short)) && 
+       (typeid(OutputPixelType) != typeid(unsigned char)) )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, "CIPLabelLungRegionsImageFilter::GenerateData()", 
+				  "Unsupported output pixel type. Must be unsigned short or unsigned char." );
+    }
+  if ( (typeid(InputPixelType) != typeid(unsigned short)) && 
+       (typeid(InputPixelType) != typeid(unsigned char)) )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, "CIPLabelLungRegionsImageFilter::GenerateData()", 
+				  "Unsupported input pixel type. Must be unsigned short or unsigned char." );
+    }
+
   // Allocate space for the output image
-  //
-  Superclass::InputImageConstPointer inputPtr  = this->GetInput();
-  Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
+  typename Superclass::InputImageConstPointer inputPtr  = this->GetInput();
+  typename Superclass::OutputImagePointer     outputPtr = this->GetOutput(0);
     outputPtr->SetRequestedRegion( inputPtr->GetRequestedRegion() );
     outputPtr->SetBufferedRegion( inputPtr->GetBufferedRegion() );
     outputPtr->SetLargestPossibleRegion( inputPtr->GetLargestPossibleRegion() );
     outputPtr->Allocate();
     outputPtr->FillBuffer( 0 );
 
-  //
   // Start by filling the output image with the WHOLELUNG region at
-  // every location where the input image has a lung region set. Begin
-  // by determining which of the input values correspond to a defined
-  // lung region.
-  //
-  std::list< unsigned short > inputValuesList;
-
+  // every location where the input image has a lung region set. 
   InputIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
+  OutputIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
 
   iIt.GoToBegin();
+  oIt.GoToBegin();
   while ( !iIt.IsAtEnd() )
     {
     if ( iIt.Get() != 0 )
       {
-      inputValuesList.push_back( iIt.Get() );
+	if ( typeid(InputPixelType) == typeid(unsigned short) )
+	  {
+	    if ( this->m_Conventions.GetChestRegionFromValue( iIt.Get() ) > 0 )
+	      {
+		oIt.Set( OutputPixelType(cip::WHOLELUNG) );
+		this->m_NumberLungVoxels++;
+	      }
+	  }
+	else
+	  {
+	    oIt.Set( OutputPixelType(cip::WHOLELUNG) );
+	    this->m_NumberLungVoxels++;
+	  }
       }
 
     ++iIt;
+    ++oIt;
     }
   
-  inputValuesList.unique();
-  inputValuesList.sort();
-  inputValuesList.unique();
-
-  std::vector< unsigned short > definedLungRegionValuesVec;
-
-  std::list< unsigned short >::iterator listIt;
-
-  std::map< unsigned short, unsigned char > valueToTypeMap; 
-
-  for ( listIt = inputValuesList.begin(); listIt != inputValuesList.end(); listIt++ )
-    {
-    unsigned char lungRegion = this->m_LungConventions.GetChestRegionFromValue( *listIt );
-    unsigned char lungType   = this->m_LungConventions.GetChestTypeFromValue( *listIt );
-
-    valueToTypeMap[ *listIt ] = lungType;
-
-    if ( lungRegion != 0 )
-      {
-      definedLungRegionValuesVec.push_back( *listIt );
-      }
-    }
-
-  //
-  // Now that we've collected all the input values that correspond to
-  // defined lung regions, we can initialize the output image with the
-  // WHOLELUNG region
-  //
-  unsigned short wholeLungLabel = this->m_LungConventions.GetValueFromChestRegionAndType( cip::WHOLELUNG, cip::UNDEFINEDTYPE );
-
-  LabelMapIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
-
-  oIt.GoToBegin();
-  iIt.GoToBegin();
-  while ( !oIt.IsAtEnd() )
-    {
-    if ( iIt.Get() != 0 )
-      {
-      for ( unsigned int i=0; i<definedLungRegionValuesVec.size(); i++ )
-        {
-        if ( iIt.Get() == definedLungRegionValuesVec[i] )
-          {
-          oIt.Set( wholeLungLabel );
-
-          this->m_NumberLungVoxels++;
-          }
-        }
-      }
-
-    ++oIt;
-    ++iIt;
-    }
-
   if ( this->m_LabelLungThirds || this->m_LabelLeftAndRightLungs )
     {
       this->m_LabelingSuccess = this->LabelLeftAndRightLungs();
@@ -120,110 +86,36 @@ CIPLabelLungRegionsImageFilter
     this->SetLungThirds();
     }
 
-  //
   // Now set the types from the input image 
-  //
-  iIt.GoToBegin();
-  oIt.GoToBegin();
-  while ( !oIt.IsAtEnd() )
+  if ( typeid(InputPixelType) != typeid(unsigned short) && 
+       typeid(OutputPixelType) != typeid(unsigned short) )
     {
-    if ( iIt.Get() != 0 )
-      {
-      unsigned short lungTypeValue = valueToTypeMap[iIt.Get()];
-
-      if ( lungTypeValue != cip::UNDEFINEDTYPE )
-        {
-        this->SetType( oIt.GetIndex(), lungTypeValue ); 
-        }
-      }
-
-    ++iIt;
-    ++oIt;
+      iIt.GoToBegin();
+      oIt.GoToBegin();
+      while ( !oIt.IsAtEnd() )
+	{
+	  if ( iIt.Get() != 0 )
+	    {
+	      unsigned char cipRegion = (unsigned char)(oIt.Get());
+	      unsigned char cipType = this->m_Conventions.GetChestTypeFromValue( iIt.Get() );
+	      unsigned short value = this->m_Conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
+	      oIt.Set( value );	      
+	    }
+	  
+	  ++iIt;
+	  ++oIt;
+	}
     }
 }
 
-
-void
-CIPLabelLungRegionsImageFilter
-::SetType( OutputImageType::IndexType index, int lungTypeValue )
-{
-  unsigned short currentValue = this->GetOutput()->GetPixel( index );
-
-  //
-  // Get the binary representation of the current value
-  //
-  int currentPlaces[16];
-  for ( int i=0; i<16; i++ )
-    {
-    currentPlaces[i] = 0;
-    }
-
-  for ( int i=15; i>=0; i-- )
-    {
-    int power = static_cast< int >( pow( 2.0, i ) );
-
-    if ( power <= currentValue )
-      {
-      currentPlaces[i] = 1;
-      
-      currentValue = currentValue % power;
-      }
-    }
-
-  //
-  // Get the binary representation of the type to set
-  //
-  int typeValue = lungTypeValue;
-
-  int typePlaces[8];
-  for ( int i=0; i<8; i++ )
-    {
-    typePlaces[i] = 0;
-    }
-
-  for ( int i=7; i>=0; i-- )
-    {
-    int power = static_cast< int >( pow( 2.0, i ) );
-
-    if ( power <= typeValue )
-      {
-      typePlaces[i] = 1;
-      
-      typeValue = typeValue % power;
-      }
-    }
-
-  //
-  // Compute the new value to assign to the label map voxel 
-  //
-  unsigned short newValue = 0;
-
-  for ( int i=0; i<16; i++ )
-    {
-    if ( i < 8 )
-      {
-      newValue += static_cast< unsigned short >( currentPlaces[i] )*static_cast< unsigned short >( pow( 2.0, i ) );
-      }
-    else
-      {
-      newValue += static_cast< unsigned short >( typePlaces[i-8] )*static_cast< unsigned short >( pow( 2.0, i ) );
-      }
-    }
-
-  this->GetOutput()->SetPixel( index, newValue );
-}
-
-
-/**
- * 
- */
+template < class TInputImage, class TOutputImage >
 bool
-CIPLabelLungRegionsImageFilter
+CIPLabelLungRegionsImageFilter< TInputImage, TOutputImage >
 ::LabelLeftAndRightLungs()
 {
   cip::ChestConventions conventions;
 
-  ConnectedComponentType::Pointer connectedComponent = ConnectedComponentType::New();
+  typename ConnectedComponentType::Pointer connectedComponent = ConnectedComponentType::New();
     connectedComponent->SetInput( this->GetOutput() );
     connectedComponent->Update();
 
@@ -250,17 +142,14 @@ CIPLabelLungRegionsImageFilter
     total += relabeler->GetSizeOfObjectsInPixels()[i];
     }
 
-  //
   // If the second largest object doesn't comprise at least 30%
   // (arbitrary) of the foreground region, assume the lungs are
   // connected 
-  //
-  if ( static_cast< double >( relabeler->GetSizeOfObjectsInPixels()[1] )/static_cast< double >( total ) < 0.3 )
+  if ( double( relabeler->GetSizeOfObjectsInPixels()[1] )/double( total ) < 0.3 )
     {
     return false;
     }
 
-  //
   // If we're here, we assume that the left and right have been
   // separated, so label them. First, we need to get the relabel
   // component corresponding to the left and the right. We assume that
@@ -270,13 +159,12 @@ CIPLabelLungRegionsImageFilter
   // supine, head-first, the component value corresponding to the
   // smallest x-index will be the left lung and the other major
   // component will be the right lung.
-  //
   unsigned int minX = relabeler->GetOutput()->GetBufferedRegion().GetSize()[0];
   unsigned int maxX = 0;
 
   unsigned int smallIndexComponentLabel, largeIndexComponentLabel;
 
-  LabelMapIteratorType rIt( relabeler->GetOutput(), relabeler->GetOutput()->GetBufferedRegion() );
+  UShortIteratorType rIt( relabeler->GetOutput(), relabeler->GetOutput()->GetBufferedRegion() );
 
   rIt.GoToBegin();
   while ( !rIt.IsAtEnd() )
@@ -310,7 +198,7 @@ CIPLabelLungRegionsImageFilter
     rightLungComponentLabel = largeIndexComponentLabel;
     }
 
-  LabelMapIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
+  OutputIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
 
   oIt.GoToBegin();
   rIt.GoToBegin();
@@ -337,101 +225,95 @@ CIPLabelLungRegionsImageFilter
  * Entering this method, the left and right lung designations have
  * been made.
  */
+template < class TInputImage, class TOutputImage >
 void
-CIPLabelLungRegionsImageFilter
+CIPLabelLungRegionsImageFilter< TInputImage, TOutputImage >
 ::SetLungThirds() 
 {
-  unsigned short leftLowerThirdLabel   = this->m_LungConventions.GetValueFromChestRegionAndType( cip::LEFTLOWERTHIRD, cip::UNDEFINEDTYPE );
-  unsigned short rightLowerThirdLabel  = this->m_LungConventions.GetValueFromChestRegionAndType( cip::RIGHTLOWERTHIRD, cip::UNDEFINEDTYPE );
-  unsigned short leftMiddleThirdLabel  = this->m_LungConventions.GetValueFromChestRegionAndType( cip::LEFTMIDDLETHIRD, cip::UNDEFINEDTYPE );
-  unsigned short rightMiddleThirdLabel = this->m_LungConventions.GetValueFromChestRegionAndType( cip::RIGHTMIDDLETHIRD, cip::UNDEFINEDTYPE );
-  unsigned short leftUpperThirdLabel   = this->m_LungConventions.GetValueFromChestRegionAndType( cip::LEFTUPPERTHIRD, cip::UNDEFINEDTYPE );
-  unsigned short rightUpperThirdLabel  = this->m_LungConventions.GetValueFromChestRegionAndType( cip::RIGHTUPPERTHIRD, cip::UNDEFINEDTYPE );
-
   int voxelTally = 0;
 
-  LabelMapIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
+  OutputIteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
 
   oIt.GoToBegin();
   while ( !oIt.IsAtEnd() )
     {
-    if ( oIt.Get() != 0 )
-      {
-      voxelTally++;
-
-      if ( voxelTally <= this->m_NumberLungVoxels/3 )
-        {
-        if ( this->m_HeadFirst )
-          {
-          if ( oIt.Get() == cip::LEFTLUNG )
-            {
-            oIt.Set( leftLowerThirdLabel );
-            }
-          if ( oIt.Get() == cip::RIGHTLUNG )
-            {
-            oIt.Set( rightLowerThirdLabel );
-            }
-          }
-        else
-          {
-          if ( oIt.Get() == cip::LEFTLUNG )
-            {
-            oIt.Set( leftUpperThirdLabel );
-            }
-          if ( oIt.Get() == cip::RIGHTLUNG )
-            {
-            oIt.Set( rightUpperThirdLabel );
-            }
-          }
-        }
-      else if ( voxelTally <= 2*this->m_NumberLungVoxels/3 )
-        {
-        if ( oIt.Get() == cip::LEFTLUNG )
-          {
-          oIt.Set( leftMiddleThirdLabel );
-          }
-        if ( oIt.Get() == cip::RIGHTLUNG )
-          {
-          oIt.Set( rightMiddleThirdLabel );
-          }
-        }
-      else
-        {
-        if ( this->m_HeadFirst )
-          {
-          if ( oIt.Get() == cip::LEFTLUNG )
-            {
-            oIt.Set( leftUpperThirdLabel );
-            }
-          if ( oIt.Get() == cip::RIGHTLUNG )
-            {
-            oIt.Set( rightUpperThirdLabel );
-            }
-          }
-        else
-          {
-          if ( oIt.Get() == cip::LEFTLUNG )
-            {
-            oIt.Set( leftLowerThirdLabel );
-            }
-          if ( oIt.Get() == cip::RIGHTLUNG )
-            {
-            oIt.Set( rightLowerThirdLabel );
-            }
-          }
-        }
-      }
-
-    ++oIt;
+      if ( oIt.Get() != 0 )
+	{
+	  voxelTally++;
+	  
+	  if ( voxelTally <= this->m_NumberLungVoxels/3 )
+	    {
+	      if ( this->m_HeadFirst )
+		{
+		  if ( oIt.Get() == cip::LEFTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::LEFTLOWERTHIRD) );
+		    }
+		  if ( oIt.Get() == cip::RIGHTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::RIGHTLOWERTHIRD) );
+		    }
+		}
+	      else
+		{
+		  if ( oIt.Get() == cip::LEFTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::LEFTUPPERTHIRD) );
+		    }
+		  if ( oIt.Get() == cip::RIGHTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::RIGHTUPPERTHIRD) );
+		    }
+		}
+	    }
+	  else if ( voxelTally <= 2*this->m_NumberLungVoxels/3 )
+	    {
+	      if ( oIt.Get() == cip::LEFTLUNG )
+		{
+		  oIt.Set( (unsigned char)(cip::LEFTMIDDLETHIRD) );
+		}
+	      if ( oIt.Get() == cip::RIGHTLUNG )
+		{
+		  oIt.Set( (unsigned char)(cip::RIGHTMIDDLETHIRD) );
+		}
+	    }
+	  else
+	    {
+	      if ( this->m_HeadFirst )
+		{
+		  if ( oIt.Get() == cip::LEFTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::LEFTUPPERTHIRD) );
+		    }
+		  if ( oIt.Get() == cip::RIGHTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::RIGHTUPPERTHIRD) );
+		    }
+		}
+	      else
+		{
+		  if ( oIt.Get() == cip::LEFTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::LEFTLOWERTHIRD) );
+		    }
+		  if ( oIt.Get() == cip::RIGHTLUNG )
+		    {
+		      oIt.Set( (unsigned char)(cip::RIGHTLOWERTHIRD) );
+		    }
+		}
+	    }
+	}
+      
+      ++oIt;
     }
 }
 
-  
 /**
  * Standard "PrintSelf" method
  */
+template < class TInputImage, class TOutputImage >
 void
-CIPLabelLungRegionsImageFilter
+CIPLabelLungRegionsImageFilter< TInputImage, TOutputImage >
 ::PrintSelf(
   std::ostream& os, 
   Indent indent) const

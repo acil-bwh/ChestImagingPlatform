@@ -30,7 +30,7 @@ namespace itk
 
 template <class TInputImage, class TOutputImage = itk::Image<unsigned short, 3> >
 class ITK_EXPORT CIPAutoThresholdAirwaySegmentationImageFilter :
-    public ImageToImageFilter< TInputImage, TOutputImage >
+  public ImageToImageFilter< TInputImage, TOutputImage >
 {
 public:
   /** Extract dimension from input and output image. */
@@ -38,8 +38,8 @@ public:
   itkStaticConstMacro( OutputImageDimension, unsigned int, 3 );
 
   /** Convenient typedefs for simplifying declarations. */
-  typedef TInputImage                       InputImageType;
-  typedef itk::Image< unsigned short, 3 >   OutputImageType;
+  typedef TInputImage  InputImageType;
+  typedef TOutputImage OutputImageType;
 
   /** Standard class typedefs. */
   typedef CIPAutoThresholdAirwaySegmentationImageFilter          Self;
@@ -90,12 +90,13 @@ public:
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
 protected:
-  typedef itk::Image< LabelMapPixelType, 3 >                                         LabelMapType;
-  typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                          LabelMapIteratorType;
-  typedef itk::ConnectedThresholdImageFilter< InputImageType, OutputImageType >      SegmentationType;
-  typedef itk::BinaryBallStructuringElement< LabelMapPixelType, 3 >                  ElementType;
-  typedef itk::BinaryDilateImageFilter< LabelMapType, LabelMapType, ElementType >    DilateType;
-  typedef itk::BinaryErodeImageFilter< LabelMapType, LabelMapType, ElementType >     ErodeType;
+  typedef itk::Image< LabelMapPixelType, 3 >                                             LabelMapType;
+  typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                              LabelMapIteratorType;
+  typedef itk::ImageRegionIteratorWithIndex< OutputImageType >                           OutputIteratorType;
+  typedef itk::ConnectedThresholdImageFilter< InputImageType, OutputImageType >          SegmentationType;
+  typedef itk::BinaryBallStructuringElement< OutputPixelType, 3 >                        ElementType;
+  typedef itk::BinaryDilateImageFilter< OutputImageType, OutputImageType, ElementType >  DilateType;
+  typedef itk::BinaryErodeImageFilter< OutputImageType, OutputImageType, ElementType >   ErodeType;
 
   CIPAutoThresholdAirwaySegmentationImageFilter();
   virtual ~CIPAutoThresholdAirwaySegmentationImageFilter() {}
@@ -107,7 +108,7 @@ private:
   CIPAutoThresholdAirwaySegmentationImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  std::vector< OutputImageType::IndexType > m_SeedVec;
+  std::vector< typename OutputImageType::IndexType > m_SeedVec;
 
   cip::ChestConventions  m_ChestConventions;
   double                 m_MaxAirwayVolume;

@@ -27,6 +27,7 @@
 #include "itkBinaryBallStructuringElement.h"
 #include "itkBinaryErodeImageFilter.h"
 #include "itkCIPOtsuLungCastImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
 
 namespace itk
 {
@@ -127,24 +128,29 @@ public:
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
 protected:
-  typedef itk::Image< unsigned long, 3 >                                              ComponentImageType;
-  typedef typename itk::Image< LabelMapPixelType, 2 >                                 LabelMapSliceType;
-  typedef itk::ImageRegionIteratorWithIndex< LabelMapSliceType >                      LabelMapSliceIteratorType;
-  typedef itk::Image< LabelMapPixelType, 3 >                                          LabelMapType;
-  typedef itk::CIPSplitLeftLungRightLungImageFilter< InputImageType >                 SplitterType;
-  typedef itk::CIPLabelLungRegionsImageFilter                                         LungRegionLabelerType;
-  typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType >        AirwaySegmentationType;
-  typedef itk::ConnectedComponentImageFilter< LabelMapSliceType, LabelMapSliceType >  ConnectedComponent2DType;
-  typedef itk::ConnectedComponentImageFilter< LabelMapType, ComponentImageType >      ConnectedComponent3DType;
-  typedef itk::RelabelComponentImageFilter< LabelMapSliceType, LabelMapSliceType >    Relabel2DType;
-  typedef itk::RelabelComponentImageFilter< ComponentImageType, ComponentImageType >  Relabel3DType;
-  typedef itk::ImageRegionIteratorWithIndex< ComponentImageType >                     ComponentIteratorType;
-  typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                           LabelMapIteratorType;
-  typedef itk::ExtractImageFilter< LabelMapType, LabelMapSliceType >                  LabelMapExtractorType;
-  typedef itk::BinaryBallStructuringElement< LabelMapPixelType, 3 >                   Element3DType;
-  typedef itk::BinaryDilateImageFilter< LabelMapType, LabelMapType, Element3DType >   Dilate3DType;
-  typedef itk::BinaryErodeImageFilter< LabelMapType, LabelMapType, Element3DType >    Erode3DType;
-  typedef itk::CIPOtsuLungCastImageFilter< InputImageType >                           OtsuCastType;
+  typedef itk::Image< unsigned short, 3 >                                                      ComponentImageType;
+  typedef itk::Image< unsigned char, 3 >                                                       UCharImageType;
+  typedef typename itk::Image< LabelMapPixelType, 2 >                                          LabelMapSliceType;
+  typedef itk::ImageRegionIteratorWithIndex< LabelMapSliceType >                               LabelMapSliceIteratorType;
+  typedef itk::Image< LabelMapPixelType, 3 >                                                   LabelMapType;
+  typedef itk::CIPSplitLeftLungRightLungImageFilter< InputImageType >                          SplitterType;
+  typedef itk::CIPLabelLungRegionsImageFilter< OutputImageType, UCharImageType >               LungRegionLabelerType;
+  typedef itk::CIPAutoThresholdAirwaySegmentationImageFilter< InputImageType, UCharImageType > AirwaySegmentationType;
+  typedef itk::ConnectedComponentImageFilter< LabelMapSliceType, LabelMapSliceType >           ConnectedComponent2DType;
+  typedef itk::ConnectedComponentImageFilter< LabelMapType, ComponentImageType >               ConnectedComponent3DType;
+  typedef itk::RelabelComponentImageFilter< LabelMapSliceType, LabelMapSliceType >             Relabel2DType;
+  typedef itk::RelabelComponentImageFilter< ComponentImageType, ComponentImageType >           Relabel3DType;
+  typedef itk::ImageRegionIteratorWithIndex< ComponentImageType >                              ComponentIteratorType;
+  typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                                    LabelMapIteratorType;
+  typedef itk::ImageRegionIteratorWithIndex< UCharImageType >                                  UCharIteratorType;
+  typedef itk::ExtractImageFilter< LabelMapType, LabelMapSliceType >                           SliceExtractorType;
+  typedef itk::ExtractImageFilter< InputImageType, InputImageType >                            InputExtractorType;
+  typedef itk::BinaryBallStructuringElement< unsigned short, 3 >                               LabelMapElementType;
+  typedef itk::BinaryBallStructuringElement< unsigned char, 3 >                                UCharElementType;
+  typedef itk::BinaryDilateImageFilter< UCharImageType, UCharImageType, UCharElementType >     UCharDilateType;
+  typedef itk::BinaryDilateImageFilter< LabelMapType, UCharImageType, LabelMapElementType >    LabelMapDilateType;
+  typedef itk::BinaryErodeImageFilter< UCharImageType, UCharImageType, LabelMapElementType >   ErodeType;
+  typedef itk::CIPOtsuLungCastImageFilter< InputImageType, UCharImageType >                    OtsuCastType;
 
   CIPPartialLungLabelMapImageFilter();
   virtual ~CIPPartialLungLabelMapImageFilter() {}
@@ -153,7 +159,7 @@ protected:
   void ApplyHelperMask();
   void ExtractLabelMapSlice( LabelMapType::Pointer, LabelMapSliceType::Pointer, int );
   void CloseLabelMap( unsigned short );
-  std::vector< OutputImageType::IndexType > GetAirwaySeeds();
+  std::vector< OutputImageType::IndexType > GetAirwaySeeds( LabelMapType::Pointer );
 
 private:
   CIPPartialLungLabelMapImageFilter(const Self&); //purposely not implemented
