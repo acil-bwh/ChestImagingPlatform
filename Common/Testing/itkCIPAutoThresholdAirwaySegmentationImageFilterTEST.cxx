@@ -36,19 +36,20 @@ int main( int argc, char* argv[] )
     segmenter->Update();
 
   if ( argc > 6 )
-   {
-	  // Check the 6th param is not "EXTRAFILES" reserved word, because in this test it would mean more input files
-	  if (strncmp(argv[6], "EXTRAFILES", 10) != 0)
-	  {
-		  std::cout << "Writing cast..." << std::endl;
-		  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-		  writer->SetFileName( argv[6] );
-		  writer->SetInput( segmenter->GetOutput() );
-		  writer->UseCompressionOn();
-		  writer->Update();
-	  }
-   }
-
+    {
+      // Check the 6th param is not "EXTRAFILES" reserved word, 
+      // because in this test it would mean more input files
+      if (strncmp(argv[6], "EXTRAFILES", 10) != 0)
+	{
+	  std::cout << "Writing cast..." << std::endl;
+	  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+	    writer->SetFileName( argv[6] );
+	    writer->SetInput( segmenter->GetOutput() );
+	    writer->UseCompressionOn();
+	    writer->Update();
+	}
+    }
+  
   // Read the reference label mape
   std::cout << "Reading reference..." << std::endl;
   cip::LabelMapReaderType::Pointer referenceReader = cip::LabelMapReaderType::New();
