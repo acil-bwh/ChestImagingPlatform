@@ -1,5 +1,7 @@
 # IMPORTANT: CIP testing depends on MIDAS server to download the data files
-  
+ 
+set (token 0)
+
 # Login in MIDAS and save the token in midas_api_token
 # If there is a problem with the token, token = 0, and it won't be used
 midas_api_login(
@@ -8,7 +10,7 @@ midas_api_login(
     MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
     RESULT_VARNAME token
 )
-#message("Authentication Token for user ${MIDAS_USER_EMAIL: ${token}")
+#message("Authentication Token for user ${MIDAS_USER_EMAIL}: ${token}")
 
 #----------------------------------------------
 # itkCIPAutoThresholdAirwaySegmentationImageFilterTEST
@@ -52,22 +54,23 @@ ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
 # itkCIPPartialLungLabelMapImageFilterTEST
+# THIS TEST IS TEMPORARILY DISABLED BECAUSE OF THE LONG TIME IT TAKES TO COMPLETE (AROUND 25 MIN IN A "POWERFUL" MAC)
 #----------------------------------------------
-IF ( CIP_BUILD_TESTING_LARGE )
-  PROJECT ( itkCIPPartialLungLabelMapImageFilterTEST )	
+# IF ( CIP_BUILD_TESTING_LARGE )
+#   PROJECT ( itkCIPPartialLungLabelMapImageFilterTEST )	
 
-  INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
+#   INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
 
-  ADD_EXECUTABLE( itkCIPPartialLungLabelMapImageFilterTEST itkCIPPartialLungLabelMapImageFilterTEST.cxx )
-  TARGET_LINK_LIBRARIES( itkCIPPartialLungLabelMapImageFilterTEST CIPCommon )
+#   ADD_EXECUTABLE( itkCIPPartialLungLabelMapImageFilterTEST itkCIPPartialLungLabelMapImageFilterTEST.cxx )
+#   TARGET_LINK_LIBRARIES( itkCIPPartialLungLabelMapImageFilterTEST CIPCommon )
 
-  SET_TARGET_PROPERTIES ( itkCIPPartialLungLabelMapImageFilterTEST 
-      PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
-  )
+#   SET_TARGET_PROPERTIES ( itkCIPPartialLungLabelMapImageFilterTEST 
+#       PROPERTIES
+#       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
+#   )
 
-  MIDAS_ADD_TEST( NAME itkCIPPartialLungLabelMapImageFilterTEST COMMAND itkCIPPartialLungLabelMapImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_partialLungLabelMap.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_partialLungLabelMap.raw.gz.md5} )
-ENDIF( CIP_BUILD_TESTING_LARGE )
+#   MIDAS_ADD_TEST( NAME itkCIPPartialLungLabelMapImageFilterTEST COMMAND itkCIPPartialLungLabelMapImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_partialLungLabelMap.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_partialLungLabelMap.raw.gz.md5} )
+# ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
 # itkCIPSplitLeftLungRightLungImageFilterTEST
