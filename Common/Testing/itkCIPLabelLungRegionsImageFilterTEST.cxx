@@ -6,8 +6,8 @@
 
 int main( int argc, char* argv[] )
 {
-  typedef itk::ImageRegionIterator< cip::LabelMapType >            IteratorType;
-  typedef itk::CIPLabelLungRegionsImageFilter                      LungRegionLabelerType;
+  typedef itk::ImageRegionIterator< cip::LabelMapType >                                IteratorType;
+  typedef itk::CIPLabelLungRegionsImageFilter< cip::LabelMapType, cip::LabelMapType >  LungRegionLabelerType;
 
   std::cout << "Reading label map..." << std::endl;
   cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();

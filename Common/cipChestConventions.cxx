@@ -659,22 +659,9 @@ std::string cip::ChestConventions::GetChestRegionNameFromValue( unsigned short v
 {
   unsigned char regionValue = 0;
   
-  for ( int i=15; i>=0; i-- )
-    {
-      int power = int( std::pow( float(2), float(i) ) );
-      
-      if ( power <= value )
-	{
-          if ( i < 8 )
-            {
-	      regionValue += power;
-            }
-	  
-          value = value % power;
-	}
-    }
+  regionValue = this->GetChestRegionFromValue(value);
   
-  return ChestRegionNames[int( regionValue )];
+  return this->GetChestRegionName(regionValue);
 };
 
 /** Given an unsigned short value, this method will return the
@@ -682,84 +669,17 @@ std::string cip::ChestConventions::GetChestRegionNameFromValue( unsigned short v
 std::string cip::ChestConventions::GetChestTypeNameFromValue( unsigned short value ) const
 {
   unsigned char typeValue = 0;
-  
-  for ( int i=15; i>=0; i-- )
-    {
-      int power = int( std::pow( float(2), float(i) ) );
       
-      if ( power <= value )
-	{
-          if ( i >= 8 )
-            {
-	      typeValue += (unsigned char)( std::pow( float(2), float(i-8) ) );
-            }
-	  
-          value = value % power;
-	}
-    }
-  
-  return ChestTypeNames[int( typeValue )];
+  typeValue = this->GetChestTypeFromValue(value);
+  return this->GetChestTypeName(typeValue);
 }
 
 unsigned short cip::ChestConventions::GetValueFromChestRegionAndType( unsigned char region, unsigned char type ) const
 {
-  // Get the binary representation of the region to set
-  int regionValue = int( region );
-  
-  int regionPlaces[8];
-  for ( int i=0; i<8; i++ )
-    {
-      regionPlaces[i] = 0;
-    }
-  
-  for ( int i=7; i>=0; i-- )
-    {
-      int power = int( std::pow( float(2), float(i) ) );
-      
-      if ( power <= regionValue )
-	{
-          regionPlaces[i] = 1;
-	  
-          regionValue = regionValue % power;
-	}
-    }
-  
-  // Get the binary representation of the type to set
-  int typeValue = int( type );
-  
-  int typePlaces[8];
-  for ( int i=0; i<8; i++ )
-    {
-      typePlaces[i] = 0;
-    }
-  
-  for ( int i=7; i>=0; i-- )
-    {
-      int power = int( std::pow( float(2), float(i) ) );
-      
-      if ( power <= typeValue )
-	{
-          typePlaces[i] = 1;
-	  
-          typeValue = typeValue % power;
-	}
-    }
-  
-  // Compute the new value to assign to the label map voxel 
-  unsigned short combinedValue = 0;
-  
-  for ( int i=0; i<16; i++ )
-    {
-      if ( i < 8 )
-	{
-	  combinedValue += (unsigned short)( regionPlaces[i] )*(unsigned short)( std::pow( float(2), float(i) ) );
-	}
-      else
-	{
-	  combinedValue += (unsigned short)( typePlaces[i-8] )*(unsigned short)( std::pow( float(2), float(i) ) );
-	}
-    }
-  
+  unsigned short regionValue = (unsigned short) region;
+  unsigned short tmp = (unsigned short) type;
+  unsigned short regionType = (tmp << 8);
+  unsigned short combinedValue = regionValue + regionType;
   return combinedValue;
 }
 

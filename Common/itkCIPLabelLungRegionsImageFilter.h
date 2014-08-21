@@ -24,11 +24,11 @@
  * lungs being merged/connected), then the output label map will only
  * have WHOLELUNG specified.
  *
- *  $Date: 2012-09-06 15:43:20 -0400 (Thu, 06 Sep 2012) $
- *  $Revision: 245 $
- *  $Author: rjosest $
- *
- * Labeling conforms to the conventions specified in itkLungConventions.h
+ * The class is templated over both the input and output image types,
+ * but both input and output images must either be unsigned char or
+ * unsigned short. If unsigned char, the values will be interpreted as
+ * chest regions. Labeling conforms to the conventions specified in 
+ * cipChestConventions.h
  */
 
 
@@ -45,8 +45,9 @@
 
 namespace itk
 {
+template <class TInputImage = itk::Image<unsigned short, 3>, class TOutputImage = itk::Image<unsigned short, 3> >
 class ITK_EXPORT CIPLabelLungRegionsImageFilter :
-  public ImageToImageFilter< ::itk::Image< unsigned short, 3 >, Image< unsigned short, 3 > >
+  public ImageToImageFilter< TInputImage, TOutputImage >
 {
 public:
   /** Extract dimension from input and output image. */
@@ -54,8 +55,8 @@ public:
   itkStaticConstMacro( OutputImageDimension, unsigned int, 3 );
 
   /** Convenient typedefs for simplifying declarations. */
-  typedef Image< unsigned short, 3 >   InputImageType;
-  typedef Image< unsigned short, 3 >   OutputImageType;
+  typedef TInputImage   InputImageType;
+  typedef TOutputImage  OutputImageType;
 
   /** Standard class typedefs. */
   typedef CIPLabelLungRegionsImageFilter                          Self;
@@ -70,12 +71,12 @@ public:
   itkTypeMacro(CIPLabelLungRegionsImageFilter, ImageToImageFilter);
   
   /** Image typedef support. */
-  typedef unsigned short                      LabelMapPixelType;
-  typedef InputImageType::PixelType           InputPixelType;
-  typedef OutputImageType::PixelType          OutputPixelType;
-  typedef InputImageType::RegionType          InputImageRegionType;
-  typedef OutputImageType::RegionType         OutputImageRegionType;
-  typedef InputImageType::SizeType            InputSizeType;
+  typedef unsigned short                        LabelMapPixelType;
+  typedef typename InputImageType::PixelType    InputPixelType;
+  typedef typename OutputImageType::PixelType   OutputPixelType;
+  typedef typename InputImageType::RegionType   InputImageRegionType;
+  typedef typename OutputImageType::RegionType  OutputImageRegionType;
+  typedef typename InputImageType::SizeType     InputSizeType;
 
   /** This variable indicates whether or not the patient was scanned
    *  in the supine position (default is true) */
@@ -120,26 +121,26 @@ public:
   void PrintSelf( std::ostream& os, Indent indent ) const;
 
 protected:
-  typedef Image< LabelMapPixelType, 3 >                                   LabelMapType;
-  typedef ConnectedComponentImageFilter< LabelMapType, LabelMapType >     ConnectedComponentType;
-  typedef RelabelComponentImageFilter< LabelMapType, LabelMapType >       RelabelComponentType;
-  typedef ImageRegionIteratorWithIndex< LabelMapType >                    LabelMapIteratorType;
-  typedef ImageRegionConstIterator< InputImageType >                      InputIteratorType;
+  typedef Image< LabelMapPixelType, 3 >                                     LabelMapType;
+  typedef Image< unsigned short, 3 >                                        UShortImageType;
+  typedef ConnectedComponentImageFilter< OutputImageType, UShortImageType > ConnectedComponentType;
+  typedef RelabelComponentImageFilter< UShortImageType, UShortImageType >   RelabelComponentType;
+  typedef ImageRegionIteratorWithIndex< OutputImageType >                   OutputIteratorType;
+  typedef ImageRegionConstIterator< InputImageType >                        InputIteratorType;
+  typedef ImageRegionIteratorWithIndex< UShortImageType >                   UShortIteratorType;
 
   CIPLabelLungRegionsImageFilter();
   virtual ~CIPLabelLungRegionsImageFilter() {}
 
-  void SetType( OutputImageType::IndexType, int );
   bool LabelLeftAndRightLungs();
   void SetLungThirds();
-
   void GenerateData();
 
 private:
   CIPLabelLungRegionsImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  cip::ChestConventions m_LungConventions;
+  cip::ChestConventions m_Conventions;
   bool                  m_HeadFirst;
   bool                  m_Supine;
   bool                  m_LabelLungThirds;
