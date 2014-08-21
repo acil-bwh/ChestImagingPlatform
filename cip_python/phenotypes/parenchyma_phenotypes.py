@@ -330,7 +330,8 @@ class ParenchymaPhenotypes(Phenotypes):
         distributions'
         """
         assert pheno_name in self.pheno_names_, "Invalid phenotype name"
-
+        #print "Region: %s, Type: %s, Pheno: %s" % \
+        #    (chest_region, chest_type, pheno_name)
         pheno_val = None
         mask_sum = np.sum(mask)
         if pheno_name == 'LAA950':
@@ -360,7 +361,9 @@ class ParenchymaPhenotypes(Phenotypes):
         elif pheno_name == 'HUSkewness':
             pheno_val = skew(ct[mask], bias=False)
         elif pheno_name == 'HUMode':
-            pheno_val = mode(ct[mask])[0][0]
+            min_val = np.min(ct[mask])
+            pheno_val = np.argmax(np.bincount(ct[mask] + np.abs(min_val))) - \
+                np.abs(min_val)
         elif pheno_name == 'HUMedian':
             pheno_val = np.median(ct[mask])
         elif pheno_name == 'HUMin':
@@ -386,7 +389,9 @@ class ParenchymaPhenotypes(Phenotypes):
         elif pheno_name == 'HUMode500':
             hus = ct[np.logical_and(mask, ct <= -500)]
             if hus.shape[0] > 0:
-                pheno_val = mode(hus)[0][0]
+                min_val = np.min(hus)
+                pheno_val = np.argmax(np.bincount(hus + np.abs(min_val))) - \
+                    np.abs(min_val)                
         elif pheno_name == 'HUMedian500':
             hus = ct[np.logical_and(mask, ct <= -500)]
             if hus.shape[0] > 0:
