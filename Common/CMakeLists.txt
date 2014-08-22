@@ -82,7 +82,7 @@ ENDIF (VTK_USE_BOOST)
 # --------------------------------------------------------------------------
 set( LIB_NAME CIPCommon )
 
-add_library(${LIB_NAME}
+add_library(${LIB_NAME} 
   ${CIPCommon_SRCS} 
   )
 
