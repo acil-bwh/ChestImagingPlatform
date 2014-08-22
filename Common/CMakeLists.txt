@@ -39,8 +39,6 @@ endif()
 # Sources
 # --------------------------------------------------------------------------
 SET ( CIPCommon_SRCS
-  vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.cxx
-  vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter.cxx
   #cipConnectedAirwayParticlesToHMMAirwayGraphFunctor.cxx  
   cipThinPlateSplineSurface.cxx
   cipLobeSurfaceModel.cxx
@@ -48,8 +46,6 @@ SET ( CIPCommon_SRCS
   cipSphereStencil.cxx
   cipCylinderStencil.cxx
   cipChestDataViewer.cxx
-  cipAirwayDataInteractor.cxx
-  cipVesselDataInteractor.cxx
   itkCIPExtractChestLabelMapImageFilter.cxx
   itkCIPMergeChestLabelMapsImageFilter.cxx
   cipParticleConnectedComponentFilter.cxx
@@ -72,8 +68,10 @@ IF(VTK_USE_BOOST)
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
   SET ( CIPCommon_SRCS 
         ${CIPCommon_SRCS}
-	vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.cxx
+        vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter.cxx
         vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter.cxx
+        cipAirwayDataInteractor.cxx
+        cipVesselDataInteractor.cxx
        )
 ENDIF (VTK_USE_BOOST)
        
