@@ -1,5 +1,7 @@
 # IMPORTANT: CIP testing depends on MIDAS server to download the data files
-  
+ 
+set (token 0)
+
 # Login in MIDAS and save the token in midas_api_token
 # If there is a problem with the token, token = 0, and it won't be used
 midas_api_login(
@@ -8,7 +10,7 @@ midas_api_login(
     MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
     RESULT_VARNAME token
 )
-#message("Authentication Token for user ${MIDAS_USER_EMAIL: ${token}")
+#message("Authentication Token for user ${MIDAS_USER_EMAIL}: ${token}")
 
 #----------------------------------------------
 # itkCIPAutoThresholdAirwaySegmentationImageFilterTEST
@@ -52,6 +54,7 @@ ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
 # itkCIPPartialLungLabelMapImageFilterTEST
+# This test is specially heavy, it takes around 25 minutes to run in a powerful machine
 #----------------------------------------------
 IF ( CIP_BUILD_TESTING_LARGE )
   PROJECT ( itkCIPPartialLungLabelMapImageFilterTEST )	
