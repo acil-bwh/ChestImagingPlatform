@@ -5,8 +5,8 @@ from cip_python.ChestConventions import ChestConventions
 from cip_python.phenotypes.parenchyma_phenotypes import *
 import pdb
 
-#np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
-#                    linewidth=200) 
+np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
+                    linewidth=200) 
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 lm_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
@@ -116,3 +116,34 @@ def test_execute():
         if (r == 'RightLung' and t == wc):
             assert np.isclose(df['Mass'].iloc[i], 0.00247609596), \
                 'Phenotype not as expected'
+
+def test_execute2():
+    c = ChestConventions()
+    wc = c.GetChestWildCardName()
+
+    paren_pheno = ParenchymaPhenotypes(chest_regions=['WholeLung'])
+    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+    assert len(df.index) == 1, "Unexpected number of rows in dataframe"
+    assert df['Region'].iloc[0] == 'WholeLung', "Unexpected region in dataframe"
+    assert df['Type'].iloc[0] == wc, "Unexpected type in dataframe"
+
+def test_execute3():
+    c = ChestConventions()
+    wc = c.GetChestWildCardName()
+
+    paren_pheno = ParenchymaPhenotypes(chest_types=['Vessel'])
+    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+    assert len(df.index) == 1, "Unexpected number of rows in dataframe"
+    assert df['Region'].iloc[0] == wc, "Unexpected region in dataframe"
+    assert df['Type'].iloc[0] == 'Vessel', "Unexpected type in dataframe"    
+
+def test_execute4():
+    c = ChestConventions()
+    wc = c.GetChestWildCardName()
+
+    paren_pheno = ParenchymaPhenotypes(pairs=[['LeftLung','Vessel']])
+    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+
+    assert len(df.index) == 1, "Unexpected number of rows in dataframe"
+    assert df['Region'].iloc[0] == 'LeftLung', "Unexpected region in dataframe"
+    assert df['Type'].iloc[0] == 'Vessel', "Unexpected type in dataframe"    
