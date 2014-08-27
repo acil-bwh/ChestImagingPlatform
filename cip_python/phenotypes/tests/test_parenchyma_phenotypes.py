@@ -147,3 +147,41 @@ def test_execute4():
     assert len(df.index) == 1, "Unexpected number of rows in dataframe"
     assert df['Region'].iloc[0] == 'LeftLung', "Unexpected region in dataframe"
     assert df['Type'].iloc[0] == 'Vessel', "Unexpected type in dataframe"    
+
+def test_execute5():
+    c = ChestConventions()
+    wc = c.GetChestWildCardName()
+
+    paren_pheno = ParenchymaPhenotypes(chest_regions=['LeftLung'], \
+                                       pheno_names=['LAA950'])
+    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+
+    assert len(df.index) == 1, "Unexpected number of rows in dataframe"
+    assert df['Region'].iloc[0] == 'LeftLung', "Unexpected region in dataframe"
+    assert df['Type'].iloc[0] == wc, "Unexpected type in dataframe"   
+    assert np.isnan(df.LAA910.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.LAA856.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HAA700.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HAA600.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HAA500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HAA250.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.Perc15.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.Perc10.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMean.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUStd.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUKurtosis.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUSkewness.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMode.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMedian.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMin.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMax.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMean500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUStd500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUKurtosis500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUSkewness500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMode500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMedian500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMin500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.HUMax500.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.Volume.iloc[0]), "Phenotype value should be NaN"
+    assert np.isnan(df.Mass.iloc[0]), "Phenotype value should be NaN"

@@ -487,7 +487,11 @@ if __name__ == "__main__":
                       interpreted as the chest region, and the second entry \
                       is interpreted as the chest type. E.g. LeftLung,Vessel \
                       would be a valid entry.',
-                      dest='pairs', metavar='<string>', default=None)       
+                      dest='pairs', metavar='<string>', default=None)
+    parser.add_option('--pheno_names',
+                      help='Comma separated list of phenotype value names to \
+                      compute.', dest='pheno_names', metavar='<string>',
+                      default=None)    
 
     (options, args) = parser.parse_args()
 
@@ -512,9 +516,12 @@ if __name__ == "__main__":
         pairs = []
         for i in xrange(0, len(tmp)/2):
             pairs.append([tmp[2*i], tmp[2*i+1]])
+    pheno_names = None
+    if options.pheno_names is not None:
+        pheno_names = options.pheno_names.split(',')
 
     paren_pheno = ParenchymaPhenotypes(chest_regions=regions,
-            chest_types=types, pairs=options.pairs)
+            chest_types=types, pairs=pairs, pheno_names=pheno_names)
 
     df = paren_pheno.execute(ct, lm, options.cid, spacing)
     
