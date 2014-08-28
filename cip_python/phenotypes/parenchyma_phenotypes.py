@@ -55,19 +55,17 @@ class ParenchymaPhenotypes(Phenotypes):
 
     Parameters
     ----------
-    chest_regions : array, shape ( R ), optional
-        Array of integers, with each element in the interval [0, 255],
-        indicating the chest regions over which to compute the phenotypes.
+    chest_regions : list of strings
+        List of chest regions over which to compute the phenotypes.
 
-    chest_types : array, shape ( T ), optional
-        Array of integers, with each element in the interval [0, 255],
-        indicating the chest types over which to compute the phenotypes.
+    chest_types : list of strings
+        List of chest types over which to compute the phenotypes.
 
-    pairs : array, shape ( P, 2 ), optional
-        Array of chest-region chest-type pairs over which to compute the
-        phenotypes. The first column indicates the chest region, and the
-        second column indicates the chest type. Each element should be in the
-        interal [0, 255].
+    pairs : list of lists of strings
+        Each element of the list is a two element list indicating a region-type
+        pair for which to compute the phenotypes. The first entry indicates the
+        chest region of the pair, and second entry indicates the chest type of
+        the pair.
 
     pheno_names : list of strings, optional
         Names of phenotypes to compute. These names must conform to the
@@ -76,31 +74,35 @@ class ParenchymaPhenotypes(Phenotypes):
     """
     def __init__(self, chest_regions=None, chest_types=None, pairs=None,
                  pheno_names=None):
+        c = ChestConventions()
+
+        self.chest_regions_ = None
         if chest_regions is not None:
-            if len(chest_regions.shape) != 1:
-                raise ValueError(\
-                'chest_regions must be a 1D array with elements in [0, 255]')
-            if np.max(chest_regions) > 255 or np.min(chest_regions) < 0:
-                raise ValueError(\
-                'chest_regions must be a 1D array with elements in [0, 255]')
+            tmp = []
+            for m in xrange(0, len(chest_regions)):
+                tmp.append(c.GetChestRegionValueFromName(chest_regions[m]))
+            self.chest_regions_ = np.array(tmp)
+
+        self.chest_types_ = None
         if chest_types is not None:
-            if len(chest_types.shape) != 1:
-                raise ValueError(\
-                'chest_types must be a 1D array with elements in [0, 255]')
-            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
-                raise ValueError(\
-                'chest_types must be a 1D array with elements in [0, 255]')
-        if pairs is not None:
-            if len(pairs.shape) != 2:
-                raise ValueError(\
-                'cpairs must be a 1D array with elements in [0, 255]')
-            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
-                raise ValueError(\
-                'chest_types must be a 1D array with elements in [0, 255]')
+            tmp = []
+            for m in xrange(0, len(chest_types)):
+                tmp.append(c.GetChestTypeValueFromName(chest_types[m]))
+            self.chest_types_ = np.array(tmp)
                 
-        self.chest_regions_ = chest_regions
-        self.chest_types_ = chest_types
-        self.pairs_ = pairs
+        self.pairs_ = None
+        if pairs is not None:
+            self.pairs_ = np.zeros([len(pairs), 2])
+            inc = 0
+            for p in pairs:
+                assert len(p)%2 == 0, \
+                    "Specified region-type pairs not understood"                
+                r = c.GetChestRegionValueFromName(p[0])
+                t = c.GetChestTypeValueFromName(p[1])
+                self.pairs_[inc, 0] = r
+                self.pairs_[inc, 1] = t                
+                inc += 1    
+                
         self.requested_pheno_names = pheno_names
 
         Phenotypes.__init__(self)    
@@ -286,15 +288,16 @@ class ParenchymaPhenotypes(Phenotypes):
                     mask = parser.get_mask(chest_type=t)
                     for n in phenos_to_compute:
                         self.add_pheno_group(ct, mask, c.GetChestWildCardName(),
-                                             c.GetChestTypeName(r), n)
+                                             c.GetChestTypeName(t), n)
         if ps is not None:
-            for p in ps:            
-                if not (p[0] == 0 and p[1] == 0):
-                    mask = parser.get_mask(chest_region=p[0], chest_type=p[1])
+            for i in xrange(0, ps.shape[0]):
+                if not (ps[i, 0] == 0 and ps[i, 1] == 0):
+                    mask = parser.get_mask(chest_region=int(ps[i, 0]),
+                                           chest_type=int(ps[i, 1]))
                     for n in phenos_to_compute:
                         self.add_pheno_group(ct, mask,
-                            c.GetChestRegionName(p[0]),
-                            c.GetChestTypeName(p[1]), n)
+                            c.GetChestRegionName(int(ps[i, 0])),
+                            c.GetChestTypeName(int(ps[i, 1])), n)
 
         return self._df
 
@@ -463,6 +466,31 @@ if __name__ == "__main__":
                       default=None)
     parser.add_option('--cid',
                       help='The case ID', dest='cid', metavar='<string>',
+                      default=None)
+    parser.add_option('-r',
+                      help='Chest regions. Should be specified as a \
+                      common-separated list of string values indicating the \
+                      desired regions over which to compute the phenotypes. \
+                      E.g. LeftLung,RightLung would be a valid input.',
+                      dest='chest_regions', metavar='<string>', default=None)
+    parser.add_option('-t',
+                      help='Chest types. Should be specified as a \
+                      common-separated list of string values indicating the \
+                      desired types over which to compute the phenotypes. \
+                      E.g.: Vessel,NormalParenchyma would be a valid input.',
+                      dest='chest_types', metavar='<string>', default=None)
+    parser.add_option('-p',
+                      help='Chest region-type pairs. Should be \
+                      specified as a common-separated list of string values \
+                      indicating what region-type pairs over which to compute \
+                      phenotypes. For a given pair, the first entry is \
+                      interpreted as the chest region, and the second entry \
+                      is interpreted as the chest type. E.g. LeftLung,Vessel \
+                      would be a valid entry.',
+                      dest='pairs', metavar='<string>', default=None)
+    parser.add_option('--pheno_names',
+                      help='Comma separated list of phenotype value names to \
+                      compute.', dest='pheno_names', metavar='<string>',
                       default=None)    
 
     (options, args) = parser.parse_args()
@@ -475,7 +503,27 @@ if __name__ == "__main__":
     spacing[1] = ct_header['space directions'][1][1]
     spacing[2] = ct_header['space directions'][2][2]
 
-    paren_pheno = ParenchymaPhenotypes()    
+    regions = None
+    if options.chest_regions is not None:
+        regions = options.chest_regions.split(',')
+    types = None
+    if options.chest_types is not None:
+        types = options.chest_types.split(',')
+    pairs = None
+    if options.pairs is not None:
+        tmp = options.pairs.split(',')
+        assert len(tmp)%2 == 0, 'Specified pairs not understood'
+        pairs = []
+        for i in xrange(0, len(tmp)/2):
+            pairs.append([tmp[2*i], tmp[2*i+1]])
+    pheno_names = None
+    if options.pheno_names is not None:
+        pheno_names = options.pheno_names.split(',')
+
+    paren_pheno = ParenchymaPhenotypes(chest_regions=regions,
+            chest_types=types, pairs=pairs, pheno_names=pheno_names)
+
     df = paren_pheno.execute(ct, lm, options.cid, spacing)
+    
     if options.out_csv is not None:
         df.to_csv(options.out_csv)
