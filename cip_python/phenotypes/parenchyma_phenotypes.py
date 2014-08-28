@@ -526,4 +526,4 @@ if __name__ == "__main__":
     df = paren_pheno.execute(ct, lm, options.cid, spacing)
     
     if options.out_csv is not None:
-        df.to_csv(options.out_csv)
+        df.to_csv(options.out_csv, index=False)
