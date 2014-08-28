@@ -405,14 +405,16 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
 	 metric->SetTransform(transform_forsim);
 	 metric->SetFixedImage( ctFixedImage );
 	 metric->SetMovingImage( resampler->GetOutput() );
-	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
-	 metric->SetFixedImageRegion(fixedRegion);
-	 metric->Initialize();
-	 
+
 	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetMovingImageMask( movingSpatialObjectMask );
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
+
+	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 metric->SetFixedImageRegion(fixedRegion);
+	 metric->Initialize();
+	 
 
 	 ncMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
 	 zero_params = transform_forsim->GetParameters();
@@ -469,6 +471,7 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
 	 std::cout<<"the msqr value is: "<<similarityValue<<std::endl;
 
 	similarity_type = "msqr";
+
       }
      
     else if (similarityMetric =="gd")
@@ -501,28 +504,28 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
       }
    else //MI is default
      {
-     
+ 
       MIMetricType::Pointer metric = MIMetricType::New();
-      transform->SetAllTransformsToOptimizeOn();
       transform_forsim->SetAllTransformsToOptimizeOn();
 
-      metric->SetFixedImageStandardDeviation( 13.5 );
-      metric->SetMovingImageStandardDeviation( 13.5 );
+      //metric->SetFixedImageStandardDeviation( 13.5 );
+      //metric->SetMovingImageStandardDeviation( 13.5 );
       metric->SetInterpolator( interpolator );
       metric->SetTransform(transform_forsim);//transform);
       metric->SetFixedImage( ctFixedImage );
       metric->SetMovingImage( resampler->GetOutput() );
-      
+
+     
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetFixedImageMask( fixedSpatialObjectMask );  
-      
+
       ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
       metric->SetFixedImageRegion(fixedRegion);
-      metric->Initialize();
+      metric->Initialize();      
            
-      msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+      MIMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
       zero_params = transform_forsim->GetParameters();
      
       similarityValue = metric->GetValue(zero_params );

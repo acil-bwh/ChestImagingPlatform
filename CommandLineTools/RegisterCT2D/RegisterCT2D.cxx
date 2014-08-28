@@ -408,7 +408,7 @@ int main( int argc, char *argv[] )
     rigidOptimizerScales[1] =  1.0; 
     rigidOptimizerScales[2] =  1.0; 
     translationScale = 1.0 / 1000.0;
-    rigidOptimizerScales[3] =  translationScale; 
+    rigidOptimizerScales[3] =  1.0;//translationScale; 
     rigidOptimizerScales[4] =  translationScale; 
     rigidOptimizerScales[5] =  translationScale; 
 
@@ -474,34 +474,54 @@ int main( int argc, char *argv[] )
   Now for the affine registration
   ****/
   
-  std::cout<<"affine registration" <<std::endl;
+  std::cout<<"affine registration new" <<std::endl;
   
   AffineTransformType2D::Pointer affineTransform2D = AffineTransformType2D::New();
     affineTransform2D->SetCenter( rigidTransform->GetCenter() );
     affineTransform2D->SetTranslation( rigidTransform->GetTranslation() );
   affineTransform2D->SetMatrix( rigidTransform->GetMatrix() );
-  
-  registration->SetTransform( affineTransform2D );
-  registration->SetInitialTransformParameters( affineTransform2D->GetParameters() );
 
+  std::cout<<"affine registration 2" <<std::endl;
+  CTRegistrationType::Pointer registration_affine = CTRegistrationType::New();  
+
+
+  registration_affine->SetMetric( nc_metric );
+  registration_affine->SetFixedImage(fixedCT2D  ); //fixedSmoother->GetOutput()
+  registration_affine->SetMovingImage(movingCT2D); //movingSmoother->GetOutput()
+
+   OptimizerType::Pointer affine_optimizer = OptimizerType::New();
+  std::cout<<"affine registration 3" <<std::endl;  
   //translationScale = 0.000001;
   OptimizerScalesType optimizerScales(affineTransform2D->GetNumberOfParameters());     
   optimizerScales[0] = 1.0;
   optimizerScales[1] = 1.0;
   optimizerScales[2] = 1.0;
   optimizerScales[3] = 1.0;
-  optimizerScales[4] = 1.0;
+  /*optimizerScales[4] = 1.0;
   optimizerScales[5] = 1.0;
   optimizerScales[6] = 1.0;
   optimizerScales[7] = 1.0;
   optimizerScales[8] = 1.0;
   optimizerScales[9]  = translationScale;
   optimizerScales[10] = translationScale;
-  optimizerScales[11] = translationScale;
-  rigid_optimizer->SetScales( optimizerScales );
-  rigid_optimizer->SetMaximumStepLength( 0.2000  );
-  rigid_optimizer->SetMinimumStepLength( 0.0001 );
-  rigid_optimizer->SetNumberOfIterations( 300 );
+  optimizerScales[11] = translationScale; */
+  optimizerScales[4]  = translationScale;
+  optimizerScales[5] = translationScale;
+
+ std::cout<<"affine registration 4" <<std::endl;  
+  affine_optimizer->SetScales( optimizerScales );
+  affine_optimizer->SetMaximumStepLength( 0.2000  );
+std::cout<<"affine registration 5" <<std::endl;  
+  affine_optimizer->SetMinimumStepLength( 0.0001 );
+  affine_optimizer->SetNumberOfIterations( 300 );
+
+  registration_affine->SetOptimizer( affine_optimizer );
+  registration_affine->SetInterpolator( CTinterpolator );
+
+   registration_affine->SetTransform( affineTransform2D );
+   registration_affine->SetInitialTransformParameters( affineTransform2D->GetParameters() );
+
+std::cout<<"affine registration 6" <<std::endl;  
   //
   // The Affine transform has 12 parameters we use therefore a more samples to run
   // this stage.
@@ -515,8 +535,10 @@ int main( int argc, char *argv[] )
      
   try
     {
-      registration->Initialize();
-      registration->Update();
+      registration_affine->Initialize();
+      std::cout<<"affine registration 7" <<std::endl;  
+      registration_affine->Update();
+      std::cout<<"affine registration 8" <<std::endl;  
     }
   catch( itk::ExceptionObject &excp )
     {
@@ -531,7 +553,7 @@ int main( int argc, char *argv[] )
    bestValue = rigid_optimizer->GetValue();
       
    std::cout <<" best similarity value = " <<bestValue<<std::endl;
-   affineTransform2D->SetParameters(registration->GetLastTransformParameters());
+   affineTransform2D->SetParameters( registration_affine->GetLastTransformParameters());
    /*
    GradOptimizerType::ParametersType finalParams;
      finalParams =registration->GetLastTransformParameters();
