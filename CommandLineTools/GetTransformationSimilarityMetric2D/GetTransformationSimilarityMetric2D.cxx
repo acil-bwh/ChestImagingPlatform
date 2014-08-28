@@ -395,7 +395,7 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
     return cip::LABELMAPWRITEFAILURE;
     }
 
-
+std::cout<<"wrote"<<std::endl;
   //initialize metric 
   if (similarityMetric =="nc")
       {
@@ -405,7 +405,7 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
 	 metric->SetTransform(transform_forsim);
 	 metric->SetFixedImage( ctFixedImage );
 	 metric->SetMovingImage( resampler->GetOutput() );
-
+std::cout<<"images set"<<std::endl;
 	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetMovingImageMask( movingSpatialObjectMask );
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
@@ -481,7 +481,7 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
 
 	 transform->SetAllTransformsToOptimizeOn();
 	 metric->SetInterpolator( interpolator );
-	 metric->SetTransform(transform_forsim);
+	 //metric->SetTransform(transform_forsim);
 	 metric->SetFixedImage( ctFixedImage );
 	 metric->SetMovingImage(resampler->GetOutput() );
 

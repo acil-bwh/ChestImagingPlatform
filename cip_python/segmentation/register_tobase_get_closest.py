@@ -5,9 +5,8 @@ import numpy as np
 from scipy import ndimage
 from cip_python.utils.get_closest_cases import getClosestCases
 
-def clean_ct(CT_original):
-    CT_clean= CT_original.split('.')[0]+"_cleaned."+\
-        CT_original.split('.')[1] 
+def clean_ct(CT_original, CT_clean):
+
            
     ct_ori, imageInfo= nrrd.read(CT_original)          
     ct_cl, nr_objects = ndimage.label(ct_ori > -700) 
@@ -122,12 +121,12 @@ def compute_ct_mask_similarity(input_labelmap_filename, input_ctfilename ,
      #   cropped_data = np.squeeze(cropped_data_temp)  
                 
     	cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp,\
-    	   iterations = 5)).astype(np.int) #2 was working not bad, with bounding box    
+    	   iterations = 10)).astype(np.int) #2 was working not bad, with bounding box    
         cropped_data = np.squeeze(cropped_data_temp)        
         print(np.shape(cropped_data)) 
         #now find boundingbox
-        b = np.where(cropped_data>0)
-        cropped_data[min(b[0]):max(b[0])+1, min(b[1]):max(b[1])+1 ] = 1
+        #b = np.where(cropped_data>0)
+        #cropped_data[min(b[0]):max(b[0])+1, min(b[1]):max(b[1])+1 ] = 1
         
         #remove lung tissue
         ct_data_temp, info = nrrd.read (input_ctfilename)
@@ -241,36 +240,42 @@ def crop_ct_to_moving_mask(fixed_ct_fname, moving_mask_fname, output_ct_fname,
             print path_name + " environment variable is not set"
             exit()
             
-    resamplecall = os.path.join(path['CIP_PATH'], "ResampleCT")    
+    resamplecall = os.path.join(path['CIP_PATH'], "ResampleCT") 
+    resamplecallLbl = os.path.join(path['CIP_PATH'], "ResampleLabelMap2D")       
 
     #create a temp file name fir the transformed mask
     temp_registered_mask = moving_mask_fname.split(".")[0]+"regtemp."+moving_mask_fname.split(".")[1]
                 
     if (moving_to_fixed_transfo is None):   
         print("copying mask ")
-        sys_call = ("cp "+moving_mask_fname+" "+output_ct_fname )
+        sys_call = ("cp "+moving_mask_fname+" "+temp_registered_mask )
     else:      
-        print("transforming CT before cropping")
+        print("transforming mask before cropping ct")
         inverse_for_similarity = " "       
         if (is_invert is True): 
             inverse_for_similarity = " -f"  
             
         # transform and save transformed MASK 
-        sys_call = resamplecall+" -d "+fixed_ct_fname+" -r "+ temp_registered_mask+\
+        sys_call = resamplecallLbl+" -d "+fixed_ct_fname+" -r "+ temp_registered_mask+\
             " -t "+moving_to_fixed_transfo+" -l "+moving_mask_fname+inverse_for_similarity         
 
     print(sys_call)
     os.system(sys_call) 
-
+    #temp_registered_mask = moving_mask_fname 
           
     #crop the input ct to the transformed mask
     print("\n\nreading ct : "+ fixed_ct_fname)
-    ct_datatemp,info = nrrd.read(fixed_ct_fname) # was input_ct_fname
+    ct_datatemp,info1 = nrrd.read(fixed_ct_fname) # was input_ct_fname
     ct_data = np.squeeze(ct_datatemp)
     
     print("reading registered mask : "+ temp_registered_mask)    
-    mask_data, info = nrrd.read(temp_registered_mask)
-    ct_data[mask_data < 1] = 0
+    mask_data, info2 = nrrd.read(temp_registered_mask)
+    
+    print(np.shape(ct_data))
+    print(np.shape(mask_data))
+    assert np.shape(ct_data) == np.shape(mask_data), "CT and mask shapes are different"
+    
+    #ct_data[mask_data < 1] = 0
     b = np.where(mask_data>0)
     extent = [0,0]
     extent = [max(b[0])-min(b[0])+1,max(b[1])-min(b[1])+1]
@@ -278,6 +283,7 @@ def crop_ct_to_moving_mask(fixed_ct_fname, moving_mask_fname, output_ct_fname,
     output_data= ct_data[min(b[0]):max(b[0]), min(b[1]):max(b[1])]
 
     print("saving cropped ct output : "+ output_ct_fname)    
+    print(np.shape(output_data))
     nrrd.write(output_ct_fname, output_data)  
                                                                                                                                                                                                               
 def register_tobase_get_closest( testing_ct_filename, base_case_ct_filenames, 
