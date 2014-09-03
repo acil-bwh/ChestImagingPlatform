@@ -40,30 +40,29 @@ bool cipChestRegionChestTypeLocationsIO::Read()
 
   while ( !file.eof() )
     {
-    file.getline( wholeLine, 512 );
+      file.getline( wholeLine, 512 );
+      
+      std::string wholeLineString( wholeLine );
 
-    std::string wholeLineString( wholeLine );
-
-	//check if the line is empty. If so, disregard
-	if(wholeLineString.length() > 1)
+      //check if the line is empty. If so, disregard
+      if(wholeLineString.length() > 1)
 	{
-    unsigned int commaLoc1 = wholeLineString.find( ',' );
-    unsigned int commaLoc2 = wholeLineString.find( ',', commaLoc1+1 );    
-    unsigned int commaLoc3 = wholeLineString.find( ',', commaLoc2+1 );
-    unsigned int commaLoc4 = wholeLineString.find( ',', commaLoc3+1 );
+	  unsigned int commaLoc1 = wholeLineString.find( ',' );
+	  unsigned int commaLoc2 = wholeLineString.find( ',', commaLoc1+1 );    
+	  unsigned int commaLoc3 = wholeLineString.find( ',', commaLoc2+1 );
+	  unsigned int commaLoc4 = wholeLineString.find( ',', commaLoc3+1 );
 
-    unsigned char cipRegion = this->Conventions.GetChestRegionValueFromName( wholeLineString.substr( 0, commaLoc1 ) );
-    unsigned char cipType   = this->Conventions.GetChestTypeValueFromName( wholeLineString.substr( commaLoc1+1, commaLoc2-commaLoc1-1 ) );
+	  unsigned char cipRegion = this->Conventions.GetChestRegionValueFromName( wholeLineString.substr( 0, commaLoc1 ) );
+	  unsigned char cipType   = this->Conventions.GetChestTypeValueFromName( wholeLineString.substr( commaLoc1+1, commaLoc2-commaLoc1-1 ) );
 
-    double* location = new double[3];
-      location[0] = static_cast< double >( atof( wholeLineString.substr( commaLoc2+1, commaLoc3-commaLoc2-1 ).c_str() ) );
-      location[1] = static_cast< double >( atof( wholeLineString.substr( commaLoc3+1, commaLoc4-commaLoc3-1 ).c_str() ) );
-      location[2] = static_cast< double >( atof( wholeLineString.substr( commaLoc4+1, wholeLineString.size()-commaLoc4-1 ).c_str() ) );
-
-    this->RegionTypeLocations->SetChestRegionChestTypeLocation( cipRegion, cipType, location );
+	  double* location = new double[3];
+	  location[0] = static_cast< double >( atof( wholeLineString.substr( commaLoc2+1, commaLoc3-commaLoc2-1 ).c_str() ) );
+	  location[1] = static_cast< double >( atof( wholeLineString.substr( commaLoc3+1, commaLoc4-commaLoc3-1 ).c_str() ) );
+	  location[2] = static_cast< double >( atof( wholeLineString.substr( commaLoc4+1, wholeLineString.size()-commaLoc4-1 ).c_str() ) );
+	  
+	  this->RegionTypeLocations->SetChestRegionChestTypeLocation( cipRegion, cipType, location );
 	}
     }
-
   file.close();
 
   return true;
