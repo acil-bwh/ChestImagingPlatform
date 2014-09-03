@@ -1,13 +1,10 @@
 /**
  *
- *  $Date: 2012-09-06 16:05:10 -0400 (Thu, 06 Sep 2012) $
- *  $Revision: 250 $
- *  $Author: jross $
- *
  */
 
 #include "cipLobeSurfaceModel.h"
 #include "vnl/vnl_math.h"
+#include <iostream>
 
 cipLobeSurfaceModel::cipLobeSurfaceModel()
 {

@@ -120,7 +120,7 @@ void LobeSurfaceModelIO::Read()
       
       commaLocOld = commaLocNew;
     }
-  
+
   this->ShapeModel->SetImageOrigin( origin );
   
   // Now get the image spacing
@@ -146,17 +146,17 @@ void LobeSurfaceModelIO::Read()
       
       commaLocOld = commaLocNew;
     }
-  
+
   this->ShapeModel->SetImageSpacing( spacing );
   
   // And now get the number of modes in the shape model
   file.getline( wholeLine, 100000 );
-  this->ShapeModel->SetNumberOfModes( static_cast< unsigned int >( atoi( wholeLine ) ) );
-  
+  this->ShapeModel->SetNumberOfModes( (unsigned int)( atoi( wholeLine ) ) );
+
   // Now get the number of z-values 
   file.getline( wholeLine, 100000 );
   unsigned int numZvals = atoi( wholeLine );
-  
+
   // Read in the mean z-vector
   std::vector< double > meanZValues;
   
@@ -180,7 +180,7 @@ void LobeSurfaceModelIO::Read()
       
       commaLocOld = commaLocNew;
     }
-  
+
   // Read in the eigenvalues and mode weights
   double eigenvalueSum = 0.0;
   std::vector< double > eigenvalues;
@@ -213,7 +213,7 @@ void LobeSurfaceModelIO::Read()
   this->ShapeModel->SetEigenvalueSum( eigenvalueSum );
   this->ShapeModel->SetEigenvalues( &eigenvalues );
   this->ShapeModel->SetModeWeights( &modeWeights );
-  
+
   // Read in each of the modes
   std::vector< std::vector< double > > eigenvectors;
   
@@ -243,7 +243,7 @@ void LobeSurfaceModelIO::Read()
       eigenvectors.push_back( eigenvector );
     }
   this->ShapeModel->SetEigenvectors( &eigenvectors );
-  
+
   // Read the domain points and fill the mean surface points vec
   std::vector< double* > meanSurfacePoints;
   
@@ -267,8 +267,9 @@ void LobeSurfaceModelIO::Read()
 
       meanSurfacePoints.push_back( point );
     }
-  this->ShapeModel->SetMeanSurfacePoints( &meanSurfacePoints );
   
+  this->ShapeModel->SetMeanSurfacePoints( &meanSurfacePoints );
+
   file.close(); 
 }
 
