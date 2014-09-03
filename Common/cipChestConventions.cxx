@@ -688,9 +688,15 @@ unsigned short cip::ChestConventions::GetValueFromChestRegionAndType( unsigned c
  * is found, the method will retune UNDEFINEDREGION */
 unsigned char cip::ChestConventions::GetChestRegionValueFromName( std::string regionString ) const
 {
+  std::string upperRegionString( regionString );
+  std::transform(upperRegionString.begin(), upperRegionString.end(), upperRegionString.begin(), ::toupper);
+
   for ( int i=0; i<m_NumberOfEnumeratedChestRegions; i++ )
     {
-      if ( !regionString.compare( ChestRegionNames[i] ) )
+      std::string upperChestRegionName( ChestRegionNames[i] );
+      std::transform(upperChestRegionName.begin(), upperChestRegionName.end(), upperChestRegionName.begin(), ::toupper);
+
+      if ( !upperRegionString.compare(upperChestRegionName) )
 	{
           return ChestRegions[i];
 	}
@@ -704,9 +710,15 @@ unsigned char cip::ChestConventions::GetChestRegionValueFromName( std::string re
  * is found, the method will retune UNDEFINEDTYPE */
 unsigned char cip::ChestConventions::GetChestTypeValueFromName( std::string typeString ) const
 {
+  std::string upperTypeString( typeString );
+  std::transform(upperTypeString.begin(), upperTypeString.end(), upperTypeString.begin(), ::toupper);
+
   for ( int i=0; i<m_NumberOfEnumeratedChestTypes; i++ )
     {
-      if ( !typeString.compare( ChestTypeNames[i] ) )
+      std::string upperChestTypeName( ChestTypeNames[i] );
+      std::transform(upperChestTypeName.begin(), upperChestTypeName.end(), upperChestTypeName.begin(), ::toupper);
+
+      if ( !upperTypeString.compare(upperChestTypeName) )
 	{
           return ChestTypes[i];
 	}
