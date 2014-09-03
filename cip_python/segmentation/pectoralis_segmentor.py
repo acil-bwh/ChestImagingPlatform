@@ -41,28 +41,11 @@ class pectoralis_segmentor:
     def execute(self):
         
         image_dimensions = np.shape(self._input_volume)
-        
-        #load the training labelmaps. Nope. Load them in acil  
-#        with open(self._training_labelmaps_filename) as f:
-#            training_labelmaps_content = f.readlines()   
-#            
-#        with open(self._training_ct_filename) as f:
-#            training_ct_content = f.readlines()
-#
-#        with open(self._base_case_ct_filename) as f:
-#            base_case_ct_content = f.readlines()                        
-#
-#        with open(self._base_case_labelmap_filename) as f:
-#            base_case_labelmap_content = f.readlines()  
-#
-#        with open(self._transformation_filenames_filename) as f:
-#            transformation_filenames_content = f.readlines()  
-                                                                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                                           
         prior_probabilities = dict()
         for class_name in self._AllClasses: #define non pec prior and compute later  
             prior_probabilities[class_name] = np.zeros((image_dimensions[0], \
                 image_dimensions[1],image_dimensions[2]), dtype=np.float)   
-        print(self._transformation_filenames)
         prior_probabilities = construct_pec_atlas_from_filenames.compute_atlas_from_labelfiles(\
             self._input_volume, self._testing_ct_filename, self._training_ct_filenames,\
             self._training_labelmaps_filenames, self._base_case_ct_filenames, \

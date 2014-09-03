@@ -40,6 +40,7 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkAffineTransform.h"
+#include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkMatrix.h"
@@ -53,7 +54,7 @@
 namespace
 {
 typedef itk::Image< short, 2 >                                                  ShortImageType;
-typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType, double >  InterpolatorType;
+typedef itk::LinearInterpolateImageFunction< ShortImageType, double >  InterpolatorType;
 typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >               ResampleType;
 typedef itk::AffineTransform< double, 2 >                                       TransformType;
 typedef itk::CompositeTransform< double, 2 >                                    CompositeTransformType;

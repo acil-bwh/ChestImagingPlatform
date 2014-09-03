@@ -49,7 +49,7 @@
 #include "itkImageRegistrationMethodv4.h"
 #include "itkImageRegistrationMethod.h"
 #include "itkCenteredTransformInitializer.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
+#include "itkLinearInterpolateImageFunction.h"
 #include "itkKappaStatisticImageToImageMetric.h"
 #include "itkNormalizedCorrelationImageToImageMetric.h"
 #include "itkAffineTransform.h"
@@ -57,7 +57,9 @@
 #include "itkIdentityTransform.h"
 #include "itkQuaternionRigidTransform.h"
 #include "itkSimilarity2DTransform.h"
+#include "itkRigid2DTransform.h"
 #include "itkMeanSquaresImageToImageMetric.h"
+#include "itkBinaryThresholdImageFilter.h"
 //#include "itkRegularStepGradientDescentOptimizerv4.h"
 
 #include "RegisterCT2DCLP.h"
@@ -75,6 +77,7 @@ namespace
   typedef itk::Image< unsigned short, 2 >                                                           LabelMapType2D; 
   typedef itk::Image< short, 2 >                                                                    ShortImageType2D;
 
+  typedef itk::ImageRegionIterator< ShortImageType2D >                                   CTImageIteratorType;  
   typedef itk::GDCMImageIO                                                                          ImageIOType;
   typedef itk::GDCMSeriesFileNames                                                                  NamesGeneratorType;
   typedef itk::ImageFileReader< LabelMapType2D >                                                    LabelMap2DReaderType;
@@ -90,7 +93,8 @@ namespace
   typedef itk::DiscreteGaussianImageFilter< ShortImageType2D, ShortImageType2D >                    GaussianFilterType;  
   typedef itk::NormalizeImageFilter<ShortImageType2D,ShortImageType2D>                              FixedNormalizeFilterType;
   typedef itk::NormalizeImageFilter<ShortImageType2D,ShortImageType2D>                              MovingNormalizeFilterType;
-
+  typedef itk::BinaryThresholdImageFilter<
+    ShortImageType2D, ShortImageType2D >  FilterType;
 
   //similarity
   typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType2D, ShortImageType2D  >        ncMetricType;
@@ -104,7 +108,9 @@ namespace
   //transformations   
   typedef itk::IdentityTransform< double, 2 >                                                       IdentityType;  
   typedef itk::AffineTransform<double, 2 >                                                          AffineTransformType2D;
-  typedef itk::Similarity2DTransform< double>                                                       RigidTransformType;
+  typedef itk::Similarity2DTransform< double>                                                       SimilarityTransformType;
+  typedef itk::Rigid2DTransform< double>
+      RigidTransformType;
   //typedef itk::VersorRigid2DTransform< double > RigidTransformType;
   typedef itk::CenteredTransformInitializer< RigidTransformType, ShortImageType2D, ShortImageType2D >  RigidInitializerType2DIntensity;
   //typedef itk::CenteredTransformInitializer< SimilarityTransformType2D, ShortImageType2D, ShortImageType2D >  SimilarityInitializerType2DIntensity;
@@ -117,7 +123,7 @@ namespace
   typedef OptimizerType::ScalesType                                                                 OptimizerScalesType;
 
   typedef itk::ImageRegistrationMethod<ShortImageType2D,ShortImageType2D >                          CTRegistrationType;
-  typedef itk::NearestNeighborInterpolateImageFunction< ShortImageType2D, double >                  CTInterpolatorType;
+  typedef itk::LinearInterpolateImageFunction< ShortImageType2D, double >                  CTInterpolatorType;
   typedef itk::ResampleImageFilter< ShortImageType2D, ShortImageType2D >                            ResampleFilterType;
 
 
@@ -393,33 +399,67 @@ int main( int argc, char *argv[] )
   movingNormalizer->SetInput( movingSmoother->GetOutput() );
   movingNormalizer->Update();
   */
-  //initial registration with a similarity transform
+  //initial registration with a rigid transform
   RigidTransformType::Pointer  rigidTransform = RigidTransformType::New();
+
+  //create a similarity transform to experiment
+  SimilarityTransformType::Pointer similarityTransform = SimilarityTransformType::New();
+    
+  
+  //create a mask for the body only in order to initialize the registration
+  const short lowerThreshold =  -1024 ;
+  const short intensity_offset =  1024 ;
+    
+  CTImageIteratorType   fixedctIt ( fixedCT2D, fixedCT2D->GetBufferedRegion() );
+  CTImageIteratorType   movingctIt ( movingCT2D, movingCT2D->GetBufferedRegion() );
+  fixedctIt.GoToBegin();
+  movingctIt.GoToBegin();
+  while ( !fixedctIt.IsAtEnd() )
+    {
+        short original_value = fixedctIt.Get();
+        if(original_value < lowerThreshold)
+            original_value = lowerThreshold;
+        fixedctIt.Set(original_value+=intensity_offset);
+        ++fixedctIt;
+    }
+  while ( !movingctIt.IsAtEnd() )
+    {
+        short original_value = movingctIt.Get();
+        if(original_value < lowerThreshold)
+            original_value = lowerThreshold;
+        movingctIt.Set(original_value+=intensity_offset);
+        ++movingctIt;
+    }
+    
   RigidInitializerType2DIntensity::Pointer rigidInitializer = RigidInitializerType2DIntensity::New();
+    rigidInitializer->SetTransform( rigidTransform );
+    rigidInitializer->SetFixedImage(fixedCT2D);
+    rigidInitializer->SetMovingImage(movingCT2D);//movingNormalizer->GetOutput()  );
+    //rigidInitializer->SetMovingImageMask(filter_moving->GetOutput());
+    rigidInitializer->MomentsOn();
+    rigidInitializer->InitializeTransform();
 
-  rigidInitializer->SetTransform( rigidTransform );
-  rigidInitializer->SetFixedImage(fixedCT2D);//fixedNormalizer->GetOutput());
-  rigidInitializer->SetMovingImage(movingCT2D);//movingNormalizer->GetOutput()  );
-  rigidInitializer->MomentsOn();
-  rigidInitializer->InitializeTransform();
+  OptimizerScalesType rigidOptimizerScales(rigidTransform->GetNumberOfParameters());
+    rigidOptimizerScales[0] =  1.0;
+    translationScale = 1.0 / 100.0;
+    rigidOptimizerScales[1] =  translationScale;
+    rigidOptimizerScales[2] =  translationScale;
 
-  OptimizerScalesType rigidOptimizerScales(rigidTransform->GetNumberOfParameters());     
-    rigidOptimizerScales[0] =  1.0; 
-    rigidOptimizerScales[1] =  1.0; 
-    rigidOptimizerScales[2] =  1.0; 
-    translationScale = 1.0 / 1000.0;
-    rigidOptimizerScales[3] =  translationScale; 
-    rigidOptimizerScales[4] =  translationScale; 
-    rigidOptimizerScales[5] =  translationScale; 
-
-
+  OptimizerScalesType similarityOptimizerScales(similarityTransform->GetNumberOfParameters());
+    rigidOptimizerScales[0] =  1.0;
+    rigidOptimizerScales[1] =  1.0;
+    translationScale = 1.0 / 100.0;
+    rigidOptimizerScales[2] =  translationScale;
+    rigidOptimizerScales[3] =  translationScale;
+    
+    
 
   OptimizerType::Pointer rigid_optimizer = OptimizerType::New();
   //GradOptimizerType::Pointer grad_optimizer = GradOptimizerType::New();    
     rigid_optimizer->SetScales(rigidOptimizerScales);
     rigid_optimizer->SetMaximumStepLength(0.2); 
-    rigid_optimizer->SetMinimumStepLength(0.0001); 
-    rigid_optimizer->SetNumberOfIterations(500);
+    rigid_optimizer->SetMinimumStepLength(0.001);
+    rigid_optimizer->SetNumberOfIterations(1000);
 
   CTInterpolatorType::Pointer CTinterpolator = CTInterpolatorType::New();  
   CTRegistrationType::Pointer registration = CTRegistrationType::New();  
@@ -474,34 +514,54 @@ int main( int argc, char *argv[] )
   Now for the affine registration
   ****/
   
-  std::cout<<"affine registration" <<std::endl;
+  std::cout<<"affine registration new" <<std::endl;
   
   AffineTransformType2D::Pointer affineTransform2D = AffineTransformType2D::New();
     affineTransform2D->SetCenter( rigidTransform->GetCenter() );
     affineTransform2D->SetTranslation( rigidTransform->GetTranslation() );
   affineTransform2D->SetMatrix( rigidTransform->GetMatrix() );
-  
-  registration->SetTransform( affineTransform2D );
-  registration->SetInitialTransformParameters( affineTransform2D->GetParameters() );
 
+  std::cout<<"affine registration 2" <<std::endl;
+  CTRegistrationType::Pointer registration_affine = CTRegistrationType::New();  
+
+
+  registration_affine->SetMetric( nc_metric );
+  registration_affine->SetFixedImage(fixedCT2D  ); //fixedSmoother->GetOutput()
+  registration_affine->SetMovingImage(movingCT2D); //movingSmoother->GetOutput()
+
+   OptimizerType::Pointer affine_optimizer = OptimizerType::New();
+  std::cout<<"affine registration 3" <<std::endl;  
   //translationScale = 0.000001;
-  OptimizerScalesType optimizerScales(affineTransform2D->GetNumberOfParameters());     
+  OptimizerScalesType optimizerScales(affineTransform2D->GetNumberOfParameters());
   optimizerScales[0] = 1.0;
   optimizerScales[1] = 1.0;
   optimizerScales[2] = 1.0;
   optimizerScales[3] = 1.0;
-  optimizerScales[4] = 1.0;
+  /*optimizerScales[4] = 1.0;
   optimizerScales[5] = 1.0;
   optimizerScales[6] = 1.0;
   optimizerScales[7] = 1.0;
   optimizerScales[8] = 1.0;
   optimizerScales[9]  = translationScale;
   optimizerScales[10] = translationScale;
-  optimizerScales[11] = translationScale;
-  rigid_optimizer->SetScales( optimizerScales );
-  rigid_optimizer->SetMaximumStepLength( 0.2000  );
-  rigid_optimizer->SetMinimumStepLength( 0.0001 );
-  rigid_optimizer->SetNumberOfIterations( 300 );
+  optimizerScales[11] = translationScale; */
+  translationScale = 1/1000.0;
+  optimizerScales[4]  = translationScale;
+  optimizerScales[5] = translationScale;
+
+ std::cout<<"affine registration 4" <<std::endl;  
+  affine_optimizer->SetScales( optimizerScales );
+  affine_optimizer->SetMaximumStepLength( 0.2000  );
+std::cout<<"affine registration 5" <<std::endl;  
+  affine_optimizer->SetMinimumStepLength( 0.0001 );
+    affine_optimizer->SetNumberOfIterations( 300);//300 );
+  registration_affine->SetOptimizer( affine_optimizer );
+  registration_affine->SetInterpolator( CTinterpolator );
+
+   registration_affine->SetTransform( affineTransform2D );
+   registration_affine->SetInitialTransformParameters( affineTransform2D->GetParameters() );
+
+std::cout<<"affine registration 6" <<std::endl;  
   //
   // The Affine transform has 12 parameters we use therefore a more samples to run
   // this stage.
@@ -515,8 +575,10 @@ int main( int argc, char *argv[] )
      
   try
     {
-      registration->Initialize();
-      registration->Update();
+      registration_affine->Initialize();
+      std::cout<<"affine registration 7" <<std::endl;  
+      registration_affine->Update();
+      std::cout<<"affine registration 8" <<std::endl;  
     }
   catch( itk::ExceptionObject &excp )
     {
@@ -531,7 +593,9 @@ int main( int argc, char *argv[] )
    bestValue = rigid_optimizer->GetValue();
       
    std::cout <<" best similarity value = " <<bestValue<<std::endl;
-   affineTransform2D->SetParameters(registration->GetLastTransformParameters());
+   affineTransform2D->SetParameters( registration_affine->GetLastTransformParameters());
+   //affineTransform2D->SetParameters( registration_affine->GetInitialTransformParameters());
+
    /*
    GradOptimizerType::ParametersType finalParams;
      finalParams =registration->GetLastTransformParameters();

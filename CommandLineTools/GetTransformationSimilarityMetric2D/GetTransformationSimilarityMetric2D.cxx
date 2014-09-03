@@ -328,7 +328,8 @@ int main( int argc, char *argv[] )
   CompositeTransformType::Pointer test_inverse_transform = CompositeTransformType::New();
   CompositeTransformType::Pointer transform = CompositeTransformType::New();
    transform->SetAllTransformsToOptimizeOn();
-
+if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
+    {
   for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
      
@@ -349,7 +350,13 @@ int main( int argc, char *argv[] )
       transform->SetAllTransformsToOptimizeOn();
       test_inverse_transform->SetAllTransformsToOptimizeOn();
     }
- 
+    }
+ else
+   {
+     // Set to identity by default
+     transformTemp->SetIdentity();
+     transform->AddTransform(transformTemp);
+   }
   CompositeTransformType::Pointer transform_forsim = CompositeTransformType::New();
   TransformType::Pointer id_transform = TransformType::New();
   id_transform->SetIdentity();
@@ -395,7 +402,7 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
     return cip::LABELMAPWRITEFAILURE;
     }
 
-
+std::cout<<"wrote"<<std::endl;
   //initialize metric 
   if (similarityMetric =="nc")
       {
@@ -405,21 +412,19 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
 	 metric->SetTransform(transform_forsim);
 	 metric->SetFixedImage( ctFixedImage );
 	 metric->SetMovingImage( resampler->GetOutput() );
-	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
-	 metric->SetFixedImageRegion(fixedRegion);
-	 metric->Initialize();
-	 
+
 	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetMovingImageMask( movingSpatialObjectMask );
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
 
+	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 metric->SetFixedImageRegion(fixedRegion);
+	 metric->Initialize();
+	 
+
 	 ncMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
 	 zero_params = transform_forsim->GetParameters();
-	 //should be set to identity, not zero
-
-	 //for(int i = 0; i< transform->GetNumberOfParameters(); i++)
-	 //    zero_params[i]=0;
 
 	 similarityValue = metric->GetValue(zero_params );
 	 std::cout<<"the ncc value is: "<<similarityValue<<std::endl;
@@ -434,11 +439,27 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
       histogramSize[0] = 20;
       histogramSize[1] = 20;
       metric->SetHistogramSize( histogramSize );
-
+ 
+      metric->SetInterpolator( interpolator );
+      metric->SetTransform(transform_forsim);
+      metric->SetFixedImage( ctFixedImage );
+      metric->SetMovingImage(resampler->GetOutput() );
+      
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );     
+	metric->SetFixedImageMask( fixedSpatialObjectMask );  
+      
+      ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+      metric->SetFixedImageRegion(fixedRegion);
+      metric->Initialize();
+      
+      msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+      zero_params = transform_forsim->GetParameters();
+      
+      similarityValue = metric->GetValue(zero_params );
+      std::cout<<"the nmi value is: "<<similarityValue<<std::endl;
+
      
       similarity_type = "NMI";
     }
@@ -449,7 +470,7 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
 
 	 transform_forsim->SetAllTransformsToOptimizeOn();
 	 metric->SetInterpolator( interpolator );
-	 metric->SetTransform(transform_forsim);//transform);
+	 metric->SetTransform(transform_forsim);
 	 metric->SetFixedImage( ctFixedImage );
 	 metric->SetMovingImage(resampler->GetOutput() );
 
@@ -469,6 +490,7 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
 	 std::cout<<"the msqr value is: "<<similarityValue<<std::endl;
 
 	similarity_type = "msqr";
+
       }
      
     else if (similarityMetric =="gd")
@@ -501,28 +523,28 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
       }
    else //MI is default
      {
-     
+
       MIMetricType::Pointer metric = MIMetricType::New();
-      transform->SetAllTransformsToOptimizeOn();
       transform_forsim->SetAllTransformsToOptimizeOn();
 
       metric->SetFixedImageStandardDeviation( 13.5 );
       metric->SetMovingImageStandardDeviation( 13.5 );
       metric->SetInterpolator( interpolator );
-      metric->SetTransform(transform_forsim);//transform);
+      metric->SetTransform(transform_forsim);
       metric->SetFixedImage( ctFixedImage );
       metric->SetMovingImage( resampler->GetOutput() );
-      
+
+     
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetFixedImageMask( fixedSpatialObjectMask );  
-      
+
       ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
       metric->SetFixedImageRegion(fixedRegion);
-      metric->Initialize();
+      metric->Initialize();      
            
-      msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+      MIMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
       zero_params = transform_forsim->GetParameters();
      
       similarityValue = metric->GetValue(zero_params );
