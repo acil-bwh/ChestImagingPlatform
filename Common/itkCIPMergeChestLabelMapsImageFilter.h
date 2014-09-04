@@ -13,7 +13,7 @@ namespace itk
 /** \class MergeChestLabelMapsImageFilter
  * \brief This filter merges two label map images. It is assumed that
  * the labels in both images are given with respect to the labeling
- * conventions indicated in cipConventions.h. The filter expects
+ * conventions indicated in cipChestConventions.h. The filter expects
  * two images: the base (input) image and the overlay image. All
  * labels in the base image remain untouched except for the rules
  * specified by the user. The user can choose to override or merge a
@@ -85,6 +85,19 @@ public:
    * applied) */
   itkSetMacro( MergeOverlay, bool ); 
   itkGetMacro( MergeOverlay, bool );
+
+  /** Setting Union to be true results in the following behavior: for a given
+   *  voxel, if either the region or type is undefined for either of the base
+   *  or overlay label maps, then the merged voxel will get the defined
+   *  region/type. If there is a conflict in defined regions for a given voxel,
+   *  if one region is a subset of the other region, then the merged voxel 
+   *  will get the region that is more specific. Otherwise, if there is a
+   *  region/type conflict that can't be resolved, then the region/type in
+   *  the base image is used. This option is false by default, and if set to
+   *  true, will trump all other rules.
+   */
+  itkSetMacro( Union, bool );
+  itkGetMacro( Union, bool );
 
   /** Set the type to override. Any voxel in the base (input) image
    * with this type will be set to UNDEFINEDTYPE first, and then
@@ -199,6 +212,7 @@ protected:
 
   void MergeOverlay();
   void GraftOverlay();
+  void Union();
   void ApplyRules();
   bool GetPermitChestRegionChange( unsigned char );
   bool GetPermitChestTypeChange( unsigned char, unsigned char );
@@ -222,6 +236,7 @@ private:
 
   bool m_GraftOverlay;
   bool m_MergeOverlay;
+  bool m_Union;
 
   cip::ChestConventions m_ChestConventions;
 };

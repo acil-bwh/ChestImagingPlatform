@@ -118,3 +118,37 @@ ENDIF( CIP_BUILD_TESTING_LARGE )
 IF ( CIP_BUILD_TESTING_LARGE )
   MIDAS_ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST2 COMMAND itkCIPOtsuLungCastImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case001.nhdr.md5} MIDAS{Case001_otsuLungCast.nhdr.md5} EXTRAFILES MIDAS{Case001.raw.gz.md5} MIDAS{Case001_otsuLungCast.raw.gz.md5} )
 ENDIF( CIP_BUILD_TESTING_LARGE )
+
+#-----------------------------------
+# itkCIPExtractChestLabelMapImageFilterTEST
+#-----------------------------------
+PROJECT ( itkCIPExtractChestLabelMapImageFilterTEST )
+
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
+
+ADD_EXECUTABLE( itkCIPExtractChestLabelMapImageFilterTEST itkCIPExtractChestLabelMapImageFilterTEST.cxx)
+TARGET_LINK_LIBRARIES( itkCIPExtractChestLabelMapImageFilterTEST CIPCommon )
+
+SET_TARGET_PROPERTIES ( itkCIPExtractChestLabelMapImageFilterTEST
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
+)
+
+ADD_TEST( itkCIPExtractChestLabelMapImageFilterTEST itkCIPExtractChestLabelMapImageFilterTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd )
+
+#-----------------------------------
+# itkCIPMergeChestLabelMapsImageFilterTEST
+#-----------------------------------
+PROJECT ( itkCIPMergeChestLabelMapsImageFilterTEST )
+
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
+
+ADD_EXECUTABLE( itkCIPMergeChestLabelMapsImageFilterTEST itkCIPMergeChestLabelMapsImageFilterTEST.cxx)
+TARGET_LINK_LIBRARIES( itkCIPMergeChestLabelMapsImageFilterTEST CIPCommon )
+
+SET_TARGET_PROPERTIES ( itkCIPMergeChestLabelMapsImageFilterTEST 
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
+)
+
+ADD_TEST( itkCIPMergeChestLabelMapsImageFilterTEST itkCIPMergeChestLabelMapsImageFilterTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd )
