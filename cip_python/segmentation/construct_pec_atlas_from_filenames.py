@@ -82,16 +82,9 @@ def compute_atlas_from_labelfiles(input_vol, testing_ct_filename, training_ct_fi
     print("the closest base case is : "+closest_base_ct+ " " + close_base_tfm)
     
     base_case_key = closest_base_ct.split("/")[-1].split(".")[0].rstrip("\n")
-    print("key is : "+ base_case_key+".")
     
-    if base_case_key in transformation_filenames.keys():
-        print "key in list"
-    else: print "out"
-    
-    print(np.shape(transformation_filenames[base_case_key])[0])
     list_transfos_given_base = [""]*np.shape(transformation_filenames[base_case_key])[0]
     for i in range(0, np.shape(transformation_filenames[base_case_key])[0]):
-        print(transformation_filenames[base_case_key][i])
         list_transfos_given_base[i] = transformation_filenames[base_case_key][i]
     
     #for tt in list_transfos_given_base:

@@ -9,7 +9,7 @@ SET_TARGET_PROPERTIES ( cipChestRegionChestTypeLocationsIOTEST
     RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/IO/Testing"
 )
 
-ADD_TEST( cipChestRegionChestTypeLocationsIOTEST cipChestRegionChestTypeLocationsIOTEST )
+ADD_TEST( cipChestRegionChestTypeLocationsIOTEST cipChestRegionChestTypeLocationsIOTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/Case000_regionAndTypePoints.csv )
 
 #-----------------------------------
 # cipLobeSurfaceModelIOTEST
@@ -27,4 +27,4 @@ SET_TARGET_PROPERTIES ( cipLobeSurfaceModelIOTEST
     RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/IO/Testing"
 )
 
-ADD_TEST( cipLobeSurfaceModelIOTEST cipLobeSurfaceModelIOTEST )
+ADD_TEST( cipLobeSurfaceModelIOTEST cipLobeSurfaceModelIOTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/Case000_leftLungLobesShapeModel.csv )

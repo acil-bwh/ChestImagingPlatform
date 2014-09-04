@@ -12,6 +12,7 @@ CIPMergeChestLabelMapsImageFilter
   this->m_OverlayImage = cip::LabelMapType::New();
   this->m_GraftOverlay = false;
   this->m_MergeOverlay = false;
+  this->m_Union        = false;
 }
 
 
@@ -24,7 +25,11 @@ CIPMergeChestLabelMapsImageFilter
   this->GetOutput()->Allocate();
   this->GetOutput()->FillBuffer( 0 );
 
-  if ( this->m_GraftOverlay )
+  if ( this->m_Union )
+    {
+      this->Union();
+    }
+  else if ( this->m_GraftOverlay )
     {
     this->GraftOverlay();
     }
@@ -262,6 +267,83 @@ CIPMergeChestLabelMapsImageFilter
 
 void
 CIPMergeChestLabelMapsImageFilter
+::Union()
+{
+  IteratorType ovIt( this->m_OverlayImage, this->m_OverlayImage->GetBufferedRegion() );
+  ConstIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
+  IteratorType oIt( this->GetOutput(), this->GetOutput()->GetBufferedRegion() );
+
+  oIt.GoToBegin();
+  iIt.GoToBegin();
+  while ( !oIt.IsAtEnd() )
+    {
+      if ( iIt.Get() == 0 && ovIt.Get() == 0 )
+	{
+	  oIt.Set( 0 );
+	}
+      else if ( iIt.Get() == 0 && ovIt.Get() != 0 )
+	{
+	  oIt.Set( ovIt.Get() );
+	}
+      else if ( iIt.Get() != 0 && ovIt.Get() == 0 )
+	{
+	  oIt.Set( iIt.Get() );
+	}
+      else 
+	{
+	  unsigned char overlayChestRegion = this->m_ChestConventions.GetChestRegionFromValue( ovIt.Get() );
+	  unsigned char baseChestRegion    = this->m_ChestConventions.GetChestRegionFromValue( iIt.Get() );
+	  unsigned char overlayChestType   = this->m_ChestConventions.GetChestTypeFromValue( ovIt.Get() );
+	  unsigned char baseChestType      = this->m_ChestConventions.GetChestTypeFromValue( iIt.Get() );
+
+	  unsigned char mergedChestRegion = 0;
+	  unsigned char mergedChestType   = 0;
+
+	  if ( overlayChestRegion == 0 && baseChestRegion != 0 )
+	    {
+	      mergedChestRegion = baseChestRegion;
+	    }
+	  else if ( overlayChestRegion != 0 && baseChestRegion == 0 )
+	    {
+	      mergedChestRegion = overlayChestRegion;
+	    }
+	  else if ( this->m_ChestConventions.CheckSubordinateSuperiorChestRegionRelationship( baseChestRegion, overlayChestRegion ) )
+	    {
+	      mergedChestRegion = baseChestRegion;
+	    }
+	  else if ( this->m_ChestConventions.CheckSubordinateSuperiorChestRegionRelationship( overlayChestRegion, baseChestRegion ) )
+	    {
+	      mergedChestRegion = overlayChestRegion;
+	    }
+	  else if ( overlayChestRegion != 0 && baseChestRegion != 0 )
+	    {
+	      mergedChestRegion = baseChestRegion;
+	    }
+
+	  if ( overlayChestType == 0 && baseChestType != 0 )
+	    {
+	      mergedChestType = baseChestType;
+	    }
+	  else if ( overlayChestType != 0 && baseChestType == 0 )
+	    {
+	      mergedChestType = overlayChestType;
+	    }
+	  else if ( overlayChestType != 0 && baseChestType != 0 )
+	    {
+	      mergedChestType = baseChestType;
+	    }
+
+	  oIt.Set( this->m_ChestConventions.GetValueFromChestRegionAndType( mergedChestRegion, mergedChestType ) );	  
+	}
+    
+      ++ovIt;
+      ++iIt;
+      ++oIt;
+    }
+}
+
+void
+CIPMergeChestLabelMapsImageFilter
 ::GraftOverlay()
 {
   ConstIteratorType iIt( this->GetInput(), this->GetInput()->GetBufferedRegion() );
@@ -296,7 +378,6 @@ CIPMergeChestLabelMapsImageFilter
     ++orIt;
     }
 }
-
 
 void
 CIPMergeChestLabelMapsImageFilter
@@ -337,8 +418,6 @@ CIPMergeChestLabelMapsImageFilter
     ++orIt;
     }
 }
-
-
 
 void
 CIPMergeChestLabelMapsImageFilter

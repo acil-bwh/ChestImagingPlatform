@@ -5,7 +5,7 @@ import sys
 import numpy as np
 import scipy
 #import scipy.scipy.ndimage as scipy.ndimage
-#from scipy import stats
+from scipy import stats
 #from scipy.stats import multivariate_normal
 from pygco import cut_from_graph
 from cip_python.utils.weighted_feature_map_densities \
