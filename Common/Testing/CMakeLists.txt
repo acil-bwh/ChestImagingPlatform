@@ -152,3 +152,20 @@ SET_TARGET_PROPERTIES ( itkCIPMergeChestLabelMapsImageFilterTEST
 )
 
 ADD_TEST( itkCIPMergeChestLabelMapsImageFilterTEST itkCIPMergeChestLabelMapsImageFilterTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd )
+
+#-----------------------------------
+# cipHelperTEST
+#-----------------------------------
+PROJECT ( cipHelperTEST )
+
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
+
+ADD_EXECUTABLE( cipHelperTEST cipHelperTEST.cxx)
+TARGET_LINK_LIBRARIES( cipHelperTEST CIPCommon )
+
+SET_TARGET_PROPERTIES ( cipHelperTEST 
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
+)
+
+ADD_TEST( cipHelperTEST cipHelperTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd )
