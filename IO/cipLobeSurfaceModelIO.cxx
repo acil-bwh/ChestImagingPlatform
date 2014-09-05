@@ -94,88 +94,81 @@ void LobeSurfaceModelIO::Read()
       throw cip::ExceptionObject( __FILE__, __LINE__, "LobeSurfaceModelIO::Read()", "Problem opening file" );
     }
 
-  char wholeLine[100000];
-  unsigned int commaLocOld, commaLocNew;
+   unsigned int commaLocOld, commaLocNew;
   
   // First get the image origin
   double origin[3];
-
-  file.getline( wholeLine, 100000 );
-  std::string originString( wholeLine, 100000 );
-
+  std::string originString;
+  std::getline( file, originString );
   commaLocOld = 0;
 
   for ( unsigned int i=0; i<3; i++ )
     {
       if ( i == 0 )
-        {
-	  commaLocNew = originString.find( ',', 0 );
-	  origin[i] = atof( originString.substr( 0, commaLocNew-commaLocOld+1).c_str() );
+        { 
+  	  commaLocNew = originString.find( ',', 0 );
+  	  origin[i] = atof( originString.substr( 0, commaLocNew-commaLocOld+1).c_str() );
         }
       else
         {
-	  commaLocNew = originString.find( ',', commaLocOld+1 );
-	  origin[i] = atof( originString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() );
+  	  commaLocNew = originString.find( ',', commaLocOld+1 );
+  	  origin[i] = atof( originString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() );
         }
       
       commaLocOld = commaLocNew;
     }
-
   this->ShapeModel->SetImageOrigin( origin );
   
   // Now get the image spacing
-  double spacing[3];
-  
-  file.getline( wholeLine, 100000 );
-  std::string spacingString( wholeLine, 100000 );
-  
+  double spacing[3];  
+  std::string spacingString;
+  std::getline( file, spacingString );
   commaLocOld = 0;
   
   for ( unsigned int i=0; i<3; i++ )
     {
       if ( i == 0 )
         {
-	  commaLocNew = spacingString.find( ',', 0 );
-	  spacing[i] = atof( spacingString.substr( 0, commaLocNew-commaLocOld+1).c_str() );
+  	  commaLocNew = spacingString.find( ',', 0 );
+  	  spacing[i] = atof( spacingString.substr( 0, commaLocNew-commaLocOld+1).c_str() );
         }
       else
         {
-	  commaLocNew = spacingString.find( ',', commaLocOld+1 );
-	  spacing[i] = atof( spacingString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() );
+  	  commaLocNew = spacingString.find( ',', commaLocOld+1 );
+  	  spacing[i] = atof( spacingString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() );
         }
       
       commaLocOld = commaLocNew;
     }
-
   this->ShapeModel->SetImageSpacing( spacing );
   
   // And now get the number of modes in the shape model
-  file.getline( wholeLine, 100000 );
-  this->ShapeModel->SetNumberOfModes( (unsigned int)( atoi( wholeLine ) ) );
+  std::string numModesString;
+  std::getline( file, numModesString );
+  this->ShapeModel->SetNumberOfModes( (unsigned int)( atoi( numModesString.c_str() ) ) );
 
   // Now get the number of z-values 
-  file.getline( wholeLine, 100000 );
-  unsigned int numZvals = atoi( wholeLine );
+  std::string numZValsString;
+  std::getline( file, numZValsString );
+  unsigned int numZvals = atoi( numZValsString.c_str() );
 
   // Read in the mean z-vector
-  std::vector< double > meanZValues;
-  
-  file.getline( wholeLine, 100000 );
-  std::string wholeLineString( wholeLine, 100000 );
-  
+  std::vector< double > meanZValues;  
+  std::string wholeLineString;
+  std::getline( file, wholeLineString );  
   commaLocOld = 0;
-  
+
   for ( unsigned int i=0; i<numZvals; i++ )
     {
       if ( i == 0 )
         {
-	  commaLocNew = wholeLineString.find( ',', 0 );
-	  meanZValues.push_back( atof( wholeLineString.substr( 0, commaLocNew-commaLocOld+1).c_str() ) );
+  	  commaLocNew = wholeLineString.find( ',', 0 );
+  	  meanZValues.push_back( atof( wholeLineString.substr( 0, commaLocNew-commaLocOld+1).c_str() ) );
         }
       else
         {
-	  commaLocNew = wholeLineString.find( ',', commaLocOld+1 );
-	  meanZValues.push_back( atof( wholeLineString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() ) );
+  	  commaLocNew = wholeLineString.find( ',', commaLocOld+1 );
+  	  meanZValues.push_back( atof( wholeLineString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() ) );
         }
       
       commaLocOld = commaLocNew;
@@ -185,29 +178,29 @@ void LobeSurfaceModelIO::Read()
   double eigenvalueSum = 0.0;
   std::vector< double > eigenvalues;
   std::vector< double > modeWeights;
-  
+
   for ( unsigned int i=0; i<this->ShapeModel->GetNumberOfModes(); i++ )
     {
-      file.getline( wholeLine, 100000 );
-      std::string valueAndWeightString( wholeLine, 100000 );
+      std::string valueAndWeightString;
+      std::getline( file, valueAndWeightString );
       
       commaLocOld = 0;
       for ( unsigned int j=0; j<2; j++ )
         {
-	  if ( j == 0 )
-	    {
-	      commaLocNew = valueAndWeightString.find( ',', 0 );
-	      double eigenvalue = atof( valueAndWeightString.substr( 0, commaLocNew-commaLocOld+1).c_str() );
-	      eigenvalues.push_back( eigenvalue );
-	      eigenvalueSum += eigenvalue;
-	    }
-	  else
-	    {
-	      commaLocNew = valueAndWeightString.find( ',', commaLocOld+1 );
-	      modeWeights.push_back( atof( valueAndWeightString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() ) );
-	    }
+  	  if ( j == 0 )
+  	    {
+  	      commaLocNew = valueAndWeightString.find( ',', 0 );
+  	      double eigenvalue = atof( valueAndWeightString.substr( 0, commaLocNew-commaLocOld+1).c_str() );
+  	      eigenvalues.push_back( eigenvalue );
+  	      eigenvalueSum += eigenvalue;
+  	    }
+  	  else
+  	    {
+  	      commaLocNew = valueAndWeightString.find( ',', commaLocOld+1 );
+  	      modeWeights.push_back( atof( valueAndWeightString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() ) );
+  	    }
 	  
-	  commaLocOld = commaLocNew;
+  	  commaLocOld = commaLocNew;
         }
     }
   this->ShapeModel->SetEigenvalueSum( eigenvalueSum );
@@ -219,25 +212,25 @@ void LobeSurfaceModelIO::Read()
   
   for ( unsigned int i=0; i<this->ShapeModel->GetNumberOfModes(); i++ )
     {
-      file.getline( wholeLine, 100000 );
-      std::string eigenvectorString( wholeLine );
+      std::string eigenvectorString;
+      std::getline( file, eigenvectorString );
       std::vector< double > eigenvector;
       
       commaLocOld = 0;
       for ( unsigned int j=0; j<numZvals; j++ )
         {
-	  if ( j == 0 )
-	    {
-	      commaLocNew = eigenvectorString.find( ',', 0 );
-	      eigenvector.push_back( atof( eigenvectorString.substr( 0, commaLocNew-commaLocOld+1).c_str() ) );
-	    }
-	  else
-	    {
-	      commaLocNew = eigenvectorString.find( ',', commaLocOld+1 );
-	      eigenvector.push_back( atof( eigenvectorString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() ) );
-	    }
+  	  if ( j == 0 )
+  	    {
+  	      commaLocNew = eigenvectorString.find( ',', 0 );
+  	      eigenvector.push_back( atof( eigenvectorString.substr( 0, commaLocNew-commaLocOld+1).c_str() ) );
+  	    }
+  	  else
+  	    {
+  	      commaLocNew = eigenvectorString.find( ',', commaLocOld+1 );
+  	      eigenvector.push_back( atof( eigenvectorString.substr( commaLocOld+1, commaLocNew-commaLocOld-1).c_str() ) );
+  	    }
 	  
-	  commaLocOld = commaLocNew;
+  	  commaLocOld = commaLocNew;
         }
       
       eigenvectors.push_back( eigenvector );
@@ -249,10 +242,9 @@ void LobeSurfaceModelIO::Read()
   
   for ( unsigned int i=0; i<numZvals; i++ )
     {
-      file.getline( wholeLine, 100000 );
-      
-      std::string domainString( wholeLine );
-      
+      std::string domainString;
+      std::getline( file, domainString );
+ 
       unsigned int commaLoc1 = domainString.find( ',', 0 );
       unsigned int commaLoc2 = domainString.find( ',', commaLoc1+1 );
       
@@ -262,14 +254,13 @@ void LobeSurfaceModelIO::Read()
       
       double* point = new double[3];
         point[0] = x;
-	point[1] = y;
-	point[2] = z;
+  	point[1] = y;
+  	point[2] = z;
 
       meanSurfacePoints.push_back( point );
     }
   
   this->ShapeModel->SetMeanSurfacePoints( &meanSurfacePoints );
-
   file.close(); 
 }
 
