@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
       {
       std::cout << "Eroding..." << std::endl;      
       cip::ErodeLabelMap(reader->GetOutput(), regionsVec[i], typesVec[i],
-  			 kernelRadiusX, kernelRadiusY, kernelRadiusZ );
+  			 kernelRadiusX*2, kernelRadiusY*2, kernelRadiusZ*2 );
       }
     }
   else if (open)
