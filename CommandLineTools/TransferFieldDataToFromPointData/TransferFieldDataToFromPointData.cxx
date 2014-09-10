@@ -182,6 +182,16 @@ int main( int argc, char *argv[] )
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );
     writer->SetInput( outPolyData );
+  
+    if (saveToBinary )
+    {
+      writer->SetFileTypeToBinary();
+    }
+    else
+    {
+      writer->SetFileTypeToASCII();
+    }
+  
     writer->Update();
 
   std::cout << "DONE." << std::endl;
