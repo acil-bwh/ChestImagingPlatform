@@ -169,3 +169,20 @@ SET_TARGET_PROPERTIES ( cipHelperTEST
 )
 
 ADD_TEST( cipHelperTEST cipHelperTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd )
+
+#-----------------------------------
+# cipNelderMeadSimplexOptimizerTEST
+#-----------------------------------
+PROJECT ( cipNelderMeadSimplexOptimizerTEST )
+
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
+
+ADD_EXECUTABLE( cipNelderMeadSimplexOptimizerTEST cipNelderMeadSimplexOptimizerTEST.cxx)
+TARGET_LINK_LIBRARIES( cipNelderMeadSimplexOptimizerTEST CIPCommon )
+
+SET_TARGET_PROPERTIES ( cipNelderMeadSimplexOptimizerTEST 
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
+)
+
+ADD_TEST( cipNelderMeadSimplexOptimizerTEST cipNelderMeadSimplexOptimizerTEST )
