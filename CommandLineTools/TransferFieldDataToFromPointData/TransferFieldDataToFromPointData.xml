@@ -38,7 +38,7 @@
             <label>maintainField</label>
             <channel>input</channel>
             <longflag>mf</longflag>
-            <description><![CDATA[Setting this to true will maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data. Default: True.]]></description>
+            <description><![CDATA[Setting this to true will maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data.]]></description>
             <default>true</default>
         </boolean>
 
@@ -47,7 +47,7 @@
             <label>maintainPoint</label>
             <channel>input</channel>
             <longflag>mp</longflag>
-            <description><![CDATA[Setting this to true will maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data. Default: True.]]></description>
+            <description><![CDATA[Setting this to true will maintain the point data. Setting it to false will eliminate the point data from the output. Only relevant if requesting to transfer point data to field data.]]></description>
             <default>true</default>
         </boolean>
         
@@ -59,6 +59,7 @@
             <description><![CDATA[Set to true to transfer field data to point data.]]></description>
             <default>true</default>
         </boolean>
+      
         <boolean>
             <name>pointToField</name>
             <label>pointToField</label>
@@ -67,5 +68,18 @@
             <description><![CDATA[Set to true to transfer point data to field data.]]></description>
             <default>true</default>
         </boolean>
+      
+        <boolean>
+          <name>saveToBinary</name>
+          <label>saveToBinary</label>
+          <channel>input</channel>
+          <flag>b</flag>
+          <longflag>binary</longflag>
+          <description><![CDATA[Set to true to save data to binary.]]></description>
+          <default>true</default>
+        </boolean>
+      
+      
+      
     </parameters>
 </executable>
