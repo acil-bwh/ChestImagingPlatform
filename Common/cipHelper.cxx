@@ -9,6 +9,7 @@
 */
 
 #include "cipHelper.h"
+#include "cipExceptionObject.h"
 #include "itkResampleImageFilter.h"
 #include "itkBSplineInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
@@ -403,6 +404,11 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
   cip::LabelMapType::RegionType roiPadded = 
     cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
 
+  if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
+    {
+      return;
+    }
+
   ROIType::Pointer roiExtractor = ROIType::New();
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
@@ -462,6 +468,11 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   cip::LabelMapType::RegionType roiPadded = 
     cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
 
+  if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
+    {
+      return;
+    }
+
   ROIType::Pointer roiExtractor = ROIType::New();
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
@@ -520,7 +531,12 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   // of interest. We will only want to perform the closing operation over that region for the
   // sake of speed.
   cip::LabelMapType::RegionType roiPadded = 
-    cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
+    cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX*3, kernelRadiusY*3, kernelRadiusZ*3);
+
+  if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
+    {
+      return;
+    }
 
   ROIType::Pointer roiExtractor = ROIType::New();
     roiExtractor->SetRegionOfInterest(roiPadded);
@@ -601,6 +617,11 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
   // sake of speed.
   cip::LabelMapType::RegionType roiPadded = 
     cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
+
+  if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
+    {
+      return;
+    }
 
   ROIType::Pointer roiExtractor = ROIType::New();
     roiExtractor->SetRegionOfInterest(roiPadded);
@@ -783,6 +804,19 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxReg
     start[1] = yMin;
     start[2] = zMin;
 
+  // Check that Bounding Box and Size have been set. If not, set the region
+  // size to have no extent
+  if ( xMin > xMax || yMin > yMax || zMin > zMax )
+    {
+      size[0] = 0;
+      size[1] = 0;
+      size[2] = 0;
+
+      start[0] = 0;
+      start[1] = 0;
+      start[2] = 0;
+    }
+
   cip::LabelMapType::RegionType region;
     region.SetSize(size);
     region.SetIndex(start);
@@ -796,6 +830,11 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypePaddedBounding
   // Get the bounding box region prior to padding
   cip::LabelMapType::RegionType roi = 
     cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(labelMap, region, type);
+
+  if ( roi.GetSize()[0] == 0 && roi.GetSize()[1] == 0 && roi.GetSize()[2] == 0 )
+    {
+      return roi;
+    }
 
   // Now construct the padded bounding box
   cip::LabelMapType::IndexType roiPaddedStart;

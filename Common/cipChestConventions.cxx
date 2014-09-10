@@ -1,4 +1,5 @@
 #include "cipChestConventions.h"
+#include <algorithm>
 
 cip::ChestConventions::ChestConventions()
 {

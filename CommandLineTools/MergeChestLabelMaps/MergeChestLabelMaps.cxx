@@ -44,6 +44,10 @@ int main( int argc, char *argv[] )
   itk::CIPMergeChestLabelMapsImageFilter::Pointer merger = itk::CIPMergeChestLabelMapsImageFilter::New();
     merger->SetInput( baseReader->GetOutput() );
     merger->SetOverlayImage( overlayReader->GetOutput() );
+  if ( applyUnion )
+    {
+    merger->SetUnion( true );
+    }
   for ( unsigned int i=0; i<overrideTypes.size(); i++ )
     {
     unsigned char cipType = conventions.GetChestTypeValueFromName( overrideTypes[i] );

@@ -31,18 +31,12 @@ bool cipChestRegionChestTypeLocationsIO::Read()
     return false;
     }
 
-  char wholeLine[512];
-
-  //
-  // Gobble the first (header) line
-  //
-  file.getline( wholeLine, 512 );
+  std::string wholeLineString;
+  std::getline( file, wholeLineString ); // Gobble header line
 
   while ( !file.eof() )
     {
-      file.getline( wholeLine, 512 );
-      
-      std::string wholeLineString( wholeLine );
+      std::getline( file, wholeLineString );
 
       //check if the line is empty. If so, disregard
       if(wholeLineString.length() > 1)

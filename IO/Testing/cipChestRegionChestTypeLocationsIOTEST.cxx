@@ -1,4 +1,5 @@
 #include "cipChestRegionChestTypeLocationsIO.h"
+#include "cipExceptionObject.h"
 #include <algorithm>
 
 int main( int argc, char* argv[] )
@@ -10,336 +11,344 @@ int main( int argc, char* argv[] )
 
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {117.071, -205.229, -261}; gtPoints.push_back( tmp );}
+  double tmp00[3] = {117.071, -205.229, -261}; gtPoints.push_back( tmp00 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {117.071, -198.977, -238}; gtPoints.push_back( tmp );}
+  double tmp01[3] = {117.071, -198.977, -238}; gtPoints.push_back( tmp01 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {117.071, -179.653, -207.5}; gtPoints.push_back( tmp );}
+  double tmp02[3] = {117.071, -179.653, -207.5}; gtPoints.push_back( tmp02 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {117.071, -154.077, -180.5}; gtPoints.push_back( tmp );}
+  double tmp03[3] = {117.071, -154.077, -180.5}; gtPoints.push_back( tmp03 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {117.071, -120.544, -147.5}; gtPoints.push_back( tmp );}
+  double tmp04[3] = {117.071, -120.544, -147.5}; gtPoints.push_back( tmp04 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {107.409, -214.323, -276}; gtPoints.push_back( tmp );}
+  double tmp05[3] = {107.409, -214.323, -276}; gtPoints.push_back( tmp05 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {107.409, -196.136, -238}; gtPoints.push_back( tmp );}
+  double tmp06[3] = {107.409, -196.136, -238}; gtPoints.push_back( tmp06 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {107.409, -163.171, -190.5}; gtPoints.push_back( tmp );}
+  double tmp07[3] = {107.409, -163.171, -190.5}; gtPoints.push_back( tmp07 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {107.409, -118.271, -144.5}; gtPoints.push_back( tmp );}
+  double tmp08[3] = {107.409, -118.271, -144.5}; gtPoints.push_back( tmp08 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {107.409, -100.651, -128}; gtPoints.push_back( tmp );}
+  double tmp09[3] = {107.409, -100.651, -128}; gtPoints.push_back( tmp09 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {88.0846, -200.114, -255.5}; gtPoints.push_back( tmp );}
+  double tmp10[3] = {88.0846, -200.114, -255.5}; gtPoints.push_back( tmp10 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {88.0846, -181.927, -232.5}; gtPoints.push_back( tmp );}
+  double tmp11[3] = {88.0846, -181.927, -232.5}; gtPoints.push_back( tmp11 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {88.0846, -177.948, -223.5}; gtPoints.push_back( tmp );}
+  double tmp12[3] = {88.0846, -177.948, -223.5}; gtPoints.push_back( tmp12 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {88.0846, -127.933, -149.5}; gtPoints.push_back( tmp );}
+  double tmp13[3] = {88.0846, -127.933, -149.5}; gtPoints.push_back( tmp13 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {88.0846, -105.767, -127.5}; gtPoints.push_back( tmp );}
+  double tmp14[3] = {88.0846, -105.767, -127.5}; gtPoints.push_back( tmp14 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {88.0846, -83.6006, -105}; gtPoints.push_back( tmp );}
+  double tmp15[3] = {88.0846, -83.6006, -105}; gtPoints.push_back( tmp15 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {78.4225, -189.315, -247.5}; gtPoints.push_back( tmp );}
+  double tmp16[3] = {78.4225, -189.315, -247.5}; gtPoints.push_back( tmp16 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {78.4225, -176.811, -228}; gtPoints.push_back( tmp );}
+  double tmp17[3] = {78.4225, -176.811, -228}; gtPoints.push_back( tmp17 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {78.4225, -130.206, -155.5}; gtPoints.push_back( tmp );}
+  double tmp18[3] = {78.4225, -130.206, -155.5}; gtPoints.push_back( tmp18 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {78.4225, -125.659, -143}; gtPoints.push_back( tmp );}
+  double tmp19[3] = {78.4225, -125.659, -143}; gtPoints.push_back( tmp19 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {78.4225, -106.903, -127}; gtPoints.push_back( tmp );}
+  double tmp20[3] = {78.4225, -106.903, -127}; gtPoints.push_back( tmp20 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {78.4225, -76.2119, -95.5}; gtPoints.push_back( tmp );}
+  double tmp21[3] = {78.4225, -76.2119, -95.5}; gtPoints.push_back( tmp21 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {67.6237, -123.954, -141}; gtPoints.push_back( tmp );}
+  double tmp22[3] = {67.6237, -123.954, -141}; gtPoints.push_back( tmp22 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {67.6237, -101.22, -117}; gtPoints.push_back( tmp );}
+  double tmp23[3] = {67.6237, -101.22, -117}; gtPoints.push_back( tmp23 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {67.6237, -73.3701, -87.5}; gtPoints.push_back( tmp );}
+  double tmp24[3] = {67.6237, -73.3701, -87.5}; gtPoints.push_back( tmp24 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {57.3932, -126.796, -144}; gtPoints.push_back( tmp );}
+  double tmp25[3] = {57.3932, -126.796, -144}; gtPoints.push_back( tmp25 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {57.3932, -112.019, -127.5}; gtPoints.push_back( tmp );}
+  double tmp26[3] = {57.3932, -112.019, -127.5}; gtPoints.push_back( tmp26 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {57.3932, -90.9893, -103.5}; gtPoints.push_back( tmp );}
+  double tmp27[3] = {57.3932, -90.9893, -103.5}; gtPoints.push_back( tmp27 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {57.3932, -75.0752, -81.5}; gtPoints.push_back( tmp );}
+  double tmp28[3] = {57.3932, -75.0752, -81.5}; gtPoints.push_back( tmp28 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {45.4577, -126.228, -137.5}; gtPoints.push_back( tmp );}
+  double tmp29[3] = {45.4577, -126.228, -137.5}; gtPoints.push_back( tmp29 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {45.4577, -119.407, -129}; gtPoints.push_back( tmp );}
+  double tmp30[3] = {45.4577, -119.407, -129}; gtPoints.push_back( tmp30 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {45.4577, -97.2412, -108.5}; gtPoints.push_back( tmp );}
+  double tmp31[3] = {45.4577, -97.2412, -108.5}; gtPoints.push_back( tmp31 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {45.4577, -75.6436, -81}; gtPoints.push_back( tmp );}
+  double tmp32[3] = {45.4577, -75.6436, -81}; gtPoints.push_back( tmp32 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {36.9323, -123.954, -126}; gtPoints.push_back( tmp );}
+  double tmp33[3] = {36.9323, -123.954, -126}; gtPoints.push_back( tmp33 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {36.9323, -105.767, -116}; gtPoints.push_back( tmp );}
+  double tmp34[3] = {36.9323, -105.767, -116}; gtPoints.push_back( tmp34 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {36.9323, -88.1475, -95}; gtPoints.push_back( tmp );}
+  double tmp35[3] = {36.9323, -88.1475, -95}; gtPoints.push_back( tmp35 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {36.9323, -77.917, -81}; gtPoints.push_back( tmp );}
+  double tmp36[3] = {36.9323, -77.917, -81}; gtPoints.push_back( tmp36 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {25.5651, -105.198, -108.5}; gtPoints.push_back( tmp );}
+  double tmp37[3] = {25.5651, -105.198, -108.5}; gtPoints.push_back( tmp37 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {25.5651, -95.5361, -96}; gtPoints.push_back( tmp );}
+  double tmp38[3] = {25.5651, -95.5361, -96}; gtPoints.push_back( tmp38 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {25.5651, -85.874, -82.5}; gtPoints.push_back( tmp );}
+  double tmp39[3] = {25.5651, -85.874, -82.5}; gtPoints.push_back( tmp39 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {13.0612, -109.745, -104}; gtPoints.push_back( tmp );}
+  double tmp40[3] = {13.0612, -109.745, -104}; gtPoints.push_back( tmp40 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {13.0612, -104.63, -98}; gtPoints.push_back( tmp );}
+  double tmp41[3] = {13.0612, -104.63, -98}; gtPoints.push_back( tmp41 );
   gtRegions.push_back( 3 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {13.0612, -100.651, -92}; gtPoints.push_back( tmp );}
+  double tmp42[3] = {13.0612, -100.651, -92}; gtPoints.push_back( tmp42 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-113.683, -181.358, -188}; gtPoints.push_back( tmp );}
+  double tmp43[3] = {-113.683, -181.358, -188}; gtPoints.push_back( tmp43 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-113.683, -163.171, -172}; gtPoints.push_back( tmp );}
+  double tmp44[3] = {-113.683, -163.171, -172}; gtPoints.push_back( tmp44 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-113.683, -141.005, -155}; gtPoints.push_back( tmp );}
+  double tmp45[3] = {-113.683, -141.005, -155}; gtPoints.push_back( tmp45 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-113.683, -118.839, -140.5}; gtPoints.push_back( tmp );}
+  double tmp46[3] = {-113.683, -118.839, -140.5}; gtPoints.push_back( tmp46 );
   gtRegions.push_back( 0 );
   gtTypes.push_back( 0 );
-  {double tmp[3] = {-113.683, -108.04, -136.5}; gtPoints.push_back( tmp );}
+  double tmp47[3] = {-113.683, -108.04, -136.5}; gtPoints.push_back( tmp47 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-104.021, -202.388, -210}; gtPoints.push_back( tmp );}
+  double tmp48[3] = {-104.021, -202.388, -210}; gtPoints.push_back( tmp48 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-104.021, -176.243, -184.5}; gtPoints.push_back( tmp );}
+  double tmp49[3] = {-104.021, -176.243, -184.5}; gtPoints.push_back( tmp49 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-104.021, -143.847, -156.5}; gtPoints.push_back( tmp );}
+  double tmp50[3] = {-104.021, -143.847, -156.5}; gtPoints.push_back( tmp50 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-104.021, -118.839, -138}; gtPoints.push_back( tmp );}
+  double tmp51[3] = {-104.021, -118.839, -138}; gtPoints.push_back( tmp51 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-104.021, -93.2627, -127}; gtPoints.push_back( tmp );}
+  double tmp52[3] = {-104.021, -93.2627, -127}; gtPoints.push_back( tmp52 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-86.9699, -220.007, -244.5}; gtPoints.push_back( tmp );}
+  double tmp53[3] = {-86.9699, -220.007, -244.5}; gtPoints.push_back( tmp53 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-86.9699, -200.683, -216}; gtPoints.push_back( tmp );}
+  double tmp54[3] = {-86.9699, -200.683, -216}; gtPoints.push_back( tmp54 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-86.9699, -160.329, -174.5}; gtPoints.push_back( tmp );}
+  double tmp55[3] = {-86.9699, -160.329, -174.5}; gtPoints.push_back( tmp55 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-86.9699, -125.659, -143}; gtPoints.push_back( tmp );}
+  double tmp56[3] = {-86.9699, -125.659, -143}; gtPoints.push_back( tmp56 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-86.9699, -98.3779, -125.5}; gtPoints.push_back( tmp );}
+  double tmp57[3] = {-86.9699, -98.3779, -125.5}; gtPoints.push_back( tmp57 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-86.9699, -75.0752, -113}; gtPoints.push_back( tmp );}
+  double tmp58[3] = {-86.9699, -75.0752, -113}; gtPoints.push_back( tmp58 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-74.466, -218.302, -247.5}; gtPoints.push_back( tmp );}
+  double tmp59[3] = {-74.466, -218.302, -247.5}; gtPoints.push_back( tmp59 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-74.466, -166.013, -184}; gtPoints.push_back( tmp );}
+  double tmp60[3] = {-74.466, -166.013, -184}; gtPoints.push_back( tmp60 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-74.466, -121.681, -139.5}; gtPoints.push_back( tmp );}
+  double tmp61[3] = {-74.466, -121.681, -139.5}; gtPoints.push_back( tmp61 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-74.466, -83.6006, -115.5}; gtPoints.push_back( tmp );}
+  double tmp62[3] = {-74.466, -83.6006, -115.5}; gtPoints.push_back( tmp62 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-74.466, -69.96, -107.5}; gtPoints.push_back( tmp );}
+  double tmp63[3] = {-74.466, -69.96, -107.5}; gtPoints.push_back( tmp63 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-64.2356, -204.661, -237}; gtPoints.push_back( tmp );}
+  double tmp64[3] = {-64.2356, -204.661, -237}; gtPoints.push_back( tmp64 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-64.2356, -178.517, -204}; gtPoints.push_back( tmp );}
+  double tmp65[3] = {-64.2356, -178.517, -204}; gtPoints.push_back( tmp65 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-64.2356, -148.962, -170}; gtPoints.push_back( tmp );}
+  double tmp66[3] = {-64.2356, -148.962, -170}; gtPoints.push_back( tmp66 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-64.2356, -128.501, -145.5}; gtPoints.push_back( tmp );}
+  double tmp67[3] = {-64.2356, -128.501, -145.5}; gtPoints.push_back( tmp67 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-64.2356, -106.903, -128}; gtPoints.push_back( tmp );}
+  double tmp68[3] = {-64.2356, -106.903, -128}; gtPoints.push_back( tmp68 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-64.2356, -81.3272, -113.5}; gtPoints.push_back( tmp );}
+  double tmp69[3] = {-64.2356, -81.3272, -113.5}; gtPoints.push_back( tmp69 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-64.2356, -67.6866, -103}; gtPoints.push_back( tmp );}
+  double tmp70[3] = {-64.2356, -67.6866, -103}; gtPoints.push_back( tmp70 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -204.093, -235}; gtPoints.push_back( tmp );}
+  double tmp71[3] = {-55.7102, -204.093, -235}; gtPoints.push_back( tmp71 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -175.106, -201.5}; gtPoints.push_back( tmp );}
+  double tmp72[3] = {-55.7102, -175.106, -201.5}; gtPoints.push_back( tmp72 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -150.099, -173.5}; gtPoints.push_back( tmp );}
+  double tmp73[3] = {-55.7102, -150.099, -173.5}; gtPoints.push_back( tmp73 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -135.321, -151}; gtPoints.push_back( tmp );}
+  double tmp74[3] = {-55.7102, -135.321, -151}; gtPoints.push_back( tmp74 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -117.702, -132}; gtPoints.push_back( tmp );}
+  double tmp75[3] = {-55.7102, -117.702, -132}; gtPoints.push_back( tmp75 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -90.4209, -117}; gtPoints.push_back( tmp );}
+  double tmp76[3] = {-55.7102, -90.4209, -117}; gtPoints.push_back( tmp76 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -72.8018, -108}; gtPoints.push_back( tmp );}
+  double tmp77[3] = {-55.7102, -72.8018, -108}; gtPoints.push_back( tmp77 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-55.7102, -68.2549, -101}; gtPoints.push_back( tmp );}
+  double tmp78[3] = {-55.7102, -68.2549, -101}; gtPoints.push_back( tmp78 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-43.7747, -201.251, -234}; gtPoints.push_back( tmp );}
+  double tmp79[3] = {-43.7747, -201.251, -234}; gtPoints.push_back( tmp79 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-43.7747, -180.79, -214.5}; gtPoints.push_back( tmp );}
+  double tmp80[3] = {-43.7747, -180.79, -214.5}; gtPoints.push_back( tmp80 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-43.7747, -158.624, -180}; gtPoints.push_back( tmp );}
+  double tmp81[3] = {-43.7747, -158.624, -180}; gtPoints.push_back( tmp81 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-43.7747, -119.407, -131}; gtPoints.push_back( tmp );}
+  double tmp82[3] = {-43.7747, -119.407, -131}; gtPoints.push_back( tmp82 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-43.7747, -100.651, -118}; gtPoints.push_back( tmp );}
+  double tmp83[3] = {-43.7747, -100.651, -118}; gtPoints.push_back( tmp83 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-43.7747, -83.0322, -110.5}; gtPoints.push_back( tmp );}
+  double tmp84[3] = {-43.7747, -83.0322, -110.5}; gtPoints.push_back( tmp84 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-43.7747, -72.2334, -104.5}; gtPoints.push_back( tmp );}
+  double tmp85[3] = {-43.7747, -72.2334, -104.5}; gtPoints.push_back( tmp85 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-34.1126, -174.538, -204.5}; gtPoints.push_back( tmp );}
+  double tmp86[3] = {-34.1126, -174.538, -204.5}; gtPoints.push_back( tmp86 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-34.1126, -163.171, -185}; gtPoints.push_back( tmp );}
+  double tmp87[3] = {-34.1126, -163.171, -185}; gtPoints.push_back( tmp87 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-112.546, -151.235, -116}; gtPoints.push_back( tmp );}
+  double tmp88[3] = {-112.546, -151.235, -116}; gtPoints.push_back( tmp88 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-112.546, -137.026, -122.5}; gtPoints.push_back( tmp );}
+  double tmp89[3] = {-112.546, -137.026, -122.5}; gtPoints.push_back( tmp89 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-112.546, -119.976, -140}; gtPoints.push_back( tmp );}
+  double tmp90[3] = {-112.546, -119.976, -140}; gtPoints.push_back( tmp90 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-105.157, -169.423, -111}; gtPoints.push_back( tmp );}
+  double tmp91[3] = {-105.157, -169.423, -111}; gtPoints.push_back( tmp91 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-105.157, -150.099, -117}; gtPoints.push_back( tmp );}
+  double tmp92[3] = {-105.157, -150.099, -117}; gtPoints.push_back( tmp92 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-105.157, -139.3, -122.5}; gtPoints.push_back( tmp );}
+  double tmp93[3] = {-105.157, -139.3, -122.5}; gtPoints.push_back( tmp93 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-105.157, -120.544, -139}; gtPoints.push_back( tmp );}
+  double tmp94[3] = {-105.157, -120.544, -139}; gtPoints.push_back( tmp94 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-96.0637, -179.653, -107}; gtPoints.push_back( tmp );}
+  double tmp95[3] = {-96.0637, -179.653, -107}; gtPoints.push_back( tmp95 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-96.0637, -150.667, -119.5}; gtPoints.push_back( tmp );}
+  double tmp96[3] = {-96.0637, -150.667, -119.5}; gtPoints.push_back( tmp96 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-96.0637, -143.278, -122}; gtPoints.push_back( tmp );}
+  double tmp97[3] = {-96.0637, -143.278, -122}; gtPoints.push_back( tmp97 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 8 );
-  {double tmp[3] = {-96.0637, -123.954, -141}; gtPoints.push_back( tmp );}
+  double tmp98[3] = {-96.0637, -123.954, -141}; gtPoints.push_back( tmp98 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-86.9699, -186.474, -104.5}; gtPoints.push_back( tmp );}
+  double tmp99[3] = {-86.9699, -186.474, -104.5}; gtPoints.push_back( tmp99 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-86.9699, -176.811, -107}; gtPoints.push_back( tmp );}
+  double tmp100[3] = {-86.9699, -176.811, -107}; gtPoints.push_back( tmp100 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-86.9699, -162.034, -119.5}; gtPoints.push_back( tmp );}
+  double tmp101[3] = {-86.9699, -162.034, -119.5}; gtPoints.push_back( tmp101 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-86.9699, -133.616, -139}; gtPoints.push_back( tmp );}
+  double tmp102[3] = {-86.9699, -133.616, -139}; gtPoints.push_back( tmp102 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-86.9699, -127.364, -143}; gtPoints.push_back( tmp );}
+  double tmp103[3] = {-86.9699, -127.364, -143}; gtPoints.push_back( tmp103 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-91.5168, -182.495, -105.5}; gtPoints.push_back( tmp );}
+  double tmp104[3] = {-91.5168, -182.495, -105.5}; gtPoints.push_back( tmp104 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-91.5168, -161.466, -117}; gtPoints.push_back( tmp );}
+  double tmp105[3] = {-91.5168, -161.466, -117}; gtPoints.push_back( tmp105 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-91.5168, -143.847, -122.5}; gtPoints.push_back( tmp );}
+  double tmp106[3] = {-91.5168, -143.847, -122.5}; gtPoints.push_back( tmp106 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-91.5168, -129.069, -138}; gtPoints.push_back( tmp );}
+  double tmp107[3] = {-91.5168, -129.069, -138}; gtPoints.push_back( tmp107 );
   gtRegions.push_back( 2 );
   gtTypes.push_back( 9 );
-  {double tmp[3] = {-91.5168, -125.091, -141.5}; gtPoints.push_back( tmp );}
+  double tmp108[3] = {-91.5168, -125.091, -141.5}; gtPoints.push_back( tmp108 );
     
   std::cout << "Reading region and type points file..." << std::endl;
   cipChestRegionChestTypeLocationsIO regionsTypesIO;
     regionsTypesIO.SetFileName( argv[1] );
+  try
+    {
     regionsTypesIO.Read();
+    }
+  catch ( cip::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught reading image:";
+    std::cerr << excp << std::endl;
+    }
 
   for ( unsigned int i=0; i<regionsTypesIO.GetOutput()->GetNumberOfTuples(); i++ )
     {      
