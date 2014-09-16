@@ -4,8 +4,6 @@
 
 int main( int argc, char* argv[] )
 {
-  // Give the reader a bogus file name. An exception should be thrown,
-  // otherwise the test fails.
   std::cout << "Reading lobe surface model..." << std::endl;
   cip::LobeSurfaceModelIO leftModelReader;
     leftModelReader.SetFileName( argv[1] );

@@ -1,0 +1,20 @@
+PROJECT ( GenerateLobeSurfaceModelsTEST )
+
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/CommandLineTools/GenerateLobeSurfaceModels )
+
+ADD_EXECUTABLE( GenerateLobeSurfaceModelsTEST GenerateLobeSurfaceModelsTEST.cxx)
+
+TARGET_LINK_LIBRARIES( GenerateLobeSurfaceModelsTEST   
+  ${VTK_LIBRARIES} 
+  ${ITK_LIBRARIES} 
+  CIPCommon
+  CIPIO
+  GenerateLobeSurfaceModelsHelper )
+
+SET_TARGET_PROPERTIES ( GenerateLobeSurfaceModelsTEST
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/CommandLineTools/GenerateLobeSurfaceModels/Testing"
+)
+
+ADD_TEST( GenerateLobeSurfaceModelsTEST GenerateLobeSurfaceModelsTEST )
+
