@@ -82,6 +82,7 @@
 #include "cipVesselParticleConnectedComponentFilter.h"
 #include "itkNumericTraits.h"
 #include "cipChestConventions.h"
+#include "cipHelper.h"
 #include "FilterVesselParticleDataCLP.h"
 
 int main( int argc, char *argv[] )
@@ -92,6 +93,9 @@ int main( int argc, char *argv[] )
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
     reader->SetFileName( inParticlesFileName.c_str() );
     reader->Update();
+
+  std::cout << "Asserting chest-region chest-type existence..." << std::endl;
+  cip::AssertChestRegionChestTypeArrayExistence( reader->GetOutput() );
 
   std::cout << "Filtering particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
