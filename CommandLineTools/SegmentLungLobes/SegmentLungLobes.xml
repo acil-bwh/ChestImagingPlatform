@@ -45,9 +45,29 @@
       <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
       <default>NA</default>
     </image>
-    </parameters>
+
+    <string>
+      <name>leftShapeModelFileName</name>
+      <label>Left lung lobes shape model file name</label>
+      <channel>input</channel>
+      <longflag>--lm</longflag>
+      <description><![CDATA[File name of shape model describing the boundary between the lobes \
+      in the left lung.]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>rightShapeModelFileName</name>
+      <label>Right lung lobes shape model file name</label>
+      <channel>input</channel>
+      <longflag>--rm</longflag>
+      <description><![CDATA[File name of shape model describing the boundaries between the lobes \
+      in the right lung.]]></description>
+      <default>NA</default>
+    </string>  
+  </parameters>
   
-    <parameters>
+  <parameters>
     <label>Fiducial Points</label>
     <description><![CDATA[Fiducials points along the fissures]]></description>
     <point multiple="true" coordinateSystem="ras">

@@ -43,6 +43,24 @@ public:
   /** Get surface points weighted according to the mode weights */
   std::vector< double* > const* GetWeightedSurfacePoints();
 
+  /** Get the mean right horizontal surface points. Assumes that 
+   *  the shape model corresponds to the right lung. */
+  std::vector< double* > const* GetMeanRightHorizontalSurfacePoints();
+
+  /** Get the mean right oblique surface points. Assumes that 
+   *  the shape model corresponds to the right lung. */
+  std::vector< double* > const* GetMeanRightObliqueSurfacePoints();
+
+  /** Get right horizontal surface points weighted according to the 
+   *  mode weights. Assumes that the shape model corresponds to the
+   *  right lung. */
+  std::vector< double* > const* GetRightHorizontalWeightedSurfacePoints();
+
+  /** Get right oblique surface points weighted according to the 
+   *  mode weights. Assumes that the shape model corresponds to the
+   *  right lung. */
+  std::vector< double* > const* GetRightObliqueWeightedSurfacePoints();
+
   /** */
   void SetEigenvalues( std::vector< double > const* );
   std::vector< double > const* GetEigenvalues() const;
@@ -60,8 +78,20 @@ public:
   void         SetNumberOfModes( unsigned int );
   unsigned int GetNumberOfModes() const;
 
+  /** Set/Get whether the surface model corresponds to the right lung. 
+   *  False by default */
+  void SetRightLungSurfaceModel( bool );
+  bool GetRightLungSurfaceModel();
+
+  /** Set/Get whether the surface model corresponds to the left lung. 
+   *  True by default */
+  void SetLeftLungSurfaceModel( bool );
+  bool GetLeftLungSurfaceModel();
+
 private:
   void ComputeWeightedSurfacePoints();
+  void ComputeRightHorizontalWeightedSurfacePoints();
+  void ComputeRightObliqueWeightedSurfacePoints();
 
   //
   // The origin and spacing are of the image from which the shape
@@ -80,6 +110,8 @@ private:
   // (physical coordinates). The mean is calculated from PCA.
   //
   std::vector< double* > MeanSurfacePoints;
+  std::vector< double* > MeanRightHorizontalSurfacePoints;
+  std::vector< double* > MeanRightObliqueSurfacePoints;
 
   //
   // The weighted surface points correspond to the mean surface points 
@@ -87,6 +119,9 @@ private:
   // principle components
   // 
   std::vector< double* > WeightedSurfacePoints;
+  std::vector< double* > LeftObliqueWeightedSurfacePoints;
+  std::vector< double* > RightObliqueWeightedSurfacePoints;
+  std::vector< double* > RightHorizontalWeightedSurfacePoints;
 
   //
   // The eigenvalues and eigenvectors derived from PCA
@@ -105,6 +140,9 @@ private:
   // The number of modes from PCA
   //
   unsigned int NumberOfModes;
+
+  bool IsRightLungSurfaceModel;
+  bool IsLeftLungSurfaceModel;
 };
 
 #endif

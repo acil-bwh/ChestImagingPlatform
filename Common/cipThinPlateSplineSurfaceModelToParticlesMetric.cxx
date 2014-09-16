@@ -59,6 +59,7 @@ void cipThinPlateSplineSurfaceModelToParticlesMetric::SetVesselParticles( vtkPol
 {
   this->VesselParticles = particles;
   this->NumberOfVesselParticles = this->VesselParticles->GetNumberOfPoints();
+  std::cout << "SETTING:\t" << this->NumberOfVesselParticles << std::endl;
 
   // If no particle weights have already been specified, set each
   // particle to have equal, unity weight
@@ -149,8 +150,6 @@ void cipThinPlateSplineSurfaceModelToParticlesMetric::SetMeanSurfacePoints( cons
     this->SurfacePoints.push_back( surfacePoint );
     }
 }
-
-
 
 void cipThinPlateSplineSurfaceModelToParticlesMetric::SetEigenvectorAndEigenvalue( const std::vector< double >* const eigenvector, 
                                                                                   double eigenvalue ) 

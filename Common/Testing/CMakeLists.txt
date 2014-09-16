@@ -186,3 +186,20 @@ SET_TARGET_PROPERTIES ( cipNelderMeadSimplexOptimizerTEST
 )
 
 ADD_TEST( cipNelderMeadSimplexOptimizerTEST cipNelderMeadSimplexOptimizerTEST )
+
+#-----------------------------------
+# cipLobeSurfaceModelTEST
+#-----------------------------------
+PROJECT ( cipLobeSurfaceModelTEST )
+
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
+
+ADD_EXECUTABLE( cipLobeSurfaceModelTEST cipLobeSurfaceModelTEST.cxx)
+TARGET_LINK_LIBRARIES( cipLobeSurfaceModelTEST CIPCommon CIPIO )
+
+SET_TARGET_PROPERTIES ( cipLobeSurfaceModelTEST 
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
+)
+
+ADD_TEST( cipLobeSurfaceModelTEST cipLobeSurfaceModelTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/Case000_rightLungLobesShapeModel.csv )

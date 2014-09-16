@@ -4,8 +4,11 @@ PROJECT( GenerateLobeSurfaceModels )
 
 SET ( MODULE_NAME GenerateLobeSurfaceModels )
 
+ADD_LIBRARY( GenerateLobeSurfaceModelsHelper GenerateLobeSurfaceModelsHelper.cxx )
+
 SET ( MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
+  GenerateLobeSurfaceModelsHelper
   )
 
 SET ( MODULE_SRCS GenerateLobeSurfaceModels.cxx )
@@ -17,4 +20,7 @@ cipMacroBuildCLI(
     SRCS ${MODULE_SRCS}
     )
 
+IF ( CIP_BUILD_TESTING )
+  SUBDIRS ( Testing )
+ENDIF( CIP_BUILD_TESTING ) 
 

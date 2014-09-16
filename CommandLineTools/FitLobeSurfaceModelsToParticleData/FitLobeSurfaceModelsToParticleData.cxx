@@ -30,6 +30,8 @@ int main( int argc, char *argv[] )
     leftMetric->SetVesselSigmaTheta( vesselSigmaTheta );
     leftMetric->SetAirwaySigmaDistance( airwaySigmaDistance );
     leftMetric->SetAirwaySigmaTheta( airwaySigmaTheta );
+    leftMetric->SetFissureTermWeight( 5.0 ); // Make fissures much more "important"
+    leftMetric->SetVesselTermWeight( 1.0 );
 
   cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric* rightMetric = 
     new cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric();
@@ -39,6 +41,8 @@ int main( int argc, char *argv[] )
     rightMetric->SetVesselSigmaTheta( vesselSigmaTheta );
     rightMetric->SetAirwaySigmaDistance( airwaySigmaDistance );
     rightMetric->SetAirwaySigmaTheta( airwaySigmaTheta );
+    rightMetric->SetFissureTermWeight( 5.0 ); // Make fissures much more "important"
+    rightMetric->SetVesselTermWeight( 1.0 );
 
   if ( leftFissureParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -107,7 +111,7 @@ int main( int argc, char *argv[] )
       leftModelIO->Read();
       leftMetric->SetMeanSurfacePoints( leftModelIO->GetOutput()->GetMeanSurfacePoints() );
 
-      while ( leftWeightAccumulator < 0.9 )
+      while ( leftWeightAccumulator < 0.99 && numberLeftModesUsed < 10 )
 	{      
 	  leftMetric->SetEigenvectorAndEigenvalue( &(*leftModelIO->GetOutput()->GetEigenvectors())[numberLeftModesUsed],       
 						   (*leftModelIO->GetOutput()->GetEigenvalues())[numberLeftModesUsed] );      
@@ -128,10 +132,10 @@ int main( int argc, char *argv[] )
       std::cout << "Reading right surface model..." << std::endl;
       rightModelIO->SetFileName( inRightModelFileName );
       rightModelIO->Read();
-
+      rightModelIO->GetOutput()->SetRightLungSurfaceModel( true );
       rightMetric->SetMeanSurfacePoints( rightModelIO->GetOutput()->GetMeanSurfacePoints() );
 
-      while ( rightWeightAccumulator < 0.9 )
+      while ( rightWeightAccumulator < 0.99 && numberRightModesUsed < 10 )
 	{      
 	  rightMetric->SetEigenvectorAndEigenvalue( &(*rightModelIO->GetOutput()->GetEigenvectors())[numberRightModesUsed],       
 						   (*rightModelIO->GetOutput()->GetEigenvalues())[numberRightModesUsed] );      
@@ -163,29 +167,22 @@ int main( int argc, char *argv[] )
 
       std::cout << "Executing Nelder-Mead optimizer (left lung)..." << std::endl;
       cipNelderMeadSimplexOptimizer* leftOptimizer = new cipNelderMeadSimplexOptimizer( numberLeftModesUsed );
-	std::cout << "a" << std::endl;
         leftOptimizer->SetInitialParameters( leftInitialParameters );
-	std::cout << "b" << std::endl;
 	leftOptimizer->SetMetric( leftMetric );
-	std::cout << "c" << std::endl;
 	leftOptimizer->SetNumberOfIterations( numIters );
-	std::cout << "d" << std::endl;
+	leftOptimizer->SetInitialSimplexEdgeLength( 3.0 );
 	leftOptimizer->Update();
-	std::cout << "e" << std::endl;
 	leftOptimizer->GetOptimalParameters( leftOptimalParameters );
-	std::cout << "1" << std::endl;
       for ( unsigned int i=0; i<numberLeftModesUsed; i++ )
 	{
 	  (*leftModelIO->GetOutput()->GetModeWeights())[i] = leftOptimalParameters[i];
 	}
-	std::cout << "2" << std::endl;
       if ( outLeftModelFileName.compare( "NA" ) != 0 )
 	{
 	  std::cout << "Writing shape model to file (left lung)..." << std::endl;
 	  leftModelIO->SetFileName( outLeftModelFileName );
 	  leftModelIO->Write();
 	}
-	std::cout << "3" << std::endl;
     }
 
   // Now optimize the right surface model to fit the provided particles.
@@ -211,14 +208,13 @@ int main( int argc, char *argv[] )
         rightOptimizer->SetInitialParameters( rightInitialParameters );
 	rightOptimizer->SetMetric( rightMetric );
 	rightOptimizer->SetNumberOfIterations( numIters );
+	rightOptimizer->SetInitialSimplexEdgeLength( 3.0 );
 	rightOptimizer->Update();
 	rightOptimizer->GetOptimalParameters( rightOptimalParameters );
-
       for ( unsigned int i=0; i<numberRightModesUsed; i++ )
 	{
 	  (*rightModelIO->GetOutput()->GetModeWeights())[i] = rightOptimalParameters[i];
 	}
-
       if ( outRightModelFileName.compare( "NA" ) != 0 )
 	{
 	  std::cout << "Writing shape model to file (right lung)..." << std::endl;

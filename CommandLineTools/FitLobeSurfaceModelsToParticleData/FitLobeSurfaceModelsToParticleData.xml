@@ -118,7 +118,7 @@
       <description>Shape variance threshold. This indicates how much of \
       the variance you want accounted for during the shape model fitting process</description>
       <label>Shape Variance Threshold</label>
-      <default>0.95</default>
+      <default>0.99</default>
     </double>
 
     <double>
@@ -126,7 +126,7 @@
       <longflag>fd</longflag>
       <description>Fissure sigma distance value for the TPS to particles optimization</description>
       <label>Fissure Sigma Distance</label>
-      <default>20.0</default>
+      <default>5.0</default>
     </double>
 
     <double>
@@ -134,7 +134,7 @@
       <longflag>vd</longflag>
       <description>Vessel sigma distance value for the TPS to particles optimization</description>
       <label>Vessel Sigma Distance</label>
-      <default>20.0</default>
+      <default>5.0</default>
     </double>
 
     <double>
@@ -142,7 +142,7 @@
       <longflag>ad</longflag>
       <description>Airway sigma distance value for the TPS to particles optimization</description>
       <label>Aissure Sigma Distance</label>
-      <default>20.0</default>
+      <default>5.0</default>
     </double>
 
     <double>

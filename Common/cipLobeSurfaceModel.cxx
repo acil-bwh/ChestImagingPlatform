@@ -3,6 +3,7 @@
  */
 
 #include "cipLobeSurfaceModel.h"
+#include "cipExceptionObject.h"
 #include "vnl/vnl_math.h"
 #include <iostream>
 
@@ -10,6 +11,9 @@ cipLobeSurfaceModel::cipLobeSurfaceModel()
 {
   this->ImageOrigin  = new double[3];
   this->ImageSpacing = new double[3];
+
+  this->IsRightLungSurfaceModel = false;
+  this->IsLeftLungSurfaceModel = true;
 }
 
 
@@ -19,12 +23,38 @@ cipLobeSurfaceModel::~cipLobeSurfaceModel()
   delete[] this->ImageSpacing;
 
   this->MeanSurfacePoints.clear();
+  this->MeanRightHorizontalSurfacePoints.clear();
+  this->MeanRightObliqueSurfacePoints.clear();
   this->WeightedSurfacePoints.clear();
+  this->LeftObliqueWeightedSurfacePoints.clear();
+  this->RightObliqueWeightedSurfacePoints.clear();
+  this->RightHorizontalWeightedSurfacePoints.clear();
   this->Eigenvalues.clear();
   this->Eigenvectors.clear();
   this->ModeWeights.clear();
 }
 
+void cipLobeSurfaceModel::SetRightLungSurfaceModel( bool isRightLung )
+{
+  this->IsRightLungSurfaceModel = isRightLung;
+  this->IsLeftLungSurfaceModel  = !isRightLung;
+}
+
+void cipLobeSurfaceModel::SetLeftLungSurfaceModel( bool isLeftLung )
+{
+  this->IsRightLungSurfaceModel = !isLeftLung;
+  this->IsLeftLungSurfaceModel  = isLeftLung;
+}
+
+bool cipLobeSurfaceModel::GetRightLungSurfaceModel()
+{
+  return this->IsRightLungSurfaceModel;
+}
+
+bool cipLobeSurfaceModel::GetLeftLungSurfaceModel()
+{
+  return this->IsLeftLungSurfaceModel;
+}
 
 void cipLobeSurfaceModel::SetImageOrigin( double const* origin )
 {
@@ -87,6 +117,56 @@ std::vector< double* > const* cipLobeSurfaceModel::GetMeanSurfacePoints() const
   return &this->MeanSurfacePoints;
 }
 
+std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightObliqueSurfacePoints()
+{
+ if ( !this->IsRightLungSurfaceModel )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipLobeSurfaceModel::GetMeanRightObliqueSurfacePoints()", 
+				  "Requested mean right oblique surface points, but shape model is not right lung" );
+    }
+
+  this->MeanRightObliqueSurfacePoints.clear();
+
+  for ( unsigned int i=0; i<this->MeanSurfacePoints.size()/2; i++ )
+    {
+      double* point = new double[3];
+        point[0] = this->MeanSurfacePoints[i][0];
+	point[1] = this->MeanSurfacePoints[i][1];
+	point[2] = this->MeanSurfacePoints[i][2];
+      
+      this->MeanRightObliqueSurfacePoints.push_back( point );
+    }
+
+  return &this->MeanRightObliqueSurfacePoints;
+}
+
+std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightHorizontalSurfacePoints()
+{
+ if ( !this->IsRightLungSurfaceModel )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipLobeSurfaceModel::GetMeanRightHorizontalSurfacePoints()", 
+				  "Requested mean right horizontal surface points, but shape model is not right lung" );
+    }
+
+  this->MeanRightHorizontalSurfacePoints.clear();
+
+  unsigned int index;
+  for ( unsigned int i=0; i<this->MeanSurfacePoints.size()/2; i++ )
+    {
+      index = i + this->MeanSurfacePoints.size()/2;
+
+      double* point = new double[3];
+        point[0] = this->MeanSurfacePoints[index][0];
+	point[1] = this->MeanSurfacePoints[index][1];
+	point[2] = this->MeanSurfacePoints[index][2];
+      
+      this->MeanRightHorizontalSurfacePoints.push_back( point );
+    }
+
+  return &this->MeanRightHorizontalSurfacePoints;
+}
 
 std::vector< double* > const* cipLobeSurfaceModel::GetWeightedSurfacePoints()
 {
@@ -95,6 +175,89 @@ std::vector< double* > const* cipLobeSurfaceModel::GetWeightedSurfacePoints()
   return &this->WeightedSurfacePoints;
 }
 
+std::vector< double* > const* cipLobeSurfaceModel::GetRightHorizontalWeightedSurfacePoints()
+{
+  if ( !this->IsRightLungSurfaceModel )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipLobeSurfaceModel::GetRightHorizontalWeightedSurfacePoints()", 
+				  "Requested right horizontal surface points, but shape model is not right lung" );
+    }
+  if ( this->MeanSurfacePoints.size() % 2 != 0 )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipLobeSurfaceModel::GetRightHorizontalWeightedSurfacePoints()", 
+				  "Requested right horizontal surface points, but shape model has odd number of points" );
+    }
+
+  this->ComputeRightHorizontalWeightedSurfacePoints();
+
+  return &this->RightHorizontalWeightedSurfacePoints;
+}
+
+void cipLobeSurfaceModel::ComputeRightHorizontalWeightedSurfacePoints()
+{
+  this->RightHorizontalWeightedSurfacePoints.clear();
+  
+  unsigned int index;
+  for ( unsigned int i=0; i<this->MeanSurfacePoints.size()/2; i++ )
+    {
+    index = i + this->MeanSurfacePoints.size()/2;
+
+    double* point = new double[3];
+      point[0] = this->MeanSurfacePoints[index][0];
+      point[1] = this->MeanSurfacePoints[index][1];
+      point[2] = this->MeanSurfacePoints[index][2];
+
+    for ( unsigned int m=0; m<this->NumberOfModes; m++ )
+      {                  
+      point[2] += this->ModeWeights[m]*vcl_sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][index];
+      }
+
+    this->RightHorizontalWeightedSurfacePoints.push_back( point );
+    }
+}
+
+std::vector< double* > const* cipLobeSurfaceModel::GetRightObliqueWeightedSurfacePoints()
+{
+  if ( !this->IsRightLungSurfaceModel )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipLobeSurfaceModel::GetRightObliqueWeightedSurfacePoints()", 
+				  "Requested right oblique surface points, but shape model is not right lung" );
+    }
+  if ( this->MeanSurfacePoints.size() % 2 != 0 )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipLobeSurfaceModel::GetRightObliqueWeightedSurfacePoints()", 
+				  "Requested right horizontal surface points, but shape model has odd number of points" );
+    }
+
+  this->ComputeRightObliqueWeightedSurfacePoints();
+
+  return &this->RightObliqueWeightedSurfacePoints;
+}
+
+void cipLobeSurfaceModel::ComputeRightObliqueWeightedSurfacePoints()
+{
+  this->RightObliqueWeightedSurfacePoints.clear();
+  
+  unsigned int index;
+  for ( unsigned int i=0; i<this->MeanSurfacePoints.size()/2; i++ )
+    {
+    double* point = new double[3];
+      point[0] = this->MeanSurfacePoints[i][0];
+      point[1] = this->MeanSurfacePoints[i][1];
+      point[2] = this->MeanSurfacePoints[i][2];
+
+    for ( unsigned int m=0; m<this->NumberOfModes; m++ )
+      {                  
+      point[2] += this->ModeWeights[m]*vcl_sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][i];
+      }
+
+    this->RightObliqueWeightedSurfacePoints.push_back( point );
+    }
+}
 
 void cipLobeSurfaceModel::ComputeWeightedSurfacePoints()
 {

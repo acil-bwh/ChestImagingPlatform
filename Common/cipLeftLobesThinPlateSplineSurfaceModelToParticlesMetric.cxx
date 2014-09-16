@@ -9,6 +9,7 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "cipHelper.h"
+#include "cipMacro.h"
 #include "cipExceptionObject.h"
 
 cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric
@@ -45,19 +46,24 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
 				  "Mean surface points are not set" );
     }
 
-  assert ( this->MeanPoints.size() == this->NumberOfSurfacePoints );
+  cipAssert ( this->MeanPoints.size() == this->NumberOfSurfacePoints );
 
   if ( this->LeftObliqueSurfacePoints.size() == 0 )
     {
       for ( unsigned int i=0; i<this->NumberOfSurfacePoints; i++ )
 	{
-	  this->LeftObliqueSurfacePoints.push_back( this->MeanPoints[i] );
+	  double* tmp = new double[3];
+	    tmp[0] = this->MeanPoints[i][0];
+	    tmp[1] = this->MeanPoints[i][1];
+	    tmp[2] = this->MeanPoints[i][2];
+
+	  this->LeftObliqueSurfacePoints.push_back( tmp );
 	}
     }
 
-  assert ( this->LeftObliqueSurfacePoints.size() == this->NumberOfSurfacePoints );
-  assert ( this->Eigenvalues.size() == this->NumberOfModes );
-  assert ( this->Eigenvectors.size() == this->NumberOfModes );
+  cipAssert ( this->LeftObliqueSurfacePoints.size() == this->NumberOfSurfacePoints );
+  cipAssert ( this->Eigenvalues.size() == this->NumberOfModes );
+  cipAssert ( this->Eigenvectors.size() == this->NumberOfModes );
 
   // First we must construct the TPS surface given the param values. 
   for ( unsigned int p=0; p<this->NumberOfSurfacePoints; p++ )
@@ -71,21 +77,22 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
 	  // fixed 
 	  this->LeftObliqueSurfacePoints[p][2] += 
 	    (*params)[m]*vcl_sqrt(this->Eigenvalues[m])*this->Eigenvectors[m][p];
-	}       
+	}
     }
 
   // Now that we have our surface points, we can construct the TPS
   // surfaces corresponding to the left oblique boundaries
   this->LeftObliqueThinPlateSplineSurface->SetSurfacePoints( &this->LeftObliqueSurfacePoints );
 
-  double value = this->FissureTermWeight*this->GetFissureTermValue() + this->VesselTermWeight*this->GetVesselTermValue();
+  double fissureTermValue = this->GetFissureTermValue();
+  double vesselTermValue = this->GetVesselTermValue();
 
-  std::cout << "this->FissureTermWeight:\t" << this->FissureTermWeight << std::endl;
-  std::cout << "this->GetFissureTermValue():\t" << this->GetFissureTermValue() << std::endl;
-  std::cout << "this->VesselTermWeight:\t" << this->VesselTermWeight << std::endl;
-  std::cout << "this->GetVesselTermValue():\t" << this->GetVesselTermValue() << std::endl;
-
-  std::cout << "Value:\t" << value << std::endl;
+  // Note that we multiply the vessel term weight by 500.0. This is because at convergence,
+  // the fissue metric value per fissure particle is roughtly 500 times that of the 
+  // vessel metric value per vessel particle. We want these two terms to be roughly equal
+  // so that the user-defined term weights are intuitive to use.
+  double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue;
+  
   return value;
 }
 
@@ -137,8 +144,8 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
 
     // Now that we have the surface normals and distances, we can compute this 
     // particle's contribution to the overall objective function value. 
-    fissureTermValue -= this->FissureParticleWeights[i]*std::exp( -0.5*std::pow(loDistance/this->FissureSigmaDistance,2) )*
-      std::exp( -0.5*std::pow(loTheta/this->FissureSigmaTheta,2) );    
+    fissureTermValue -= this->FissureParticleWeights[i]*std::exp( -loDistance/this->FissureSigmaDistance )*
+      std::exp( -loTheta/this->FissureSigmaTheta );
     }
 
   delete position;

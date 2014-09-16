@@ -9,6 +9,7 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "cipHelper.h"
+#include "cipMacro.h"
 #include "cipExceptionObject.h"
 
 cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric
@@ -52,8 +53,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
 				  "Mean surface points are not set" );
     }
 
-  assert ( this->MeanPoints.size() == this->NumberOfSurfacePoints );
-
+  cipAssert ( this->MeanPoints.size() == this->NumberOfSurfacePoints );
+ 
   // If the right oblique / horizontal points have not yet been set, set them now. Notice
   // that we assume the first half of the surface points correspond to the right
   // oblique boundary, and the second half correspond to the right horizontal
@@ -62,24 +63,34 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
     {
       for ( unsigned int i=0; i<this->NumberOfSurfacePoints/2; i++ )
 	{
-	  this->RightObliqueSurfacePoints.push_back( this->MeanPoints[i] );
+	  double* tmp = new double[3];
+	    tmp[0] = this->MeanPoints[i][0];
+	    tmp[1] = this->MeanPoints[i][1];
+	    tmp[2] = this->MeanPoints[i][2];
+
+	  this->RightObliqueSurfacePoints.push_back( tmp );
 	}
     }
-
+ 
   unsigned int index;
   if ( this->RightHorizontalSurfacePoints.size() == 0 )
     {
       for ( unsigned int i=0; i<this->NumberOfSurfacePoints/2; i++ )
 	{
 	  index = i + this->NumberOfSurfacePoints/2;
-	  this->RightObliqueSurfacePoints.push_back( this->MeanPoints[index] );
+
+	  double* tmp = new double[3];
+	    tmp[0] = this->MeanPoints[index][0];
+	    tmp[1] = this->MeanPoints[index][1];
+	    tmp[2] = this->MeanPoints[index][2];
+
+	  this->RightHorizontalSurfacePoints.push_back( tmp );
 	}
     }
-
-  assert ( this->RightObliqueSurfacePoints.size() == this->NumberOfSurfacePoints/2 );
-  assert ( this->RightHorizontalSurfacePoints.size() == this->NumberOfSurfacePoints/2 );
-  assert ( this->Eigenvalues.size() == this->NumberOfModes );
-  assert ( this->Eigenvectors.size() == this->NumberOfModes );
+  cipAssert ( this->RightObliqueSurfacePoints.size() == this->NumberOfSurfacePoints/2 );
+  cipAssert ( this->RightHorizontalSurfacePoints.size() == this->NumberOfSurfacePoints/2 );
+  cipAssert ( this->Eigenvalues.size() == this->NumberOfModes );
+  cipAssert ( this->Eigenvectors.size() == this->NumberOfModes );
 
   // First we must construct the TPS surface given the param values. Note that we assume the first
   // half of the surface points correspond to the right oblique surface, and the second half
@@ -121,8 +132,11 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
   this->RightHorizontalThinPlateSplineSurface->SetSurfacePoints( &this->RightHorizontalSurfacePoints );
   this->RightObliqueThinPlateSplineSurface->SetSurfacePoints( &this->RightObliqueSurfacePoints );
 
-  double value = this->FissureTermWeight*this->GetFissureTermValue() + this->VesselTermWeight*this->GetVesselTermValue();
-  
+  double fissureTermValue = this->GetFissureTermValue();
+  double vesselTermValue = this->GetVesselTermValue();
+
+  double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue;
+
   return value;
 }
 
@@ -150,6 +164,9 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     orientation[0] = this->FissureParticles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[0];
     orientation[1] = this->FissureParticles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[1];
     orientation[2] = this->FissureParticles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[2];
+
+    // DEB
+    float cipType = this->FissureParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0];
 
     // Determine the domain locations for which the particle is closest
     // to the right oblique and right horizontal TPS surfaces
@@ -188,21 +205,44 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     this->RightHorizontalThinPlateSplineSurface->GetSurfaceNormal( (*rhOptimalParams)[0], (*rhOptimalParams)[1], rhNormal );
     double rhTheta = cip::GetAngleBetweenVectors( rhNormal, orientation, true );
 
+    // A given particle can only contribute to the metric through association to either the
+    // right horizontal boundary or the right oblique boundary, but not both. If the
+    // the right horizontal term is more negative and if the right horizontal surface
+    // is above the right oblique surface at this iteration, the the right horizontal
+    // term will be used. Otherwise the right oblique term will be used.
+    double rhTerm = -this->FissureParticleWeights[i]*std::exp( -rhDistance/this->FissureSigmaDistance )*
+      std::exp( -rhTheta/this->FissureSigmaTheta );
+
+    double roTerm = -this->FissureParticleWeights[i]*std::exp( -roDistance/this->FissureSigmaDistance )*
+      std::exp( -roTheta/this->FissureSigmaTheta );    
+
     // Now that we have the surface normals and distances, we can compute this 
     // particle's contribution to the overall objective function value. Note that
     // we only consider the right horizontal boundary surface provided that the
     // surface right horizontal surface point is above the right oblique surface
     // point.
-    if ( this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( (*rhOptimalParams)[0], (*rhOptimalParams)[1] ) >
-	 this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( (*roOptimalParams)[0], (*roOptimalParams)[1] ) )
+    // DEB
+    // if ( this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( (*rhOptimalParams)[0], (*rhOptimalParams)[1] ) >
+    // 	 this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( (*roOptimalParams)[0], (*roOptimalParams)[1] ) &&
+    // 	 rhTerm < roTerm )
+    //   {
+    // 	fissureTermValue += rhTerm;
+    //   }
+    // else
+    //   {
+    // 	fissureTermValue += roTerm;
+    //   }
+    if ( cipType == 8 )
       {
-	fissureTermValue -= this->FissureParticleWeights[i]*std::exp( -0.5*std::pow(rhDistance/this->FissureSigmaDistance,2) )*
-	  std::exp( -0.5*std::pow(rhTheta/this->FissureSigmaTheta,2) );
+	fissureTermValue += roTerm;
       }
-    fissureTermValue -= this->FissureParticleWeights[i]*std::exp( -0.5*std::pow(roDistance/this->FissureSigmaDistance,2) )*
-      std::exp( -0.5*std::pow(roTheta/this->FissureSigmaTheta,2) );    
-    }
+    else
+      {						
+	//fissureTermValue += rhTerm;
+      }
 
+    }
+    
   delete position;
   delete roNormal;
   delete rhNormal;
