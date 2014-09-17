@@ -55,24 +55,25 @@ namespace
   typedef itk::NearestNeighborInterpolateImageFunction< cip::LabelMapType, double >  InterpolatorType;
   typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >           ResampleType;
   typedef itk::AffineTransform< double, 3 >                                          TransformType;
-  typedef itk::CompositeTransform< double, 3 >                                   CompositeTransformType;
+  typedef itk::CompositeTransform< double, 3 >                                       CompositeTransformType;
 
   TransformType::Pointer GetTransformFromFile( std::string fileName )
   {
     itk::TransformFileReader::Pointer transformReader = itk::TransformFileReader::New();
-    transformReader->SetFileName( fileName );
+      transformReader->SetFileName( fileName );
     try
       {
-	transformReader->Update();
+      transformReader->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
-	std::cerr << "Exception caught reading transform:";
-	std::cerr << excp << std::endl;
+      std::cerr << "Exception caught reading transform:";
+      std::cerr << excp << std::endl;
       }
   
     itk::TransformFileReader::TransformListType::const_iterator it;
-    it = transformReader->GetTransformList()->begin();
+      it = transformReader->GetTransformList()->begin();
+
     TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() ); 
     return transform;
   }
@@ -85,117 +86,104 @@ int main( int argc, char *argv[] )
 
   PARSE_ARGS;
   
-  //
   // Read the destination image information for spacing, origin, and
   // size information (neede for the resampling process).
-  //
   cip::LabelMapType::SpacingType spacing;
   cip::LabelMapType::SizeType    size;
   cip::LabelMapType::PointType   origin;
   
   std::cout << "Reading destination information..." << std::endl;
   cip::LabelMapReaderType::Pointer destinationReader = cip::LabelMapReaderType::New();
-  destinationReader->SetFileName( destinationFileName.c_str() );
+    destinationReader->SetFileName( destinationFileName.c_str() );
   try
     {
-      destinationReader->Update();
+    destinationReader->Update();
     }
   catch ( itk::ExceptionObject &excp )
     {
-      std::cerr << "Exception caught reading label map:";
-      std::cerr << excp << std::endl;
+    std::cerr << "Exception caught reading label map:";
+    std::cerr << excp << std::endl;
 
-      return cip::LABELMAPREADFAILURE;
+    return cip::LABELMAPREADFAILURE;
     }
 
   spacing = destinationReader->GetOutput()->GetSpacing();
   size    = destinationReader->GetOutput()->GetLargestPossibleRegion().GetSize();
   origin  = destinationReader->GetOutput()->GetOrigin();
   
-
-  //
   // Read the label map image
-  //
   std::cout << "Reading label map image..." << std::endl;
   cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
-  labelMapReader->SetFileName( labelMapFileName.c_str() );
+    labelMapReader->SetFileName( labelMapFileName.c_str() );
   try
     {
-      labelMapReader->Update();
+    labelMapReader->Update();
     }
   catch ( itk::ExceptionObject &excp )
     {
-      std::cerr << "Exception caught reading label map:";
-      std::cerr << excp << std::endl;
+    std::cerr << "Exception caught reading label map:";
+    std::cerr << excp << std::endl;
 
-      return cip::LABELMAPREADFAILURE;
+    return cip::LABELMAPREADFAILURE;
     }
 
-  //
-  // Read the transform
-  //
-      
-  //last transform applied first
+  // Read the transform (last transform applied first)
   CompositeTransformType::Pointer transform = CompositeTransformType::New();
   for ( unsigned int i=0; i<transformFileName.size(); i++ )
-    { std::cout<<"adding tx: "<<i<<std::endl;
-      TransformType::Pointer transformTemp = TransformType::New();
-      transformTemp = GetTransformFromFile((transformFileName[i]).c_str() );
+    { 
       // Invert the transformation if specified by command like argument.
       // Only inverting the first transformation
-
-      if((i==0)&& (isInvertTransformation == true))
+      std::cout << "Adding transform: " << i << std::endl;
+      TransformType::Pointer transformTemp = TransformType::New();
+        transformTemp = GetTransformFromFile((transformFileName[i]).c_str() );
+      if( i==0 && isInvertTransformation == true )
         {
-	  transformTemp->GetInverse( transformTemp );
+	transformTemp->GetInverse( transformTemp );
         }
-      transform->AddTransform(transformTemp);
+        transform->AddTransform(transformTemp);
     } 
   transform->SetAllTransformsToOptimizeOn();		
 
-  //
   // Resample the label map
-  //
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
   std::cout << "Resampling..." << std::endl;
   ResampleType::Pointer resampler = ResampleType::New();
-  resampler->SetTransform( transform );
-  resampler->SetInterpolator( interpolator );
-  resampler->SetInput( labelMapReader->GetOutput() );
-  resampler->SetSize( size );
-  resampler->SetOutputSpacing( spacing );
-  resampler->SetOutputOrigin( origin );
-  resampler->SetOutputDirection( destinationReader->GetOutput()->GetDirection() );
+    resampler->SetTransform( transform );
+    resampler->SetInterpolator( interpolator );
+    resampler->SetInput( labelMapReader->GetOutput() );
+    resampler->SetSize( size );
+    resampler->SetOutputSpacing( spacing );
+    resampler->SetOutputOrigin( origin );
+    resampler->SetOutputDirection( destinationReader->GetOutput()->GetDirection() );
   try
     {
-      resampler->Update();
+    resampler->Update();
     }
   catch ( itk::ExceptionObject &excp )
     {
-      std::cerr << "Exception caught resampling:";
-      std::cerr << excp << std::endl;
+    std::cerr << "Exception caught resampling:";
+    std::cerr << excp << std::endl;
 
-      return cip::RESAMPLEFAILURE;
+    return cip::RESAMPLEFAILURE;
     }
 
-  //
   // Write the resampled label map to file
-  //
   std::cout << "Writing resampled label map..." << std::endl;
   cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-  writer->SetFileName( resampledFileName.c_str());
-  writer->UseCompressionOn();
-  writer->SetInput( resampler->GetOutput() );
+    writer->SetFileName( resampledFileName.c_str());
+    writer->UseCompressionOn();
+    writer->SetInput( resampler->GetOutput() );
   try
     {
-      writer->Update();
+    writer->Update();
     }
   catch ( itk::ExceptionObject &excp )
     {
-      std::cerr << "Exception caught writing label map:";
-      std::cerr << excp << std::endl;
+    std::cerr << "Exception caught writing label map:";
+    std::cerr << excp << std::endl;
     
-      return cip::LABELMAPWRITEFAILURE;
+    return cip::LABELMAPWRITEFAILURE;
     }
 
   std::cout << "DONE." << std::endl;
