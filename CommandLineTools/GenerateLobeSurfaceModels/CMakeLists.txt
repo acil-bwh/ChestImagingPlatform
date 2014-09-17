@@ -6,6 +6,13 @@ SET ( MODULE_NAME GenerateLobeSurfaceModels )
 
 ADD_LIBRARY( GenerateLobeSurfaceModelsHelper GenerateLobeSurfaceModelsHelper.cxx )
 
+TARGET_LINK_LIBRARIES( GenerateLobeSurfaceModelsHelper
+  ${VTK_LIBRARIES} 
+  ${ITK_LIBRARIES} 
+  CIPCommon
+  CIPIO
+)
+
 SET ( MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
   GenerateLobeSurfaceModelsHelper
