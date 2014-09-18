@@ -1,25 +1,7 @@
-
 /** \file
  *  \ingroup commandLineTools
- *  \details This program registers 2 label maps, source and target, and
- * a transformation file as well as the transformed image
- *
- *  USAGE: ./RegisterLabelMaps --regionVec 1 -m
-
- /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/11622T/11622T_INSP_STD_HAR_COPD/11622T_INSP_STD_HAR_COPD_leftLungRightLung.nhdr
- -f
- /net/th914_nas.bwh.harvard.edu/mnt/array1/share/Processed/COPDGene/10393Z/10393Z_INSP_STD_HAR_COPD/10393Z_INSP_STD_HAR_COPD_leftLungRightLung.nhdr
- --outputImage /projects/lmi/people/rharmo/projects/dataInfo/testoutput.nrrd
- --outputTransform output_transform_file -d 12
-
- *
- *  $Date: $
- *  $Revision: $
- *  $Author:  $
- *
  */
 
-//image
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -32,8 +14,6 @@
 #include "itkImageRegionIterator.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkCIPExtractChestLabelMapImageFilter.h"
-
-//registration
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkImageRegistrationMethod.h"
 #include "itkCenteredTransformInitializer.h"
@@ -42,23 +22,16 @@
 #include "itkAffineTransform.h"
 #include "itkTransformFileWriter.h"
 #include "itkIdentityTransform.h"
-
-//xml
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xinclude.h>
 #include <libxml/xmlIO.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
-
-
 #include "RegisterLabelMaps3DCLP.h"
 #include "cipChestConventions.h"
 #include "cipHelper.h"
 #include <sstream>
-
-
-
 
 namespace
 {
@@ -81,12 +54,9 @@ namespace
   typedef itk::GDCMSeriesFileNames                                                                  NamesGeneratorType;
   typedef itk::ImageFileReader< cip::CTType >                                                       CTFileReaderType;
   typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                                    LabelMapIteratorType;
-
-  typedef itk::AffineTransform<double, 3 >  TransformType;
+  typedef itk::AffineTransform<double, 3 >                                                          TransformType;
   typedef itk::CenteredTransformInitializer< TransformType, cip::LabelMapType, cip::LabelMapType >  InitializerType;
-
-  typedef itk::ImageFileReader<cip::LabelMapType >  LabelMapReaderType;
-
+  typedef itk::ImageFileReader<cip::LabelMapType >                                                  LabelMapReaderType;
 
   struct REGIONTYPEPAIR
   {
@@ -108,47 +78,39 @@ namespace
 
   void WriteTransformFile( TransformType::Pointer transform, char* fileName )
   {
-    itk::TransformFileWriter::Pointer transformWriter =
-      itk::TransformFileWriter::New();
-    transformWriter->SetInput( transform );
-    transformWriter->SetFileName( fileName );
+    itk::TransformFileWriter::Pointer transformWriter = itk::TransformFileWriter::New();
+      transformWriter->SetInput( transform );
+      transformWriter->SetFileName( fileName );
     try
       {
-	transformWriter->Update();
+      transformWriter->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
-	std::cerr << "Exception caught while updating transform writer:";
-	std::cerr << excp << std::endl;
+      std::cerr << "Exception caught while updating transform writer:";
+      std::cerr << excp << std::endl;
       }
   }
 
-
- 
-  cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string
-						   labelMapFileName )
+  cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
   {
     std::cout << "Reading label map..." << std::endl;
     cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
-
-    reader->SetFileName( labelMapFileName );
+      reader->SetFileName( labelMapFileName );
     try
       {
-	reader->Update();
+      reader->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
-	std::cerr << "Exception caught reading label map:";
-	std::cerr << excp << std::endl;
+      std::cerr << "Exception caught reading label map:";
+      std::cerr << excp << std::endl;
       }
 
     return reader->GetOutput();
   }
 
-
-
-  void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA
-			    &theXMLData)
+  void WriteRegistrationXML(const char *file, REGISTRATION_XML_DATA &theXMLData)
   {
     std::cout<<"Writing registration XML file"<<std::endl;
     xmlDocPtr doc = NULL;       /* document pointer */
@@ -159,13 +121,12 @@ namespace
     root_node = xmlNewNode(NULL, BAD_CAST "Registration");
     xmlDocSetRootElement(doc, root_node);
 
-    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST
-			     "RegistrationOutput_v2.dtd");
+    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "RegistrationOutput_v2.dtd");
 
     time_t timer;
-    time(&timer);
+    time( &timer );
     std::stringstream tempStream;
-    tempStream<<timer;
+    tempStream << timer;
     theXMLData.registrationID.assign("Registration");
     theXMLData.registrationID.append(tempStream.str());
     theXMLData.registrationID.append("_");
@@ -173,15 +134,13 @@ namespace
     theXMLData.registrationID.append("_to_");
     theXMLData.registrationID.append(theXMLData.destID.c_str());
 
-
-    xmlNewProp(root_node, BAD_CAST "Registration_ID", BAD_CAST
-	       (theXMLData.registrationID.c_str()));
+    xmlNewProp(root_node, BAD_CAST "Registration_ID", BAD_CAST (theXMLData.registrationID.c_str()));
 
     // xmlNewChild() creates a new node, which is "attached"
     // as child node of root_node node.
     std::ostringstream similaritString;
     //std::string tempsource;
-    similaritString <<theXMLData.similarityValue;
+    similaritString << theXMLData.similarityValue;
     std::ostringstream transformationIndexString;    
     transformationIndexString <<theXMLData.transformationIndex;
     
@@ -201,25 +160,18 @@ namespace
 		(similaritString.str().c_str()));
     xmlSaveFormatFileEnc(file, doc, "UTF-8", 1);
     xmlFreeDoc(doc);
-
   }
-
-
 } //end namespace
 
 int main( int argc, char *argv[] )
 {
+  PARSE_ARGS;
 
   std::vector< unsigned char >  regionVec;
   std::vector< unsigned char >  typeVec;
   std::vector< unsigned char >  regionPairVec;
   std::vector< unsigned char >  typePairVec;
-
-  PARSE_ARGS;
-
-  std::cout << "agrs parsed, new" << std::endl;
-
-    
+      
   //Read in region and type pair
   std::vector< REGIONTYPEPAIR > regionTypePairVec;
 
@@ -249,7 +201,6 @@ int main( int argc, char *argv[] )
   cip::LabelMapType::Pointer fixedLabelMap = cip::LabelMapType::New();
   cip::LabelMapType::Pointer subSampledFixedImage = cip::LabelMapType::New();
 
-
   if ( strcmp( fixedImageFileName.c_str(), "q") != 0 )
     {
       std::cout << "Reading label map from file..." << std::endl;
@@ -266,9 +217,9 @@ int main( int argc, char *argv[] )
       return cip::EXITFAILURE;
     }
 
-  std::cout << "Subsampling fixed image with factor..."<<downsampleFactor<< std::endl;
+  std::cout << "Subsampling fixed image with factor..." << downsampleFactor << std::endl;
 
-  subSampledFixedImage=cip::DownsampleLabelMap(downsampleFactor,fixedLabelMap);
+  subSampledFixedImage = cip::DownsampleLabelMap(downsampleFactor,fixedLabelMap);
 
   //Read in moving image label map from file and subsample
   cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
@@ -285,38 +236,34 @@ int main( int argc, char *argv[] )
     }
   else
     {
-      std::cerr <<"Error: No lung label map specified"<< std::endl;
+      std::cerr << "Error: No lung label map specified" << std::endl;
       return cip::EXITFAILURE;
     }
 
   std::cout << "Subsampling moving image..." << std::endl;
- 
-  subSampledMovingImage=cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
+  subSampledMovingImage = cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
   // Extract fixed Image region that we want
   std::cout << "Extracting region and type..." << std::endl;
   LabelMapExtractorType::Pointer fixedExtractor = LabelMapExtractorType::New();
-
-  fixedExtractor->SetInput( subSampledFixedImage );
+    fixedExtractor->SetInput( subSampledFixedImage );
 
   LabelMapExtractorType::Pointer movingExtractor = LabelMapExtractorType::New();
-
-  movingExtractor->SetInput( subSampledMovingImage );
+    movingExtractor->SetInput( subSampledMovingImage );
 
   for ( unsigned int i=0; i<regionVec.size(); i++ )
     {
       fixedExtractor->SetChestRegion(regionVec[i]);
       movingExtractor->SetChestRegion(regionVec[i]);
     }
-  if (typeVec.size()>0)
+  if ( typeVec.size() > 0 )
     {
-
       for ( unsigned int i=0; i<typeVec.size(); i++ )
 	{
 	  fixedExtractor->SetChestType( typeVec[i] );
 	  movingExtractor->SetChestType( typeVec[i] );
 	}
     }
-  if (regionTypePairVec.size()>0)
+  if ( regionTypePairVec.size()>0 )
     {
       for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
 	{
@@ -330,7 +277,6 @@ int main( int argc, char *argv[] )
 
   std::cout << "Isolating region and type of interest..." << std::endl;
   LabelMapIteratorType it( fixedExtractor->GetOutput(),fixedExtractor->GetOutput()->GetBufferedRegion() );
-
 
   it.GoToBegin();
   while ( !it.IsAtEnd() )
@@ -356,68 +302,56 @@ int main( int argc, char *argv[] )
     }
 
   MetricType::Pointer metric = MetricType::New();
-  //because we are minimizing as opposed to maximizing
-  metric->SetForegroundValue( 1);
+    metric->SetForegroundValue( 1 );  // Because we are minimizing as opposed to maximizing
 
   TransformType::Pointer transform = TransformType::New();
     
   std::cout<<"initializing transform"<<std::endl;
   InitializerType::Pointer initializer = InitializerType::New();
-
-  initializer->SetTransform( transform );
-  initializer->SetFixedImage(  fixedExtractor->GetOutput() );
-  initializer->SetMovingImage( movingExtractor->GetOutput() );
-  initializer->MomentsOn();
-  initializer->InitializeTransform();
-   
-
-    
+    initializer->SetTransform( transform );
+    initializer->SetFixedImage(  fixedExtractor->GetOutput() );
+    initializer->SetMovingImage( movingExtractor->GetOutput() );
+    initializer->MomentsOn();
+    initializer->InitializeTransform();
+      
   OptimizerScalesType optimizerScales( transform->GetNumberOfParameters());
-  optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;
-  optimizerScales[2] =  1.0;
-  optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;
-  optimizerScales[5] =  1.0;
-  optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;
-  optimizerScales[8] =  1.0;
-  optimizerScales[9]  =  translationScale;
-  optimizerScales[10] =  translationScale;
-  optimizerScales[11] =  translationScale;
+    optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;
+    optimizerScales[2] =  1.0;
+    optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;
+    optimizerScales[5] =  1.0;
+    optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;
+    optimizerScales[8] =  1.0;
+    optimizerScales[9]  =  translationScale;
+    optimizerScales[10] =  translationScale;
+    optimizerScales[11] =  translationScale;
 
   OptimizerType::Pointer optimizer = OptimizerType::New();
-
-  optimizer->SetScales( optimizerScales );
-  optimizer->SetMaximumStepLength( maxStepLength );
-  optimizer->SetMinimumStepLength( minStepLength );
-  optimizer->SetNumberOfIterations( numberOfIterations );
-
+    optimizer->SetScales( optimizerScales );
+    optimizer->SetMaximumStepLength( maxStepLength );
+    optimizer->SetMinimumStepLength( minStepLength );
+    optimizer->SetNumberOfIterations( numberOfIterations );
 
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
   std::cout << "Starting registration..." << std::endl;
   RegistrationType::Pointer registration = RegistrationType::New();
-
-  registration->SetMetric( metric );
-  registration->SetOptimizer( optimizer );
-  registration->SetInterpolator( interpolator );
-  registration->SetTransform( transform );        
-  
-  registration->SetFixedImage( fixedExtractor->GetOutput() );
-  registration->SetMovingImage( movingExtractor->GetOutput() );
-  registration->SetFixedImageRegion(
-				    fixedExtractor->GetOutput()->GetBufferedRegion() );
-
-  registration->SetInitialTransformParameters( transform->GetParameters());
-    
-  
+    registration->SetMetric( metric );
+    registration->SetOptimizer( optimizer );
+    registration->SetInterpolator( interpolator );
+    registration->SetTransform( transform );          
+    registration->SetFixedImage( fixedExtractor->GetOutput() );
+    registration->SetMovingImage( movingExtractor->GetOutput() );
+    registration->SetFixedImageRegion( fixedExtractor->GetOutput()->GetBufferedRegion() );
+    registration->SetInitialTransformParameters( transform->GetParameters());      
   try
     {
-      registration->Initialize();
-      registration->Update();
+    registration->Initialize();
+    registration->Update();
     }
   catch( itk::ExceptionObject &excp )
     {
-      std::cerr << "ExceptionObject caught while executing registration" << std::endl;
-      std::cerr << excp << std::endl;
+    std::cerr << "ExceptionObject caught while executing registration" << std::endl;
+    std::cerr << excp << std::endl;
     }
 
   //get all params to output to file
@@ -426,17 +360,19 @@ int main( int argc, char *argv[] )
   const double bestValue = optimizer->GetValue();
   std::cout<<"similarity output = "<< optimizer->GetValue() <<" best value = " <<bestValue<<std::endl;
   OptimizerType::ParametersType finalParams =registration->GetLastTransformParameters();
-  TransformType::Pointer finalTransform = TransformType::New();
-  finalTransform->SetParameters( finalParams );
-  finalTransform->SetCenter( transform->GetCenter() );
 
+  TransformType::Pointer finalTransform = TransformType::New();
+    finalTransform->SetParameters( finalParams );
+    finalTransform->SetCenter( transform->GetCenter() );
 
   if ( strcmp(outputTransformFileName.c_str(), "q") != 0 )
     {
       std::string infoFilename = outputTransformFileName;
       int result = infoFilename.find_last_of('.');
       if (std::string::npos != result)
-	infoFilename.erase(result);
+	{
+	  infoFilename.erase(result);
+	}
       // append extension:
       infoFilename.append(".xml");
 
@@ -455,7 +391,6 @@ int main( int argc, char *argv[] )
       //otherwise, NA
 
       int pathLength = 0, pos=0, next=0;
-
 
       if ( strcmp(movingImageID.c_str(), "q") != 0 )
 	{
@@ -491,10 +426,9 @@ int main( int argc, char *argv[] )
 
       std::cout << "Writing transform..." << std::endl;
       itk::TransformFileWriter::Pointer transformWriter = itk::TransformFileWriter::New();
-      transformWriter->SetInput( finalTransform );
-   
-      transformWriter->SetFileName( outputTransformFileName );
-      transformWriter->Update();
+        transformWriter->SetInput( finalTransform );   
+	transformWriter->SetFileName( outputTransformFileName );
+	transformWriter->Update();
     }
 
   if ( strcmp(outputImageFileName.c_str(), "q") != 0 )
@@ -502,16 +436,15 @@ int main( int argc, char *argv[] )
       std::cout << "Resampling moving image..." << std::endl;
         
       ResampleFilterType::Pointer resample = ResampleFilterType::New();
-      resample->SetTransform( finalTransform );
-      resample->SetInput( movingLabelMap);
-      resample->SetSize(fixedLabelMap->GetLargestPossibleRegion().GetSize());
-      resample->SetOutputOrigin(  fixedLabelMap->GetOrigin() );
-      resample->SetOutputSpacing( fixedLabelMap->GetSpacing());
-      resample->SetOutputDirection( fixedLabelMap->GetDirection() );
-      resample->SetInterpolator( interpolator );
-      resample->SetDefaultPixelValue( 0 );
-      resample->Update();
-
+        resample->SetTransform( finalTransform );
+	resample->SetInput( movingLabelMap);
+	resample->SetSize(fixedLabelMap->GetLargestPossibleRegion().GetSize());
+	resample->SetOutputOrigin(  fixedLabelMap->GetOrigin() );
+	resample->SetOutputSpacing( fixedLabelMap->GetSpacing());
+	resample->SetOutputDirection( fixedLabelMap->GetDirection() );
+	resample->SetInterpolator( interpolator );
+	resample->SetDefaultPixelValue( 0 );
+	resample->Update();
 
       //ImageType::Pointer upsampledImage = ImageType::New();
       //std::cout << "Upsampling to original size..." << std::endl;
@@ -519,18 +452,17 @@ int main( int argc, char *argv[] )
       //upsampledImage=cip::UpsampleLabelMap(downsampleFactor,resample->GetOutput());
 
       cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-      writer->SetInput(resample->GetOutput());
-      writer->SetFileName( outputImageFileName );
-      writer->UseCompressionOn();
-
+        writer->SetInput(resample->GetOutput());
+	writer->SetFileName( outputImageFileName );
+	writer->UseCompressionOn();
       try
 	{
-	  writer->Update();
+	writer->Update();
 	}
       catch ( itk::ExceptionObject &excp )
 	{
-	  std::cerr << "Exception caught writing output image:";
-	  std::cerr << excp << std::endl;
+	std::cerr << "Exception caught writing output image:";
+	std::cerr << excp << std::endl;
 	}
     }
 
