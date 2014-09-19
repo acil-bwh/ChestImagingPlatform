@@ -31,7 +31,7 @@ cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric
   this->RightObliqueNewtonOptimizer->SetMetric( this->RightObliqueParticleToTPSMetric );
 
   this->RightHorizontalNewtonOptimizer = new cipNewtonOptimizer< 2 >();
-  this->RightHorizontalNewtonOptimizer->SetMetric( this->RightObliqueParticleToTPSMetric );
+  this->RightHorizontalNewtonOptimizer->SetMetric( this->RightHorizontalParticleToTPSMetric );
 }
 
 
@@ -135,7 +135,11 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
   double fissureTermValue = this->GetFissureTermValue();
   double vesselTermValue = this->GetVesselTermValue();
 
-  double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue;
+  std::cout << "-------------------------------" << std::endl;
+  std::cout << "fissureTermWeight:\t" << fissureTermValue << std::endl;
+  std::cout << "vesselTermWeight:\t" << vesselTermValue << std::endl;
+  //double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue;
+  double value = this->FissureTermWeight*fissureTermValue;
 
   return value;
 }
@@ -154,6 +158,11 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
 
   cipNewtonOptimizer< 2 >::PointType* rhDomainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   cipNewtonOptimizer< 2 >::PointType* rhOptimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
+
+  unsigned int ROtoRHcount = 0;
+  unsigned int ROtoROcount = 0;
+  unsigned int RHtoRHcount = 0;
+  unsigned int RHtoROcount = 0;
 
   for ( unsigned int i=0; i<this->NumberOfFissureParticles; i++ )
     {
@@ -197,6 +206,7 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     // optimized by the Newton method.
     double roDistance = vcl_sqrt( this->RightObliqueNewtonOptimizer->GetOptimalValue() );
     double rhDistance = vcl_sqrt( this->RightHorizontalNewtonOptimizer->GetOptimalValue() );
+    //std::cout << roDistance << "\t should not be\t" << rhDistance << std::endl;
 
     // Get the TPS surface normals at the domain locations.
     this->RightObliqueThinPlateSplineSurface->GetSurfaceNormal( (*roOptimalParams)[0], (*roOptimalParams)[1], roNormal );
@@ -221,27 +231,62 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     // we only consider the right horizontal boundary surface provided that the
     // surface right horizontal surface point is above the right oblique surface
     // point.
+
     // DEB
-    // if ( this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( (*rhOptimalParams)[0], (*rhOptimalParams)[1] ) >
-    // 	 this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( (*roOptimalParams)[0], (*roOptimalParams)[1] ) &&
-    // 	 rhTerm < roTerm )
-    //   {
-    // 	fissureTermValue += rhTerm;
-    //   }
-    // else
+    //fissureTermValue += rhTerm + roTerm;
+    if ( this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) >
+    	 this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) &&
+    	 rhTerm < roTerm )
+      {
+    	fissureTermValue += rhTerm;
+    	if ( cipType == 8 )
+    	  {
+    	    ROtoRHcount++;
+	    // std::cout << "\t RO Distance:\t" << roDistance << "\t RH Distance:\t" << rhDistance << "\t RO Angle:\t" << roTheta << "\t RH Angle:\t" << rhTheta << "\t RH Height:\t" <<
+	    //   this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) << "\t RO Height:\t" << 
+	    //   this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) << std::endl;
+    	  }
+    	else
+    	  {
+    	    RHtoRHcount++;
+    	  }
+      }
+    else
+      {
+    	fissureTermValue += roTerm;
+    	if ( cipType == 8 )
+    	  {
+    	    ROtoROcount++;
+    	  }
+    	else
+    	  {
+    	    RHtoROcount++;
+    	  }
+      }
+
+    // if ( roTerm < rhTerm )
     //   {
     // 	fissureTermValue += roTerm;
     //   }
-    if ( cipType == 8 )
-      {
-	fissureTermValue += roTerm;
-      }
-    else
-      {						
-	//fissureTermValue += rhTerm;
-      }
+    // else
+    //   {
+    // 	fissureTermValue += rhTerm;
+    //   }
+    // if ( cipType == 8 )
+    //    {
+    //  	fissureTermValue += roTerm;
+    //    }
+    //  else
+    //    {						
+    //  	fissureTermValue += rhTerm;
+    //    }
 
     }
+  // std::cout << "------------------------------------" << std::endl;
+  // std::cout << "RO to RH:\t" << ROtoRHcount << std::endl;
+  // std::cout << "RO to RO:\t" << ROtoROcount << std::endl;
+  // std::cout << "RH to RH:\t" << RHtoRHcount << std::endl;
+  // std::cout << "RH to RO:\t" << RHtoROcount << std::endl; 
     
   delete position;
   delete roNormal;
@@ -318,8 +363,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermV
     // we only consider the right horizontal boundary surface provided that the
     // surface right horizontal surface point is above the right oblique surface
     // point.
-    if ( this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( (*rhOptimalParams)[0], (*rhOptimalParams)[1] ) >
-	 this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( (*roOptimalParams)[0], (*roOptimalParams)[1] ) )
+    if ( this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) >
+	 this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) )
       {
 	vesselTermValue += this->VesselParticleWeights[i]*std::exp( -rhDistance/this->VesselSigmaDistance )*
 	  std::exp( -rhTheta/this->VesselSigmaTheta );

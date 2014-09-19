@@ -126,7 +126,7 @@
       <longflag>fd</longflag>
       <description>Fissure sigma distance value for the TPS to particles optimization</description>
       <label>Fissure Sigma Distance</label>
-      <default>5.0</default>
+      <default>20.0</default>
     </double>
 
     <double>
