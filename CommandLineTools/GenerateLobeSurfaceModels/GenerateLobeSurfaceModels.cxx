@@ -45,21 +45,26 @@
 
 #include "GenerateLobeSurfaceModelsHelper.h"
 #include "GenerateLobeSurfaceModelsCLP.h"
+#include "cipMacro.h"
+#include "itksys/Directory.hxx"
+
+void GetResourceFiles( std::string, std::vector< std::string >*, std::vector< std::string >* );
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  if ( trainTransformFileVec.size() != trainPointsFileVec.size() )
+  std::vector< std::string > trainTransformFileVec;
+  std::vector< std::string > trainPointsFileVec;
+
+  GetResourceFiles( resourcesDir, &trainTransformFileVec, &trainPointsFileVec );
+
+  cipAssert( trainTransformFileVec.size() == trainPointsFileVec.size() );
+
+  if ( trainPointsFileVec.size() < 2 )
     {
-      std::cerr << "Must specify same number of training data transform files ";
-      std::cerr << "and training data points files" << std::endl;
-      return cip::ARGUMENTPARSINGERROR;
-    }
-  if ( trainTransformFileVec.size() == 0 )
-    {
-      std::cerr << "Must supply training data" << std::endl;
-      return cip::ARGUMENTPARSINGERROR;
+      std::cerr << "Insufficient resources in directory" << std::endl;
+      return cip::EXITFAILURE;
     }
 
   // The reference image for model building has been (arbitrarily)
@@ -247,15 +252,15 @@ int main( int argc, char *argv[] )
 
     for ( unsigned int j=0; j<roRangeValuesVec.size(); j++ )
       {
-  	rightRangeValuesVec.push_back( roRangeValuesVec[j] );
+	rightRangeValuesVec.push_back( roRangeValuesVec[j] );
       }
     for ( unsigned int j=0; j<rhRangeValuesVec.size(); j++ )
       {
-  	rightRangeValuesVec.push_back( rhRangeValuesVec[j] );
+	rightRangeValuesVec.push_back( rhRangeValuesVec[j] );
       }
 
-    loRangeValuesVecVec.push_back( loRangeValuesVec );
     rightRangeValuesVecVec.push_back( rightRangeValuesVec );
+    loRangeValuesVecVec.push_back( loRangeValuesVec );
     }
 
   // Now we have all the training information needed for building the
@@ -369,6 +374,39 @@ int main( int argc, char *argv[] )
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
+}
+
+void GetResourceFiles( std::string resourcesDir, std::vector< std::string >* trainTransformFileVec, 
+		       std::vector< std::string >* trainPointsFileVec)
+{
+  itksys::Directory dir;
+  dir.Load( resourcesDir.c_str() );
+
+  unsigned int numFiles = itksys::Directory::GetNumberOfFilesInDirectory( resourcesDir.c_str() );
+  std::string transformFileSuffix = "_TO_10002K_INSP_STD_BWH_COPD_transform.txt";
+  std::string pointsFileSuffix    = "_regionAndTypePoints.csv";
+
+  for ( unsigned int i=0; i<numFiles; i++ )
+    {
+      std::size_t pointsFileSuffixStart = std::string(dir.GetFile( i )).find( pointsFileSuffix );
+      if ( pointsFileSuffixStart != std::string::npos )
+	{
+	  std::string pointsFilePrefix = std::string(dir.GetFile( i )).substr(0, pointsFileSuffixStart);
+	  for ( unsigned int j=0; j<numFiles; j++ )
+	    {
+	      std::size_t transformFileSuffixStart = std::string(dir.GetFile( j )).find( transformFileSuffix );
+	      if ( transformFileSuffixStart != std::string::npos )
+		{
+		  std::string transformFilePrefix = std::string(dir.GetFile( j )).substr(0, transformFileSuffixStart);
+		  if ( transformFilePrefix.compare( pointsFilePrefix ) == 0 )
+		    {
+		      trainPointsFileVec->push_back( resourcesDir + std::string(dir.GetFile(i)) );
+		      trainTransformFileVec->push_back( resourcesDir + std::string(dir.GetFile(j)) );
+		    }
+		}
+	    }
+	}
+    }
 }
 
 #endif

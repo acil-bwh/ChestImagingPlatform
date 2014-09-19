@@ -75,6 +75,23 @@
     </image>  
 
     <string>
+      <name>resourcesDir</name>
+      <label>Resources Directory</label>
+      <channel>input</channel>
+      <flag>r</flag>
+      <longflag>resourcesDir</longflag>
+      <description><![CDATA[Directory containing resources needed to build the shape model. \
+      This directory is expected to contain a collection of file pairs: a transform file and a \
+      region and type points file. Each pair corresponds to a single case. The transform file \
+      indicates how to transform the case so that it aligns with a reference case and is expected \
+      to have the extension '_TO_10002K_INSP_STD_BWH_COPD_transform.txt'. The region and type \
+      points file contains physical coordinates along the right horizontal, right oblique, and left oblique \
+      lobe boundaries. It is expected to have the extension '_regionAndTypePoints.csv'. For a given pair \
+      the prefix is expected to be the same.]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
       <name>refPointsFileName</name>
       <label>Reference points file name</label>
       <channel>input</channel>
@@ -112,26 +129,6 @@
       <description><![CDATA[Output reference image to input label map transform file name.]]></description>
       <default>NA</default>
     </string>  
-
-    <string-vector>
-      <name>trainTransformFileVec</name>
-      <label>Training transform files</label>
-      <channel>input</channel>
-      <longflag>trainTrans</longflag>
-      <description><![CDATA[Training data set transform file. This file contains the \
-      transform that is used to map the corresponding training data set's fissure points to the reference image's \
-      coordinate system. It should immediately be followed with a region and type points file (specified with the \
-      --trainPoints flag).]]></description>
-    </string-vector>  
-
-    <string-vector>
-      <name>trainPointsFileVec</name>
-      <label>Training points files</label>
-      <channel>input</channel>
-      <longflag>trainPoints</longflag>
-      <description><![CDATA[Region and type points file corresponding to the previously \
-      called transform file (see notes for --trainTrans).]]></description>
-    </string-vector>  
   </parameters>
 
   <parameters>
