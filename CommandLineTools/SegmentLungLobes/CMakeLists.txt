@@ -4,9 +4,9 @@ PROJECT( SegmentLungLobes )
 
 SET ( MODULE_NAME SegmentLungLobes )
 
-
 SET ( MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
+  ${ITK_LIBRARIES}
   )
 
 SET ( MODULE_SRCS SegmentLungLobes.cxx )

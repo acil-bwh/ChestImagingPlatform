@@ -36,6 +36,36 @@ int main( int argc, char *argv[] )
 
   LungLobeSegmentationType::Pointer lobeSegmenter = LungLobeSegmentationType::New();
 
+  if ( rhParticlesFileName.compare( "NA" ) != 0 )
+    {
+    std::cout << "Reading right horizontal particles..." << std::endl;
+    vtkPolyDataReader* rhParticlesReader = vtkPolyDataReader::New();
+      rhParticlesReader->SetFileName( rhParticlesFileName.c_str() );
+      rhParticlesReader->Update();    
+
+    std::cout << "Appending right horizontal fissure points..." << std::endl;
+    AppendFissurePoints( &rhPoints, rhParticlesReader->GetOutput() );
+    }
+  if ( roParticlesFileName.compare( "NA" ) != 0 )
+    {
+    std::cout << "Reading right oblique particles..." << std::endl;
+    vtkPolyDataReader* roParticlesReader = vtkPolyDataReader::New();
+      roParticlesReader->SetFileName( roParticlesFileName.c_str() );
+      roParticlesReader->Update();    
+
+    std::cout << "Appending right oblique fissure points..." << std::endl;
+    AppendFissurePoints( &roPoints, roParticlesReader->GetOutput() );
+    }
+  if ( loParticlesFileName.compare( "NA" ) != 0 )
+    {
+    std::cout << "Reading left oblique particles..." << std::endl;
+    vtkPolyDataReader* loParticlesReader = vtkPolyDataReader::New();
+      loParticlesReader->SetFileName( loParticlesFileName.c_str() );
+      loParticlesReader->Update();    
+
+    std::cout << "Appending left oblique fissure points..." << std::endl;
+    AppendFissurePoints( &loPoints, loParticlesReader->GetOutput() );
+    }
   if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     { 
     std::cout << "Reading left lung shape model..." << std::endl;
@@ -56,7 +86,6 @@ int main( int argc, char *argv[] )
 
     lobeSegmenter->SetLeftObliqueThinPlateSplineSurface( loTPS );
     }
-
   if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     { 
     std::cout << "Reading right lung shape model..." << std::endl;
@@ -75,11 +104,9 @@ int main( int argc, char *argv[] )
 
     cipThinPlateSplineSurface* roTPS = new cipThinPlateSplineSurface();
     roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
-    //roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetMeanRightObliqueSurfacePoints() );
 
     cipThinPlateSplineSurface* rhTPS = new cipThinPlateSplineSurface();
     rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
-    //rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetMeanRightHorizontalSurfacePoints() );
 
     lobeSegmenter->SetRightObliqueThinPlateSplineSurface( roTPS );
     lobeSegmenter->SetRightHorizontalThinPlateSplineSurface( rhTPS );
@@ -101,6 +128,9 @@ int main( int argc, char *argv[] )
     }
   
   std::cout << "Segmenting lobes..." << std::endl;
+  lobeSegmenter->SetLeftObliqueFissurePoints( &loPoints );
+  lobeSegmenter->SetRightObliqueFissurePoints( &roPoints );
+  lobeSegmenter->SetRightHorizontalFissurePoints( &rhPoints );
   lobeSegmenter->SetInput( leftLungRightLungReader->GetOutput() );
   lobeSegmenter->Update();
   
@@ -170,23 +200,7 @@ int main( int argc, char *argv[] )
   //       }
   //     }
   //   }
-  
-  // // Read in the left-lung-right-lung label map
-  // std::cout << "Reading lung label map..." << std::endl;
-  // cip::LabelMapReaderType::Pointer leftLungRightLungReader = cip::LabelMapReaderType::New();
-  //   leftLungRightLungReader->SetFileName( inLabelMapFileName );
-  // try
-  //   {
-  //   leftLungRightLungReader->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught while reading label map:";
-  //   std::cerr << excp << std::endl;
     
-  //   return cip::LABELMAPREADFAILURE;
-  //   }
-  
   // // Read Fiducial points if they are available
   // if( rightHorizontalFiducials.size() > 0 )
   //   {
@@ -250,18 +264,6 @@ int main( int argc, char *argv[] )
   // 	location[2]=index[2];
   // 	loPoints.push_back(location);
   //     }
-  //   }
-
-  // // Read in the particles data
-  // if ( loParticlesFileName.compare( "NA" ) != 0 )
-  //   {
-  //   std::cout << "Reading left oblique particles..." << std::endl;
-  //   vtkPolyDataReader* loParticlesReader = vtkPolyDataReader::New();
-  //     loParticlesReader->SetFileName( loParticlesFileName.c_str() );
-  //     loParticlesReader->Update();    
-
-  //   std::cout << "Appending left oblique fissure points..." << std::endl;
-  //   AppendFissurePoints( &loPoints, loParticlesReader->GetOutput() );
   //   }
 
   // if ( roParticlesFileName.compare( "NA" ) != 0 && rhParticlesFileName.compare( "NA" ) != 0 )
@@ -337,23 +339,6 @@ int main( int argc, char *argv[] )
   //   }
   //   lobeSegmenter->Update();
       
-  // // Write the lung lobe label map 
-  // std::cout << "Writing lung lobe label map..." << std::endl;
-  // cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-  //   writer->SetInput( lobeSegmenter->GetOutput() );
-  //   writer->UseCompressionOn();
-  //   writer->SetFileName( outLabelMapFileName );
-  // try
-  //   {
-  //   writer->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught writing label map:";
-  //   std::cerr << excp << std::endl;
-
-  //   return cip::LABELMAPWRITEFAILURE;
-  //   }
 
   std::cout << "DONE." << std::endl;
 
