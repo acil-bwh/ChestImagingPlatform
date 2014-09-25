@@ -26,38 +26,33 @@
       <label>Particles file name</label>
       <channel>input</channel>
       <flag>p</flag>
-      <longflag>--particles</longflag>
+      <longflag>particles</longflag>
       <description><![CDATA[Particles file name]]></description>
     </string>  
 
     <string>
-      <name>loShapeModelFileName</name>
-      <label>Left oblique shape model file name</label>
+      <name>leftShapeModelFileName</name>
+      <longflag>lm</longflag>
+      <label>Left lung shape model file name</label>
       <channel>input</channel>
-      <longflag>--loModel</longflag>
-      <description><![CDATA[Left oblique shape model file name]]></description>
-    </string>  
+      <default>NA</default>
+      <description><![CDATA[Left lung shape model file name]]></description>
+    </string>
 
     <string>
-      <name>roShapeModelFileName</name>
-      <label>Right oblique shape model file name</label>
+      <name>rightShapeModelFileName</name>
+      <label>Right lung shape model file name</label>
       <channel>input</channel>
-      <longflag>--roModel</longflag>
-      <description><![CDATA[Right oblique shape model file name]]></description>
-    </string>  
-
-    <string>
-      <name>rhShapeModelFileName</name>
-      <label>Right horizontal shape model file name</label>
-      <channel>input</channel>
-      <longflag>--rhModel</longflag>
-      <description><![CDATA[Right horizontal shape model file name]]></description>
-    </string>  
+      <longflag>rm</longflag>
+      <default>NA</default>
+      <description><![CDATA[Right lung shape model file name]]></description>
+    </string>
 
     <string>
       <name>loClassifiedFileName</name>
       <label>Left oblique classified particles file name</label>
       <channel>input</channel>
+      <default>NA</default>
       <longflag>--loClassified</longflag>
       <description><![CDATA[Left oblique classified particles file name]]></description>
     </string>  
@@ -66,6 +61,7 @@
       <name>roClassifiedFileName</name>
       <label>Right oblique classified particles file name</label>
       <channel>input</channel>
+      <default>NA</default>
       <longflag>--roClassified</longflag>
       <description><![CDATA[Right oblique classified particles file name]]></description>
     </string>  
@@ -74,6 +70,7 @@
       <name>rhClassifiedFileName</name>
       <label>Right horizontal classified particles file name</label>
       <channel>input</channel>
+      <default>NA</default>
       <longflag>--rhClassified</longflag>
       <description><![CDATA[Right horizontal classified particles file name]]></description>
     </string>  

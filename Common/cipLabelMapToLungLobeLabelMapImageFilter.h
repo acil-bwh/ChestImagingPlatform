@@ -101,6 +101,11 @@ public:
    *  middle lobe from the right upper lobe). */
   void SetRightHorizontalFissurePoints( std::vector< double* >* );
 
+  /** Set/Get the smoothing value to use when creating the TPS surfaces from 
+   *  points. Default is 0.1 */
+  itkSetMacro( ThinPlateSplineSurfaceFromPointsLambda, double );
+  itkGetMacro( ThinPlateSplineSurfaceFromPointsLambda, double );
+
   /** Thin plate spline model of the boundary between the left upper lobe and
    *  the left lower lobe. If a surface is specified AND a set of left oblique
    *  fissure points (indices) is specified, the surface that interpolates through
@@ -160,6 +165,8 @@ private:
   std::vector< double* >  LeftObliqueFissurePoints;
   std::vector< double* >  RightObliqueFissurePoints;
   std::vector< double* >  RightHorizontalFissurePoints;
+
+  double m_ThinPlateSplineSurfaceFromPointsLambda;
 
   cipThinPlateSplineSurface* LeftObliqueThinPlateSplineSurface;
   cipThinPlateSplineSurface* RightObliqueThinPlateSplineSurface;

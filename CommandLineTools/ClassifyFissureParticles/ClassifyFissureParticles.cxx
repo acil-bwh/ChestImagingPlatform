@@ -10,68 +10,12 @@
  *  lung are being considered, a particle is classified according to which
  *  entity it is most like (noise, right horizontal or right oblique). The
  *  classified particles are then written to file.
- * 
- *  USAGE: 
- *
- *  ClassifyFissureParticles  [-t \<string\>] [-a \<string\>] [-d \<string\>]
- *                            [--rhClassified \<string\>] 
- *                            [--roClassified \<string\>] [--loClassified \<string\>]
- *                            [--rhModel \<string\>] [--roModel \<string\>]
- *                            [--loModel \<string\>] -p \<string\> [--]
- *                            [--version] [-h]
- *
- *  Where: 
- *
- *  -t \<string\>,  --thresh \<string\>
- *    Threshold for Fischer discriminant based classification
- *
- *  -a \<string\>,  --angle \<string\>
- *    Angle weight for Fischer discriminant projection
- *
- *  -d \<string\>,  --dist \<string\>
- *    Distance weight for Fischer discriminant projection
- *
- *  --rhClassified \<string\>
- *    Right horizontal classified particles file name
- *
- *  --roClassified \<string\>
- *    Right oblique classified particles file name
- *
- *  --loClassified \<string\>
- *    Left oblique classified particles file name
- *
- *  --rhModel \<string\>
- *    Right horizontal shape model file name. If specified, a right oblique
- *    shape model most also be specified.
- *
- *  --roModel \<string\>
- *    Right oblique shape model file name. If specified, a right horizontal
- *    shape model most also be specified.
- *
- *  --loModel \<string\>
- *    Left oblique shape model file name
- *
- *  -p \<string\>,  --particles \<string\>
- *    (required)  Particles file name
- *
- *  --,  --ignore_rest
- *    Ignores the rest of the labeled arguments following this flag.
- *
- *  --version
- *    Displays version information and exits.
- *
- *  -h,  --help
- *    Displays usage information and exits.
- *
- *  $Date: 2012-09-10 13:37:14 -0400 (Mon, 10 Sep 2012) $
- *  $Revisionw$
- *  $Author: jross $
- *
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "cipChestConventions.h"
+#include "cipExceptionObject.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -114,48 +58,45 @@ int main( int argc, char *argv[] )
   // Read shape models
   std::vector< cipThinPlateSplineSurface* > tpsVec;
 
-  if ( (roShapeModelFileName.compare( "NA" ) != 0 && rhShapeModelFileName.compare( "NA" ) == 0) || 
-       (roShapeModelFileName.compare( "NA" ) == 0 && rhShapeModelFileName.compare( "NA" ) != 0) )
-    {
-    std::cerr << "ERROR: If one shape model in the right lung is specified, they both must be. Exiting." << std::endl;
-    return cip::ARGUMENTPARSINGERROR;
-    }
-
-  if ( roShapeModelFileName.compare( "NA" ) != 0 )
+  if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     { 
-    std::cout << "Reading right oblique shape model..." << std::endl;
-    cip::LobeSurfaceModelIO* roShapeModelIO = new cip::LobeSurfaceModelIO(); 
-      roShapeModelIO->SetFileName( roShapeModelFileName );
-      roShapeModelIO->Read();
+    std::cout << "Reading right lung shape model..." << std::endl;
+    cip::LobeSurfaceModelIO* rightShapeModelIO = new cip::LobeSurfaceModelIO(); 
+      rightShapeModelIO->SetFileName( rightShapeModelFileName );
+    try
+      {
+      rightShapeModelIO->Read();
+      }
+    catch ( cip::ExceptionObject &excp )
+      {
+      std::cerr << "Exception caught reading right shape model:";
+      std::cerr << excp << std::endl;
+      }
+      rightShapeModelIO->GetOutput()->SetRightLungSurfaceModel( true );
 
     cipThinPlateSplineSurface* roTPS = new cipThinPlateSplineSurface();
-      roTPS->SetSurfacePoints( roShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
+      roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
     // before the RH (assumed when we execute 'TallyParticleInfo') 
     tpsVec.push_back( roTPS );
     
-    std::cout << "Reading right horizontal shape model..." << std::endl;
-    cip::LobeSurfaceModelIO* rhShapeModelIO = new cip::LobeSurfaceModelIO();
-      rhShapeModelIO->SetFileName( rhShapeModelFileName );
-      rhShapeModelIO->Read();
-
     cipThinPlateSplineSurface* rhTPS = new cipThinPlateSplineSurface();
-      rhTPS->SetSurfacePoints( rhShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
+      rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
     // before the RH (assumed when we execute 'TallyParticleInfo') 
     tpsVec.push_back( rhTPS );
     }
-  else if ( loShapeModelFileName.compare( "NA" ) != 0 )
+  else if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     {
-    std::cout << "Reading left oblique shape model..." << std::endl;
-    cip::LobeSurfaceModelIO* loShapeModelIO = new cip::LobeSurfaceModelIO();
-      loShapeModelIO->SetFileName( loShapeModelFileName );
-      loShapeModelIO->Read();
+    std::cout << "Reading left lung shape model..." << std::endl;
+    cip::LobeSurfaceModelIO* leftShapeModelIO = new cip::LobeSurfaceModelIO();
+      leftShapeModelIO->SetFileName( leftShapeModelFileName );
+      leftShapeModelIO->Read();
 
     cipThinPlateSplineSurface* loTPS = new cipThinPlateSplineSurface();
-      loTPS->SetSurfacePoints( loShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
+      loTPS->SetSurfacePoints( leftShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
 
     tpsVec.push_back( loTPS );
     }

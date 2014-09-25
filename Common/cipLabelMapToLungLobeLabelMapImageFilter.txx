@@ -14,6 +14,8 @@
 cipLabelMapToLungLobeLabelMapImageFilter
 ::cipLabelMapToLungLobeLabelMapImageFilter()
 {
+  this->m_ThinPlateSplineSurfaceFromPointsLambda = 0.1;
+
   this->LeftObliqueThinPlateSplineSurface     = new cipThinPlateSplineSurface;
   this->RightObliqueThinPlateSplineSurface    = new cipThinPlateSplineSurface;
   this->RightHorizontalThinPlateSplineSurface = new cipThinPlateSplineSurface;
@@ -341,6 +343,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
     }
 
   this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->LeftObliqueFissurePoints );
+  this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
 }
 
 
@@ -371,6 +374,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
       }  
 
     this->RightObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightObliqueFissurePoints );
+    this->RightObliqueThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
     }
 }
 
@@ -385,6 +389,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
     }
 
   this->RightObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightObliqueFissurePoints );
+  this->RightObliqueThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
 }
 
 
@@ -415,6 +420,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
       }  
 
     this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightHorizontalFissurePoints );
+    this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
     }
 }
 
@@ -429,6 +435,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
     }
 
   this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightHorizontalFissurePoints );
+  this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
 }
 
 
