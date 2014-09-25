@@ -1,103 +1,36 @@
 /** \file
  *  \ingroup commandLineTools 
- *  \details This program can be used to 
- * 
- *  USAGE: 
- *
- *  GenerateOverlayImages  [-x] [-y] [-z] [--type <unsigned char>]
- *                           [--region <unsigned char>] [--opacity <double>]
- *                           [--level <short>] [--window <short>] -c
- *                           <string> -l <string> [-o <string>] ...  [--]
- *                           [--version] [-h]
- *
- *  Where: 
- *
- *   -x,  --sagittal
- *     Set to 1 if sagittal overlay images are desired (0 by default)
- *
- *   -y,  --coronal
- *     Set to 1 if coronal overlay images are desired (0 by default)
- *
- *   -z,  --axial
- *     Set to 1 if axial overlay images are desired (1 by default)
- *
- *   --type <unsigned char>
- *     The chest type over which to compute the bounding box which in turn
- *     defines where to take the slice planes from for the overlays. By
- *     default this value is set to UNDEFINEDTYPE. If both the chest region
- *     and chest type are left undefined, the entire foreground region will
- *     we considered when computing the bounding box.
- *
- *   --region <unsigned char>
- *     The chest region over which to compute the bounding box which in turn
- *     defines where to take the slice planes from for the overlays. By
- *     default this value is set to UNDEFINEDREGION. If both the chest region
- *     and chest type are left undefined, the entire foreground region will
- *     we considered when computing the bounding box
- *
- *   --opacity <double>
- *     A real number between 0 and 1 indicating the opacity of the overlay
- *     (default is 0.5)
- *
- *   --level <short>
- *     The level setting in Hounsfield units for window-leveling
- *
- *   --window <short>
- *     The window width setting in Hounsfield units for window-leveling
- *
- *   -c <string>,  --ct <string>
- *     (required)  Input CT image file name. Only needs to be specified if
- *     you intend to createlung lobe QC images
- *
- *   -l <string>,  --labelMap <string>
- *     (required)  Input label map file name
- *
- *   -o <string>,  --overlays <string>  (accepted multiple times)
- *     Names of the overlay images to produce. The images will be spaced
- *     evenly across the bounding box in the direction orthogonal to the
- *     plane of interest.
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
- *   This program produces RGB overlay images corresponding to the input CT
- *   image and its label map. The overlay images will be spaced evenly across
- *   the bounding box in the direction orthogonal to the plane of interest
- *   (axial, coronal, or sagittal). The user has control over the
- *   window-level settings as well as the opacity of the overlay. The colors
- *   used in the overlay are established in the CIP conventions
- *
- *  $Date$
- *  $Revision$
- *  $Author$
- *
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+#include <string>
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "cipHelper.h"
 #include "cipChestConventions.h"
-#include "itkImageRegionIteratorWithIndex.h"
+#include "itkImageRegionIterator.h"
 #include "itkRGBPixel.h"
 #include "GenerateOverlayImagesCLP.h"
 
-typedef itk::RGBPixel<unsigned char>       RGBPixelType;
-typedef itk::Image<RGBPixelType, 2>        OverlayType;
-typedef itk::ImageFileWriter<OverlayType>  OverlayWriterType;
+typedef itk::RGBPixel< unsigned char >                 RGBPixelType;
+typedef itk::Image< RGBPixelType, 2 >                  OverlayType;
+typedef itk::ImageFileWriter< OverlayType >            OverlayWriterType;
+typedef itk::ImageRegionIterator< cip::LabelMapType >  IteratorType;
 
 double GetWindowLeveledValue(short, short, short);
 RGBPixelType GetOverlayPixelValue(double, unsigned short, double);
-void GetOverlayImages(cip::LabelMapType::Pointer, cip::CTType::Pointer, unsigned int, std::vector<OverlayType::Pointer>*, 
-		      double, std::string, short, short, unsigned char, unsigned char, bool);
+
+/** Gets the overlay images in the label map. If 'allImages' is set
+ *  to true, then every slice with a foreground region in it will be
+ *  used to produce an overlay. It thus trumps whatever is specified
+ *  for the 'numImages' parameter */
+void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer ctImage, unsigned int numImages,
+		      std::vector<OverlayType::Pointer>* overlayVec, double opacity, std::string slicePlane, 
+		      short window, short level, unsigned char cipRegion, unsigned char cipType, bool bookEnds,
+		      bool allImages);
+bool GetSliceHasForeground(cip::LabelMapType::Pointer, unsigned int, std::string );
 
 int main( int argc, char *argv[] )
 {
@@ -157,32 +90,44 @@ int main( int argc, char *argv[] )
 
   // Now get the overlay images
   std::vector<OverlayType::Pointer> overlays;
-
+  
   std::cout << "Getting overlay images..." << std::endl;
   GetOverlayImages(labelMapReader->GetOutput(), ctReader->GetOutput(), overlayFileNameVec.size(),
-		   &overlays, opacity, slicePlane, window, level, cipRegion, cipType, bookEnds);
-
+		   &overlays, opacity, slicePlane, window, level, cipRegion, cipType, bookEnds, 
+		   allImages);
+  
   // Finally, write the overlays to file
-  for (unsigned int i=0; i<overlayFileNameVec.size(); i++)
+  for (unsigned int i=0; i<overlays.size(); i++)
     {
-    std::cout << "Writing overlay..." << std::endl;
-    OverlayWriterType::Pointer writer = OverlayWriterType::New();
-      writer->SetFileName(overlayFileNameVec[i]);
-      writer->SetInput(overlays[i]);
-      writer->UseCompressionOn();
-    try
-      {
-      writer->Update();
-      }
-    catch (itk::ExceptionObject &excp)
-      {
-      std::cerr << "Exception caught writing overlay image:";
-      std::cerr << excp << std::endl;
-
-      return cip::EXITFAILURE;
-      }
+      char buff[4];
+      std::sprintf(buff, "%04u", i);
+      std::string whichOverlay( buff );
+      
+      std::cout << "Writing overlay..." << std::endl;
+      OverlayWriterType::Pointer writer = OverlayWriterType::New();
+      if ( allImages )
+	{
+	writer->SetFileName(prefix + whichOverlay + ".png");
+	}
+      else
+	{
+        writer->SetFileName(overlayFileNameVec[i]);	  
+	}
+        writer->SetInput(overlays[i]);
+	writer->UseCompressionOn();
+      try
+	{
+	writer->Update();
+	}
+      catch (itk::ExceptionObject &excp)
+	{
+	std::cerr << "Exception caught writing overlay image:";
+	std::cerr << excp << std::endl;
+	  
+	return cip::EXITFAILURE;
+	}
     }
-
+  
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
@@ -190,7 +135,8 @@ int main( int argc, char *argv[] )
 
 void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer ctImage, unsigned int numImages,
 		      std::vector<OverlayType::Pointer>* overlayVec, double opacity, std::string slicePlane, 
-		      short window, short level, unsigned char cipRegion, unsigned char cipType, bool bookEnds)
+		      short window, short level, unsigned char cipRegion, unsigned char cipType, bool bookEnds,
+		      bool allImages)
 {
   cip::ChestConventions conventions;
 
@@ -262,6 +208,11 @@ void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer 
     kIndex = 0;
     }
 
+  if ( allImages )
+    {
+      numImages = sliceMax - sliceMin + 1;
+    }
+
   cip::LabelMapType::IndexType index;
   OverlayType::IndexType  overlayIndex;
   
@@ -270,7 +221,7 @@ void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer 
   double         windowLeveledValue;
   unsigned short labelValue;
 
-  for (unsigned int n=1; n<=numImages; n++ )
+  for ( unsigned int n=1; n<=numImages; n++ )
     {
     RGBPixelType rgbDefault;
       rgbDefault[0] = 0;
@@ -284,7 +235,11 @@ void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer 
       overlay->FillBuffer(rgbDefault);
 
     unsigned int slice;
-    if ( bookEnds )
+    if ( allImages )
+      {
+	slice = sliceMin + n - 1;
+      }
+    else if ( bookEnds )
       {
 	slice = sliceMin + (n - 1)*(sliceMax - sliceMin)/numImages;
       }
@@ -293,47 +248,50 @@ void GetOverlayImages(cip::LabelMapType::Pointer labelMap, cip::CTType::Pointer 
 	slice = sliceMin + n*(sliceMax - sliceMin)/(numImages + 1);
       }
 
-    index[kIndex] = slice;
+    if ( !allImages || (allImages && GetSliceHasForeground(labelMap, slice, slicePlane)) )
+      {      
+	index[kIndex] = slice;
 
-    for ( unsigned int i=0; i<overlaySize[0]; i++ )
-      {
-      index[iIndex] = i;
-      overlayIndex[0] = i;
-
-      for ( unsigned int j=0; j<overlaySize[1]; j++ )
-        {
-        index[jIndex] = j;
-
-	// We assume by default that the scan is head-first and supine. This requires
-	// us to flip the coronal and sagittal images so they are upright.
-	if (slicePlane.compare("coronal") == 0 || slicePlane.compare("sagittal") == 0)
+	for ( unsigned int i=0; i<overlaySize[0]; i++ )
 	  {
-	  overlayIndex[1] = size[2] - 1 - j;
+	    index[iIndex] = i;
+	    overlayIndex[0] = i;
+	    
+	    for ( unsigned int j=0; j<overlaySize[1]; j++ )
+	      {
+		index[jIndex] = j;
+		
+		// We assume by default that the scan is head-first and supine. This requires
+		// us to flip the coronal and sagittal images so they are upright.
+		if (slicePlane.compare("coronal") == 0 || slicePlane.compare("sagittal") == 0)
+		  {
+		    overlayIndex[1] = size[2] - 1 - j;
+		  }
+		else
+		  {
+		    overlayIndex[1] = j;
+		  }
+		
+		windowLeveledValue = GetWindowLeveledValue(ctImage->GetPixel(index), window, level);
+		labelValue = labelMap->GetPixel(index);
+		
+		if (opacity == 0.0)
+		  {
+		    overlayValue[0] = windowLeveledValue;
+		    overlayValue[1] = windowLeveledValue;
+		    overlayValue[2] = windowLeveledValue;
+		  }
+		else
+		  {
+		    overlayValue = GetOverlayPixelValue(windowLeveledValue, labelValue, opacity);
+		  }        
+		
+		overlay->SetPixel(overlayIndex, overlayValue);
+	      }
 	  }
-	else
-	  {
-	  overlayIndex[1] = j;
-	  }
-
-        windowLeveledValue = GetWindowLeveledValue(ctImage->GetPixel(index), window, level);
-        labelValue = labelMap->GetPixel(index);
-        
-        if (opacity == 0.0)
-          {
-          overlayValue[0] = windowLeveledValue;
-          overlayValue[1] = windowLeveledValue;
-          overlayValue[2] = windowLeveledValue;
-          }
-        else
-          {
-          overlayValue = GetOverlayPixelValue(windowLeveledValue, labelValue, opacity);
-          }        
-
-        overlay->SetPixel(overlayIndex, overlayValue);
-        }
+	
+	overlayVec->push_back( overlay );
       }
-
-    overlayVec->push_back( overlay );
     }
 }
 
@@ -357,6 +315,64 @@ double GetWindowLeveledValue(short ctValue, short window, short level)
     }
 
   return windowLeveledValue;
+}
+
+bool GetSliceHasForeground(cip::LabelMapType::Pointer labelMap, unsigned int whichSlice, std::string slicePlane )
+{
+  cip::LabelMapType::SizeType size = labelMap->GetBufferedRegion().GetSize();
+
+  cip::LabelMapType::RegionType region;
+  cip::LabelMapType::IndexType  start;
+  cip::LabelMapType::SizeType   regionSize;
+
+  if (slicePlane.compare("axial") == 0)
+    {
+      start[0] = 0;
+      start[1] = 0;
+      start[2] = whichSlice;
+      
+      regionSize[0] = size[0];
+      regionSize[1] = size[1];
+      regionSize[2] = 1;
+    }
+  else if (slicePlane.compare("coronal") == 0)
+    {      
+      start[0] = 0;
+      start[1] = whichSlice;
+      start[2] = 0;
+      
+      regionSize[0] = size[0];
+      regionSize[1] = 1;
+      regionSize[2] = size[2];
+    }
+  else if (slicePlane.compare("sagittal") == 0)
+    {      
+      start[0] = whichSlice;
+      start[1] = 0;
+      start[2] = 0;
+      
+      regionSize[0] = 1;
+      regionSize[1] = size[1];
+      regionSize[2] = size[2];
+    }
+
+  region.SetSize( regionSize );
+  region.SetIndex( start );
+
+  IteratorType it( labelMap, region );
+
+  it.GoToBegin();
+  while ( !it.IsAtEnd() )
+    {
+      if ( it.Get() > 0 )
+	{
+	  return true;
+	}
+
+      ++it;
+    }
+
+  return false;
 }
 
 //

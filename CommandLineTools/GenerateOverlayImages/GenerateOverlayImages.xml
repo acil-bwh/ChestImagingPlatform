@@ -46,6 +46,19 @@
       <description><![CDATA[Names of the overlay images to produce. The images will be spaced \
       evenly across the bounding box in the direction orthogonal to the plane of interest]]></description>
     </string-vector>  
+
+    <string>
+      <name>prefix</name>
+      <label>File names prefix</label>
+      <channel>input</channel>
+      <longflag>prefix</longflag>
+      <description><![CDATA[The prefix is only relevant for use with --all. Use this flag to indicate \
+      the file name prefix to be used for the output overlays. Appended to the prefix will be an integer \
+      value indicating the overlay number. E.g. a prefex of 'foo' will produce result in the first overlay \
+      file name 'foo0000.png' (four digits are used to represent the file number).]]></description>
+      <default>NA</default>
+    </string>  
+
   </parameters>
 
   <parameters>
@@ -86,6 +99,15 @@
       <default>0</default>
       <description><![CDATA[Set to 1 in order to make overlays relative to the bounding box endpoints instead of \
       the bounding box interior.]]></description>
+    </boolean>  
+
+    <boolean>
+      <name>allImages</name>
+      <label>All images option</label>
+      <channel>input</channel>
+      <longflag>all</longflag>
+      <description><![CDATA[Use of this flag will produce an overlay image for every slice that has foreground\
+      region. If using this flag, you should also use --prefix in order to specify the output overlays.]]></description>
     </boolean>  
 
     <integer>
