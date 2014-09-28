@@ -383,7 +383,7 @@ void GetResourceFiles( std::string resourcesDir, std::vector< std::string >* tra
   dir.Load( resourcesDir.c_str() );
 
   unsigned int numFiles = itksys::Directory::GetNumberOfFilesInDirectory( resourcesDir.c_str() );
-  std::string transformFileSuffix = "_TO_10002K_INSP_STD_BWH_COPD_transform.txt";
+  std::string transformFileSuffix = "_TO_10002K_INSP_STD_BWH_COPD_transform.tfm";
   std::string pointsFileSuffix    = "_regionAndTypePoints.csv";
 
   for ( unsigned int i=0; i<numFiles; i++ )
