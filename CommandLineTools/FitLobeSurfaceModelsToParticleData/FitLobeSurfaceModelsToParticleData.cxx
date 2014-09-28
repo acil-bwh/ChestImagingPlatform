@@ -16,6 +16,7 @@
 #include "cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric.h"
 #include "cipNelderMeadSimplexOptimizer.h"
 #include "cipLobeSurfaceModelIO.h"
+#include "cipVesselParticleConnectedComponentFilter.h"
 #include "FitLobeSurfaceModelsToParticleDataCLP.h"
 
 int main( int argc, char *argv[] )
@@ -60,7 +61,20 @@ int main( int argc, char *argv[] )
         leftVesselParticlesReader->SetFileName( leftVesselParticlesFileName.c_str() );
 	leftVesselParticlesReader->Update();    
 
-    leftMetric->SetVesselParticles( leftVesselParticlesReader->GetOutput() );
+      std::cout << "Filtering left vessel particles..." << std::endl;
+      cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
+	filter->SetInterParticleSpacing( 1.5 );
+	filter->SetComponentSizeThreshold( 50 );
+	filter->SetParticleDistanceThreshold( 3.0 );
+	filter->SetParticleAngleThreshold( 20.0 );
+	filter->SetScaleRatioThreshold( 0.25 );
+	filter->SetMaximumComponentSize( 10000 );
+	filter->SetMaximumAllowableScale( 5.0 );
+	filter->SetMinimumAllowableScale( 0.0 );
+	filter->SetInput( leftVesselParticlesReader->GetOutput() );
+	filter->Update();
+
+    leftMetric->SetVesselParticles( filter->GetOutput() );
     }
   if ( leftAirwayParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -88,7 +102,20 @@ int main( int argc, char *argv[] )
         rightVesselParticlesReader->SetFileName( rightVesselParticlesFileName.c_str() );
 	rightVesselParticlesReader->Update();    
 
-    rightMetric->SetVesselParticles( rightVesselParticlesReader->GetOutput() );
+      std::cout << "Filtering right vessel particles..." << std::endl;
+      cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
+	filter->SetInterParticleSpacing( 1.5 );
+	filter->SetComponentSizeThreshold( 50 );
+	filter->SetParticleDistanceThreshold( 3.0 );
+	filter->SetParticleAngleThreshold( 20.0 );
+	filter->SetScaleRatioThreshold( 0.25 );
+	filter->SetMaximumComponentSize( 10000 );
+	filter->SetMaximumAllowableScale( 5.0 );
+	filter->SetMinimumAllowableScale( 0.0 );
+	filter->SetInput( rightVesselParticlesReader->GetOutput() );
+	filter->Update();
+
+    rightMetric->SetVesselParticles( filter->GetOutput() );
     }
   if ( rightAirwayParticlesFileName.compare( "NA" ) != 0 )
     {
