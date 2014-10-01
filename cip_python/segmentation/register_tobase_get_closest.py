@@ -46,24 +46,26 @@ def register_2d_ct(moving_CT_original, fixed_CT_original, output_transfo_name):
     fixed_CT= fixed_CT_original.split('.')[0]+"_cleaned."+\
         fixed_CT_original.split('.')[1]
             
-    ct_ori, imageInfo= nrrd.read(moving_CT_original)          
-    ct_cl, nr_objects = ndimage.label(ct_ori > -700) 
-    ct_ori[ct_cl != 1]=-1024
-    nrrd.write(moving_CT, np.squeeze(ct_ori))
-    
-    moving_mask_rigid= moving_CT_original.split('.')[0]+"_registrationMask."+\
+
+    input_moving_mask_rigid= '_'.join(moving_CT_original.split("_")[0:-1])+"_pecsSubqFatClosedSlice."+\
+        moving_CT_original.split('.')[1]
+           
+    moving_mask_rigid= '_'.join(moving_CT_original.split("_")[0:-1])+"_pecsSubqFatClosedSlice_thresholded."+\
         moving_CT_original.split('.')[1]
 
-    rigid_mask = np.zeros_like(ct_ori)         
-    rigid_mask[ct_ori<(-1023)] = 0
-    rigid_mask[ct_ori>(-1024)] = 1
-    nrrd.write(moving_mask_rigid, np.squeeze(rigid_mask))
+    mask, imageInfo= nrrd.read(input_moving_mask_rigid)          
+    above_zero = mask>0
+    belowthresh = mask<17000 #fat is 17944
     
-    ct_ori, imageInfo= nrrd.read(fixed_CT_original)          
-    ct_cl, nr_objects = ndimage.label(ct_ori > -700) 
-    ct_ori[ct_cl != 1]=-1024
-    nrrd.write(fixed_CT, np.squeeze(ct_ori))
-
+        #threshold slice to contain only all pec data
+    mask[above_zero & belowthresh ] = 1
+    mask[mask>1] = 0  
+        
+    nrrd.write(moving_mask_rigid, np.squeeze(mask))
+    
+    clean_ct(moving_CT_original, moving_CT)
+    clean_ct(fixed_CT_original, fixed_CT)
+    
     registerCall = os.path.join(path['CIP_PATH'],"RegisterCT2D")
     register_call = registerCall+" -m "+moving_CT+" -f "+\
                 fixed_CT+ " --outputTransform "+output_transfo_name+\
@@ -103,7 +105,7 @@ def compute_ct_mask_similarity_withlabel(input_ct_volume, input_labelmap_filenam
         nrrd.write(output_ct_filename,np.squeeze(cropped_data))
         
 def compute_ct_mask_similarity(input_labelmap_filename, input_ctfilename , 
-    output_maskfilename):
+    output_maskfilename, dilation_value):
 
         cropped_data_temp, imageInfo= nrrd.read(input_labelmap_filename)
         above_zero = cropped_data_temp>0
@@ -119,9 +121,9 @@ def compute_ct_mask_similarity(input_labelmap_filename, input_ctfilename ,
     	#cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp,\
     	#   iterations = 10)).astype(np.int) #10    
      #   cropped_data = np.squeeze(cropped_data_temp)  
-                
-    	cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp,\
-    	   iterations = 10)).astype(np.int) #2 was working not bad, with bounding box    
+        if (dilation_value > 0):        
+    	   cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp,\
+    	       iterations = dilation_value)).astype(np.int) #10 is the last functional value   
         cropped_data = np.squeeze(cropped_data_temp)        
         print(np.shape(cropped_data)) 
         #now find boundingbox
@@ -137,7 +139,32 @@ def compute_ct_mask_similarity(input_labelmap_filename, input_ctfilename ,
         
         nrrd.write(output_maskfilename,np.squeeze(cropped_data))
         
-        
+
+def compute_edge_mask(input_mask_name, output_mask_name):
+    """
+    generates a mask that only takes into account the edge of the existing mask 
+    with some dilation
+    """
+    toolsPaths = ['CIP_PATH', 'TEEM_PATH'];
+    path=dict()
+    for path_name in toolsPaths:
+        path[path_name]=os.environ.get(path_name,False)
+        if path[path_name] == False:
+            print path_name + " environment variable is not set"
+            exit()    
+
+
+    mask_data, options = nrrd.read(input_mask_name)
+
+    #make the number of iterations proportional to the size of the pecs
+    
+    dilated_mask = np.array(ndimage.binary_dilation(mask_data, iterations = 10)).astype(np.int) 
+    erdoded_mask = np.array(ndimage.binary_erosion(mask_data, iterations = 5)).astype(np.int) 
+    
+    final_array = np.zeros_like(mask_data)
+    final_array = np.bitwise_and(dilated_mask, -erdoded_mask+1)
+    nrrd.write(output_mask_name,final_array)
+                
 def compute_similarity_from_filenames(testing_ct_filename, \
     training_case_ct_filenames,training_case_label_filenames, list_of_transfos, \
     base_case_transfo = None):
@@ -150,6 +177,8 @@ def compute_similarity_from_filenames(testing_ct_filename, \
     
     The assumption is that base to training always exists. So we don't need 
     to invert transformations        
+    
+    the label filenames are supposed to be already thresholded to the right pec
     """  
     
     toolsPaths = ['CIP_PATH'];
@@ -168,39 +197,34 @@ def compute_similarity_from_filenames(testing_ct_filename, \
     for x in range(0,len(training_case_ct_filenames)):  
         
         # compute mask and cropped image, save in temp_dir
-        moving_mask_filename_uncropped= training_case_ct_filenames[x].split('.')[0]+\
-            "_similarityMask."+training_case_ct_filenames[x].split('.')[1]   
         moving_mask_filename= training_case_ct_filenames[x].split('.')[0]+\
-            "_similarityMask_cropped."+training_case_ct_filenames[x].split('.')[1]          
+            "_similarityMask."+training_case_ct_filenames[x].split('.')[1]   
+ 
 
-        clean_ct(training_case_ct_filenames[x])
-        clean_ct(testing_ct_filename)
+
         moving_CT= training_case_ct_filenames[x].split('.')[0]+"_cleaned."+\
             training_case_ct_filenames[x].split('.')[1]
 
         fixed_CT= testing_ct_filename.split('.')[0]+"_cleaned."+\
             testing_ct_filename.split('.')[1]
+
+        clean_ct(training_case_ct_filenames[x], moving_CT)
+        clean_ct(testing_ct_filename, fixed_CT)
+                        
+        #compute_ct_mask_similarity(training_case_label_filenames[x],\
+        #    moving_CT, moving_mask_filename)
         
-        compute_ct_mask_similarity(training_case_label_filenames[x],\
-            moving_CT, moving_mask_filename_uncropped)
-       
-        moving_cropped_ct_filename = training_case_ct_filenames[x].split('.')[0]+\
-            "_ctCroppedMask."+training_case_ct_filenames[x].split('.')[1]
-        fixed_cropped_ct_filename =testing_ct_filename.split('.')[0]+\
-            "_ctCroppedMask."+testing_ct_filename.split('.')[1]
+        cropped_data_temp, imageInfo= nrrd.read(training_case_label_filenames[x])
+        above_zero = cropped_data_temp>0
+        belowthresh = cropped_data_temp<17000 #fat is 17944
+    
+        #threshold slice to contain only all pec data
+        cropped_data_temp[above_zero & belowthresh ] = 1
+        cropped_data_temp[cropped_data_temp>1] = 0  
+        nrrd.write(moving_mask_filename,cropped_data_temp)
         
-           
-        print("\n\n\n about to crop CT data and the moving mask")    
-        
-                  
-        crop_ct_to_moving_mask(moving_CT, moving_mask_filename_uncropped, moving_cropped_ct_filename, \
-             False, None)
-        # transfo that we have is moving to fixed.     
-        crop_ct_to_moving_mask(fixed_CT, moving_mask_filename_uncropped, fixed_cropped_ct_filename, \
-             False, list_of_transfos[x])                
-        crop_ct_to_moving_mask(moving_mask_filename_uncropped, moving_mask_filename_uncropped, \
-            moving_mask_filename, False, None) 
-                                                                    
+        compute_edge_mask(moving_mask_filename, moving_mask_filename)
+                                                                   
         if (base_case_transfo == None):
             list_of_similarity_files[x] = list_of_transfos[x]+ "_measures.xml"
             transfos_for_similarity = list_of_transfos[x]
@@ -209,19 +233,164 @@ def compute_similarity_from_filenames(testing_ct_filename, \
                list_of_transfos[x].split('/')[-1]+"_measures.xml"
             transfos_for_similarity = list_of_transfos[x]+","+base_case_transfo
                                             
-        similarity_call= GetTransformationSimilarityMetric+ \
-            " --fixedCTFileName "+fixed_cropped_ct_filename +\
-            " --movingCTFileName "+ moving_cropped_ct_filename+ \
-            " --inputTransform "+transfos_for_similarity+\
-            " --outputXMLFile "+list_of_similarity_files[x] +\
-            " --movingLabelMapFileName "+ moving_mask_filename+\
-            " --SimilarityMetric msqr"    
+        #similarity_call= GetTransformationSimilarityMetric+ \
+        #    " --fixedCTFileName "+fixed_CT +\
+        #    " --movingCTFileName "+ moving_CT+ \
+        #    " --inputTransform "+transfos_for_similarity+\
+        #    " --outputXMLFile "+list_of_similarity_files[x] +\
+        #    " --movingLabelMapFileName "+ moving_mask_filename+\
+        #    " --SimilarityMetric nc"    
 
-                                              
+        moving_CT= training_case_ct_filenames[x].split('.')[0]+"_thresholded."+\
+            training_case_ct_filenames[x].split('.')[1]
+
+        fixed_CT= testing_ct_filename.split('.')[0]+"_thresholded."+\
+            testing_ct_filename.split('.')[1]
+            
+        GetTransformationSimilarityMetric = os.path.join(path['CIP_PATH'], \
+        "GetTransformationKappa2D")        
+        similarity_call= GetTransformationSimilarityMetric+ \
+            " --fixedCTFileName "+fixed_CT +\
+            " --movingCTFileName "+ moving_CT+ \
+            " --inputTransform "+transfos_for_similarity+\
+            " --outputXMLFile "+list_of_similarity_files[x] 
+            #" --movingLabelMapFileName "+ moving_mask_filename
+                                                                                                        
         print(similarity_call)                
         subprocess.call(similarity_call, shell=True);
     print(list_of_similarity_files)     
     return list_of_similarity_files
+
+
+def compute_dice_with_transfo(img_fixed, img_moving, transfo):
+    
+    #first transform 
+    toolsPaths = ['CIP_PATH'];
+    path=dict()
+    for path_name in toolsPaths:
+        path[path_name]=os.environ.get(path_name,False)
+        if path[path_name] == False:
+            print path_name + " environment variable is not set"
+            exit()
+    temp_out = "/Users/rolaharmouche/Documents/Data/temp_reg.nrrd"        
+    resamplecall = os.path.join(path['CIP_PATH'], "ResampleCT")    
+        
+    sys_call = resamplecall+" -d "+img_fixed+" -r "+ temp_out+\
+            " -t "+transfo+" -l "+img_moving
+    os.system(sys_call) 
+    
+    print(" computing ssd between "+img_fixed+" and registered"+ img_moving)
+                    
+    img1_data, info = nrrd.read(temp_out)
+    img2_data, info = nrrd.read(img_fixed)
+    
+    
+    
+    #careful reference image has labels =2 and 3
+    added_images = img1_data
+    np.bitwise_and(img1_data, img2_data, added_images)
+    Dice_calculation = sum(added_images[:])*2.0/(sum(img1_data[:])+sum(img2_data[:]))
+
+    return Dice_calculation
+    
+
+def compute_dice_similarity_from_filenames(testing_ct_filename, \
+    training_case_ct_filenames,training_case_label_filenames, list_of_transfos, \
+    base_case_transfo = None):
+    
+    """
+    generalized call to get compute similarity so that we always call the 
+    same function. if  base_case_transfo = Null, then 1 transformation.
+    
+    make sure identity base case transfos exist.  
+    
+    The assumption is that base to training always exists. So we don't need 
+    to invert transformations        
+    
+    the label filenames are supposed to be already thresholded to the right pec
+    """  
+    
+    toolsPaths = ['CIP_PATH'];
+    path=dict()
+    for path_name in toolsPaths:
+        path[path_name]=os.environ.get(path_name,False)
+        if path[path_name] == False:
+            print path_name + " environment variable is not set"
+            exit()
+    
+    #GetTransformationSimilarityMetric = os.path.join(path['CIP_PATH'], \
+    #    "GetTransformationSimilarityMetric2D")
+    GetTransformationSimilarityMetric = os.path.join(path['CIP_PATH'], \
+        "GetTransformationKappa2D")        
+    list_of_similarity_files = [""]*len(training_case_ct_filenames)
+    
+    for x in range(0,len(training_case_ct_filenames)):  
+        
+        # compute mask and cropped image, save in temp_dir
+        moving_mask_filename= training_case_ct_filenames[x].split('.')[0]+\
+            "_similarityMask."+training_case_ct_filenames[x].split('.')[1]   
+ 
+
+
+        #        moving_CT= training_case_ct_filenames[x].split('.')[0]+"_cleaned."+\
+        #            training_case_ct_filenames[x].split('.')[1]
+        #
+        #        fixed_CT= testing_ct_filename.split('.')[0]+"_cleaned."+\
+        #            testing_ct_filename.split('.')[1]
+        #
+        #        clean_ct(training_case_ct_filenames[x], moving_CT)
+        #        clean_ct(testing_ct_filename, fixed_CT)
+        moving_CT =training_case_ct_filenames[x]
+        fixed_CT =  testing_ct_filename              
+        #compute_ct_mask_similarity(training_case_label_filenames[x],\
+        #    moving_CT, moving_mask_filename)
+        
+        cropped_data_temp, imageInfo= nrrd.read(training_case_label_filenames[x])
+        above_zero = cropped_data_temp>0
+        belowthresh = cropped_data_temp<17000 #fat is 17944
+    
+        #threshold slice to contain only all pec data
+        cropped_data_temp[above_zero & belowthresh ] = 1
+        cropped_data_temp[cropped_data_temp>1] = 0  
+        nrrd.write(moving_mask_filename,cropped_data_temp)
+        
+        compute_edge_mask(moving_mask_filename, moving_mask_filename)
+                                                                   
+        if (base_case_transfo == None):
+            list_of_similarity_files[x] = list_of_transfos[x]+ "_measures.xml"
+            transfos_for_similarity = list_of_transfos[x]
+        else:
+            list_of_similarity_files[x] = base_case_transfo+"_followedby_"+\
+               list_of_transfos[x].split('/')[-1]+"_measures.xml"
+            transfos_for_similarity = list_of_transfos[x]+","+base_case_transfo
+                                            
+        #similarity_call= GetTransformationSimilarityMetric+ \
+        #    " --fixedCTFileName "+fixed_CT +\
+        #    " --movingCTFileName "+ moving_CT+ \
+        #    " --inputTransform "+transfos_for_similarity+\
+        #    " --outputXMLFile "+list_of_similarity_files[x] +\
+        #    " --movingLabelMapFileName "+ moving_mask_filename+\
+        #    " --SimilarityMetric nc"    
+
+        temp1_for_registration = fixed_CT.split('.')[0]+"_thresholded.nrrd"
+        temp2_for_registration = moving_CT.split('.')[0]+"_thresholded.nrrd"
+ 
+
+        similarity_call= GetTransformationSimilarityMetric+ \
+            " --fixedCTFileName "+temp1_for_registration +\
+            " --movingCTFileName "+ temp2_for_registration+ \
+            " --inputTransform "+transfos_for_similarity+\
+            " --outputXMLFile "+list_of_similarity_files[x] 
+
+                                              
+        print(similarity_call)                
+        subprocess.call(similarity_call, shell=True);
+        
+        #dd = compute_dice_with_transfo(temp1_for_registration, temp2_for_registration, transfos_for_similarity)
+        #list_of_similarity_files[x] = str(dd)
+    print(list_of_similarity_files)     
+    return list_of_similarity_files
+
 
 def crop_ct_to_moving_mask(fixed_ct_fname, moving_mask_fname, output_ct_fname, 
      is_invert, moving_to_fixed_transfo=None):
@@ -302,14 +471,25 @@ def register_tobase_get_closest( testing_ct_filename, base_case_ct_filenames,
             print path_name + " environment variable is not set"
             exit()
     
+    registerLabelMaps = os.path.join(path['CIP_PATH'],"RegisterLabelMaps2D")
+    
     base_to_testing_transfo_names = [""]*len(base_case_ct_filenames)                
     for ii in range(0, len(base_case_ct_filenames)) :     
         base_case_ct_filename =  base_case_ct_filenames[ii]  
         base_to_testing_transfo_names[ii] = os.path.join(test_case_transfo_dir, \
         base_case_ct_filenames[ii].split('/')[-1].split('.')[0]+"_to_"+testing_ct_filename.split('/')[-1].split('.')[0]+"_tfm_0GenericAffine.tfm")             
         if(is_register is True):
-            register_2d_ct( base_case_ct_filename, testing_ct_filename,  base_to_testing_transfo_names[ii])
-                
+            #register_2d_ct( base_case_ct_filename, testing_ct_filename,  base_to_testing_transfo_names[ii])
+            
+            temp1_for_registration = base_case_ct_filename.split('.')[0]+"_thresholded.nrrd"
+            temp2_for_registration = testing_ct_filename.split('.')[0]+"_thresholded.nrrd"
+            print(registerLabelMaps+" -m "+temp1_for_registration+" -f "+\
+                temp2_for_registration+ " --outputTransform "+base_to_testing_transfo_names[ii])
+    
+            #os.system(registerLabelMaps+" -m "+base_case_ct_filename+" -f "+\
+            #    testing_ct_filename+ " --outputTransform "+base_to_testing_transfo_names[ii])
+        else:
+            exit()        
    
     """
     find closest base case label filename and the index in the list we have
