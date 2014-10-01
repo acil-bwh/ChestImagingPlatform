@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # TODO: Investigate live_thresh and seed_thresh (ranges specified below)
 # TODO: Consider using mask throughout all passes if you're passing an
 #       airway mask in (tried this -- does not seem to have an effect. Bug?)

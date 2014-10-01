@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 #------------------------------------------------------------------------------------
 # TODO: We will want to put some of the functionality into a base class from which
 # 'Generate[Airway,Vessel,Fissure]Particles' can inherit.
@@ -133,7 +131,7 @@ class ChestParticles:
         # -----------------
         # Binning width as mulitple of irad. Increase this value run into
         # overflow of maximum number of bins.
-        self._binning_width = 1.2
+        self._binning_width = 1.2 
         # Population control period
         self._population_control_period = 5
         # If enabled, it does not add points during population control
@@ -529,3 +527,4 @@ class ChestParticles:
                                          'out':output_mask}
 
             subprocess.call(tmp_command, shell=True)
+
