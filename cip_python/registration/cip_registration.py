@@ -40,9 +40,20 @@ def transform_data ( reference_im, moving_im, transforms_list, output):
     None
     
   """
+  
+  os.environ['ANTS_PATH']=os.path.expanduser('/Users/rolaharmouche/Downloads/antsbin/bin')
+  os.environ['ITKTOOLS_PATH']=os.path.expanduser('/Users/rolaharmouche/Downloads/ITKTools/build/bin')
+  os.environ['TEEM_PATH']=os.path.expanduser('/Users/rolaharmouche/Slicer4-SuperBuild-Debug/teem-build/bin')
+
+
   toolsPaths = ['TEEM_PATH','ITKTOOLS_PATH','ANTS_PATH'];
   path=dict()
-  
+  for path_name in toolsPaths:
+    path[path_name]=os.environ.get(path_name,False)
+    if path[path_name] == False:
+      print path_name + " environment variable is not set"
+      exit()
+        
   tmp_command = "antsApplyTransforms -d 3 -i %(m)s -r %(f)s -n linear -o %(deformed)s"
   tmp_command = tmp_command % {'f':reference_im,'m':moving_im,'deformed':output}
   for tt in transforms_list:
@@ -55,6 +66,9 @@ def transform_data ( reference_im, moving_im, transforms_list, output):
 
 def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cache,affine,elastic,use_lung_mask,use_body_mask,body_th,fast,resampled_out,generate_tfm,pec_registration):
 
+  os.environ['ANTS_PATH']=os.path.expanduser('/Users/rolaharmouche/Downloads/antsbin/bin')
+  os.environ['ITKTOOLS_PATH']=os.path.expanduser('/Users/rolaharmouche/Downloads/ITKTools/build/bin')
+  os.environ['TEEM_PATH']=os.path.expanduser('/Users/rolaharmouche/Slicer4-SuperBuild-Debug/teem-build/bin')
 
   #Check required tools path enviroment variables for tools path
   toolsPaths = ['ANTS_PATH','TEEM_PATH','ITKTOOLS_PATH'];
@@ -182,24 +196,34 @@ def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cach
                  -c [%(its)s,1.e-8,20]  \
                  -s 4x2x1vox \
                  -f 8x4x2 \
-                 -l 1"
-  if affine == True:
-    tmp_command = tmp_command + " -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
+                 -l 1" 
+  tmp_command = tmp_command % {'f':fixed_tmp,'m':moving_tmp, \
+    'percentage':percentage,'its':its}
+ 
+  print(tmp_command)
+  
+  if affine :
+    tmp_command = tmp_command + " -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ]  \
                  -t affine[ 0.1 ] \
                  -c [%(its)s,1.e-8,20] \
                  -s 4x2x1vox \
                  -f 8x4x2 \
                  -l 1 -u 1 -z 1"
-    tmp_command = tmp_command + " -o [%(nm)s]"
+    
     tmp_command = tmp_command % {'f':fixed_tmp,'m':moving_tmp, \
     'percentage':percentage,'its':its,'nm':deformation_prefix}
 
-    if use_body_mask == True:
+  print(tmp_command)               
+  if use_body_mask:
       tmp_command = tmp_command + " -x [%(f_mask)s,%(m_mask)s]"
       tmp_command = tmp_command % {'f_mask':fixed_body_mask_tmp,'m_mask':moving_body_mask_tmp}
 
-    tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
-    
+  tmp_command = tmp_command + " -o [%(nm)s]"
+  tmp_command = tmp_command % {'nm':deformation_prefix}   
+  print(tmp_command)
+  tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
+  
+   
   if pec_registration == True:
     tmp_command = "antsRegistration -d 2 -r [ %(f)s,%(m)s,0] \
              -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
@@ -276,8 +300,10 @@ def register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cach
     -o [%(nm)s,%(out)s,%(out_inv)s]"
     tmp_command = tmp_command % {'affine':affine_tfm, 'f':fixed_tmp, 'm':moving_tmp,'syn':syn, \
     'nm':deformation_prefix,'out':moving_deformed_tmp,'out_inv':fixed_deformed_tmp}
+    
+    
 
-    if use_lung_mask == True:
+    if use_lung_mask:
       tmp_command = tmp_command + " -x [%(f_mask)s,%(m_mask)s]"
       tmp_command = tmp_command % {'f_mask':fixed_mask_tmp,'m_mask':moving_mask_tmp}
 
@@ -375,7 +401,7 @@ if __name__ == "__main__":
     resampled_out = options.resampled_out
     generate_tfm = options.generate_tfm
     
-    register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cache,affine,elastic,use_lung_mask,use_body_mask,body_th,fast,resampled_out,generate_tfm)
+    register_images(fixed_cid,moving_cid,sigma,rate,tmp_dir,data_dir,delete_cache,affine,elastic,use_lung_mask,use_body_mask,body_th,fast,resampled_out,generate_tfm, False)
 
 
 
