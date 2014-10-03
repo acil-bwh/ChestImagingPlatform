@@ -92,15 +92,6 @@
     </string>  
 
     <string>
-      <name>refPointsFileName</name>
-      <label>Reference points file name</label>
-      <channel>input</channel>
-      <longflag>refps</longflag>
-      <description><![CDATA[Reference points corresponding to the reference image.]]></description>
-      <default>NA</default>
-    </string>  
-
-    <string>
       <name>rightShapeModelFileName</name>
       <label>Right oblique and right horizontal shape model file name</label>
       <channel>input</channel>

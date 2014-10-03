@@ -107,6 +107,9 @@ int main( int argc, char *argv[] )
     leftWidth[0] = leftLungBoundingBox.GetSize()[0]*fixedReader->GetOutput()->GetSpacing()[0];
     leftWidth[1] = leftLungBoundingBox.GetSize()[1]*fixedReader->GetOutput()->GetSpacing()[1];
 
+  cipAssert( leftWidth[0] > 0.0 );
+  cipAssert( leftWidth[1] > 0.0 );
+
   std::vector< ImageType::PointType > leftDomainPatternPoints;
   GetDomainPatternedPoints(leftBoundingBoxStartPoint, leftWidth, 2, &leftDomainPatternPoints );
 
@@ -120,6 +123,9 @@ int main( int argc, char *argv[] )
   float rightWidth[2];
     rightWidth[0] = rightLungBoundingBox.GetSize()[0]*fixedReader->GetOutput()->GetSpacing()[0];
     rightWidth[1] = rightLungBoundingBox.GetSize()[1]*fixedReader->GetOutput()->GetSpacing()[1];
+
+  cipAssert( rightWidth[0] > 0.0 );
+  cipAssert( rightWidth[1] > 0.0 );
 
   std::vector< ImageType::PointType > rightDomainPatternPoints;
   GetDomainPatternedPoints(rightBoundingBoxStartPoint, rightWidth, 2, &rightDomainPatternPoints );
