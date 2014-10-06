@@ -427,11 +427,11 @@ cip::ChestConventions::ChestConventions()
   double* r002 = new double[3]; r002[0] = 0.42; r002[1] = 0.38; r002[2] = 0.75; ChestRegionColors.push_back( r002 ); //WHOLELUNG
   double* r003 = new double[3]; r003[0] = 0.26; r003[1] = 0.64; r003[2] = 0.10; ChestRegionColors.push_back( r003 ); //RIGHTLUNG
   double* r004 = new double[3]; r004[0] = 0.80; r004[1] = 0.11; r004[2] = 0.36; ChestRegionColors.push_back( r004 ); //LEFTLUNG
-  double* r005 = new double[3]; r005[0] = 0.04; r005[1] = 0.00; r005[2] = 0.00; ChestRegionColors.push_back( r005 ); //RIGHTSUPERIORLOBE
-  double* r006 = new double[3]; r006[0] = 0.05; r006[1] = 0.00; r006[2] = 0.00; ChestRegionColors.push_back( r006 ); //RIGHTMIDDLELOBE
-  double* r007 = new double[3]; r007[0] = 0.06; r007[1] = 0.00; r007[2] = 0.00; ChestRegionColors.push_back( r007 ); //RIGHTINFERIORLOBE
-  double* r008 = new double[3]; r008[0] = 0.07; r008[1] = 0.00; r008[2] = 0.00; ChestRegionColors.push_back( r008 ); //LEFTSUPERIORLOBE
-  double* r009 = new double[3]; r009[0] = 0.08; r009[1] = 0.00; r009[2] = 0.00; ChestRegionColors.push_back( r009 ); //LEFTINFERIORLOBE
+  double* r005 = new double[3]; r005[0] = 0.94; r005[1] = 0.00; r005[2] = 0.00; ChestRegionColors.push_back( r005 ); //RIGHTSUPERIORLOBE
+  double* r006 = new double[3]; r006[0] = 0.05; r006[1] = 1.00; r006[2] = 0.00; ChestRegionColors.push_back( r006 ); //RIGHTMIDDLELOBE
+  double* r007 = new double[3]; r007[0] = 0.06; r007[1] = 0.00; r007[2] = 1.00; ChestRegionColors.push_back( r007 ); //RIGHTINFERIORLOBE
+  double* r008 = new double[3]; r008[0] = 0.97; r008[1] = 1.00; r008[2] = 0.00; ChestRegionColors.push_back( r008 ); //LEFTSUPERIORLOBE
+  double* r009 = new double[3]; r009[0] = 0.08; r009[1] = 1.00; r009[2] = 1.00; ChestRegionColors.push_back( r009 ); //LEFTINFERIORLOBE
   double* r010 = new double[3]; r010[0] = 0.95; r010[1] = 0.03; r010[2] = 0.03; ChestRegionColors.push_back( r010 ); //LEFTUPPERTHIRD
   double* r011 = new double[3]; r011[0] = 0.95; r011[1] = 0.89; r011[2] = 0.03; ChestRegionColors.push_back( r011 ); //LEFTMIDDLETHIRD
   double* r012 = new double[3]; r012[0] = 0.03; r012[1] = 0.34; r012[2] = 0.95; ChestRegionColors.push_back( r012 ); //LEFTLOWERTHIRD
