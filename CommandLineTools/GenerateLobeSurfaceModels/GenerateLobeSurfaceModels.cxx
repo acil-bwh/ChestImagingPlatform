@@ -58,7 +58,6 @@ int main( int argc, char *argv[] )
   std::vector< std::string > trainPointsFileVec;
 
   GetResourceFiles( resourcesDir, &trainTransformFileVec, &trainPointsFileVec );
-
   cipAssert( trainTransformFileVec.size() == trainPointsFileVec.size() );
 
   if ( trainPointsFileVec.size() < 2 )
@@ -66,6 +65,8 @@ int main( int argc, char *argv[] )
       std::cerr << "Insufficient resources in directory" << std::endl;
       return cip::EXITFAILURE;
     }
+
+  std::cout << "Read in " << trainPointsFileVec.size() << " atlas resource file pairs." << std::endl;
 
   // The reference image for model building has been (arbitrarily)
   // chosen to be the COPDGene case, 10002K_INSP_STD_BWH_COPD. There are
