@@ -758,11 +758,14 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxReg
     {
     if (it.Get() > 0)
       {
+	unsigned char currentRegion = conventions.GetChestRegionFromValue( it.Get() );
+	unsigned char currentType   = conventions.GetChestTypeFromValue( it.Get() );
+
       // By default 'value' is zero, indicating that we want the bounding box over
       // the entire foreground region. So if either the foreground value is equal to
       // the requested region-type pair, or if we want to consider the foreground as
       // a whole, we will update the bounding box info.
-      if (it.Get() == value || value == 0)
+      if ( (currentType == cipType && conventions.CheckSubordinateSuperiorChestRegionRelationship( currentRegion, cipRegion)) || value == 0 )
 	{
 	if (it.GetIndex()[0] < xMin)
 	  {

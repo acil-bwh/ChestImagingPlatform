@@ -10,14 +10,14 @@
 #include "itkImageFileWriter.h"
 #include "cipHelper.h"
 #include "cipChestConventions.h"
-#include "itkImageRegionIterator.h"
+#include "itkImageRegionIteratorWithIndex.h"
 #include "itkRGBPixel.h"
 #include "GenerateOverlayImagesCLP.h"
 
 typedef itk::RGBPixel< unsigned char >                 RGBPixelType;
 typedef itk::Image< RGBPixelType, 2 >                  OverlayType;
 typedef itk::ImageFileWriter< OverlayType >            OverlayWriterType;
-typedef itk::ImageRegionIterator< cip::LabelMapType >  IteratorType;
+typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >  IteratorType;
 
 double GetWindowLeveledValue(short, short, short);
 RGBPixelType GetOverlayPixelValue(double, unsigned short, double);
@@ -366,6 +366,7 @@ bool GetSliceHasForeground(cip::LabelMapType::Pointer labelMap, unsigned int whi
     {
       if ( it.Get() > 0 )
 	{
+	  std::cout << it.GetIndex() << std::endl;
 	  return true;
 	}
 
