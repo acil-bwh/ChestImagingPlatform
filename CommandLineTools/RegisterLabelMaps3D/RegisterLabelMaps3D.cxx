@@ -217,9 +217,8 @@ int main( int argc, char *argv[] )
       return cip::EXITFAILURE;
     }
 
-  std::cout << "Subsampling fixed image with factor..." << downsampleFactor << std::endl;
-
-  subSampledFixedImage = cip::DownsampleLabelMap(downsampleFactor,fixedLabelMap);
+  std::cout << "Subsampling fixed image by a factor of " << downsampleFactor << "..." << std::endl;
+  subSampledFixedImage = cip::DownsampleLabelMap(downsampleFactor, fixedLabelMap);
 
   //Read in moving image label map from file and subsample
   cip::LabelMapType::Pointer movingLabelMap = cip::LabelMapType::New();
@@ -240,43 +239,71 @@ int main( int argc, char *argv[] )
       return cip::EXITFAILURE;
     }
 
-  std::cout << "Subsampling moving image..." << std::endl;
-  subSampledMovingImage = cip::DownsampleLabelMap(downsampleFactor,movingLabelMap);
-  // Extract fixed Image region that we want
-  std::cout << "Extracting region and type..." << std::endl;
-  LabelMapExtractorType::Pointer fixedExtractor = LabelMapExtractorType::New();
-    fixedExtractor->SetInput( subSampledFixedImage );
+  std::cout << "Subsampling moving image by a factor of " << downsampleFactor << "..." << std::endl;
+  subSampledMovingImage = cip::DownsampleLabelMap(downsampleFactor, movingLabelMap);
 
-  LabelMapExtractorType::Pointer movingExtractor = LabelMapExtractorType::New();
-    movingExtractor->SetInput( subSampledMovingImage );
-
-  for ( unsigned int i=0; i<regionVec.size(); i++ )
+  if ( regionVec.size() > 0 || typeVec.size() > 0 || regionTypePairVec.size() > 0)
     {
-      fixedExtractor->SetChestRegion(regionVec[i]);
-      movingExtractor->SetChestRegion(regionVec[i]);
-    }
-  if ( typeVec.size() > 0 )
-    {
-      for ( unsigned int i=0; i<typeVec.size(); i++ )
+      std::cout << "Extracting region and type from moving and fixed images..." << std::endl;
+      LabelMapExtractorType::Pointer fixedExtractor = LabelMapExtractorType::New();
+        fixedExtractor->SetInput( subSampledFixedImage );
+      
+      LabelMapExtractorType::Pointer movingExtractor = LabelMapExtractorType::New();
+        movingExtractor->SetInput( subSampledMovingImage );
+      
+      for ( unsigned int i=0; i<regionVec.size(); i++ )
+	{
+	  fixedExtractor->SetChestRegion( regionVec[i] );
+	  movingExtractor->SetChestRegion( regionVec[i] );
+	}
+      if ( typeVec.size() > 0 )
+	{
+	  for ( unsigned int i=0; i<typeVec.size(); i++ )
 	{
 	  fixedExtractor->SetChestType( typeVec[i] );
 	  movingExtractor->SetChestType( typeVec[i] );
 	}
-    }
-  if ( regionTypePairVec.size()>0 )
-    {
-      for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
+	}
+      if ( regionTypePairVec.size()>0 )
 	{
-	  fixedExtractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
-	  movingExtractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
+	  for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
+	    {
+	      fixedExtractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
+	      movingExtractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
+	    }
+	}
+
+      fixedExtractor->Update();
+      movingExtractor->Update();
+
+      LabelMapIteratorType feIt( fixedExtractor->GetOutput(), fixedExtractor->GetOutput()->GetBufferedRegion() );
+      LabelMapIteratorType sfIt( subSampledFixedImage, subSampledFixedImage->GetBufferedRegion() );
+
+      feIt.GoToBegin();
+      sfIt.GoToBegin();
+      while ( !sfIt.IsAtEnd() )
+	{
+	  sfIt.Set( feIt.Get() );
+
+	  ++feIt;
+	  ++sfIt;
+	}
+
+      LabelMapIteratorType meIt( movingExtractor->GetOutput(), movingExtractor->GetOutput()->GetBufferedRegion() );
+      LabelMapIteratorType smIt( subSampledMovingImage, subSampledMovingImage->GetBufferedRegion() );
+
+      meIt.GoToBegin();
+      smIt.GoToBegin();
+      while ( !smIt.IsAtEnd() )
+	{
+	  smIt.Set( meIt.Get() );
+
+	  ++meIt;
+	  ++smIt;
 	}
     }
 
-  fixedExtractor->Update();
-  movingExtractor->Update();
-
-  std::cout << "Isolating region and type of interest..." << std::endl;
-  LabelMapIteratorType it( fixedExtractor->GetOutput(),fixedExtractor->GetOutput()->GetBufferedRegion() );
+  LabelMapIteratorType it( subSampledFixedImage, subSampledFixedImage->GetBufferedRegion() );
 
   it.GoToBegin();
   while ( !it.IsAtEnd() )
@@ -288,7 +315,7 @@ int main( int argc, char *argv[] )
       ++it;
     }
 
-  LabelMapIteratorType itmoving( movingExtractor->GetOutput(),movingExtractor->GetOutput()->GetBufferedRegion() );
+  LabelMapIteratorType itmoving( subSampledMovingImage, subSampledMovingImage->GetBufferedRegion() );
 
   itmoving.GoToBegin();
   while ( !itmoving.IsAtEnd() )
@@ -306,21 +333,24 @@ int main( int argc, char *argv[] )
 
   TransformType::Pointer transform = TransformType::New();
     
-  std::cout<<"initializing transform"<<std::endl;
+  std::cout << "Initializing transform..." << std::endl;
   InitializerType::Pointer initializer = InitializerType::New();
     initializer->SetTransform( transform );
-    initializer->SetFixedImage(  fixedExtractor->GetOutput() );
-    initializer->SetMovingImage( movingExtractor->GetOutput() );
+    initializer->SetFixedImage( subSampledFixedImage );
+    initializer->SetMovingImage( subSampledMovingImage );
     initializer->MomentsOn();
     initializer->InitializeTransform();
       
   OptimizerScalesType optimizerScales( transform->GetNumberOfParameters());
-    optimizerScales[0] =  1.0;   optimizerScales[1] =  1.0;
-    optimizerScales[2] =  1.0;
-    optimizerScales[3] =  1.0;   optimizerScales[4] =  1.0;
-    optimizerScales[5] =  1.0;
-    optimizerScales[6] =  1.0;   optimizerScales[7] =  1.0;
-    optimizerScales[8] =  1.0;
+    optimizerScales[0]  =  1.0;   
+    optimizerScales[1]  =  1.0;
+    optimizerScales[2]  =  1.0;
+    optimizerScales[3]  =  1.0;   
+    optimizerScales[4]  =  1.0;
+    optimizerScales[5]  =  1.0;
+    optimizerScales[6]  =  1.0;   
+    optimizerScales[7]  =  1.0;
+    optimizerScales[8]  =  1.0;
     optimizerScales[9]  =  translationScale;
     optimizerScales[10] =  translationScale;
     optimizerScales[11] =  translationScale;
@@ -339,9 +369,9 @@ int main( int argc, char *argv[] )
     registration->SetOptimizer( optimizer );
     registration->SetInterpolator( interpolator );
     registration->SetTransform( transform );          
-    registration->SetFixedImage( fixedExtractor->GetOutput() );
-    registration->SetMovingImage( movingExtractor->GetOutput() );
-    registration->SetFixedImageRegion( fixedExtractor->GetOutput()->GetBufferedRegion() );
+    registration->SetFixedImage( subSampledFixedImage );
+    registration->SetMovingImage( subSampledMovingImage );
+    registration->SetFixedImageRegion( subSampledFixedImage->GetBufferedRegion() );
     registration->SetInitialTransformParameters( transform->GetParameters());      
   try
     {
@@ -358,8 +388,8 @@ int main( int argc, char *argv[] )
   numberOfIterations = optimizer->GetCurrentIteration();
   //  The value of the image metric corresponding to the last set of parameters
   const double bestValue = optimizer->GetValue();
-  std::cout<<"similarity output = "<< optimizer->GetValue() <<" best value = " <<bestValue<<std::endl;
-  OptimizerType::ParametersType finalParams =registration->GetLastTransformParameters();
+  std::cout << "Final metric value: " << optimizer->GetValue() << std::endl;
+  OptimizerType::ParametersType finalParams = registration->GetLastTransformParameters();
 
   TransformType::Pointer finalTransform = TransformType::New();
     finalTransform->SetParameters( finalParams );
@@ -410,8 +440,7 @@ int main( int argc, char *argv[] )
 	  labelMapRegistrationXMLData.destID.assign("N/A");
 	}
 
-      //remove path from output transformation file before storing in xml
-      std::cout<<"outputtransform filename="<<outputTransformFileName.c_str()<<std::endl;
+      // Remove path from output transformation file before storing in xml
       pos=0;
       next=0;
       for (int i = 0; i < (pathLength);i++)
@@ -433,13 +462,12 @@ int main( int argc, char *argv[] )
 
   if ( strcmp(outputImageFileName.c_str(), "q") != 0 )
     {
-      std::cout << "Resampling moving image..." << std::endl;
-        
+      std::cout << "Resampling moving image..." << std::endl;        
       ResampleFilterType::Pointer resample = ResampleFilterType::New();
         resample->SetTransform( finalTransform );
 	resample->SetInput( movingLabelMap);
 	resample->SetSize(fixedLabelMap->GetLargestPossibleRegion().GetSize());
-	resample->SetOutputOrigin(  fixedLabelMap->GetOrigin() );
+	resample->SetOutputOrigin( fixedLabelMap->GetOrigin() );
 	resample->SetOutputSpacing( fixedLabelMap->GetSpacing());
 	resample->SetOutputDirection( fixedLabelMap->GetDirection() );
 	resample->SetInterpolator( interpolator );
