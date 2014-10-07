@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>FilterConnectedComponents</title>
+  <description><![CDATA[This program filters out connected components that are smaller than a set size. It reads a labelmap and regions and types. For each region / type or pair in the inclusion set (or each pair not in the exclusion set) , it first finds all the connected components having the corresponding label value. It then proceeds to remove labels for all connected components having a voxel number that is less than a user input threshold.]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+     <image type="label">
+      <name>inputFileName</name>
+      <label>Input label map</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>inFileName</longflag>
+      <description><![CDATA[Input label map which we want to filter.]]></description>
+    </image>  
+
+     <image type="label">
+      <name>outputFileName</name>
+      <label>Output label map</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>outFileName</longflag>
+      <description><![CDATA[Output filtered label map file name.]]></description>
+    </image>  
+
+    <integer>
+      <name>sizeThreshold</name>
+       <flag>s</flag>
+      <longflag>sizeThreshold</longflag>
+      <description>Minimum number of voxels in the connected component. Connected componented with number of voxels below this value will be removed from the labelmap.</description>
+      <label>size threshold</label>
+      <default>1</default>
+    </integer>
+
+
+
+
+
+
+<integer-vector>
+      <name>regionVecArgInclude</name>
+      <longflag>regionVecInclude</longflag>
+      <label>regionVec</label>
+      <description><![CDATA[Specify a region in a region-type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+
+
+
+
+
+
+<integer-vector>
+      <name>typeVecArgInclude</name>
+      <longflag>typeVecInclude</longflag>
+      <label>typeVecInclude</label>
+      <description><![CDATA[Specify a region in a region-type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+<integer-vector>
+      <name>typePairVecArgInclude</name>
+      <longflag>typePairVecInclude</longflag>
+      <label>typePairVecInclude</label>
+      <description><![CDATA[Specify a type in a region type pair you want to include in the filtering process. This flag should be used together with the -regionPair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+<integer-vector>
+      <name>regionPairVecArgInclude</name>
+      <longflag>regionPairVecInclude</longflag>
+      <label>regionPairVecInclude</label>
+      <description><![CDATA[Specify a region in a region type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+<integer-vector>
+      <name>regionVecArgExclude</name>
+      <longflag>regionVecExclude</longflag>
+      <label>regionVecExclude</label>
+      <description><![CDATA[Specify a region in a region-type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+<integer-vector>
+      <name>typeVecArgExclude</name>
+      <longflag>typeVecExclude</longflag>
+      <label>typeVecExclude</label>
+      <description><![CDATA[Specify a region in a region-type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+<integer-vector>
+      <name>typePairVecArgExclude</name>
+      <longflag>typePairVecExclude</longflag>
+      <label>typePairVecExclude</label>
+      <description><![CDATA[Specify a type in a region type pair you want to exclude in the filtering process. This flag should be used together with the -regionPair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+<integer-vector>
+      <name>regionPairVecArgExclude</name>
+      <longflag>regionPairVecExclude</longflag>
+      <label>regionPairVeExcludec</label>
+      <description><![CDATA[Specify a region in a region type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.]]></description>
+</integer-vector>
+
+  
+
+
+
+
+
+
+
+
+
+
+  <boolean>
+      <name>isAxial</name>
+      <label>Axial Slice</label>
+      <channel>input</channel>
+      <longflag>--ax</longflag>
+      <description><![CDATA[Set if the connected components will be evaluted on one axial slice at a time.  ]]></description>
+      <default>false</default>
+    </boolean> 
+    <boolean>
+      <name>isCoronal</name>
+      <label>Coronal Slice</label>
+      <channel>input</channel>
+      <longflag>--cor</longflag>
+      <description><![CDATA[Set if the connected components will be evaluted on one coronal slice at a time.  ]]></description>
+      <default>false</default>
+    </boolean> 
+    <boolean>
+      <name>isSaggital</name>
+      <label>Saggital Slice</label>
+      <channel>input</channel>
+      <longflag>--sag</longflag>
+      <description><![CDATA[Set if the connected components will be evaluted on one saggital slice at a time. ]]></description>
+      <default>false</default>
+    </boolean> 
+    <boolean>
+      <name>isVol</name>
+      <label>Volumetric</label>
+      <channel>input</channel>
+      <longflag>--vol</longflag>
+      <description><![CDATA[Set if the connected components will be evaluted on a volumetric basis.  ]]></description>
+      <default>false</default>
+    </boolean> 
+
+  </parameters>
+</executable>
