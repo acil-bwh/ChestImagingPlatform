@@ -72,6 +72,7 @@ IF(VTK_USE_BOOST)
         vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter.cxx
         cipAirwayDataInteractor.cxx
         cipVesselDataInteractor.cxx
+        cipFissureDataInteractor.cxx
        )
 ENDIF (VTK_USE_BOOST)
        

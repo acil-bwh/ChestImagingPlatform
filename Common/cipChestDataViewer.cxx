@@ -61,7 +61,7 @@ cipChestDataViewer::cipChestDataViewer()
   this->RenderWindowInteractor->SetInteractorStyle( this->TrackballCameraStyle );
 
   this->RenderWindow->AddRenderer( this->Renderer );
-  this->RenderWindow->SetSize( 700, 700 );
+  this->RenderWindow->SetSize( 1400, 1400 );
 
   this->ParticleGlyphThetaResolution = 12;
   this->ParticleGlyphPhiResolution   = 12;

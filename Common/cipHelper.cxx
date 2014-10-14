@@ -9,6 +9,8 @@
 */
 
 #include "cipHelper.h"
+#include "cipNewtonOptimizer.h"
+#include "cipParticleToThinPlateSplineSurfaceMetric.h"
 #include "cipExceptionObject.h"
 #include "itkResampleImageFilter.h"
 #include "itkBSplineInterpolateImageFunction.h"
@@ -941,4 +943,28 @@ void cip::GraftPointDataArrays( vtkSmartPointer< vtkPolyData > fromPoly, vtkSmar
 	  toPoly->GetPointData()->AddArray( fromPoly->GetPointData()->GetArray(i) );
 	}
     }
+}
+
+double cip::GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface* tps, double* point )
+{
+  cipNewtonOptimizer< 2 >::PointType* domainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
+  (*domainParams)[0] = point[0]; 
+  (*domainParams)[1] = point[1]; 
+  
+  cipParticleToThinPlateSplineSurfaceMetric* tpsMetric = new cipParticleToThinPlateSplineSurfaceMetric();
+    tpsMetric->SetThinPlateSplineSurface( tps );
+    tpsMetric->SetParticle( point );
+
+  cipNewtonOptimizer< 2 >* optimizer = new cipNewtonOptimizer< 2 >();
+    optimizer->SetMetric( tpsMetric );
+    optimizer->SetInitialParameters( domainParams );
+    optimizer->Update();
+
+  double distance = vcl_sqrt( optimizer->GetOptimalValue() );
+  
+  delete domainParams;
+  delete tpsMetric;
+  delete optimizer;
+
+  return distance ;  
 }

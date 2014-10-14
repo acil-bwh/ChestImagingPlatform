@@ -335,8 +335,8 @@ cip::ChestConventions::ChestConventions()
   double* t006 = new double[3]; t006[0] = 0.95; t006[1] = 0.95; t006[2] = 0.95; ChestTypeColors.push_back( t006 ); //GROUNDGLASS
   double* t007 = new double[3]; t007[0] = 0.94; t007[1] = 0.94; t007[2] = 0.94; ChestTypeColors.push_back( t007 ); //RETICULAR
   double* t008 = new double[3]; t008[0] = 0.93; t008[1] = 0.93; t008[2] = 0.93; ChestTypeColors.push_back( t008 ); //NODULAR
-  double* t009 = new double[3]; t009[0] = 0.92; t009[1] = 0.92; t009[2] = 0.92; ChestTypeColors.push_back( t009 ); //OBLIQUEFISSURE
-  double* t010 = new double[3]; t010[0] = 0.91; t010[1] = 0.91; t010[2] = 0.91; ChestTypeColors.push_back( t010 ); //HORIZONTALFISSURE
+  double* t009 = new double[3]; t009[0] = 0.12; t009[1] = 0.92; t009[2] = 0.02; ChestTypeColors.push_back( t009 ); //OBLIQUEFISSURE
+  double* t010 = new double[3]; t010[0] = 0.01; t010[1] = 0.01; t010[2] = 0.94; ChestTypeColors.push_back( t010 ); //HORIZONTALFISSURE
   double* t011 = new double[3]; t011[0] = 0.90; t011[1] = 0.90; t011[2] = 0.90; ChestTypeColors.push_back( t011 ); //MILDPARASEPTALEMPHYSEMA
   double* t012 = new double[3]; t012[0] = 0.89; t012[1] = 0.89; t012[2] = 0.89; ChestTypeColors.push_back( t012 ); //MODERATEPARASEPTALEMPHYSEMA
   double* t013 = new double[3]; t013[0] = 0.88; t013[1] = 0.88; t013[2] = 0.88; ChestTypeColors.push_back( t013 ); //SEVEREPARASEPTALEMPHYSEMA
@@ -384,7 +384,7 @@ cip::ChestConventions::ChestConventions()
   double* t053 = new double[3]; t053[0] = 0.48; t053[1] = 0.48; t053[2] = 0.48; ChestTypeColors.push_back( t053 ); //PECTORALISMINOR
   double* t054 = new double[3]; t054[0] = 0.47; t054[1] = 0.47; t054[2] = 0.47; ChestTypeColors.push_back( t054 ); //PECTORALISMAJOR
   double* t055 = new double[3]; t055[0] = 0.46; t055[1] = 0.46; t055[2] = 0.46; ChestTypeColors.push_back( t055 ); //ANTERIORSCALENE
-  double* t056 = new double[3]; t056[0] = 0.45; t056[1] = 0.45; t056[2] = 0.45; ChestTypeColors.push_back( t056 ); //FISSURE     
+  double* t056 = new double[3]; t056[0] = 0.93; t056[1] = 0.01; t056[2] = 0.10; ChestTypeColors.push_back( t056 ); //FISSURE     
   // The vessel generation colors are identical to the airway generation colors except that the red chanel
   // is 0.01 less than the airway generation red channel. This ensures that the colors are unique
   double* t057 = new double[3]; t057[0] = 0.00; t057[1] = 0.00; t057[2] = 0.00; ChestTypeColors.push_back( t057 ); //VESSELGENERATION0

@@ -97,6 +97,8 @@ int main( int argc, char *argv[] )
   std::cout << "Asserting chest-region chest-type existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( reader->GetOutput() );
 
+  //reader->GetOutput()->Print( std::cout );
+
   std::cout << "Filtering particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
     filter->SetInterParticleSpacing( interParticleSpacing );

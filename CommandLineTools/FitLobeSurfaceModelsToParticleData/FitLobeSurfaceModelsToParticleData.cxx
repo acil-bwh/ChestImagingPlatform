@@ -6,6 +6,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+#include "cipHelper.h"
 #include "cipChestConventions.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -52,7 +53,10 @@ int main( int argc, char *argv[] )
         leftFissureParticlesReader->SetFileName( leftFissureParticlesFileName.c_str() );
 	leftFissureParticlesReader->Update();    
 
-    leftMetric->SetFissureParticles( leftFissureParticlesReader->GetOutput() );
+      std::cout << "Asserting chest-region chest-type existence..." << std::endl;
+      cip::AssertChestRegionChestTypeArrayExistence( leftFissureParticlesReader->GetOutput() );
+
+      leftMetric->SetFissureParticles( leftFissureParticlesReader->GetOutput() );
     }
   if ( leftVesselParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -93,7 +97,10 @@ int main( int argc, char *argv[] )
         rightFissureParticlesReader->SetFileName( rightFissureParticlesFileName.c_str() );
 	rightFissureParticlesReader->Update();    
 
-    rightMetric->SetFissureParticles( rightFissureParticlesReader->GetOutput() );
+      std::cout << "Asserting chest-region chest-type existence..." << std::endl;
+      cip::AssertChestRegionChestTypeArrayExistence( rightFissureParticlesReader->GetOutput() );
+
+      rightMetric->SetFissureParticles( rightFissureParticlesReader->GetOutput() );
     }
   if ( rightVesselParticlesFileName.compare( "NA" ) != 0 )
     {

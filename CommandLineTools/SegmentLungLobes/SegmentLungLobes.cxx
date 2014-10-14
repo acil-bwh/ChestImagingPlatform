@@ -214,7 +214,14 @@ int main( int argc, char *argv[] )
       }
 
     cipThinPlateSplineSurface* loTPS = new cipThinPlateSplineSurface();
+    if ( leftMeanShape )
+      {
+      loTPS->SetSurfacePoints( leftShapeModelIO->GetOutput()->GetMeanSurfacePoints() );
+      }
+    else
+      {
       loTPS->SetSurfacePoints( leftShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
+      }
 
     lobeSegmenter->SetLeftObliqueThinPlateSplineSurface( loTPS );
     }
@@ -235,10 +242,24 @@ int main( int argc, char *argv[] )
     rightShapeModelIO->GetOutput()->SetRightLungSurfaceModel( true );
 
     cipThinPlateSplineSurface* roTPS = new cipThinPlateSplineSurface();
-    roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
+    if ( rightMeanShape )
+      {
+      roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetMeanRightObliqueSurfacePoints() );
+      }
+    else
+      {
+      roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
+      }
 
     cipThinPlateSplineSurface* rhTPS = new cipThinPlateSplineSurface();
-    rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
+    if ( rightMeanShape )
+      {
+      rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetMeanRightHorizontalSurfacePoints() );
+      }
+    else
+      {
+      rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
+      }
 
     lobeSegmenter->SetRightObliqueThinPlateSplineSurface( roTPS );
     lobeSegmenter->SetRightHorizontalThinPlateSplineSurface( rhTPS );
@@ -252,9 +273,18 @@ int main( int argc, char *argv[] )
     }
 
   std::cout << "Segmenting lobes..." << std::endl;
-  lobeSegmenter->SetLeftObliqueFissurePoints( &loPoints );
-  lobeSegmenter->SetRightObliqueFissurePoints( &roPoints );
-  lobeSegmenter->SetRightHorizontalFissurePoints( &rhPoints );
+  if ( loPoints.size() > 2 )
+    {
+      lobeSegmenter->SetLeftObliqueFissurePoints( &loPoints );
+    }
+  if ( roPoints.size() > 2 )
+    {
+      lobeSegmenter->SetRightObliqueFissurePoints( &roPoints );
+    }
+  if ( rhPoints.size() > 2 )
+    {
+      lobeSegmenter->SetRightHorizontalFissurePoints( &rhPoints );
+    }
   lobeSegmenter->SetInput( leftLungRightLungReader->GetOutput() );
   lobeSegmenter->SetThinPlateSplineSurfaceFromPointsLambda( lambda );
   lobeSegmenter->Update();

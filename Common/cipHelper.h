@@ -20,6 +20,7 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#include "cipThinPlateSplineSurface.h"
 
 namespace cip {
   /**
@@ -107,6 +108,10 @@ namespace cip {
       when an array has the same name in both the "from" polydata and the "to" polydata, nothing will be done. 
       Both data sets must have the same number of points. */
   void GraftPointDataArrays( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
+  
+  /** Given a thin plate spline surface and a point, this function will find the minimum distance
+   *  to the surface */
+  double GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface*, double* );
 }  
 
 #endif

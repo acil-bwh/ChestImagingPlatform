@@ -99,7 +99,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
   int loZ, roZ, rhZ;  // The z index values for each of the fissures
   unsigned short newValue;
   unsigned char cipRegion, cipType;
-  
+
   for ( int i=0; i < int( size[0] ); i++ )
     {
       for ( int j=0; j < int( size[1] ); j++ )

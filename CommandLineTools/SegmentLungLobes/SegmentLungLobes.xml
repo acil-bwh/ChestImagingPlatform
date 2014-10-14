@@ -50,7 +50,7 @@
       <name>leftShapeModelFileName</name>
       <label>Left lung lobes shape model file name</label>
       <channel>input</channel>
-      <longflag>--lm</longflag>
+      <longflag>lm</longflag>
       <description><![CDATA[File name of shape model describing the boundary between the lobes \
       in the left lung.]]></description>
       <default>NA</default>
@@ -60,7 +60,7 @@
       <name>rightShapeModelFileName</name>
       <label>Right lung lobes shape model file name</label>
       <channel>input</channel>
-      <longflag>--rm</longflag>
+      <longflag>rm</longflag>
       <description><![CDATA[File name of shape model describing the boundaries between the lobes \
       in the right lung.]]></description>
       <default>NA</default>
@@ -73,7 +73,7 @@
     <point multiple="true" coordinateSystem="ras">
       <name>rightHorizontalFiducials</name>
       <label>Horizontal Right Fiducials</label>
-      <longflag>--rightHorizontalFiducials</longflag>
+      <longflag>rightHorizontalFiducials</longflag>
       <description><![CDATA[Fiducals along right horizontal fissure]]></description>
       <default>0,0,0</default>
     </point>
@@ -100,7 +100,7 @@
       <name>loParticlesFileName</name>
       <label>Left oblique particles file name</label>
       <channel>input</channel>
-      <longflag>--loParticles</longflag>
+      <longflag>loParticles</longflag>
       <description><![CDATA[Left oblique particles file name. It's assumed that all particles are "highly likely" to \
       represent the left oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
       through these points to define the boundary between the lobes.]]></description>
@@ -111,7 +111,7 @@
       <name>roParticlesFileName</name>
       <label>Right oblique particles file name</label>
       <channel>input</channel>
-      <longflag>--roParticles</longflag>
+      <longflag>roParticles</longflag>
       <description><![CDATA[Right oblique particles file name. It's assumed that all particles are "highly likely" to \
       represent the right oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
       through these points to define the boundary between the lobes.]]></description>
@@ -122,7 +122,7 @@
       <name>rhParticlesFileName</name>
       <label>Right horizontal particles file name</label>
       <channel>input</channel>
-      <longflag>--rhParticles</longflag>
+      <longflag>rhParticles</longflag>
       <description><![CDATA[Right horizontal particles file name. It's assumed that all particles are "highly likely" to \
       represent the right horizontal fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
       through these points to define the boundary between the lobes.]]></description>
@@ -156,5 +156,21 @@
       <label>Lambda</label>
       <default>0.1</default>
     </double>
+
+    <boolean>
+      <name>rightMeanShape</name>
+      <label>Right Mean Shape</label>
+      <longflag>rms</longflag>
+      <description><![CDATA[Setting this flag will cause the mean of the right shape model \
+      to be used instead of the fit shape model.]]></description>
+    </boolean>  
+
+    <boolean>
+      <name>leftMeanShape</name>
+      <label>Left Mean Shape</label>
+      <longflag>lms</longflag>
+      <description><![CDATA[Setting this flag will cause the mean of the left shape model \
+      to be used instead of the fit shape model.]]></description>
+    </boolean>  
   </parameters>
 </executable>

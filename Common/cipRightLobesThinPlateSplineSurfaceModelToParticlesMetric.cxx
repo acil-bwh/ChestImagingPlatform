@@ -170,8 +170,7 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     orientation[1] = this->FissureParticles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[1];
     orientation[2] = this->FissureParticles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[2];
 
-    // DEB
-    //float cipType = this->FissureParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0];
+    float cipType = this->FissureParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0];
 
     // Determine the domain locations for which the particle is closest
     // to the right oblique and right horizontal TPS surfaces
@@ -221,59 +220,24 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     double roTerm = -this->FissureParticleWeights[i]*std::exp( -roDistance/this->FissureSigmaDistance )*
       std::exp( -roTheta/this->FissureSigmaTheta );    
 
-    // Now that we have the surface normals and distances, we can compute this 
-    // particle's contribution to the overall objective function value. Note that
-    // we only consider the right horizontal boundary surface provided that the
+    // Note that we only consider the right horizontal boundary surface provided that the
     // surface right horizontal surface point is above the right oblique surface
-    // point.
-
-    // DEB
-    //fissureTermValue += rhTerm + roTerm;
-    if ( this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) >
+    // point or if the chest type is explicity set to HORIZONTALFISSURE
+    if ( cipType == float(cip::OBLIQUEFISSURE) )
+      {
+	fissureTermValue += roTerm;
+      }
+    else if ( (this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) >
     	 this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) &&
-    	 rhTerm < roTerm )
+    	 rhTerm < roTerm) || cipType == float(cip::HORIZONTALFISSURE) )
       {
     	fissureTermValue += rhTerm;
-    	// if ( cipType == 8 )
-    	//   {
-    	//     ROtoRHcount++;
-	//     // std::cout << "\t RO Distance:\t" << roDistance << "\t RH Distance:\t" << rhDistance << "\t RO Angle:\t" << roTheta << "\t RH Angle:\t" << rhTheta << "\t RH Height:\t" <<
-	//     //   this->RightHorizontalThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) << "\t RO Height:\t" << 
-	//     //   this->RightObliqueThinPlateSplineSurface->GetSurfaceHeight( position[0], position[1] ) << std::endl;
-    	//   }
-    	// else
-    	//   {
-    	//     RHtoRHcount++;
-    	//   }
       }
     else
       {
     	fissureTermValue += roTerm;
       }
-
-    // if ( roTerm < rhTerm )
-    //   {
-    // 	fissureTermValue += roTerm;
-    //   }
-    // else
-    //   {
-    // 	fissureTermValue += rhTerm;
-    //   }
-    // if ( cipType == 8 )
-    //    {
-    //  	fissureTermValue += roTerm;
-    //    }
-    //  else
-    //    {						
-    //  	fissureTermValue += rhTerm;
-    //    }
-
     }
-  // std::cout << "------------------------------------" << std::endl;
-  // std::cout << "RO to RH:\t" << ROtoRHcount << std::endl;
-  // std::cout << "RO to RO:\t" << ROtoROcount << std::endl;
-  // std::cout << "RH to RH:\t" << RHtoRHcount << std::endl;
-  // std::cout << "RH to RO:\t" << RHtoROcount << std::endl; 
     
   delete position;
   delete roNormal;
