@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Segmentation</category>
+  <title>EnhanceFissuresInImage</title>
+  <description><![CDATA[This program...]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image type="label">
+      <name>labelMapFileName</name>
+      <label>Input label map file name</label>
+      <channel>input</channel>
+      <longflag>lm</longflag>
+      <description><![CDATA[Input lung label map file name. On CT voxels in the foreground region of this \
+      label map will be enhanced.]]></description>
+      <default>NA</default>
+    </image>  
+
+    <image type="label">
+      <name>ctFileName</name>
+      <label>Input CT file name</label>
+      <channel>input</channel>
+      <longflag>ct</longflag>
+      <description><![CDATA[Input CT file to be enhanced.]]></description>
+      <default>NA</default>
+    </image>  
+
+    <string>
+      <name>vesselParticlesFileName</name>
+      <label>Vessel particles file name</label>
+      <channel>input</channel>
+      <longflag>vp</longflag>
+      <description><![CDATA[Vessel particles to use for the enhancement.]]></description>
+      <default>NA</default>
+    </string>  
+
+    <image type="label">
+      <name>outFileName</name>
+      <label>Output CT file name</label>
+      <channel>output</channel>
+      <longflag>out</longflag>
+      <description><![CDATA[Output, fissure-enhanced CT file name.]]></description>
+      <default>NA</default>
+    </image>  
+  </parameters> 
+</executable>
