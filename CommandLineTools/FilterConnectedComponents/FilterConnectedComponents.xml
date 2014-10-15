@@ -106,18 +106,6 @@
       <label>regionPairVeExcludec</label>
       <description><![CDATA[Specify a region in a region type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.]]></description>
 </integer-vector>
-
-  
-
-
-
-
-
-
-
-
-
-
   <boolean>
       <name>isAxial</name>
       <label>Axial Slice</label>

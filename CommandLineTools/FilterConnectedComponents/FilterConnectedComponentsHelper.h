@@ -8,6 +8,7 @@
 #include "itkConnectedComponentImageFilter.h"
 #include "itkRelabelComponentImageFilter.h"
 #include "itkExtractImageFilter.h"
+#include <itkImageDuplicator.h>
 
 struct REGIONTYPEPAIR
 {
@@ -30,12 +31,12 @@ typedef itk::ConnectedComponentImageFilter< cip::LabelMapType, cip::LabelMapType
 typedef itk::RelabelComponentImageFilter <cip::LabelMapType, cip::LabelMapType>    RelabelFilter3DType;
 typedef itk::RelabelComponentImageFilter <LabelMapSliceType, LabelMapSliceType>   RelabelFilter2DType;
 typedef itk::ImageRegionIteratorWithIndex< LabelMapSliceType >                                 LabelMapSliceIteratorType;
+typedef itk::ImageDuplicator< cip::LabelMapType > DuplicatorType;
 
 cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string);
 void ExtractLabelMapSlice( cip::LabelMapType::Pointer , LabelMapSliceType::Pointer , int , std::string  );
-cip::LabelMapType::Pointer FilterConnectedComponents(cip::LabelMapType::Pointer , int , std::vector< unsigned char> , std::vector< unsigned char> , std::vector<REGIONTYPEPAIR> , std::string  , bool , bool );
-
-
+void FilterConnectedComponents(cip::LabelMapType::Pointer , cip::LabelMapType::Pointer , int , std::vector< unsigned char> , std::vector< unsigned char> , std::vector<REGIONTYPEPAIR> , std::string  , bool , bool );
+void performConnectedComponents(cip::LabelMapType::Pointer, cip::LabelMapType::Pointer , int , std::string  );
 
 
 #endif

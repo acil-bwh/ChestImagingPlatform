@@ -167,11 +167,16 @@ void ExtractLabelMapSlice( cip::LabelMapType::Pointer image, LabelMapSliceType::
 
 
 
-//Performs filtering
-cip::LabelMapType::Pointer FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, int sizeThreshold, std::vector< unsigned char> regionVec, std::vector< unsigned char> typeVec, std::vector<REGIONTYPEPAIR> regionTypePairVec, std::string  evalMethod, bool isInclude, bool isExclude)
+//Performs the whole filtering
+void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::LabelMapType::Pointer outputLabelMap, int sizeThreshold, std::vector< unsigned char> regionVec, std::vector< unsigned char> typeVec, std::vector<REGIONTYPEPAIR> regionTypePairVec, std::string  evalMethod, bool isInclude, bool isExclude)
 {
-  
-  //cip::LabelMapType::Pointer inclusionLabelMap = cip::LabelMapType::New();
+  cip::ChestConventions conventions;
+  if( (isInclude == true) && (isExclude == true))
+    {
+      std::cerr <<"Cannot specify inclusion and exclusion criteria"<< std::endl;
+      return;
+    }
+    
   cip::LabelMapType::IndexType input_start;
 
   input_start[0] = 0;
@@ -183,183 +188,358 @@ cip::LabelMapType::Pointer FilterConnectedComponents(cip::LabelMapType::Pointer 
   inputRegion.SetSize(input_size);
   inputRegion.SetIndex(input_start);
 
-  typedef itk::ImageDuplicator< cip::LabelMapType > DuplicatorType;
-  DuplicatorType::Pointer duplicator = DuplicatorType::New();
-  duplicator->SetInputImage(inputLabelMap);
-  duplicator->Update();
-  cip::LabelMapType::Pointer inclusionLabelMap = duplicator->GetModifiableOutput();
+  /* set output to input by default
+   */
+  LabelMapIteratorType it_output0(outputLabelMap,outputLabelMap->GetBufferedRegion());
+  LabelMapIteratorType it_input0(inputLabelMap,inputLabelMap->GetBufferedRegion());
+  it_output0.GoToBegin();
+  it_input0.GoToBegin();
 
-
-
-  if( (isInclude == true) && (isExclude == true))
+  while ( !it_output0.IsAtEnd() )
     {
-      std::cerr <<"Cannot specify inclusion and exclusion criteria"<< std::endl;
-      return inclusionLabelMap;
+      it_output0.Set(it_input0.Get());
+      
+      ++it_output0;
+      ++it_input0;
     }
-    
-
-  //extract the appropriate region and type labels to include and create a new volume that only has the labels 
-  // for which the connected components will be computed
-  LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
-  extractor->SetInput( inputLabelMap );
-
-  if(isInclude == true)
+  
+  if(isInclude == true) 
     {
-      for ( unsigned int i=0; i<regionVec.size(); i++ )
+      //here we start off with the output being identical to the input.  so nothing
+      //needs to be changed to the output labelmap as far as initialization
+
+      for ( unsigned int i=0; i<typeVec.size(); i++ )
 	{
-	  extractor->SetChestRegion(regionVec[i]);
-	}
-      if ( typeVec.size() > 0 )
-	{
-	  for ( unsigned int i=0; i<typeVec.size(); i++ )
-	    {
-	      extractor->SetChestType( typeVec[i] );
-	    }
-	}
-      if ( regionTypePairVec.size()>0 )
-	{
-	  for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
-	    {
-	      extractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
-	    }
-	}
-	
-      extractor->Update();
+	  // perform connected components on the region of interest only, depending on
+	  // whether we want volumetric, axial ...
+	  // return a labelmap with the small components removed
+	  LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
+	  extractor->SetInput( inputLabelMap );
+	  extractor->SetChestType(typeVec[i]);
+	  extractor->Update();
 
-      // Set all inclusion values to the appropriate in the volume for which we are going to compute connected components
-	
-      LabelMapIteratorType itinclusion( inclusionLabelMap,inclusionLabelMap->GetBufferedRegion() );
-      LabelMapIteratorType it( extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion() );
-      it.GoToBegin();
-      itinclusion.GoToBegin();
-      while ( !it.IsAtEnd() )
-	{
-	  if ( it.Get() != 0 )
-	    {
-	      itinclusion.Set( it.Get() );
-	    }
-	  else
-	    itinclusion.Set( 0 );
-	  ++it;
-	  ++itinclusion;
-	}
-
-    }
-
-  if( isExclude == true)
-    {
-      //extract the appropriate region and type labels to exclude
-
-      for ( unsigned int i=0; i<regionVec.size(); i++ )
-	{
-	  extractor->SetChestRegion(regionVec[i]);
-	}
-      if ( typeVec.size() > 0 )
-	{
-	  for ( unsigned int i=0; i<typeVec.size(); i++ )
-	    {
-	      extractor->SetChestType( typeVec[i] );
-	    }
-	}
-      if ( regionTypePairVec.size()>0 )
-	{
-	  for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
-	    {
-	      extractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
-	    }
-	}
-	
-      extractor->Update();
-
-      // Set all exclusion values to 0 in the volume for which we are going to compute connected components
-      LabelMapIteratorType it( extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion() );
-      LabelMapIteratorType itexclusion( inclusionLabelMap,inclusionLabelMap->GetBufferedRegion() );
-	
-      it.GoToBegin();
-      itexclusion.GoToBegin();
-      while ( !it.IsAtEnd() )
-	{
-	  if ( it.Get() != 0 )
-	    {
-	      itexclusion.Set(0 );
-	    }
-	  else
-	    itexclusion.Set( it.Get() );
-	  ++it;
-	  ++itexclusion;
-	}
-    }
-
-  if( (isInclude == false) && (isExclude == false))
-    {
-      //then include all labelmaps by default.
-      std::cout<<"performing connected components on all labels"<<std::endl;
-
-      LabelMapIteratorType itinclusiondefault( inclusionLabelMap,inclusionLabelMap->GetBufferedRegion() );
-      LabelMapIteratorType itdefault( inputLabelMap,inputLabelMap->GetBufferedRegion() );
-      itdefault.GoToBegin();
-      itinclusiondefault.GoToBegin();
-      while ( !itdefault.IsAtEnd() )
-	{
-	  itinclusiondefault.Set(itdefault.Get() );
-	  ++itdefault;
-	  ++itinclusiondefault;
-	}
-    }
-    
-
-  //get a list of unique labels in order to compute connected components for each separately
-  std::list< unsigned short > labelsList;
-
-  LabelMapIteratorType it_forlabels(inclusionLabelMap,inclusionLabelMap->GetBufferedRegion());
-
-  it_forlabels.GoToBegin();
-  while ( !it_forlabels.IsAtEnd() )
-    {
-      if ( it_forlabels.Get() != 0 )
-	{
-	  labelsList.push_back( it_forlabels.Get() );
-	}
-
-      ++it_forlabels;
-    }
-
-  labelsList.unique();
-  labelsList.sort();
-  labelsList.unique();
-
-  //perform connected components on the labels from the original  set
-  if (evalMethod.compare("vol") == 0)
-    {  
-      //for each label in label list, perform connected components separately
-      for (std::list<unsigned short>::iterator it_labels = labelsList.begin(); it_labels != labelsList.end(); it_labels++)
-	{
-	  typedef itk::ImageDuplicator< cip::LabelMapType > DuplicatorType;
 	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
-	  duplicator2->SetInputImage(inclusionLabelMap);
+	  duplicator2->SetInputImage(inputLabelMap);
 	  duplicator2->Update();
-	  cip::LabelMapType::Pointer forconnectedLabelMap = duplicator2->GetModifiableOutput();
-	  
-	  LabelMapIteratorType it_forconnected(forconnectedLabelMap,forconnectedLabelMap->GetBufferedRegion());
-	  it_forconnected.GoToBegin();
-	  while ( !it_forconnected.IsAtEnd() )
+	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();
+
+	    
+	  performConnectedComponents(extractor->GetOutput(), connectedLabelMap, sizeThreshold, evalMethod);
+	    
+	  // Here we expect to get a labelmap identical to extractor->GetOutput(), except with 
+	  // the small components washed away. Now, given the list of inclusion priorities
+	  // remove type values from label if it been washed away
+
+	  LabelMapIteratorType it_components(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
+	  LabelMapIteratorType it_inclusion(extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion());
+	  LabelMapIteratorType it_output(outputLabelMap,outputLabelMap->GetBufferedRegion());
+	  it_components.GoToBegin();
+	  it_inclusion.GoToBegin();
+	  it_output.GoToBegin();
+
+	  while ( !it_output.IsAtEnd() )
 	    {
-	      if ( it_forconnected.Get() != *it_labels )
+	      if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
 		{
-		  it_forconnected.Set(0);
+		  //get the present voxel value and translate to region and type. Then remove the region value
+		  unsigned char chest_region = conventions.GetChestRegionFromValue( it_output.Get() );
+		  unsigned char chest_type = conventions.GetChestTypeFromValue( it_output.Get() );
+		  unsigned short final_value = conventions.GetValueFromChestRegionAndType(  (unsigned char)( cip::UNDEFINEDREGION ), chest_type ); 
+		      
+		  it_output.Set(final_value);
 		}
+	      ++it_components;
+	      ++it_inclusion;
+	      ++it_output;
+	    }
+	}
+
+      for ( unsigned int i=0; i<regionVec.size(); i++ )
+	{
+	  // perform connected components on the region of interest only, depending on
+	  // whether we want volumetric, axial ...
+	  // return a labelmap with the small components removed
+	  LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
+	  extractor->SetInput( inputLabelMap );
+	  extractor->SetChestRegion(regionVec[i]);
+	  extractor->Update();
+
+	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
+	  duplicator2->SetInputImage(inputLabelMap);
+	  duplicator2->Update();
+	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();	    
+
+	  performConnectedComponents(extractor->GetOutput(), connectedLabelMap, sizeThreshold, evalMethod);
+	  // Here we expect to get a labelmap identical to extractor->GetOutput(), except with 
+	  // the small components washed away. Now, given the list of inclusion priorities
+	  // remove region values from label if it been washed away
+
+	  LabelMapIteratorType it_components(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
+	  LabelMapIteratorType it_inclusion(extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion());
+	  LabelMapIteratorType it_output(outputLabelMap,outputLabelMap->GetBufferedRegion());
+	  it_components.GoToBegin();
+	  it_inclusion.GoToBegin();
+	  it_output.GoToBegin();
+	  std::cout<<it_inclusion.Get()<<std::endl;
+	  std::cout<<it_components.Get()<<std::endl;
+	  while ( !it_output.IsAtEnd() )
+	    {
+	      if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
+		{
+		  std::cout<<"in region vec removing label "<<it_inclusion.Get()<<std::endl;
+		  //get the present voxel value and translate to region and type. Then remove the region value
+		  unsigned char chest_region = conventions.GetChestRegionFromValue( it_output.Get() );
+		  unsigned char chest_type = conventions.GetChestTypeFromValue( it_output.Get() );
+		  unsigned short final_value = conventions.GetValueFromChestRegionAndType( chest_region , (unsigned char)( cip::UNDEFINEDTYPE ) ) ;
+		      
+		  it_output.Set(final_value);
+		}
+	      ++it_components;
+	      ++it_inclusion;
+	      ++it_output;
+	    }
+	}
+
+      for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
+	{
+	  // perform connected components on the region of interest only, depending on
+	  // whether we want volumetric, axial ...
+	  // return a labelmap with the small components removed
+
+
+	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
+	  duplicator2->SetInputImage(inputLabelMap);
+	  duplicator2->Update();
+	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();
+
+	  LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
+	  extractor->SetInput( inputLabelMap );
+	  extractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
+	  extractor->Update();
+
+		    
+	  performConnectedComponents(extractor->GetOutput(), connectedLabelMap,  sizeThreshold, evalMethod);
+	   
+	  // Here we expect to get a labelmap identical to extractor->GetOutput(), except with 
+	  // the small components washed away. Now, if the voxel's region has not been set in the 
+	  // region list remove it from voxel. otherwise keep.
+	  // do the same for the type. I think the final removal value should be the same for all 
+	  // voxels in this region/type, because all voxels should have the same value... 
+	  LabelMapIteratorType it_inclusion(extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion());
+	  LabelMapIteratorType it_components(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
+	  LabelMapIteratorType it_output(outputLabelMap,outputLabelMap->GetBufferedRegion());
+	  it_components.GoToBegin();
+	  it_inclusion.GoToBegin();
+	  it_output.GoToBegin();
+
+	  while ( !it_output.IsAtEnd() )
+	    {
+	      if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
+		{
+		  std::cout<<"in FilterConnectedComponents removing label "<<it_inclusion.Get()<<" "<<it_components.Get()<<std::endl;
+		  //We first need to see if it was in the region list or the type list
+		  // if so, do not touch.
+		  unsigned char chest_region = conventions.GetChestRegionFromValue( it_output.Get() );
+		  unsigned char chest_type = conventions.GetChestTypeFromValue( it_output.Get() );
+		  unsigned char final_region;
+		  unsigned char final_type;
+		  std::cout<<chest_region<<std::endl;
+		  if(std::find(regionVec.begin(), regionVec.end(), chest_region)!=regionVec.end())
+		    {
+		      final_region = chest_region;
+		    }
+		  else
+		    final_region = (unsigned char)( cip::UNDEFINEDREGION );
+		      
+		  if(std::find(typeVec.begin(), typeVec.end(), chest_type)!=typeVec.end())
+		    final_type = chest_type;
+		      
+		  else
+		    final_type = (unsigned char)( cip::UNDEFINEDTYPE );
+
+		  unsigned short final_value = conventions.GetValueFromChestRegionAndType( final_region ,final_type ); 
+		  it_output.Set(final_value);
+		}
+	      ++it_components;
+	      ++it_inclusion;
+	      ++it_output;
+	    }
+	}
+
+    }
+
+  else
+    {
+      std::cout<<"performing connected components on all thresholded labels"<<std::endl;
+      DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
+      duplicator2->SetInputImage(inputLabelMap);
+      duplicator2->Update();
+      cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();
+
+      performConnectedComponents(inputLabelMap, connectedLabelMap, sizeThreshold, evalMethod);
+
+      // here the output label map has a copy of the input label map.
+      // First label output based on all labels. Then add back exclusions.
+      std::cout<<"in all"<<std::endl;
+      // set all voxels deleted by connected components to 0, otherwise keep as is
+      LabelMapIteratorType it_inclusion(inputLabelMap,inputLabelMap->GetBufferedRegion());
+      LabelMapIteratorType it_components(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
+      LabelMapIteratorType it_output(outputLabelMap,outputLabelMap->GetBufferedRegion());
+      it_components.GoToBegin();
+      it_inclusion.GoToBegin();
+      it_output.GoToBegin();
+      while ( !it_output.IsAtEnd() )
+	{		  
+	  if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
+	    {
+	      std::cout<<"in FilterConnectedComponents all removing label "<<it_inclusion.Get()<<" "<<it_components.Get()<<std::endl;
+	      it_output.Set(0);
+	    }
+	  else
+	    {
+	      it_output.Set(it_inclusion.Get());
+	    }
+	  ++it_components;
+	  ++it_inclusion;
+	  ++it_output;
+	}
+      
+      if(isExclude == true) 
+	{
+
+	  //read through the list of exclusion type. If connected = 0 and extractor >0
+	  // add only type value back to the label (has been removed by the -all option). 
+	  for ( unsigned int i=0; i<typeVec.size(); i++ )
+	    {
+	      // extract type labels
+	      LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
+	      extractor->SetInput( inputLabelMap );
+	      extractor->SetChestType(typeVec[i]);
+	      extractor->Update();
 	      
-	      ++it_forconnected;
+	      LabelMapIteratorType it_exclusion(extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion());
+	      LabelMapIteratorType it_input(inputLabelMap,inputLabelMap->GetBufferedRegion());
+	      LabelMapIteratorType it_components2(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
+	      LabelMapIteratorType it_output2(outputLabelMap,outputLabelMap->GetBufferedRegion());
+
+	      it_components2.GoToBegin();
+	      it_exclusion.GoToBegin();
+	      it_output2.GoToBegin();
+	      it_input.GoToBegin();
+
+	      while ( !it_output2.IsAtEnd() )
+		{
+		  if(( it_components2.Get() == 0) && (it_exclusion.Get()>0))
+		    {
+		      //get the present old label value and translate to region and type. Then add the exclusion type value to the label
+		      unsigned char chest_region = conventions.GetChestRegionFromValue( it_input.Get() );
+		      unsigned char chest_type = conventions.GetChestTypeFromValue( it_input.Get() );
+
+		      unsigned short final_value = conventions.GetValueFromChestRegionAndType(  (unsigned char)( cip::UNDEFINEDREGION ), chest_type ); 
+		      it_output2.Set(final_value);
+		    }
+		  ++it_components2;
+		  ++it_exclusion;
+		  ++it_output2;
+		  ++it_input;
+		}
+	    }
+	  //read through the list of exclusion region. If connected = 0 and extractor >0 add only region value to the label
+	  for ( unsigned int i=0; i<regionVec.size(); i++ )
+	    {
+	      // extract region labels
+
+	      LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
+	      extractor->SetInput( inputLabelMap );
+	      extractor->SetChestRegion(regionVec[i]);
+	      extractor->Update();
+	      
+	      LabelMapIteratorType it_exclusion(extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion());
+	      LabelMapIteratorType it_input(inputLabelMap,inputLabelMap->GetBufferedRegion());
+	      LabelMapIteratorType it_components2(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
+	      LabelMapIteratorType it_output2(outputLabelMap,outputLabelMap->GetBufferedRegion());
+	      it_components2.GoToBegin();
+	      it_exclusion.GoToBegin();
+	      it_output2.GoToBegin();
+	      it_input.GoToBegin();
+
+	      while ( !it_output2.IsAtEnd() )
+		{
+		  if(( it_components2.Get() == 0) && (it_exclusion.Get()>0))
+		    {
+		      //get the present old label value and translate to region and type. Then add the exclusion type value to the label
+		      unsigned char chest_region = conventions.GetChestRegionFromValue( it_input.Get() );
+		      unsigned char chest_type = conventions.GetChestTypeFromValue( it_output2.Get() ); //the type that has already been placed
+
+		      unsigned short final_value = conventions.GetValueFromChestRegionAndType( chest_region ,chest_type); 
+
+		      it_output2.Set(final_value);
+		    }
+		  ++it_components2;
+		  ++it_exclusion;
+		  ++it_output2;
+		  ++it_input;
+		}
 	    }
 
+	  //read through the list of exclusion region and type. If connected = 0 and extractor >0
+	  // if not in region list add region value
+	  // if not in type list add type value
+	  for ( unsigned int i=0; i<regionTypePairVec.size(); i++ )
+	    {
+		// extract region labels
+		LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
+		extractor->SetInput( inputLabelMap );
+		extractor->SetRegionAndType(regionTypePairVec[i].region, regionTypePairVec[i].type);
+		extractor->Update();
+
+		LabelMapIteratorType it_exclusion(extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion());
+		LabelMapIteratorType it_input(inputLabelMap,inputLabelMap->GetBufferedRegion());
+		LabelMapIteratorType it_components2(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
+		LabelMapIteratorType it_output2(outputLabelMap,outputLabelMap->GetBufferedRegion());
+		it_components2.GoToBegin();
+		it_exclusion.GoToBegin();
+		it_output2.GoToBegin();
+		it_input.GoToBegin();
+
+		while ( !it_output2.IsAtEnd() )
+		  {
+		    if(( it_components2.Get() == 0) && (it_exclusion.Get()>0))
+		      {
+			//get the present old label value and translate to region and type. Then add the exclusion region & type value to the label
+			// Can add both back blindly since if it was before then was added, if it was not, then should be added.
+			it_output2.Set(it_input.Get());
+		      }
+		    ++it_components2;
+		    ++it_exclusion;
+		    ++it_output2;
+		    ++it_input;
+		  }
+	    } 
+	  
+	}     
+      
+    }
+  
+}
+
+
+
+
+  // Performs connected components given an extracted region of interest and a specified slice direction / volumetric
+  void performConnectedComponents(cip::LabelMapType::Pointer unconnectedLabelMap,cip::LabelMapType::Pointer connectedLabelMap, int sizeThreshold, std::string  evalMethod)
+    {
+     //perform connected components on the labels from the original  set
+      if (evalMethod.compare("vol") == 0)
+	{  	  
 	  ConnectedComponent3DType::Pointer connected =  ConnectedComponent3DType::New ();
-	  connected->SetInput(forconnectedLabelMap);
+	  connected->SetInput(unconnectedLabelMap);
 	  connected->Update();
 	  
 	  std::cout << "Volumetric, Number of objects: " << connected->GetObjectCount() << std::endl;
-	  
+	  std::cout<<" in performConnectedComponents, size is : "<<sizeThreshold<<std::endl;
 	  //remove labels with small size (or create a volume with the value 1 if we want to delete the labels)
-	  RelabelFilter3DType::Pointer relabel =	RelabelFilter3DType::New();
+	  RelabelFilter3DType::Pointer relabel =  RelabelFilter3DType::New();
 	  
 	  relabel->SetInput(connected->GetOutput());
 	  relabel->SetMinimumObjectSize(sizeThreshold);
@@ -367,160 +547,142 @@ cip::LabelMapType::Pointer FilterConnectedComponents(cip::LabelMapType::Pointer 
 	  
 	  //delete the labels from the input labelmap that have been removed post connected components
 	  LabelMapIteratorType it_components( relabel->GetOutput(),relabel->GetOutput()->GetBufferedRegion() );
-	  LabelMapIteratorType it_original( inputLabelMap,inputLabelMap->GetBufferedRegion() ); 
-	  LabelMapIteratorType it_inclusion( forconnectedLabelMap,forconnectedLabelMap->GetBufferedRegion() ); 
-	  
-	  
+	  LabelMapIteratorType it_original( unconnectedLabelMap,unconnectedLabelMap->GetBufferedRegion() ); 	  
+	  LabelMapIteratorType it_connected( connectedLabelMap,connectedLabelMap->GetBufferedRegion() ); 	  
+
 	  //store the output in lieu of the input labelmap
 	  it_components.GoToBegin();
 	  it_original.GoToBegin();
-	  it_inclusion.GoToBegin();
-	  
+	  it_connected.GoToBegin();
 	  
 	  while ( !it_components.IsAtEnd() )
 	    {
-	      if(( it_components.Get() == 0) && (it_inclusion.Get()>0) &&(it_original.Get()>0))
+	      if(( it_components.Get() == 0) &&(it_original.Get()>0))
 		{
-		  std::cout<<"removing label "<<it_original.Get()<<std::endl;		  
-		  it_original.Set(0 );
+		  std::cout<<"in connected components removing label "<<it_original.Get()<<std::endl;		  
+		  it_connected.Set(0 );
 		}
 	      ++it_components;
 	      ++it_original;
-	      ++it_inclusion;
+	      ++it_connected;
 	    }
 	}
-    }
-  cip::LabelMapType::RegionType boundingBox;
-  boundingBox = cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(inclusionLabelMap);
-  cip::LabelMapType::SizeType inclusion_size = inclusionLabelMap->GetBufferedRegion().GetSize();
-  cip::LabelMapType::SpacingType inclusion_spacing = inclusionLabelMap->GetSpacing();
+      else
+	{ //not vol
+	  cip::LabelMapType::IndexType tempIndex;
+	  cip::LabelMapType::RegionType boundingBox;
+	  boundingBox = cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(unconnectedLabelMap);
+	  cip::LabelMapType::SizeType unconnected_size = unconnectedLabelMap->GetBufferedRegion().GetSize();
+	  cip::LabelMapType::SpacingType unconnected_spacing = unconnectedLabelMap->GetSpacing();
 
-  //  cip::LabelMapType::SizeType sliceSize;
-  //cip::LabelMapType::SpacingType sliceSpacing;
-
-  unsigned int sliceMin;
-  unsigned int sliceMax;
-
-  if (evalMethod.compare("axial") == 0)
-    {  
-      std::cout<<"performing axial connected components"<<std::endl;
-
-      sliceMin = boundingBox.GetIndex()[2];
-      sliceMax = boundingBox.GetIndex()[2] + boundingBox.GetSize()[2] - 1;
-
-    }
-  else if (evalMethod.compare("coronal") == 0)
-    {      
-
-      sliceMin = boundingBox.GetIndex()[1];
-      sliceMax = boundingBox.GetIndex()[1] + boundingBox.GetSize()[1] - 1;
-
-    }
-  else if (evalMethod.compare("sagittal") == 0)
-    {      
-
-      sliceMin = boundingBox.GetIndex()[0];
-      sliceMax = boundingBox.GetIndex()[0] + boundingBox.GetSize()[0] - 1;
-
-    }
+	  //  cip::LabelMapType::SizeType sliceSize;
+	  //cip::LabelMapType::SpacingType sliceSpacing;
+      
+	  unsigned int sliceMin;
+	  unsigned int sliceMax;
+      
+	  if (evalMethod.compare("axial") == 0)
+	    {  
+	      std::cout<<"performing axial connected components"<<std::endl;	  
+	      sliceMin = boundingBox.GetIndex()[2];
+	      sliceMax = boundingBox.GetIndex()[2] + boundingBox.GetSize()[2] - 1;
+	    }
+	  else if (evalMethod.compare("coronal") == 0)
+	    {      	  
+	      sliceMin = boundingBox.GetIndex()[1];
+	      sliceMax = boundingBox.GetIndex()[1] + boundingBox.GetSize()[1] - 1;
+	    }
+	  else if (evalMethod.compare("sagittal") == 0)
+	    {      	  
+	      sliceMin = boundingBox.GetIndex()[0];
+	      sliceMax = boundingBox.GetIndex()[0] + boundingBox.GetSize()[0] - 1;	  
+	    }
 
  
-
-  if (evalMethod.compare("vol") != 0)
-    {
-      int numImages = sliceMax - sliceMin + 1;
-      std::cout<<"max = "<<sliceMax<<" min = "<<sliceMin<<std::endl;
-      cip::LabelMapType::IndexType slice_start = inputRegion.GetIndex();
-
-      //perform connected components on each slice separately
-      for ( unsigned int n=sliceMin; n<=sliceMax; n++ )
-	{
-	  std::cout<<" checking slice "<<n<<std::endl; 
-	  if(GetSliceHasForeground(inclusionLabelMap, n, evalMethod))
+	  int numImages = sliceMax - sliceMin + 1;
+	  //cip::LabelMapType::IndexType slice_start = inputRegion.GetIndex();
+      
+	  //perform connected components on each slice separately
+	  for ( unsigned int n=sliceMin; n<=sliceMax; n++ )
 	    {
-	      std::cout<<"evaluating slice "<<n<<" using "<<evalMethod<<std::endl;
-	      //Create a 2D image by extracting the appropriate slice in the right direction
-	      LabelMapSliceType::Pointer inclusionSlice = LabelMapSliceType::New();
-	      
-	      ExtractLabelMapSlice(inclusionLabelMap, inclusionSlice, n , evalMethod);
-
-	      for (std::list<unsigned short>::iterator it_labels = labelsList.begin(); it_labels != labelsList.end(); it_labels++)
+	      std::cout<<" checking slice "<<n<<std::endl; 
+	      if(GetSliceHasForeground(unconnectedLabelMap, n, evalMethod))
 		{
+		  std::cout<<"evaluating slice "<<n<<" using "<<evalMethod<<std::endl;
+	  
+		  //Create a 2D image by extracting the appropriate slice in the right direction
+		  LabelMapSliceType::Pointer unconnectedLabelMapSlice = LabelMapSliceType::New();
+	      
+		  ExtractLabelMapSlice(unconnectedLabelMap, unconnectedLabelMapSlice, n , evalMethod);
+
 		  typedef itk::ImageDuplicator< LabelMapSliceType > DuplicatorType;
-		  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
-		  duplicator2->SetInputImage(inclusionSlice);
-		  duplicator2->Update();
-		  LabelMapSliceType::Pointer forconnectedLabelMapSlice = duplicator2->GetModifiableOutput();
-		  
-		  LabelMapIterator2DType it_forconnected(forconnectedLabelMapSlice,forconnectedLabelMapSlice->GetBufferedRegion());
-		  it_forconnected.GoToBegin();
-		  while ( !it_forconnected.IsAtEnd() )
-		    {
-		      if ( it_forconnected.Get() != *it_labels )
-			{
-			  it_forconnected.Set(0);
-			}
-		      
-		      ++it_forconnected;
-		    }
+		  DuplicatorType::Pointer duplicatorSlice = DuplicatorType::New();
+		  duplicatorSlice->SetInputImage(unconnectedLabelMapSlice);
+		  duplicatorSlice->Update();
+		  LabelMapSliceType::Pointer connectedLabelMapSlice = duplicatorSlice->GetModifiableOutput();
 
 		  ConnectedComponent2DType::Pointer connected = ConnectedComponent2DType::New();    
-		  connected->SetInput(forconnectedLabelMapSlice); 
+		  connected->SetInput(unconnectedLabelMapSlice); 
 		  connected->Update();
-	      
+
 		  //RelabelComponentImageFilter
 		  //remove labels with small size (or create a volume with the value 1 if we want to delete the labels)
 		  RelabelFilter2DType::Pointer relabel = RelabelFilter2DType::New();
 		  RelabelFilter2DType::ObjectSizeType minSize = 10;
 		  minSize = sizeThreshold;
-	      
+		      
 		  relabel->SetInput(connected->GetOutput());
+		  std::cout<<" threshold "<<sizeThreshold<<std::endl;
 		  relabel->SetMinimumObjectSize(sizeThreshold);
-		  relabel->Update();
-		  
-		  //delete the labels from the input labelmap that have been removed post connected components.
+		  relabel->Update();  
+		  std::cout << "slice, Number of objects: " << connected->GetObjectCount() << std::endl;
+	      
+		  //delete the labels from the input labelmap that have been removed post connected components
+		  LabelMapIterator2DType it_components2d( relabel->GetOutput(),relabel->GetOutput()->GetBufferedRegion() );
+		  LabelMapIterator2DType it_original2d( unconnectedLabelMapSlice,unconnectedLabelMapSlice->GetBufferedRegion() ); 	  
+		  LabelMapIteratorType it_connected( connectedLabelMap,connectedLabelMap->GetBufferedRegion() ); 	// the volume to be output  
+
 		  // the tricky part here is to get the 2 iterators right, depending on slice direction and location
-		  
-		  //iterate over the 2D relabeler, and place at right location in 3D image
-		  LabelMapIterator2DType it_components( relabel->GetOutput(),relabel->GetOutput()->GetBufferedRegion() ); //2D
-		  LabelMapIteratorType it_original( inputLabelMap,inputLabelMap->GetBufferedRegion() ); //these 2 will vary
-		  LabelMapIterator2DType it_inclusion( forconnectedLabelMapSlice,forconnectedLabelMapSlice->GetBufferedRegion() ); //2D now..
-		  
-		  it_components.GoToBegin();
-		  it_inclusion.GoToBegin();
-		  while ( !it_components.IsAtEnd() )
+		  //store the output in lieu of the input labelmap
+		  it_components2d.GoToBegin();
+		  it_original2d.GoToBegin();
+		  it_connected.GoToBegin();
+	      
+		  while ( !it_components2d.IsAtEnd() )
 		    {
 		      cip::LabelMapType::IndexType tempIndex;
 		      if(evalMethod.compare("axial") == 0)
 			{
-			  tempIndex[0] = it_components.GetIndex()[0];
-			  tempIndex[1] = it_components.GetIndex()[1];
+			  tempIndex[0] = it_components2d.GetIndex()[0];
+			  tempIndex[1] = it_components2d.GetIndex()[1];
 			  tempIndex[2] = n;
 			}
 		      if(evalMethod.compare("coronal") == 0)
 			{
-			  tempIndex[0] = it_components.GetIndex()[0];
+			  tempIndex[0] = it_components2d.GetIndex()[0];
 			  tempIndex[1] = n; 
-			  tempIndex[2] = it_components.GetIndex()[1];
+			  tempIndex[2] = it_components2d.GetIndex()[1];
 			}
 		      if(evalMethod.compare("sagittal") == 0)
 			{
 			  tempIndex[0] = n; 
-			  tempIndex[1] = it_components.GetIndex()[1];			 
-			  tempIndex[2] = it_components.GetIndex()[2];
+			  tempIndex[1] = it_components2d.GetIndex()[0];			 
+			  tempIndex[2] = it_components2d.GetIndex()[1];
 			}
-		      if(( it_components.Get() == 0) && (it_inclusion.Get()>0) &&(inputLabelMap->GetPixel(tempIndex)>0))
+
+
+		      if(( it_components2d.Get() == 0) &&(it_original2d.Get()>0))
 			{
-			  std::cout<<"removing label "<<inputLabelMap->GetPixel(tempIndex)<<std::endl;
-			  inputLabelMap->SetPixel( tempIndex, 0 );
+			  connectedLabelMap->SetPixel( tempIndex, 0 );
+
 			}
-		      ++it_components;
-		      ++it_inclusion;
-		    }
+		      ++it_components2d;
+		      ++it_original2d;
+		      ++it_connected;
+		    }	      
 		}
 	    }
 	}
+      return;
     }
-      // return output label map
-      return  inputLabelMap; 
-    }
+ 
