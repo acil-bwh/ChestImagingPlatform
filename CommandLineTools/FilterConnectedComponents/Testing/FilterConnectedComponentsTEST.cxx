@@ -54,12 +54,12 @@ LeftLung	Vessel : 771
   DuplicatorType::Pointer duplicator = DuplicatorType::New();
   duplicator->SetInputImage(inputLabelMap);
   duplicator->Update();
-  expectedOutputLabelMap = duplicator->GetModifiableOutput();
+  expectedOutputLabelMap = duplicator->GetOutput();
 
   DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
   duplicator2->SetInputImage(inputLabelMap);
   duplicator2->Update();
-  outputLabelMap = duplicator2->GetModifiableOutput();
+  outputLabelMap = duplicator2->GetOutput();
   
 
   /************
