@@ -30,6 +30,7 @@ bool GetSliceHasForeground(cip::LabelMapType::Pointer labelMap, unsigned int whi
   cip::LabelMapType::IndexType  start;
   cip::LabelMapType::SizeType   regionSize;
 
+
   if (slicePlane.compare("axial") == 0)
     {
       start[0] = 0;
@@ -147,8 +148,18 @@ void ExtractLabelMapSlice( cip::LabelMapType::Pointer image, LabelMapSliceType::
   
   LabelMapSliceExtractorType::Pointer sliceExtractor = LabelMapSliceExtractorType::New();
   sliceExtractor->SetInput( image );
+  sliceExtractor->SetDirectionCollapseToIdentity();
   sliceExtractor->SetExtractionRegion( sliceExtractorRegion );
-  sliceExtractor->Update();
+  try
+    {   
+      sliceExtractor->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+      std::cerr << "Exception caught extracting slice:";
+      std::cerr << excp << std::endl;
+    }   
+
 
   LabelMapSliceIteratorType eIt( sliceExtractor->GetOutput(), sliceExtractor->GetOutput()->GetBufferedRegion() );
   LabelMapSliceIteratorType sIt( sliceImage, sliceImage->GetBufferedRegion() );
@@ -589,10 +600,10 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	      sliceMax = boundingBox.GetIndex()[0] + boundingBox.GetSize()[0] - 1;	  
 	    }
 
- 
+	  
 	  int numImages = sliceMax - sliceMin + 1;
 	  //cip::LabelMapType::IndexType slice_start = inputRegion.GetIndex();
-      
+	  
 	  //perform connected components on each slice separately
 	  for ( unsigned int n=sliceMin; n<=sliceMax; n++ )
 	    {
