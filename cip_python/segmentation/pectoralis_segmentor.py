@@ -3,6 +3,7 @@ import numpy as np
 import vtk
 import pickle
 from vtk.util import numpy_support as VN
+import nrrd
 from cip_python.segmentation.segment_chest_with_atlas \
     import segment_pec_with_atlas
 import construct_pec_atlas_from_filenames     
@@ -46,13 +47,19 @@ class pectoralis_segmentor:
         for class_name in self._AllClasses: #define non pec prior and compute later  
             prior_probabilities[class_name] = np.zeros((image_dimensions[0], \
                 image_dimensions[1],image_dimensions[2]), dtype=np.float)   
-        prior_probabilities = construct_pec_atlas_from_filenames.compute_atlas_from_labelfiles(\
-            self._input_volume, self._testing_ct_filename, self._training_ct_filenames,\
-            self._training_labelmaps_filenames, self._base_case_ct_filenames, \
-            self._base_case_labelmap_filenames,\
-            self._test_case_transfo_dir, self._transformation_filenames, \
-            self._num_closest_cases, self._similarity, \
-            self._threshold_value_for_similarity)
+        #prior_probabilities = construct_pec_atlas_from_filenames.compute_atlas_from_labelfiles(\
+        #    self._input_volume, self._testing_ct_filename, self._training_ct_filenames,\
+        #    self._training_labelmaps_filenames, self._base_case_ct_filenames, \
+        #    self._base_case_labelmap_filenames,\
+        #    self._test_case_transfo_dir, self._transformation_filenames, \
+        #    self._num_closest_cases, self._similarity, \
+        #    self._threshold_value_for_similarity)
+    
+        ### for debugging purposes, read atlas:
+        for class_index in self._PecClasses:
+            atlas_filename_temp = "/Users/rolaharmouche/Documents/Data/COPDGene/10010J/10010J_INSP_STD_NJC_COPD/10010J_INSP_STD_NJC_COPD_"+class_index+"_atlas_nc_multiplebase15closest_threshold0_6.nrrd"    
+            prior_probabilities[class_index], test= nrrd.read(atlas_filename_temp)
+ 
     
         print("atlases read..")
         #i=0

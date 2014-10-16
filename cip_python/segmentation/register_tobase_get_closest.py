@@ -189,6 +189,7 @@ def compute_similarity_from_filenames(testing_ct_filename, \
             print path_name + " environment variable is not set"
             exit()
     
+    print("\n\n\n In compute_similarity_from_filenames \n\n\n")
     GetTransformationSimilarityMetric = os.path.join(path['CIP_PATH'], \
         "GetTransformationSimilarityMetric2D")
         
@@ -256,9 +257,9 @@ def compute_similarity_from_filenames(testing_ct_filename, \
             " --outputXMLFile "+list_of_similarity_files[x] 
             #" --movingLabelMapFileName "+ moving_mask_filename
                                                                                                         
-        print(similarity_call)                
+        #print(similarity_call)                
         subprocess.call(similarity_call, shell=True);
-    print(list_of_similarity_files)     
+    #print(list_of_similarity_files)     
     return list_of_similarity_files
 
 
@@ -318,6 +319,7 @@ def compute_dice_similarity_from_filenames(testing_ct_filename, \
             print path_name + " environment variable is not set"
             exit()
     
+    print("\n\n\n In compute_dice_similarity_from_filenames \n\n\n")
     #GetTransformationSimilarityMetric = os.path.join(path['CIP_PATH'], \
     #    "GetTransformationSimilarityMetric2D")
     GetTransformationSimilarityMetric = os.path.join(path['CIP_PATH'], \
@@ -383,12 +385,12 @@ def compute_dice_similarity_from_filenames(testing_ct_filename, \
             " --outputXMLFile "+list_of_similarity_files[x] 
 
                                               
-        print(similarity_call)                
+        #print(similarity_call)                
         subprocess.call(similarity_call, shell=True);
         
         #dd = compute_dice_with_transfo(temp1_for_registration, temp2_for_registration, transfos_for_similarity)
         #list_of_similarity_files[x] = str(dd)
-    print(list_of_similarity_files)     
+    #print(list_of_similarity_files)     
     return list_of_similarity_files
 
 
@@ -471,6 +473,7 @@ def register_tobase_get_closest( testing_ct_filename, base_case_ct_filenames,
             print path_name + " environment variable is not set"
             exit()
     
+    print("\n\n\n In register_tobase_get_closest \n\n\n")
     registerLabelMaps = os.path.join(path['CIP_PATH'],"RegisterLabelMaps2D")
     
     base_to_testing_transfo_names = [""]*len(base_case_ct_filenames)                

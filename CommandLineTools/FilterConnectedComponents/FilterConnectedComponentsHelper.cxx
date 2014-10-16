@@ -32,7 +32,6 @@ bool GetSliceHasForeground(cip::LabelMapType::Pointer labelMap, unsigned int whi
 
   if (slicePlane.compare("axial") == 0)
     {
-      std::cout<<"in axial"<<std::endl;
       start[0] = 0;
       start[1] = 0;
       start[2] = whichSlice;
@@ -280,13 +279,11 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  it_components.GoToBegin();
 	  it_inclusion.GoToBegin();
 	  it_output.GoToBegin();
-	  std::cout<<it_inclusion.Get()<<std::endl;
-	  std::cout<<it_components.Get()<<std::endl;
+
 	  while ( !it_output.IsAtEnd() )
 	    {
 	      if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
 		{
-		  std::cout<<"in region vec removing label "<<it_inclusion.Get()<<std::endl;
 		  //get the present voxel value and translate to region and type. Then remove the region value
 		  unsigned char chest_region = conventions.GetChestRegionFromValue( it_output.Get() );
 		  unsigned char chest_type = conventions.GetChestTypeFromValue( it_output.Get() );
@@ -336,14 +333,12 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	    {
 	      if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
 		{
-		  std::cout<<"in FilterConnectedComponents removing label "<<it_inclusion.Get()<<" "<<it_components.Get()<<std::endl;
 		  //We first need to see if it was in the region list or the type list
 		  // if so, do not touch.
 		  unsigned char chest_region = conventions.GetChestRegionFromValue( it_output.Get() );
 		  unsigned char chest_type = conventions.GetChestTypeFromValue( it_output.Get() );
 		  unsigned char final_region;
 		  unsigned char final_type;
-		  std::cout<<chest_region<<std::endl;
 		  if(std::find(regionVec.begin(), regionVec.end(), chest_region)!=regionVec.end())
 		    {
 		      final_region = chest_region;
@@ -380,7 +375,6 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 
       // here the output label map has a copy of the input label map.
       // First label output based on all labels. Then add back exclusions.
-      std::cout<<"in all"<<std::endl;
       // set all voxels deleted by connected components to 0, otherwise keep as is
       LabelMapIteratorType it_inclusion(inputLabelMap,inputLabelMap->GetBufferedRegion());
       LabelMapIteratorType it_components(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
@@ -392,7 +386,6 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	{		  
 	  if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
 	    {
-	      std::cout<<"in FilterConnectedComponents all removing label "<<it_inclusion.Get()<<" "<<it_components.Get()<<std::endl;
 	      it_output.Set(0);
 	    }
 	  else
@@ -537,7 +530,6 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  connected->Update();
 	  
 	  std::cout << "Volumetric, Number of objects: " << connected->GetObjectCount() << std::endl;
-	  std::cout<<" in performConnectedComponents, size is : "<<sizeThreshold<<std::endl;
 	  //remove labels with small size (or create a volume with the value 1 if we want to delete the labels)
 	  RelabelFilter3DType::Pointer relabel =  RelabelFilter3DType::New();
 	  
@@ -583,7 +575,6 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
       
 	  if (evalMethod.compare("axial") == 0)
 	    {  
-	      std::cout<<"performing axial connected components"<<std::endl;	  
 	      sliceMin = boundingBox.GetIndex()[2];
 	      sliceMax = boundingBox.GetIndex()[2] + boundingBox.GetSize()[2] - 1;
 	    }
@@ -605,11 +596,8 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  //perform connected components on each slice separately
 	  for ( unsigned int n=sliceMin; n<=sliceMax; n++ )
 	    {
-	      std::cout<<" checking slice "<<n<<std::endl; 
 	      if(GetSliceHasForeground(unconnectedLabelMap, n, evalMethod))
-		{
-		  std::cout<<"evaluating slice "<<n<<" using "<<evalMethod<<std::endl;
-	  
+		{  
 		  //Create a 2D image by extracting the appropriate slice in the right direction
 		  LabelMapSliceType::Pointer unconnectedLabelMapSlice = LabelMapSliceType::New();
 	      
@@ -628,14 +616,13 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 		  //RelabelComponentImageFilter
 		  //remove labels with small size (or create a volume with the value 1 if we want to delete the labels)
 		  RelabelFilter2DType::Pointer relabel = RelabelFilter2DType::New();
-		  RelabelFilter2DType::ObjectSizeType minSize = 10;
+		  RelabelFilter2DType::ObjectSizeType minSize;
 		  minSize = sizeThreshold;
 		      
 		  relabel->SetInput(connected->GetOutput());
-		  std::cout<<" threshold "<<sizeThreshold<<std::endl;
 		  relabel->SetMinimumObjectSize(sizeThreshold);
 		  relabel->Update();  
-		  std::cout << "slice, Number of objects: " << connected->GetObjectCount() << std::endl;
+		  std::cout << "slice "<<n<<" eval " <<evalMethod <<" Number of objects: " << connected->GetObjectCount() << std::endl;
 	      
 		  //delete the labels from the input labelmap that have been removed post connected components
 		  LabelMapIterator2DType it_components2d( relabel->GetOutput(),relabel->GetOutput()->GetBufferedRegion() );

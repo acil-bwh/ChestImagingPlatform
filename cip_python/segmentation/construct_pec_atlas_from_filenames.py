@@ -90,6 +90,7 @@ def compute_atlas_from_labelfiles(input_vol, testing_ct_filename, training_ct_fi
     
     for class_index in pec_classes: 
         
+        print("constucting atlas for "+ class_index)
         """
         For each class, find the most similar cases by computing similarity.
         Files required : full path ct slices of all training data, full path masks of all training data (to be 
@@ -101,9 +102,10 @@ def compute_atlas_from_labelfiles(input_vol, testing_ct_filename, training_ct_fi
     
         closest_cases  = getClosestCases(training_labelmap_filenames, \
             training_similarity_files, "dice", num_closest_cases, threshold_value_for_similarity)  
+        num_closest_cases_nonzero = np.shape(filter(None, closest_cases[0]))[0]
 
-        closest_cases_tfms = [""]*num_closest_cases
-        for i in range(0,num_closest_cases):
+        closest_cases_tfms = [""]*num_closest_cases_nonzero
+        for i in range(0,num_closest_cases_nonzero):
             closest_cases_tfms[i] = list_transfos_given_base[\
                 training_labelmap_filenames.index(closest_cases[0,i])]
 
@@ -111,13 +113,13 @@ def compute_atlas_from_labelfiles(input_vol, testing_ct_filename, training_ct_fi
     
         closest_label_maps[class_index] =[np.zeros([np.shape(imageFull)[0], \
             np.shape(imageFull)[1], np.shape(imageFull)[2]], dtype=float)] \
-            *num_closest_cases              
+            *num_closest_cases_nonzero              
 
         """
         resample all closest cases
         Files required : labelmaps of all training data
         """
-        for i in range(0,num_closest_cases): 
+        for i in range(0,num_closest_cases_nonzero): 
             # we assume that this transformation exists
             training_to_base_tfm = closest_cases_tfms[i] 
             base_to_testing = close_base_tfm                                     

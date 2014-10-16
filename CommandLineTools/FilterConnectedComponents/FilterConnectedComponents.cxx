@@ -55,9 +55,7 @@ int main( int argc, char *argv[] )
 	  regionTypePairTemp.type   = typePairVecArgInclude[i];
 
 	  regionTypePairVec.push_back( regionTypePairTemp );
-	  std::cout<<"reg and type"<<std::endl;
-	  std::cout<<regionPairVecArgInclude[i]<<" "<<typePairVecArgInclude[i]<<std::endl;
-	  std::cout<<regionTypePairTemp.region<<" "<<regionTypePairTemp.type<<std::endl;
+	  std::cout<<"reg and type: "<<regionPairVecArgInclude[i]<<" "<<typePairVecArgInclude[i]<<regionTypePairTemp.region<<" "<<regionTypePairTemp.type<<std::endl;
 	  is_include = true;
 	}
     }
@@ -107,8 +105,6 @@ int main( int argc, char *argv[] )
       return cip::EXITFAILURE;
     }
 
-  std::cout<<is_include<<std::endl;
-  std::cout<<is_exclude<<std::endl;
   // Read the input labelmap from file
  try
     {
@@ -128,7 +124,6 @@ int main( int argc, char *argv[] )
  //check how the volume will be evaluated, if more than 1 value is set, throw error
  evalMethod = "";
 
- std::cout<<" evalMethod is : "<<evalMethod<<std::endl;
 
  if(isVol)
    {

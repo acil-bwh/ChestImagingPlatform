@@ -15,6 +15,7 @@ from cip_python.utils.feature_maps import PolynomialFeatureMap
 import cip_python.gaussian_rician as gc
 import math
 import scipy.ndimage.morphology as scimorph
+import nrrd
 
 def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
     """Segment structures using atlas data and likelihoods. 
@@ -51,6 +52,7 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
        compute_structure_posterior_probabilities(np.squeeze(likelihoods), np.squeeze(priors), \
                                                   np.squeeze(normalization_constants))
 
+    #nrrd.write(posterior_probabilities[i])
     #posterior_probabilities = \
     #   compute_structure_posterior_probabilities(likelihoods, priors, \
     #                                              normalization_constants)      
@@ -75,9 +77,7 @@ def segment_chest_with_atlas(likelihoods, priors, normalization_constants):
         not_class_posterior_energies = ( -np.log(np.maximum(not_class_posteriors,\
             0.0000000000001))*integer_precision).astype(np.int32)
         
-        print("shape of energies")
-        print(np.shape(not_class_posterior_energies))  
-        print(np.shape(class_posterior_energies))     
+    
         label_map[i]=obtain_graph_cuts_segmentation( \
           not_class_posterior_energies, class_posterior_energies)
           
@@ -491,9 +491,6 @@ def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_
                 likelihoods[distclass_index, givenclass_index] = compute_non_pec_likelihood(input_image, distance_maps[distclass_index], \
                     nonpec_classifier_params[distclass_index, givenclass_index])   
             else:
-                print("intensity and distance ")
-                print(np.shape(input_image))
-                print(np.shape(distance_maps[distclass_index]))
                 likelihoods[distclass_index, givenclass_index]= gc.gauss_noncentered_rician_pdf(input_image, distance_maps[distclass_index], \
                     non_diagonals_classifier_params[distclass_index, givenclass_index])                 
                 
@@ -518,7 +515,7 @@ def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_
             #nrrd.write(likelihood_name, likelihoods[distclass_index, givenclass_index])            
         likelihoods_sum[givenclass_index] = np.multiply(likelihoods[distclass_index, givenclass_index], 0.25) #0.25
         likelihood_name =  "/Users/rolaharmouche/Documents/Data/likelihood_"+givenclass_index+".nrrd"
-        #nrrd.write(likelihood_name, likelihoods_sum[givenclass_index])
+        nrrd.write(likelihood_name, likelihoods_sum[givenclass_index])
     
     
     
@@ -617,7 +614,6 @@ def segment_pec_with_atlas(input_image, probabilistic_atlases, alpha_p_distance_
     #   probabilistic_atlases["rightmajor"],probabilistic_atlases["rightminor"]     ], \
     #   [marginal,marginal,marginal,marginal])
 
-    print("new labels")
     segmented_labels = dict()
     posteriors = dict()
     [segmented_labels["leftmajor"],segmented_labels["leftminor"],segmented_labels["rightmajor"],\
@@ -674,16 +670,17 @@ def compute_structure_posterior_probabilities(likelihoods, priors, \
         zero_indeces = (normalization_constants[d] < 0.0000000000000000001) #0.0000000000000000001 pre namic
         normalization_constants[d][zero_indeces] = 0.0000000000000000001#*np.max(likelihoods[d])  
         threashold = 0.000000001*np.max(likelihoods[d])        
-        posteriors[d] = likelihoods[d].astype(np.float)*priors[d].astype(np.float) /((normalization_constants[d]).astype(np.float))
+        posteriors[d] = likelihoods[d].astype(np.float)*priors[d].astype(np.float)/((normalization_constants[d]).astype(np.float))
         #mask = (posteriors[d]<threashold)
         
         #mask2 =(posteriors[d] <0) 
         #posteriors[d][mask2]=0
-        posteriors[d][zero_indeces]=0;
+        #posteriors[d][zero_indeces]=0;
         
         #mask3 =(posteriors[d] >1) 
         #posteriors[d][mask3]=1
         #posteriors[d][mask] = 0
+    
     return posteriors
     
 def obtain_graph_cuts_segmentation(structure_posterior_energy, \
@@ -763,8 +760,7 @@ def obtain_graph_cuts_segmentation(structure_posterior_energy, \
         #horz is first element, vert is 
         theweights2 = np.ones((np.shape(edges2))).astype(np.int32)*5#*30
         edges2 = np.hstack((edges2,theweights2))[:,0:3].astype(np.int32)
-        print("edge shape")
-        print(np.shape(edges))
+
         edges_temp = np.vstack([edges,edges2]).astype(np.int32)
         edges = np.reshape(edges_temp, np.shape(edges_temp), order = 'C')
         pairwise_cost = np.array([[0, 125], [125, 0]], dtype = np.int32, order = 'C')
@@ -773,7 +769,6 @@ def obtain_graph_cuts_segmentation(structure_posterior_energy, \
         np.array(sink_slice).astype(np.int32).flatten())).squeeze()
 
         energies = np.ascontiguousarray(np.reshape(energies_temp, np.shape(energies_temp), order = 'C'))
-        print(np.shape(energies))
         segmented_slice = cut_from_graph(edges, energies, pairwise_cost, 3, \
           'expansion') 
         segmented_image[:,:,slice_num] = segmented_slice.reshape(length,width)
