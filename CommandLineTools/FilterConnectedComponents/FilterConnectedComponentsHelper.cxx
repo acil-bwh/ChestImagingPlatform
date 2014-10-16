@@ -220,7 +220,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
 	  duplicator2->SetInputImage(inputLabelMap);
 	  duplicator2->Update();
-	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();
+	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetOutput();//GetModifiableOutput();
 
 	    
 	  performConnectedComponents(extractor->GetOutput(), connectedLabelMap, sizeThreshold, evalMethod);
@@ -266,7 +266,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
 	  duplicator2->SetInputImage(inputLabelMap);
 	  duplicator2->Update();
-	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();	    
+	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetOutput();	    
 
 	  performConnectedComponents(extractor->GetOutput(), connectedLabelMap, sizeThreshold, evalMethod);
 	  // Here we expect to get a labelmap identical to extractor->GetOutput(), except with 
@@ -307,7 +307,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
 	  duplicator2->SetInputImage(inputLabelMap);
 	  duplicator2->Update();
-	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();
+	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetOutput();
 
 	  LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
 	  extractor->SetInput( inputLabelMap );
@@ -369,7 +369,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
       DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
       duplicator2->SetInputImage(inputLabelMap);
       duplicator2->Update();
-      cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetModifiableOutput();
+      cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetOutput();
 
       performConnectedComponents(inputLabelMap, connectedLabelMap, sizeThreshold, evalMethod);
 
