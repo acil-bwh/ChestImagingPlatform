@@ -607,7 +607,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 		  DuplicatorType::Pointer duplicatorSlice = DuplicatorType::New();
 		  duplicatorSlice->SetInputImage(unconnectedLabelMapSlice);
 		  duplicatorSlice->Update();
-		  LabelMapSliceType::Pointer connectedLabelMapSlice = duplicatorSlice->GetModifiableOutput();
+		  LabelMapSliceType::Pointer connectedLabelMapSlice = duplicatorSlice->GetOutput();
 
 		  ConnectedComponent2DType::Pointer connected = ConnectedComponent2DType::New();    
 		  connected->SetInput(unconnectedLabelMapSlice); 
