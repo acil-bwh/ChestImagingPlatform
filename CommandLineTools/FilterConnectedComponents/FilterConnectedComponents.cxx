@@ -171,11 +171,10 @@ int main( int argc, char *argv[] )
       return cip::EXITFAILURE;
      }
 
- //DuplicatorType::Pointer duplicator = DuplicatorType::New();
- //duplicator->SetInputImage(inputLabelMap);
- //duplicator->Update();
- //outputLabelMap = duplicator->GetOutput();
-  outputLabelMap   = ReadLabelMapFromFile( inputFileName );
+ DuplicatorType::Pointer duplicator = DuplicatorType::New();
+ duplicator->SetInputImage(inputLabelMap);
+ duplicator->Update();
+ outputLabelMap = duplicator->GetOutput();
  FilterConnectedComponents(inputLabelMap,outputLabelMap,sizeThreshold, regionVec, typeVec, regionTypePairVec, evalMethod, is_include, is_exclude);
 
 

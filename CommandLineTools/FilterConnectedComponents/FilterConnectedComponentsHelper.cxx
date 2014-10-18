@@ -200,7 +200,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 
   /* set output to input by default
    */
-  LabelMapIteratorType it_output0(outputLabelMap,outputLabelMap->GetBufferedRegion());
+    LabelMapIteratorType it_output0(outputLabelMap,outputLabelMap->GetBufferedRegion());
   LabelMapIteratorType it_input0(inputLabelMap,inputLabelMap->GetBufferedRegion());
   it_output0.GoToBegin();
   it_input0.GoToBegin();
@@ -213,6 +213,12 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
       ++it_input0;
     }
   
+
+ cip::LabelMapType::IndexType tempIndex;
+ cip::LabelMapType::RegionType boundingBox;
+ boundingBox = cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(inputLabelMap);
+
+
   if(isInclude == true) 
     {
       //here we start off with the output being identical to the input.  so nothing
@@ -228,12 +234,13 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  extractor->SetChestType(typeVec[i]);
 	  extractor->Update();
 
-	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
-	  duplicator2->SetInputImage(inputLabelMap);
-	  duplicator2->Update();
-	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetOutput();//GetModifiableOutput();
+	  //DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
+	  //duplicator2->SetInputImage(inputLabelMap);
+	  //duplicator2->Update();
+	  cip::LabelMapType::Pointer connectedLabelMap = cip::LabelMapType::New();//duplicator2->GetOutput();
+	  //If the region / type does not exist in the image, then the connected labelmap should be empty
 
-	    
+
 	  performConnectedComponents(extractor->GetOutput(), connectedLabelMap, sizeThreshold, evalMethod);
 	    
 	  // Here we expect to get a labelmap identical to extractor->GetOutput(), except with 
@@ -256,7 +263,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 		  unsigned char chest_type = conventions.GetChestTypeFromValue( it_output.Get() );
 		  unsigned short final_value = conventions.GetValueFromChestRegionAndType(  (unsigned char)( cip::UNDEFINEDREGION ), chest_type ); 
 		      
-		  it_output.Set(final_value);
+		   it_output.Set(final_value);
 		}
 	      ++it_components;
 	      ++it_inclusion;
@@ -318,14 +325,15 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  DuplicatorType::Pointer duplicator2 = DuplicatorType::New();
 	  duplicator2->SetInputImage(inputLabelMap);
 	  duplicator2->Update();
-	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetOutput();
+	  cip::LabelMapType::Pointer connectedLabelMap = duplicator2->GetOutput(); //= cip::LabelMapType::New();//
 
 	  LabelMapChestExtractorType::Pointer extractor = LabelMapChestExtractorType::New();
 	  extractor->SetInput( inputLabelMap );
 	  extractor->SetRegionAndType( regionTypePairVec[i].region,regionTypePairVec[i].type );
 	  extractor->Update();
 
-		    
+	   boundingBox = cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(extractor->GetOutput());
+  	    
 	  performConnectedComponents(extractor->GetOutput(), connectedLabelMap,  sizeThreshold, evalMethod);
 	   
 	  // Here we expect to get a labelmap identical to extractor->GetOutput(), except with 
@@ -336,11 +344,12 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  LabelMapIteratorType it_inclusion(extractor->GetOutput(),extractor->GetOutput()->GetBufferedRegion());
 	  LabelMapIteratorType it_components(connectedLabelMap,connectedLabelMap->GetBufferedRegion());
 	  LabelMapIteratorType it_output(outputLabelMap,outputLabelMap->GetBufferedRegion());
+	  LabelMapIteratorType it_input(inputLabelMap,inputLabelMap->GetBufferedRegion());
 	  it_components.GoToBegin();
 	  it_inclusion.GoToBegin();
 	  it_output.GoToBegin();
-
-	  while ( !it_output.IsAtEnd() )
+	  it_input.GoToBegin();
+	  while ( !it_input.IsAtEnd() )
 	    {
 	      if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
 		{
@@ -363,12 +372,16 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 		  else
 		    final_type = (unsigned char)( cip::UNDEFINEDTYPE );
 
+
 		  unsigned short final_value = conventions.GetValueFromChestRegionAndType( final_region ,final_type ); 
-		  it_output.Set(final_value);
+		  it_output.Set(final_value); //this is messing up bounding box
+
 		}
+
 	      ++it_components;
 	      ++it_inclusion;
 	      ++it_output;
+	      ++it_input;
 	    }
 	}
 
@@ -397,11 +410,11 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	{		  
 	  if(( it_components.Get() == 0) && (it_inclusion.Get()>0))
 	    {
-	      it_output.Set(0);
+	       it_output.Set(0);
 	    }
 	  else
 	    {
-	      it_output.Set(it_inclusion.Get());
+	        it_output.Set(it_inclusion.Get());
 	    }
 	  ++it_components;
 	  ++it_inclusion;
@@ -440,7 +453,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 		      unsigned char chest_type = conventions.GetChestTypeFromValue( it_input.Get() );
 
 		      unsigned short final_value = conventions.GetValueFromChestRegionAndType(  (unsigned char)( cip::UNDEFINEDREGION ), chest_type ); 
-		      it_output2.Set(final_value);
+		       it_output2.Set(final_value);
 		    }
 		  ++it_components2;
 		  ++it_exclusion;
@@ -477,7 +490,7 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 
 		      unsigned short final_value = conventions.GetValueFromChestRegionAndType( chest_region ,chest_type); 
 
-		      it_output2.Set(final_value);
+		       it_output2.Set(final_value);
 		    }
 		  ++it_components2;
 		  ++it_exclusion;
@@ -533,6 +546,21 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
   // Performs connected components given an extracted region of interest and a specified slice direction / volumetric
   void performConnectedComponents(cip::LabelMapType::Pointer unconnectedLabelMap,cip::LabelMapType::Pointer connectedLabelMap, int sizeThreshold, std::string  evalMethod)
     {
+       
+       //Set output to input by default in case the labelmap is empty
+       LabelMapIteratorType it_connected( connectedLabelMap,connectedLabelMap->GetBufferedRegion() ); 
+       LabelMapIteratorType it_unconnected( unconnectedLabelMap,unconnectedLabelMap->GetBufferedRegion() ); 
+       it_connected.GoToBegin();
+       it_unconnected.GoToBegin();
+       while ( !it_connected.IsAtEnd() )
+	 {	  
+	   it_connected.Set(it_unconnected.Get());
+	   
+	   ++it_connected;
+	   ++it_unconnected;
+	 }
+       
+
      //perform connected components on the labels from the original  set
       if (evalMethod.compare("vol") == 0)
 	{  	  
@@ -562,7 +590,6 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	    {
 	      if(( it_components.Get() == 0) &&(it_original.Get()>0))
 		{
-		  std::cout<<"in connected components removing label "<<it_original.Get()<<std::endl;		  
 		  it_connected.Set(0 );
 		}
 	      ++it_components;
@@ -577,9 +604,6 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	  boundingBox = cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(unconnectedLabelMap);
 	  cip::LabelMapType::SizeType unconnected_size = unconnectedLabelMap->GetBufferedRegion().GetSize();
 	  cip::LabelMapType::SpacingType unconnected_spacing = unconnectedLabelMap->GetSpacing();
-
-	  //  cip::LabelMapType::SizeType sliceSize;
-	  //cip::LabelMapType::SpacingType sliceSpacing;
       
 	  unsigned int sliceMin;
 	  unsigned int sliceMax;
@@ -588,23 +612,30 @@ void FilterConnectedComponents(cip::LabelMapType::Pointer inputLabelMap, cip::La
 	    {  
 	      sliceMin = boundingBox.GetIndex()[2];
 	      sliceMax = boundingBox.GetIndex()[2] + boundingBox.GetSize()[2] - 1;
-	    }
-	  else if (evalMethod.compare("coronal") == 0)
-	    {      	  
-	      sliceMin = boundingBox.GetIndex()[1];
-	      sliceMax = boundingBox.GetIndex()[1] + boundingBox.GetSize()[1] - 1;
-	    }
-	  else if (evalMethod.compare("sagittal") == 0)
+	     }
+	   else if (evalMethod.compare("coronal") == 0)
+	     {      	  
+	       sliceMin = boundingBox.GetIndex()[1];
+	       sliceMax = boundingBox.GetIndex()[1] + boundingBox.GetSize()[1] - 1;
+	     }
+	   else if (evalMethod.compare("sagittal") == 0)
 	    {      	  
 	      sliceMin = boundingBox.GetIndex()[0];
 	      sliceMax = boundingBox.GetIndex()[0] + boundingBox.GetSize()[0] - 1;	  
 	    }
 
-	  
 	  int numImages = sliceMax - sliceMin + 1;
 	  //cip::LabelMapType::IndexType slice_start = inputRegion.GetIndex();
 	  
-	  //perform connected components on each slice separately
+	  //if there are no labels in the volume, then  boundingBox.GetSize() =0. do no perform in that case
+	  if((boundingBox.GetSize()[0]==0) || (boundingBox.GetSize()[1]==0) ||(boundingBox.GetSize()[2]==0))
+	    {
+	      std::cout<<" no labels in labelmap "<<std::endl;
+	      sliceMin = 0;
+	      sliceMax = 0;
+	    }
+
+	  //perform connected components on each slice separately, 
 	  for ( unsigned int n=sliceMin; n<=sliceMax; n++ )
 	    {
 	      if(GetSliceHasForeground(unconnectedLabelMap, n, evalMethod))
