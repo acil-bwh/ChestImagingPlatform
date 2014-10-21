@@ -36,6 +36,9 @@ cipThinPlateSplineSurfaceModelToParticlesMetric
 cipThinPlateSplineSurfaceModelToParticlesMetric
 ::~cipThinPlateSplineSurfaceModelToParticlesMetric()
 {
+  this->FissureParticles->Delete();
+  this->AirwayParticles->Delete();
+  this->VesselParticles->Delete();
 }
 
 
