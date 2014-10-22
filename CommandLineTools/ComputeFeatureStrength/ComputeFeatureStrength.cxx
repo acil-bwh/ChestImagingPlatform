@@ -3,13 +3,6 @@
  *  \details This program takes a CT volume and a Lung label map and
  *  crops the input volume and/or label map to the specified
  *  region/type
- * 
- *  USAGE: 
- *
- *  * 
- *  $Date:  $
- *  $Revision:  $
- *  $Author:  $
  *
  */
 
@@ -35,382 +28,341 @@
 
 namespace
 {
-typedef itk::ImageFileReader< cip::CTType >  CTFileReaderType;
+  typedef itk::ImageFileReader< cip::CTType >  CTFileReaderType;
 
-  
-cip::CTType::Pointer ReadCTFromFile( std::string  );
-    
-cip::CTType::Pointer ReadCTFromFile( std::string fileName )
-{
+  cip::CTType::Pointer ReadCTFromFile( std::string );    
+  cip::CTType::Pointer ReadCTFromFile( std::string fileName )
+  {
     CTFileReaderType::Pointer reader = CTFileReaderType::New();
-    reader->SetFileName( fileName );
+      reader->SetFileName( fileName );
     try
-    {
-        reader->Update();
-    }
+      {
+      reader->Update();
+      }
     catch ( itk::ExceptionObject &excp )
-    {
-        std::cerr << "Exception caught reading CT image:";
-        std::cerr << excp << std::endl;
-        return NULL;
-    }
+      {
+      std::cerr << "Exception caught reading CT image:";
+      std::cerr << excp << std::endl;
+      return NULL;
+      }
     
     return reader->GetOutput();
-}
-  
-
-
+  }  
 } //end namespace
 
-
 typedef double OutputPixelType;
-typedef itk::Image<OutputPixelType,3>  OutputImageType;
+typedef itk::Image<OutputPixelType,3>          OutputImageType;
 typedef itk::ImageFileWriter<OutputImageType>  WriterType;
+typedef cip::CTType                            InputImageType;
 
-typedef cip::CTType InputImageType;
-
-
-typedef itk::MultiScaleGaussianEnhancementImageFilter<
-InputImageType, OutputImageType >                 MultiScaleFilterType;
-typedef MultiScaleFilterType
-::GradientMagnitudePixelType                      GradientMagnitudePixelType;
-typedef MultiScaleFilterType
-::EigenValueArrayType                             EigenValueArrayType;
+typedef itk::MultiScaleGaussianEnhancementImageFilter< InputImageType, OutputImageType >  MultiScaleFilterType;
+typedef MultiScaleFilterType ::GradientMagnitudePixelType                                 GradientMagnitudePixelType;
+typedef MultiScaleFilterType::EigenValueArrayType                                         EigenValueArrayType;
 
 /** Supported functors. */
-typedef itk::Functor::FrangiVesselnessFunctor<
-EigenValueArrayType, OutputPixelType >            FrangiVesselnessFunctorType;
-typedef itk::Functor::FrangiSheetnessFunctor<
-EigenValueArrayType, OutputPixelType >            FrangiSheetnessFunctorType;
-typedef itk::Functor::DescoteauxSheetnessFunctor<
-EigenValueArrayType, OutputPixelType >            DescoteauxSheetnessFunctorType;
-typedef itk::Functor::ModifiedKrissianVesselnessFunctor<
-EigenValueArrayType, OutputPixelType >            ModifiedKrissianVesselnessFunctorType;
-
-typedef itk::Functor::StrainEnergyVesselnessFunctor<
-GradientMagnitudePixelType, EigenValueArrayType,
-OutputPixelType >                                 StrainEnergyVesselnessFunctorType;
-typedef itk::Functor::StrainEnergySheetnessFunctor<
-GradientMagnitudePixelType, EigenValueArrayType,
-OutputPixelType >                                 StrainEnergySheetnessFunctorType;
-typedef itk::Functor::FrangiXiaoSheetnessFunctor<
-GradientMagnitudePixelType, EigenValueArrayType,
-OutputPixelType >                                 FrangiXiaoSheetnessFunctorType;
-typedef itk::Functor::DescoteauxXiaoSheetnessFunctor<
-GradientMagnitudePixelType, EigenValueArrayType,
-OutputPixelType >                                 DescoteauxXiaoSheetnessFunctorType;
-
-
+typedef itk::Functor::FrangiVesselnessFunctor< EigenValueArrayType, OutputPixelType >                                    FrangiVesselnessFunctorType;
+typedef itk::Functor::FrangiSheetnessFunctor< EigenValueArrayType, OutputPixelType >                                     FrangiSheetnessFunctorType;
+typedef itk::Functor::DescoteauxSheetnessFunctor< EigenValueArrayType, OutputPixelType >                                 DescoteauxSheetnessFunctorType;
+typedef itk::Functor::ModifiedKrissianVesselnessFunctor< EigenValueArrayType, OutputPixelType >                          ModifiedKrissianVesselnessFunctorType;
+typedef itk::Functor::StrainEnergyVesselnessFunctor< GradientMagnitudePixelType, EigenValueArrayType, OutputPixelType >  StrainEnergyVesselnessFunctorType;
+typedef itk::Functor::StrainEnergySheetnessFunctor< GradientMagnitudePixelType, EigenValueArrayType, OutputPixelType >   StrainEnergySheetnessFunctorType;
+typedef itk::Functor::FrangiXiaoSheetnessFunctor< GradientMagnitudePixelType, EigenValueArrayType, OutputPixelType >     FrangiXiaoSheetnessFunctorType;
+typedef itk::Functor::DescoteauxXiaoSheetnessFunctor< GradientMagnitudePixelType, EigenValueArrayType, OutputPixelType > DescoteauxXiaoSheetnessFunctorType;
 
 int main( int argc, char *argv[] )
 {
-
   PARSE_ARGS;
   
   // Parse all arguments
   if (ctFileName.length() == 0 )
-  {
-    std::cerr << "ERROR: No CT image specified" << std::endl;
-    return cip::EXITFAILURE;
-  }
+    {
+      std::cerr << "ERROR: No CT image specified" << std::endl;
+      return cip::EXITFAILURE;
+    }
   
   if (strengthFileName.length() == 0 )
-  {
-    std::cerr << "ERROR: No output image specified" << std::endl;
-    return cip::EXITFAILURE;
-  }
+    {
+      std::cerr << "ERROR: No output image specified" << std::endl;
+      return cip::EXITFAILURE;
+    }
   
   /** Sanity checks. */
   if ( ( gaussianStd.size() != 1 && gaussianStd.size() != 3 ) )
-  {
-    std::cerr << "ERROR: You should specify 1 or 3 values for \"-std\"." << std::endl;
-    return cip::EXITFAILURE;
-  }
-
+    {
+      std::cerr << "ERROR: You should specify 1 or 3 values for \"-std\"." << std::endl;
+      return cip::EXITFAILURE;
+    }
+  
   if ( ( sigmaStepMethod != 0 && sigmaStepMethod != 1 ) )
-  {
-    std::cerr << "ERROR: \"-ssm\" should be one of {0, 1}." << std::endl;
-    return EXIT_FAILURE;
-  }
+    {
+      std::cerr << "ERROR: \"-ssm\" should be one of {0, 1}." << std::endl;
+      return EXIT_FAILURE;
+    }
   
   /** Get the range of sigma values. */
   double sigmaMinimum = gaussianStd[ 0 ];
   double sigmaMaximum = gaussianStd[ 0 ];
   unsigned int numberOfSigmaSteps = 1;
   if ( gaussianStd.size() == 3 )
-  {
-    sigmaMaximum = gaussianStd[ 1 ];
-    numberOfSigmaSteps = static_cast<unsigned int>( gaussianStd[ 2 ] );
-  }
-  
-  
+    {
+      sigmaMaximum = gaussianStd[ 1 ];
+      numberOfSigmaSteps = static_cast<unsigned int>( gaussianStd[ 2 ] );
+    }
+    
   // Set threads
   unsigned int maxThreads = itk::MultiThreader::GetGlobalDefaultNumberOfThreads();
   
   if (threads == 0)
-    threads = maxThreads;
+    {
+      threads = maxThreads;
+    }
   
   itk::MultiThreader::SetGlobalMaximumNumberOfThreads( maxThreads );
   
   // Create multi-scale filter. */
-  MultiScaleFilterType::Pointer multiScaleFilter
-  = MultiScaleFilterType::New();
+  MultiScaleFilterType::Pointer multiScaleFilter = MultiScaleFilterType::New();
   
   bool generateScalesOutput;
 
   if (scaleFileName.length() == 0 )
-  {
-    generateScalesOutput = false;
-  }
+    {
+      generateScalesOutput = false;
+    }
   else
-  {
-    generateScalesOutput = true;
-  }
+    {
+      generateScalesOutput = true;
+    }
   
   // Create Functor function based on selected method and connect to filter
   if ( method == "Frangi" )
-  {
-    if ( feature == "RidgeLine" )
     {
-      FrangiVesselnessFunctorType::Pointer functor
-      = FrangiVesselnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetBrightObject( true );
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else if (feature == "ValleyLine" )
-    {
-      FrangiVesselnessFunctorType::Pointer functor
-      = FrangiVesselnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetBrightObject( false );
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else if (feature == "RidgeSurface" )
-    {
-      FrangiSheetnessFunctorType::Pointer functor
-      = FrangiSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetBrightObject( true );
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else if (feature == "ValleySurface" )
-    {
-      FrangiSheetnessFunctorType::Pointer functor
-      = FrangiSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetBrightObject( false );
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else
-    {
-      itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
-      return cip::EXITFAILURE;
-    }
-    
-  }
-  else if ( method == "StrainEnergy" )
-  {
-    if ( feature == "RidgeLine" )
-    {
-      StrainEnergyVesselnessFunctorType::Pointer functor
-      = StrainEnergyVesselnessFunctorType::New();
-      functor->SetAlpha( alphase );
-      functor->SetBeta( betase );
-      functor->SetNu( nu );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( true );
-      
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else if ( feature == "ValleyLine" )
-    {
-      StrainEnergyVesselnessFunctorType::Pointer functor
-      = StrainEnergyVesselnessFunctorType::New();
-      functor->SetAlpha( alphase );
-      functor->SetBeta( betase );
-      functor->SetNu( nu );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( false );
-      
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else if ( feature == "RidgeSurface" )
-    {
-      StrainEnergySheetnessFunctorType::Pointer functor
-      = StrainEnergySheetnessFunctorType::New();
-      functor->SetAlpha( alphase );
-      functor->SetBeta( betase );
-      functor->SetNu( nu );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( true );
-      
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else if ( feature == "ValleySurface" )
-    {
-      StrainEnergySheetnessFunctorType::Pointer functor
-      = StrainEnergySheetnessFunctorType::New();
-      functor->SetAlpha( alphase );
-      functor->SetBeta( betase );
-      functor->SetNu( nu );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( false );
-      
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else
-    {
-      itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
-      return cip::EXITFAILURE;
-    }
-    
-  }
-  else if ( method == "ModifiedKrissian" )
-  {
-    if ( feature == "RidgeLine" )
-    {
-      ModifiedKrissianVesselnessFunctorType::Pointer functor
-      = ModifiedKrissianVesselnessFunctorType::New();
-      functor->SetBrightObject( true );
-      
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else if ( feature == "ValleyLine" )
-    {
-      ModifiedKrissianVesselnessFunctorType::Pointer functor
-      = ModifiedKrissianVesselnessFunctorType::New();
-      functor->SetBrightObject( false );
-      
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else
-    {
-      itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
-      return cip::EXITFAILURE;
-    }
-  }
-  else if ( method == "Descoteaux" )
-  {
-    if ( feature == "RidgeSurface" )
-    {
-      DescoteauxSheetnessFunctorType::Pointer functor
-      = DescoteauxSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetBrightObject( true );
-      
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else if ( feature == "ValleySurface" )
-    {
-      DescoteauxSheetnessFunctorType::Pointer functor
-      = DescoteauxSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetBrightObject( false );
-      
-      multiScaleFilter->SetUnaryFunctor( functor );
-    }
-    else
-    {
-      itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
-      return cip::EXITFAILURE;
-    }
-  }
-  else if ( method == "FrangiXiao" )
-  {
-    if ( feature ==  "RidgeSurface" )
-    {
-      FrangiXiaoSheetnessFunctorType::Pointer functor
-      = FrangiXiaoSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( true );
-      
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else if ( feature == "ValleySurface" )
-    {
-      FrangiXiaoSheetnessFunctorType::Pointer functor
-      = FrangiXiaoSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( false );
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else
-    {
-      itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
-      return cip::EXITFAILURE;
-    }
-  }
-  else if ( method == "DescoteauxXiao" )
-  {
-    if ( feature == "RidgeSurface" )
-    {
-      DescoteauxXiaoSheetnessFunctorType::Pointer functor
-      = DescoteauxXiaoSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( true );
-      
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else if ( feature == "ValleySurface" )
-    {
-      DescoteauxXiaoSheetnessFunctorType::Pointer functor
-      = DescoteauxXiaoSheetnessFunctorType::New();
-      functor->SetAlpha( alpha );
-      functor->SetBeta( beta );
-      functor->SetC( C );
-      functor->SetKappa( kappa );
-      functor->SetBrightObject( false );
-      
-      multiScaleFilter->SetBinaryFunctor( functor );
-    }
-    else
-    {
-      itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
-      return cip::EXITFAILURE;
-    }
-  }
-  else
-  {
-    itkGenericExceptionMacro( << "ERROR: unknown method " << method << "!" );
-    return cip::EXITFAILURE;
-  }
-  
+      if ( feature == "RidgeLine" )
+	{
+	  FrangiVesselnessFunctorType::Pointer functor = FrangiVesselnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetBrightObject( true );
 
-  //
-  // Read the input image now that filter is good to go
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else if (feature == "ValleyLine" )
+	{
+	  FrangiVesselnessFunctorType::Pointer functor = FrangiVesselnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetBrightObject( false );
+
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else if (feature == "RidgeSurface" )
+	{
+	  FrangiSheetnessFunctorType::Pointer functor = FrangiSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetBrightObject( true );
+
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else if (feature == "ValleySurface" )
+	{
+	  FrangiSheetnessFunctorType::Pointer functor = FrangiSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetBrightObject( false );
+
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else
+	{
+	  itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
+	  return cip::EXITFAILURE;
+	}
+      
+    }
+  else if ( method == "StrainEnergy" )
+    {
+      if ( feature == "RidgeLine" )
+	{
+	  StrainEnergyVesselnessFunctorType::Pointer functor = StrainEnergyVesselnessFunctorType::New();
+	    functor->SetAlpha( alphase );
+	    functor->SetBeta( betase );
+	    functor->SetNu( nu );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( true );
+	  
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else if ( feature == "ValleyLine" )
+	{
+	  StrainEnergyVesselnessFunctorType::Pointer functor = StrainEnergyVesselnessFunctorType::New();
+	    functor->SetAlpha( alphase );
+	    functor->SetBeta( betase );
+	    functor->SetNu( nu );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( false );
+	  
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else if ( feature == "RidgeSurface" )
+	{
+	  StrainEnergySheetnessFunctorType::Pointer functor = StrainEnergySheetnessFunctorType::New();
+	    functor->SetAlpha( alphase );
+	    functor->SetBeta( betase );
+	    functor->SetNu( nu );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( true );
+	  
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else if ( feature == "ValleySurface" )
+	{
+	  StrainEnergySheetnessFunctorType::Pointer functor = StrainEnergySheetnessFunctorType::New();
+	    functor->SetAlpha( alphase );
+	    functor->SetBeta( betase );
+	    functor->SetNu( nu );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( false );
+	  
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else
+	{
+	  itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
+	  return cip::EXITFAILURE;
+	}
+      
+    }
+  else if ( method == "ModifiedKrissian" )
+    {
+      if ( feature == "RidgeLine" )
+	{
+	  ModifiedKrissianVesselnessFunctorType::Pointer functor = ModifiedKrissianVesselnessFunctorType::New();
+	    functor->SetBrightObject( true );
+	  
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else if ( feature == "ValleyLine" )
+	{
+	  ModifiedKrissianVesselnessFunctorType::Pointer functor = ModifiedKrissianVesselnessFunctorType::New();
+	    functor->SetBrightObject( false );
+	  
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else
+	{
+	  itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
+	  return cip::EXITFAILURE;
+	}
+    }
+  else if ( method == "Descoteaux" )
+    {
+      if ( feature == "RidgeSurface" )
+	{
+	  DescoteauxSheetnessFunctorType::Pointer functor = DescoteauxSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetBrightObject( true );
+	  
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else if ( feature == "ValleySurface" )
+	{
+	  DescoteauxSheetnessFunctorType::Pointer functor = DescoteauxSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetBrightObject( false );
+	  
+	  multiScaleFilter->SetUnaryFunctor( functor );
+	}
+      else
+	{
+	  itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
+	  return cip::EXITFAILURE;
+	}
+    }
+  else if ( method == "FrangiXiao" )
+    {
+      if ( feature ==  "RidgeSurface" )
+	{
+	  FrangiXiaoSheetnessFunctorType::Pointer functor = FrangiXiaoSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( true );
+	  
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else if ( feature == "ValleySurface" )
+	{
+	  FrangiXiaoSheetnessFunctorType::Pointer functor = FrangiXiaoSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( false );
+
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else
+	{
+	  itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
+	  return cip::EXITFAILURE;
+	}
+    }
+  else if ( method == "DescoteauxXiao" )
+    {
+      if ( feature == "RidgeSurface" )
+	{
+	  DescoteauxXiaoSheetnessFunctorType::Pointer functor = DescoteauxXiaoSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( true );
+	  
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else if ( feature == "ValleySurface" )
+	{
+	  DescoteauxXiaoSheetnessFunctorType::Pointer functor = DescoteauxXiaoSheetnessFunctorType::New();
+	    functor->SetAlpha( alpha );
+	    functor->SetBeta( beta );
+	    functor->SetC( C );
+	    functor->SetKappa( kappa );
+	    functor->SetBrightObject( false );
+	  
+	  multiScaleFilter->SetBinaryFunctor( functor );
+	}
+      else
+	{
+	  itkGenericExceptionMacro( << "ERROR: unknown feature type " << feature << " for method " << method << "!" );
+	  return cip::EXITFAILURE;
+	}
+    }
+  else
+    {
+      itkGenericExceptionMacro( << "ERROR: unknown method " << method << "!" );
+      return cip::EXITFAILURE;
+    }
   
+  // Read the input image now that filter is good to go  
   cip::CTType::Pointer ctImage;
   
   std::cout << "Reading CT from file..." << std::endl;
   ctImage = ReadCTFromFile( ctFileName );
-
+  
   if (ctImage.GetPointer() == NULL)
     {
       return cip::NRRDREADFAILURE;
     }
-
+  
   std::cout<<sigmaMinimum<<" "<<sigmaMaximum<<" "<<numberOfSigmaSteps<<std::endl;
   
   // Finish Filter set up before execution
@@ -421,9 +373,8 @@ int main( int argc, char *argv[] )
   multiScaleFilter->SetGenerateScalesOutput( generateScalesOutput );
   multiScaleFilter->SetSigmaStepMethod( sigmaStepMethod );
   multiScaleFilter->SetRescale( rescale );
-  multiScaleFilter->SetInput( ctImage );
-  
-   try
+  multiScaleFilter->SetInput( ctImage );  
+  try
     {
       multiScaleFilter->Update();
     }
@@ -436,42 +387,40 @@ int main( int argc, char *argv[] )
   
   // Write feature strenght output
   WriterType::Pointer writer = WriterType::New();
-  writer->SetInput( multiScaleFilter->GetOutput() );
-  writer->SetFileName( strengthFileName );
-  writer->UseCompressionOn();
+    writer->SetInput( multiScaleFilter->GetOutput() );
+    writer->SetFileName( strengthFileName );
+    writer->UseCompressionOn();
   try
     {
-      writer->Update();
+    writer->Update();
     }
   catch (itk::ExceptionObject &excp )
     {
-      std::cerr << "Exception caught writing output image";
-      std::cerr << excp << std::endl;
-      return cip::NRRDWRITEFAILURE;
+    std::cerr << "Exception caught writing output image";
+    std::cerr << excp << std::endl;
+    return cip::NRRDWRITEFAILURE;
     }
-
+  
   // Write the maximum scale response
   if( generateScalesOutput == true )
-  {
-    writer->SetInput( multiScaleFilter->GetOutput( 1 ) );
-    writer->SetFileName( scaleFileName );
-    writer->UseCompressionOn();
+    {
+      writer->SetInput( multiScaleFilter->GetOutput( 1 ) );
+      writer->SetFileName( scaleFileName );
+      writer->UseCompressionOn();
     try
       {
-        writer->Update();
+      writer->Update();
       }
     catch (itk::ExceptionObject &excp )
       {
-        std::cerr << "Exception caught writing output image";
-        std::cerr << excp << std::endl;
-        return cip::NRRDWRITEFAILURE;
-      }
-
-  }
-  
-
+      std::cerr << "Exception caught writing output image";
+      std::cerr << excp << std::endl;
+      return cip::NRRDWRITEFAILURE;
+      }      
+    }
+    
   std::cout<< "DONE." << std::endl;
-
+  
   multiScaleFilter = NULL;
   return cip::EXITSUCCESS;
 }
