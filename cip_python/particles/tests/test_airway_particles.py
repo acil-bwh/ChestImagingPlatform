@@ -75,7 +75,12 @@ def test_airway_particles():
              'ct-deconv.nrrd', 'hess.nrrd', 'heval0.nrrd', 'heval1.nrrd',
              'heval2.nrrd', 'hevec0.nrrd', 'hevec1.nrrd', 'hevec2.nrrd',
              'hmode.nrrd', 'pass1.nrrd', 'pass2.nrrd', 'pass3.nrrd',
-             'val.nrrd']
+             'val.nrrd', '2dd.nrrd', 'curvdir1.nrrd', 'curvdir2.nrrd',
+             'flowlinecurv.nrrd', 'gausscurv.nrrd', 'gmag.nrrd',
+             'gvec.nrrd', 'hf.nrrd', 'kappa1.nrrd', 'kappa2.nrrd',
+             'lapl.nrrd', 'meancurv.nrrd', 'median.nrrd',
+             'si.nrrd', 'st.nrrd', 'totalcurv.nrrd']
+
     for f in files:
         if os.path.isfile(tmp_dir + f):
             subprocess.call("rm " + tmp_dir + f, shell=True)
