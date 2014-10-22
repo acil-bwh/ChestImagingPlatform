@@ -152,8 +152,39 @@ class ChestParticles:
         self._seed_thresh = -100 # Threshold on feature strengh
         self._mode_thresh = -0.5 # Threshold on mode of the hessian
         self._use_mode_thresh = False #Use mode threshold
+  
+        # Probing quantities
+        #--------------------------
+        # Dictionary with a list containing the vtk array name and a flag indicating if the
+        # the quantity is going to used derivative normalize.
+        self._probing_quantities = dict()
+        self._probing_quantities["val"]=["val",0]
+        self._probing_quantities["heval0"]=["h0",1]
+        self._probing_quantities["heval1"]=["h1",1]
+        self._probing_quantities["heval2"]=["h2",1]
+        self._probing_quantities["hmode"]=["hmode",1]
+        self._probing_quantities["hevec0"]=["hevec0",0]
+        self._probing_quantities["hevec1"]=["hevec1",0]
+        self._probing_quantities["hevec2"]=["hevec2",0]
+        self._probing_quantities["hess"]=["hess",0]
+        self._probing_quantities["gvec"]=["gvec",0]
+        self._probing_quantities["gmag"]=["gmag",1]
+        self._probing_quantities["lapl"]=["lapl",1]
+        self._probing_quantities["hf"]=["hf",0]
+        self._probing_quantities["2dd"]=["2dd",1]
+        self._probing_quantities["kappa1"]=["kappa1",1]
+        self._probing_quantities["kappa2"]=["kappa2",1]
+        self._probing_quantities["totalcurv"]=["totalcurv",1]
+        self._probing_quantities["st"]=["st",1]
+        self._probing_quantities["si"]=["si",1]
+        self._probing_quantities["meancurv"]=["meancurv",1]
+        self._probing_quantities["gausscurv"]=["gausscurv",1]
+        self._probing_quantities["curvdir1"]=["curvdir1",1]
+        self._probing_quantities["curvdir2"]=["curvdir2",1]
+        self._probing_quantities["flowlinecurv"]=["flowlinecurv",1]
+        self._probing_quantities["median"]=["median",1]
 
-    def set_vol_params(self):	   
+    def set_vol_params(self):
         if self._single_scale == 0:
             self._volParams = " -vol " + self._tmp_in_file_name + \
                 ":scalar:0-" + str(self._scale_samples) + "-" + \
@@ -422,15 +453,15 @@ class ChestParticles:
         subprocess.call( tmp_command, shell=True )
 
     def probe_quantities(self, in_volume, in_particles):
-        self.probe_points(in_volume, in_particles, "val" )
-        self.probe_points(in_volume, in_particles, "heval0", 1)
-        self.probe_points(in_volume, in_particles, "heval1", 1)
-        self.probe_points(in_volume, in_particles, "heval2", 1)
-        self.probe_points(in_volume, in_particles, "hmode", 1)
-        self.probe_points(in_volume, in_particles, "hevec0")
-        self.probe_points(in_volume, in_particles, "hevec1")
-        self.probe_points(in_volume, in_particles, "hevec2")
-        self.probe_points(in_volume, in_particles, "hess")
+        """
+        Parameters
+        ----------
+        in_volume : string
+        
+        in_particles : string
+        """
+        for quant in self._probing_quantities.keys():
+            self.probe_points(in_volume, in_particles, quant, self._probing_quantities[quant][1])
 
     def deconvolve(self, in_vol, out_vol):
         """
@@ -480,16 +511,11 @@ class ChestParticles:
     def save_vtk(self, in_particles):
         reader_writer = ReadNRRDsWriteVTK(self._out_particles_file_name)
         reader_writer.add_file_name_array_name_pair(in_particles, "NA")
-        quantities = ["val", "heval0", "heval1", "heval2", "hmode", "hevec0",\
-                    "hevec1", "hevec2", "hess"]
 
-        # VTK field names should be standardized to match teem tags
-        tags = ["val", "h0", "h1", "h2", "hmode", "hevec0", \
-                "hevec1", "hevec2", "hess"]
-
-        for ii in range(len(quantities)):
-            file = os.path.join(self._tmp_dir,"%s.nrrd" % quantities[ii])
-            reader_writer.add_file_name_array_name_pair(file, tags[ii])
+        for quant in self._probing_quantities.keys():
+            file = os.path.join(self._tmp_dir,"%s.nrrd" % quant)
+            vtk_tag=self._probing_quantities[quant][0]
+            reader_writer.add_file_name_array_name_pair(file,vtk_tag)
 
         reader_writer.execute()
 
