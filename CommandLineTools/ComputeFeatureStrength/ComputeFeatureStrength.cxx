@@ -56,7 +56,7 @@ typedef itk::ImageFileWriter<OutputImageType>  WriterType;
 typedef cip::CTType                            InputImageType;
 
 typedef itk::MultiScaleGaussianEnhancementImageFilter< InputImageType, OutputImageType >  MultiScaleFilterType;
-typedef MultiScaleFilterType ::GradientMagnitudePixelType                                 GradientMagnitudePixelType;
+typedef MultiScaleFilterType::GradientMagnitudePixelType                                  GradientMagnitudePixelType;
 typedef MultiScaleFilterType::EigenValueArrayType                                         EigenValueArrayType;
 
 /** Supported functors. */
