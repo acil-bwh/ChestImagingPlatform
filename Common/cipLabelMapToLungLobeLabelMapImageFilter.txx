@@ -32,11 +32,25 @@ cipLabelMapToLungLobeLabelMapImageFilter
   this->BlendIntercept = -1.0/49.0;
 }
 
-
 void
 cipLabelMapToLungLobeLabelMapImageFilter
 ::GenerateData()
 {
+  bool segmentLeftLobes  = false;
+  bool segmentRightLobes = false;
+  if ( this->LeftObliqueThinPlateSplineSurface->GetNumberSurfacePoints() > 0 || 
+       this->LeftObliqueThinPlateSplineSurfaceFromPoints->GetNumberSurfacePoints() > 0 )
+    {
+      segmentLeftLobes = true;
+    }
+  if ( (this->RightObliqueThinPlateSplineSurface->GetNumberSurfacePoints() > 0 || 
+	this->RightObliqueThinPlateSplineSurfaceFromPoints->GetNumberSurfacePoints() > 0) &&
+       (this->RightHorizontalThinPlateSplineSurface->GetNumberSurfacePoints() > 0 || 
+	this->RightHorizontalThinPlateSplineSurfaceFromPoints->GetNumberSurfacePoints() > 0) )
+    {
+      segmentRightLobes = true;
+    }
+
   // Allocate the output buffer
   this->GetOutput()->SetBufferedRegion( this->GetOutput()->GetRequestedRegion() );
   this->GetOutput()->Allocate();
@@ -104,18 +118,24 @@ cipLabelMapToLungLobeLabelMapImageFilter
     {
       for ( int j=0; j < int( size[1] ); j++ )
 	{
-	  loZ = this->GetBoundaryHeightIndex( this->LeftObliqueThinPlateSplineSurface,
-					      this->LeftObliqueThinPlateSplineSurfaceFromPoints,
-					      this->LeftObliqueBlendMap, i, j );
+	  if ( segmentLeftLobes )
+	    {
+	      loZ = this->GetBoundaryHeightIndex( this->LeftObliqueThinPlateSplineSurface,
+						  this->LeftObliqueThinPlateSplineSurfaceFromPoints,
+						  this->LeftObliqueBlendMap, i, j );
+	    }
 
-	  roZ = this->GetBoundaryHeightIndex( this->RightObliqueThinPlateSplineSurface,
-					      this->RightObliqueThinPlateSplineSurfaceFromPoints,
-					      this->RightObliqueBlendMap, i, j );
+	  if ( segmentRightLobes )
+	    {
+	      roZ = this->GetBoundaryHeightIndex( this->RightObliqueThinPlateSplineSurface,
+						  this->RightObliqueThinPlateSplineSurfaceFromPoints,
+						  this->RightObliqueBlendMap, i, j );
 
-	  rhZ = this->GetBoundaryHeightIndex( this->RightHorizontalThinPlateSplineSurface,
-					      this->RightHorizontalThinPlateSplineSurfaceFromPoints,
-					      this->RightHorizontalBlendMap, i, j );
-	
+	      rhZ = this->GetBoundaryHeightIndex( this->RightHorizontalThinPlateSplineSurface,
+						  this->RightHorizontalThinPlateSplineSurfaceFromPoints,
+						  this->RightHorizontalBlendMap, i, j );
+	    }
+
 	  for ( int z=0; z < int( size[2] ); z++ )
 	    {
 	      index[0] = i;   
@@ -129,7 +149,8 @@ cipLabelMapToLungLobeLabelMapImageFilter
 		  cipRegion = conventions.GetChestRegionFromValue( this->GetInput()->GetPixel( index ) );
 		  cipType   = conventions.GetChestTypeFromValue( this->GetInput()->GetPixel( index ) );
 		  
-		  if ( conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)( cip::LEFTLUNG ) ) )
+		  if ( segmentLeftLobes && 
+		       conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)( cip::LEFTLUNG ) ) )
 		    {
 		      if ( z < loZ )
 			{
@@ -144,7 +165,8 @@ cipLabelMapToLungLobeLabelMapImageFilter
 		      
 		      this->GetOutput()->SetPixel( index, newValue );
 		    }
-		  else if ( conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)( cip::RIGHTLUNG ) ) )
+		  else if ( segmentRightLobes && 
+			    conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)( cip::RIGHTLUNG ) ) )
 		    {
 		      if ( z <= roZ )
 			{
