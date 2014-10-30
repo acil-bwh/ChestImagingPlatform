@@ -13,7 +13,7 @@
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.
@@ -22,7 +22,7 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <string>
+    <geometry type="model">
       <name>particlesFileName</name>
       <label>Particles file name</label>
       <channel>input</channel>
@@ -30,13 +30,13 @@
       <longflag>--inFile</longflag>
       <description><![CDATA[Particles file name]]></description>
       <default>NA</default>
-    </string> 
+    </geometry>
 
     <string>
       <name>inROShapeModelFileName</name>
       <label>Input right oblique shape model file name</label>
       <channel>input</channel>
-      <longflag>--inROModel</longflag>
+      <longflag>inROModel</longflag>
       <description><![CDATA[Input right oblique shape model file name]]></description>
       <default>NA</default>
     </string> 
@@ -45,7 +45,7 @@
       <name>inRHShapeModelFileName</name>
       <label>Input right horizontal shape model file name</label>
       <channel>input</channel>
-      <longflag>--inRHModel</longflag>
+      <longflag>inRHModel</longflag>
       <description><![CDATA[Input right horizontal shape model file name]]></description>
       <default>NA</default>
     </string> 
@@ -53,8 +53,8 @@
     <string>
       <name>outROShapeModelFileName</name>
       <label>Output right oblique shape model file name</label>
-      <channel>input</channel>
-      <longflag>--outROModel</longflag>
+      <channel>output</channel>
+      <longflag>outROModel</longflag>
       <description><![CDATA[Output right oblique shape model file name]]></description>
       <default>NA</default>
     </string>  
@@ -62,8 +62,8 @@
     <string>
       <name>outRHShapeModelFileName</name>
       <label>Output right horizontal shape model file name</label>
-      <channel>input</channel>
-      <longflag>--outRHModel</longflag>
+      <channel>output</channel>
+      <longflag>outRHModel</longflag>
       <description><![CDATA[Output right horizontal shape model file name]]></description>
       <default>NA</default>
     </string>  

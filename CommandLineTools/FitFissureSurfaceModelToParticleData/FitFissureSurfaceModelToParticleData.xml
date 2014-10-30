@@ -9,7 +9,7 @@ l<?xml version="1.0" encoding="utf-8"?>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.
@@ -18,22 +18,22 @@ l<?xml version="1.0" encoding="utf-8"?>
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <string>
+    <geometry type="model">
       <name>particlesFileName</name>
       <label>Particles file name</label>
       <channel>input</channel>
       <flag>p</flag>
-      <longflag>--inFile</longflag>
+      <longflag>inFile</longflag>
       <description><![CDATA[Particles file name]]></description>
       <default>NA</default>
-    </string> 
+    </geometry>
 
     <string>
       <name>inShapeModelFileName</name>
       <label>Input shape model file name</label>
       <channel>input</channel>
       <flag>i</flag>
-      <longflag>--inModel</longflag>
+      <longflag>inModel</longflag>
       <description><![CDATA[Input shape model file name]]></description>
       <default>NA</default>
     </string> 
@@ -41,9 +41,9 @@ l<?xml version="1.0" encoding="utf-8"?>
     <string>
       <name>outShapeModelFileName</name>
       <label>Output shape model file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <flag>o</flag>
-      <longflag>--outModel</longflag>
+      <longflag>outModel</longflag>
       <description><![CDATA[Output shape model file name]]></description>
       <default>NA</default>
     </string>  
