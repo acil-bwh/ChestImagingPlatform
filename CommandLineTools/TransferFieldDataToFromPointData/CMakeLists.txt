@@ -6,6 +6,7 @@ SET ( MODULE_NAME TransferFieldDataToFromPointData )
 
 SET ( MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
+  CIPCommon
   )
 
 SET ( MODULE_SRCS TransferFieldDataToFromPointData.cxx )

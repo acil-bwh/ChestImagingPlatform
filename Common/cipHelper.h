@@ -112,6 +112,15 @@ namespace cip {
   /** Given a thin plate spline surface and a point, this function will find the minimum distance
    *  to the surface */
   double GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface*, double* );
+
+  /**Transfers the contents of a VTK polydata's field data to point data and vice-versa. 
+   * Generally, field data applies to a dataset as a whole and need not have a one-to-one 
+   * correspondence with the points. However, this may be the case in some instances 
+   * (esp. with the particles datasets). In those cases it may be helpful to have the data 
+   * contained in field data arrays also stored in point data arrays (e.g. for rendering 
+   * purposes). Field data will only be transferred provided that the number of tuples in 
+   * the field data array is the same as the number of points. */
+  void TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData >, bool, bool, bool, bool );
 }  
 
 #endif
