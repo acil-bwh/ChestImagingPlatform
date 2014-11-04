@@ -14,32 +14,30 @@
 
 #include "vtkCIPCommonConfigure.h"
 
-#include "vtkImageToImageFilter.h"
-
+#include <vtkImageAlgorithm.h>
+#include <vtkVersion.h>
 #include "vtkMatrix4x4.h"
 #include "vtkIntArray.h"
 #include "vtkShortArray.h"
 
-
-class VTK_CIP_COMMON_EXPORT vtkSimpleLungMask : public vtkImageToImageFilter
+class VTK_CIP_COMMON_EXPORT vtkSimpleLungMask : public vtkImageAlgorithm
 {
 public:
   static vtkSimpleLungMask *New();
-  vtkTypeRevisionMacro(vtkSimpleLungMask, vtkImageToImageFilter);
+  vtkTypeMacro(vtkSimpleLungMask,vtkImageAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
-
 
   // Description:
   // Get left Centroid of the lung
   //vtkGet3Macro(LCentroid, int);
   // Get right Centroid of the lung
   //vtkGet3Macro(RCentroid,int);
-  
+
   vtkGetMacro(LungThreshold,int);
-  
+
   vtkSetMacro(LeftLungLabel,int);
   vtkGetMacro(LeftLungLabel,int);
-  
+
   vtkSetMacro(RightLungLabel,int);
   vtkGetMacro(RightLungLabel,int);
 
@@ -48,29 +46,29 @@ public:
 
   vtkSetMacro(VesselsLabel,int);
   vtkGetMacro(VesselsLabel,int);
-  
+
   vtkSetMacro(NumberOfErosions,int);
   vtkGetMacro(NumberOfErosions,int);
-  
+
   vtkSetMacro(NumberOfDilatations,int);
   vtkGetMacro(NumberOfDilatations,int);
 
   vtkSetMacro(ExtractVessels,int);
   vtkGetMacro(ExtractVessels,int);
   vtkBooleanMacro(ExtractVessels,int);
-  
+
   vtkSetMacro(VesselsThreshold,int);
   vtkGetMacro(VesselsThreshold,int);
 
   //Density Mask Get methods
   vtkGetMacro(NumVoxelLeftLung,int);
-  vtkGetMacro(NumVoxelRightLung,int); 
+  vtkGetMacro(NumVoxelRightLung,int);
   vtkGetMacro(NumVoxelTrachea,int);
   vtkGetObjectMacro(LeftDMTable,vtkIntArray);
   vtkGetObjectMacro(RightDMTable,vtkIntArray);
-  
+
   vtkGetObjectMacro(ThresholdTable,vtkShortArray);
-  
+
   vtkSetObjectMacro(RasToVtk,vtkMatrix4x4);
   vtkGetObjectMacro(RasToVtk,vtkMatrix4x4);
 
@@ -78,12 +76,8 @@ protected:
   vtkSimpleLungMask();
   ~vtkSimpleLungMask();
 
-  void ExecuteInformation() {
-    this->vtkImageToImageFilter::ExecuteInformation(); };
-  void ExecuteInformation(vtkImageData *inData, vtkImageData *outData);
+  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation *);
 
-  void ExecuteData(vtkDataObject *out);
-  
   void ComputeCentroids(vtkImageData *in, int LC[3], int RC[3]);
   void ComputeCentroid(vtkImageData *in, int ext[6], int C[3]);
   vtkImageData *PreVolumeProcessing(vtkImageData *in, int &ZCentroid);
@@ -99,14 +93,14 @@ protected:
   void Histogram(vtkImageData *in, int *hist, int minbin, int maxbin);
   void CopyToBuffer(vtkImageData *in, vtkImageData *out, int copyext[6]);
   void ExtractTracheaOLD(vtkImageData *in);
-  
+
   int LungThreshold;
   int LCentroid[3];
   int RCentroid[3];
-  
+
   int NumberOfDilatations;
   int NumberOfErosions;
-  
+
   short LeftLungLabel; //greater than 1
   short RightLungLabel; //greater than 1
   short TracheaLabel;
@@ -114,33 +108,33 @@ protected:
   short BodyLabel;
   short AirLabel;
   short UpperTracheaLabel;
-  
+
   int BaseLabelLeftLung;
   int BaseLabelRightLung;
-  
+
   int NumVoxelLeftLung;
   int NumVoxelRightLung;
   int NumVoxelTrachea;
-  
+
   int TopLungZ;
   int BottomLungZ;
 
   int TracheaInitZ;
   int TracheaEndZ;
-  
+
   int TracheaAreaTh;
 
   int ExtractVessels;
   int VesselsThreshold;
-  
+
   vtkShortArray *ThresholdTable;
   vtkIntArray *LeftDMTable;
   vtkIntArray *RightDMTable;
-  
+
   vtkMatrix4x4 *RasToVtk;
 
   int AirIntensityBaseline;
-  
+
 private:
   vtkSimpleLungMask(const vtkSimpleLungMask&);  // Not implemented.
   void operator=(const vtkSimpleLungMask&);  // Not implemented.

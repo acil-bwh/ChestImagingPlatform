@@ -1,5 +1,5 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program accepts two inputs: a particles dataset and
  *  another particles dataset indicating which particles should be
  *  removed from the first dataset. The output if the set of particles
@@ -7,7 +7,7 @@
  *
  *  Usage: RemoveParticlesFromParticlesDataSet \<options\> where \<options\> is one or more of the following:\n
  *    \<-h\>     Display (this) usage information\n
- *    \<-i\>     Input particle data set file name. 
+ *    \<-i\>     Input particle data set file name.
  *    \<-r\>     Particle data set file name indicating which
  *               particles should be removed from the data set
  *               specified by the -i flag.
@@ -50,7 +50,7 @@ int main( int argc, char *argv[] )
 
   std::cout << "Writing airway particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
-    particlesWriter->SetInput( cleanedParticles );
+    particlesWriter->SetInputData( cleanedParticles );
     particlesWriter->SetFileName( outFileName.c_str() );
     particlesWriter->Write();
 
@@ -58,7 +58,6 @@ int main( int argc, char *argv[] )
 
   return 0;
 }
-
 
 void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< vtkPolyData > removeParticles,
                       vtkSmartPointer< vtkPolyData > cleanedParticles )
@@ -86,7 +85,7 @@ void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer<
   unsigned int inc = 0;
 
   for ( int i=0; i<particles->GetNumberOfPoints(); i++ )
-    {   
+    {
     addPoint = true;
 
     point1[0] = particles->GetPoint( i )[0];

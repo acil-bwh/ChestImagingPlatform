@@ -1,20 +1,20 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program is used to filter fissure particles. In particular
- *  it is used as step in the overall lung lobe segmentation framework. 
+ *  it is used as step in the overall lung lobe segmentation framework.
  *  Default values for the input parameters are chosen for that purpose.
- *  The program provides an interface to the 
+ *  The program provides an interface to the
  *  'cipFissureParticleConnectedComponentFilter': connected components
  *  concepts are used to eliminate small particle groups and to retain
  *  those that form larger, sheet-like structures.
  *
- *  USAGE: 
+ *  USAGE:
  *
- *  FilterFissureParticleData  [-s \<unsigned int\>] [-a \<double\>] 
- *                             [-p \<double\>] [-d \<double\>] -o \<string\> 
+ *  FilterFissureParticleData  [-s \<unsigned int\>] [-a \<double\>]
+ *                             [-p \<double\>] [-d \<double\>] -o \<string\>
  *                             -i \<string\> [--] [--version] [-h]
  *
- *  Where: 
+ *  Where:
  *
  *   -s \<unsigned int\>,  --size \<unsigned int\>
  *     The minimum cardinality of a set of component particles needed for
@@ -76,7 +76,7 @@ int main( int argc, char *argv[] )
   std::cout << "Reading polydata..." << std::endl;
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
     reader->SetFileName( inParticlesFileName.c_str() );
-    reader->Update();    
+    reader->Update();
 
   std::cout << "Filtering particles using connectedness..."  << std::endl;
   cipFissureParticleConnectedComponentFilter particleFilter;
@@ -90,8 +90,8 @@ int main( int argc, char *argv[] )
   std::cout << "Writing filtered particles ..." << std::endl;
   vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInput( particleFilter.GetOutput() );
-    filteredWriter->Write();  
+    filteredWriter->SetInputData( particleFilter.GetOutput() );
+    filteredWriter->Write();
 
   std::cout << "DONE." << std::endl;
 
@@ -99,5 +99,4 @@ int main( int argc, char *argv[] )
 }
 
 #endif
-
 

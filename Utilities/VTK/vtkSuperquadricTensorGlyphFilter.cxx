@@ -23,6 +23,7 @@
 
 #include "vtkSuperquadricTensorGlyphFilter.h"
 
+#include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkObjectFactory.h"
@@ -32,10 +33,6 @@
 #include "vtkSuperquadricSource.h"
 #include "vtkTensorGlyph.h"
 
-#define vtkNew(type,name) \
-  vtkSmartPointer<type> name = vtkSmartPointer<type>::New()
-
-vtkCxxRevisionMacro(vtkSuperquadricTensorGlyphFilter, "$Revision: 1.2 $");
 vtkStandardNewMacro(vtkSuperquadricTensorGlyphFilter);
 
 vtkSuperquadricTensorGlyphFilter::vtkSuperquadricTensorGlyphFilter()
@@ -57,13 +54,18 @@ vtkSuperquadricTensorGlyphFilter::~vtkSuperquadricTensorGlyphFilter()
 {
 }
 
-int vtkSuperquadricTensorGlyphFilter::FillInputPortInformation(
-  int vtkNotUsed(port), vtkInformation* info)
+//----------------------------------------------------------------------------
+int vtkSuperquadricTensorGlyphFilter::RequestInformation(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **vtkNotUsed(inputVector),
+  vtkInformationVector *outputVector)
 {
-  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  // get the info object
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  outInfo->Set(CAN_HANDLE_PIECE_REQUEST(), 1);
   return 1;
 }
-
 
 int vtkSuperquadricTensorGlyphFilter::RequestData(
   vtkInformation *vtkNotUsed(request),
@@ -92,7 +94,8 @@ int vtkSuperquadricTensorGlyphFilter::RequestData(
     return 1;
     }
 
-  vtkNew(vtkSuperquadricSource, superquadric);
+  vtkSmartPointer<vtkSuperquadricSource> superquadric = vtkSmartPointer<vtkSuperquadricSource>::New();
+  //vtkNew(vtkSuperquadricSource, superquadric);
   superquadric->SetThetaResolution(this->ThetaResolution);
   superquadric->SetPhiResolution(this->PhiResolution);
   superquadric->SetThetaRoundness(this->ThetaRoundness);
@@ -107,13 +110,14 @@ int vtkSuperquadricTensorGlyphFilter::RequestData(
 //   if (inTensors)
 //     input->GetPointData()->SetActiveTensors( inTensors->GetName() );
 
-  vtkNew(vtkTensorGlyph, tensors);
+  //vtkNew(vtkTensorGlyph, tensors);
+  vtkSmartPointer<vtkTensorGlyph> tensors = vtkSmartPointer<vtkTensorGlyph>::New();
   if (this->ExtractEigenvalues)
     tensors->ExtractEigenvaluesOn();
   else
     tensors->ExtractEigenvaluesOff();
-  tensors->SetInput(input);
-  tensors->SetSource(superquadric->GetOutput());
+  tensors->SetInputData(input);
+  tensors->SetSourceData(superquadric->GetOutput());
   tensors->SetScaleFactor(this->ScaleFactor);
   tensors->Update();
 
@@ -145,7 +149,6 @@ int vtkSuperquadricTensorGlyphFilter::RequestData(
 
   return 1;
 }
-
 
 void vtkSuperquadricTensorGlyphFilter::PrintSelf(ostream& os, vtkIndent indent)
 {

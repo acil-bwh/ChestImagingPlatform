@@ -50,8 +50,10 @@
 class VTK_CIP_UTILITIES_EXPORT vtkSuperquadricTensorGlyphFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeRevisionMacro(vtkSuperquadricTensorGlyphFilter, vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkSuperquadricTensorGlyphFilter,vtkPolyDataAlgorithm);
+
   void PrintSelf(ostream& os, vtkIndent indent);
+
   static vtkSuperquadricTensorGlyphFilter *New();
 
   vtkSetMacro(ThetaResolution,int);
@@ -72,9 +74,11 @@ protected:
 
   /* implementation of algorithm */
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation* info);
-  void SetActiveTensors(int, int, int, int, const char *);
+  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
 
+  //virtual int FillInputPortInformation(int port, vtkInformation* info);
+
+  void SetActiveTensors(int, int, int, int, const char *);
 
   int ThetaResolution;
   int PhiResolution;

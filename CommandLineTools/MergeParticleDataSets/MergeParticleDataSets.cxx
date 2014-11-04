@@ -1,17 +1,17 @@
 /** \file
- *  \ingroup commandLineTools 
- *  \details This program accepts as input multiple particle 
- *  datasets and merges them into one dataset for output. If 
- *  any of the inputs do not have ChestType and ChestRegion 
- *  fields defined this program will create them and initialize 
+ *  \ingroup commandLineTools
+ *  \details This program accepts as input multiple particle
+ *  datasets and merges them into one dataset for output. If
+ *  any of the inputs do not have ChestType and ChestRegion
+ *  fields defined this program will create them and initialize
  *  entries to UNDEFINEDTYPE and UNDEFINEDREGION.
  *
- *  USAGE: 
+ *  USAGE:
  *
- *  MergeParticleDataSets  -i \<string\> ...  -o \<string\> [--] 
+ *  MergeParticleDataSets  -i \<string\> ...  -o \<string\> [--]
  *                        [--version]  [-h]
  *
- *  Where: 
+ *  Where:
  *
  *  -i \<string\>,  --in \<string\>  (accepted multiple times)
  *    (required)  Input particles file name
@@ -49,7 +49,6 @@ void MergeParticles( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyDat
 void CopyParticles( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > );
 
-
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
@@ -77,7 +76,7 @@ int main( int argc, char *argv[] )
 
   std::cout << "Writing merged particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
-    particlesWriter->SetInput( mergedParticles );
+    particlesWriter->SetInputData( mergedParticles );
     particlesWriter->SetFileName( outFileName.c_str() );
     particlesWriter->Write();
 
@@ -85,7 +84,6 @@ int main( int argc, char *argv[] )
 
   return cip::EXITSUCCESS;
 }
-
 
 void MergeParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< vtkPolyData > mergedParticles )
 {
@@ -112,7 +110,7 @@ void MergeParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< 
   unsigned int inc = 0;
 
   for ( int i=0; i<particles->GetNumberOfPoints(); i++ )
-    {   
+    {
     addPoint = true;
 
     point1[0] = particles->GetPoint( i )[0];
@@ -142,7 +140,6 @@ void MergeParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< 
     }
 }
 
-
 void CopyParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< vtkPolyData > mergedParticles )
 {
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();;
@@ -171,7 +168,7 @@ void CopyParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< v
   unsigned int inc = 0;
 
   for ( int i=0; i<particles->GetNumberOfPoints(); i++ )
-    {   
+    {
     for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
       {
       arrayVec[k]->InsertTuple( inc, particles->GetPointData()->GetArray(k)->GetTuple(i) );
@@ -186,7 +183,6 @@ void CopyParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< v
     mergedParticles->GetPointData()->AddArray( arrayVec[j] );
     }
 }
-
 
 //
 // This function is used to verify that the input particles have
@@ -214,7 +210,7 @@ void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > pa
       {
       foundChestTypeArray = true;
       }
-    }  
+    }
 
   if ( !foundChestRegionArray )
     {

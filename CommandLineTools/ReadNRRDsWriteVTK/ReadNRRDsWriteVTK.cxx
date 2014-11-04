@@ -1,20 +1,20 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program reads a number of NRRD files and collects
  *  the data in those files into a single VTK polydata file for
  *  writing. The input data files typically contain particles
- *  information. 
- * 
+ *  information.
+ *
  *  $Date: 2012-09-04 15:09:57 -0400 (Tue, 04 Sep 2012) $
  *  $Revision: 224 $
  *  $Author: jross $
  *
- *  USAGE: 
+ *  USAGE:
  *
  *  ReadNRRDsWriteVTK [-a \<string\>] ...  [-i \<string\>] ...  -o \<string\>
  *                    [--] [--version] [-h]
  *
- *  Where: 
+ *  Where:
  *
  *   -a \<string\>,  --arrayName \<string\>  (accepted multiple times)
  *     Array names corresponding to files immediately preceding invocation of
@@ -52,8 +52,6 @@
  *
  */
 
-
-
 #include "vtkSmartPointer.h"
 #include "vtkPolyData.h"
 #include "vtkPolyDataReader.h"
@@ -74,19 +72,18 @@ typedef itk::ImageFileReader< NRRDImageType >  ReaderType;
 
 int main( int argc, char *argv[] )
 {
-
   //
   // Parse the input arguments
   //
   PARSE_ARGS;
     std::vector<std::string> arrayNameVec;
     std::vector<std::string> inFileNameVec;
-  
+
     if ( inFileNameVecArg.size() != arrayNameVecArg.size() )
       {
       std::cerr << "Mismatch between input file name (specified with -i or --inFileName) and array name ";
       std::cerr << "(specified with -a or --arrayName). See help for details" << std::endl;
-      return cip::ARGUMENTPARSINGERROR;     
+      return cip::ARGUMENTPARSINGERROR;
       }
 
     outFileName = outFileNameArg.getValue();
@@ -98,8 +95,6 @@ int main( int argc, char *argv[] )
       {
       arrayNameVec.push_back( arrayNameVecArg[i] );
       }
-
-
 
   vtkSmartPointer< vtkPolyData > polyData = vtkSmartPointer< vtkPolyData >::New();
   vtkSmartPointer< vtkPoints >   points   = vtkSmartPointer< vtkPoints >::New();
@@ -134,7 +129,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer< vtkFloatArray > scale = vtkSmartPointer< vtkFloatArray >::New();
         scale->SetNumberOfComponents( 1 );
         scale->SetName( "scale" );
-      
+
       for ( unsigned int j=0; j<numParticles; j++ )
         {
         float* point = new float[3];
@@ -150,9 +145,9 @@ int main( int argc, char *argv[] )
 
         index[0] = 3;        index[1] = j;
         float sc = static_cast< float >( reader->GetOutput()->GetPixel( index ) );
- 
+
         points->InsertNextPoint( point );
-        scale->InsertTuple( j, &sc );        
+        scale->InsertTuple( j, &sc );
         }
 
       polyData->GetPointData()->AddArray( scale );
@@ -166,7 +161,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
         array->SetNumberOfComponents( 1 );
         array->SetName( arrayNameVec[i].c_str() );
-      
+
       for ( unsigned int j=0; j<numParticles; j++ )
         {
         index[0] = 0;
@@ -174,7 +169,7 @@ int main( int argc, char *argv[] )
 
         float value = static_cast< float >( reader->GetOutput()->GetPixel( index ) );
 
-        array->InsertTuple( j, &value );        
+        array->InsertTuple( j, &value );
         }
 
       polyData->GetPointData()->AddArray( array );
@@ -188,7 +183,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
         array->SetNumberOfComponents( 3 );
         array->SetName( arrayNameVec[i].c_str() );
-      
+
       for ( unsigned int j=0; j<numParticles; j++ )
         {
         float* vec = new float[3];
@@ -205,7 +200,7 @@ int main( int argc, char *argv[] )
         index[1] = j;
         vec[2] = static_cast< float >( reader->GetOutput()->GetPixel( index ) );
 
-        array->InsertTuple( j, vec );        
+        array->InsertTuple( j, vec );
         }
 
       polyData->GetPointData()->AddArray( array );
@@ -219,7 +214,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
         array->SetNumberOfComponents( 9 );
         array->SetName( arrayNameVec[i].c_str() );
-      
+
       for ( unsigned int j=0; j<numParticles; j++ )
         {
         float* vec = new float[9];
@@ -260,7 +255,7 @@ int main( int argc, char *argv[] )
         index[1] = j;
         vec[8] = static_cast< float >( reader->GetOutput()->GetPixel( index ) );
 
-        array->InsertTuple( j, vec );        
+        array->InsertTuple( j, vec );
         }
 
       polyData->GetPointData()->AddArray( array );
@@ -274,7 +269,7 @@ int main( int argc, char *argv[] )
       vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
         array->SetNumberOfComponents( 9 );
         array->SetName( arrayNameVec[i].c_str() );
-      
+
       for ( unsigned int j=0; j<numParticles; j++ )
         {
         float* vec = new float[9];
@@ -315,7 +310,7 @@ int main( int argc, char *argv[] )
         index[1] = j;
         vec[8] = static_cast< float >( reader->GetOutput()->GetPixel( index ) );
 
-        array->InsertTuple( j, vec );        
+        array->InsertTuple( j, vec );
         }
 
       polyData->GetPointData()->AddArray( array );
@@ -327,7 +322,7 @@ int main( int argc, char *argv[] )
   std::cout << "Writing poly data..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );
-    writer->SetInput( polyData );
+    writer->SetInputData( polyData );
     if (binaryOutput)
       {
       writer->SetFileTypeToBinary();

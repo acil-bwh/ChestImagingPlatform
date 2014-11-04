@@ -12,8 +12,16 @@
 
 =========================================================================auto=*/
 #include "vtkImageStatistics.h"
+#include "vtkImageData.h"
+#include "vtkImageProgressIterator.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkObjectFactory.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
+#include "vtkDataSetAttributes.h"
 #include "vtkObjectFactory.h"
 #include "vtkImageData.h"
+
 #include <math.h>
 #include <stdlib.h>
 
@@ -49,38 +57,26 @@ vtkImageStatistics::vtkImageStatistics()
 }
 
 //----------------------------------------------------------------------------
-void vtkImageStatistics::ExecuteInformation(vtkImageData *input, 
-                        vtkImageData *output)
+int vtkImageStatistics::RequestInformation (
+  vtkInformation * vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  int min0,max0,min1,max1,min2,max2;
-  input->GetWholeExtent(min0, max0, min1, max1, min2, max2);
-  int numelement = (max0-min0+1)*(max1-min1+1)*(max2-min2+1);
+  // get the info objects
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
-  int ext[6];
-  memset(ext, 0, 6*sizeof(int));
-  ext[1] = numelement;
+  vtkInformation *inScalarInfo = vtkDataObject::GetActiveFieldInformation(inInfo,
+    vtkDataObject::FIELD_ASSOCIATION_POINTS, vtkDataSetAttributes::SCALARS);
+  if (!inScalarInfo)
+    {
+    vtkErrorMacro("Missing scalar field on input information!");
+    return 0;
+    }
+  vtkDataObject::SetPointDataActiveScalarInfo(outInfo,
+    inScalarInfo->Get( vtkDataObject::FIELD_ARRAY_TYPE() ), -1 );
 
-  vtkFloatingPointType origin[3], spacing[3];
-  spacing[0] = spacing[1] = spacing[2] = 1;
-  origin[0]  = origin[1] = origin[2] = 0;
-
-  output->SetWholeExtent(input->GetWholeExtent());
-  output->SetOrigin(origin);
-  output->SetSpacing(spacing);
-  output->SetNumberOfScalarComponents(1);
-  output->SetScalarType(input->GetScalarType());
-}
-
-//----------------------------------------------------------------------------
-// Get ALL of the input.
-void vtkImageStatistics::ComputeInputUpdateExtent(int inExt[6], 
-                                                  int outExt[6])
-{
-  int *wholeExtent;
-
-  outExt = outExt;
-  wholeExtent = this->GetInput()->GetWholeExtent();
-  memcpy(inExt, wholeExtent, 6*sizeof(int));
+  return 1;
 }
 
 //----------------------------------------------------------------------------
@@ -92,7 +88,7 @@ public:
   {
     const T *da = (const T *) a;
     const T *db = (const T *) b;
-  
+
     return (*da > *db) - (*da < *db);
   };
 };
@@ -114,10 +110,10 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
   outData->GetExtent(Amin0, Amax0, Amin1, Amax1, Amin2, Amax2);
   int numelement = (max0-min0+1)*(max1-min1+1)*(max2-min2+1);
 
-//  cout << "in: " << min0 << " " << max0 << " " 
+//  cout << "in: " << min0 << " " << max0 << " "
 //       << min1 << " " << max1 << " "
 //       << min2 << " " << max2 << "\n";
-//  cout << "out: " << Amin0 << " " << Amax0 << " " 
+//  cout << "out: " << Amin0 << " " << Amax0 << " "
 //       << Amin1 << " " << Amax1 << " "
 //       << Amin2 << " " << Amax2 << "\n";
 
@@ -153,7 +149,7 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
   else
     {
       // Copy the input to the output data
-      memcpy((void *)outPtr, (void *)inPtr, numelement*sizeof(T)); 
+      memcpy((void *)outPtr, (void *)inPtr, numelement*sizeof(T));
     }
 
   dataPtr = outPtr+offset;
@@ -167,17 +163,17 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
   cout.setf(ios::scientific);
 
   if (self->GetIgnoreZero())
-   { 
+   {
      if (double(*outPtr) < 0.0)
        {
-         if (vtkObject::GetGlobalWarningDisplay()) 
-           { 
-             char *vtkmsgbuff; 
-             ostrstream vtkmsg; 
-             vtkmsg << "ERROR: In " __FILE__ ", line " << __LINE__ << "\n" 
-                    << "vtkImageStatistics can not ignore zeros with data that includes negative numbers!" 
-                    << "\n\n" << ends; 
-             vtkmsgbuff = vtkmsg.str(); 
+         if (vtkObject::GetGlobalWarningDisplay())
+           {
+             char *vtkmsgbuff;
+             ostrstream vtkmsg;
+             vtkmsg << "ERROR: In " __FILE__ ", line " << __LINE__ << "\n"
+                    << "vtkImageStatistics can not ignore zeros with data that includes negative numbers!"
+                    << "\n\n" << ends;
+             vtkmsgbuff = vtkmsg.str();
              vtkOutputWindowDisplayText(vtkmsgbuff);
              vtkmsg.rdbuf()->freeze(0); vtkObject::BreakOnError();
            }
@@ -213,7 +209,7 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
       double newnum = (double ) *dataPtr;
       dataPtr++;
       // cout << "Pointers: " << dataPtr << " " << outPtr+numelement << '\n';
-      //      cout << "newnum: " << newnum << " offset: " << offset << 
+      //      cout << "newnum: " << newnum << " offset: " << offset <<
       //        "s : " << s << '\n';
       total += newnum;
       totalsq += newnum*newnum;
@@ -226,8 +222,8 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
   self->SetNumExaminedElements(num_stat_element);
   if (num_stat_element != 0)
     {
-      self->SetQuartile1( (double) dataPtr[(num_stat_element*1)/4]); 
-      self->SetMedian   ( (double) dataPtr[(num_stat_element*1)/2]); 
+      self->SetQuartile1( (double) dataPtr[(num_stat_element*1)/4]);
+      self->SetMedian   ( (double) dataPtr[(num_stat_element*1)/2]);
       self->SetQuartile3( (double) dataPtr[(num_stat_element*3)/4]);
       self->SetQuintile1( (double) dataPtr[(num_stat_element*1)/5]);
       self->SetQuintile2( (double) dataPtr[(num_stat_element*2)/5]);
@@ -235,8 +231,8 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
       self->SetQuintile4( (double) dataPtr[(num_stat_element*4)/5]);
       self->SetAverage  ( total/num_stat_element);
       self->SetStdev    ( sqrt((totalsq - (total*total/num_stat_element))/(num_stat_element-1.0)));
-      self->SetMax      ( max ); 
-      self->SetMin      ( min ); 
+      self->SetMax      ( max );
+      self->SetMin      ( min );
     } else {
       self->SetQuartile1(0);
       self->SetMedian   (0);
@@ -246,14 +242,14 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
       self->SetQuintile3(0);
       self->SetQuintile4(0);
       self->SetAverage  (0);
-      self->SetStdev    (0); 
+      self->SetStdev    (0);
       self->SetMax      (0);
       self->SetMin      (0);
     }
 
 //  cout  << "NumExaminedElements: " <<self->GetNumExaminedElements()<< "\n";
-//  cout  << "Quartile1: " <<self->GetQuartile1() << "\n"; 
-//  cout  << "Median: "    <<self->GetMedian()    << "\n"; 
+//  cout  << "Quartile1: " <<self->GetQuartile1() << "\n";
+//  cout  << "Median: "    <<self->GetMedian()    << "\n";
 //  cout  << "Quartile3: " <<self->GetQuartile3() << "\n";
 //  cout  << "Quintile1: " <<self->GetQuintile1() << "\n";
 //  cout  << "Quintile2: " <<self->GetQuintile2() << "\n";
@@ -266,24 +262,33 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
 //  cout  << "Igore Zero? "<<self->GetIgnoreZero()   << "\n";
 }
 
-    
-
 //----------------------------------------------------------------------------
 // This method is passed a input and output Data, and executes the filter
 // algorithm to fill the output from the input.
 // It just executes a switch statement to call the correct function for
 // the Datas data types.
-void vtkImageStatistics::ExecuteData(vtkDataObject *)
+
+//----------------------------------------------------------------------------
+// This method is passed a input and output data, and executes the filter
+// algorithm to fill the output from the input.
+// It just executes a switch statement to call the correct function for
+// the datas data types.
+void vtkImageStatistics::RequestData(
+                        vtkInformation *vtkNotUsed(request),
+                        vtkInformationVector **vtkNotUsed(inputVector),
+                        vtkInformationVector *vtkNotUsed(outputVector),
+                        vtkImageData ***inputData,
+                        vtkImageData **outputData,
+                        int outExt[6], int id)
 {
   void *inPtr;
   int *outPtr;
-  int outExt[6];
 
-  vtkImageData *inData = this->GetInput(); 
-  vtkImageData *outData = this->GetOutput();
-  outData->GetWholeExtent(outExt);
+  vtkImageData *inData = inputData[0][0];
+  vtkImageData *outData = outputData[0];
+
   outData->SetExtent(outExt);
-  outData->AllocateScalars();
+  outData->AllocateScalars(inData->GetScalarType(), inData->GetNumberOfScalarComponents());
 
   inPtr  = inData->GetScalarPointer();
   outPtr = (int *)outData->GetScalarPointer();
@@ -292,15 +297,15 @@ void vtkImageStatistics::ExecuteData(vtkDataObject *)
   if (outData->GetScalarType() != inData->GetScalarType())
     {
     vtkErrorMacro(<< "Execute: out ScalarType " << outData->GetScalarType()
-          << "must be the same as in ScalarType" 
-                  << inData->GetScalarType() 
+          << "must be the same as in ScalarType"
+                  << inData->GetScalarType()
                   <<"\n");
     return;
   }
 
   if (inData->GetNumberOfScalarComponents() != 1)
   {
-    vtkErrorMacro(<< "Execute: Number of scalar components " 
+    vtkErrorMacro(<< "Execute: Number of scalar components "
                   << outData->GetScalarType()
           << " is not 1\n");
     return;
@@ -308,8 +313,8 @@ void vtkImageStatistics::ExecuteData(vtkDataObject *)
 
   switch (inData->GetScalarType())
     {
-    vtkTemplateMacro5(vtkImageStatisticsExecute, this, inData, 
-                                                (VTK_TT *)(inPtr), outData, 
+    vtkTemplateMacro5(vtkImageStatisticsExecute, this, inData,
+                                                (VTK_TT *)(inPtr), outData,
                                                 (VTK_TT *)(outPtr));
     default:
       vtkErrorMacro(<< "Execute: Unknown ScalarType");
@@ -324,8 +329,8 @@ void vtkImageStatistics::PrintSelf(ostream& os, vtkIndent indent)
 
   os << indent << "Igore Zero? "<<this->IgnoreZero     << "\n";
   os << indent << "NumExaminedElements: " <<this->GetNumExaminedElements()<< "\n";
-  os << indent << "Quartile1: " <<this->GetQuartile1() << "\n"; 
-  os << indent << "Median: "    <<this->GetMedian()    << "\n"; 
+  os << indent << "Quartile1: " <<this->GetQuartile1() << "\n";
+  os << indent << "Median: "    <<this->GetMedian()    << "\n";
   os << indent << "Quartile3: " <<this->GetQuartile3() << "\n";
   os << indent << "Quintile1: " <<this->GetQuintile1() << "\n";
   os << indent << "Quintile2: " <<this->GetQuintile2() << "\n";

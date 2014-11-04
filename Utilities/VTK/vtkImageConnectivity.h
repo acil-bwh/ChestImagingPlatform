@@ -2,17 +2,12 @@
 
   Portions (c) Copyright 2005 Brigham and Women's Hospital (BWH) All Rights Reserved.
 
-  See Doc/copyright/copyright.txt
+  See COPYRIGHT.txt
   or http://www.slicer.org/copyright/copyright.txt for details.
-
-  Program:   3D Slicer
-  Module:    $RCSfile: vtkImageConnectivity.h,v $
-  Date:      $Date: 2010-02-20 15:39:37 -0500 (Sat, 20 Feb 2010) $
-  Version:   $Revision: 12195 $
 
 =========================================================================auto=*/
 ///  vtkImageConnectivity - Identify and process islands of similar pixels
-/// 
+///
 ///  The input data type must be shorts.
 /// .SECTION Warning
 /// You need to explicitely call Update
@@ -20,8 +15,11 @@
 #ifndef __vtkImageConnectivity_h
 #define __vtkImageConnectivity_h
 
-#include "vtkImageToImageFilter.h"
 #include "vtkCIPUtilitiesConfigure.h"
+
+// VTK includes
+#include <vtkImageAlgorithm.h>
+#include <vtkVersion.h>
 
 #define CONNECTIVITY_IDENTIFY 1
 #define CONNECTIVITY_REMOVE 2
@@ -29,11 +27,11 @@
 #define CONNECTIVITY_MEASURE 4
 #define CONNECTIVITY_SAVE 5
 
-class VTK_CIP_UTILITIES_EXPORT vtkImageConnectivity : public vtkImageToImageFilter
+class VTK_CIP_UTILITIES_EXPORT vtkImageConnectivity : public vtkImageAlgorithm
 {
 public:
   static vtkImageConnectivity *New();
-  vtkTypeRevisionMacro(vtkImageConnectivity,vtkImageToImageFilter);
+  vtkTypeMacro(vtkImageConnectivity,vtkImageAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   /// Function
@@ -58,7 +56,7 @@ public:
   vtkGetMacro(LargestIslandSize, int);
   vtkSetMacro(LargestIslandSize, int);
 
-  /// 
+  ///
   vtkGetMacro(SliceBySlice, int);
   vtkSetMacro(SliceBySlice, int);
   vtkBooleanMacro(SliceBySlice, int);
@@ -92,7 +90,11 @@ protected:
   int Function;
   int SliceBySlice;
 
+#if (VTK_MAJOR_VERSION <= 5)
   void ExecuteData(vtkDataObject *);
+#else
+  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation *);
+#endif
 
 private:
   vtkImageConnectivity(const vtkImageConnectivity&);
@@ -100,6 +102,4 @@ private:
 };
 
 #endif
-
-
 

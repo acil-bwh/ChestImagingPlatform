@@ -81,12 +81,10 @@ cipChestDataViewer::cipChestDataViewer()
   this->ActorsVisible = true;
 }
 
-
 void cipChestDataViewer::SetBackgroundColor( double r, double g, double b )
 {
   this->Renderer->SetBackground( r, g, b );
 }
-
 
 void cipChestDataViewer::SetPlaneWidgetXShowing( bool showing )
 {
@@ -102,7 +100,6 @@ void cipChestDataViewer::SetPlaneWidgetXShowing( bool showing )
     }
 }
 
-
 void cipChestDataViewer::SetPlaneWidgetYShowing( bool showing )
 {
   this->PlaneWidgetYShowing = showing;
@@ -116,7 +113,6 @@ void cipChestDataViewer::SetPlaneWidgetYShowing( bool showing )
     this->PlaneWidgetY->Off();
     }
 }
-
 
 void cipChestDataViewer::SetPlaneWidgetZShowing( bool showing )
 {
@@ -132,13 +128,11 @@ void cipChestDataViewer::SetPlaneWidgetZShowing( bool showing )
     }
 }
 
-
 void cipChestDataViewer::SetLabelMapImage( LabelMapImageType::Pointer labelMapImage )
 {
   this->LabelMapImage = LabelMapImageType::New();
   this->LabelMapImage = labelMapImage;
 }
-
 
 void cipChestDataViewer::SetGrayscaleImage( GrayscaleImageType::Pointer grayscaleImage )
 {
@@ -181,7 +175,7 @@ void cipChestDataViewer::SetGrayscaleImage( GrayscaleImageType::Pointer grayscal
   this->PlaneWidgetX->SetInteractor( this->RenderWindowInteractor );
   this->PlaneWidgetX->RestrictPlaneToVolumeOn();
   this->PlaneWidgetX->DisplayTextOff();
-  this->PlaneWidgetX->SetInput( this->vtkGrayscaleImage );
+  this->PlaneWidgetX->SetInputData( this->vtkGrayscaleImage );
   this->PlaneWidgetX->SetWindowLevel( window, level );
   this->PlaneWidgetX->SetPlaneOrientationToXAxes();
   this->PlaneWidgetX->SetSliceIndex( xSlice );
@@ -197,7 +191,7 @@ void cipChestDataViewer::SetGrayscaleImage( GrayscaleImageType::Pointer grayscal
   this->PlaneWidgetY->SetInteractor( this->RenderWindowInteractor );
   this->PlaneWidgetY->RestrictPlaneToVolumeOn();
   this->PlaneWidgetY->DisplayTextOff();
-  this->PlaneWidgetY->SetInput( this->vtkGrayscaleImage );
+  this->PlaneWidgetY->SetInputData( this->vtkGrayscaleImage );
   this->PlaneWidgetY->SetWindowLevel( window, level );
   this->PlaneWidgetY->SetPlaneOrientationToYAxes();
   this->PlaneWidgetY->SetSliceIndex( ySlice );
@@ -213,7 +207,7 @@ void cipChestDataViewer::SetGrayscaleImage( GrayscaleImageType::Pointer grayscal
   this->PlaneWidgetZ->SetInteractor( this->RenderWindowInteractor );
   this->PlaneWidgetZ->RestrictPlaneToVolumeOn();
   this->PlaneWidgetZ->DisplayTextOff();
-  this->PlaneWidgetZ->SetInput( this->vtkGrayscaleImage );
+  this->PlaneWidgetZ->SetInputData( this->vtkGrayscaleImage );
   this->PlaneWidgetZ->SetWindowLevel( window, level );
   this->PlaneWidgetZ->SetPlaneOrientationToZAxes();
   this->PlaneWidgetZ->SetSliceIndex( zSlice );
@@ -224,11 +218,10 @@ void cipChestDataViewer::SetGrayscaleImage( GrayscaleImageType::Pointer grayscal
   this->PlaneWidgetZShowing = true;
 }
 
-
 vtkSmartPointer< vtkActor > cipChestDataViewer::SetPolyData( vtkPolyData* polyData, std::string name )
 {
   vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
-    mapper->SetInput( polyData );
+    mapper->SetInputData( polyData );
 
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
     actor->SetMapper( mapper );
@@ -243,29 +236,25 @@ vtkSmartPointer< vtkActor > cipChestDataViewer::SetPolyData( vtkPolyData* polyDa
   return actor;
 }
 
-
 void cipChestDataViewer::SetActorColor( std::string name, double r, double g, double b )
 {
   this->ActorMap[name]->GetProperty()->SetColor( r, g, b );
 }
-
 
 void cipChestDataViewer::GetActorColor( std::string name, double color[3] )
 {
   this->ActorMap[name]->GetProperty()->GetColor( color );
 }
 
-
 void cipChestDataViewer::SetActorOpacity( std::string name, double opacity )
 {
   this->ActorMap[name]->GetProperty()->SetOpacity( opacity );
 }
 
-
 void cipChestDataViewer::ToggleActorVisibility()
 {
   std::map< std::string, vtkActor* >::iterator it = this->ActorMap.begin();
-      
+
   while ( it != this->ActorMap.end() )
     {
     if ( this->ActorsVisible )
@@ -276,42 +265,38 @@ void cipChestDataViewer::ToggleActorVisibility()
       {
       this->Renderer->AddActor( (*it).second );
       }
-    
+
     ++it;
     }
-  
+
   this->ActorsVisible = !this->ActorsVisible;
-  
+
   this->RenderWindow->Render();
 }
-
 
 void cipChestDataViewer::SetLeftObliqueThinPlateSplineSurface( cipThinPlateSplineSurface* tps, std::string name )
 {
   this->LeftObliqueThinPlateSplineSurface = tps;
 
-  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ),
                               static_cast< unsigned char >( cip::LEFTLUNG ), name );
 }
-
 
 void cipChestDataViewer::SetRightObliqueThinPlateSplineSurface( cipThinPlateSplineSurface* tps, std::string name )
 {
   this->RightObliqueThinPlateSplineSurface = tps;
 
-  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ),
                               static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
-
 
 void cipChestDataViewer::SetRightHorizontalThinPlateSplineSurface( cipThinPlateSplineSurface* tps, std::string name )
 {
   this->RightHorizontalThinPlateSplineSurface = tps;
 
-  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( cip::HORIZONTALFISSURE ), 
+  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( cip::HORIZONTALFISSURE ),
                               static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
-
 
 void cipChestDataViewer::SetLeftObliqueFissurePoints( const std::vector< double* >* const pointsVec, std::string name )
 {
@@ -319,12 +304,11 @@ void cipChestDataViewer::SetLeftObliqueFissurePoints( const std::vector< double*
     {
     this->LeftObliqueFissurePoints.push_back( (*pointsVec)[i] );
     }
- 
+
   this->LeftObliqueThinPlateSplineSurface->SetSurfacePoints( pointsVec );
-  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+  this->GenerateFissureActor( this->LeftObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ),
                               static_cast< unsigned char >( cip::LEFTLUNG ), name );
 }
-
 
 void cipChestDataViewer::SetRightObliqueFissurePoints( const std::vector< double* >* const pointsVec, std::string name )
 {
@@ -332,12 +316,11 @@ void cipChestDataViewer::SetRightObliqueFissurePoints( const std::vector< double
     {
     this->RightObliqueFissurePoints.push_back( (*pointsVec)[i] );
     }
- 
+
   this->RightObliqueThinPlateSplineSurface->SetSurfacePoints( pointsVec );
-  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ), 
+  this->GenerateFissureActor( this->RightObliqueThinPlateSplineSurface, static_cast< unsigned char >( cip::OBLIQUEFISSURE ),
                               static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
-
 
 void cipChestDataViewer::SetRightHorizontalFissurePoints( const std::vector< double* >* const pointsVec, std::string name )
 {
@@ -345,20 +328,18 @@ void cipChestDataViewer::SetRightHorizontalFissurePoints( const std::vector< dou
     {
     this->RightHorizontalFissurePoints.push_back( (*pointsVec)[i] );
     }
- 
+
   this->RightHorizontalThinPlateSplineSurface->SetSurfacePoints( pointsVec );
-  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( cip::HORIZONTALFISSURE ), 
+  this->GenerateFissureActor( this->RightHorizontalThinPlateSplineSurface, static_cast< unsigned char >( cip::HORIZONTALFISSURE ),
                               static_cast< unsigned char >( cip::RIGHTLUNG ), name );
 }
-
 
 void cipChestDataViewer::Render()
 {
   this->RenderWindow->Render();
   this->RenderWindowInteractor->Initialize();
-  this->RenderWindowInteractor->Start();  
+  this->RenderWindowInteractor->Start();
 }
-
 
 bool cipChestDataViewer::Exists( std::string name )
 {
@@ -379,18 +360,15 @@ void cipChestDataViewer::SetAirwayParticles( vtkPolyData* polyData, double scale
   this->SetParticles( polyData, scaleFactor, actorName, false );
 }
 
-
 void cipChestDataViewer::SetVesselParticles( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
   this->SetParticles( polyData, scaleFactor, actorName, false );
 }
 
-
 void cipChestDataViewer::SetFissureParticles( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
   this->SetParticles( polyData, scaleFactor, actorName, true );
 }
-
 
 void cipChestDataViewer::SetPointsAsSpheres( vtkPolyData* polyData, double radius, std::string actorName )
 {
@@ -399,14 +377,14 @@ void cipChestDataViewer::SetPointsAsSpheres( vtkPolyData* polyData, double radiu
     sphereSource->SetCenter( 0, 0, 0 );
 
   vtkGlyph3D* glyph = vtkGlyph3D::New();
-    glyph->SetInput( polyData );
-    glyph->SetSource( sphereSource->GetOutput() );
+    glyph->SetInputData( polyData );
+    glyph->SetSourceData( sphereSource->GetOutput() );
 //     glyph->SetScaleModeToScaleByScalar();
 //     glyph->SetScaleFactor( scaleFactor );
     glyph->Update();
 
   vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
-    mapper->SetInput( glyph->GetOutput() );
+    mapper->SetInputData( glyph->GetOutput() );
 
   vtkActor* actor = vtkActor::New();
     actor->SetMapper( mapper );
@@ -414,7 +392,6 @@ void cipChestDataViewer::SetPointsAsSpheres( vtkPolyData* polyData, double radiu
   this->ActorMap[actorName] = actor;
   this->Renderer->AddActor( this->ActorMap[actorName] );
 }
-
 
 vtkSmartPointer< vtkActor > cipChestDataViewer::SetAirwayParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName )
 {
@@ -452,28 +429,28 @@ vtkSmartPointer< vtkActor > cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData
     cylinderSource->SetResolution( 20 );
     cylinderSource->CappingOn();
 
-  vtkTransform* cylinderRotator = vtkTransform::New(); 
+  vtkTransform* cylinderRotator = vtkTransform::New();
     cylinderRotator->RotateZ( 90 );
 
   vtkTransformPolyDataFilter* polyFilter = vtkTransformPolyDataFilter::New();
-    polyFilter->SetInput( cylinderSource->GetOutput() );
+    polyFilter->SetInputConnection( cylinderSource->GetOutputPort() );
     polyFilter->SetTransform( cylinderRotator );
     polyFilter->Update();
 
   vtkGlyph3DWithScaling* glyph = vtkGlyph3DWithScaling::New();
-    glyph->SetInput( polyData );
-    glyph->SetSource( polyFilter->GetOutput() );
+    glyph->SetInputData( polyData );
+    glyph->SetSourceData( polyFilter->GetOutput() );
     glyph->SetVectorModeToUseNormal();
-    glyph->SetScaleModeToScaleByScalar();    
+    glyph->SetScaleModeToScaleByScalar();
     glyph->ScalingXOff();
     glyph->ScalingYOn();
-    glyph->ScalingZOn(); 
+    glyph->ScalingZOn();
     // #glyph SetScaleModeToDataScalingOff
     glyph->SetScaleFactor( scaleFactor );
     glyph->Update();
 
   vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
-    mapper->SetInput( glyph->GetOutput() );
+    mapper->SetInputConnection( glyph->GetOutputPort() );
     mapper->ScalarVisibilityOff();
 
   vtkActor* actor = vtkActor::New();
@@ -497,7 +474,6 @@ void cipChestDataViewer::SetVesselParticlesAsCylinders( vtkPolyData* polyData, d
 {
   this->SetParticlesAsCylinders( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::VESSEL ), false );
 }
-
 
 vtkActor* cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, double scaleFactor, std::string actorName,
                                                        unsigned char particlesType, bool scaleGlyphsByParticlesScale )
@@ -523,17 +499,17 @@ vtkActor* cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, do
     cylinderSource->SetResolution( 10 );
     cylinderSource->CappingOn();
 
-  vtkTransform* cylinderRotator = vtkTransform::New(); 
+  vtkTransform* cylinderRotator = vtkTransform::New();
     cylinderRotator->RotateZ( 90 );
 
   vtkTransformPolyDataFilter* polyFilter = vtkTransformPolyDataFilter::New();
-    polyFilter->SetInput( cylinderSource->GetOutput() );
+    polyFilter->SetInputConnection( cylinderSource->GetOutputPort() );
     polyFilter->SetTransform( cylinderRotator );
     polyFilter->Update();
 
   vtkGlyph3D* glyph = vtkGlyph3D::New();
-    glyph->SetInput( polyData );
-    glyph->SetSource( polyFilter->GetOutput() );
+    glyph->SetInputData( polyData );
+    glyph->SetSourceData( polyFilter->GetOutput() );
     glyph->SetVectorModeToUseNormal();
   if ( scaleGlyphsByParticlesScale )
     {
@@ -544,7 +520,7 @@ vtkActor* cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, do
     glyph->GetOutput()->GetPointData()->SetScalars( NULL );
 
   vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
-    mapper->SetInput( glyph->GetOutput() );
+    mapper->SetInputConnection( glyph->GetOutputPort() );
 
   vtkActor* actor = vtkActor::New();
     actor->SetMapper( mapper );
@@ -562,7 +538,6 @@ vtkActor* cipChestDataViewer::SetParticlesAsCylinders( vtkPolyData* polyData, do
 
   return actor;
 }
-
 
 void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor, std::string actorName, bool fissureParticles )
 {
@@ -648,7 +623,7 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
     tensorMat *= *scale;
 
     dbar->InsertTuple9( i, tensorMat(0,0), tensorMat(0,1), tensorMat(0,2),
-                           tensorMat(1,0), tensorMat(1,1), tensorMat(1,2), 
+                           tensorMat(1,0), tensorMat(1,1), tensorMat(1,2),
                            tensorMat(2,0), tensorMat(2,1), tensorMat(2,2) );
     }
 
@@ -657,11 +632,11 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
     sculptedTensorsPolyData->GetPointData()->SetTensors( dbar );
 
   vtkSuperquadricTensorGlyphFilter* epp = vtkSuperquadricTensorGlyphFilter::New();
-    epp->SetInput( sculptedTensorsPolyData );
+    epp->SetInputData( sculptedTensorsPolyData );
     epp->SetThetaRoundness( 0.95 ); //0 is rect, 1 is sphere
     epp->SetPhiRoundness( 0.95 ); //0 is rect, 1 is sphere
-    epp->SetThetaResolution( this->ParticleGlyphThetaResolution ); 
-    epp->SetPhiResolution( this->ParticleGlyphPhiResolution ); 
+    epp->SetThetaResolution( this->ParticleGlyphThetaResolution );
+    epp->SetPhiResolution( this->ParticleGlyphPhiResolution );
     epp->SetScaleFactor( scaleFactor );
     epp->SetExtractEigenvalues( true );
 
@@ -704,8 +679,7 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
   dbar->Delete();
 }
 
-
-void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSurface, unsigned char whichFissure, 
+void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSurface, unsigned char whichFissure,
                                            unsigned char whichLung, std::string name )
 {
  //  if ( whichFissure == HORIZONTALFISSURE && tpsSurface->GetNumberSurfacePoints() <= 0 )
@@ -752,7 +726,7 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
       {
       double x = dIt.GetIndex()[0]*spacing[0] + origin[0];
       double y = dIt.GetIndex()[1]*spacing[1] + origin[1];
-      double z = tpsSurface->GetSurfaceHeight( x, y );             
+      double z = tpsSurface->GetSurfaceHeight( x, y );
 
       index[0] = dIt.GetIndex()[0];
       index[1] = dIt.GetIndex()[1];
@@ -764,18 +738,18 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
         unsigned char  lungRegion = conventions.GetChestRegionFromValue( labelValue );
 
         if ( ((whichLung == cip::LEFTLUNG) &&
-              (lungRegion == static_cast< unsigned char >( cip::LEFTLUNG ) || 
-               lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) || 
-               lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) || 
+              (lungRegion == static_cast< unsigned char >( cip::LEFTLUNG ) ||
+               lungRegion == static_cast< unsigned char >( cip::LEFTUPPERTHIRD ) ||
+               lungRegion == static_cast< unsigned char >( cip::LEFTMIDDLETHIRD ) ||
+               lungRegion == static_cast< unsigned char >( cip::LEFTLOWERTHIRD ) ||
+               lungRegion == static_cast< unsigned char >( cip::LEFTSUPERIORLOBE ) ||
                lungRegion == static_cast< unsigned char >( cip::LEFTINFERIORLOBE ))) ||
              ((whichLung == cip::RIGHTLUNG) &&
-              (lungRegion == static_cast< unsigned char >( cip::RIGHTLUNG ) || 
-               lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) || 
-               lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) || 
-               lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) || 
+              (lungRegion == static_cast< unsigned char >( cip::RIGHTLUNG ) ||
+               lungRegion == static_cast< unsigned char >( cip::RIGHTUPPERTHIRD ) ||
+               lungRegion == static_cast< unsigned char >( cip::RIGHTMIDDLETHIRD ) ||
+               lungRegion == static_cast< unsigned char >( cip::RIGHTLOWERTHIRD ) ||
+               lungRegion == static_cast< unsigned char >( cip::RIGHTSUPERIORLOBE ) ||
                lungRegion == static_cast< unsigned char >( cip::RIGHTINFERIORLOBE ))) )
           {
           bool addPoint = true;
@@ -790,7 +764,7 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
 //               }
 //             }
           if ( addPoint )
-            { 
+            {
             this->LabelMapImage->TransformIndexToPhysicalPoint( index, physicalPoint );
 
             points->InsertNextPoint( physicalPoint[0], physicalPoint[1], physicalPoint[2] );
@@ -817,7 +791,7 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
       {
       //
       // Initialize our three points and the triangle counter to keep
-      // track of the triangle construction 
+      // track of the triangle construction
       //
       unsigned int triangleCounter = 0;
       unsigned int firstPoint      = 0;
@@ -832,7 +806,7 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
         // Create a new triangle strip for this row
         //
         vtkTriangleStrip* triangleStrip = vtkTriangleStrip::New();
-        
+
         for ( unsigned int yInc=y; yInc<=y+1; yInc++ )
           {
           domainIndex[1] = yInc;
@@ -856,17 +830,17 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
                 thirdPoint = domainImage->GetPixel( domainIndex ) - 1;
                 triangleCounter++;
                 }
-              
+
               //
               // If 'triangleCounter' is up to 3, that means we have
               // found three consecutive points that are non-zero in the
               // domain image. These three should form the next triangle
               // in our triangle strip
-              //            
+              //
               if ( triangleCounter == 3 )
                 {
                 //
-                // Add these points to the triangle strip 
+                // Add these points to the triangle strip
                 //
                 triangleStrip->GetPointIds()->InsertNextId( firstPoint );
                 triangleStrip->GetPointIds()->InsertNextId( secondPoint );
@@ -880,10 +854,10 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
                 // 'secondPoint' becomes the 'firstPoint'.
                 //
                 triangleCounter = 2;
-                
+
                 firstPoint = secondPoint;  secondPoint = thirdPoint;
                 }
-              }   
+              }
             else
               {
               triangleCounter = 0;
@@ -902,8 +876,8 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
       }
 
     vtkDataSetMapper* triangleStripMapper = vtkDataSetMapper::New();
-      triangleStripMapper->SetInput( triangleStripPolyData );
-  
+      triangleStripMapper->SetInputData( triangleStripPolyData );
+
     vtkActor* triangleStripActor = vtkActor::New();
       triangleStripActor->SetMapper( triangleStripMapper );
 
@@ -911,7 +885,6 @@ void cipChestDataViewer::GenerateFissureActor( cipThinPlateSplineSurface* tpsSur
     this->Renderer->AddActor( this->ActorMap[name] );
     }
 }
-
 
 void cipChestDataViewer::SetLeftObliqueFissurePCAModeAndVariance( std::vector< double > vec, double variance, unsigned int whichMode )
 {
@@ -925,7 +898,7 @@ void cipChestDataViewer::SetLeftObliqueFissurePCAModeAndVariance( std::vector< d
       this->LeftObliqueFissurePCAModes.push_back( tempModeVec );
       }
     }
-  
+
   this->LeftObliqueFissurePCAVariances[whichMode] = variance;
 
   for ( unsigned int i=0; i<vec.size(); i++ )
@@ -933,7 +906,6 @@ void cipChestDataViewer::SetLeftObliqueFissurePCAModeAndVariance( std::vector< d
     this->LeftObliqueFissurePCAModes[whichMode].push_back( vec[i] );
     }
 }
-
 
 void cipChestDataViewer::SetRightObliqueFissurePCAModeAndVariance( std::vector< double > vec, double variance, unsigned int whichMode )
 {
@@ -947,7 +919,7 @@ void cipChestDataViewer::SetRightObliqueFissurePCAModeAndVariance( std::vector< 
       this->RightObliqueFissurePCAModes.push_back( tempModeVec );
       }
     }
-  
+
   this->RightObliqueFissurePCAVariances[whichMode] = variance;
 
   for ( unsigned int i=0; i<vec.size(); i++ )
@@ -955,7 +927,6 @@ void cipChestDataViewer::SetRightObliqueFissurePCAModeAndVariance( std::vector< 
     this->RightObliqueFissurePCAModes[whichMode].push_back( vec[i] );
     }
 }
-
 
 void cipChestDataViewer::SetRightHorizontalFissurePCAModeAndVariance( std::vector< double > vec, double variance, unsigned int whichMode )
 {
@@ -969,7 +940,7 @@ void cipChestDataViewer::SetRightHorizontalFissurePCAModeAndVariance( std::vecto
       this->RightHorizontalFissurePCAModes.push_back( tempModeVec );
       }
     }
-  
+
   this->RightHorizontalFissurePCAVariances[whichMode] = variance;
 
   for ( unsigned int i=0; i<vec.size(); i++ )
@@ -978,22 +949,20 @@ void cipChestDataViewer::SetRightHorizontalFissurePCAModeAndVariance( std::vecto
     }
 }
 
-
 void cipChestDataViewer::ModifyLeftObliqueFissureByPCAMode( unsigned int whichMode, double stdMultiplier )
-{  
+{
 //   for ( unsigned int i=0; i<(this->LeftObliqueFissurePCAModes[whichMode]).size(); i++ )
 //     {
 //     (this->LeftObliqueFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*vcl_sqrt( this->LeftObliqueFissurePCAVariances[whichMode] )*
 //                                                                               (this->LeftObliqueFissurePCAModes[whichMode])[i] );
 //     }
-//   this->Renderer->RemoveActor( this->ActorMap["LEFTLUNGOBLIQUEFISSURE"] ); 
+//   this->Renderer->RemoveActor( this->ActorMap["LEFTLUNGOBLIQUEFISSURE"] );
 //   this->ActorMap["LEFTLUNGOBLIQUEFISSURE"]->Delete();
 //   this->GenerateFissureActor( static_cast< unsigned char >( OBLIQUEFISSURE ), static_cast< unsigned char >( LEFTLUNG ) );
 }
 
-
 void cipChestDataViewer::ModifyRightObliqueFissureByPCAMode( unsigned int whichMode, double stdMultiplier )
-{  
+{
 //   for ( unsigned int i=0; i<(this->RightObliqueFissurePCAModes[whichMode]).size(); i++ )
 //     {
 //     (this->RightObliqueFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*vcl_sqrt( this->RightObliqueFissurePCAVariances[whichMode] )*
@@ -1004,9 +973,8 @@ void cipChestDataViewer::ModifyRightObliqueFissureByPCAMode( unsigned int whichM
 //   this->GenerateFissureActor( static_cast< unsigned char >( OBLIQUEFISSURE ), static_cast< unsigned char >( RIGHTLUNG ) );
 }
 
-
 void cipChestDataViewer::ModifyRightHorizontalFissureByPCAMode( unsigned int whichMode, double stdMultiplier )
-{  
+{
 //   for ( unsigned int i=0; i<(this->RightHorizontalFissurePCAModes[whichMode]).size(); i++ )
 //     {
 //     (this->RightHorizontalFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*vcl_sqrt( this->RightHorizontalFissurePCAVariances[whichMode] )*
@@ -1016,7 +984,6 @@ void cipChestDataViewer::ModifyRightHorizontalFissureByPCAMode( unsigned int whi
 //   this->ActorMap["RIGHTLUNGHORIZONTALFISSURE"]->Delete();
 //   this->GenerateFissureActor( static_cast< unsigned char >( HORIZONTALFISSURE ), static_cast< unsigned char >( RIGHTLUNG ) );
 }
-
 
 // void cipChestDataViewer::ExtractAndViewLungRegionModel( unsigned char lungRegion, std::string name )
 // {
@@ -1032,13 +999,12 @@ void cipChestDataViewer::ModifyRightHorizontalFissureByPCAMode( unsigned int whi
 //       extractor->SetInput( this->LabelMapImage );
 //       extractor->SetLungRegion( lungRegion );
 //       extractor->Update();
-      
+
 //     vtkPolyData* lungRegionPolyData = this->GetModelFromLabelMap( extractor->GetOutput(), foregroundLabel );
 
 //     this->SetPolyData( lungRegionPolyData, name );
 //     }
 // }
-
 
 // void cipChestDataViewer::ExtractAndViewLungTypeModel( unsigned char lungType, std::string name )
 // {
@@ -1054,29 +1020,28 @@ void cipChestDataViewer::ModifyRightHorizontalFissureByPCAMode( unsigned int whi
 //       extractor->SetInput( this->LabelMapImage );
 //       extractor->SetLungType( lungType );
 //       extractor->Update();
-      
+
 //     vtkPolyData* lungTypePolyData = this->GetModelFromLabelMap( extractor->GetOutput(), foregroundLabel );
 
 //     this->SetPolyData( lungTypePolyData, name );
 //     }
 // }
 
-
 vtkPolyData* cipChestDataViewer::GetModelFromLabelMap( LabelMapImageType::Pointer labelMap, unsigned short foregroundLabel )
 {
     LabelMapExportType::Pointer refExporter = LabelMapExportType::New();
       refExporter->SetInput( labelMap );
-    
+
     vtkImageImport* refImporter = vtkImageImport::New();
 
     this->ConnectLabelMapPipelines( refExporter, refImporter );
 
     //
     // Perform marching cubes on the reference binary image and then
-    // decimate 
+    // decimate
     //
     vtkDiscreteMarchingCubes* cubes = vtkDiscreteMarchingCubes::New();
-      cubes->SetInput( refImporter->GetOutput() );
+      cubes->SetInputConnection( refImporter->GetOutputPort() );
       cubes->SetValue( 0, foregroundLabel );
       cubes->ComputeNormalsOff();
       cubes->ComputeScalarsOff();
@@ -1084,7 +1049,7 @@ vtkPolyData* cipChestDataViewer::GetModelFromLabelMap( LabelMapImageType::Pointe
       cubes->Update();
 
     vtkWindowedSincPolyDataFilter* smoother = vtkWindowedSincPolyDataFilter::New();
-      smoother->SetInput( cubes->GetOutput() );
+      smoother->SetInputConnection( cubes->GetOutputPort() );
       smoother->SetNumberOfIterations( 2 );
       smoother->BoundarySmoothingOff();
       smoother->FeatureEdgeSmoothingOff();
@@ -1094,14 +1059,14 @@ vtkPolyData* cipChestDataViewer::GetModelFromLabelMap( LabelMapImageType::Pointe
       smoother->Update();
 
     vtkDecimatePro* decimator = vtkDecimatePro::New();
-      decimator->SetInput( smoother->GetOutput() );
+      decimator->SetInputConnection( smoother->GetOutputPort() );
       decimator->SetTargetReduction( 0.9 );
       decimator->PreserveTopologyOn();
       decimator->BoundaryVertexDeletionOff();
       decimator->Update();
 
     vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
-      normals->SetInput( decimator->GetOutput() );
+      normals->SetInputConnection( decimator->GetOutputPort() );
       normals->SetFeatureAngle( 90 );
       normals->Update();
 
@@ -1113,7 +1078,6 @@ vtkPolyData* cipChestDataViewer::GetModelFromLabelMap( LabelMapImageType::Pointe
 
     return decimator->GetOutput();
 }
-
 
 void cipChestDataViewer::ConnectPipelines( ExportType::Pointer exporter, vtkImageImport* importer )
 {
@@ -1131,7 +1095,6 @@ void cipChestDataViewer::ConnectPipelines( ExportType::Pointer exporter, vtkImag
   importer->SetCallbackUserData(exporter->GetCallbackUserData());
 }
 
-
 void cipChestDataViewer::ConnectLabelMapPipelines( LabelMapExportType::Pointer exporter, vtkImageImport* importer )
 {
   importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
@@ -1148,16 +1111,15 @@ void cipChestDataViewer::ConnectLabelMapPipelines( LabelMapExportType::Pointer e
   importer->SetCallbackUserData(exporter->GetCallbackUserData());
 }
 
-
 void ViewerKeyCallback( vtkObject* obj, unsigned long b, void* clientData, void* d )
 {
   cipChestDataViewer* dataViewer = reinterpret_cast< cipChestDataViewer* >( clientData );
 
-  char pressedKey = dataViewer->GetRenderWindowInteractor()->GetKeyCode(); 
+  char pressedKey = dataViewer->GetRenderWindowInteractor()->GetKeyCode();
 
   if ( pressedKey == 'x' )
     {
-    if ( dataViewer->GetPlaneWidgetXShowing() ) 
+    if ( dataViewer->GetPlaneWidgetXShowing() )
       {
       dataViewer->SetPlaneWidgetXShowing( false );
       }
@@ -1169,7 +1131,7 @@ void ViewerKeyCallback( vtkObject* obj, unsigned long b, void* clientData, void*
 
   if ( pressedKey == 'y' )
     {
-    if ( dataViewer->GetPlaneWidgetYShowing() ) 
+    if ( dataViewer->GetPlaneWidgetYShowing() )
       {
       dataViewer->SetPlaneWidgetYShowing( false );
       }
@@ -1181,7 +1143,7 @@ void ViewerKeyCallback( vtkObject* obj, unsigned long b, void* clientData, void*
 
   if ( pressedKey == 'z' )
     {
-    if ( dataViewer->GetPlaneWidgetZShowing() ) 
+    if ( dataViewer->GetPlaneWidgetZShowing() )
       {
       dataViewer->SetPlaneWidgetZShowing( false );
       }

@@ -1,22 +1,22 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program is used to label particles datasets by chest
  *  region and chest type. The user must specify the type of the input
  *  particles, but the chest region can either be determined by an
- *  input label map or be specified at the command line. 
- * 
+ *  input label map or be specified at the command line.
+ *
  *  $Date: 2012-07-18 13:23:15 -0700 (Wed, 18 Jul 2012) $
  *  $Revision: 196 $
  *  $Author: rjosest $
  *
- *  USAGE: 
+ *  USAGE:
  *
  *   LabelParticlesByChestRegionChestType  [-t \<unsigned char\>] [-r
  *                                         \<unsigned char\>] -o \<string\> -i
  *                                         \<string\> [-l \<string\>] [--]
  *                                         [--version] [-h]
  *
- *  Where: 
+ *  Where:
  *   -t \<unsigned char\>,  --type \<unsigned char\>
  *     Chest type for particles labeling. UNDEFINEDTYPE by default
  *
@@ -65,7 +65,7 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
     {
         unsigned int numberPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
         unsigned int numberParticles       = particles->GetNumberOfPoints();
-        
+
         //
         // The input particles may or may not have 'ChestType' and
         // 'ChestRegion' data arrays. As we loop through the input, we will
@@ -73,7 +73,7 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
         //
         bool foundChestRegionArray = false;
         bool foundChestTypeArray   = false;
-        
+
         for ( unsigned int i=0; i<numberPointDataArrays; i++ )
         {
             std::string name( particles->GetPointData()->GetArray(i)->GetName() );
@@ -86,7 +86,7 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
                 foundChestRegionArray = true;
             }
         }
-        
+
         //
         // The 'chestRegionArray' and 'chestTypeArray' defined here will
         // only be used if they have not already been found in 'particles'
@@ -112,7 +112,7 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
         //
         unsigned char cipRegion = static_cast< unsigned char >( cip::UNDEFINEDREGION );
         unsigned char cipType   = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
-        
+
         for ( unsigned int i=0; i<numberParticles; i++ )
         {
             if ( foundChestRegionArray )
@@ -123,7 +123,7 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
             {
                 chestRegionArray->SetValue( i, cipRegion );
             }
-            
+
             if ( foundChestTypeArray )
             {
                 dynamic_cast <vtkUnsignedCharArray*> (particles->GetPointData()->GetArray( "ChestType" ))->SetValue( i, cipType );
@@ -133,7 +133,7 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
                 chestTypeArray->SetValue( i, cipType );
             }
         }
-        
+
         if ( !foundChestRegionArray )
         {
             particles->GetPointData()->AddArray( chestRegionArray );
@@ -143,19 +143,17 @@ typedef itk::ImageFileReader< ImageType >    ReaderType;
             particles->GetPointData()->AddArray( chestTypeArray );
         }
     }
-
 }
 //void InitializeParticleChestRegionChestTypeArrays( vtkSmartPointer< vtkPolyData > );
-
 
 int main( int argc, char *argv[] )
 {
   //
   // Begin by defining the arguments to be passed
   //
-    
+
   PARSE_ARGS;
-    
+
   unsigned char       cipRegion            = static_cast< unsigned char >( cip::UNDEFINEDREGION );
   unsigned char       cipType              = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
 
@@ -163,7 +161,6 @@ int main( int argc, char *argv[] )
       cipRegion            =  static_cast< unsigned char >(cipRegionArg);
   if ( cipTypeArg > -1 )
       cipType            =  static_cast< unsigned char >(cipTypeArg);
-    
 
   //
   // Instantiate ChestConventions for later use
@@ -176,7 +173,7 @@ int main( int argc, char *argv[] )
   std::cout << "Reading polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
     particlesReader->SetFileName( inParticlesFileName.c_str() );
-    particlesReader->Update();    
+    particlesReader->Update();
 
   //
   // Initialize chest region and chest type field data arrays. We
@@ -187,13 +184,12 @@ int main( int argc, char *argv[] )
   std::cout << "Initializing chest-region chest-type arrays..." << std::endl;
   InitializeParticleChestRegionChestTypeArrays( particlesReader->GetOutput() );
 
-  
   //
   // Get arrays from data
   //
   vtkSmartPointer< vtkUnsignedCharArray > chestRegionArray = dynamic_cast <vtkUnsignedCharArray*> (particlesReader->GetOutput()->GetPointData()->GetArray("ChestRegion"));
   vtkSmartPointer< vtkUnsignedCharArray > chestTypeArray = dynamic_cast <vtkUnsignedCharArray*> (particlesReader->GetOutput()->GetPointData()->GetArray("ChestType"));
-  
+
   //
   // If specified, read the input label map
   //
@@ -209,7 +205,7 @@ int main( int argc, char *argv[] )
     catch ( itk::ExceptionObject &excp )
       {
       std::cerr << "Exception caught reading label map:";
-      std::cerr << excp << std::endl;     
+      std::cerr << excp << std::endl;
 
       return cip::LABELMAPREADFAILURE;
       }
@@ -225,8 +221,8 @@ int main( int argc, char *argv[] )
       point[0] = particlesReader->GetOutput()->GetPoint(i)[0];
       point[1] = particlesReader->GetOutput()->GetPoint(i)[1];
       point[2] = particlesReader->GetOutput()->GetPoint(i)[2];
-      
-      labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );    
+
+      labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );
 
       unsigned short labelValue = labelMapReader->GetOutput()->GetPixel( index );
 
@@ -241,7 +237,7 @@ int main( int argc, char *argv[] )
     //
     // If here, no label map was specified, and we must assign region
     // and types based on user specification. Loop through the
-    // particles to label them 
+    // particles to label them
     //
     for ( unsigned int i=0; i<particlesReader->GetOutput()->GetNumberOfPoints(); i++ )
       {
@@ -256,9 +252,9 @@ int main( int argc, char *argv[] )
   std::cout << "Writing labeled particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
     particlesWriter->SetFileName( outParticlesFileName.c_str() );
-    particlesWriter->SetInput( particlesReader->GetOutput() );
+    particlesWriter->SetInputConnection( particlesReader->GetOutputPort() );
     particlesWriter->SetFileTypeToBinary();
-    particlesWriter->Update();    
+    particlesWriter->Update();
 
   std::cout << "DONE." << std::endl;
 

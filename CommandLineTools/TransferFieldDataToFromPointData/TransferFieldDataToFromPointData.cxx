@@ -1,22 +1,22 @@
 /** \file
- *  \ingroup commandLineTools 
- *  \details This program can be used to transfer the contents of a VTK 
- *  polydata's field data to point data and vice-versa. Generally, field 
- *  data applies to a dataset as a whole and need not have a one-to-one 
- *  correspondence with the points. However, this may be the case in some 
- *  instances (esp. with the particles datasets). In those cases it may be 
- *  helpful to have the data contained in field data arrays also stored in 
- *  point data arrays (e.g. for rendering purposes). Field data will only 
- *  be transferred provided that the number of tuples in the field data 
+ *  \ingroup commandLineTools
+ *  \details This program can be used to transfer the contents of a VTK
+ *  polydata's field data to point data and vice-versa. Generally, field
+ *  data applies to a dataset as a whole and need not have a one-to-one
+ *  correspondence with the points. However, this may be the case in some
+ *  instances (esp. with the particles datasets). In those cases it may be
+ *  helpful to have the data contained in field data arrays also stored in
+ *  point data arrays (e.g. for rendering purposes). Field data will only
+ *  be transferred provided that the number of tuples in the field data
  *  array is the same as the number of points.
- * 
- *  USAGE: 
+ *
+ *  USAGE:
  *
  *  TransferFieldDataToFromPointData  [--mp <bool>] [--mf <bool>] [--pf
  *                                     <bool>] [--fp <bool>] -o <string> -i
  *                                     <string> [--] [--version] [-h]
  *
- *  Where: 
+ *  Where:
  *
  *  --mp <bool>
  *   Setting this to true will maintain the field data. Setting it to false
@@ -48,7 +48,7 @@
  *
  *  -h,  --help
  *   Displays usage information and exits.
- *  
+ *
  *  $Date: 2013-03-25 13:23:52 -0400 (Mon, 25 Mar 2013) $
  *  $Revision: 383 $
  *  $Author: jross $
@@ -77,7 +77,7 @@ int main( int argc, char *argv[] )
   vtkSmartPointer< vtkPolyDataReader > reader = vtkSmartPointer< vtkPolyDataReader >::New();
     reader->SetFileName( inFileName.c_str() );
     reader->Update();
-  
+
   unsigned int numberOfPoints = reader->GetOutput()->GetNumberOfPoints();
   unsigned int numberOfFieldDataArrays = reader->GetOutput()->GetFieldData()->GetNumberOfArrays();
   unsigned int numberOfPointDataArrays = reader->GetOutput()->GetPointData()->GetNumberOfArrays();
@@ -181,8 +181,8 @@ int main( int argc, char *argv[] )
   std::cout << "Writing VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );
-    writer->SetInput( outPolyData );
-  
+    writer->SetInputData( outPolyData );
+
     if (saveToBinary )
     {
       writer->SetFileTypeToBinary();
@@ -191,7 +191,7 @@ int main( int argc, char *argv[] )
     {
       writer->SetFileTypeToASCII();
     }
-  
+
     writer->Update();
 
   std::cout << "DONE." << std::endl;

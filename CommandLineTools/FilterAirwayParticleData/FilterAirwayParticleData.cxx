@@ -1,5 +1,5 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program reads airway particles and filters them
  *  based on connected components analysis. Particles are placed in
  *  the same component provided they are sufficiently close to one
@@ -13,11 +13,11 @@
  *
  *  USAGE:
  *
- *  FilterAirwayParticleData  [--spacing \<double\>] [-r \<double\>] 
- *                            [-a \<double\>] [-d \<double\>] 
- *                            [-m \<unsigned short\>] 
- *                            [-s \<unsigned short\>] 
- *                            -o \<string\> -i \<string\> [--] 
+ *  FilterAirwayParticleData  [--spacing \<double\>] [-r \<double\>]
+ *                            [-a \<double\>] [-d \<double\>]
+ *                            [-m \<unsigned short\>]
+ *                            [-s \<unsigned short\>]
+ *                            -o \<string\> -i \<string\> [--]
  *                            [--version] [-h]
  *
  *  Where:
@@ -72,7 +72,6 @@
  *
  */
 
-
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
 #include "vtkFloatArray.h"
@@ -84,7 +83,6 @@
 #include "vtkIndent.h"
 #include "FilterAirwayParticleDataCLP.h"
 
-
 int main( int argc, char *argv[] )
 {
   //
@@ -95,7 +93,6 @@ int main( int argc, char *argv[] )
 
   unsigned int maxComponentSize       = (unsigned int) maxComponentSizeTemp;
   unsigned int componentSizeThreshold = (unsigned int) componentSizeThresholdTemp;
- 
 
   std::cout << "Reading particles ..." << std::endl;
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
@@ -118,12 +115,11 @@ int main( int argc, char *argv[] )
   std::cout << "Writing filtered particles ..." << std::endl;
   vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInput( filter->GetOutput() );
-    filteredWriter->Write();  
+    filteredWriter->SetInputData( filter->GetOutput() );
+    filteredWriter->Write();
 
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
 }
-
 

@@ -5,7 +5,7 @@
 *  $Author: $
 *
 *  Class cipHelper
-*	
+*
 */
 
 #include "cipHelper.h"
@@ -55,7 +55,7 @@ cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::La
 
   InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
 
-  // Compute and set the output spacing from the input spacing and samplingAmount  
+  // Compute and set the output spacing from the input spacing and samplingAmount
   const cip::LabelMapType::RegionType& inputRegion = inputLabelMap->GetLargestPossibleRegion();
   const cip::LabelMapType::SizeType& inputSize = inputRegion.GetSize();
 
@@ -73,8 +73,8 @@ cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::La
     outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
     outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
     outputSpacing[2] = inputSpacing[2]*(double(originalHeight)/double(newHeight));
-  
-  // Set the resampler with the calculated parameters and resample  
+
+  // Set the resampler with the calculated parameters and resample
   itk::Size< 3 > outputSize = { {newWidth, newLength, newHeight} };
 
   ResampleType::Pointer resizeFilter = ResampleType::New();
@@ -88,7 +88,7 @@ cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::La
 
   // Save the resampled output to the output image and return
   outputLabelMap = resizeFilter->GetOutput();
-  
+
   return outputLabelMap;
 }
 
@@ -106,7 +106,7 @@ cip::LabelMapType::Pointer cip::UpsampleLabelMap(short samplingAmount, cip::Labe
 
   InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
 
-  // Compute and set the output spacing from the input spacing and samplingAmount 
+  // Compute and set the output spacing from the input spacing and samplingAmount
   const LabelMapType::RegionType& inputRegion = inputLabelMap->GetLargestPossibleRegion();
   const LabelMapType::SizeType& inputSize = inputRegion.GetSize();
 
@@ -124,7 +124,7 @@ cip::LabelMapType::Pointer cip::UpsampleLabelMap(short samplingAmount, cip::Labe
     outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
     outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
     outputSpacing[2] = inputSpacing[2]*(double(originalHeight)/double(newHeight));
-    
+
   // Set the resampler with the calculated parameters and resample
   itk::Size< 3 > outputSize = { {newWidth, newLength, newHeight} };
 
@@ -157,7 +157,7 @@ cip::CTType::Pointer cip::UpsampleCT(short samplingAmount, cip::CTType::Pointer 
 
   InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
 
-  // Compute and set the output spacing from the input spacing and samplingAmount 
+  // Compute and set the output spacing from the input spacing and samplingAmount
   const cip::CTType::RegionType& inputRegion = inputCT->GetLargestPossibleRegion();
   const cip::CTType::SizeType& inputSize = inputRegion.GetSize();
 
@@ -165,7 +165,7 @@ cip::CTType::Pointer cip::UpsampleCT(short samplingAmount, cip::CTType::Pointer 
   unsigned int originalLength = inputSize[1];
   unsigned int originalHeight = inputSize[2];
 
-  unsigned int newWidth  = (unsigned int)(double(originalWidth)*double(samplingAmount)); 
+  unsigned int newWidth  = (unsigned int)(double(originalWidth)*double(samplingAmount));
   unsigned int newLength = (unsigned int)(double(originalLength)*double(samplingAmount));
   unsigned int newHeight = (unsigned int)(double(originalHeight)*double(samplingAmount));
 
@@ -173,7 +173,7 @@ cip::CTType::Pointer cip::UpsampleCT(short samplingAmount, cip::CTType::Pointer 
 
   double outputSpacing[3];
   outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
-  outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength)); 
+  outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
   outputSpacing[2] = inputSpacing[2]*(double(originalHeight)/double(newHeight));
 
   // Set the resampler with the calculated parameters and resample
@@ -208,7 +208,7 @@ cip::CTType::Pointer cip::DownsampleCT(short samplingAmount, cip::CTType::Pointe
 
   InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
 
-  // Compute and set the output spacing from the input spacing and samplingAmount 
+  // Compute and set the output spacing from the input spacing and samplingAmount
   const cip::CTType::RegionType& inputRegion = inputCT->GetLargestPossibleRegion();
   const cip::CTType::SizeType& inputSize = inputRegion.GetSize();
 
@@ -216,7 +216,7 @@ cip::CTType::Pointer cip::DownsampleCT(short samplingAmount, cip::CTType::Pointe
   unsigned int originalLength = inputSize[1];
   unsigned int originalHeight = inputSize[2];
 
-  unsigned int newWidth  = (unsigned int)(double(originalWidth)/double(samplingAmount)); 
+  unsigned int newWidth  = (unsigned int)(double(originalWidth)/double(samplingAmount));
   unsigned int newLength = (unsigned int)(double(originalLength)/double(samplingAmount));
   unsigned int newHeight = (unsigned int)(double(originalHeight)/double(samplingAmount));
 
@@ -224,7 +224,7 @@ cip::CTType::Pointer cip::DownsampleCT(short samplingAmount, cip::CTType::Pointe
 
   double outputSpacing[3];
     outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
-    outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength)); 
+    outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
     outputSpacing[2] = inputSpacing[2]*(double(originalHeight)/double(newHeight));
 
   // Set the resampler with the calculated parameters and resample
@@ -245,14 +245,12 @@ cip::CTType::Pointer cip::DownsampleCT(short samplingAmount, cip::CTType::Pointe
   return outputCT;
 }
 
-
 double cip::GetVectorMagnitude(double vector[3])
 {
   double magnitude = vcl_sqrt(std::pow(vector[0], 2) + std::pow(vector[1], 2) + std::pow(vector[2], 2));
 
   return magnitude;
 }
-
 
 double cip::GetAngleBetweenVectors(double vec1[3], double vec2[3], bool returnDegrees)
 {
@@ -265,7 +263,7 @@ double cip::GetAngleBetweenVectors(double vec1[3], double vec2[3], bool returnDe
     {
       arg = 1.0;
     }
-  
+
   double angle = vcl_acos( arg );
 
   if ( !returnDegrees )
@@ -284,11 +282,11 @@ double cip::GetAngleBetweenVectors(double vec1[3], double vec2[3], bool returnDe
 }
 
 void cip::ViewGraph( vtkSmartPointer< vtkMutableDirectedGraph > graph )
-{ 
+{
   vtkSmartPointer< vtkSimple2DLayoutStrategy > strategy = vtkSmartPointer< vtkSimple2DLayoutStrategy >::New();
 
   vtkSmartPointer< vtkGraphLayout > layout =  vtkSmartPointer< vtkGraphLayout >::New();
-    layout->SetInput( graph );
+    layout->SetInputData( graph );
     layout->SetLayoutStrategy( strategy );
 
   vtkSmartPointer< vtkGraphToPolyData > graphToPoly = vtkSmartPointer< vtkGraphToPolyData >::New();
@@ -313,23 +311,22 @@ void cip::ViewGraph( vtkSmartPointer< vtkMutableDirectedGraph > graph )
 
   vtkSmartPointer< vtkGraphLayoutView > graphLayoutView = vtkSmartPointer< vtkGraphLayoutView >::New();
     graphLayoutView->SetLayoutStrategyToPassThrough();
-    graphLayoutView->SetEdgeLayoutStrategyToPassThrough(); 
+    graphLayoutView->SetEdgeLayoutStrategyToPassThrough();
     graphLayoutView->AddRepresentationFromInputConnection( layout->GetOutputPort() );
-    graphLayoutView->GetRenderer()->AddActor( arrowActor ); 
+    graphLayoutView->GetRenderer()->AddActor( arrowActor );
     graphLayoutView->ResetCamera();
     graphLayoutView->Render();
     graphLayoutView->GetInteractor()->Start();
 }
 
-
 void cip::ViewGraphAsPolyData(vtkSmartPointer< vtkMutableUndirectedGraph > graph)
 {
   vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
-    graphToPolyData->SetInput( graph );
+    graphToPolyData->SetInputData( graph );
     graphToPolyData->Update();
 
   vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
-    renderer->SetBackground( 1, 1, 1 ); 
+    renderer->SetBackground( 1, 1, 1 );
 
   vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(graphToPolyData->GetOutputPort());
@@ -348,7 +345,7 @@ void cip::ViewGraphAsPolyData(vtkSmartPointer< vtkMutableUndirectedGraph > graph
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     renderWindowInteractor->SetRenderWindow(renderWindow);
     renderWindowInteractor->SetInteractorStyle(trackball);
-    
+
     // Set up the nodes to be rendered
   vtkSmartPointer<vtkSphereSource> sphereSource = vtkSmartPointer<vtkSphereSource>::New();
     sphereSource->SetRadius(0.2);
@@ -358,12 +355,12 @@ void cip::ViewGraphAsPolyData(vtkSmartPointer< vtkMutableUndirectedGraph > graph
     //   for ( unsigned int i=0; i<this->SubGraphLeafParticleIDs.size(); i++ )
     //     {
     //     unsigned int leafParticleID  = this->SubGraphLeafParticleIDs[i];
-    
+
     //     double leafPoint[3];
     //     leafPoint[0] = this->InternalInputPolyData->GetPoint( leafParticleID )[0];
     //     leafPoint[1] = this->InternalInputPolyData->GetPoint( leafParticleID )[1];
     //     leafPoint[2] = this->InternalInputPolyData->GetPoint( leafParticleID )[2];
-    
+
     //     leafPoints->InsertNextPoint( leafPoint[0], leafPoint[1], leafPoint[2] );
     //     }
 
@@ -371,12 +368,12 @@ void cip::ViewGraphAsPolyData(vtkSmartPointer< vtkMutableUndirectedGraph > graph
     nodesPoly->SetPoints(graph->GetPoints());
 
   vtkSmartPointer<vtkGlyph3D> nodesGlyph = vtkSmartPointer<vtkGlyph3D>::New();
-    nodesGlyph->SetInput(nodesPoly);
-    nodesGlyph->SetSource(sphereSource->GetOutput());
+    nodesGlyph->SetInputData(nodesPoly);
+    nodesGlyph->SetSourceData(sphereSource->GetOutput());
     nodesGlyph->Update();
-    
+
   vtkSmartPointer<vtkPolyDataMapper> nodesMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    nodesMapper->SetInput(nodesGlyph->GetOutput());
+    nodesMapper->SetInputData(nodesGlyph->GetOutput());
 
   vtkSmartPointer<vtkActor> nodesActor = vtkSmartPointer<vtkActor>::New();
     nodesActor->SetMapper(nodesMapper);
@@ -388,7 +385,7 @@ void cip::ViewGraphAsPolyData(vtkSmartPointer< vtkMutableUndirectedGraph > graph
   renderWindowInteractor->Start();
 }
 
-void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type,
 			 unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
 {
   ChestConventions conventions;
@@ -403,7 +400,7 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
   // We will want to isolate the bounding box containing the chest region - chest type combination
   // of interest. We will only want to perform the closing operation over that region for the
   // sake of speed.
-  cip::LabelMapType::RegionType roiPadded = 
+  cip::LabelMapType::RegionType roiPadded =
     cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
 
   if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
@@ -452,7 +449,7 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
     }
 }
 
-void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type,
 			unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
 {
   ChestConventions conventions;
@@ -467,7 +464,7 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   // We will want to isolate the bounding box containing the chest region - chest type combination
   // of interest. We will only want to perform the closing operation over that region for the
   // sake of speed.
-  cip::LabelMapType::RegionType roiPadded = 
+  cip::LabelMapType::RegionType roiPadded =
     cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
 
   if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
@@ -516,7 +513,7 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     }
 }
 
-void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type,
 		     unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
 {
   ChestConventions conventions;
@@ -532,7 +529,7 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   // We will want to isolate the bounding box containing the chest region - chest type combination
   // of interest. We will only want to perform the closing operation over that region for the
   // sake of speed.
-  cip::LabelMapType::RegionType roiPadded = 
+  cip::LabelMapType::RegionType roiPadded =
     cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX*3, kernelRadiusY*3, kernelRadiusZ*3);
 
   if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
@@ -584,8 +581,8 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     }
 
   // Now replace the label map values with those from the closing operation. Note that
-  // the iterator over the erosion output is over the entire region but that we only 
-  // iterate over the label map in the area defined above -- the area that was 
+  // the iterator over the erosion output is over the entire region but that we only
+  // iterate over the label map in the area defined above -- the area that was
   // extracted from the original label map to operate on.
   IteratorType eIt(eroder->GetOutput(), eroder->GetOutput()->GetBufferedRegion());
   IteratorType lIt(labelMap, roiPadded);
@@ -601,7 +598,7 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     }
 }
 
-void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type, 
+void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region, unsigned char type,
 		       unsigned int kernelRadiusX, unsigned int kernelRadiusY, unsigned int kernelRadiusZ)
 {
   ChestConventions conventions;
@@ -617,7 +614,7 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
   // We will want to isolate the bounding box containing the chest region - chest type combination
   // of interest. We will only want to perform the closing operation over that region for the
   // sake of speed.
-  cip::LabelMapType::RegionType roiPadded = 
+  cip::LabelMapType::RegionType roiPadded =
     cip::GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(labelMap, region, type, kernelRadiusX, kernelRadiusY, kernelRadiusZ);
 
   if ( roiPadded.GetSize()[0] == 0 && roiPadded.GetSize()[1] == 0 && roiPadded.GetSize()[2] == 0 )
@@ -700,7 +697,7 @@ void cip::AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData
       {
       foundChestTypeArray = true;
       }
-    }  
+    }
 
   if ( !foundChestRegionArray )
     {
@@ -737,7 +734,7 @@ void cip::AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData
     }
 }
 
-cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap,
 										    unsigned char cipRegion, unsigned char cipType)
 {
   ChestConventions conventions;
@@ -795,7 +792,7 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypeBoundingBoxReg
 	  }
 	}
       }
-    
+
     ++it;
     }
 
@@ -833,7 +830,7 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypePaddedBounding
 											  unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ)
 {
   // Get the bounding box region prior to padding
-  cip::LabelMapType::RegionType roi = 
+  cip::LabelMapType::RegionType roi =
     cip::GetLabelMapChestRegionChestTypeBoundingBoxRegion(labelMap, region, type);
 
   if ( roi.GetSize()[0] == 0 && roi.GetSize()[1] == 0 && roi.GetSize()[2] == 0 )
@@ -848,7 +845,7 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypePaddedBounding
     tmpStart[0] = int(roi.GetIndex()[0]) - int(radiusX);
     tmpStart[1] = int(roi.GetIndex()[1]) - int(radiusY);
     tmpStart[2] = int(roi.GetIndex()[2]) - int(radiusZ);
-  
+
   if (tmpStart[0] < 0)
     {
     roiPaddedStart[0] = 0;
@@ -907,7 +904,7 @@ cip::LabelMapType::RegionType cip::GetLabelMapChestRegionChestTypePaddedBounding
     {
     roiPaddedSize[2] = tmpSize[2];
     }
-				      
+
   // Now we can set up the region extractor
   cip::LabelMapType::RegionType roiPadded;
     roiPadded.SetSize(roiPaddedSize);
@@ -937,7 +934,7 @@ void cip::GraftPointDataArrays( vtkSmartPointer< vtkPolyData > fromPoly, vtkSmar
 	      break;
 	    }
 	}
-      
+
       if ( !alreadyPresent )
 	{
 	  toPoly->GetPointData()->AddArray( fromPoly->GetPointData()->GetArray(i) );
@@ -948,9 +945,9 @@ void cip::GraftPointDataArrays( vtkSmartPointer< vtkPolyData > fromPoly, vtkSmar
 double cip::GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface* tps, double* point )
 {
   cipNewtonOptimizer< 2 >::PointType* domainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
-  (*domainParams)[0] = point[0]; 
-  (*domainParams)[1] = point[1]; 
-  
+  (*domainParams)[0] = point[0];
+  (*domainParams)[1] = point[1];
+
   cipParticleToThinPlateSplineSurfaceMetric* tpsMetric = new cipParticleToThinPlateSplineSurfaceMetric();
     tpsMetric->SetThinPlateSplineSurface( tps );
     tpsMetric->SetParticle( point );
@@ -961,10 +958,10 @@ double cip::GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface* tps,
     optimizer->Update();
 
   double distance = vcl_sqrt( optimizer->GetOptimalValue() );
-  
+
   delete domainParams;
   delete tpsMetric;
   delete optimizer;
 
-  return distance ;  
+  return distance ;
 }

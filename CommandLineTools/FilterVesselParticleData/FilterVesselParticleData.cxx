@@ -1,5 +1,5 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program reads vessels particles and filters them
  *  based on connected components analysis. Particles are placed in
  *  the same component provided they are sufficiently close to one
@@ -13,11 +13,11 @@
  *
  *  USAGE:
  *
- *  FilterVesselParticleData  [--spacing \<double\>] [-r \<double\>] 
- *                            [-a \<double\>] [-d \<double\>] 
- *                            [-m \<unsigned short\>] 
- *                            [-s \<unsigned short\>] 
- *                            -o \<string\> -i \<string\> [--] 
+ *  FilterVesselParticleData  [--spacing \<double\>] [-r \<double\>]
+ *                            [-a \<double\>] [-d \<double\>]
+ *                            [-m \<unsigned short\>]
+ *                            [-s \<unsigned short\>]
+ *                            -o \<string\> -i \<string\> [--]
  *                            [--version] [-h]
  *
  *  Where:
@@ -115,8 +115,8 @@ int main( int argc, char *argv[] )
   std::cout << "Writing filtered particles ..." << std::endl;
   vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInput( filter->GetOutput() );
-    filteredWriter->Write();  
+    filteredWriter->SetInputData( filter->GetOutput() );
+    filteredWriter->Write();
 
   std::cout << "DONE." << std::endl;
 

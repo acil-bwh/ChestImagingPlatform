@@ -1,12 +1,12 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program can be used to scour an input particles data
  *  set, removing specified field data arrays.
  *
  *  USAGE:
  *
  *  ScourParticleData  [-n <string>] -o <string> -i <string> [--]
- *                     [--version] [-h] 
+ *                     [--version] [-h]
  *
  *  Where:
  *
@@ -50,12 +50,9 @@ int main( int argc, char *argv[] )
   //
   // Begin by defining the arguments to be passed
   //
-  
+
   //std::vector< std::string > dataArrayNames;
 
-
-
-  
   //
   // Parse the input arguments
   //
@@ -64,9 +61,9 @@ int main( int argc, char *argv[] )
       {
       dataArrayNames.push_back( dataArrayNamesArg.getValue()[i] );
       }*/
-   
+
     PARSE_ARGS;
-    
+
   std::cout << "Reading particles ..." << std::endl;
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
     reader->SetFileName( inParticlesFileName.c_str() );
@@ -114,7 +111,7 @@ int main( int argc, char *argv[] )
       outArrayToInArrayMap[inc] = i;
       inc++;
       }
-    } 
+    }
 
   inc = 0;
   for ( unsigned int p=0; p<numberInputParticles; p++ )
@@ -137,13 +134,12 @@ int main( int argc, char *argv[] )
   std::cout << "Writing filtered particles ..." << std::endl;
   vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInput( outParticles );
-    filteredWriter->Write();  
+    filteredWriter->SetInputData( outParticles );
+    filteredWriter->Write();
 
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
 }
-
 
 #endif

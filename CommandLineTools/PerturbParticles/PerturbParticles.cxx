@@ -1,13 +1,13 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program can used to perturb a particles
- *  dataset. This kind of operation can be useful for 
+ *  dataset. This kind of operation can be useful for
  *  experimentation purposes. Currently, the program simply
  *  translates the particles dataset by a random offset in
  *  the x, y, and z directions. The user can control the
  *  magnitude of the random offset that is used.
- * 
- *  
+ *
+ *
  *  $Date: 2013-03-27 16:46:33 -0400 (Wed, 27 Mar 2013) $
  *  $Revision: 386 $
  *  $Author: jross $
@@ -34,13 +34,11 @@
 
 int main( int argc, char *argv[] )
 {
-
-
   //
   // Parse the input arguments
   //
   PARSE_ARGS;
-    
+
   //
   // Read the poly data
   //
@@ -48,7 +46,7 @@ int main( int argc, char *argv[] )
   vtkSmartPointer< vtkPolyDataReader > reader = vtkSmartPointer< vtkPolyDataReader >::New();
     reader->SetFileName( inFileName.c_str() );
     reader->Update();
-  
+
   unsigned int numberOfPoints = reader->GetOutput()->GetNumberOfPoints();
   unsigned int numberOfFieldDataArrays = reader->GetOutput()->GetFieldData()->GetNumberOfArrays();
   unsigned int numberOfPointDataArrays = reader->GetOutput()->GetPointData()->GetNumberOfArrays();
@@ -56,7 +54,7 @@ int main( int argc, char *argv[] )
   vtkSmartPointer< vtkPoints > outputPoints = vtkSmartPointer< vtkPoints >::New();
 
   srand(time(0));
-  double starter = rand(); 
+  double starter = rand();
   srand(starter);
   double xOffset = offsetMagnitude*(double(rand())/double(RAND_MAX) - 0.5);
   double yOffset = offsetMagnitude*(double(rand())/double(RAND_MAX) - 0.5);
@@ -93,7 +91,7 @@ int main( int argc, char *argv[] )
   for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
       outPolyData->GetPointData()->AddArray( reader->GetOutput()->GetPointData()->GetArray(i) );
-    }    
+    }
 
   //
   // Write the poly data
@@ -101,7 +99,7 @@ int main( int argc, char *argv[] )
   std::cout << "Writing VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );
-    writer->SetInput( outPolyData );
+    writer->SetInputData( outPolyData );
     writer->Update();
 
   std::cout << "DONE." << std::endl;

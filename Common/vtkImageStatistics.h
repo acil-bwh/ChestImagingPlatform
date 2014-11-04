@@ -23,15 +23,15 @@
 #ifndef __vtkImageStatistics_h
 #define __vtkImageStatistics_h
 
-#include "vtkImageToImageFilter.h"
+#include "vtkImageAlgorithm.h"
 #include "vtkCIPCommonConfigure.h"
 
 class vtkImageData;
-class VTK_CIP_COMMON_EXPORT vtkImageStatistics : public vtkImageToImageFilter
+class VTK_CIP_COMMON_EXPORT vtkImageStatistics : public vtkImageAlgorithm
 {
   public:
   static vtkImageStatistics *New();
-  vtkTypeMacro(vtkImageStatistics,vtkImageToImageFilter);
+  vtkTypeMacro(vtkImageStatistics,vtkImageAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -90,17 +90,22 @@ class VTK_CIP_COMMON_EXPORT vtkImageStatistics : public vtkImageToImageFilter
   double Quintile2;
   double Quintile3;
   double Quintile4;
-  double Average;  
-  double Stdev;    
+  double Average;
+  double Stdev;
   double Max;
   double Min;
 
-  void ExecuteInformation(vtkImageData *input, vtkImageData *output);
-  void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
-  void ExecuteData(vtkDataObject *);
+  // convenience method
+  virtual int RequestInformation(vtkInformation* request,
+                                 vtkInformationVector** inputVector,
+                                 vtkInformationVector* outputVector);
+
+  void RequestData(vtkInformation *request,
+                   vtkInformationVector **inputVector,
+                   vtkInformationVector *outputVector,
+                   vtkImageData ***inData, vtkImageData **outData,
+                   int extent[6], int id);
 };
 
 #endif
-
-
 

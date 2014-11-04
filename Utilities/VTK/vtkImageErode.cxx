@@ -2,27 +2,19 @@
 
   Portions (c) Copyright 2005 Brigham and Women's Hospital (BWH) All Rights Reserved.
 
-  See Doc/copyright/copyright.txt
+  See COPYRIGHT.txt
   or http://www.slicer.org/copyright/copyright.txt for details.
 
-  Program:   3D Slicer
-  Module:    $RCSfile: vtkImageErode.cxx,v $
-  Date:      $Date: 2010-02-20 15:39:37 -0500 (Sat, 20 Feb 2010) $
-  Version:   $Revision: 12195 $
-
 =========================================================================auto=*/
+#include <vtkInformation.h>
 #include "vtkImageErode.h"
-#include <time.h>
 #include "vtkObjectFactory.h"
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkVersion.h>
 
-#include "vtkDataArray.h"
-#include "vtkImageData.h"
-#include "vtkInformation.h"
-#include "vtkInformationVector.h"
-#include "vtkObjectFactory.h"
-#include "vtkPointData.h"
-#include "vtkStreamingDemandDrivenPipeline.h"
-
+#ifndef NDEBUG
+#include <ctime>
+#endif
 
 //------------------------------------------------------------------------------
 vtkStandardNewMacro(vtkImageErode);
@@ -52,11 +44,10 @@ vtkImageErode::~vtkImageErode()
 // For every pixel in the foreground, if a neighbor is in the background,
 // then the pixel becomes background.
 template <class T>
-void vtkImageErodeExecute(vtkImageErode *self,
+static void vtkImageErodeExecute(vtkImageErode *self,
                      vtkImageData *inData, T *inPtr,
-                     vtkImageData *outData, T *outPtr,
-                     int outExt[6], int id,
-                     vtkDataArray *inArray)
+                     vtkImageData *outData,
+                     int outExt[6], int id)
 {
   // For looping though output (and input) pixels.
   int outMin0, outMax0, outMin1, outMax1, outMin2, outMax2;
@@ -80,24 +71,36 @@ void vtkImageErodeExecute(vtkImageErode *self,
   T backgnd = (T)(self->GetBackground());
   T foregnd = (T)(self->GetForeground());
   T pix;
+  T *outPtr = (T*)outData->GetScalarPointerForExtent(outExt);
   unsigned long count = 0;
   unsigned long target;
 
+#ifndef NDEBUG
   clock_t tStart, tEnd, tDiff;
   tStart = clock();
+#endif
 
   // Get information to march through data
-  inData->GetIncrements(inInc0, inInc1, inInc2); 
+  inData->GetIncrements(inInc0, inInc1, inInc2);
+#if (VTK_MAJOR_VERSION <= 5)
   self->GetInput()->GetWholeExtent(inImageMin0, inImageMax0, inImageMin1,
     inImageMax1, inImageMin2, inImageMax2);
-  outData->GetIncrements(outInc0, outInc1, outInc2); 
+#else
+  int inExt[6];
+  self->GetInputInformation()->Get(
+    vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), inExt);
+  inImageMin0 = inExt[0]; inImageMax0 = inExt[1];
+  inImageMin1 = inExt[2]; inImageMax1 = inExt[3];
+  inImageMin2 = inExt[4]; inImageMax2 = inExt[5];
+#endif
+  outData->GetIncrements(outInc0, outInc1, outInc2);
   outMin0 = outExt[0];   outMax0 = outExt[1];
   outMin1 = outExt[2];   outMax1 = outExt[3];
   outMin2 = outExt[4];   outMax2 = outExt[5];
   numComps = outData->GetNumberOfScalarComponents();
 
   // Neighborhood around current voxel
-  self->GetRelativeHoodExtent(hoodMin0, hoodMax0, hoodMin1, 
+  self->GetRelativeHoodExtent(hoodMin0, hoodMax0, hoodMin1,
     hoodMax1, hoodMin2, hoodMax2);
 
   // Set up mask info
@@ -105,7 +108,7 @@ void vtkImageErodeExecute(vtkImageErode *self,
   self->GetMaskIncrements(maskInc0, maskInc1, maskInc2);
 
   // in and out should be marching through corresponding pixels.
-  inPtr = static_cast<T *>(inData->GetScalarPointer(outMin0, outMin1, outMin2));
+  inPtr = (T *)(inData->GetScalarPointer(outMin0, outMin1, outMin2));
 
   target = (unsigned long)(numComps*(outMax2-outMin2+1)*
     (outMax1-outMin1+1)/50.0);
@@ -122,7 +125,7 @@ void vtkImageErodeExecute(vtkImageErode *self,
       {
       outPtr1 = outPtr2;
       inPtr1 = inPtr2;
-      for (outIdx1 = outMin1; 
+      for (outIdx1 = outMin1;
         !self->AbortExecute && outIdx1 <= outMax1; outIdx1++)
         {
         if (!id) {
@@ -142,7 +145,7 @@ void vtkImageErodeExecute(vtkImageErode *self,
             {
             // Loop through neighborhood pixels (kernel radius=1)
             // Note: input pointer marches out of bounds.
-            hoodPtr2 = inPtr0 + inInc0*hoodMin0 + inInc1*hoodMin1 
+            hoodPtr2 = inPtr0 + inInc0*hoodMin0 + inInc1*hoodMin1
               + inInc2*hoodMin2;
             maskPtr2 = maskPtr;
             for (hoodIdx2 = hoodMin2; hoodIdx2 <= hoodMax2; ++hoodIdx2)
@@ -194,55 +197,65 @@ void vtkImageErodeExecute(vtkImageErode *self,
     outPtr++;
     }
 
+#ifndef NDEBUG
   tEnd = clock();
   tDiff = tEnd - tStart;
+#endif
+  vtkDebugWithObjectMacro(self, << "tDiff:" << tDiff);
 }
 
 //----------------------------------------------------------------------------
 // Description:
-// This method contains the first switch statement that calls the correct
-// templated function for the input and output region types.
-void vtkImageErode::ThreadedRequestData(
-                          vtkInformation *vtkNotUsed(request),
-                          vtkInformationVector **inputVector,
-                          vtkInformationVector *vtkNotUsed(outputVector),
-                          vtkImageData ***inData,
-                          vtkImageData **outData,
-                          int outExt[6], int id)
+// This method is passed a input and output data, and executes the filter
+// algorithm to fill the output from the input.
+// It just executes a switch statement to call the correct function for
+// the datas data types.
+void vtkImageErode::ThreadedExecute(vtkImageData *inData,
+                    vtkImageData *outData,
+                    int outExt[6], int id)
 {
-  void *inPtr;
-  void *outPtr = outData[0]->GetScalarPointerForExtent(outExt);
+  void *inPtr = inData->GetScalarPointerForExtent(outExt);
 
-  vtkDataArray *inArray = this->GetInputArrayToProcess(0,inputVector);
-  if (id == 0)
-  {
-    outData[0]->GetPointData()->GetScalars()->SetName(inArray->GetName());
-  }
-  
-  inPtr = inArray->GetVoidPointer(0);
-
-  switch (inArray->GetDataType())
+  switch (inData->GetScalarType())
     {
-    vtkTemplateMacro(
-      vtkImageErodeExecute(this,inData[0][0],
-              static_cast<VTK_TT *>(inPtr),
-              outData[0], static_cast<VTK_TT *>(outPtr),
-              outExt, id,inArray));
+  case VTK_DOUBLE:
+    vtkImageErodeExecute(this, inData, (double *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_FLOAT:
+    vtkImageErodeExecute(this, inData, (float *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_LONG:
+    vtkImageErodeExecute(this, inData, (long *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_INT:
+    vtkImageErodeExecute(this, inData, (int *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_UNSIGNED_INT:
+    vtkImageErodeExecute(this, inData, (unsigned int *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_SHORT:
+    vtkImageErodeExecute(this, inData, (short *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_UNSIGNED_SHORT:
+    vtkImageErodeExecute(this, inData, (unsigned short *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_CHAR:
+    vtkImageErodeExecute(this, inData, (char *)(inPtr),
+      outData, outExt, id);
+    break;
+  case VTK_UNSIGNED_CHAR:
+    vtkImageErodeExecute(this, inData, (unsigned char *)(inPtr),
+      outData, outExt, id);
+    break;
   default:
     vtkErrorMacro(<< "Execute: Unknown input ScalarType");
     return;
     }
-}
-
-//----------------------------------------------------------------------------
-void vtkImageErode::PrintSelf(ostream& os, vtkIndent indent)
-{
-  this->Superclass::PrintSelf(os, indent);
-  
-  os << indent << "Background: " << this->Background;
-  os << "\n";
-  
-  os << indent << "Foreground: " << this->Foreground;
-  os << "\n";
-  
 }

@@ -22,7 +22,7 @@
 // creating a table of source objects, each defining a different glyph. If a
 // table of glyphs is defined, then the table can be indexed into by using
 // either scalar value or vector magnitude.
-// 
+//
 // To use this object you'll have to provide an input dataset and a source
 // to define the glyph. Then decide whether you want to scale the glyph and
 // how to scale the glyph (using scalar value or vector magnitude). Next
@@ -31,7 +31,7 @@
 // table of glyphs, or just a single glyph. If you use a table of glyphs,
 // you'll have to decide whether to index into it with scalar value or with
 // vector magnitude.
-// 
+//
 // .SECTION Caveats
 // The scaling of the glyphs is controlled by the ScaleFactor ivar multiplied
 // by the scalar value at each point (if VTK_SCALE_BY_SCALAR is set), or
@@ -42,7 +42,7 @@
 // Clamping ivar. If clamping is enabled, the scale is normalized by the
 // Range ivar, and then multiplied by the scale factor. The normalization
 // process includes clamping the scale value between (0,1).
-// 
+//
 // Typically this object operates on input data with scalar and/or vector
 // data. However, scalar and/or vector aren't necessary, and it can be used
 // to copy data from a single source to each point. In this case the scale
@@ -50,9 +50,9 @@
 //
 // The object uses "vector" data to scale glyphs, orient glyphs, and/or index
 // into a table of glyphs. You can choose to use either the vector or normal
-// data at each input point. Use the method SetVectorModeToUseVector() to use 
+// data at each input point. Use the method SetVectorModeToUseVector() to use
 // the vector input data, and SetVectorModeToUseNormal() to use the
-// normal input data. 
+// normal input data.
 //
 // If you do use a table of glyphs, make sure to set the Range ivar to make
 // sure the index into the glyph table is computed correctly.
@@ -73,7 +73,6 @@
 #define __vtkGlyph3DWithScaling_h
 
 #include "vtkCIPUtilitiesConfigure.h"
-
 #include "vtkPolyDataAlgorithm.h"
 
 #define VTK_SCALE_BY_SCALAR 0
@@ -109,13 +108,18 @@ public:
   static vtkGlyph3DWithScaling *New();
 
   // Description:
-  // Set the source to use for he glyph. Old style. See SetSourceConnection.
-  void SetSource(vtkPolyData *pd) {this->SetSource(0,pd);};
+  // Set the source to use for the glyph.
+  // Note that this method does not connect the pipeline. The algorithm will
+  // work on the input data as it is without updating the producer of the data.
+  // See SetSourceConnection for connecting the pipeline.
+  void SetSourceData(vtkPolyData *pd) {this->SetSourceData(0,pd);};
 
   // Description:
   // Specify a source object at a specified table location.
-  // Old style. See SetSourceConnection.
-  void SetSource(int id, vtkPolyData *pd);
+  // Note that this method does not connect the pipeline. The algorithm will
+  // work on the input data as it is without updating the producer of the data.
+  // See SetSourceConnection for connecting the pipeline.
+  void SetSourceData(int id, vtkPolyData *pd);
 
   // Description:
   // Specify a source object at a specified table location. New style.
@@ -141,18 +145,17 @@ public:
   vtkSetMacro(ScalingX,int);
   vtkBooleanMacro(ScalingX,int);
   vtkGetMacro(ScalingX,int);
-  
+
   // Turn on/off scaling of source geometry along Y
   vtkSetMacro(ScalingY,int);
   vtkBooleanMacro(ScalingY,int);
   vtkGetMacro(ScalingY,int);
-  
+
   // Turn on/off scaling of source geometry along Z
   vtkSetMacro(ScalingZ,int);
   vtkBooleanMacro(ScalingZ,int);
   vtkGetMacro(ScalingZ,int);
-  
-  
+
   // Description:
   // Either scale by scalar or by vector/normal magnitude.
   vtkSetMacro(ScaleMode,int);
@@ -274,6 +277,14 @@ protected:
 
   vtkPolyData* GetSource(int idx, vtkInformationVector *sourceInfo);
 
+  // Description:
+  // Method called in RequestData() to do the actual data processing. This will
+  // glyph the \c input, filling up the \c output based on the filter
+  // parameters.
+  virtual bool Execute(vtkDataSet* input,
+    vtkInformationVector* sourceVector,
+    vtkPolyData* output, int requestedGhostLevel);
+
   vtkPolyData **Source; // Geometry to copy to each point
   int Scaling; // Determine whether scaling of geometry is performed
   int ScalingX;// Determine whether scaling of geometry is performed along X
@@ -305,11 +316,11 @@ inline const char *vtkGlyph3DWithScaling::GetScaleModeAsString(void)
     {
     return "ScaleByScalar";
     }
-  else if ( this->ScaleMode == VTK_SCALE_BY_VECTOR ) 
+  else if ( this->ScaleMode == VTK_SCALE_BY_VECTOR )
     {
     return "ScaleByVector";
     }
-  else 
+  else
     {
     return "DataScalingOff";
     }
@@ -323,11 +334,11 @@ inline const char *vtkGlyph3DWithScaling::GetColorModeAsString(void)
     {
     return "ColorByScalar";
     }
-  else if ( this->ColorMode == VTK_COLOR_BY_VECTOR ) 
+  else if ( this->ColorMode == VTK_COLOR_BY_VECTOR )
     {
     return "ColorByVector";
     }
-  else 
+  else
     {
     return "ColorByScale";
     }
@@ -337,15 +348,15 @@ inline const char *vtkGlyph3DWithScaling::GetColorModeAsString(void)
 // Return the vector mode as a character string.
 inline const char *vtkGlyph3DWithScaling::GetVectorModeAsString(void)
 {
-  if ( this->VectorMode == VTK_USE_VECTOR) 
+  if ( this->VectorMode == VTK_USE_VECTOR)
     {
     return "UseVector";
     }
-  else if ( this->VectorMode == VTK_USE_NORMAL) 
+  else if ( this->VectorMode == VTK_USE_NORMAL)
     {
     return "UseNormal";
     }
-  else 
+  else
     {
     return "VectorRotationOff";
     }
@@ -355,15 +366,15 @@ inline const char *vtkGlyph3DWithScaling::GetVectorModeAsString(void)
 // Return the index mode as a character string.
 inline const char *vtkGlyph3DWithScaling::GetIndexModeAsString(void)
 {
-  if ( this->IndexMode == VTK_INDEXING_OFF) 
+  if ( this->IndexMode == VTK_INDEXING_OFF)
     {
     return "IndexingOff";
     }
-  else if ( this->IndexMode == VTK_INDEXING_BY_SCALAR) 
+  else if ( this->IndexMode == VTK_INDEXING_BY_SCALAR)
     {
     return "IndexingByScalar";
     }
-  else 
+  else
     {
     return "IndexingByVector";
     }

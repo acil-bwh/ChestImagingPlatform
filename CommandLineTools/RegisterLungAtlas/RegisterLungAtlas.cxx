@@ -1,5 +1,5 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program is used to register a lung atlas convex hull
  *  mesh to the bones (ribs) in CT image. It used the iterative
  *  closest point algorithm with an affine transform to perform the
@@ -8,11 +8,11 @@
  *  to the target point set. We assume that the ribs will be the bony
  *  objects that the mesh points will attract to. The final transform
  *  is written to file for image resampling using other tools.
- * 
+ *
  * USAGE:
  *
- *   RegisterLungAtlas.exe  [-i \<int\>] [-b \<short\>] -o \<string\> 
- *                          -m \<string\> -c \<string\> 
+ *   RegisterLungAtlas.exe  [-i \<int\>] [-b \<short\>] -o \<string\>
+ *                          -m \<string\> -c \<string\>
  *                          [--] [--version] [-h]
  *
  * Where:
@@ -43,7 +43,6 @@
  *   -h,  --help
  *     Displays usage information and exits.
  */
-
 
 #include "cipChestConventions.h"
 #include "itkImage.h"
@@ -136,21 +135,20 @@ int main( int argc, char *argv[] )
     {
       vtkSmartPointer< vtkIdList > idList = vtkSmartPointer< vtkIdList >::New();
       idList->InsertNextId( i );
-  
+
       targetArray->InsertNextCell( idList );
     }
-  
+
   target->SetVerts( targetArray );
-  target->Update();
+  //target->Update();
 
   //
   // Now read the convex hull mesh
   //
   std::cout << "Reading convex hull mesh... " << std::endl;
-    
+
   vtkSmartPointer< vtkIterativeClosestPointTransform > icp = vtkSmartPointer< vtkIterativeClosestPointTransform >::New();
-    
-    
+
   std::string extension = vtksys::SystemTools::LowerCase( vtksys::SystemTools::GetFilenameLastExtension(convexHullMeshFileName) );
 
   vtkSmartPointer< vtkPolyDataReader > meshReader = vtkSmartPointer< vtkPolyDataReader >::New();
@@ -172,7 +170,6 @@ int main( int argc, char *argv[] )
 
   std::cout << "Registering..." << std::endl;
 
-    
   icp->SetTarget( target );
   icp->SetStartByMatchingCentroids( true );
   icp->GetLandmarkTransform()->SetModeToAffine();

@@ -1,5 +1,5 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program allows you to extract particles from an
  *  input particles data set using either an input label map or the
  *  particles themselves. Many particles datasets contain a
@@ -11,19 +11,19 @@
  *  'ChestType' or 'ChestRegion' data arrays, the output particles
  *  data set will have these with region and type values specified at
  *  the command line.
- * 
+ *
  *  $Date: 2013-03-25 13:23:52 -0400 (Mon, 25 Mar 2013) $
  *  $Revision: 383 $
  *  $Author: jross $
  *
- *  USAGE: 
+ *  USAGE:
  *
- *  ExtractParticlesFromChestRegionChestType  [-t \<int\>] -r \<int\> 
+ *  ExtractParticlesFromChestRegionChestType  [-t \<int\>] -r \<int\>
  *                                            -o \<string\> -i \<string\>
- *                                            [-l \<string\>]  
+ *                                            [-l \<string\>]
  *                                            [--] [--version] [-h]
  *
- *  Where: 
+ *  Where:
  *
  *   -t \<int\>,  --type \<int\>
  *     Chest type for which to extract particles. If specifying a label map
@@ -72,7 +72,7 @@
 #include "ExtractParticlesFromChestRegionChestTypeCLP.h"
 
 void GetOutputParticlesUsingLabelMap( std::string, std::vector< std::string >, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
-void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string >, std::vector< std::string >, 
+void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string >, std::vector< std::string >,
 							vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 
 int main( int argc, char *argv[] )
@@ -84,7 +84,7 @@ int main( int argc, char *argv[] )
   std::cout << "Reading polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
     particlesReader->SetFileName( inParticlesFileName.c_str() );
-    particlesReader->Update();    
+    particlesReader->Update();
 
   // First make sure that the particles have 'ChestRegion' and 'ChestType' arrays
   cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
@@ -93,7 +93,7 @@ int main( int argc, char *argv[] )
     {
     GetOutputParticlesUsingLabelMap( labelMapFileName, cipRegions, particlesReader->GetOutput(), outParticles );
     }
-  else 
+  else
     {
     GetOutputParticlesUsingChestRegionChestTypeArrays( cipRegions, cipTypes, particlesReader->GetOutput(), outParticles );
     }
@@ -101,7 +101,7 @@ int main( int argc, char *argv[] )
   std::cout << "Writing extracted particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
     particlesWriter->SetFileName( outParticlesFileName.c_str() );
-    particlesWriter->SetInput( outParticles );
+    particlesWriter->SetInputData( outParticles );
     particlesWriter->Write();
 
   std::cout << "DONE." << std::endl;
@@ -109,13 +109,13 @@ int main( int argc, char *argv[] )
   return 0;
 }
 
-// A) If no region is specified, all particles falling within the foreground 
+// A) If no region is specified, all particles falling within the foreground
 // region will be retained. The particles' ChestRegion and ChestType array values
-// will be preserved. 
+// will be preserved.
 // B) If a region is specified, all particles falling inside the specified label
 // map's region will be retained. The particles' ChestType array is preserved, but
-// the ChestRegion is overwritten with the specified desired region 
-void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::string > cipRegions, 
+// the ChestRegion is overwritten with the specified desired region
+void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::string > cipRegions,
 				      vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
 {
   cip::ChestConventions conventions;
@@ -137,7 +137,7 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
   unsigned int numberParticles       = inParticles->GetNumberOfPoints();
 
   vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();
-  
+
   std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
 
   for ( unsigned int i=0; i<numberPointDataArrays; i++ )
@@ -158,30 +158,30 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
     point[0] = inParticles->GetPoint(i)[0];
     point[1] = inParticles->GetPoint(i)[1];
     point[2] = inParticles->GetPoint(i)[2];
-    
-    labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );    
+
+    labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );
 
     unsigned short labelValue   = labelMapReader->GetOutput()->GetPixel( index );
     unsigned char  labelRegion  = conventions.GetChestRegionFromValue( labelValue );
-    
+
     if ( labelValue > 0 )
-      {       
+      {
 	for ( unsigned int k=0; k<cipRegions.size(); k++ )
 	  {
 	    unsigned char cipRegion = conventions.GetChestRegionValueFromName( cipRegions[k] );
 
 	    // If the label map chest region is a subordinate of the requested
-	    // chest region, then add this particle to the output    
-	    if ( cipRegion == (unsigned char)(cip::UNDEFINEDREGION ) || 
+	    // chest region, then add this particle to the output
+	    if ( cipRegion == (unsigned char)(cip::UNDEFINEDREGION ) ||
 		 conventions.CheckSubordinateSuperiorChestRegionRelationship( labelRegion, cipRegion ) )
 	      {
 		outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
-		
+
 		for ( unsigned int j=0; j<numberPointDataArrays; j++ )
 		  {
-		    arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );        
+		    arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
 		  }
-	    
+
 		inc++;
 
 		break;
@@ -189,7 +189,7 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
 	  }
       }
     }
-  
+
   outParticles->SetPoints( outputPoints );
   for ( unsigned int j=0; j<numberPointDataArrays; j++ )
     {
@@ -197,8 +197,7 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
     }
 }
 
-
-void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string > cipRegions, std::vector< std::string > cipTypes, 
+void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string > cipRegions, std::vector< std::string > cipTypes,
 							vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
 {
   cip::ChestConventions conventions;
@@ -206,7 +205,7 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
   unsigned int numberPointDataArrays = inParticles->GetPointData()->GetNumberOfArrays();
   unsigned int numberParticles       = inParticles->GetNumberOfPoints();
 
-  vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();  
+  vtkSmartPointer< vtkPoints > outputPoints  = vtkSmartPointer< vtkPoints >::New();
   std::vector< vtkSmartPointer< vtkFloatArray > > pointArrayVec;
 
   for ( unsigned int i=0; i<numberPointDataArrays; i++ )
@@ -262,6 +261,5 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
     outParticles->GetPointData()->AddArray( pointArrayVec[j] );
     }
 }
-
 
 #endif

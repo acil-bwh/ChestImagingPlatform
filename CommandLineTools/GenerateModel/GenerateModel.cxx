@@ -1,15 +1,15 @@
 /** \file
- *  \ingroup commandLineTools 
- *  \details This program will generate a 3D model from an input 
- *  3D label map using the discrete marching cubes algorithm  
+ *  \ingroup commandLineTools
+ *  \details This program will generate a 3D model from an input
+ *  3D label map using the discrete marching cubes algorithm
  *
- *  USAGE: 
+ *  USAGE:
  *
  *  GenerateModel  [-r \<float\>] [--origSp \<bool\>] [-l \<unsigned short\>]
  *                 [-s \<unsigned int\>] -o \<string\> -i \<string\> [--]
  *                 [--version] [-h]
  *
- *  Where: 
+ *  Where:
  *
  *   -r \<float\>,  --reduc \<float\>
  *     Target reduction fraction for decimation
@@ -44,7 +44,6 @@
  *
  */
 
-
 #include "cipChestConventions.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -68,7 +67,6 @@ namespace
    typedef itk::VTKImageExport< ImageType >       ExportType;
    typedef itk::ImageRegionIterator< ImageType >  IteratorType;
 
-
    void ConnectPipelines( ExportType::Pointer exporter, vtkImageImport* importer )
    {
     importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
@@ -84,20 +82,16 @@ namespace
     importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
     importer->SetCallbackUserData(exporter->GetCallbackUserData());
     }
-
 }
-
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
-  
+
   unsigned int   smootherIterations           = (unsigned int) smootherIterationsTemp;
   unsigned short foregroundLabel              = (unsigned short) foregroundLabelTemp;
 
-    
-
-  std::cout << "Reading mask..." << std::endl;    
+  std::cout << "Reading mask..." << std::endl;
   ReaderType::Pointer maskReader = ReaderType::New();
     maskReader->SetFileName( maskFileName );
   try
@@ -111,7 +105,7 @@ int main( int argc, char *argv[] )
 
     return cip::LABELMAPREADFAILURE;
     }
-  
+
   if ( setStandardOriginAndSpacing == true )
     {
     ImageType::SpacingType spacing;
@@ -129,7 +123,7 @@ int main( int argc, char *argv[] )
     }
 
   IteratorType it( maskReader->GetOutput(), maskReader->GetOutput()->GetBufferedRegion() );
-  
+
   //
   // If the user has not specified a foreground label, find the first
   // non-zero value and use that as the foreground value
@@ -142,13 +136,12 @@ int main( int argc, char *argv[] )
       if ( it.Get() != 0 )
         {
         foregroundLabel = it.Get();
-        
+
         break;
         }
 
       ++it;
       }
-
     }
 
   it.GoToBegin();
@@ -162,24 +155,24 @@ int main( int argc, char *argv[] )
       {
       it.Set( 0 );
       }
-    
+
     ++it;
     }
-  
+
   ExportType::Pointer refExporter = ExportType::New();
     refExporter->SetInput( maskReader->GetOutput() );
-    
+
   vtkSmartPointer< vtkImageImport > refImporter = vtkSmartPointer< vtkImageImport >::New();
 
   ConnectPipelines( refExporter, refImporter );
 
   //
   // Perform marching cubes on the reference binary image and then
-  // decimate 
+  // decimate
   //
   std::cout << "Running marching cubes..." << std::endl;
   vtkSmartPointer< vtkDiscreteMarchingCubes > cubes = vtkSmartPointer< vtkDiscreteMarchingCubes >::New();
-    cubes->SetInput( refImporter->GetOutput() );
+    cubes->SetInputConnection( refImporter->GetOutputPort() );
     cubes->SetValue( 0, 1 );
     cubes->ComputeNormalsOff();
     cubes->ComputeScalarsOff();
@@ -188,7 +181,7 @@ int main( int argc, char *argv[] )
 
   std::cout << "Smoothing model..." << std::endl;
   vtkSmartPointer< vtkWindowedSincPolyDataFilter > smoother = vtkSmartPointer< vtkWindowedSincPolyDataFilter >::New();
-    smoother->SetInput( cubes->GetOutput() );
+    smoother->SetInputConnection( cubes->GetOutputPort() );
     smoother->SetNumberOfIterations( smootherIterations );
     smoother->BoundarySmoothingOff();
     smoother->FeatureEdgeSmoothingOff();
@@ -199,23 +192,23 @@ int main( int argc, char *argv[] )
 
   std::cout << "Decimating model..." << std::endl;
   vtkSmartPointer< vtkDecimatePro > decimator = vtkSmartPointer< vtkDecimatePro >::New();
-    decimator->SetInput( smoother->GetOutput() );
+    decimator->SetInputConnection( smoother->GetOutputPort() );
     decimator->SetTargetReduction( decimatorTargetReduction );
     decimator->PreserveTopologyOn();
     decimator->BoundaryVertexDeletionOff();
     decimator->Update();
 
   vtkSmartPointer< vtkPolyDataNormals > normals = vtkSmartPointer< vtkPolyDataNormals >::New();
-    normals->SetInput( decimator->GetOutput() );
+    normals->SetInputConnection( decimator->GetOutputPort() );
     normals->SetFeatureAngle( 90 );
     normals->Update();
 
   std::cout << "Writing model..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > modelWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
     modelWriter->SetFileName( outputModelFileName.c_str() );
-    modelWriter->SetInput( normals->GetOutput() );
-    modelWriter->Write();  
-    modelWriter->Delete();  
+    modelWriter->SetInputConnection( normals->GetOutputPort() );
+    modelWriter->Write();
+    modelWriter->Delete();
 
   std::cout << "DONE." << std::endl;
 
@@ -237,6 +230,4 @@ int main( int argc, char *argv[] )
 //   importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
 //   importer->SetCallbackUserData(exporter->GetCallbackUserData());
 // }
-
-
 

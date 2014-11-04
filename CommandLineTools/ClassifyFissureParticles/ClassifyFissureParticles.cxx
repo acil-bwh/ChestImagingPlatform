@@ -1,5 +1,5 @@
 /** \file
- *  \ingroup commandLineTools 
+ *  \ingroup commandLineTools
  *  \details This program is used to classify fissure particles using Fischer's
  *  Linear Discriminant. Left or right lung fissure particles are read in
  *  along with lobe boundary shape models for the left or right lung. For
@@ -59,9 +59,9 @@ int main( int argc, char *argv[] )
   std::vector< cipThinPlateSplineSurface* > tpsVec;
 
   if ( rightShapeModelFileName.compare( "NA" ) != 0 )
-    { 
+    {
     std::cout << "Reading right lung shape model..." << std::endl;
-    cip::LobeSurfaceModelIO* rightShapeModelIO = new cip::LobeSurfaceModelIO(); 
+    cip::LobeSurfaceModelIO* rightShapeModelIO = new cip::LobeSurfaceModelIO();
       rightShapeModelIO->SetFileName( rightShapeModelFileName );
     try
       {
@@ -78,14 +78,14 @@ int main( int argc, char *argv[] )
       roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
-    // before the RH (assumed when we execute 'TallyParticleInfo') 
+    // before the RH (assumed when we execute 'TallyParticleInfo')
     tpsVec.push_back( roTPS );
-    
+
     cipThinPlateSplineSurface* rhTPS = new cipThinPlateSplineSurface();
       rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
-    // before the RH (assumed when we execute 'TallyParticleInfo') 
+    // before the RH (assumed when we execute 'TallyParticleInfo')
     tpsVec.push_back( rhTPS );
     }
   else if ( leftShapeModelFileName.compare( "NA" ) != 0 )
@@ -107,7 +107,7 @@ int main( int argc, char *argv[] )
     }
 
   // Now we want to tally the component information, computing the
-  // mean distance and the mean angle with respect to the fit surface 
+  // mean distance and the mean angle with respect to the fit surface
   std::map< unsigned int, PARTICLEINFO >  particleToInfoMap;
 
   TallyParticleInfo( particlesReader->GetOutput(), tpsVec, &particleToInfoMap );
@@ -132,14 +132,14 @@ int main( int argc, char *argv[] )
     std::cout << "Writing right horizontal particles to file..." << std::endl;
     WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, rhClassifiedFileName, static_cast< unsigned char >( cip::HORIZONTALFISSURE ) );
     }
-  
+
   std::cout << "DONE." << std::endl;
 
   return 0;
 }
 
 void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichParticle, cipThinPlateSplineSurface* tps,
-                                  double* distance, double* angle ) 
+                                  double* distance, double* angle )
 {
   cipParticleToThinPlateSplineSurfaceMetric* particleToTPSMetric = new cipParticleToThinPlateSplineSurfaceMetric();
     particleToTPSMetric->SetThinPlateSplineSurface( tps );
@@ -157,22 +157,22 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
   position[0] = particles->GetPoint(whichParticle)[0];
   position[1] = particles->GetPoint(whichParticle)[1];
   position[2] = particles->GetPoint(whichParticle)[2];
-  
+
   orientation[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[0];
   orientation[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[1];
   orientation[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[2];
 
   particleToTPSMetric->SetParticle( position );
 
-  (*domainParams)[0] = position[0]; 
-  (*domainParams)[1] = position[1]; 
+  (*domainParams)[0] = position[0];
+  (*domainParams)[1] = position[1];
 
   newtonOptimizer->SetInitialParameters( domainParams );
   newtonOptimizer->Update();
   newtonOptimizer->GetOptimalParameters( optimalParams );
 
   *distance = vcl_sqrt( newtonOptimizer->GetOptimalValue() );
-  
+
   tps->GetSurfaceNormal( (*optimalParams)[0], (*optimalParams)[1], normal );
 
   *angle = cip::GetAngleBetweenVectors( normal, orientation, true );
@@ -182,7 +182,7 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
 // convention is that if the 'tpsVec' contains surfaces for the right
 // lung, the first element of the vector corresponds to the oblique,
 // and the second element corresponds to the horizontal.
-void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineSurface* > tpsVec, 
+void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineSurface* > tpsVec,
 			std::map< unsigned int, PARTICLEINFO >* particleToInfoMap )
 {
   if ( tpsVec.size() == 1 )
@@ -194,7 +194,7 @@ void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineS
 
       double distance, angle;
       GetParticleDistanceAndAngle( particles, i, tpsVec[0], &distance, &angle );
-      
+
       pInfo.distance.push_back( distance );
       pInfo.angle.push_back( angle );
 
@@ -210,16 +210,16 @@ void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineS
       PARTICLEINFO pInfo;
 
       roSurfaceHeight = tpsVec[0]->GetSurfaceHeight( particles->GetPoint(i)[0], particles->GetPoint(i)[1] );
-      rhSurfaceHeight = tpsVec[1]->GetSurfaceHeight( particles->GetPoint(i)[0], particles->GetPoint(i)[1] ); 
-     
+      rhSurfaceHeight = tpsVec[1]->GetSurfaceHeight( particles->GetPoint(i)[0], particles->GetPoint(i)[1] );
+
       if ( roSurfaceHeight > rhSurfaceHeight )
         {
         double distance, angle;
         GetParticleDistanceAndAngle( particles, i, tpsVec[0], &distance, &angle );
-      
+
         pInfo.distance.push_back( distance );
         pInfo.angle.push_back( angle );
-        
+
         (*particleToInfoMap)[i] = pInfo;
         }
       else
@@ -235,14 +235,14 @@ void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineS
 
         pInfo.distance.push_back( rhDistance );
         pInfo.angle.push_back( rhAngle );
-          
+
         (*particleToInfoMap)[i] = pInfo;
         }
       }
     }
 }
-  
-void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMap, std::vector< cipThinPlateSplineSurface* > tpsVec, 
+
+void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMap, std::vector< cipThinPlateSplineSurface* > tpsVec,
                         double distanceWeight, double angleWeight, double threshold )
 {
   std::map< unsigned int, PARTICLEINFO >::iterator it = (*particleToInfoMap).begin();
@@ -253,7 +253,7 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
 
     for ( unsigned int i=0; i<(*it).second.distance.size(); i++)
       {
-      projection.push_back( distanceWeight*(*it).second.distance[i] + angleWeight*(*it).second.angle[i] ); 
+      projection.push_back( distanceWeight*(*it).second.distance[i] + angleWeight*(*it).second.angle[i] );
       }
 
     if ( projection.size() == 1 )
@@ -298,13 +298,13 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
     }
 }
 
-void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< unsigned int, PARTICLEINFO > particleToInfoMap, 
+void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< unsigned int, PARTICLEINFO > particleToInfoMap,
                           std::string fileName, unsigned char cipType )
 {
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
   vtkPoints* outputPoints  = vtkPoints::New();
-   
+
   std::vector< vtkFloatArray* > arrayVec;
 
   for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
@@ -326,7 +326,7 @@ void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< u
       for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
         {
         arrayVec[k]->InsertTuple( inc, particles->GetPointData()->GetArray(k)->GetTuple(i) );
-        }        
+        }
       inc++;
       }
     }
@@ -340,7 +340,7 @@ void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< u
     }
 
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
-    writer->SetInput( outputParticles );
+    writer->SetInputData( outputParticles );
     writer->SetFileName( fileName.c_str() );
     writer->Write();
 }

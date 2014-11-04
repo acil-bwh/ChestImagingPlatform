@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <string>
 
-
 #include "vtkSmartPointer.h"
 #include "vtkTimerLog.h"
 
@@ -25,22 +24,20 @@
 #include "vtkImageResample.h"
 #include "vtkMatrix4x4.h"
 
-
 int main( int argc, char * argv[] ){
-
   PARSE_ARGS;
 
   // Read in volume inputs
   vtkNRRDReader *readerA = vtkNRRDReader::New();
   readerA->SetFileName(inputVolume.c_str());
   readerA->Update();
- 
+
   vtkMatrix4x4 *rasTovtk = vtkMatrix4x4::New();
   rasTovtk->DeepCopy(readerA->GetRasToIjkMatrix());
   for (int kk=0;kk<3;kk++) {
     rasTovtk->SetElement(kk,1,-1.0*rasTovtk->GetElement(kk,1));
   }
-  
+
   for (int rr=0;rr<4;rr++) {
     for (int cc=0;cc<4;cc++) {
       std::cout<<readerA->GetRasToIjkMatrix()->GetElement(rr,cc)<<" ";
@@ -63,7 +60,7 @@ int main( int argc, char * argv[] ){
     // Downsample in X-Y to speed things up a bit
     applyResampling=1;
 
-    resampling->SetInput(readerA->GetOutput());
+    resampling->SetInputConnection(readerA->GetOutputPort());
     resampling->SetDimensionality(3);
     resampling->SetAxisMagnificationFactor(0,downFactor);
     resampling->SetAxisMagnificationFactor(1,downFactor);
@@ -72,14 +69,12 @@ int main( int argc, char * argv[] ){
     std::cout<<"Downsampling volume..."<<std::endl;
     resampling->Update();
     vol=resampling->GetOutput();
-    
+
     rasTovtk->SetElement(0,0,rasTovtk->GetElement(0,0)*downFactor);
     rasTovtk->SetElement(1,1,rasTovtk->GetElement(1,1)*downFactor);
   } else {
     vol=readerA->GetOutput();
   }
-
-  
 
   // Compute Laplacian to enhance edges
   //vtkImageLaplacian *laplacian = vtkImageLaplacian::New();
@@ -89,14 +84,14 @@ int main( int argc, char * argv[] ){
 
   // Median Filtering to help lung extraction
   vtkImageMedian3D *filter=vtkImageMedian3D::New();
-  filter->SetInput(vol);
+  filter->SetInputData(vol);
   filter->SetKernelSize(3,3,1);
   std::cout<<"Median filtering..."<<std::endl;
   filter->Update();
 
   // combine labels
   vtkSimpleLungMask *lungMask = vtkSimpleLungMask::New();
-  lungMask->SetInput( filter->GetOutput() );
+  lungMask->SetInputData( filter->GetOutput() );
   lungMask->SetTracheaLabel(1);
   lungMask->SetRasToVtk(rasTovtk);
   std::cout<<"Lung mask extraction..."<<std::endl;
@@ -107,7 +102,7 @@ int main( int argc, char * argv[] ){
   resampling = vtkImageResample::New();
 
   if (applyResampling == 1) {
-    resampling->SetInput(lungMask->GetOutput());
+    resampling->SetInputConnection(lungMask->GetOutputPort());
     resampling->SetDimensionality(3);
     for (int ii=0; ii<2;ii++) {
       resampling->SetAxisMagnificationFactor(ii,1/downFactor);
@@ -125,7 +120,7 @@ int main( int argc, char * argv[] ){
   std::cout<<"Reade To Write File"<<endl;
   vtkNRRDWriter *writer = vtkNRRDWriter::New();
   writer->SetFileName(outputVolume.c_str());
-  writer->SetInput( vol );
+  writer->SetInputData( vol );
   readerA->GetRasToIjkMatrix()->Invert();
   writer->SetIJKToRASMatrix( readerA->GetRasToIjkMatrix() );
   writer->Write();
