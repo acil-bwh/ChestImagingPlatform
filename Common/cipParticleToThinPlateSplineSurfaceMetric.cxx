@@ -12,31 +12,16 @@
 #include "cipParticleToThinPlateSplineSurfaceMetric.h"
 #include "itkNumericTraits.h"
 
-
-cipParticleToThinPlateSplineSurfaceMetric
-::cipParticleToThinPlateSplineSurfaceMetric()
-{
-}
-
-
-cipParticleToThinPlateSplineSurfaceMetric
-::~cipParticleToThinPlateSplineSurfaceMetric()
-{
-  delete this->ThinPlateSplineSurface;
-}
-
-
 //
 // Set the TPS surface that will be used for metric computation
 //
-void cipParticleToThinPlateSplineSurfaceMetric::SetThinPlateSplineSurface( cipThinPlateSplineSurface* tpsSurface )
+void cipParticleToThinPlateSplineSurfaceMetric::SetThinPlateSplineSurface( const cipThinPlateSplineSurface& tpsSurface )
 {
-  this->ThinPlateSplineSurface = new cipThinPlateSplineSurface();
   this->ThinPlateSplineSurface = tpsSurface;
 }
 
 
-void cipParticleToThinPlateSplineSurfaceMetric::SetParticle( double* position )
+void cipParticleToThinPlateSplineSurfaceMetric::SetParticle( cip::PointType position )
 {
   this->ParticlePosition[0] = position[0];
   this->ParticlePosition[1] = position[1];
@@ -53,7 +38,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValue( PointType* params ) 
   double s[3];
     s[0] = (*params)[0];
     s[1] = (*params)[1];
-    s[2] = this->ThinPlateSplineSurface->GetSurfaceHeight( s[0], s[1] );
+    s[2] = this->ThinPlateSplineSurface.GetSurfaceHeight( s[0], s[1] );
 
   double value = std::pow(this->ParticlePosition[0]-s[0],2) + std::pow(this->ParticlePosition[1]-s[1],2) + 
     std::pow(this->ParticlePosition[2]-s[2],2);
@@ -80,12 +65,12 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueAndGradient( PointType
   double s[3];
     s[0] = (*params)[0];
     s[1] = (*params)[1];
-    s[2] = this->ThinPlateSplineSurface->GetSurfaceHeight( s[0], s[1] );
+    s[2] = this->ThinPlateSplineSurface.GetSurfaceHeight( s[0], s[1] );
 
   double value = std::pow(s[0]-p[0],2) + std::pow(s[1]-p[1],2) + std::pow(s[2]-p[2],2);
 
   double n[3];
-  this->ThinPlateSplineSurface->GetNonNormalizedSurfaceNormal( s[0], s[1], n );
+  this->ThinPlateSplineSurface.GetNonNormalizedSurfaceNormal( s[0], s[1], n );
 
   (*gradient)[0] = 2.0*(s[0] - p[0] - n[0]*(s[2]-p[2])); 
   (*gradient)[1] = 2.0*(s[1] - p[1] - n[1]*(s[2]-p[2]));  
@@ -112,7 +97,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
   double s[3];
     s[0] = (*params)[0];
     s[1] = (*params)[1];
-    s[2] = this->ThinPlateSplineSurface->GetSurfaceHeight( s[0], s[1] );
+    s[2] = this->ThinPlateSplineSurface.GetSurfaceHeight( s[0], s[1] );
 
   double value = std::pow(s[0]-p[0],2) + std::pow(s[1]-p[1],2) + std::pow(s[2]-p[2],2);
 
@@ -120,7 +105,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
   // Compute the gradient
   //
   double n[3];
-  this->ThinPlateSplineSurface->GetNonNormalizedSurfaceNormal( s[0], s[1], n );
+  this->ThinPlateSplineSurface.GetNonNormalizedSurfaceNormal( s[0], s[1], n );
 
   (*gradient)[0] = 2.0*(s[0] - p[0] - n[0]*(s[2]-p[2])); 
   (*gradient)[1] = 2.0*(s[1] - p[1] - n[1]*(s[2]-p[2]));  
@@ -130,17 +115,17 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
   // associated with the TPS surface, and they are needed for the
   // Hessian computation
   //
-  const std::vector< double >*        w          = this->ThinPlateSplineSurface->GetWVector();
-  const std::vector< const double* >* surfPoints = this->ThinPlateSplineSurface->GetSurfacePoints();
+  const std::vector< double > w = this->ThinPlateSplineSurface.GetWVector();
+  const std::vector< cip::PointType > surfPoints = this->ThinPlateSplineSurface.GetSurfacePoints();
 
   double r, drdx, drdy;
   double d3dx   = 0.0;
   double d14dy  = 0.0;
   double d19dy  = 0.0;
-  for ( unsigned int i=0; i<w->size(); i++ )
+  for ( unsigned int i=0; i<w.size(); i++ )
     {
-    double xDiffi = s[0] - (*surfPoints)[i][0];
-    double yDiffi = s[1] - (*surfPoints)[i][1];
+    double xDiffi = s[0] - surfPoints[i][0];
+    double yDiffi = s[1] - surfPoints[i][1];
 
     r    = vcl_sqrt( std::pow(xDiffi,2) + std::pow(yDiffi,2) );
     drdx = xDiffi/r;
@@ -158,9 +143,9 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
 
     double d11dy = -xDiffi*(yDiffi/r)/std::pow(r,2);
 
-    d19dy -= (*w)[i]*( rrGroup*d11dy + drdx*d10dy );
-    d3dx  -= (*w)[i]*( rrGroup*d11dx + drdx*d10dx );
-    d14dy -= (*w)[i]*( rrGroup*d16dy + (yDiffi/r)*d10dy );
+    d19dy -= w[i]*( rrGroup*d11dy + drdx*d10dy );
+    d3dx  -= w[i]*( rrGroup*d11dx + drdx*d10dx );
+    d14dy -= w[i]*( rrGroup*d16dy + (yDiffi/r)*d10dy );
     }
 
   double zDiff = (s[2]-p[2]);
@@ -202,6 +187,5 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetVectorMagnitude( const doub
 
   return magnitude;
 }
-
 
 #endif

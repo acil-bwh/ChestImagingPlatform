@@ -48,7 +48,7 @@ public:
   std::string GetChestTypeName( unsigned int ) const;
 
   /** */
-  void GetLocation( unsigned int, double* ) const;
+  void GetLocation( unsigned int, cip::PointType& ) const;
 
   /** */
   void GetLocation( unsigned int, unsigned int* ) const;

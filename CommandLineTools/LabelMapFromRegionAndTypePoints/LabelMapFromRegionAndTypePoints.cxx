@@ -83,7 +83,7 @@ int main( int argc, char *argv[] )
 
   for ( unsigned int i=0; i<pointsReader->GetOutput()->GetNumberOfTuples(); i++ )
     {
-    double* point = new double[3];
+    cip::PointType point(3);
     cip::LabelMapType::IndexType index;
 
     pointsReader->GetOutput()->GetLocation( i, point );

@@ -89,17 +89,17 @@ public:
   /** Physical point coorindates indicating the locations of points along 
    *  the left oblique fissure (along the boundary separating the left upper 
    *  lobe from the left lower lobe). */
-  void SetLeftObliqueFissurePoints( std::vector< double* >* );
+  void SetLeftObliqueFissurePoints( const std::vector< cip::PointType >& );
 
   /** Physical point coordinates indicating the locations of points along 
    *  the right oblique fissure (along the boundary separating the right upper 
    *  lobe from the right middle and lower lobes). */
-  void SetRightObliqueFissurePoints( std::vector< double* >* );
+  void SetRightObliqueFissurePoints( const std::vector< cip::PointType >& );
 
   /** Physical point coordinates indicating the locations of points along 
    *  the right horizontal fissure (along the boundary separating the right 
    *  middle lobe from the right upper lobe). */
-  void SetRightHorizontalFissurePoints( std::vector< double* >* );
+  void SetRightHorizontalFissurePoints( const std::vector< cip::PointType >& );
 
   /** Set/Get the smoothing value to use when creating the TPS surfaces from 
    *  points. Default is 0.1 */
@@ -162,9 +162,9 @@ private:
   std::vector< InputImageType::IndexType >  RightObliqueFissureIndices;
   std::vector< InputImageType::IndexType >  RightHorizontalFissureIndices;
 
-  std::vector< double* >  LeftObliqueFissurePoints;
-  std::vector< double* >  RightObliqueFissurePoints;
-  std::vector< double* >  RightHorizontalFissurePoints;
+  std::vector< cip::PointType >  LeftObliqueFissurePoints;
+  std::vector< cip::PointType >  RightObliqueFissurePoints;
+  std::vector< cip::PointType >  RightHorizontalFissurePoints;
 
   double m_ThinPlateSplineSurfaceFromPointsLambda;
 

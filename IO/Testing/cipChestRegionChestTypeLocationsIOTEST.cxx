@@ -354,7 +354,8 @@ int main( int argc, char* argv[] )
     {      
       unsigned char cipRegion = regionsTypesIO.GetOutput()->GetChestRegionValue( i );
       unsigned char cipType   = regionsTypesIO.GetOutput()->GetChestTypeValue( i );
-      double* point = new double[3];
+
+      cip::PointType point(3);
       regionsTypesIO.GetOutput()->GetLocation( i, point );
 
       if ( cipRegion != gtRegions[i] || cipType != gtTypes[i] || gtPoints[i][0] != point[0] || 
@@ -363,7 +364,6 @@ int main( int argc, char* argv[] )
 	  std::cout << "FAILED" << std::endl;
 	  return 1;
 	}
-      delete[] point;
     }
   
   std::cout << "PASSED" << std::endl;

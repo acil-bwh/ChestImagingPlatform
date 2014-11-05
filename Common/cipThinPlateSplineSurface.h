@@ -19,19 +19,19 @@
 
 #include <vector>
 #include "itkImage.h"
+#include "cipChestConventions.h"
 
 class cipThinPlateSplineSurface
 {
 public:
-  ~cipThinPlateSplineSurface();
   cipThinPlateSplineSurface();
+  cipThinPlateSplineSurface( const std::vector< cip::PointType >& );
+  ~cipThinPlateSplineSurface() {};
 
-  cipThinPlateSplineSurface( const std::vector< double* >* const );
-
-  double GetSurfaceHeight( double, double );
+  double GetSurfaceHeight( double, double ) const;
 
   /**  */
-  void SetSurfacePoints( const std::vector< double* >* const );
+  void SetSurfacePoints( const std::vector< cip::PointType >& );
 
   /**  */
   void SetSurfacePointWeights( const std::vector< double >* const );
@@ -40,10 +40,10 @@ public:
   void ComputeThinPlateSplineVectors();
 
   /**  */
-  void GetSurfaceNormal( double, double, double* );
+  void GetSurfaceNormal( double x, double y, double* normal ) const;
 
   /**  */
-  void GetNonNormalizedSurfaceNormal( double, double, double* );
+  void GetNonNormalizedSurfaceNormal( double, double, double* ) const;
 
   /** lambda is a parameter that controls smoothing. If set to 0,
       interpolation will be exact. As lambda increases, the TPS
@@ -52,47 +52,44 @@ public:
   void SetLambda( double );
     
   /** */
-  double GetLambda()
+  double GetLambda() const
     {
       return m_Lambda;
     }
 
   /** */
-  double GetBendingEnergy();
+  double GetBendingEnergy() const;
 
   /** */
-  const std::vector< double >* GetWVector()
+  const std::vector< double >& GetWVector() const
     {
       return m_w;
     };
 
   /** */
-  const std::vector< double >* GetAVector()
+  const std::vector< double >& GetAVector() const
     {
       return m_a;
     };
 
   /** */
-  const std::vector< const double* >* GetSurfacePoints()
+  const std::vector< cip::PointType >& GetSurfacePoints() const
     {
       return m_SurfacePoints;
     };
 
   /** */
-  const unsigned int GetNumberSurfacePoints()
+  const unsigned int GetNumberSurfacePoints() const
     {
-      return m_SurfacePoints->size();
+      return m_NumberSurfacePoints;
     };
 
 private:
-  void Init();
-
-  std::vector< double >*         m_a;
-  std::vector< double >*         m_w;
-  std::vector< const double* >*  m_SurfacePoints;
-  std::vector< double >*         m_SurfacePointWeights;
+  std::vector< double >         m_a;
+  std::vector< double >         m_w;
+  std::vector< cip::PointType > m_SurfacePoints;
+  std::vector< double >         m_SurfacePointWeights;
   double m_Lambda;
-
   unsigned int m_NumberSurfacePoints;
 };
 

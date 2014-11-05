@@ -164,7 +164,7 @@ void cipNewtonOptimizer< Dimension >::Update()
   // initialize OptimalValue (it will be updated during the
   // optimization below)
   //
-  this->OptimalValue = this->Metric->GetValueGradientAndHessian( params, g, &h );
+  this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
 
   double gradMag = vcl_sqrt( dot_product(*g,*g) );
 
@@ -199,7 +199,7 @@ void cipNewtonOptimizer< Dimension >::Update()
     // each iteration, but upon convergence they will be set to the
     // final ("optimal") values
     //
-    this->OptimalValue = this->Metric->GetValueGradientAndHessian( params, g, &h );
+    this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
     
     (*this->OptimalParams) = (*params);
     
@@ -230,7 +230,7 @@ double cipNewtonOptimizer< Dimension >::LineSearch( PointType* x0, VectorType* p
   // Get the metric value, 'f0', and the gradient, 'g', at initial
   // point, 'x0'.
   //
-  double f0 = this->Metric->GetValueAndGradient( x0, g ); 
+  double f0 = this->Metric.GetValueAndGradient( x0, g ); 
 
   //
   // Compute the following product to save a few computations 
@@ -249,7 +249,7 @@ double cipNewtonOptimizer< Dimension >::LineSearch( PointType* x0, VectorType* p
   PointType* params = new PointType;
   (*params) = (*x0) + a*(*p);
 
-  double value = this->Metric->GetValueAndGradient( params, g );
+  double value = this->Metric.GetValueAndGradient( params, g );
   
   while ( value > f0 + this->SufficientDecreaseFactor*a*g0p )
     {
@@ -257,7 +257,7 @@ double cipNewtonOptimizer< Dimension >::LineSearch( PointType* x0, VectorType* p
 
     (*params) = (*x0) + a*(*p);
 
-    value = this->Metric->GetValueAndGradient( params, g );
+    value = this->Metric.GetValueAndGradient( params, g );
     }
 
   double aOpt = a;

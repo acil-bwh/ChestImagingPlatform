@@ -945,28 +945,52 @@ void cip::GraftPointDataArrays( vtkSmartPointer< vtkPolyData > fromPoly, vtkSmar
     }
 }
 
-double cip::GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface* tps, double* point )
+double cip::GetDistanceToThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point )
 {
-  cipNewtonOptimizer< 2 >::PointType* domainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
+  cipNewtonOptimizer< 2 >::PointType* domainParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   (*domainParams)[0] = point[0]; 
   (*domainParams)[1] = point[1]; 
   
-  cipParticleToThinPlateSplineSurfaceMetric* tpsMetric = new cipParticleToThinPlateSplineSurfaceMetric();
-    tpsMetric->SetThinPlateSplineSurface( tps );
-    tpsMetric->SetParticle( point );
+  cipParticleToThinPlateSplineSurfaceMetric tpsMetric;
+    tpsMetric.SetThinPlateSplineSurface( tps );
+    tpsMetric.SetParticle( point );
 
-  cipNewtonOptimizer< 2 >* optimizer = new cipNewtonOptimizer< 2 >();
-    optimizer->SetMetric( tpsMetric );
-    optimizer->SetInitialParameters( domainParams );
-    optimizer->Update();
+  cipNewtonOptimizer< 2 > optimizer;
+    optimizer.SetMetric( tpsMetric );
+    optimizer.SetInitialParameters( domainParams );
+    optimizer.Update();
 
-  double distance = vcl_sqrt( optimizer->GetOptimalValue() );
+  double distance = vcl_sqrt( optimizer.GetOptimalValue() );
   
   delete domainParams;
-  delete tpsMetric;
-  delete optimizer;
 
   return distance;  
+}
+
+void cip::GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, double* tpsPoint )
+{
+  cipNewtonOptimizer< 2 >::PointType* optimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
+
+  cipNewtonOptimizer< 2 >::PointType* domainParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
+  (*domainParams)[0] = point[0]; 
+  (*domainParams)[1] = point[1]; 
+  
+  cipParticleToThinPlateSplineSurfaceMetric tpsMetric;
+    tpsMetric.SetThinPlateSplineSurface( tps );
+    tpsMetric.SetParticle( point );
+
+  cipNewtonOptimizer< 2 > optimizer;
+    optimizer.SetMetric( tpsMetric );
+    optimizer.SetInitialParameters( domainParams );
+    optimizer.Update();
+    optimizer.GetOptimalParameters( optimalParams );
+
+  tpsPoint[0] = (*optimalParams)[0];
+  tpsPoint[1] = (*optimalParams)[1];
+  tpsPoint[2] = tps.GetSurfaceHeight( tpsPoint[0], tpsPoint[1] );
+
+  delete optimalParams;
+  delete domainParams;
 }
 
 void cip::TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData > inPolyData, vtkSmartPointer< vtkPolyData > outPolyData,

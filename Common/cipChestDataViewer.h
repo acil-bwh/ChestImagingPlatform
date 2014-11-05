@@ -59,15 +59,15 @@ public:
 
   void SetBackgroundColor( double, double, double );
 
-  void SetLeftObliqueFissurePoints( const std::vector< double* >* const, std::string );
+  void SetLeftObliqueFissurePoints( const std::vector< cip::PointType >&, std::string );
   void SetLeftObliqueFissurePCAModeAndVariance( std::vector< double >, double, unsigned int );
   void ModifyLeftObliqueFissureByPCAMode( unsigned int, double );
 
-  void SetRightObliqueFissurePoints( const std::vector< double* >* const, std::string );
+  void SetRightObliqueFissurePoints( const std::vector< cip::PointType >&, std::string );
   void SetRightObliqueFissurePCAModeAndVariance( std::vector< double >, double, unsigned int );
   void ModifyRightObliqueFissureByPCAMode( unsigned int, double );
 
-  void SetRightHorizontalFissurePoints( const std::vector< double* >* const, std::string );
+  void SetRightHorizontalFissurePoints( const std::vector< cip::PointType >&, std::string );
   void SetRightHorizontalFissurePCAModeAndVariance( std::vector< double >, double, unsigned int );
   void ModifyRightHorizontalFissureByPCAMode( unsigned int, double );
 
@@ -151,9 +151,9 @@ private:
 
   LabelMapImageType::Pointer          LabelMapImage;
 
-  std::vector< double* >  LeftObliqueFissurePoints;
-  std::vector< double* >  RightObliqueFissurePoints;
-  std::vector< double* >  RightHorizontalFissurePoints;
+  std::vector< cip::PointType >  LeftObliqueFissurePoints;
+  std::vector< cip::PointType >  RightObliqueFissurePoints;
+  std::vector< cip::PointType >  RightHorizontalFissurePoints;
 
   std::vector< double >                  LeftObliqueFissurePCAVariances;
   std::vector< std::vector< double > >   LeftObliqueFissurePCAModes;

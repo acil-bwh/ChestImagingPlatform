@@ -35,13 +35,13 @@
 
 typedef itk::ImageRegionIterator< cip::LabelMapType > LabelMapIteratorType;
 
-double GetDistanceFromPointToThinPlateSplineSurface( double, double, double, cipThinPlateSplineSurface* );
+double GetDistanceFromPointToThinPlateSplineSurface( double, double, double, const cipThinPlateSplineSurface& );
 void PrintAndComputeDiceScores( cip::LabelMapType::Pointer, cip::LabelMapType::Pointer );
 void PrintStats( std::vector< double > );
-void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, 
-					      cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, 
+void ComputeAndPrintFullSurfaceDiscrepancies( const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&, 
+					      const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&, 
 					      cip::LabelMapType::Pointer );
-void ComputeAndPrintPointWiseSurfaceDiscrepancies( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, 
+void ComputeAndPrintPointWiseSurfaceDiscrepancies( const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&, 
 						   vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData >, 
 						   vtkSmartPointer< vtkPolyData >, cip::LabelMapType::Pointer );
 
@@ -166,9 +166,9 @@ int main( int argc, char *argv[] )
   // ground truth boundaries between lobes. The GT particles are phyical points
   // on those boundaries that identify fissure locations only.
   //
-  std::vector< double* > loGTPoints;
-  std::vector< double* > roGTPoints;
-  std::vector< double* > rhGTPoints;
+  std::vector< cip::PointType > loGTPoints;
+  std::vector< cip::PointType > roGTPoints;
+  std::vector< cip::PointType > rhGTPoints;
 
   //
   // Loop through the points and identify those (if any) that
@@ -186,8 +186,7 @@ int main( int argc, char *argv[] )
 	{
 	  if ( cipType == static_cast< unsigned char >( cip::OBLIQUEFISSURE ) )
 	    {
-	      double* location = new double[3];
-	      
+	      cip::PointType location(3);	      
 	      regionTypePointsIO.GetOutput()->GetLocation( i, location );
 	      loGTPoints.push_back( location );
 	    }
@@ -196,15 +195,13 @@ int main( int argc, char *argv[] )
         {
         if ( cipType == static_cast< unsigned char >( cip::OBLIQUEFISSURE ) )
           {
-	    double* location = new double[3];
-	    
+	    cip::PointType location(3);
 	    regionTypePointsIO.GetOutput()->GetLocation( i, location );
 	    roGTPoints.push_back( location );
           }
         else if ( cipType == static_cast< unsigned char >( cip::HORIZONTALFISSURE ) )
           {
-	    double* location = new double[3];
-
+	    cip::PointType location(3);
 	    regionTypePointsIO.GetOutput()->GetLocation( i, location );
 	    rhGTPoints.push_back( location );
           }
@@ -215,69 +212,69 @@ int main( int argc, char *argv[] )
   // Now create the ground truth TPS boundary surfaces
   // 
   std::cout << "Defining ground truth right oblique TPS surface..." << std::endl;
-  cipThinPlateSplineSurface* roGTTPS = new cipThinPlateSplineSurface;
-    roGTTPS->SetLambda( lambda );
-    roGTTPS->SetSurfacePoints( &roGTPoints );
+  cipThinPlateSplineSurface roGTTPS;
+    roGTTPS.SetLambda( lambda );
+    roGTTPS.SetSurfacePoints( roGTPoints );
 
   std::cout << "Defining ground truth left oblique TPS surface..." << std::endl;
-  cipThinPlateSplineSurface* loGTTPS = new cipThinPlateSplineSurface;
-    loGTTPS->SetLambda( lambda );
-    loGTTPS->SetSurfacePoints( &loGTPoints );
+  cipThinPlateSplineSurface loGTTPS;
+    loGTTPS.SetLambda( lambda );
+    loGTTPS.SetSurfacePoints( loGTPoints );
 
   std::cout << "Defining ground truth right horizontal TPS surface..." << std::endl;
-  cipThinPlateSplineSurface* rhGTTPS = new cipThinPlateSplineSurface;
-    rhGTTPS->SetLambda( lambda );
-    rhGTTPS->SetSurfacePoints( &rhGTPoints );
+  cipThinPlateSplineSurface rhGTTPS;
+    rhGTTPS.SetLambda( lambda );
+    rhGTTPS.SetSurfacePoints( rhGTPoints );
 
   //
   // Now create the TPS boundary surfaces corresponding to the automatic 
   // segmentation result
   // 
-  std::vector< double* > loPoints;
-  std::vector< double* > roPoints;
-  std::vector< double* > rhPoints;
+  std::vector< cip::PointType > loPoints;
+  std::vector< cip::PointType > roPoints;
+  std::vector< cip::PointType > rhPoints;
   for ( unsigned int i=0; i<roParticlesReader->GetOutput()->GetNumberOfPoints(); i++ )
     {
-      double* point = new double[3];
-      point[0] = roParticlesReader->GetOutput()->GetPoint(i)[0];
-      point[1] = roParticlesReader->GetOutput()->GetPoint(i)[1];
-      point[2] = roParticlesReader->GetOutput()->GetPoint(i)[2];
+      cip::PointType point(3);
+        point[0] = roParticlesReader->GetOutput()->GetPoint(i)[0];
+	point[1] = roParticlesReader->GetOutput()->GetPoint(i)[1];
+	point[2] = roParticlesReader->GetOutput()->GetPoint(i)[2];
 
       roPoints.push_back( point );
     }
   for ( unsigned int i=0; i<loParticlesReader->GetOutput()->GetNumberOfPoints(); i++ )
     {
-      double* point = new double[3];
-      point[0] = loParticlesReader->GetOutput()->GetPoint(i)[0];
-      point[1] = loParticlesReader->GetOutput()->GetPoint(i)[1];
-      point[2] = loParticlesReader->GetOutput()->GetPoint(i)[2];
+      cip::PointType point(3);
+        point[0] = loParticlesReader->GetOutput()->GetPoint(i)[0];
+	point[1] = loParticlesReader->GetOutput()->GetPoint(i)[1];
+	point[2] = loParticlesReader->GetOutput()->GetPoint(i)[2];
 
       loPoints.push_back( point );
     }
   for ( unsigned int i=0; i<rhParticlesReader->GetOutput()->GetNumberOfPoints(); i++ )
     {
-      double* point = new double[3];
-      point[0] = rhParticlesReader->GetOutput()->GetPoint(i)[0];
-      point[1] = rhParticlesReader->GetOutput()->GetPoint(i)[1];
-      point[2] = rhParticlesReader->GetOutput()->GetPoint(i)[2];
-
+      cip::PointType point(3);
+        point[0] = rhParticlesReader->GetOutput()->GetPoint(i)[0];
+	point[1] = rhParticlesReader->GetOutput()->GetPoint(i)[1];
+	point[2] = rhParticlesReader->GetOutput()->GetPoint(i)[2];
+	
       rhPoints.push_back( point );
     }
 
   std::cout << "Defining right oblique TPS surface..." << std::endl;
-  cipThinPlateSplineSurface* roTPS = new cipThinPlateSplineSurface;
-    roTPS->SetLambda( lambda );
-    roTPS->SetSurfacePoints( &roPoints );
+  cipThinPlateSplineSurface roTPS;
+    roTPS.SetLambda( lambda );
+    roTPS.SetSurfacePoints( roPoints );
 
   std::cout << "Defining left oblique TPS surface..." << std::endl;
-  cipThinPlateSplineSurface* loTPS = new cipThinPlateSplineSurface;
-    loTPS->SetLambda( lambda );
-    loTPS->SetSurfacePoints( &loPoints );
+  cipThinPlateSplineSurface loTPS;
+    loTPS.SetLambda( lambda );
+    loTPS.SetSurfacePoints( loPoints );
 
   std::cout << "Defining right horizontal TPS surface..." << std::endl;
-  cipThinPlateSplineSurface* rhTPS = new cipThinPlateSplineSurface;
-    rhTPS->SetLambda( lambda );
-    rhTPS->SetSurfacePoints( &rhPoints );
+  cipThinPlateSplineSurface rhTPS;
+    rhTPS.SetLambda( lambda );
+    rhTPS.SetSurfacePoints( rhPoints );
 
   //
   // At this point we have the TPS surfaces we need: for the ground truth and
@@ -427,17 +424,17 @@ void PrintStats( std::vector< double > distances )
 }
 
 
-double GetDistanceFromPointToThinPlateSplineSurface( double x, double y, double z, cipThinPlateSplineSurface* tps )
+double GetDistanceFromPointToThinPlateSplineSurface( double x, double y, double z, const cipThinPlateSplineSurface& tps )
 {
-  cipParticleToThinPlateSplineSurfaceMetric* particleToTPSMetric = new cipParticleToThinPlateSplineSurfaceMetric();
-    particleToTPSMetric->SetThinPlateSplineSurface( tps );
+  cipParticleToThinPlateSplineSurfaceMetric particleToTPSMetric;
+    particleToTPSMetric.SetThinPlateSplineSurface( tps );
 
   cipNewtonOptimizer< 2 >* optimizer = new cipNewtonOptimizer< 2 >();
     optimizer->SetMetric( particleToTPSMetric );
 
   cipNewtonOptimizer< 2 >::PointType* domainParams  = new cipNewtonOptimizer< 2 >::PointType( 2 );
 
-  double* position = new double[3];
+  cip::PointType position(3);
     position[0] = x;
     position[1] = y;
     position[2] = z;
@@ -446,7 +443,7 @@ double GetDistanceFromPointToThinPlateSplineSurface( double x, double y, double 
   // Determine the domain location for which the particle is closest
   // to the TPS surface
   //
-  particleToTPSMetric->SetParticle( position );
+  particleToTPSMetric.SetParticle( position );
 
   //
   // The particle's x, and y location are a good place to initialize
@@ -472,7 +469,6 @@ double GetDistanceFromPointToThinPlateSplineSurface( double x, double y, double 
 
 //  delete particleToTPSMetric;  
   delete optimizer;
-  delete position;
 
   return distance;
 }
@@ -580,8 +576,8 @@ void PrintAndComputeDiceScores( cip::LabelMapType::Pointer gtLabelMap, cip::Labe
 }
 
 
-void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, cipThinPlateSplineSurface* rhTPS, cipThinPlateSplineSurface* loTPS, 
-					      cipThinPlateSplineSurface* roGTTPS, cipThinPlateSplineSurface* rhGTTPS, cipThinPlateSplineSurface* loGTTPS, 
+void ComputeAndPrintFullSurfaceDiscrepancies( const cipThinPlateSplineSurface& roTPS, const cipThinPlateSplineSurface& rhTPS, const cipThinPlateSplineSurface& loTPS, 
+					      const cipThinPlateSplineSurface& roGTTPS, const cipThinPlateSplineSurface& rhGTTPS, const cipThinPlateSplineSurface& loGTTPS, 
 					      cip::LabelMapType::Pointer labelMap )
 {
   cip::ChestConventions conventions;
@@ -611,9 +607,9 @@ void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, 
 	{
 	  point[1] = origin[1] + static_cast< double >(y)*spacing[1];
 
-	  loHeight = loTPS->GetSurfaceHeight( point[0], point[1] );
-	  roHeight = roTPS->GetSurfaceHeight( point[0], point[1] );
-	  rhHeight = rhTPS->GetSurfaceHeight( point[0], point[1] );
+	  loHeight = loTPS.GetSurfaceHeight( point[0], point[1] );
+	  roHeight = roTPS.GetSurfaceHeight( point[0], point[1] );
+	  rhHeight = rhTPS.GetSurfaceHeight( point[0], point[1] );
 
 	  point[2] = loHeight;
 	  labelMap->TransformPhysicalPointToIndex( point, index );
@@ -669,7 +665,7 @@ void ComputeAndPrintFullSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, 
 }
 
 
-void ComputeAndPrintPointWiseSurfaceDiscrepancies( cipThinPlateSplineSurface* roTPS, cipThinPlateSplineSurface* rhTPS, cipThinPlateSplineSurface* loTPS, 
+void ComputeAndPrintPointWiseSurfaceDiscrepancies( const cipThinPlateSplineSurface& roTPS, const cipThinPlateSplineSurface& rhTPS, const cipThinPlateSplineSurface& loTPS, 
 						   vtkSmartPointer< vtkPolyData > roParticles, vtkSmartPointer< vtkPolyData > rhParticles, 
 						   vtkSmartPointer< vtkPolyData > loParticles, cip::LabelMapType::Pointer labelMap )
 {

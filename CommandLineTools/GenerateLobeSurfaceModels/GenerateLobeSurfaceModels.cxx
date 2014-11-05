@@ -295,28 +295,28 @@ int main( int argc, char *argv[] )
   // Now create shape models for each of the three lobe boundaries. To do this we need to 
   // collect the domain locations and mean vector into a single collection of points
   // for each of the three boundaries
-  std::vector< double* >* rightMeanSurfacePoints = new std::vector< double* >;
+  std::vector< cip::PointType > rightMeanSurfacePoints;
   for ( unsigned int i=0; i<rightShapePCA.meanVec.size(); i++ )
     {
       unsigned int index = i%(rightShapePCA.meanVec.size()/2);
 
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = rightDomainPatternPoints[index][0];
   	point[1] = rightDomainPatternPoints[index][1];
   	point[2] = rightShapePCA.meanVec[i];
 
-      rightMeanSurfacePoints->push_back( point );
+      rightMeanSurfacePoints.push_back( point );
     }
 
-  std::vector< double* >* loMeanSurfacePoints = new std::vector< double* >;
+  std::vector< cip::PointType > loMeanSurfacePoints;
   for ( unsigned int i=0; i<loShapePCA.meanVec.size(); i++ )
     {
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = leftDomainPatternPoints[i][0];
   	point[1] = leftDomainPatternPoints[i][1];
   	point[2] = loShapePCA.meanVec[i];
 
-      loMeanSurfacePoints->push_back( point );
+      loMeanSurfacePoints.push_back( point );
     }
 
   // Now create the boundary models

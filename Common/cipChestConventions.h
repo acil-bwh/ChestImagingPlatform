@@ -21,6 +21,10 @@
 #include <iostream>
 
 namespace cip {
+  /**
+   *  Define typedefs used throughout the cip
+   */
+  typedef std::vector< double >                 PointType;
 
 /**
  *  Note that chest regions are inherently hierarchical. If you add a

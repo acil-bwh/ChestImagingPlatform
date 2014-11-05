@@ -54,7 +54,7 @@ public:
 
   /** Set the objective function that is to be optimized. The metric
    *  must support gradient and Hessian computations. */
-  void SetMetric( cipParticleToThinPlateSplineSurfaceMetric* m )
+  void SetMetric( const cipParticleToThinPlateSplineSurfaceMetric& m )
     {
       Metric = m;
     };
@@ -79,7 +79,7 @@ private:
   double GradientTolerance;  // Optimization stopping criterion
   double OptimalValue;
   
-  cipParticleToThinPlateSplineSurfaceMetric* Metric;
+  cipParticleToThinPlateSplineSurfaceMetric Metric;
   PointType* InitialParams;
   PointType* OptimalParams;
 

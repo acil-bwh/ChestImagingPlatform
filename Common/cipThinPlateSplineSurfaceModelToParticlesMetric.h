@@ -45,7 +45,7 @@ public:
 
   /** The mean surface points are the physical x, y, and z-coordinates
    *  of a collection of points that define the mean surface in our model */
-  void SetMeanSurfacePoints( const std::vector< double* >* const );
+  void SetMeanSurfacePoints( const std::vector< cip::PointType >& );
 
   /** Set the surface model eigenvectors and eigenvalues with this
    *  method. Note that the eigenvectors are normalized, and they
@@ -144,10 +144,10 @@ protected:
   std::vector< double >                 FissureParticleWeights;
   std::vector< double >                 AirwayParticleWeights;
   std::vector< double >                 VesselParticleWeights;
-  std::vector< double* >                SurfacePoints;
+  std::vector< cip::PointType >         SurfacePoints;
   std::vector< std::vector< double > >  Eigenvectors;
   std::vector< double >                 Eigenvalues;
-  std::vector< double* >                MeanPoints;
+  std::vector< cip::PointType >         MeanPoints;
 
   double FissureSigmaDistance;
   double FissureSigmaTheta;

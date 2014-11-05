@@ -17,6 +17,7 @@
 #define __cipLobeSurfaceModel_h
 
 #include <vector>
+#include "cipChestConventions.h"
 
 class cipLobeSurfaceModel
 {
@@ -37,29 +38,29 @@ public:
   double GetEigenvalueSum() const;
 
   /**  double pointers are assumed to have 3 elements */
-  void SetMeanSurfacePoints( std::vector< double* > const* );
-  std::vector< double* > const* GetMeanSurfacePoints() const;
+  void SetMeanSurfacePoints( const std::vector< cip::PointType >& );
+  const std::vector< cip::PointType >& GetMeanSurfacePoints() const;
 
   /** Get surface points weighted according to the mode weights */
-  std::vector< double* > const* GetWeightedSurfacePoints();
+  const std::vector< cip::PointType >& GetWeightedSurfacePoints();
 
   /** Get the mean right horizontal surface points. Assumes that 
    *  the shape model corresponds to the right lung. */
-  std::vector< double* > const* GetMeanRightHorizontalSurfacePoints();
+  const std::vector< cip::PointType >& GetMeanRightHorizontalSurfacePoints();
 
   /** Get the mean right oblique surface points. Assumes that 
    *  the shape model corresponds to the right lung. */
-  std::vector< double* > const* GetMeanRightObliqueSurfacePoints();
+  const std::vector< cip::PointType >& GetMeanRightObliqueSurfacePoints();
 
   /** Get right horizontal surface points weighted according to the 
    *  mode weights. Assumes that the shape model corresponds to the
    *  right lung. */
-  std::vector< double* > const* GetRightHorizontalWeightedSurfacePoints();
+  const std::vector< cip::PointType >& GetRightHorizontalWeightedSurfacePoints();
 
   /** Get right oblique surface points weighted according to the 
    *  mode weights. Assumes that the shape model corresponds to the
    *  right lung. */
-  std::vector< double* > const* GetRightObliqueWeightedSurfacePoints();
+  const std::vector< cip::PointType >& GetRightObliqueWeightedSurfacePoints();
 
   /** */
   void SetEigenvalues( std::vector< double > const* );
@@ -109,19 +110,19 @@ private:
   // The mean surface points are stored as a vector of 3D points
   // (physical coordinates). The mean is calculated from PCA.
   //
-  std::vector< double* > MeanSurfacePoints;
-  std::vector< double* > MeanRightHorizontalSurfacePoints;
-  std::vector< double* > MeanRightObliqueSurfacePoints;
+  std::vector< cip::PointType > MeanSurfacePoints;
+  std::vector< cip::PointType > MeanRightHorizontalSurfacePoints;
+  std::vector< cip::PointType > MeanRightObliqueSurfacePoints;
 
   //
   // The weighted surface points correspond to the mean surface points 
   // but weighted according to the stored weights for the various
   // principle components
   // 
-  std::vector< double* > WeightedSurfacePoints;
-  std::vector< double* > LeftObliqueWeightedSurfacePoints;
-  std::vector< double* > RightObliqueWeightedSurfacePoints;
-  std::vector< double* > RightHorizontalWeightedSurfacePoints;
+  std::vector< cip::PointType > WeightedSurfacePoints;
+  std::vector< cip::PointType > LeftObliqueWeightedSurfacePoints;
+  std::vector< cip::PointType > RightObliqueWeightedSurfacePoints;
+  std::vector< cip::PointType > RightHorizontalWeightedSurfacePoints;
 
   //
   // The eigenvalues and eigenvectors derived from PCA

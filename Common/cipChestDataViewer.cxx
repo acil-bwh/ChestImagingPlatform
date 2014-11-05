@@ -313,11 +313,11 @@ void cipChestDataViewer::SetRightHorizontalThinPlateSplineSurface( cipThinPlateS
 }
 
 
-void cipChestDataViewer::SetLeftObliqueFissurePoints( const std::vector< double* >* const pointsVec, std::string name )
+void cipChestDataViewer::SetLeftObliqueFissurePoints( const std::vector< cip::PointType >& pointsVec, std::string name )
 {
-  for ( unsigned int i=0; i<pointsVec->size(); i++ )
+  for ( unsigned int i=0; i<pointsVec.size(); i++ )
     {
-    this->LeftObliqueFissurePoints.push_back( (*pointsVec)[i] );
+    this->LeftObliqueFissurePoints.push_back( pointsVec[i] );
     }
  
   this->LeftObliqueThinPlateSplineSurface->SetSurfacePoints( pointsVec );
@@ -326,11 +326,11 @@ void cipChestDataViewer::SetLeftObliqueFissurePoints( const std::vector< double*
 }
 
 
-void cipChestDataViewer::SetRightObliqueFissurePoints( const std::vector< double* >* const pointsVec, std::string name )
+void cipChestDataViewer::SetRightObliqueFissurePoints( const std::vector< cip::PointType >& pointsVec, std::string name )
 {
-  for ( unsigned int i=0; i<pointsVec->size(); i++ )
+  for ( unsigned int i=0; i<pointsVec.size(); i++ )
     {
-    this->RightObliqueFissurePoints.push_back( (*pointsVec)[i] );
+    this->RightObliqueFissurePoints.push_back( pointsVec[i] );
     }
  
   this->RightObliqueThinPlateSplineSurface->SetSurfacePoints( pointsVec );
@@ -339,11 +339,11 @@ void cipChestDataViewer::SetRightObliqueFissurePoints( const std::vector< double
 }
 
 
-void cipChestDataViewer::SetRightHorizontalFissurePoints( const std::vector< double* >* const pointsVec, std::string name )
+void cipChestDataViewer::SetRightHorizontalFissurePoints( const std::vector< cip::PointType >& pointsVec, std::string name )
 {
-  for ( unsigned int i=0; i<pointsVec->size(); i++ )
+  for ( unsigned int i=0; i<pointsVec.size(); i++ )
     {
-    this->RightHorizontalFissurePoints.push_back( (*pointsVec)[i] );
+    this->RightHorizontalFissurePoints.push_back( pointsVec[i] );
     }
  
   this->RightHorizontalThinPlateSplineSurface->SetSurfacePoints( pointsVec );
