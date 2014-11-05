@@ -20,7 +20,7 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <string>
+    <geometry type="model">
       <name>vesselParticlesFileName</name>
       <label>Vessel particles file name</label>
       <channel>input</channel>
@@ -28,9 +28,9 @@
       <longflag>vessel</longflag>
       <description><![CDATA[Vessel particles file name]]></description>
       <default>NA</default>
-    </string>  
+    </geometry>
 
-    <string>
+    <geometry type="model">
       <name>airwayParticlesFileName</name>
       <label>Airway particles file name</label>
       <channel>input</channel>
@@ -38,17 +38,17 @@
       <longflag>airway</longflag>
       <description><![CDATA[Airway particles file name]]></description>
       <default>NA</default>
-    </string>  
+    </geometry>
 
-    <string>
+    <geometry type="model">
       <name>outParticlesFileName</name>
       <label>Output particles file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <flag>o</flag>
       <longflag>out</longflag>
       <description><![CDATA[Output particles file name]]></description>
       <default>NA</default>
-    </string>  
+    </geometry>
   </parameters>
 
   <parameters>

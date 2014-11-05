@@ -12,7 +12,7 @@
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.
@@ -21,14 +21,14 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <string>
+    <geometry type="model">
       <name>particlesFileName</name>
       <label>Particles file name</label>
       <channel>input</channel>
       <flag>p</flag>
       <longflag>particles</longflag>
       <description><![CDATA[Particles file name]]></description>
-    </string>  
+    </geometry>
 
     <string>
       <name>leftShapeModelFileName</name>
@@ -48,32 +48,32 @@
       <description><![CDATA[Right lung shape model file name]]></description>
     </string>
 
-    <string>
+    <geometry type="model">
       <name>loClassifiedFileName</name>
       <label>Left oblique classified particles file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <default>NA</default>
-      <longflag>--loClassified</longflag>
+      <longflag>loClassified</longflag>
       <description><![CDATA[Left oblique classified particles file name]]></description>
-    </string>  
+    </geometry>
 
-    <string>
+    <geometry type="model">
       <name>roClassifiedFileName</name>
       <label>Right oblique classified particles file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <default>NA</default>
-      <longflag>--roClassified</longflag>
+      <longflag>roClassified</longflag>
       <description><![CDATA[Right oblique classified particles file name]]></description>
-    </string>  
+    </geometry>
 
-    <string>
+    <geometry type="model">
       <name>rhClassifiedFileName</name>
       <label>Right horizontal classified particles file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <default>NA</default>
-      <longflag>--rhClassified</longflag>
+      <longflag>rhClassified</longflag>
       <description><![CDATA[Right horizontal classified particles file name]]></description>
-    </string>  
+    </geometry>
   </parameters>
 
   <parameters>
