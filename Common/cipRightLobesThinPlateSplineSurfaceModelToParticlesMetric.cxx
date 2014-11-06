@@ -135,9 +135,9 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
   double fissureTermValue = 0.0;
 
   cip::PointType position(3);
-  double* roNormal    = new double[3];
-  double* rhNormal    = new double[3];
-  double* orientation = new double[3];
+  cip::VectorType roNormal(3);
+  cip::VectorType rhNormal(3);
+  cip::VectorType orientation(3);
 
   cipNewtonOptimizer< 2 >::PointType* roDomainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   cipNewtonOptimizer< 2 >::PointType* roOptimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
@@ -229,10 +229,6 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
       }
     }
     
-  delete roNormal;
-  delete rhNormal;
-  delete orientation;
-
   return fissureTermValue;
 }
 
@@ -241,9 +237,9 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermV
   double vesselTermValue = 0.0;
 
   cip::PointType position(3);
-  double* roNormal    = new double[3];
-  double* rhNormal    = new double[3];
-  double* orientation = new double[3];
+  cip::VectorType roNormal(3);
+  cip::VectorType rhNormal(3);
+  cip::VectorType orientation(3);
 
   cipNewtonOptimizer< 2 >::PointType* roDomainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   cipNewtonOptimizer< 2 >::PointType* roOptimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
@@ -313,10 +309,6 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermV
     vesselTermValue += this->VesselParticleWeights[i]*std::exp( -roDistance/this->VesselSigmaDistance )*
       std::exp( -roTheta/this->VesselSigmaTheta );
     }
-
-  delete roNormal;
-  delete rhNormal;
-  delete orientation;
 
   return vesselTermValue;
 }

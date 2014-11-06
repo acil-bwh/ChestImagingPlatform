@@ -1,5 +1,6 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+#include <fstream>
 #include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "vtkPolyData.h"
@@ -19,6 +20,7 @@
 typedef itk::Image< unsigned char, 3 >                                            MaskType;
 typedef itk::Image< float, 3 >                                                    FloatImageType;
 typedef itk::Image< float, 3 >                                                    DistanceImageType;
+typedef itk::ImageFileWriter< DistanceImageType >                                 DistanceWriterType;
 typedef itk::SignedMaurerDistanceMapImageFilter< MaskType, DistanceImageType >    DistanceMapType;
 typedef itk::ImageRegionIteratorWithIndex< cip::CTType >                          CTIteratorType;
 typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                    LabelMapIteratorType;
@@ -60,21 +62,21 @@ int main( int argc, char *argv[] )
   if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Reading right shape model..." << std::endl;
-      cip::LobeSurfaceModelIO* rightShapeModelIO = new cip::LobeSurfaceModelIO();
-      rightShapeModelIO->SetFileName( rightShapeModelFileName );
-      rightShapeModelIO->Read();
+      cip::LobeSurfaceModelIO rightShapeModelIO;
+      rightShapeModelIO.SetFileName( rightShapeModelFileName );
+      rightShapeModelIO.Read();
 
-      rhTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetMeanRightHorizontalSurfacePoints() );
-      roTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetMeanRightObliqueSurfacePoints() );
+      rhTPS.SetSurfacePoints( rightShapeModelIO.GetOutput()->GetMeanRightHorizontalSurfacePoints() );
+      roTPS.SetSurfacePoints( rightShapeModelIO.GetOutput()->GetMeanRightObliqueSurfacePoints() );
     }
   else if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Reading left shape model..." << std::endl;
-      cip::LobeSurfaceModelIO* leftShapeModelIO = new cip::LobeSurfaceModelIO();
-      leftShapeModelIO->SetFileName( leftShapeModelFileName );
-      leftShapeModelIO->Read();
+      cip::LobeSurfaceModelIO leftShapeModelIO;
+      leftShapeModelIO.SetFileName( leftShapeModelFileName );
+      leftShapeModelIO.Read();
 
-      loTPS.SetSurfacePoints( leftShapeModelIO->GetOutput()->GetMeanSurfacePoints() );
+      loTPS.SetSurfacePoints( leftShapeModelIO.GetOutput()->GetMeanSurfacePoints() );
     }
   else 
     {
@@ -98,7 +100,7 @@ int main( int argc, char *argv[] )
     }
 
   std::cout << "Reading vessel particles..." << std::endl;
-  vtkPolyDataReader* vesselParticlesReader = vtkPolyDataReader::New();
+  vtkSmartPointer< vtkPolyDataReader > vesselParticlesReader = vtkPolyDataReader::New();
     vesselParticlesReader->SetFileName( vesselParticlesFileName.c_str() );
     vesselParticlesReader->Update();    
 
@@ -107,12 +109,13 @@ int main( int argc, char *argv[] )
   					 true, false, true, false );
 
   std::cout << "Getting vessel distance map..." << std::endl;
-  DistanceImageType::Pointer distanceMap = 
+  DistanceImageType::Pointer distanceMap = DistanceImageType::New();
+  distanceMap = 
     GetVesselDistanceMap( ctReader->GetOutput()->GetSpacing(), ctReader->GetOutput()->GetBufferedRegion().GetSize(), 
   			  ctReader->GetOutput()->GetOrigin(), vesselParticles );
 
   std::cout << "Reading particles file indicating where to compute feature vectors..." << std::endl;
-  vtkPolyDataReader* pointsParticlesReader = vtkPolyDataReader::New();
+  vtkSmartPointer< vtkPolyDataReader > pointsParticlesReader = vtkPolyDataReader::New();
     pointsParticlesReader->SetFileName( pointsParticlesFileName.c_str() );
     pointsParticlesReader->Update();    
 
@@ -155,7 +158,7 @@ int main( int argc, char *argv[] )
 
       ctReader->GetOutput()->TransformPhysicalPointToIndex( imPoint, index );
       vec.intensity = ctReader->GetOutput()->GetPixel( index );
-      vec.distanceToVessel = distanceMap->GetPixel( index );
+      vec.distanceToVessel = abs( distanceMap->GetPixel( index ) );
 
       hessian = hessianFunction->EvaluateAtIndex( index );
       hessian.ComputeEigenAnalysis( eigenValues, eigenVectors);      
@@ -219,14 +222,17 @@ int main( int argc, char *argv[] )
   	{
   	  vec.distanceToLobeSurface = cip::GetDistanceToThinPlateSplineSurface( loTPS, point );
 
-  	  double* normal = new double[3];
-  	  double* tpsPoint = new double[3];
+	  cip::VectorType normal(3);
+	  cip::PointType tpsPoint(3);
 
   	  cip::GetClosestPointOnThinPlateSplineSurface( loTPS, point, tpsPoint );
   	  loTPS.GetSurfaceNormal( tpsPoint[0], tpsPoint[1], normal );
-  	  vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, vec.eigenVector, true);
-  	  delete[] tpsPoint;
-  	  delete[] normal;
+
+	  cip::VectorType tmpVec(3);
+  	    tmpVec[0] = vec.eigenVector[0];
+	    tmpVec[1] = vec.eigenVector[1];
+	    tmpVec[2] = vec.eigenVector[2];
+  	  vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, tmpVec, true);
   	}
       else if ( roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0 )
   	{
@@ -240,25 +246,35 @@ int main( int argc, char *argv[] )
   	    {
   	      vec.distanceToLobeSurface = rhDist;
 
-  	      double* normal = new double[3];
-  	      double* tpsPoint = new double[3];
+	      cip::VectorType normal(3);
+	      cip::PointType tpsPoint(3);
+
   	      cip::GetClosestPointOnThinPlateSplineSurface( rhTPS, point, tpsPoint );
   	      rhTPS.GetSurfaceNormal( tpsPoint[0], tpsPoint[1], normal );
-  	      vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, vec.eigenVector, true);
-  	      delete[] tpsPoint;
-  	      delete[] normal;
+
+	      cip::VectorType tmpVec(3);
+	        tmpVec[0] = vec.eigenVector[0];
+		tmpVec[1] = vec.eigenVector[1];
+		tmpVec[2] = vec.eigenVector[2];
+	      
+  	      vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, tmpVec, true);
   	    }
   	  else
   	    {
   	      vec.distanceToLobeSurface = roDist;
 
-  	      double* normal = new double[3];
-  	      double* tpsPoint = new double[3];
+	      cip::VectorType normal(3);
+	      cip::PointType tpsPoint(3);
+
   	      cip::GetClosestPointOnThinPlateSplineSurface( roTPS, point, tpsPoint );
   	      roTPS.GetSurfaceNormal( tpsPoint[0], tpsPoint[1], normal );
-  	      vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, vec.eigenVector, true);
-  	      delete[] tpsPoint;
-  	      delete[] normal;
+
+	      cip::VectorType tmpVec(3);
+	        tmpVec[0] = vec.eigenVector[0];
+		tmpVec[1] = vec.eigenVector[1];
+		tmpVec[2] = vec.eigenVector[2];
+
+  	      vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, tmpVec, true);
   	    }
   	}
       else
@@ -270,102 +286,22 @@ int main( int argc, char *argv[] )
       featureVectors.push_back( vec );
     }
 
+  std::cout << "Writing feature vectors to file..." << std::endl;
+  std::ofstream file( outFileName.c_str() );
+
+  file << "smallestEigenValue,middleEigenValue,largestEigenValue,intensity,";
+  file << "distanceToVessel,distanceToLobeSurface,angleWithLobeSurfaceNormal" << std::endl;
   for ( unsigned int i=0; i<featureVectors.size(); i++ )
     {
-      std::cout << featureVectors[i].intensity << std::endl;
+      file << featureVectors[i].smallestEigenValue << ",";
+      file << featureVectors[i].middleEigenValue << ",";
+      file << featureVectors[i].largestEigenValue << ",";
+      file << featureVectors[i].intensity << ",";
+      file << featureVectors[i].distanceToVessel << ",";
+      file << featureVectors[i].distanceToLobeSurface << ",";
+      file << featureVectors[i].angleWithLobeSurfaceNormal << std::endl;
     }
-
-  //----------------------------------------------------------------------------------------
-  // for ( int i=0; i<3; i++ )
-  //   {
-  //     std::cout << "--------------------------------" << std::endl;
-  //     std::cout << "val:\t" << eigenValues[i] << std::endl;
-  //     std::cout << "vec:\t";
-  //     for ( int j=0; j<3; j++ )
-  // 	{
-  // 	  std::cout << eigenVectors(i, j) << "\t";
-  // 	}      
-  //     std::cout << std::endl;
-  //   }
-
-  // CTIteratorType cIt( ctReader->GetOutput(), ctReader->GetOutput()->GetBufferedRegion() );
-  // std::cout << "Computing..." << std::endl;
-  // cIt.GoToBegin();
-  // while ( !cIt.IsAtEnd() )
-  //   {
-  //     ++cIt;
-  //   }
-
-
-
-  // std::cout << "Reading lung label map..." << std::endl;
-  // cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
-  //   labelMapReader->SetFileName( labelMapFileName );
-  // try
-  //   {
-  //   labelMapReader->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught while reading label map:";
-  //   std::cerr << excp << std::endl;
-      
-  //   return cip::LABELMAPREADFAILURE;
-  //   }
-  
-  // LabelMapIteratorType lIt( labelMapReader->GetOutput(), labelMapReader->GetOutput()->GetBufferedRegion() );
-  // DistanceImageIteratorType dIt( distanceMap, distanceMap->GetBufferedRegion() );
-
-
-  // std::cout << "Enhancing fissures..." << std::endl;
-  // cIt.GoToBegin();
-  // lIt.GoToBegin();
-  // dIt.GoToBegin();
-  // while ( !cIt.IsAtEnd() )
-  //   {
-  //     if ( lIt.Get() > 0 )
-  // 	{
-  // 	  if ( cIt.Get() > minCT && cIt.Get() < maxCT )
-  // 	    {
-	      
-  // 	      double huTerm   = std::exp( -0.5*std::pow(cIt.Get() - meanHU, 2)/varHU );
-  // 	      double distTerm = std::exp( -0.5*std::pow(std::abs(dIt.Get()) - meanDist, 2)/varDist );	      
-  // 	      //double newValue = 1000.0*( huTerm*distTerm - 1.0 );
-  // 	      //double newValue = -1000.0*(1.0 - huTerm*distTerm) + (cIt.Get())*huTerm*distTerm;
-  // 	      double newValue = -1000.0*(1.0 - distTerm) + (cIt.Get())*distTerm;
-  // 	      //double newValue = cIt.Get()*huTerm*distTerm;
-  // 	      // std::cout << "-----------------------------" << std::endl;
-  // 	      // std::cout << "huTerm:\t" << huTerm << std::endl;
-  // 	      // std::cout << "distTerm:\t" << distTerm << std::endl;
-  // 	      // std::cout << "CT:\t" << cIt.Get() << std::endl;
-  // 	      // std::cout << "newValue:\t" << newValue << std::endl;
-  // 	      cIt.Set( short(newValue) );
-  // 	    }
-  // 	  else
-  // 	    {
-  // 	      cIt.Set( -1000 );
-  // 	    }
-  // 	}      
-      
-  //     ++cIt;
-  //     ++lIt;
-  //     ++dIt;
-  //   }
-
-  // std::cout << "Writing enhanced image..." << std::endl;
-  // cip::CTWriterType::Pointer writer = cip::CTWriterType::New();
-  //   writer->SetInput( ctReader->GetOutput() );
-  //   writer->UseCompressionOn();
-  //   writer->SetFileName( outFileName );
-  // try
-  //   {
-  //   writer->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught writing enhanced image:";
-  //   std::cerr << excp << std::endl;
-  //   }
+  file.close();
 
   std::cout << "DONE." << std::endl;
 
@@ -424,6 +360,12 @@ DistanceImageType::Pointer GetVesselDistanceMap( cip::CTType::SpacingType spacin
     std::cerr << "Exception caught generating distance map:";
     std::cerr << excp << std::endl;
     }
+
+  DistanceWriterType::Pointer writer = DistanceWriterType::New();
+  writer->SetInput( distanceMap->GetOutput() );
+  writer->UseCompressionOn();
+  writer->SetFileName( "/Users/jross/tmp/foo_dist.nhdr" );
+  writer->Update();
 
   return distanceMap->GetOutput();
 }

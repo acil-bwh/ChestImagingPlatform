@@ -241,7 +241,7 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
  // labeled. We'll need this in case we want to undo the labeling.
  std::vector< unsigned int > labeledIDs;
 
- double* refVec = new double[3];
+ cip::VectorType refVec(3);
  for ( unsigned int i=0; i<idList->GetNumberOfIds(); i++ )
    {
    if ( this->AirwayParticles->GetPointData()->GetArray("ChestType")->GetTuple(idList->GetId(i))[0] == float(cip::UNDEFINEDTYPE) )
@@ -275,7 +275,6 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
    }
 
  this->LabeledParticleIDs.push_back( labeledIDs );
-
  this->RenderWindow->Render();
 }
 
@@ -284,19 +283,23 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
 // process to ensure that all labeled particles have minor eigenvectors oriented in a consistent
 // way, which is necessary for some registration routines that take as input the labeled
 // particles datasets.
-void cipAirwayDataInteractor::OrientParticle( unsigned int particleID, double* refVec )
+void cipAirwayDataInteractor::OrientParticle( unsigned int particleID, cip::VectorType& refVec )
 {
-  double angle = cip::GetAngleBetweenVectors( this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID ),
-					      refVec, false );
+  cip::VectorType hevec2(3);
+    hevec2[0] = this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[0];
+    hevec2[1] = this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[1];
+    hevec2[2] = this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[2];
 
-  float* hevec2 = new float[3];
+  double angle = cip::GetAngleBetweenVectors( hevec2, refVec, false );
+
   if ( angle > vnl_math::pi/2.0 )
     {
-      hevec2[0] = -this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[0];
-      hevec2[1] = -this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[1];
-      hevec2[2] = -this->AirwayParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID )[2];
+      float hevec2flipped[3];
+        hevec2flipped[0] = -hevec2[0];
+	hevec2flipped[1] = -hevec2[1];
+	hevec2flipped[2] = -hevec2[2];
 
-      this->AirwayParticles->GetPointData()->GetArray("hevec2")->SetTuple( particleID, hevec2 );
+      this->AirwayParticles->GetPointData()->GetArray("hevec2")->SetTuple( particleID, hevec2flipped );
     }
 }
 
@@ -549,7 +552,7 @@ bool cipAirwayDataInteractor::GetEdgeWeight( unsigned int particleID1, unsigned 
     point2[1] = particles->GetPoint( particleID2 )[1];
     point2[2] = particles->GetPoint( particleID2 )[2];
 
-  double connectingVec[3];
+  cip::VectorType connectingVec(3);
     connectingVec[0] = point1[0] - point2[0];
     connectingVec[1] = point1[1] - point2[1];
     connectingVec[2] = point1[2] - point2[2];
@@ -561,12 +564,12 @@ bool cipAirwayDataInteractor::GetEdgeWeight( unsigned int particleID1, unsigned 
     return false;
     }
 
-  double particle1Hevec2[3];
+  cip::VectorType particle1Hevec2(3);
     particle1Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[0];
     particle1Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[1];
     particle1Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[2];
 
-  double particle2Hevec2[3];
+  cip::VectorType particle2Hevec2(3);
     particle2Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[0];
     particle2Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[1];
     particle2Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[2];

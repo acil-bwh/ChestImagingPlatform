@@ -50,11 +50,11 @@ namespace cip {
   cip::CTType::Pointer UpsampleCT(short samplingAmount, cip::CTType::Pointer inputCT);
 
   /** Get the magnitude of the indicated vector */
-  double GetVectorMagnitude(double vector[3]);
+  double GetVectorMagnitude(const cip::VectorType& vector);
 
   /** Get the angle between the two vectors. By default, the answer will be returned 
    * in radians, but it can also be returned in degrees by setting 'returnDegrees' to 'true'. */
-  double GetAngleBetweenVectors(double vec1[3], double vec2[3], bool returnDegrees = false);
+  double GetAngleBetweenVectors(const cip::VectorType& vec1, const cip::VectorType& vec2, bool returnDegrees = false);
 
   /** Render a vtk-style graph for visualization */
   void ViewGraph(vtkSmartPointer< vtkMutableDirectedGraph > graph);
@@ -124,7 +124,7 @@ namespace cip {
 
   /** Given a thin plate spline surface and some point in 3D space, this function will 
    *  compute the closest point on the surface and set it to tpsPoint. */
-  void GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, double* tpsPoint );
+  void GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, cip::PointType tpsPoint );
 }  
 
 #endif

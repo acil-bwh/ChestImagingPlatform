@@ -246,7 +246,7 @@ cip::CTType::Pointer cip::DownsampleCT(short samplingAmount, cip::CTType::Pointe
 }
 
 
-double cip::GetVectorMagnitude(double vector[3])
+double cip::GetVectorMagnitude(const cip::VectorType& vector)
 {
   double magnitude = vcl_sqrt(std::pow(vector[0], 2) + std::pow(vector[1], 2) + std::pow(vector[2], 2));
 
@@ -254,7 +254,8 @@ double cip::GetVectorMagnitude(double vector[3])
 }
 
 
-double cip::GetAngleBetweenVectors(double vec1[3], double vec2[3], bool returnDegrees)
+double cip::GetAngleBetweenVectors(const cip::VectorType& vec1, 
+				   const cip::VectorType& vec2, bool returnDegrees)
 {
   double vec1Mag = cip::GetVectorMagnitude(vec1);
   double vec2Mag = cip::GetVectorMagnitude(vec2);
@@ -967,7 +968,7 @@ double cip::GetDistanceToThinPlateSplineSurface( const cipThinPlateSplineSurface
   return distance;  
 }
 
-void cip::GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, double* tpsPoint )
+void cip::GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, cip::PointType tpsPoint )
 {
   cipNewtonOptimizer< 2 >::PointType* optimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
 

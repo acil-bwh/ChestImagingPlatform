@@ -252,7 +252,7 @@ double cipThinPlateSplineSurface::GetSurfaceHeight( double x, double y ) const
 }
 
 
-void cipThinPlateSplineSurface::GetSurfaceNormal( double x, double y, double* normal ) const
+void cipThinPlateSplineSurface::GetSurfaceNormal( double x, double y, cip::VectorType& normal ) const
 {
   this->GetNonNormalizedSurfaceNormal( x, y, normal );
 
@@ -264,7 +264,7 @@ void cipThinPlateSplineSurface::GetSurfaceNormal( double x, double y, double* no
 }
 
 
-void cipThinPlateSplineSurface::GetNonNormalizedSurfaceNormal( double x, double y, double* normal ) const
+void cipThinPlateSplineSurface::GetNonNormalizedSurfaceNormal( double x, double y, cip::VectorType& normal ) const
 {
   //
   // The normal will be computed using:

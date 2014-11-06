@@ -24,7 +24,8 @@ namespace cip {
   /**
    *  Define typedefs used throughout the cip
    */
-  typedef std::vector< double >                 PointType;
+  typedef std::vector< double >  PointType;
+  typedef std::vector< double >  VectorType;
 
 /**
  *  Note that chest regions are inherently hierarchical. If you add a

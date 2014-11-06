@@ -53,7 +53,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueAndGradient( PointType
   // Define 'p' to hold the particle's position for notational
   // readability  
   //
-  double p[3];    
+  cip::PointType p(3);    
     p[0] = this->ParticlePosition[0];
     p[1] = this->ParticlePosition[1];
     p[2] = this->ParticlePosition[2];
@@ -62,14 +62,14 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueAndGradient( PointType
   // Compute the point on the surface, 's', given the params (domain
   // location) 
   //
-  double s[3];
+  cip::PointType s(3);
     s[0] = (*params)[0];
     s[1] = (*params)[1];
     s[2] = this->ThinPlateSplineSurface.GetSurfaceHeight( s[0], s[1] );
 
   double value = std::pow(s[0]-p[0],2) + std::pow(s[1]-p[1],2) + std::pow(s[2]-p[2],2);
 
-  double n[3];
+  cip::VectorType n(3);
   this->ThinPlateSplineSurface.GetNonNormalizedSurfaceNormal( s[0], s[1], n );
 
   (*gradient)[0] = 2.0*(s[0] - p[0] - n[0]*(s[2]-p[2])); 
@@ -85,7 +85,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
   // Define 'p' to hold the particle's position for notational
   // readability  
   //
-  double p[3];    
+  cip::PointType p(3);    
     p[0] = this->ParticlePosition[0];
     p[1] = this->ParticlePosition[1];
     p[2] = this->ParticlePosition[2];
@@ -94,7 +94,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
   // Compute the point on the surface, 's', given the params (domain
   // location) 
   //
-  double s[3];
+  cip::PointType s(3);
     s[0] = (*params)[0];
     s[1] = (*params)[1];
     s[2] = this->ThinPlateSplineSurface.GetSurfaceHeight( s[0], s[1] );
@@ -104,7 +104,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
   //
   // Compute the gradient
   //
-  double n[3];
+  cip::VectorType n(3);
   this->ThinPlateSplineSurface.GetNonNormalizedSurfaceNormal( s[0], s[1], n );
 
   (*gradient)[0] = 2.0*(s[0] - p[0] - n[0]*(s[2]-p[2])); 

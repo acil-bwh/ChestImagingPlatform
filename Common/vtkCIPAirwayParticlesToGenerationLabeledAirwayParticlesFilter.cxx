@@ -495,7 +495,7 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 	point1[1] = inputParticles->GetPoint( p )[1];
 	point1[2] = inputParticles->GetPoint( p )[2];
 
-      double particle1Hevec2[3];
+      cip::VectorType particle1Hevec2(3);
         particle1Hevec2[0] = inputParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( p )[0];
 	particle1Hevec2[1] = inputParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( p )[1];
 	particle1Hevec2[2] = inputParticles->GetPointData()->GetArray( "hevec2" )->GetTuple( p )[2];
@@ -508,19 +508,19 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeEm
 	      
 	      float scale2 = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "scale" )->GetTuple( g )[0];
 	      
-	      float point2[3];
+	      cip::PointType point2(3);
 	        point2[0] = this->AirwayGenerationLabeledAtlases[a]->GetPoint( g )[0];
 		point2[1] = this->AirwayGenerationLabeledAtlases[a]->GetPoint( g )[1];
 		point2[2] = this->AirwayGenerationLabeledAtlases[a]->GetPoint( g )[2];
 
-	      double connectingVec[3];
+	      cip::VectorType connectingVec(3);
                 connectingVec[0] = point1[0] - point2[0];
 		connectingVec[1] = point1[1] - point2[1];
 		connectingVec[2] = point1[2] - point2[2];
 
 	      double distance = cip::GetVectorMagnitude( connectingVec );
 
-	      double particle2Hevec2[3];
+	      cip::VectorType particle2Hevec2(3);
   	        particle2Hevec2[0] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[0];
 		particle2Hevec2[1] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[1];
 		particle2Hevec2[2] = this->AirwayGenerationLabeledAtlases[a]->GetPointData()->GetArray( "hevec2" )->GetTuple( g )[2];
@@ -746,7 +746,7 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetEdgeWeigh
     point2[1] = particles->GetPoint( particleID2 )[1];
     point2[2] = particles->GetPoint( particleID2 )[2];
 
-  double connectingVec[3];
+  cip::VectorType connectingVec(3);
     connectingVec[0] = point1[0] - point2[0];
     connectingVec[1] = point1[1] - point2[1];
     connectingVec[2] = point1[2] - point2[2];
@@ -758,12 +758,12 @@ bool vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetEdgeWeigh
     return false;
     }
 
-  double particle1Hevec2[3];
+  cip::VectorType particle1Hevec2(3);
     particle1Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[0];
     particle1Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[1];
     particle1Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID1 )[2];
 
-  double particle2Hevec2[3];
+  cip::VectorType particle2Hevec2(3);
     particle2Hevec2[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[0];
     particle2Hevec2[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[1];
     particle2Hevec2[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( particleID2 )[2];
@@ -1347,15 +1347,15 @@ double vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::GetTransit
 
   // Now that we have the prior, compute the likelihood. The posterior (transition given scale and
   // angle) will then be proportional to the product of the two.
-  double sourceDirection[3];
-  sourceDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[0];
-  sourceDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[1];
-  sourceDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[2];
+  cip::VectorType sourceDirection(3);
+    sourceDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[0];
+    sourceDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[1];
+    sourceDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( sourceParticleID )[2];
 	  
-  double targetDirection[3];
-  targetDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[0];
-  targetDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[1];
-  targetDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[2];
+  cip::VectorType targetDirection(3);
+    targetDirection[0] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[0];
+    targetDirection[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[1];
+    targetDirection[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple( targetParticleID )[2];
 	  
   double angle = cip::GetAngleBetweenVectors( sourceDirection, targetDirection, true );
 	  

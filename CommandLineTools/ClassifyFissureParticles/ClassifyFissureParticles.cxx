@@ -148,8 +148,8 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
     newtonOptimizer->SetMetric( particleToTPSMetric );
 
   cip::PointType position(3);
-  double* normal      = new double[3];
-  double* orientation = new double[3];
+  cip::VectorType normal(3);
+  cip::VectorType orientation(3);
 
   cipNewtonOptimizer< 2 >::PointType* domainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   cipNewtonOptimizer< 2 >::PointType* optimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );

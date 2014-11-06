@@ -40,10 +40,10 @@ public:
   void ComputeThinPlateSplineVectors();
 
   /**  */
-  void GetSurfaceNormal( double x, double y, double* normal ) const;
+  void GetSurfaceNormal( double x, double y, cip::VectorType& normal ) const;
 
   /**  */
-  void GetNonNormalizedSurfaceNormal( double, double, double* ) const;
+  void GetNonNormalizedSurfaceNormal( double, double, cip::VectorType& ) const;
 
   /** lambda is a parameter that controls smoothing. If set to 0,
       interpolation will be exact. As lambda increases, the TPS
