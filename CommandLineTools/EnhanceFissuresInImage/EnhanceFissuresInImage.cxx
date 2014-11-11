@@ -1,5 +1,6 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+#include <cmath>
 #include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "vtkPolyData.h"
@@ -13,79 +14,107 @@
 #include "cipExceptionObject.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 #include "itkDiscreteHessianGaussianImageFunction.h"
-#include "itkCastImageFilter.h"
+#include "cipLobeSurfaceModelIO.h"
+#include "cipVesselParticleConnectedComponentFilter.h"
 #include "EnhanceFissuresInImageCLP.h"
 
 typedef itk::Image< unsigned char, 3 >                                            MaskType;
 typedef itk::Image< float, 3 >                                                    FloatImageType;
 typedef itk::Image< float, 3 >                                                    DistanceImageType;
+typedef itk::ImageFileWriter< DistanceImageType >                                 DistanceWriterType;
 typedef itk::SignedMaurerDistanceMapImageFilter< MaskType, DistanceImageType >    DistanceMapType;
 typedef itk::ImageRegionIteratorWithIndex< cip::CTType >                          CTIteratorType;
 typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                    LabelMapIteratorType;
 typedef itk::ImageRegionIteratorWithIndex< DistanceImageType >                    DistanceImageIteratorType;
-//typedef itk::DiscreteHessianGaussianImageFunction< FloatImageType >               HessianImageFunctionType;
 typedef itk::DiscreteHessianGaussianImageFunction< cip::CTType >                  HessianImageFunctionType ;
-typedef itk::CastImageFilter< cip::CTType, FloatImageType >                       CastType;
+
+struct FEATUREVECTOR
+{
+  double eigenVector[3];
+  short  intensity;
+  double distanceToVessel;
+  double distanceToLobeSurface;
+  double angleWithLobeSurfaceNormal;
+  double pMeasure;
+  double fMeasure;
+  std::list< double > eigenValues;
+  std::list< double > eigenValueMags;
+};
 
 DistanceImageType::Pointer GetVesselDistanceMap( cip::CTType::SpacingType, cip::CTType::SizeType, 
 						 cip::CTType::PointType, vtkSmartPointer< vtkPolyData > );
+FEATUREVECTOR ComputeFissureFeatureVector( cip::CTType::IndexType, cip::CTType::Pointer, 
+					   DistanceImageType::Pointer, const cipThinPlateSplineSurface&,  
+					   const cipThinPlateSplineSurface&,  const cipThinPlateSplineSurface&,
+					   HessianImageFunctionType::Pointer );
+double GetFissureProbability( FEATUREVECTOR );
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  // cip::CTType::SizeType size;
-  // size[0] = 11;
-  // size[1] = 11;
-  // size[2] = 11;
-
-  // cip::CTType::SpacingType spacing;
-  // spacing[0] = 1;
-  // spacing[1] = 1;
-  // spacing[2] = 1;
-
-  // cip::CTType::Pointer fissureImage = cip::CTType::New();
-  // fissureImage->SetRegions( size );
-  // fissureImage->Allocate();
-  // fissureImage->SetSpacing( spacing );
-  // fissureImage->FillBuffer( -1000 );
-
-  // cip::CTType::IndexType tmpIndex;
-  // tmpIndex[2] = 5;
-
-  // for ( unsigned i=0; i<11; i++ )
-  //   {
-  //     tmpIndex[0] = i;
-  //     for ( unsigned j=0; j<11; j++ )
-  // 	{
-  // 	  tmpIndex[1] = j;
-  // 	  fissureImage->SetPixel( tmpIndex, -650 );
-  // 	}
-  //   }
-
-  // cip::CTWriterType::Pointer foo = cip::CTWriterType::New();
-  // foo->SetInput( fissureImage );
-  // foo->SetFileName( "/Users/jross/Downloads/ChestImagingPlatformPrivate/Testing/Data/Input/simple_fissure.nrrd" );
-  // foo->UseCompressionOn();
-  // foo->Update();
-
-  // Instatiate ChestConventions for general convenience later
   cip::ChestConventions conventions;
 
-  // vtkPolyDataReader* fooReader = vtkPolyDataReader::New();
-  //   fooReader->SetFileName( "/Users/jross/Projects/Data/Processed/COPDGene/10017X/10017X_INSP_STD_BWH_COPD/10017X_INSP_STD_BWH_COPD_rightObliqueGroundTruthParticles.vtk" );
-  //   fooReader->Update();    
+  cipThinPlateSplineSurface rhTPS;
+  cipThinPlateSplineSurface roTPS;
+  cipThinPlateSplineSurface loTPS;
 
-    //fooReader->GetOutput()->Print( std::cout );
+  if ( rightShapeModelFileName.compare( "NA" ) != 0 )
+    {
+      std::cout << "Reading right shape model..." << std::endl;
+      cip::LobeSurfaceModelIO rightShapeModelIO;
+        rightShapeModelIO.SetFileName( rightShapeModelFileName );
+      try
+	{
+	rightShapeModelIO.Read();
+	}
+      catch ( cip::ExceptionObject &excp )
+	{
+	std::cerr << "Exception caught reading right shape model:";
+	std::cerr << excp << std::endl;
+	return cip::EXITFAILURE;
+	}
+      rightShapeModelIO.GetOutput()->SetRightLungSurfaceModel( true );
 
-  // std::cout << "heval0:\t" << fooReader->GetOutput()->GetPointData()->GetArray( "h0" )->GetTuple( 0 )[0] << std::endl;
-  // std::cout << "heval1:\t" << fooReader->GetOutput()->GetPointData()->GetArray( "h1" )->GetTuple( 0 )[0] << std::endl;
-  // std::cout << "heval2:\t" << fooReader->GetOutput()->GetPointData()->GetArray( "h2" )->GetTuple( 0 )[0] << std::endl;
+      rhTPS.SetSurfacePoints( rightShapeModelIO.GetOutput()->GetMeanRightHorizontalSurfacePoints() );
+      roTPS.SetSurfacePoints( rightShapeModelIO.GetOutput()->GetMeanRightObliqueSurfacePoints() );
+    }
+  else if ( leftShapeModelFileName.compare( "NA" ) != 0 )
+    {
+      std::cout << "Reading left shape model..." << std::endl;
+      cip::LobeSurfaceModelIO leftShapeModelIO;
+        leftShapeModelIO.SetFileName( leftShapeModelFileName );
+      try
+	{
+	leftShapeModelIO.Read();
+	}
+      catch ( cip::ExceptionObject &excp )
+	{
+	std::cerr << "Exception caught reading left shape model:";
+	std::cerr << excp << std::endl;
+	return cip::EXITFAILURE;
+	}
 
-  // std::cout << "Reading vessel particles..." << std::endl;
-  // vtkPolyDataReader* vesselParticlesReader = vtkPolyDataReader::New();
-  //   vesselParticlesReader->SetFileName( vesselParticlesFileName.c_str() );
-  //   vesselParticlesReader->Update();    
+      loTPS.SetSurfacePoints( leftShapeModelIO.GetOutput()->GetMeanSurfacePoints() );
+    }
+  else 
+    {
+      std::cerr << "Must specify a shape model file name." << std::endl;
+      return 1;
+    }
+
+  std::cout << "Reading label map..." << std::endl;
+  cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
+    labelMapReader->SetFileName( labelMapFileName );
+  try
+    {
+    labelMapReader->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught reading label map:";
+    std::cerr << excp << std::endl;
+    }
 
   std::cout << "Reading CT image..." << std::endl;
   cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
@@ -97,171 +126,133 @@ int main( int argc, char *argv[] )
   catch ( itk::ExceptionObject &excp )
     {
     std::cerr << "Exception caught while reading label map:";
-    std::cerr << excp << std::endl;
-      
+    std::cerr << excp << std::endl;      
     return cip::NRRDREADFAILURE;
     }
 
-  // CastType::Pointer caster = CastType::New();
-  //   caster->SetInput( ctReader->GetOutput() );
-  //   caster->Update();
+  std::cout << "Reading vessel particles..." << std::endl;
+  vtkSmartPointer< vtkPolyDataReader > vesselParticlesReader = vtkPolyDataReader::New();
+    vesselParticlesReader->SetFileName( vesselParticlesFileName.c_str() );
+    vesselParticlesReader->Update();    
 
-  // cip::CTType::PointType point;
-  //   point[0] = fooReader->GetOutput()->GetPoint( 0 )[0];
-  //   point[1] = fooReader->GetOutput()->GetPoint( 0 )[1];
-  //   point[2] = fooReader->GetOutput()->GetPoint( 0 )[2];
+  vtkSmartPointer< vtkPolyData > vesselParticles = vtkSmartPointer< vtkPolyData >::New();
+  cip::TransferFieldDataToFromPointData( vesselParticlesReader->GetOutput(), vesselParticles, 
+  					 true, false, true, false );
 
-  cip::CTType::IndexType index;
-  index[0] = 5;
-  index[1] = 5;
-  index[2] = 5;
+  // Input vessel particles are expected to be "raw" (unfiltered). We filter here
+  // for consistency
+  double interParticleSpacing = 1.5;
+  unsigned int componentSizeThreshold = 10;
+  double maxAllowableDistance = 3.0; 
+  double particleAngleThreshold = 20.0;
+  double scaleRatioThreshold = 0.25;
+  unsigned int maxComponentSize = std::numeric_limits<unsigned int>::max();
+  double maxAllowableScale = 5.0;
+  double minAllowableScale = 0.0;
 
-  // ctReader->GetOutput()->TransformPhysicalPointToIndex( point, index );
-  // std::cout << "Index:\t" << index << std::endl;
+  std::cout << "Filtering vessel particles..." << std::endl;
+  cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
+    filter->SetInterParticleSpacing( interParticleSpacing );
+    filter->SetComponentSizeThreshold( componentSizeThreshold );
+    filter->SetParticleDistanceThreshold( maxAllowableDistance );
+    filter->SetParticleAngleThreshold( particleAngleThreshold );
+    filter->SetScaleRatioThreshold( scaleRatioThreshold );
+    filter->SetMaximumComponentSize( maxComponentSize );
+    filter->SetMaximumAllowableScale( maxAllowableScale );
+    filter->SetMinimumAllowableScale( minAllowableScale );
+    filter->SetInput( vesselParticles );
+    filter->Update();
 
-  HessianImageFunctionType::TensorType::EigenValuesArrayType eigenValues;
-  HessianImageFunctionType::TensorType::EigenVectorsMatrixType eigenVectors;
+  if ( filter->GetOutput()->GetNumberOfPoints() == 0 )
+    {
+      std::cerr << "No vessel particles. Exiting." << std::endl;
+      return cip::EXITFAILURE;
+    }
 
-  HessianImageFunctionType::TensorType hessian;
+  std::cout << "Getting vessel distance map..." << std::endl;
+  DistanceImageType::Pointer distanceMap = DistanceImageType::New();
+  distanceMap = 
+    GetVesselDistanceMap( ctReader->GetOutput()->GetSpacing(), ctReader->GetOutput()->GetBufferedRegion().GetSize(), 
+  			  ctReader->GetOutput()->GetOrigin(), filter->GetOutput() );
 
   unsigned int maxKernelWidth = 100;
   double variance = 1.0;
   double maxError = 0.01;
-
   HessianImageFunctionType::Pointer hessianFunction = HessianImageFunctionType::New();
     hessianFunction->SetUseImageSpacing( true );
     hessianFunction->SetNormalizeAcrossScale( false );
-    //hessianFunction->SetInputImage( caster->GetOutput() );
     hessianFunction->SetInputImage( ctReader->GetOutput() );
     hessianFunction->SetMaximumError( maxError );
     hessianFunction->SetMaximumKernelWidth( maxKernelWidth );
     hessianFunction->SetVariance( variance );
     hessianFunction->Initialize();
 
-  hessian = hessianFunction->EvaluateAtIndex( index );
-  hessian.ComputeEigenAnalysis( eigenValues, eigenVectors);
+  // Allocation space for the output image
+  cip::CTType::Pointer outImage = cip::CTType::New();
+    outImage->SetRegions( ctReader->GetOutput()->GetBufferedRegion().GetSize() );
+    outImage->Allocate();
+    outImage->FillBuffer( -1000 );
+    outImage->SetSpacing( ctReader->GetOutput()->GetSpacing() );
+    outImage->SetOrigin( ctReader->GetOutput()->GetOrigin() );
 
-  for ( int i=0; i<3; i++ )
+  CTIteratorType ctIt( ctReader->GetOutput(), ctReader->GetOutput()->GetBufferedRegion() );
+  CTIteratorType outIt( outImage, outImage->GetBufferedRegion() );
+  LabelMapIteratorType lIt( labelMapReader->GetOutput(), labelMapReader->GetOutput()->GetBufferedRegion() );
+
+  std::list< double >::iterator eigenValIt;
+  
+  std::cout << "Enhancing fissures..." << std::endl;
+  ctIt.GoToBegin();
+  lIt.GoToBegin();
+  outIt.GoToBegin();
+
+  unsigned int inc = 0;
+  cip::CTType::SizeType size = ctReader->GetOutput()->GetBufferedRegion().GetSize();
+
+  while ( !ctIt.IsAtEnd() )
     {
-      std::cout << "--------------------------------" << std::endl;
-      std::cout << "val:\t" << eigenValues[i] << std::endl;
-      std::cout << "vec:\t";
-      for ( int j=0; j<3; j++ )
+      if ( ctIt.GetIndex()[2] > 300 && ctIt.GetIndex()[2] < 400 && ctIt.GetIndex()[1] > 260 && ctIt.GetIndex()[1] < 320 && ctIt.GetIndex()[0] > 80 && ctIt.GetIndex()[0] < 120 )
 	{
-	  std::cout << eigenVectors(i, j) << "\t";
-	}      
-      std::cout << std::endl;
+	  if ( lIt.Get() != 0 && ctIt.Get() < -650 )
+	    {
+	      FEATUREVECTOR vec = ComputeFissureFeatureVector( ctIt.GetIndex(), ctReader->GetOutput(), distanceMap, 
+							       rhTPS, roTPS, loTPS, hessianFunction );
+	      if ( *vec.eigenValues.begin() < 0 && vec.distanceToVessel > 2 )
+		{
+		  double prob = GetFissureProbability( vec );
+		  outIt.Set( short(-1000.0*(1.0 - prob) + prob*(double(ctIt.Get()) + 0.0)));
+		  
+		  if ( inc % 50000 == 0 )
+		    {
+		      std::cout << double(inc)/double(size[0]*size[1]*size[2]) << std::endl;
+		    }
+		}	
+	    }
+	}
+
+      inc++;
+      ++outIt;
+      ++ctIt;
+      ++lIt;
     }
 
-  // cip::CTType::IndexType tmp;
-  // for ( int x = -1; x<=1; x++ )
-  //   {
-  //     for ( int y = -1; y<=1; y++ )
-  // 	{
-  // 	  for ( int z = -1; z<=1; z++ )
-  // 	    {
-  // 	      tmp[0] = index[0] + x;
-  // 	      tmp[1] = index[1] + y;
-  // 	      tmp[2] = index[2] + z;
-  // 	      hessian = hessianFunction->EvaluateAtIndex( tmp );
-  // 	      hessian.ComputeEigenAnalysis( eigenValues, eigenVectors);
-  // 	      std::cout << eigenValues << std::endl;	      
-  // 	    }
-  // 	}
-  //   }
-
-
-  // CTIteratorType cIt( ctReader->GetOutput(), ctReader->GetOutput()->GetBufferedRegion() );
-  // std::cout << "Computing..." << std::endl;
-  // cIt.GoToBegin();
-  // while ( !cIt.IsAtEnd() )
-  //   {
-  //     ++cIt;
-  //   }
-
-
-  // std::cout << "Getting vessel distance map..." << std::endl;
-  // DistanceImageType::Pointer distanceMap = 
-  //   GetVesselDistanceMap( ctReader->GetOutput()->GetSpacing(), ctReader->GetOutput()->GetBufferedRegion().GetSize(), 
-  // 			  ctReader->GetOutput()->GetOrigin(), vesselParticlesReader->GetOutput() );
-
-  // std::cout << "Reading lung label map..." << std::endl;
-  // cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
-  //   labelMapReader->SetFileName( labelMapFileName );
-  // try
-  //   {
-  //   labelMapReader->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught while reading label map:";
-  //   std::cerr << excp << std::endl;
-      
-  //   return cip::LABELMAPREADFAILURE;
-  //   }
-  
-  // LabelMapIteratorType lIt( labelMapReader->GetOutput(), labelMapReader->GetOutput()->GetBufferedRegion() );
-  // DistanceImageIteratorType dIt( distanceMap, distanceMap->GetBufferedRegion() );
-
-  // double meanHU   = -828.0;
-  // double varHU    = 2091.0;
-  // double meanDist = 9.7;
-  // double varDist  = 8.3;
-
-  // short minCT = -950;
-  // short maxCT = -650;
-
-  // std::cout << "Enhancing fissures..." << std::endl;
-  // cIt.GoToBegin();
-  // lIt.GoToBegin();
-  // dIt.GoToBegin();
-  // while ( !cIt.IsAtEnd() )
-  //   {
-  //     if ( lIt.Get() > 0 )
-  // 	{
-  // 	  if ( cIt.Get() > minCT && cIt.Get() < maxCT )
-  // 	    {
-  // 	      cip::CTType::PointType point;
-  // 	      ctReader->GetOutput()->TransformIndexToPhysicalPoint( cIt.GetIndex(), point );
-	      
-  // 	      double huTerm   = std::exp( -0.5*std::pow(cIt.Get() - meanHU, 2)/varHU );
-  // 	      double distTerm = std::exp( -0.5*std::pow(std::abs(dIt.Get()) - meanDist, 2)/varDist );	      
-  // 	      //double newValue = 1000.0*( huTerm*distTerm - 1.0 );
-  // 	      //double newValue = -1000.0*(1.0 - huTerm*distTerm) + (cIt.Get())*huTerm*distTerm;
-  // 	      double newValue = -1000.0*(1.0 - distTerm) + (cIt.Get())*distTerm;
-  // 	      //double newValue = cIt.Get()*huTerm*distTerm;
-  // 	      // std::cout << "-----------------------------" << std::endl;
-  // 	      // std::cout << "huTerm:\t" << huTerm << std::endl;
-  // 	      // std::cout << "distTerm:\t" << distTerm << std::endl;
-  // 	      // std::cout << "CT:\t" << cIt.Get() << std::endl;
-  // 	      // std::cout << "newValue:\t" << newValue << std::endl;
-  // 	      cIt.Set( short(newValue) );
-  // 	    }
-  // 	  else
-  // 	    {
-  // 	      cIt.Set( -1000 );
-  // 	    }
-  // 	}      
-      
-  //     ++cIt;
-  //     ++lIt;
-  //     ++dIt;
-  //   }
-
-  // std::cout << "Writing enhanced image..." << std::endl;
-  // cip::CTWriterType::Pointer writer = cip::CTWriterType::New();
-  //   writer->SetInput( ctReader->GetOutput() );
-  //   writer->UseCompressionOn();
-  //   writer->SetFileName( outFileName );
-  // try
-  //   {
-  //   writer->Update();
-  //   }
-  // catch ( itk::ExceptionObject &excp )
-  //   {
-  //   std::cerr << "Exception caught writing enhanced image:";
-  //   std::cerr << excp << std::endl;
-  //   }
+  if ( outFileName.compare("NA") != 0 )
+    {
+      std::cout << "Writing enhanced image..." << std::endl;
+      cip::CTWriterType::Pointer writer = cip::CTWriterType::New();
+        writer->SetInput( outImage );
+	writer->UseCompressionOn();
+	writer->SetFileName( outFileName );
+      try
+	{
+	  writer->Update();
+	}
+      catch ( itk::ExceptionObject &excp )
+	{
+	  std::cerr << "Exception caught writing enhanced image:";
+	  std::cerr << excp << std::endl;
+	}
+    }    
 
   std::cout << "DONE." << std::endl;
 
@@ -321,7 +312,201 @@ DistanceImageType::Pointer GetVesselDistanceMap( cip::CTType::SpacingType spacin
     std::cerr << excp << std::endl;
     }
 
+  DistanceWriterType::Pointer writer = DistanceWriterType::New();
+  writer->SetInput( distanceMap->GetOutput() );
+  writer->UseCompressionOn();
+  writer->SetFileName( "/Users/jross/tmp/foo_dist.nhdr" );
+  writer->Update();
+
   return distanceMap->GetOutput();
+}
+
+FEATUREVECTOR ComputeFissureFeatureVector( cip::CTType::IndexType index, cip::CTType::Pointer ct, 
+					   DistanceImageType::Pointer distanceMap, const cipThinPlateSplineSurface& rhTPS,  
+					   const cipThinPlateSplineSurface& roTPS,  const cipThinPlateSplineSurface& loTPS,
+					   HessianImageFunctionType::Pointer hessianFunction )
+{
+  FEATUREVECTOR vec;
+
+  // Mean and variance intensity values empirically found for 
+  // fissures
+  double meanHU = -828.0;
+  double varHU  = 2091.0;
+
+  HessianImageFunctionType::TensorType::EigenValuesArrayType eigenValues;
+  HessianImageFunctionType::TensorType::EigenVectorsMatrixType eigenVectors;
+  HessianImageFunctionType::TensorType hessian;
+
+  cip::PointType point(3);
+  cip::CTType::PointType imPoint;
+  ct->TransformIndexToPhysicalPoint( index, imPoint );
+
+  point[0] = imPoint[0];
+  point[1] = imPoint[1];
+  point[2] = imPoint[2];
+
+  vec.intensity = ct->GetPixel( index );
+  vec.distanceToVessel = std::abs( distanceMap->GetPixel( index ) );
+
+  hessian = hessianFunction->EvaluateAtIndex( index );
+  hessian.ComputeEigenAnalysis( eigenValues, eigenVectors);      
+  
+  vec.eigenValues.push_back( eigenValues[0] );
+  vec.eigenValues.push_back( eigenValues[1] );
+  vec.eigenValues.push_back( eigenValues[2] );
+  vec.eigenValues.sort();
+  
+  for ( unsigned int i=0; i<3; i++ )
+    {
+      if ( eigenValues[i] == *vec.eigenValues.begin() )
+	{
+	  vec.eigenVector[0] = eigenVectors(i, 0);
+	  vec.eigenVector[1] = eigenVectors(i, 1);
+	  vec.eigenVector[2] = eigenVectors(i, 2);
+	}
+    }
+  
+  vec.eigenValueMags.push_back( std::abs(eigenValues[0]) );
+  vec.eigenValueMags.push_back( std::abs(eigenValues[1]) );
+  vec.eigenValueMags.push_back( std::abs(eigenValues[2]) );
+  vec.eigenValueMags.sort();
+  
+  if ( loTPS.GetNumberSurfacePoints() > 0 )
+    {
+      vec.distanceToLobeSurface = cip::GetDistanceToThinPlateSplineSurface( loTPS, point );
+      
+      cip::VectorType normal(3);
+      cip::PointType tpsPoint(3);
+      
+      cip::GetClosestPointOnThinPlateSplineSurface( loTPS, point, tpsPoint );
+      loTPS.GetSurfaceNormal( tpsPoint[0], tpsPoint[1], normal );
+      
+      cip::VectorType tmpVec(3);
+      tmpVec[0] = vec.eigenVector[0];
+      tmpVec[1] = vec.eigenVector[1];
+      tmpVec[2] = vec.eigenVector[2];
+      vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, tmpVec, true);
+    }
+  else if ( roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0 )
+    {
+      double roDist = cip::GetDistanceToThinPlateSplineSurface( roTPS, point );
+      double rhDist = cip::GetDistanceToThinPlateSplineSurface( rhTPS, point );
+      
+      double roHeight = roTPS.GetSurfaceHeight( point[0], point[1] );
+      double rhHeight = rhTPS.GetSurfaceHeight( point[0], point[1] );
+      
+      if ( rhDist < roDist && rhHeight > roHeight )
+	{
+	  vec.distanceToLobeSurface = rhDist;
+	  
+	  cip::VectorType normal(3);
+	  cip::PointType tpsPoint(3);
+	  
+	  cip::GetClosestPointOnThinPlateSplineSurface( rhTPS, point, tpsPoint );
+	  rhTPS.GetSurfaceNormal( tpsPoint[0], tpsPoint[1], normal );
+	  
+	  cip::VectorType tmpVec(3);
+	  tmpVec[0] = vec.eigenVector[0];
+	  tmpVec[1] = vec.eigenVector[1];
+	  tmpVec[2] = vec.eigenVector[2];
+	  
+	  vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, tmpVec, true);
+	}
+      else
+	{
+	  vec.distanceToLobeSurface = roDist;
+	  
+	  cip::VectorType normal(3);
+	  cip::PointType tpsPoint(3);
+	  
+	  cip::GetClosestPointOnThinPlateSplineSurface( roTPS, point, tpsPoint );
+	  roTPS.GetSurfaceNormal( tpsPoint[0], tpsPoint[1], normal );
+	  
+	  cip::VectorType tmpVec(3);
+	  tmpVec[0] = vec.eigenVector[0];
+	  tmpVec[1] = vec.eigenVector[1];
+	  tmpVec[2] = vec.eigenVector[2];
+	  
+	  vec.angleWithLobeSurfaceNormal = cip::GetAngleBetweenVectors(normal, tmpVec, true);
+	}
+    }
+  else
+    {
+      std::cerr << "Insufficient lobe boundary surface points." << std::endl;
+    }
+  
+  // Compute the pMeasaure, as given by equations 2 and 3 in 'Supervised Enhancement Filters : 
+  // Application to Fissure Detection in Chest CT Scans' (van Rikxoort):
+  if ( *vec.eigenValues.begin() < 0 )
+    {
+      vec.pMeasure = (*vec.eigenValueMags.rbegin() - *vec.eigenValueMags.begin())/
+	(*vec.eigenValueMags.rbegin() + *vec.eigenValueMags.begin());
+    }
+  else
+    {
+      vec.pMeasure = 0;
+    }
+  
+  // Compute the fMeasaure, as given by equation 4 in 'Supervised Enhancement Filters : 
+  // Application to Fissure Detection in Chest CT Scans' (van Rikxoort):
+  vec.fMeasure = std::exp( -std::pow( vec.intensity - meanHU, 2 )/(2*varHU) )*vec.pMeasure;
+
+  return vec;
+}
+
+double GetFissureProbability( FEATUREVECTOR vec )
+{
+  // The following values were learned from a training set
+  // taken from COPDGene data
+  double intercept                     =  1.20702066;
+  double eigenValue0_co                = -0.0838340285296;
+  double eigenValue1_co                =  0.0646291719633;
+  double eigenValue2_co                = -0.0612478543215;
+  double eigenValueMag0_co             = -0.0355337954651;
+  double eigenValueMag1_co             = -0.0260964307701;
+  double eigenValueMag2_co             =  0.0121555946598;
+  double intensity_co                  = -0.000514098310704;
+  double distanceToVessel_co           =  0.0497639090219;
+  double distanceToLobeSurface_co      = -0.103594456986;
+  double angleWithLobeSurfaceNormal_co = -0.064595541012;
+  double pMeasure_co                   =  0.687978749475;
+  double fMeasure_co                   =  3.23773903683;
+
+  std::list<double>::iterator itv = vec.eigenValues.begin();
+  std::list<double>::iterator itm = vec.eigenValueMags.begin();
+
+  double eigenValue0                = *itv; ++itv;
+  double eigenValue1                = *itv; ++itv;
+  double eigenValue2                = *itv;
+  double eigenValueMag0             = *itm; ++itm;
+  double eigenValueMag1             = *itm; ++itm;
+  double eigenValueMag2             = *itm;
+  double intensity                  = double(vec.intensity);
+  double distanceToVessel           = vec.distanceToVessel;
+  double distanceToLobeSurface      = vec.distanceToLobeSurface;
+  double angleWithLobeSurfaceNormal = vec.angleWithLobeSurfaceNormal;
+  double pMeasure                   = vec.pMeasure;
+  double fMeasure                   = vec.fMeasure;
+
+  std::list< double > eigenValues;
+  std::list< double > eigenValueMags;  
+
+  double expArg =
+    intercept +
+    eigenValue0*eigenValue0_co +
+    eigenValue1*eigenValue1_co +
+    eigenValue2*eigenValue2_co +
+    eigenValueMag0*eigenValueMag0_co +
+    eigenValueMag1*eigenValueMag1_co +
+    eigenValueMag2*eigenValueMag2_co +
+    intensity*intensity_co +
+    distanceToVessel*distanceToVessel_co +
+    distanceToLobeSurface*distanceToLobeSurface_co +
+    angleWithLobeSurfaceNormal*angleWithLobeSurfaceNormal_co +
+    pMeasure*pMeasure_co +
+    fMeasure*fMeasure_co;
+
+  return 1.0/(1.0 + std::exp(-expArg));
 }
 
 #endif
