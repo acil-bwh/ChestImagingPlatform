@@ -2,7 +2,8 @@
 <executable>
   <category>Chest Imaging Platform.Toolkit.Segmentation</category>
   <title>EnhanceFissuresInImage</title>
-  <description><![CDATA[This program...]]>
+  <description><![CDATA[This program enhances fissure image features using logistic regression \
+  classifiers.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
@@ -33,15 +34,6 @@
       <description><![CDATA[Input CT file to be enhanced.]]></description>
       <default>NA</default>
     </image>  
-
-    <string>
-      <name>vesselParticlesFileName</name>
-      <label>Vessel particles file name</label>
-      <channel>input</channel>
-      <longflag>vp</longflag>
-      <description><![CDATA[Vessel particles to use for the enhancement.]]></description>
-      <default>NA</default>
-    </string>  
 
     <image type="label">
       <name>outFileName</name>
