@@ -187,48 +187,45 @@ int main( int argc, char *argv[] )
   int lastZ = -1;
   while ( !ctIt.IsAtEnd() )
     {
-      if ( ctIt.GetIndex()[2] > 300 && ctIt.GetIndex()[2] < 400 && ctIt.GetIndex()[1] > 260 && ctIt.GetIndex()[1] < 320 && ctIt.GetIndex()[0] > 80 && ctIt.GetIndex()[0] < 120 )
-      	{
-  	  if ( lIt.Get() != 0 && ctIt.Get() < -650 )
-  	    {
-	      cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-	      if ( (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::LEFTLUNG) ) &&
-		    loTPS.GetNumberSurfacePoints() > 0) ||
-		   (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::RIGHTLUNG) ) &&
-		    roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0) )
+      if ( lIt.Get() != 0 && ctIt.Get() < -650 )
+	{
+	  cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
+	  if ( (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::LEFTLUNG) ) &&
+		loTPS.GetNumberSurfacePoints() > 0) ||
+	       (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::RIGHTLUNG) ) &&
+		roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0) )
+	    {
+	      ctReader->GetOutput()->TransformIndexToPhysicalPoint( ctIt.GetIndex(), imPoint );
+	      
+	      FEATUREVECTORINFO vec;
+	      vec.intensity = ctIt.Get();
+	      
+	      UpdateFeatureVectorWithShapeModelInfo( imPoint, vec, rhTPS, roTPS, loTPS );
+	      prob = GetIntensityAndShapeModelFeaturesProbability( vec );
+	      
+	      // The following probability threshold corresponds to a 0.995 TPR. Only consider
+	      // points with at least this probability of being a fissure helps reduce computation
+	      // (we only compute additional features for those points that are likely candidates)
+	      if ( prob > 0.111636111749 )
 		{
-		  ctReader->GetOutput()->TransformIndexToPhysicalPoint( ctIt.GetIndex(), imPoint );
-  
-		  FEATUREVECTORINFO vec;
-		  vec.intensity = ctIt.Get();
-
-		  UpdateFeatureVectorWithShapeModelInfo( imPoint, vec, rhTPS, roTPS, loTPS );
-		  prob = GetIntensityAndShapeModelFeaturesProbability( vec );
-
-		  // The following probability threshold corresponds to a 0.995 TPR. Only consider
-		  // points with at least this probability of being a fissure helps reduce computation
-		  // (we only compute additional features for those points that are likely candidates)
-		  if ( prob > 0.111636111749 )
+		  UpdateFeatureVectorWithHessianInfo( ctIt.GetIndex(), imPoint, hessianFunction,
+						      rhTPS, roTPS, loTPS, vec );
+		  if ( *vec.eigenValues.begin() < 0 )
 		    {
-		      UpdateFeatureVectorWithHessianInfo( ctIt.GetIndex(), imPoint, hessianFunction,
-							  rhTPS, roTPS, loTPS, vec );
-		      if ( *vec.eigenValues.begin() < 0 )
+		      prob = GetIntensityShapeModelAndHessianFeaturesProbability( vec );
+		      if ( prob > 0.0441242935955 )
 			{
-			  prob = GetIntensityShapeModelAndHessianFeaturesProbability( vec );
-			  if ( prob > 0.0441242935955 )
-			    {
-			      UpdateFeatureVectorWithGradientInfo( ctIt.GetIndex(), derivativeFunction, vec );
-			      prob = GetIntensityShapeModelHessianAndGradientFeaturesProbability( vec );
-
-			      short newVal = short(prob*(double(ctIt.Get()) + 1000.0) - 1000.0);
-			      outIt.Set( newVal );
-			    }
+			  UpdateFeatureVectorWithGradientInfo( ctIt.GetIndex(), derivativeFunction, vec );
+			  prob = GetIntensityShapeModelHessianAndGradientFeaturesProbability( vec );
+			  
+			  short newVal = short(prob*(double(ctIt.Get()) + 1000.0) - 1000.0);
+			  outIt.Set( newVal );
 			}
 		    }
 		}
 	    }
 	}
-
+    
       // if ( ctIt.GetIndex()[2] != lastZ )
       // 	{
       // 	  lastZ = ctIt.GetIndex()[2];
