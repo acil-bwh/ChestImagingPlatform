@@ -464,9 +464,9 @@ if __name__ == "__main__":
                       help='Output csv file in which to store the computed \
                       dataframe', dest='out_csv', metavar='<string>',
                       default=None)
-    parser.add_option('--cid',
-                      help='The case ID', dest='cid', metavar='<string>',
-                      default=None)
+    parser.add_option('--db_cid',
+                      help='The database case ID', dest='db_cid',
+                      metavar='<string>', default=None)
     parser.add_option('-r',
                       help='Chest regions. Should be specified as a \
                       common-separated list of string values indicating the \
@@ -523,7 +523,7 @@ if __name__ == "__main__":
     paren_pheno = ParenchymaPhenotypes(chest_regions=regions,
             chest_types=types, pairs=pairs, pheno_names=pheno_names)
 
-    df = paren_pheno.execute(ct, lm, options.cid, spacing)
+    df = paren_pheno.execute(ct, lm, options.db_cid, spacing)
     
     if options.out_csv is not None:
         df.to_csv(options.out_csv, index=False)
