@@ -15,13 +15,6 @@
 cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric
 ::cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric()
 {
-  // The 'cipThinPlateSplineSurface' class wraps functionality for
-  // constructing and accessing data for a TPS interpolating surface
-  // given a set of surface points 
-  this->RightObliqueParticleToTPSMetric.SetThinPlateSplineSurface( this->RightObliqueThinPlateSplineSurface );
-  this->RightHorizontalParticleToTPSMetric.SetThinPlateSplineSurface( this->RightHorizontalThinPlateSplineSurface );
-  this->RightObliqueNewtonOptimizer.SetMetric( this->RightObliqueParticleToTPSMetric );
-  this->RightHorizontalNewtonOptimizer.SetMetric( this->RightHorizontalParticleToTPSMetric );
 }
 
 
@@ -119,13 +112,22 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
   // Now that we have our surface points, we can construct the TPS
   // surfaces corresponding to the right horizontal and right oblique
   // boundaries
-  this->RightHorizontalThinPlateSplineSurface.SetSurfacePoints( this->RightHorizontalSurfacePoints );
-  this->RightObliqueThinPlateSplineSurface.SetSurfacePoints( this->RightObliqueSurfacePoints );
+  this->RightObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+    SetSurfacePoints( this->RightObliqueSurfacePoints );
+  this->RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+    SetSurfacePoints( this->RightHorizontalSurfacePoints );
+
+  double regularizer = 0;
+  for ( unsigned int m=0; m<this->NumberOfModes; m++ )      
+    {
+      regularizer += std::pow((*params)[m], 2);
+    }
 
   double fissureTermValue = this->GetFissureTermValue();
   double vesselTermValue  = this->GetVesselTermValue();
 
-  double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue;
+  double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue +
+    this->RegularizationWeight*regularizer;
 
   return value;
 }
@@ -164,8 +166,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
 
     // Determine the domain locations for which the particle is closest
     // to the right oblique and right horizontal TPS surfaces
-    this->RightObliqueParticleToTPSMetric.SetParticle( position );
-    this->RightHorizontalParticleToTPSMetric.SetParticle( position );
+    this->RightObliqueNewtonOptimizer.GetMetric().SetParticle( position );
+    this->RightHorizontalNewtonOptimizer.GetMetric().SetParticle( position );
 
     // The particle's x, and y location are a good place to initialize
     // the search for the domain locations that result in the smallest
@@ -193,10 +195,12 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     double rhDistance = vcl_sqrt( this->RightHorizontalNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
-    this->RightObliqueThinPlateSplineSurface.GetSurfaceNormal( (*roOptimalParams)[0], (*roOptimalParams)[1], roNormal );
+    this->RightObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*roOptimalParams)[0], (*roOptimalParams)[1], roNormal );
     double roTheta = cip::GetAngleBetweenVectors( roNormal, orientation, true );
 
-    this->RightHorizontalThinPlateSplineSurface.GetSurfaceNormal( (*rhOptimalParams)[0], (*rhOptimalParams)[1], rhNormal );
+    this->RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*rhOptimalParams)[0], (*rhOptimalParams)[1], rhNormal );
     double rhTheta = cip::GetAngleBetweenVectors( rhNormal, orientation, true );
 
     // A given particle can only contribute to the metric through association to either the
@@ -217,9 +221,11 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
       {
 	fissureTermValue += roTerm;
       }
-    else if ( (this->RightHorizontalThinPlateSplineSurface.GetSurfaceHeight( position[0], position[1] ) >
-    	 this->RightObliqueThinPlateSplineSurface.GetSurfaceHeight( position[0], position[1] ) &&
-    	 rhTerm < roTerm) || cipType == float(cip::HORIZONTALFISSURE) )
+
+    else if ( (this->RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+	       GetSurfaceHeight( position[0], position[1] ) > this->RightObliqueNewtonOptimizer.
+	       GetMetric().GetThinPlateSplineSurface().GetSurfaceHeight( position[0], position[1] ) &&
+	       rhTerm < roTerm) || cipType == float(cip::HORIZONTALFISSURE) )
       {
     	fissureTermValue += rhTerm;
       }
@@ -259,8 +265,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermV
 
     // Determine the domain locations for which the particle is closest
     // to the right oblique and right horizontal TPS surfaces
-    this->RightObliqueParticleToTPSMetric.SetParticle( position );
-    this->RightHorizontalParticleToTPSMetric.SetParticle( position );
+    this->RightObliqueNewtonOptimizer.GetMetric().SetParticle( position );
+    this->RightHorizontalNewtonOptimizer.GetMetric().SetParticle( position );
 
     // The particle's x, and y location are a good place to initialize
     // the search for the domain locations that result in the smallest
@@ -288,10 +294,12 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermV
     double rhDistance = vcl_sqrt( this->RightHorizontalNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
-    this->RightObliqueThinPlateSplineSurface.GetSurfaceNormal( (*roOptimalParams)[0], (*roOptimalParams)[1], roNormal );
+    this->RightObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*roOptimalParams)[0], (*roOptimalParams)[1], roNormal );
     double roTheta = cip::GetAngleBetweenVectors( roNormal, orientation, true );
 
-    this->RightHorizontalThinPlateSplineSurface.GetSurfaceNormal( (*rhOptimalParams)[0], (*rhOptimalParams)[1], rhNormal );
+    this->RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*rhOptimalParams)[0], (*rhOptimalParams)[1], rhNormal );
     double rhTheta = cip::GetAngleBetweenVectors( rhNormal, orientation, true );
 
     // Now that we have the surface normals and distances, we can compute this 
@@ -299,8 +307,9 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermV
     // we only consider the right horizontal boundary surface provided that the
     // surface right horizontal surface point is above the right oblique surface
     // point.
-    if ( this->RightHorizontalThinPlateSplineSurface.GetSurfaceHeight( position[0], position[1] ) >
-	 this->RightObliqueThinPlateSplineSurface.GetSurfaceHeight( position[0], position[1] ) )
+    if ( this->RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+	 GetSurfaceHeight( position[0], position[1] ) > this->RightObliqueNewtonOptimizer.GetMetric().
+	 GetThinPlateSplineSurface().GetSurfaceHeight( position[0], position[1] ) )
       {
 	vesselTermValue += this->VesselParticleWeights[i]*std::exp( -rhDistance/this->VesselSigmaDistance )*
 	  std::exp( -rhTheta/this->VesselSigmaTheta );

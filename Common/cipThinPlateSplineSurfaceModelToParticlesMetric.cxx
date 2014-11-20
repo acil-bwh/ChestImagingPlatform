@@ -21,6 +21,7 @@ cipThinPlateSplineSurfaceModelToParticlesMetric
   this->AirwayParticles  = vtkPolyData::New();
   this->VesselParticles  = vtkPolyData::New();
 
+  this->RegularizationWeight = 0.0;
   this->NumberOfModes = 0; 
 
   this->NumberOfFissureParticles = 0;
@@ -62,7 +63,6 @@ void cipThinPlateSplineSurfaceModelToParticlesMetric::SetVesselParticles( vtkPol
 {
   this->VesselParticles = particles;
   this->NumberOfVesselParticles = this->VesselParticles->GetNumberOfPoints();
-  std::cout << "SETTING:\t" << this->NumberOfVesselParticles << std::endl;
 
   // If no particle weights have already been specified, set each
   // particle to have equal, unity weight

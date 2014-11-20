@@ -245,7 +245,6 @@ double cipThinPlateSplineSurface::GetSurfaceHeight( double x, double y ) const
       total += this->m_w[n]*r*r*vcl_log10( r );
       }
     }
-
   double z = this->m_a[0] + x*this->m_a[1] + y*this->m_a[2] + total;
 
   return z;

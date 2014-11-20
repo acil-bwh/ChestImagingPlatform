@@ -128,6 +128,26 @@ public:
       AirwayTermWeight = weight;
     }
 
+  void SetRegularizationWeight( double weight )
+  {
+    RegularizationWeight = weight;
+  }
+
+  double GetRegularizationWeight()
+  {
+    return RegularizationWeight;
+  }
+
+  const std::vector< cip::PointType >& GetMeanSurfacePoints() const
+    {
+      return MeanPoints;
+    }
+
+  const std::vector< cip::PointType >& GetSurfacePoints() const
+    {
+      return SurfacePoints;
+    }
+
 protected:
   virtual double GetFissureTermValue() = 0;
   virtual double GetAirwayTermValue()  = 0;
@@ -157,6 +177,8 @@ protected:
 
   double AirwaySigmaDistance;
   double AirwaySigmaTheta;
+
+  double RegularizationWeight;
 
   unsigned int NumberOfModes;
   unsigned int NumberOfSurfacePoints;

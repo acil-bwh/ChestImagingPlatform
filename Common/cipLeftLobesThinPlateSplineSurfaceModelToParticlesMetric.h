@@ -21,7 +21,7 @@ public:
 
   const cipThinPlateSplineSurface& GetLeftObliqueThinPlateSplineSurface()
     {
-      return LeftObliqueThinPlateSplineSurface;
+      return LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface();
     }
 
 private:
@@ -31,9 +31,7 @@ private:
 
   std::vector< cip::PointType > LeftObliqueSurfacePoints;
 
-  cipNewtonOptimizer< 2 >                      LeftObliqueNewtonOptimizer;
-  cipThinPlateSplineSurface                    LeftObliqueThinPlateSplineSurface;
-  cipParticleToThinPlateSplineSurfaceMetric    LeftObliqueParticleToTPSMetric;
+  cipNewtonOptimizer< 2 >  LeftObliqueNewtonOptimizer;
 };
 
 

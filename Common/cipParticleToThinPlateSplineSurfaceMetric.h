@@ -46,7 +46,8 @@ public:
 
   void SetThinPlateSplineSurface( const cipThinPlateSplineSurface& );
 
-  const cipThinPlateSplineSurface& GetThinPlateSplineSurface() const
+  /** Expose the TPS surface so that it can be modified */
+  cipThinPlateSplineSurface& GetThinPlateSplineSurface()
   {
     return ThinPlateSplineSurface;
   }

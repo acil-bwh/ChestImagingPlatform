@@ -15,11 +15,6 @@
 cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric
 ::cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric()
 {
-  // The 'cipThinPlateSplineSurface' class wraps functionality for
-  // constructing and accessing data for a TPS interpolating surface
-  // given a set of surface points 
-  this->LeftObliqueParticleToTPSMetric.SetThinPlateSplineSurface( this->LeftObliqueThinPlateSplineSurface );
-  this->LeftObliqueNewtonOptimizer.SetMetric( this->LeftObliqueParticleToTPSMetric );
 }
 
 
@@ -77,7 +72,14 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
 
   // Now that we have our surface points, we can construct the TPS
   // surfaces corresponding to the left oblique boundaries
-  this->LeftObliqueThinPlateSplineSurface.SetSurfacePoints( this->LeftObliqueSurfacePoints );
+  this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+    SetSurfacePoints( this->LeftObliqueSurfacePoints );
+
+  double regularizer = 0;
+  for ( unsigned int m=0; m<this->NumberOfModes; m++ )      
+    {
+      regularizer += std::pow((*params)[m], 2);
+    }
 
   double fissureTermValue = this->GetFissureTermValue();
   double vesselTermValue = this->GetVesselTermValue();
@@ -86,8 +88,10 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
   // the fissue metric value per fissure particle is roughtly 500 times that of the 
   // vessel metric value per vessel particle. We want these two terms to be roughly equal
   // so that the user-defined term weights are intuitive to use.
-  double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue;
-  
+  double value = this->FissureTermWeight*fissureTermValue + 
+    500.0*this->VesselTermWeight*vesselTermValue +
+    this->RegularizationWeight*regularizer;
+
   return value;
 }
 
@@ -114,7 +118,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
 
     // Determine the domain locations for which the particle is closest
     // to the left oblique
-    this->LeftObliqueParticleToTPSMetric.SetParticle( position );
+    this->LeftObliqueNewtonOptimizer.GetMetric().SetParticle( position );
 
     // The particle's x, and y location are a good place to initialize
     // the search for the domain locations that result in the smallest
@@ -134,7 +138,8 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
     double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
-    this->LeftObliqueThinPlateSplineSurface.GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
+    this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
     double loTheta = cip::GetAngleBetweenVectors( loNormal, orientation, true );
 
     // Now that we have the surface normals and distances, we can compute this 
@@ -169,7 +174,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermVa
 
     // Determine the domain locations for which the particle is closest
     // to the left oblique TPS surfaces
-    this->LeftObliqueParticleToTPSMetric.SetParticle( position );
+    this->LeftObliqueNewtonOptimizer.GetMetric().SetParticle( position );
 
     // The particle's x, and y location are a good place to initialize
     // the search for the domain locations that result in the smallest
@@ -189,7 +194,9 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermVa
     double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
-    this->LeftObliqueThinPlateSplineSurface.GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
+    this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
+
     double loTheta = cip::GetAngleBetweenVectors( loNormal, orientation, true );
 
     // Now that we have the surface normals and distances, we can compute this 

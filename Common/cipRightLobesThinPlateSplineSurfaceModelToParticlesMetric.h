@@ -20,14 +20,14 @@ public:
     * to the specified parameters. */
   double GetValue( const std::vector< double >* const ); 
 
-  const cipThinPlateSplineSurface& GetRightHorizontalThinPlateSplineSurface() const
+  const cipThinPlateSplineSurface& GetRightHorizontalThinPlateSplineSurface()
     {
-      return RightHorizontalThinPlateSplineSurface;
+      return RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface();
     }
 
-  const cipThinPlateSplineSurface& GetRightObliqueThinPlateSplineSurface() const
+  const cipThinPlateSplineSurface& GetRightObliqueThinPlateSplineSurface()
     {
-      return RightObliqueThinPlateSplineSurface;
+      return RightObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface();
     }
 
 private:
@@ -38,13 +38,13 @@ private:
   std::vector< cip::PointType > RightObliqueSurfacePoints;
   std::vector< cip::PointType > RightHorizontalSurfacePoints;
 
-  cipNewtonOptimizer< 2 >                      RightObliqueNewtonOptimizer;
-  cipThinPlateSplineSurface                    RightObliqueThinPlateSplineSurface;
-  cipParticleToThinPlateSplineSurfaceMetric    RightObliqueParticleToTPSMetric;
+  cipNewtonOptimizer< 2 >  RightObliqueNewtonOptimizer;
+  /* cipThinPlateSplineSurface                    RightObliqueThinPlateSplineSurface; */
+  /* cipParticleToThinPlateSplineSurfaceMetric    RightObliqueParticleToTPSMetric; */
 
-  cipNewtonOptimizer< 2 >                      RightHorizontalNewtonOptimizer;
-  cipThinPlateSplineSurface                    RightHorizontalThinPlateSplineSurface;
-  cipParticleToThinPlateSplineSurfaceMetric    RightHorizontalParticleToTPSMetric;
+  cipNewtonOptimizer< 2 >  RightHorizontalNewtonOptimizer;
+  /* cipThinPlateSplineSurface                    RightHorizontalThinPlateSplineSurface; */
+  /* cipParticleToThinPlateSplineSurfaceMetric    RightHorizontalParticleToTPSMetric; */
 };
 
 
