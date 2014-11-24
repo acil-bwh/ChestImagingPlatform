@@ -15,5 +15,6 @@ SET_TARGET_PROPERTIES ( FilterConnectedComponentsTEST
     RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/CommandLineTools/FilterConnectedComponents/Testing"
 )
 
+
 ADD_TEST( FilterConnectedComponentsTEST FilterConnectedComponentsTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd)
 

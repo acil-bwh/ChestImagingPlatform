@@ -3,6 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT( RemoveParticlesFromParticlesDataSet )
 
 SET ( MODULE_NAME RemoveParticlesFromParticlesDataSet )
+SET ( MODULE_SRCS RemoveParticlesFromParticlesDataSet.cxx )
 
 FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
 INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
@@ -13,7 +14,6 @@ SET ( MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
   )
 
-SET ( MODULE_SRCS RemoveParticlesFromParticlesDataSet.cxx )
 
 SEMMacroBuildCLI (
   NAME ${MODULE_NAME}
@@ -23,7 +23,5 @@ SEMMacroBuildCLI (
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   EXECUTABLE_ONLY
   )
-
-
 
 

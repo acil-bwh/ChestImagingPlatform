@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.0)
 project(ResampleCT )
 
 set(MODULE_NAME ResampleCT)
-
+set(MODULE_SRCS )
 
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
@@ -21,8 +21,6 @@ set(MODULE_TARGET_LIBRARIES
   ${CIP_LIBRARIES}
   )
 
-set(MODULE_SRCS
-  )
 
 SEMMacroBuildCLI(
   NAME ${MODULE_NAME}
@@ -32,3 +30,4 @@ SEMMacroBuildCLI(
   RUNTIME_OUTPUT_DIRECTORY        "${CMAKE_BINARY_DIR}/bin"
   EXECUTABLE_ONLY
   )
+

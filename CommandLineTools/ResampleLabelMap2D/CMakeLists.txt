@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.0)
 project(ResampleLabelMap2D )
 
 set(MODULE_NAME ResampleLabelMap2D)
-
+set(MODULE_SRCS )
 
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
@@ -21,9 +21,6 @@ set(MODULE_TARGET_LIBRARIES
   ${CIP_LIBRARIES}
   )
 
-set(MODULE_SRCS
-  )
-
 SEMMacroBuildCLI(
   NAME ${MODULE_NAME}
   TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
@@ -32,3 +29,4 @@ SEMMacroBuildCLI(
   RUNTIME_OUTPUT_DIRECTORY        "${CMAKE_BINARY_DIR}/bin"
   EXECUTABLE_ONLY
   )
+
