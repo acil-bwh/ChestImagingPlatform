@@ -40,7 +40,7 @@ MESSAGE( STATUS "Including CIP settings.")
 INCLUDE_DIRECTORIES( ${CIP_INCLUDE_DIRECTORIES} )
 
 # Set the directory that contains the CIP libraries,
-LINK_DIRECTORIES( "${CIP_LIBRARY_OUTPUT_PATH}" )
+LINK_DIRECTORIES( "${CIP_LIBRARY_PATH}" )
 
 # Read in the library dependencies
 INCLUDE( "${CIP_LIBRARY_DEPENDS_FILE}" )

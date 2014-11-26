@@ -92,7 +92,8 @@ set( EXECUTABLE_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
 
 mark_as_advanced( LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH )
 
-set( CIP_LIBRARY_PATH    "${LIBRARY_OUTPUT_PATH}" )
+get_filename_component( CIP_PARENT_DIR ${CMAKE_BINARY_DIR} DIRECTORY )
+set( CIP_LIBRARY_PATH "${CIP_PARENT_DIR}/lib" )
 set( CIP_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}" )
 
 #---------------------------------------------------------------------
