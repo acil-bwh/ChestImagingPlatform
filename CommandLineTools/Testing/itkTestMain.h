@@ -68,6 +68,18 @@ int RegressionTestImage(const char *testImageFilename,
                         double intensityTolerance,
                         ::itk::SizeValueType numberOfPixelsTolerance = 0,
                         unsigned int radiusTolerance = 0);
+int RegressionTestCSV( const char* testCSVFilename,
+		       const char* baselineCSVFilename );
+int RegressionTestCT( const char *testImageFilename,
+		      const char *baselineImageFilename,
+		      double intensityTolerance,
+		      ::itk::SizeValueType numberOfPixelsTolerance,
+		      unsigned int radiusTolerance);
+int RegressionTestLabelMap( const char *testImageFilename,
+			    const char *baselineImageFilename,
+			    double intensityTolerance,
+			    ::itk::SizeValueType numberOfPixelsTolerance,
+			    unsigned int radiusTolerance);
 
 std::map<std::string, int> RegressionTestBaselines(char *);
 
@@ -512,7 +524,6 @@ int RegressionTestImage(const char *testImageFilename,
 
 int RegressionTestCT( const char *testImageFilename,
 		      const char *baselineImageFilename,
-		      int reportErrors,
 		      double intensityTolerance,
 		      ::itk::SizeValueType numberOfPixelsTolerance,
 		      unsigned int radiusTolerance)
@@ -578,7 +589,6 @@ int RegressionTestCT( const char *testImageFilename,
 
 int RegressionTestLabelMap( const char *testImageFilename,
 			    const char *baselineImageFilename,
-			    int reportErrors,
 			    double intensityTolerance,
 			    ::itk::SizeValueType numberOfPixelsTolerance,
 			    unsigned int radiusTolerance)
