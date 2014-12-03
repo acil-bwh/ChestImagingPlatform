@@ -58,20 +58,22 @@ macro(cipMacroBuildCLI)
  
  
   if(${BUILD_TESTING})  
-		SET (INCLUDE_DIRECTORIES
+	SET (INCLUDE_DIRECTORIES
 	      ${INCLUDE_DIRECTORIES}
 	      ${CIP_SOURCE_DIR}/CommandLineTools/Testing
 	    )
-	    # Default directories for input and ouput data for the tests
-	   	SET (INPUT_DATA_DIR ${CIP_SOURCE_DIR}/Testing/Data/Input)
-		  SET (OUTPUT_DATA_DIR ${CIP_BINARY_DIR}/CommandLineTools/Testing/Output)
-	    file(MAKE_DIRECTORY "${OUTPUT_DATA_DIR}")
+	# Default directories for input and ouput data for the tests
+	SET (INPUT_DATA_DIR ${CIP_SOURCE_DIR}/Testing/Data/Input)
+	SET (OUTPUT_DATA_DIR ${CIP_BINARY_DIR}/CommandLineTools/Testing/Output)
+	SET (BASELINE_DATA_DIR ${CIP_SOURCE_DIR}/CommandLineTools/${MODULE_NAME}/Data/Baseline)
+		
+	file(MAKE_DIRECTORY "${OUTPUT_DATA_DIR}")
 
-	  	INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES})
-	 	  ADD_EXECUTABLE(${MODULE_NAME}Test ./Testing/${MODULE_NAME}Test.cxx) 
-	  	TARGET_LINK_LIBRARIES(${MODULE_NAME}Test ${MODULE_NAME}Lib ${TARGET_LIBRARIES})
-	  	SET_TARGET_PROPERTIES(${MODULE_NAME}Test PROPERTIES LABELS ${MODULE_NAME} 
-	          RUNTIME_OUTPUT_DIRECTORY ${CIP_BINARY_DIR}/CommandLineTools/Testing/bin
+	INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES})
+	ADD_EXECUTABLE(${MODULE_NAME}Test ./Testing/${MODULE_NAME}Test.cxx) 
+	TARGET_LINK_LIBRARIES(${MODULE_NAME}Test ${MODULE_NAME}Lib ${TARGET_LIBRARIES})
+	SET_TARGET_PROPERTIES(${MODULE_NAME}Test PROPERTIES LABELS ${MODULE_NAME} 
+	RUNTIME_OUTPUT_DIRECTORY ${CIP_BINARY_DIR}/CommandLineTools/Testing/bin
 	    )
   endif()
  
