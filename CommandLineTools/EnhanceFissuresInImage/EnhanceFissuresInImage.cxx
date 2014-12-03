@@ -48,7 +48,7 @@ struct FEATUREVECTORINFO
 
 void UpdateFeatureVectorWithShapeModelInfo( cip::CTType::PointType, FEATUREVECTORINFO&,
 					    const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&, 
-					    const cipThinPlateSplineSurface& );
+					    const cipThinPlateSplineSurface&, bool, bool );
 void UpdateFeatureVectorWithHessianInfo( cip::CTType::IndexType, cip::CTType::PointType, 
 					 HessianImageFunctionType::Pointer,
 					 const cipThinPlateSplineSurface&, const cipThinPlateSplineSurface&,  
@@ -183,6 +183,8 @@ int main( int argc, char *argv[] )
   unsigned char cipRegion;
   cip::CTType::SizeType size = ctReader->GetOutput()->GetBufferedRegion().GetSize();
   cip::CTType::PointType imPoint;
+  bool isLeftLung;
+  bool isRightLung;
 
   int lastZ = -1;
   while ( !ctIt.IsAtEnd() )
@@ -190,17 +192,17 @@ int main( int argc, char *argv[] )
       if ( lIt.Get() != 0 && ctIt.Get() < -650 )
 	{
 	  cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-	  if ( (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::LEFTLUNG) ) &&
-		loTPS.GetNumberSurfacePoints() > 0) ||
-	       (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::RIGHTLUNG) ) &&
-		roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0) )
+	  isLeftLung  = conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::LEFTLUNG) );
+	  isRightLung = conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::RIGHTLUNG) );
+	  if ( (isLeftLung && loTPS.GetNumberSurfacePoints() > 0) ||
+	       (isRightLung && roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0) )
 	    {
 	      ctReader->GetOutput()->TransformIndexToPhysicalPoint( ctIt.GetIndex(), imPoint );
 	      
 	      FEATUREVECTORINFO vec;
 	      vec.intensity = ctIt.Get();
 	      
-	      UpdateFeatureVectorWithShapeModelInfo( imPoint, vec, rhTPS, roTPS, loTPS );
+	      UpdateFeatureVectorWithShapeModelInfo( imPoint, vec, rhTPS, roTPS, loTPS, isLeftLung, isRightLung );
 	      prob = GetIntensityAndShapeModelFeaturesProbability( vec );
 	      
 	      // The following probability threshold corresponds to a 0.995 TPR. Only consider
@@ -264,21 +266,22 @@ void UpdateFeatureVectorWithShapeModelInfo( cip::CTType::PointType imPoint,
 					    FEATUREVECTORINFO& vec,
 					    const cipThinPlateSplineSurface& rhTPS,  
 					    const cipThinPlateSplineSurface& roTPS,  
-					    const cipThinPlateSplineSurface& loTPS )
+					    const cipThinPlateSplineSurface& loTPS,
+					    bool isLeftLung, bool isRightLung )
 {
   cip::PointType point(3);
     point[0] = imPoint[0];
     point[1] = imPoint[1];
     point[2] = imPoint[2];
   
-  if ( loTPS.GetNumberSurfacePoints() > 0 )
+  if ( loTPS.GetNumberSurfacePoints() > 0 && isLeftLung )
     {
       vec.distanceToLobeSurface = cip::GetDistanceToThinPlateSplineSurface( loTPS, point );
       vec.matchesLO = true;
       vec.matchesRO = false;
       vec.matchesRH = false;
     }
-  else if ( roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0 )
+  else if ( roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0 && isRightLung )
     {
       double roDist = cip::GetDistanceToThinPlateSplineSurface( roTPS, point );
       double rhDist = cip::GetDistanceToThinPlateSplineSurface( rhTPS, point );

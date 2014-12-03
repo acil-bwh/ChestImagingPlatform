@@ -15,6 +15,7 @@
 #include "cipExceptionObject.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 #include "itkDiscreteHessianGaussianImageFunction.h"
+#include "itkDiscreteGaussianDerivativeImageFunction.h"
 #include "cipLobeSurfaceModelIO.h"
 #include "cipVesselParticleConnectedComponentFilter.h"
 #include "ComputeFissureFeatureVectorsCLP.h"
@@ -28,6 +29,7 @@ typedef itk::ImageRegionIteratorWithIndex< cip::CTType >                        
 typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                    LabelMapIteratorType;
 typedef itk::ImageRegionIteratorWithIndex< DistanceImageType >                    DistanceImageIteratorType;
 typedef itk::DiscreteHessianGaussianImageFunction< cip::CTType >                  HessianImageFunctionType ;
+typedef itk::DiscreteGaussianDerivativeImageFunction< cip::CTType >               DerivativeFunctionType;
 
 struct FEATUREVECTOR
 {
@@ -38,6 +40,11 @@ struct FEATUREVECTOR
   double angleWithLobeSurfaceNormal;
   double pMeasure;
   double fMeasure;
+  double gradX;
+  double gradY;
+  double gradZ;
+  double gradientMagnitude;
+  std::list< double > gradient;
   std::list< double > eigenValues;
   std::list< double > eigenValueMags;
 };
@@ -47,7 +54,8 @@ DistanceImageType::Pointer GetVesselDistanceMap( cip::CTType::SpacingType, cip::
 FEATUREVECTOR ComputeFissureFeatureVector( vtkSmartPointer< vtkPolyData >, cip::CTType::Pointer, 
 					   DistanceImageType::Pointer, const cipThinPlateSplineSurface& ,  
 					   const cipThinPlateSplineSurface&,  const cipThinPlateSplineSurface&,
-					   HessianImageFunctionType::Pointer, cip::CTType::IndexType );
+					   DerivativeFunctionType::Pointer, HessianImageFunctionType::Pointer, 
+					   cip::CTType::IndexType );
 
 int main( int argc, char *argv[] )
 {
@@ -72,15 +80,15 @@ int main( int argc, char *argv[] )
       cip::LobeSurfaceModelIO rightShapeModelIO;
         rightShapeModelIO.SetFileName( rightShapeModelFileName );
       try
-	{
-	rightShapeModelIO.Read();
-	}
+  	{
+  	rightShapeModelIO.Read();
+  	}
       catch ( cip::ExceptionObject &excp )
-	{
-	std::cerr << "Exception caught reading right shape model:";
-	std::cerr << excp << std::endl;
-	return cip::EXITFAILURE;
-	}
+  	{
+  	std::cerr << "Exception caught reading right shape model:";
+  	std::cerr << excp << std::endl;
+  	return cip::EXITFAILURE;
+  	}
       rightShapeModelIO.GetOutput()->SetRightLungSurfaceModel( true );
 
       rhTPS.SetSurfacePoints( rightShapeModelIO.GetOutput()->GetMeanRightHorizontalSurfacePoints() );
@@ -92,15 +100,15 @@ int main( int argc, char *argv[] )
       cip::LobeSurfaceModelIO leftShapeModelIO;
         leftShapeModelIO.SetFileName( leftShapeModelFileName );
       try
-	{
-	leftShapeModelIO.Read();
-	}
+  	{
+  	leftShapeModelIO.Read();
+  	}
       catch ( cip::ExceptionObject &excp )
-	{
-	std::cerr << "Exception caught reading left shape model:";
-	std::cerr << excp << std::endl;
-	return cip::EXITFAILURE;
-	}
+  	{
+  	std::cerr << "Exception caught reading left shape model:";
+  	std::cerr << excp << std::endl;
+  	return cip::EXITFAILURE;
+  	}
 
       loTPS.SetSurfacePoints( leftShapeModelIO.GetOutput()->GetMeanSurfacePoints() );
     }
@@ -206,6 +214,14 @@ int main( int argc, char *argv[] )
     hessianFunction->SetVariance( variance );
     hessianFunction->Initialize();
 
+  DerivativeFunctionType::Pointer derivativeFunction = DerivativeFunctionType::New();
+    derivativeFunction->SetInputImage( ctReader->GetOutput() );
+    derivativeFunction->SetUseImageSpacing( true );
+    derivativeFunction->SetNormalizeAcrossScale( false );
+    derivativeFunction->SetMaximumError( maxError );
+    derivativeFunction->SetMaximumKernelWidth( maxKernelWidth );
+    derivativeFunction->SetVariance( variance );
+
   // Now loop through the query points and compute the feature vectors for the true 
   // fissure particles
   std::vector< FEATUREVECTOR > trueFeatureVectors;
@@ -222,15 +238,15 @@ int main( int argc, char *argv[] )
       ctReader->GetOutput()->TransformPhysicalPointToIndex( point, index );
 
       FEATUREVECTOR vec = ComputeFissureFeatureVector( pointsParticlesReader->GetOutput(), ctReader->GetOutput(), 
-						       vesselDistanceMap, rhTPS, roTPS, loTPS, hessianFunction,
-						       index );
+  						       vesselDistanceMap, rhTPS, roTPS, loTPS, derivativeFunction, 
+  						       hessianFunction, index );
       if ( *vec.eigenValues.begin() < 0 )
-	{
-	  trueFeatureVectors.push_back( vec );
-	}
+  	{
+  	  trueFeatureVectors.push_back( vec );
+  	}
     }
 
-  // Now loop through the image and get feature vectors for false exampes
+  // Now loop through the image and get feature vectors for false examples
   std::vector< FEATUREVECTOR > falseFeatureVectors;
 
   CTIteratorType cIt( ctReader->GetOutput(), ctReader->GetOutput()->GetBufferedRegion() );
@@ -243,25 +259,25 @@ int main( int argc, char *argv[] )
   while ( !cIt.IsAtEnd() )
     {
       if ( lIt.Get() > 0 && cIt.Get() <= -650 )
-	{
-	  unsigned char cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
-	  if ( (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::LEFTLUNG) ) &&
-		loTPS.GetNumberSurfacePoints() > 0) || 
-	       (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::RIGHTLUNG) ) &&
-		roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0) )
-	    {
-	      if ( rand() % 10000 == 1 && std::abs(dIt.Get()) > 2 )
-		{
-		  FEATUREVECTOR vec = ComputeFissureFeatureVector( pointsParticlesReader->GetOutput(), ctReader->GetOutput(), 
-								   vesselDistanceMap, rhTPS, roTPS, loTPS, hessianFunction,
-								   cIt.GetIndex() );
-		  if ( *vec.eigenValues.begin() < 0 )
-		    {
-		      falseFeatureVectors.push_back( vec );
-		    }
-		}
-	    } 
-	}
+  	{
+  	  unsigned char cipRegion = conventions.GetChestRegionFromValue( lIt.Get() );
+  	  if ( (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::LEFTLUNG) ) &&
+  		loTPS.GetNumberSurfacePoints() > 0) || 
+  	       (conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::RIGHTLUNG) ) &&
+  		roTPS.GetNumberSurfacePoints() > 0 && rhTPS.GetNumberSurfacePoints() > 0) )
+  	    {
+  	      if ( rand() % 10000 < 3 && std::abs(dIt.Get()) > 2 )
+  		{
+  		  FEATUREVECTOR vec = ComputeFissureFeatureVector( pointsParticlesReader->GetOutput(), ctReader->GetOutput(), 
+  								   vesselDistanceMap, rhTPS, roTPS, loTPS, derivativeFunction, 
+  								   hessianFunction, cIt.GetIndex() );
+  		  if ( *vec.eigenValues.begin() < 0 )
+  		    {
+  		      falseFeatureVectors.push_back( vec );
+  		    }
+  		}
+  	    } 
+  	}
 
       ++cIt;
       ++lIt;
@@ -272,11 +288,13 @@ int main( int argc, char *argv[] )
   std::ofstream trueFile( trueOutFileName.c_str() );
 
   trueFile << "eigenValue0,eigenValue1,eigenValue2,eigenValueMag0,eigenValueMag1,eigenValueMag2,intensity,";
-  trueFile << "distanceToVessel,distanceToLobeSurface,angleWithLobeSurfaceNormal,pMeasure,fMeasure" << std::endl;
+  trueFile << "distanceToVessel,distanceToLobeSurface,angleWithLobeSurfaceNormal,pMeasure,fMeasure,";
+  trueFile << "gradX,gradY,gradZ,gradientMagnitude,gradMin,gradMid,gradMax" << std::endl;
   for ( unsigned int i=0; i<trueFeatureVectors.size(); i++ )
     {
       std::list<double>::iterator itv = trueFeatureVectors[i].eigenValues.begin();
       std::list<double>::iterator itm = trueFeatureVectors[i].eigenValueMags.begin();
+      std::list<double>::iterator itg = trueFeatureVectors[i].gradient.begin();
       trueFile << *itv << ","; ++itv;
       trueFile << *itv << ","; ++itv;
       trueFile << *itv << ","; 
@@ -288,7 +306,14 @@ int main( int argc, char *argv[] )
       trueFile << trueFeatureVectors[i].distanceToLobeSurface << ",";
       trueFile << trueFeatureVectors[i].angleWithLobeSurfaceNormal << ",";
       trueFile << trueFeatureVectors[i].pMeasure << ",";
-      trueFile << trueFeatureVectors[i].fMeasure << std::endl;      
+      trueFile << trueFeatureVectors[i].fMeasure << ",";      
+      trueFile << trueFeatureVectors[i].gradX << ",";
+      trueFile << trueFeatureVectors[i].gradY << ",";
+      trueFile << trueFeatureVectors[i].gradZ << ",";
+      trueFile << trueFeatureVectors[i].gradientMagnitude << ",";
+      trueFile << *itg << ","; ++itg;
+      trueFile << *itg << ","; ++itg;
+      trueFile << *itg << std::endl;
     }
   trueFile.close();
 
@@ -296,11 +321,13 @@ int main( int argc, char *argv[] )
   std::ofstream falseFile( falseOutFileName.c_str() );
 
   falseFile << "eigenValue0,eigenValue1,eigenValue2,eigenValueMag0,eigenValueMag1,eigenValueMag2,intensity,";
-  falseFile << "distanceToVessel,distanceToLobeSurface,angleWithLobeSurfaceNormal,pMeasure,fMeasure" << std::endl;
+  falseFile << "distanceToVessel,distanceToLobeSurface,angleWithLobeSurfaceNormal,pMeasure,fMeasure,";
+  falseFile << "gradX,gradY,gradZ,gradientMagnitude,gradMin,gradMid,gradMax" << std::endl;
   for ( unsigned int i=0; i<falseFeatureVectors.size(); i++ )
     {
       std::list<double>::iterator itv = falseFeatureVectors[i].eigenValues.begin();
       std::list<double>::iterator itm = falseFeatureVectors[i].eigenValueMags.begin();
+      std::list<double>::iterator itg = falseFeatureVectors[i].gradient.begin();
       falseFile << *itv << ","; ++itv;
       falseFile << *itv << ","; ++itv;
       falseFile << *itv << ","; 
@@ -312,7 +339,14 @@ int main( int argc, char *argv[] )
       falseFile << falseFeatureVectors[i].distanceToLobeSurface << ",";
       falseFile << falseFeatureVectors[i].angleWithLobeSurfaceNormal << ",";
       falseFile << falseFeatureVectors[i].pMeasure << ",";
-      falseFile << falseFeatureVectors[i].fMeasure << std::endl;      
+      falseFile << falseFeatureVectors[i].fMeasure << ",";
+      falseFile << falseFeatureVectors[i].gradX << ",";
+      falseFile << falseFeatureVectors[i].gradY << ",";
+      falseFile << falseFeatureVectors[i].gradZ << ",";
+      falseFile << falseFeatureVectors[i].gradientMagnitude << ",";
+      falseFile << *itg << ","; ++itg;
+      falseFile << *itg << ","; ++itg;
+      falseFile << *itg << std::endl;
     }
   falseFile.close();
 
@@ -356,7 +390,10 @@ DistanceImageType::Pointer GetVesselDistanceMap( cip::CTType::SpacingType spacin
 	point[2] = particles->GetPoint(i)[2];
 
       mask->TransformPhysicalPointToIndex( point, index );
-      mask->SetPixel( index, 1 );
+      if ( mask->GetBufferedRegion().IsInside( index ) )
+	{
+	  mask->SetPixel( index, 1 );
+	}
     }
 
   DistanceMapType::Pointer distanceMap = DistanceMapType::New();
@@ -386,6 +423,7 @@ DistanceImageType::Pointer GetVesselDistanceMap( cip::CTType::SpacingType spacin
 FEATUREVECTOR ComputeFissureFeatureVector( vtkSmartPointer< vtkPolyData > pointsParticles, cip::CTType::Pointer ct, 
 					   DistanceImageType::Pointer distanceMap, const cipThinPlateSplineSurface& rhTPS,  
 					   const cipThinPlateSplineSurface& roTPS,  const cipThinPlateSplineSurface& loTPS,
+					   DerivativeFunctionType::Pointer derivativeFunction, 
 					   HessianImageFunctionType::Pointer hessianFunction, cip::CTType::IndexType index )
 {
   FEATUREVECTOR vec;
@@ -410,6 +448,30 @@ FEATUREVECTOR ComputeFissureFeatureVector( vtkSmartPointer< vtkPolyData > points
 
   vec.intensity = ct->GetPixel( index );
   vec.distanceToVessel = std::abs( distanceMap->GetPixel( index ) );
+
+  unsigned int order[3];
+  order[0] = 1; order[1] = 0; order[2] = 0;
+  derivativeFunction->SetOrder( order );
+  derivativeFunction->Initialize();
+  vec.gradX = derivativeFunction->EvaluateAtIndex( index );
+
+  order[0] = 0; order[1] = 1; order[2] = 0;
+  derivativeFunction->SetOrder( order );
+  derivativeFunction->Initialize();
+  vec.gradY = derivativeFunction->EvaluateAtIndex( index );
+
+  order[0] = 0; order[1] = 0; order[2] = 1;
+  derivativeFunction->SetOrder( order );
+  derivativeFunction->Initialize();
+  vec.gradZ = derivativeFunction->EvaluateAtIndex( index );
+
+  vec.gradient.push_back( vec.gradX );
+  vec.gradient.push_back( vec.gradY );
+  vec.gradient.push_back( vec.gradZ );
+  vec.gradient.sort();
+
+  vec.gradientMagnitude = std::sqrt(std::pow(vec.gradX, 2) + std::pow(vec.gradY, 2) + 
+				    std::pow(vec.gradZ, 2));
 
   hessian = hessianFunction->EvaluateAtIndex( index );
   hessian.ComputeEigenAnalysis( eigenValues, eigenVectors);      

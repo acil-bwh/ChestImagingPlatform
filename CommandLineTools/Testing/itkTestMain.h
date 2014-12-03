@@ -249,6 +249,45 @@ int main(int ac, char *av[])
   return -1;
 }
 
+int RegressionTestCSV( const char* testCSVFilename,
+		       const char* baselineCSVFilename )
+{
+  std::ifstream testFile( testCSVFilename );
+  std::ifstream baselineFile( baselineCSVFilename );
+
+  if ( !testFile || !baselineFile )
+    {
+      return false;
+    }
+
+  unsigned int numTestLines = std::count(std::istreambuf_iterator<char>(testFile), 
+					 std::istreambuf_iterator<char>(), '\n');
+  unsigned int numBaselineLines = std::count(std::istreambuf_iterator<char>(baselineFile), 
+					     std::istreambuf_iterator<char>(), '\n');
+
+  if ( numTestLines != numBaselineLines )
+    {
+      return 0;
+    }
+
+  std::string testLine;
+  std::string baselineLine;
+  while ( !testFile.eof() )
+    {
+      std::getline( testFile, testLine );
+      std::getline( baselineFile, baselineLine );
+
+      if ( testLine.compare( baselineLine ) != 0 )
+	{
+	  return 0;
+	}
+    }
+  testFile.close();
+  baselineFile.close();
+
+  return 1;
+}
+
 // Regression Testing Code
 
 int RegressionTestImage(const char *testImageFilename,
