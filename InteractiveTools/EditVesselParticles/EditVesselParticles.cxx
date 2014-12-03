@@ -349,8 +349,8 @@ will be retained in the output";
   if ( regionTypePointsFileName.compare( "NA" ) != 0 )
     {
       AddRegionTypePointsAsSpheresToInteractor( &interactor, regionTypePointsFileName, regionTypePointsRegions, regionTypePointsTypes, 
-						regionTypePointsRed, regionTypePointsGreen, regionTypePointsBlue, 
-						regionTypePointsScale, regionTypePointsOpacity );
+  						regionTypePointsRed, regionTypePointsGreen, regionTypePointsBlue, 
+  						regionTypePointsScale, regionTypePointsOpacity );
     }
 
   // The nameToComponentMap will keep track of the mapping between the
@@ -385,7 +385,7 @@ will be retained in the output";
 
   // Give the output file name to the interactor. This will allow the user to
   // save work as he/she goes along.
-  interactor.SetFileName( genParticlesFileName.c_str() );
+  interactor.SetFileName( genParticlesFileName );
 
   if ( label )
     {
@@ -401,15 +401,15 @@ will be retained in the output";
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
         writer->SetFileName( genParticlesFileName.c_str() );
-	writer->SetInput( filter->GetOutput() );
-	//writer->SetFileTypeToASCII();
-	writer->Write();  
+  	writer->SetInput( filter->GetOutput() );
+  	//writer->SetFileTypeToASCII();
+  	writer->Write();  
     }
   else if ( prune )
     {      
       std::cout << "Adding components to interactor..." << std::endl;
       AddComponentsToInteractor( &interactor, filter->GetOutput(), "vesselParticles", &componentLabelToNameMap, 
-				 particleSize, distThresh, scaleThresh );
+  				 particleSize, distThresh, scaleThresh );
 
       std::cout << "Rendering..." << std::endl;  
       interactor.Render();
@@ -479,7 +479,7 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
 		point2[1] = particles->GetPoint( labeledIDs[j] )[1];
 		point2[2] = particles->GetPoint( labeledIDs[j] )[2];
 		
-	      double vec[3];
+	      cip::VectorType vec(3);
 		vec[0] = point1[0] - point2[0];
 		vec[1] = point1[1] - point2[1];
 		vec[2] = point1[2] - point2[2];
