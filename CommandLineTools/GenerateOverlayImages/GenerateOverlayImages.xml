@@ -9,7 +9,7 @@
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.
@@ -21,7 +21,7 @@
     <image>
       <name>labelMapFileName</name>
       <label>Input label map</label>
-      <channel>l</channel>
+      <channel>input</channel>
       <flag>l</flag>
       <longflag>lm</longflag>
       <description><![CDATA[Input label map file name.]]></description>
@@ -40,7 +40,7 @@
     <string-vector>
       <name>overlayFileNameVec</name>
       <label>Overlay file names</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <flag>o</flag>
       <longflag>overlays</longflag>
       <description><![CDATA[Names of the overlay images to produce. The images will be spaced \
