@@ -4,7 +4,7 @@
  */
 
 #cmakedefine BUILD_SHARED_LIBS
-#ifndef BUILD_SHARED_LIBS
+#if defined(USE_STATIC_CIP_LIBS) || !defined(BUILD_SHARED_LIBS)
 #define VTKCIPUtilities_STATIC
 #endif
 
