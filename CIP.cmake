@@ -154,6 +154,7 @@ else( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON")
 endif( CIP_BUILD_TESTING )
 
+
 #---------------------------------------------------------------------
 set( CIP_BUILD_CLI_EXECUTABLEONLY ON CACHE BOOL "Build CLIs only with executables and not shared libraries+executables.")
 
@@ -240,3 +241,19 @@ endif()
 export( PACKAGE CIP )
 
 
+# Macro to login in MIDAS with a public user (that could be replaced for any other user)
+# This is defined as a macro because it will be used just in large testing for different parts of CIP library
+macro(cipMIDASAuthentication)
+  # Init MIDAS required data
+  SET (MIDAS_AUTH_TOKEN 0)
+
+  # Macro defined in MIDASAPILogin.cmake
+  # Login in MIDAS and save the token in MIDAS_AUTH_TOKEN
+  # If there is a problem with the token, then token = 0, and it won't be used
+  midas_api_login(
+      MIDAS_REST_URL ${MIDAS_REST_URL}
+      MIDAS_USER_EMAIL ${MIDAS_USER_EMAIL}
+      MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
+      RESULT_VARNAME MIDAS_AUTH_TOKEN
+  )
+endmacro()
