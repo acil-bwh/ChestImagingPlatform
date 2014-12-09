@@ -191,6 +191,12 @@ int main(int ac, char *av[])
         av += 3;
         ac -= 3;
       }
+      else if( ac > 3 && strcmp(av[1], "--compareLabelMap") == 0 )
+      {
+        compareList.push_back( CompareTupleType("compareLabelMap",ComparePairType(av[2], av[3])) );
+        av += 3;
+        ac -= 3;
+      }
       else if( ac > 3 && strcmp(av[1], "--compareCSV") == 0 )
       {
         compareList.push_back( CompareTupleType("compareCSV",ComparePairType(av[2], av[3])) );
