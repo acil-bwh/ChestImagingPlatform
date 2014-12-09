@@ -292,6 +292,17 @@ cip::ChestConventions::ChestConventions()
   BodyCompositionPhenotypeNames.push_back( "HUMedian" );
   BodyCompositionPhenotypeNames.push_back( "HUMin" );
   BodyCompositionPhenotypeNames.push_back( "HUMax" );
+  BodyCompositionPhenotypeNames.push_back( "leanAxialCSA" );
+  BodyCompositionPhenotypeNames.push_back( "leanCoronalCSA" );
+  BodyCompositionPhenotypeNames.push_back( "leanSagittalCSA" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUMean" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUStd" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUKurtosis" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUSkewness" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUMode" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUMedian" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUMin" );
+  BodyCompositionPhenotypeNames.push_back( "leanHUMax" );
 
   ParenchymaPhenotypeNames.push_back( "LAA950" );
   ParenchymaPhenotypeNames.push_back( "LAA910" );

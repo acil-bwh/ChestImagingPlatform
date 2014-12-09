@@ -26,10 +26,10 @@ cipMacroBuildCLI(
 SET (TEST_NAME ${MODULE_NAME}_Test)
 add_test(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
     --compare 
-      ${INPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
     --compare 
-      ${INPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
     ModuleEntryPoint
       -i ${INPUT_DATA_DIR}/dummy_ct.nrrd

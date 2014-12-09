@@ -88,3 +88,24 @@ def test_execute():
         if (r == 'WholeLung' and t == 'Airway'):
             assert df['HUMin'].iloc[i] == -980, 'Phenotype not as expected'
             assert df['HUMax'].iloc[i] == -950, 'Phenotype not as expected'
+        if (r == 'WholeLung' and t == wc):
+            assert df['leanHUMin'].iloc[i] == -50, 'Phenotype not as expected'
+            assert df['leanHUMax'].iloc[i] == -30, 'Phenotype not as expected'
+            assert np.isclose(df['leanAxialCSA'].iloc[i],
+                2*spacing[0]*spacing[1]), 'Phenotype not as expected'
+            assert np.isclose(df['leanCoronalCSA'].iloc[i],
+                2*spacing[0]*spacing[2]), 'Phenotype not as expected'
+            assert np.isclose(df['leanSagittalCSA'].iloc[i],
+                2*spacing[2]*spacing[1]), 'Phenotype not as expected'
+            assert df['leanHUMedian'].iloc[i] == -40, \
+                'Phenotype not as expected'
+            assert df['leanHUStd'].iloc[i] == 10, \
+                'Phenotype not as expected'
+            assert df['leanHUMode'].iloc[i] == -50, \
+                'Phenotype not as expected'                        
+            assert df['leanHUKurtosis'].iloc[i] == -2.0, \
+                'Phenotype not as expected'
+            assert df['leanHUSkewness'].iloc[i] == 0.0, \
+                'Phenotype not as expected'                            
+
+
