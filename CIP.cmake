@@ -126,18 +126,38 @@ set( CIP_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/bin )
 endif()
 
 #---------------------------------------------------------------------
-# MIDAS configuration (used in Testing to store data files)
-set(MIDAS_REST_URL "http://midas.airwayinspector.org/rest" CACHE STRING "The MIDAS server where testing data resides")
-set(MIDAS_KEY_DIR "${CMAKE_SOURCE_DIR}/Testing/Data/Large/MIDAS_Keys" CACHE PATH "Directory where hash files are stored (included in Source code)")
-set(MIDAS_DATA_DIR "${CIP_BINARY_DIR}/Testing/Data/Large/MIDAS_Data" CACHE PATH "Directory where downloaded files are stored (local directory)")
-# Login 
-set(MIDAS_USER_EMAIL "acilws@acil-bwh.org" CACHE STRING "Email used to authenticate MIDAS server")
-set(MIDAS_USER_APIKEY "SL1di53twednww4kV6I8V1O9wcyuBcgX" CACHE STRING "API key of the user used to authenticate MIDAS server")
+# MIDAS configuration (used in LARGE Testing to store data files)
 
-file(MAKE_DIRECTORY ${MIDAS_DATA_DIR})
 
-include(MIDAS)
-include(MIDASAPILogin)
+
+if ( CIP_BUILD_TESTING_LARGE )  
+  include(MIDAS)
+  include(MIDASAPILogin)
+ 
+  set(MIDAS_REST_URL "http://midas.airwayinspector.org/rest" CACHE STRING "The MIDAS server where testing data resides")
+  set(MIDAS_KEY_DIR "${CMAKE_SOURCE_DIR}/Testing/Data/Large/MIDAS_Keys" CACHE PATH "Directory where hash files are stored (included in Source code)")
+  set(MIDAS_DATA_DIR "${CIP_BINARY_DIR}/Testing/Data/Large/MIDAS_Data" CACHE PATH "Directory where downloaded files are stored (local directory)")
+  FILE(MAKE_DIRECTORY ${MIDAS_DATA_DIR})
+
+  set(MIDAS_USER_EMAIL "" CACHE STRING "Email used to authenticate MIDAS server")
+  set(MIDAS_USER_APIKEY "" CACHE STRING "API key of the user used to authenticate MIDAS server")
+  
+
+  # # Authenticate with MIDAS (Public user by default, but settings can be modified)
+  if ((MIDAS_USER_EMAIL) AND (MIDAS_USER_APIKEY))
+    midas_api_login(
+          MIDAS_REST_URL ${MIDAS_REST_URL}
+          MIDAS_USER_EMAIL ${MIDAS_USER_EMAIL}
+          MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
+          RESULT_VARNAME MIDAS_AUTH_TOKEN
+      )    
+  endif()
+
+  if (NOT MIDAS_AUTH_TOKEN)
+    MESSAGE("Warning: MIDAS authentication could not be completed. Please make sure that MIDAS_USER_EMAIL and MIDAS_USER_APIKEY settings are correct")
+    SET (MIDAS_AUTH_TOKEN 0)    # Init with dumb value to avoid build errors
+  endif()
+endif()
 
 #---------------------------------------------------------------------
 # Testing
@@ -153,7 +173,7 @@ else( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE")
   SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON")
 endif( CIP_BUILD_TESTING )
-
+ 
 
 #---------------------------------------------------------------------
 set( CIP_BUILD_CLI_EXECUTABLEONLY ON CACHE BOOL "Build CLIs only with executables and not shared libraries+executables.")
@@ -238,22 +258,6 @@ if(APPLE)
 endif()
 
 
+
 export( PACKAGE CIP )
 
-
-# Macro to login in MIDAS with a public user (that could be replaced for any other user)
-# This is defined as a macro because it will be used just in large testing for different parts of CIP library
-macro(cipMIDASAuthentication)
-  # Init MIDAS required data
-  SET (MIDAS_AUTH_TOKEN 0)
-
-  # Macro defined in MIDASAPILogin.cmake
-  # Login in MIDAS and save the token in MIDAS_AUTH_TOKEN
-  # If there is a problem with the token, then token = 0, and it won't be used
-  midas_api_login(
-      MIDAS_REST_URL ${MIDAS_REST_URL}
-      MIDAS_USER_EMAIL ${MIDAS_USER_EMAIL}
-      MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
-      RESULT_VARNAME MIDAS_AUTH_TOKEN
-  )
-endmacro()

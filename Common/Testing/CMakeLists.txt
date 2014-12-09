@@ -1,7 +1,5 @@
 # IMPORTANT: CIP Large testing depends on MIDAS server to download the data files
 
-# Macro defined in CIP.cmake to login in MIDAS with a public user (that could be replaced for any other user with MIDAS_USER_APIKEY and MIDAS_USER_EMAIL settings)
-cipMIDASAuthentication()    
 
 #----------------------------------------------
 # itkCIPAutoThresholdAirwaySegmentationImageFilterTEST

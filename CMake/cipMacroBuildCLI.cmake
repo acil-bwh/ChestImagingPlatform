@@ -4,8 +4,6 @@ include(${SlicerExecutionModel_USE_FILE})
 
 #FIND_PACKAGE( CIP REQUIRED )
 
-
-
 macro(cipMacroBuildCLI)
   set(options
     NO_INSTALL VERBOSE
@@ -77,11 +75,6 @@ macro(cipMacroBuildCLI)
   	ADD_EXECUTABLE(${MODULE_NAME}Test ./Testing/${MODULE_NAME}Test.cxx) 
   	TARGET_LINK_LIBRARIES(${MODULE_NAME}Test ${MODULE_NAME}Lib ${TARGET_LIBRARIES})
   	SET_TARGET_PROPERTIES(${MODULE_NAME}Test PROPERTIES LABELS ${MODULE_NAME} RUNTIME_OUTPUT_DIRECTORY ${CIP_BINARY_DIR}/CommandLineTools/Testing/bin)
-
-    if ( CIP_BUILD_TESTING_LARGE )
-      # Macro defined in CIP.cmake to login in MIDAS with a public user (that could be replaced for any other user with MIDAS_USER_APIKEY and MIDAS_USER_EMAIL settings)
-      cipMIDASAuthentication()    
-    endif()   
   endif()
  
  
