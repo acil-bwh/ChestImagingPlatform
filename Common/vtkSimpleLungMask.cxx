@@ -513,15 +513,16 @@ void vtkSimpleLungMask::ExecuteDataWithInformation(vtkDataObject *output, vtkInf
    int orgExt[6];
    inData->GetExtent(orgExt);
    int mid = int ((orgExt[5]+orgExt[4])/2.0);
-   //this->GetInput()->SetExtent(orgExt[0],orgExt[1],orgExt[2],orgExt[3],mid,mid);
+   // Set input extend for on slice
+   inData->SetExtent(orgExt[0],orgExt[1],orgExt[2],orgExt[3],mid,mid);
    tmpFilter->SetInputData(inData);
    tmpFilter->Update();
    if (tmpFilter->GetMedian()<0)
       this->AirIntensityBaseline = -1024;
    else
       this->AirIntensityBaseline = 0;
-
-   //this->GetInput()->SetExtent(orgExt);
+   // Reset extent to original one
+   inData->SetExtent(orgExt);
    tmpFilter->Delete();
 
   short *inPtr;
