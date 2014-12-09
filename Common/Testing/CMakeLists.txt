@@ -1,16 +1,7 @@
-# IMPORTANT: CIP testing depends on MIDAS server to download the data files
- 
-set (token 0)
+# IMPORTANT: CIP Large testing depends on MIDAS server to download the data files
 
-# Login in MIDAS and save the token in midas_api_token
-# If there is a problem with the token, token = 0, and it won't be used
-midas_api_login(
-    MIDAS_REST_URL ${MIDAS_REST_URL}
-    MIDAS_USER_EMAIL ${MIDAS_USER_EMAIL}
-    MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
-    RESULT_VARNAME token
-)
-#message("Authentication Token for user ${MIDAS_USER_EMAIL}: ${token}")
+# Macro defined in CIP.cmake to login in MIDAS with a public user (that could be replaced for any other user with MIDAS_USER_APIKEY and MIDAS_USER_EMAIL settings)
+cipMIDASAuthentication()    
 
 #----------------------------------------------
 # itkCIPAutoThresholdAirwaySegmentationImageFilterTEST
@@ -28,7 +19,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  MIDAS_ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000.nhdr.md5} 252 304 449 MIDAS{Case000_interactiveAirwaySegmentation.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_interactiveAirwaySegmentation.raw.gz.md5})
+  MIDAS_ADD_TEST( NAME itkCIPAutoThresholdAirwaySegmentationImageFilterTEST COMMAND itkCIPAutoThresholdAirwaySegmentationImageFilterTEST MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} MIDAS{Case000.nhdr.md5} 252 304 449 MIDAS{Case000_interactiveAirwaySegmentation.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_interactiveAirwaySegmentation.raw.gz.md5})
 
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
@@ -48,7 +39,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  MIDAS_ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST COMMAND itkCIPOtsuLungCastImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_otsuLungCast.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_otsuLungCast.raw.gz.md5} )
+  MIDAS_ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST COMMAND itkCIPOtsuLungCastImageFilterTEST MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_otsuLungCast.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_otsuLungCast.raw.gz.md5} )
   
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
@@ -69,7 +60,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  MIDAS_ADD_TEST( NAME itkCIPPartialLungLabelMapImageFilterTEST COMMAND itkCIPPartialLungLabelMapImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_partialLungLabelMap.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_partialLungLabelMap.raw.gz.md5} )
+  MIDAS_ADD_TEST( NAME itkCIPPartialLungLabelMapImageFilterTEST COMMAND itkCIPPartialLungLabelMapImageFilterTEST MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_partialLungLabelMap.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_partialLungLabelMap.raw.gz.md5} )
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #----------------------------------------------
@@ -88,7 +79,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  MIDAS_ADD_TEST( NAME itkCIPSplitLeftLungRightLungImageFilterTEST COMMAND itkCIPSplitLeftLungRightLungImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_preLeftRightSplit.nhdr.md5} MIDAS{Case000_postLeftRightSplitLabeled.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_preLeftRightSplit.raw.gz.md5} MIDAS{Case000_postLeftRightSplitLabeled.raw.gz.md5} )
+  MIDAS_ADD_TEST( NAME itkCIPSplitLeftLungRightLungImageFilterTEST COMMAND itkCIPSplitLeftLungRightLungImageFilterTEST MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} MIDAS{Case000.nhdr.md5} MIDAS{Case000_preLeftRightSplit.nhdr.md5} MIDAS{Case000_postLeftRightSplitLabeled.nhdr.md5} EXTRAFILES MIDAS{Case000.raw.gz.md5} MIDAS{Case000_preLeftRightSplit.raw.gz.md5} MIDAS{Case000_postLeftRightSplitLabeled.raw.gz.md5} )
 
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
@@ -108,7 +99,7 @@ IF ( CIP_BUILD_TESTING_LARGE )
       RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/Common/Testing"
   )
 
-  MIDAS_ADD_TEST( NAME itkCIPLabelLungRegionsImageFilterTEST COMMAND itkCIPLabelLungRegionsImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case000_postLeftRightSplit.nhdr.md5} MIDAS{Case000_postLeftRightSplitLabeled.nhdr.md5} EXTRAFILES MIDAS{Case000_postLeftRightSplit.raw.gz.md5} MIDAS{Case000_postLeftRightSplitLabeled.raw.gz.md5})
+  MIDAS_ADD_TEST( NAME itkCIPLabelLungRegionsImageFilterTEST COMMAND itkCIPLabelLungRegionsImageFilterTEST MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} MIDAS{Case000_postLeftRightSplit.nhdr.md5} MIDAS{Case000_postLeftRightSplitLabeled.nhdr.md5} EXTRAFILES MIDAS{Case000_postLeftRightSplit.raw.gz.md5} MIDAS{Case000_postLeftRightSplitLabeled.raw.gz.md5})
 
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
@@ -116,7 +107,7 @@ ENDIF( CIP_BUILD_TESTING_LARGE )
 # itkCIPOtsuLungCastImageFilterTEST2
 #----------------------------------------------
 IF ( CIP_BUILD_TESTING_LARGE )
-  MIDAS_ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST2 COMMAND itkCIPOtsuLungCastImageFilterTEST MIDAS_TOKEN{${token}} MIDAS{Case001.nhdr.md5} MIDAS{Case001_otsuLungCast.nhdr.md5} EXTRAFILES MIDAS{Case001.raw.gz.md5} MIDAS{Case001_otsuLungCast.raw.gz.md5} )
+  MIDAS_ADD_TEST( NAME itkCIPOtsuLungCastImageFilterTEST2 COMMAND itkCIPOtsuLungCastImageFilterTEST MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} MIDAS{Case001.nhdr.md5} MIDAS{Case001_otsuLungCast.nhdr.md5} EXTRAFILES MIDAS{Case001.raw.gz.md5} MIDAS{Case001_otsuLungCast.raw.gz.md5} )
 ENDIF( CIP_BUILD_TESTING_LARGE )
 
 #-----------------------------------
