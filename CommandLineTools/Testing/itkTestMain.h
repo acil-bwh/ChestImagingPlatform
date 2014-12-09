@@ -267,7 +267,7 @@ int RegressionTestCSV( const char* testCSVFilename,
 
   if ( numTestLines != numBaselineLines )
     {
-      return 0;
+      return 1;
     }
 
   std::string testLine;
@@ -279,14 +279,76 @@ int RegressionTestCSV( const char* testCSVFilename,
 
       if ( testLine.compare( baselineLine ) != 0 )
 	{
-	  return 0;
+	  return 1;
 	}
     }
   testFile.close();
   baselineFile.close();
 
-  return 1;
+  return 0;
 }
+
+int CompareFieldData(vtkFieldData *test,vtkFieldData *baseline)
+{
+  
+  
+  
+  
+  
+}
+
+
+int RegressionTestVTKPolyData( const char *testVtkFilename,
+                              const char *baselineVtkFilename)
+{
+  
+  vtkPolyDataReader *testReader = vtkPolyDataReader::New();
+  testReader->SetFileName(testVtkFilename);
+  testReader->Update();
+  
+  vtkPolyDataReader *baselineReader = vtkPolyDataReader::New();
+  baselineReader->SetFileName(baselineVtkFilename);
+  baselineReader->Update();
+  
+  vtkPolyData * test = testReader->GetOutput();
+  vtkPolyData *baseline = baselineReader->GetOutput();
+  
+  // Check Point
+  if (test->GetNumberOfPoints() != baseline->GetNumberOfPoints())
+  {
+    std::cerr << "Test and baseline have different number of points" << std::endl;
+    return 1;
+  }
+  for (int ii=0; ii<test->GetNumberOfPoints(); ii++)
+  {
+    int val=fuzzyComparePoint(test->GetPoint(ii),baseline->GetPoint(ii));
+    if (val>0)
+    {
+      std::cerr << "Test and baseline have different point values" <<std::endl;
+      return val;
+    }
+  }
+  // Check PointData
+  if (test->GetPointData()->GetNumberOfArrays() != baseline->GetPointData()->GetNumberOfArrays())
+  {
+    std::cerr << "Test and baseline have different number of point data arrays" <<std::endl;
+  }
+  
+  // Check each array: name and values
+  for (int ii=0;ii<test->GetPointData()->GetNumberOfArrays
+  
+  
+  // Check Cell
+  
+  // Check CellData
+  
+  
+  // Check FieldData
+  
+  
+  
+}
+
 
 // Regression Testing Code
 
