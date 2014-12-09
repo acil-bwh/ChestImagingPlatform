@@ -52,6 +52,12 @@
 #include "itkFloatingPointExceptions.h"
 #include <itkFactoryRegistration.h>
 #include "cipHelper.h"
+#include "vtkTesting.h"
+#include "vtkPolyDataReader.h"
+#include "vtkPolyDataWriter.h"
+#include "vtkPolyData.h"
+#include "vtkFieldData.h"
+#include "vtkDataArray.h"
 
 #define ITK_TEST_DIMENSION_MAX 6
 
@@ -68,18 +74,31 @@ int RegressionTestImage(const char *testImageFilename,
                         double intensityTolerance,
                         ::itk::SizeValueType numberOfPixelsTolerance = 0,
                         unsigned int radiusTolerance = 0);
+
 int RegressionTestCSV( const char* testCSVFilename,
 		       const char* baselineCSVFilename );
+
 int RegressionTestCT( const char *testImageFilename,
 		      const char *baselineImageFilename,
+          int reportErrors,
 		      double intensityTolerance,
 		      ::itk::SizeValueType numberOfPixelsTolerance,
 		      unsigned int radiusTolerance);
+
 int RegressionTestLabelMap( const char *testImageFilename,
 			    const char *baselineImageFilename,
+          int reportErrors,
 			    double intensityTolerance,
 			    ::itk::SizeValueType numberOfPixelsTolerance,
 			    unsigned int radiusTolerance);
+
+
+int RegressionTestVTKPolyData(const char *testVtkFilename,
+          const char *baselineVtkFilename,
+          double pointTolerance);
+
+int CompareFieldData(vtkFieldData* fd1, vtkFieldData* fd2, double pointTolerance);
+
 
 std::map<std::string, int> RegressionTestBaselines(char *);
 
@@ -105,9 +124,18 @@ int main(int ac, char *av[])
   double       intensityTolerance  = 2.0;
   unsigned int numberOfPixelsTolerance = 0;
   unsigned int radiusTolerance = 0;
+  double       pointTolerance = 0.001;
 
+  //typedef std::pair<char *, char *> ComparePairType;
+  //std::vector<ComparePairType> compareList;
+  //std::vector<ComparePairType> compareCTList;
+  //std::vector<ComparePairType> compareCSVList;
+  //std::vector<ComparePairType> comparePolyDataList;
+  
   typedef std::pair<char *, char *> ComparePairType;
-  std::vector<ComparePairType> compareList;
+  typedef std::pair<const char *, ComparePairType> CompareTupleType;
+
+  std::vector<CompareTupleType> compareList;
 
   itk::itkFactoryRegistration();
 
@@ -153,10 +181,28 @@ int main(int ac, char *av[])
         }
       else if( ac > 3 && strcmp(av[1], "--compare") == 0 )
         {
-        compareList.push_back( ComparePairType(av[2], av[3]) );
+        compareList.push_back( CompareTupleType("compareImage",ComparePairType(av[2], av[3])) );
         av += 3;
         ac -= 3;
         }
+      else if( ac > 3 && strcmp(av[1], "--compareCT") == 0 )
+      {
+        compareList.push_back( CompareTupleType("compareCT",ComparePairType(av[2], av[3])) );
+        av += 3;
+        ac -= 3;
+      }
+      else if( ac > 3 && strcmp(av[1], "--compareCSV") == 0 )
+      {
+        compareList.push_back( CompareTupleType("compareCSV",ComparePairType(av[2], av[3])) );
+        av += 3;
+        ac -= 3;
+      }
+      else if( ac > 3 && strcmp(av[1], "--compareVTKPolyData") == 0 )
+      {
+        compareList.push_back( CompareTupleType("compareVTKPolyData",ComparePairType(av[2], av[3])) );
+        av += 3;
+        ac -= 3;
+      }
       else if( ac > 2 && strcmp(av[1], "--compareNumberOfPixelsTolerance") == 0 )
         {
         numberOfPixelsTolerance = atoi(av[2]);
@@ -175,6 +221,12 @@ int main(int ac, char *av[])
         av += 2;
         ac -= 2;
         }
+      else if (ac > 2 && strcmp(av[1], "--comparePointTolerance") == 0)
+        {
+        pointTolerance = atof(av[2]);
+        av +=2;
+        ac -= 2;
+        }
       else
         {
         testToRun = av[1];
@@ -190,52 +242,103 @@ int main(int ac, char *av[])
       {
       // Invoke the test's "main" function.
       result = ( *f )( ac - 1, av + 1 );
+      
+      // Chest Through the different Lists
+        
       // Make a list of possible baselines
       for( int i = 0; i < static_cast<int>( compareList.size() ); i++ )
         {
-        char *                               baselineFilename = compareList[i].first;
-        char *                               testFilename = compareList[i].second;
+
+        const char * compareType = compareList[i].first;
+        char * baselineFilename = compareList[i].second.first;
+        char * testFilename = compareList[i].second.second;
+          
+        //char *                               baselineFilename = compareList[i].first;
+        //char *                               testFilename = compareList[i].second;
         std::map<std::string, int>           baselines = RegressionTestBaselines(baselineFilename);
         std::map<std::string, int>::iterator baseline = baselines.begin();
         std::string                          bestBaseline;
         int                                  bestBaselineStatus = itk::NumericTraits<int>::max();
         while( baseline != baselines.end() )
           {
-          baseline->second = RegressionTestImage(testFilename,
-                                                 ( baseline->first ).c_str(),
-                                                 0,
-                                                 intensityTolerance,
-                                                 numberOfPixelsTolerance,
-                                                 radiusTolerance);
-          if( baseline->second < bestBaselineStatus )
+            if (strcmp(compareType,"compareImage"))
             {
-            bestBaseline = baseline->first;
-            bestBaselineStatus = baseline->second;
+              baseline->second = RegressionTestImage(testFilename,
+                                                     ( baseline->first ).c_str(),
+                                                     0,
+                                                     intensityTolerance,
+                                                     numberOfPixelsTolerance,
+                                                     radiusTolerance);
             }
-          if( baseline->second == 0 )
+            else if (strcmp(compareType,"compareCT"))
             {
-            break;
+              baseline->second = RegressionTestCT(testFilename,
+                                                  ( baseline->first ).c_str(),
+                                                    0,
+                                                    intensityTolerance,
+                                                    numberOfPixelsTolerance,
+                                                    radiusTolerance);
+              
             }
-          ++baseline;
+            else if (strcmp(compareType,"compareLabelMap"))
+            {
+              baseline->second = RegressionTestLabelMap(testFilename,
+                                                  ( baseline->first ).c_str(),
+                                                    0,
+                                                    intensityTolerance,
+                                                    numberOfPixelsTolerance,
+                                                    radiusTolerance);
+            }
+            else if (strcmp(compareType,"compareVTKPolyData"))
+            {
+              baseline->second = RegressionTestVTKPolyData(testFilename,
+                                                        ( baseline->first ).c_str(),
+                                                        pointTolerance);
+          
+            }
+            else if (strcmp(compareType,"compareCSV"))
+            {
+              baseline->second = RegressionTestCSV(testFilename,
+                                                           ( baseline->first ).c_str());
+            }
+            else
+            {
+              //Report that type is not available
+            }
+          
+            if( baseline->second < bestBaselineStatus )
+              {
+              bestBaseline = baseline->first;
+              bestBaselineStatus = baseline->second;
+              }
+            if( baseline->second == 0 )
+              {
+              break;
+              }
+            ++baseline;
           }
 
-        // if the best we can do still has errors, generate the error images
-        if( bestBaselineStatus )
+          // if the best we can do still has errors, generate the error images
+          if (strcmp(compareType,"compareImage"))
           {
-          RegressionTestImage(testFilename,
-                              bestBaseline.c_str(),
-                              1,
-                              intensityTolerance,
-                              numberOfPixelsTolerance,
-                              radiusTolerance);
+            if( bestBaselineStatus )
+              {
+
+              RegressionTestImage(testFilename,
+                                bestBaseline.c_str(),
+                                1,
+                                intensityTolerance,
+                                numberOfPixelsTolerance,
+                                radiusTolerance);
+              }
+            // output the matching baseline
+            std::cout << "<DartMeasurement name=\"BaselineImageName\" type=\"text/string\">";
+            std::cout << itksys::SystemTools::GetFilenameName(bestBaseline);
+            std::cout << "</DartMeasurement>" << std::endl;
+            result += bestBaselineStatus;
+            
           }
-
-        // output the matching baseline
-        std::cout << "<DartMeasurement name=\"BaselineImageName\" type=\"text/string\">";
-        std::cout << itksys::SystemTools::GetFilenameName(bestBaseline);
-        std::cout << "</DartMeasurement>" << std::endl;
-
-        result += bestBaselineStatus;
+          
         }
       }
     catch( const itk::ExceptionObject & e )
@@ -301,64 +404,121 @@ int RegressionTestCSV( const char* testCSVFilename,
   return 0;
 }
 
-int CompareFieldData(vtkFieldData *test,vtkFieldData *baseline)
+int CompareFieldData(vtkFieldData *test,vtkFieldData *baseline,double tolerance)
 {
   
+  if (test->GetNumberOfArrays() != baseline->GetNumberOfArrays())
+  {
+    std::cerr << "Test and baseline have different number of point data arrays" <<std::endl;
+    return 1;
+  }
   
+  // Check each array: name and values
+  vtkDataArray *testArray;
+  vtkDataArray *baselineArray;
+  vtkSmartPointer<vtkTesting> testing=vtkSmartPointer<vtkTesting>::New();
   
-  
+  for (int ii=0;ii<baseline->GetNumberOfArrays(); ii++)
+  {
+    const char *arrayName=baseline->GetArrayName(ii);
+    if (test->HasArray(arrayName) == 0)
+    {
+      std::cerr << "Array Name "<< arrayName << " does not exits in test"<<std::endl;
+      return 1;
+    }
+    testArray=test->GetArray(arrayName);
+    baselineArray=baseline->GetArray(arrayName);
+    
+    int res=testing->CompareAverageOfL2Norm(testArray,baselineArray,tolerance);
+    
+    if (res == vtkTesting::PASSED)
+    {
+      //Do nothing
+    } else {
+
+      std::cerr<< "Array "<< arrayName<< " does not match"<<std::endl;
+      return 1;
+    }
+  }
+  return 0;
   
 }
-
+    
 
 int RegressionTestVTKPolyData( const char *testVtkFilename,
-                              const char *baselineVtkFilename)
+                              const char *baselineVtkFilename,double tolerance)
 {
   
-  vtkPolyDataReader *testReader = vtkPolyDataReader::New();
+  vtkSmartPointer<vtkPolyDataReader> testReader = vtkSmartPointer<vtkPolyDataReader>::New();
   testReader->SetFileName(testVtkFilename);
   testReader->Update();
   
-  vtkPolyDataReader *baselineReader = vtkPolyDataReader::New();
+  vtkSmartPointer<vtkPolyDataReader> baselineReader = vtkSmartPointer<vtkPolyDataReader>::New();
   baselineReader->SetFileName(baselineVtkFilename);
   baselineReader->Update();
   
   vtkPolyData * test = testReader->GetOutput();
   vtkPolyData *baseline = baselineReader->GetOutput();
   
-  // Check Point
+  vtkSmartPointer<vtkTesting> testing = vtkSmartPointer<vtkTesting>::New();
+  
+  int res;
+  
+  //1.  Check Point
   if (test->GetNumberOfPoints() != baseline->GetNumberOfPoints())
   {
     std::cerr << "Test and baseline have different number of points" << std::endl;
     return 1;
   }
-  for (int ii=0; ii<test->GetNumberOfPoints(); ii++)
+  
+  res=testing->CompareAverageOfL2Norm(test,baseline,tolerance);
+  
+  if (res == vtkTesting::PASSED)
   {
-    int val=fuzzyComparePoint(test->GetPoint(ii),baseline->GetPoint(ii));
-    if (val>0)
-    {
-      std::cerr << "Test and baseline have different point values" <<std::endl;
-      return val;
-    }
+    //Do nothing
   }
-  // Check PointData
-  if (test->GetPointData()->GetNumberOfArrays() != baseline->GetPointData()->GetNumberOfArrays())
+  else
   {
-    std::cerr << "Test and baseline have different number of point data arrays" <<std::endl;
+    std::cerr << "Test and baseline have different point values" <<std::endl;
+    return 1;
   }
   
-  // Check each array: name and values
-  for (int ii=0;ii<test->GetPointData()->GetNumberOfArrays
+  //Check Point Data (the prior function also test point data but we keep this for redundancy so far)
+  res= CompareFieldData((vtkFieldData *)baseline->GetPointData(),
+                          (vtkFieldData *)test->GetPointData(), tolerance);
+  
+  if (res == 1)
+  {
+    return res;
+  }
   
   
-  // Check Cell
+  //2. Check Cell
+  if (test->GetNumberOfCells() != baseline->GetNumberOfCells())
+  {
+    std::cerr << "Cells are not the same " << std::endl;
+    return 1;
+  }
+  
+  // TO DO: Do checking of underlying cell data
   
   // Check CellData
+  res= CompareFieldData((vtkFieldData *)baseline->GetCellData(),(vtkFieldData *)test->GetCellData(), tolerance);
   
+  if (res == 1)
+  {
+    return res;
+  }
   
-  // Check FieldData
+  //3. Check FieldData
+  res=CompareFieldData((vtkFieldData *)baseline->GetFieldData(),(vtkFieldData *)test->GetFieldData(), tolerance);
   
+  if (res == 1)
+  {
+    return res;
+  }
   
+  return 0;
   
 }
 
@@ -586,6 +746,7 @@ int RegressionTestImage(const char *testImageFilename,
 
 int RegressionTestCT( const char *testImageFilename,
 		      const char *baselineImageFilename,
+          int reportErrors,
 		      double intensityTolerance,
 		      ::itk::SizeValueType numberOfPixelsTolerance,
 		      unsigned int radiusTolerance)
@@ -651,6 +812,7 @@ int RegressionTestCT( const char *testImageFilename,
 
 int RegressionTestLabelMap( const char *testImageFilename,
 			    const char *baselineImageFilename,
+          int reportErrors,
 			    double intensityTolerance,
 			    ::itk::SizeValueType numberOfPixelsTolerance,
 			    unsigned int radiusTolerance)
