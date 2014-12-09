@@ -31,25 +31,27 @@ ADD_TEST(NAME ${RIGHTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE
       -o ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_ct.nrrd
       --opl ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_lm.nrrd       
     )
-   
-SET (LEFTLUNG_TEST_NAME ${MODULE_NAME}_LeftLung_Test) 
-MIDAS_ADD_TEST( NAME ${LEFTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test> MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} 
-    --compare 
-       MIDAS{${LEFTLUNG_TEST_NAME}_ct.nrrd.md5}
-       ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_ct.nrrd
-    --compare 
-       MIDAS{${LEFTLUNG_TEST_NAME}_lm.nrrd.md5}
-       ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd
-     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/simple_ct.nrrd
-      -l ${INPUT_DATA_DIR}/simple_lm.nrrd
-      -r LeftLung 
-      -p 2,2,2 
-      -m 0 
-      -v 1000 
-      -o ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_ct.nrrd
-      --opl ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd      
-)
+
+if ( CIP_BUILD_TESTING_LARGE )
+  SET (LEFTLUNG_TEST_NAME ${MODULE_NAME}_LeftLung_Test) 
+  MIDAS_ADD_TEST( NAME ${LEFTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test> MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} 
+      --compare 
+         MIDAS{${LEFTLUNG_TEST_NAME}_ct.nrrd.md5}
+         ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_ct.nrrd
+      --compare 
+         MIDAS{${LEFTLUNG_TEST_NAME}_lm.nrrd.md5}
+         ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd
+       ModuleEntryPoint
+        -i ${INPUT_DATA_DIR}/simple_ct.nrrd
+        -l ${INPUT_DATA_DIR}/simple_lm.nrrd
+        -r LeftLung 
+        -p 2,2,2 
+        -m 0 
+        -v 1000 
+        -o ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_ct.nrrd
+        --opl ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd      
+  )
+endif()
 
     
 # SET (CHECKPOINT_TEST_NAME ${MODULE_NAME}_CheckPoint_Test)
