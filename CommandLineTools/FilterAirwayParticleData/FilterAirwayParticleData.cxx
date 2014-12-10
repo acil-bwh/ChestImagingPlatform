@@ -115,7 +115,7 @@ int main( int argc, char *argv[] )
   std::cout << "Writing filtered particles ..." << std::endl;
   vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInput( filter->GetOutput() );
+    filteredWriter->SetInputData( filter->GetOutput() );
     filteredWriter->SetFileTypeToBinary();
     filteredWriter->Write();
 

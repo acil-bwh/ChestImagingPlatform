@@ -1088,5 +1088,4 @@ void cip::TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData > inPol
 	  outPolyData->GetPointData()->AddArray( inPolyData->GetPointData()->GetArray(i) );
 	}
     }  
->>>>>>> master
 }

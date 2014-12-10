@@ -113,16 +113,21 @@ namespace
         // Get the location for each point
         for ( unsigned int i=0; i<regionTypePointsIO.GetOutput()->GetNumberOfTuples(); i++ )
         {
-            double* pointLocation = new double[3];
+	  cip::PointType pointLocation(3);
 
-            regionTypePointsIO.GetOutput()->GetLocation( i, pointLocation );
+	  regionTypePointsIO.GetOutput()->GetLocation( i, pointLocation );
+	  
+	  double* vtkPoint = new double[3];
+	    vtkPoint[0] = pointLocation[0];
+	    vtkPoint[1] = pointLocation[1];
+	    vtkPoint[2] = pointLocation[2];
 
-            float cipRegion = float( regionTypePointsIO.GetOutput()->GetChestRegionValue( i ) );
-            float cipType   = float( regionTypePointsIO.GetOutput()->GetChestTypeValue( i ) );
-
-            cipTypeArray->InsertTuple( i, &cipType );
-            cipRegionArray->InsertTuple( i, &cipRegion );
-            pointArray->InsertTuple( i, pointLocation );
+	  float cipRegion = float( regionTypePointsIO.GetOutput()->GetChestRegionValue( i ) );
+	  float cipType   = float( regionTypePointsIO.GetOutput()->GetChestTypeValue( i ) );
+	  
+	  cipTypeArray->InsertTuple( i, &cipType );
+	  cipRegionArray->InsertTuple( i, &cipRegion );
+	  pointArray->InsertTuple( i, vtkPoint );
         }
 
         points->SetData( pointArray );
