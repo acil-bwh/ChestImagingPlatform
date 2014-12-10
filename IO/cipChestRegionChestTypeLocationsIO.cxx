@@ -66,8 +66,7 @@ bool cipChestRegionChestTypeLocationsIO::Read()
 void cipChestRegionChestTypeLocationsIO::Write() const
 {
   std::ofstream file( this->FileName.c_str() );
-
-  double* location = new double[3];
+  cip::PointType location(3);
 
   file << "Region,Type,X Location,Y Location, Z Location" << std::endl;
   for ( unsigned int i=0; i<this->RegionTypeLocations->GetNumberOfTuples(); i++ )

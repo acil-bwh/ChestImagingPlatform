@@ -2,7 +2,8 @@
 <executable>
   <category>Chest Imaging Platform.Toolkit.Segmentation</category>
   <title>EnhanceFissuresInImage</title>
-  <description><![CDATA[This program...]]>
+  <description><![CDATA[This program enhances fissure image features using logistic regression \
+  classifiers.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
@@ -20,7 +21,7 @@
       <label>Input label map file name</label>
       <channel>input</channel>
       <longflag>lm</longflag>
-      <description><![CDATA[Input lung label map file name. On CT voxels in the foreground region of this \
+      <description><![CDATA[Input lung label map file name. Only CT voxels in the foreground region of this \
       label map will be enhanced.]]></description>
       <default>NA</default>
     </image>  
@@ -34,15 +35,6 @@
       <default>NA</default>
     </image>  
 
-    <string>
-      <name>vesselParticlesFileName</name>
-      <label>Vessel particles file name</label>
-      <channel>input</channel>
-      <longflag>vp</longflag>
-      <description><![CDATA[Vessel particles to use for the enhancement.]]></description>
-      <default>NA</default>
-    </string>  
-
     <image type="label">
       <name>outFileName</name>
       <label>Output CT file name</label>
@@ -51,5 +43,28 @@
       <description><![CDATA[Output, fissure-enhanced CT file name.]]></description>
       <default>NA</default>
     </image>  
+
+    <string>
+      <name>rightShapeModelFileName</name>
+      <label>Right shape model file name</label>
+      <channel>input</channel>
+      <longflag>rsm</longflag>
+      <description><![CDATA[Right lung lobe boundaries shape model file name. The mean points of the shape model will \
+      be used to create thin plate spline surfaces. These surfaces will be used to compute certain features. A right \
+      shape model file OR a left shape model file (but not both) must be specified.]]></description>
+      <default>NA</default>
+    </string>  
+
+    <string>
+      <name>leftShapeModelFileName</name>
+      <label>Left shape model file name</label>
+      <channel>input</channel>
+      <longflag>lsm</longflag>
+      <description><![CDATA[Left lung lobe boundaries shape model file name. The mean points of the shape model will \
+      be used to create a thin plate spline surface. This surface will be used to compute certain features. A right \
+      shape model file OR a left shape model file (but not both) must be specified.]]></description>
+      <default>NA</default>
+    </string>  
+
   </parameters> 
 </executable>

@@ -147,16 +147,16 @@ int main( int argc, char *argv[] )
 
   std::string inputExtension  = "NA";
   std::string outputExtension = "NA";
-
+  
   // Check if the argument is a csv or a vtk file, otherwise report error
   unsigned int inputPointLoc = inputFileName.find_last_of( '.' );
   inputExtension = inputFileName.substr( inputPointLoc+1, inputFileName.length());
-
+  
   unsigned int outputPointLoc = outputFileName.find_last_of( '.' );
   outputExtension = outputFileName.substr( outputPointLoc+1, outputFileName.length());
-
+  
   bool readWriteSuccess = true;
-
+  
   // If it is a csv file, invoke the reader which can be found under cip/trunk/io
   if (strcmp(inputExtension.c_str(), "csv") == 0)
     {
@@ -166,7 +166,7 @@ int main( int argc, char *argv[] )
 	  std::cerr << "Must specify .vtk as output file format if input format is .csv" << std::endl;
 	  exit(1);
 	}
-
+      
       readWriteSuccess = ReadCSVWriteVTK( inputFileName, outputFileName);
     }
   else if (strcmp(inputExtension.c_str(), "vtk") == 0)
@@ -176,7 +176,7 @@ int main( int argc, char *argv[] )
 	  std::cerr << "Must specify .csv as output file format if input format is .vtk" << std::endl;
 	  exit(1);
 	}
-
+      
       readWriteSuccess = ReadVTKWriteCSV( inputFileName, outputFileName);
     }
   else

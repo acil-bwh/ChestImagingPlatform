@@ -48,12 +48,12 @@ void LobeSurfaceModelIO::Write() const
            << this->ShapeModel->GetImageSpacing()[2] << std::endl;
 
       file << this->ShapeModel->GetNumberOfModes() << std::endl;
-      file << this->ShapeModel->GetMeanSurfacePoints()->size() << std::endl;
+      file << this->ShapeModel->GetMeanSurfacePoints().size() << std::endl;
 
       // Write the mean z-vector
-      for ( unsigned int i=0; i<this->ShapeModel->GetMeanSurfacePoints()->size(); i++ )
+      for ( unsigned int i=0; i<this->ShapeModel->GetMeanSurfacePoints().size(); i++ )
 	{
-	  file << (*this->ShapeModel->GetMeanSurfacePoints())[i][2] << ",";
+	  file << this->ShapeModel->GetMeanSurfacePoints()[i][2] << ",";
 	}
       file << std::endl;
 
@@ -67,7 +67,7 @@ void LobeSurfaceModelIO::Write() const
       // Write the modes
       for ( unsigned int i=0; i<this->ShapeModel->GetNumberOfModes(); i++ )
 	{
-	  for ( unsigned int j=0; j<this->ShapeModel->GetMeanSurfacePoints()->size(); j++ )
+	  for ( unsigned int j=0; j<this->ShapeModel->GetMeanSurfacePoints().size(); j++ )
 	    {
 	      file << (*this->ShapeModel->GetEigenvectors())[i][j] << ",";
 	    }
@@ -75,10 +75,10 @@ void LobeSurfaceModelIO::Write() const
 	}
 
       // Write the domain locations
-      for ( unsigned int i=0; i<this->ShapeModel->GetMeanSurfacePoints()->size(); i++ )
+      for ( unsigned int i=0; i<this->ShapeModel->GetMeanSurfacePoints().size(); i++ )
 	{
-	  file << (*this->ShapeModel->GetMeanSurfacePoints())[i][0] << ",";
-	  file << (*this->ShapeModel->GetMeanSurfacePoints())[i][1] << ",";
+	  file << this->ShapeModel->GetMeanSurfacePoints()[i][0] << ",";
+	  file << this->ShapeModel->GetMeanSurfacePoints()[i][1] << ",";
 	  file << 0 << std::endl;
 	}
     }
@@ -238,7 +238,7 @@ void LobeSurfaceModelIO::Read()
   this->ShapeModel->SetEigenvectors( &eigenvectors );
 
   // Read the domain points and fill the mean surface points vec
-  std::vector< double* > meanSurfacePoints;
+  std::vector< cip::PointType > meanSurfacePoints;
   
   for ( unsigned int i=0; i<numZvals; i++ )
     {
@@ -252,7 +252,7 @@ void LobeSurfaceModelIO::Read()
       double y = atof( domainString.substr( commaLoc1+1, commaLoc2-commaLoc1-1).c_str() );
       double z = meanZValues[i];
       
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = x;
   	point[1] = y;
   	point[2] = z;
@@ -260,7 +260,7 @@ void LobeSurfaceModelIO::Read()
       meanSurfacePoints.push_back( point );
     }
   
-  this->ShapeModel->SetMeanSurfacePoints( &meanSurfacePoints );
+  this->ShapeModel->SetMeanSurfacePoints( meanSurfacePoints );
   file.close(); 
 }
 

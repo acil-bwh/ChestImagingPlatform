@@ -20,7 +20,7 @@
 
 typedef cipLabelMapToLungLobeLabelMapImageFilter LungLobeSegmentationType;
 
-void AppendFissurePoints( std::vector< double* >*, vtkPolyData* );
+void AppendFissurePoints( std::vector< cip::PointType >*, vtkSmartPointer< vtkPolyData > );
 
 int main( int argc, char *argv[] )
 {
@@ -45,9 +45,9 @@ int main( int argc, char *argv[] )
     }
   
   // Define the vectors of physical points needed for creating the TPS
-  std::vector< double* > loPoints;
-  std::vector< double* > roPoints;
-  std::vector< double* > rhPoints;
+  std::vector< cip::PointType > loPoints;
+  std::vector< cip::PointType > roPoints;
+  std::vector< cip::PointType > rhPoints;
 
   LungLobeSegmentationType::Pointer lobeSegmenter = LungLobeSegmentationType::New();
 
@@ -74,8 +74,8 @@ int main( int argc, char *argv[] )
         {
         if ( cipType == (unsigned char)( cip::OBLIQUEFISSURE ) )
           {
-          double* location = new double[3];
-
+	  cip::PointType location(3);
+	  
           regionTypesIO.GetOutput()->GetLocation( i, location );
           loPoints.push_back( location );
           }
@@ -84,14 +84,14 @@ int main( int argc, char *argv[] )
         {
         if ( cipType == (unsigned char)( cip::OBLIQUEFISSURE ) )
           {
-          double* location = new double[3];
+	  cip::PointType location(3);
 
           regionTypesIO.GetOutput()->GetLocation( i, location );
           roPoints.push_back( location );
           }
         else if ( cipType == (unsigned char)( cip::HORIZONTALFISSURE ) )
           {
-          double* location = new double[3];
+	  cip::PointType location(3);
 
           regionTypesIO.GetOutput()->GetLocation( i, location );
           rhPoints.push_back( location );
@@ -114,7 +114,7 @@ int main( int argc, char *argv[] )
 	  lpsPoint[2] = rightHorizontalFiducials[i][2];
 	  
 	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  double* location = new double[3];
+	  cip::PointType location(3);
   	    location[0] = index[0];
 	    location[1] = index[1];
 	    location[2] = index[2];
@@ -136,7 +136,7 @@ int main( int argc, char *argv[] )
 	  lpsPoint[2] = rightObliqueFiducials[i][2];
 	  
 	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  double* location = new double[3];
+	  cip::PointType location(3);
        	    location[0] = index[0];
 	    location[1] = index[1];
 	    location[2] = index[2];
@@ -159,7 +159,7 @@ int main( int argc, char *argv[] )
 	  
 	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
 	  
-	  double* location = new double[3];
+	  cip::PointType location(3);
 	    location[0] = index[0];
 	    location[1] = index[1];
 	    location[2] = index[2];
@@ -275,15 +275,15 @@ int main( int argc, char *argv[] )
   std::cout << "Segmenting lobes..." << std::endl;
   if ( loPoints.size() > 2 )
     {
-      lobeSegmenter->SetLeftObliqueFissurePoints( &loPoints );
+      lobeSegmenter->SetLeftObliqueFissurePoints( loPoints );
     }
   if ( roPoints.size() > 2 )
     {
-      lobeSegmenter->SetRightObliqueFissurePoints( &roPoints );
+      lobeSegmenter->SetRightObliqueFissurePoints( roPoints );
     }
   if ( rhPoints.size() > 2 )
     {
-      lobeSegmenter->SetRightHorizontalFissurePoints( &rhPoints );
+      lobeSegmenter->SetRightHorizontalFissurePoints( rhPoints );
     }
   lobeSegmenter->SetInput( leftLungRightLungReader->GetOutput() );
   lobeSegmenter->SetThinPlateSplineSurfaceFromPointsLambda( lambda );
@@ -311,7 +311,7 @@ int main( int argc, char *argv[] )
   return cip::EXITSUCCESS;
 }
 
-void AppendFissurePoints( std::vector< double* >* fissurePoints, vtkPolyData* particles )
+void AppendFissurePoints( std::vector< cip::PointType >* fissurePoints, vtkSmartPointer< vtkPolyData > particles )
 {  
   unsigned int inc = 1; //static_cast< unsigned int >( vcl_ceil(
                         //particles->GetNumberOfPoints()/750.0 ) );
@@ -322,7 +322,7 @@ void AppendFissurePoints( std::vector< double* >* fissurePoints, vtkPolyData* pa
     {
     addPoint = true;
 
-    double* position = new double[3];
+    cip::PointType position(3);
       position[0] = particles->GetPoint(i)[0];
       position[1] = particles->GetPoint(i)[1];
       position[2] = particles->GetPoint(i)[2];

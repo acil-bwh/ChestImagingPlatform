@@ -61,7 +61,7 @@ public:
 private:
   void InitializeMinimumSpanningTree( vtkSmartPointer< vtkPolyData > );
   bool GetEdgeWeight( unsigned int, unsigned int, vtkSmartPointer< vtkPolyData >, double* );
-  void OrientParticle( unsigned int, double* );
+  void OrientParticle( unsigned int, cip::VectorType& );
 
   std::map< vtkActor*, unsigned int > ActorToParticleIDMap;
   std::map< unsigned int, vtkActor* > ParticleIDToActorMap;

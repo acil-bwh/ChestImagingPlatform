@@ -201,13 +201,13 @@ cipLabelMapToLungLobeLabelMapImageFilter
 
   // First create foreground points on the blend map
   bool isInside;
-  for ( unsigned int i=0; i<tps->GetSurfacePoints()->size(); i++ )
+  for ( unsigned int i=0; i<tps->GetSurfacePoints().size(); i++ )
     {
       BlendMapType::PointType point;
       BlendMapType::IndexType index;
 
-      point[0] = (*(tps->GetSurfacePoints()))[i][0];
-      point[1] = (*(tps->GetSurfacePoints()))[i][1];
+      point[0] = tps->GetSurfacePoints()[i][0];
+      point[1] = tps->GetSurfacePoints()[i][1];
 
       isInside = blendMap->TransformPhysicalPointToIndex( point, index );
       cipAssert( isInside );
@@ -342,7 +342,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
       {
       this->GetInput()->TransformIndexToPhysicalPoint( indices[i], physicalPoint );
     
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = physicalPoint[0];
         point[1] = physicalPoint[1];
         point[2] = physicalPoint[2];
@@ -350,21 +350,21 @@ cipLabelMapToLungLobeLabelMapImageFilter
       this->LeftObliqueFissurePoints.push_back( point );
       }  
 
-    this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->LeftObliqueFissurePoints );
+    this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( this->LeftObliqueFissurePoints );
     }
 }
 
 
 void
 cipLabelMapToLungLobeLabelMapImageFilter
-::SetLeftObliqueFissurePoints( std::vector< double* >* points )
+::SetLeftObliqueFissurePoints( const std::vector< cip::PointType >& points )
 {
-  for ( unsigned int i=0; i<points->size(); i++ )
+  for ( unsigned int i=0; i<points.size(); i++ )
     {
-    this->LeftObliqueFissurePoints.push_back( (*points)[i] );
+    this->LeftObliqueFissurePoints.push_back( points[i] );
     }
 
-  this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->LeftObliqueFissurePoints );
+  this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( this->LeftObliqueFissurePoints );
   this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
 }
 
@@ -387,7 +387,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
       {
       this->GetInput()->TransformIndexToPhysicalPoint( indices[i], physicalPoint );
     
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = physicalPoint[0];
         point[1] = physicalPoint[1];
         point[2] = physicalPoint[2];
@@ -395,7 +395,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
       this->RightObliqueFissurePoints.push_back( point );
       }  
 
-    this->RightObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightObliqueFissurePoints );
+    this->RightObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( this->RightObliqueFissurePoints );
     this->RightObliqueThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
     }
 }
@@ -403,14 +403,14 @@ cipLabelMapToLungLobeLabelMapImageFilter
 
 void
 cipLabelMapToLungLobeLabelMapImageFilter
-::SetRightObliqueFissurePoints( std::vector< double* >* points )
+::SetRightObliqueFissurePoints( const std::vector< cip::PointType >& points )
 {
-  for ( unsigned int i=0; i<points->size(); i++ )
+  for ( unsigned int i=0; i<points.size(); i++ )
     {
-    this->RightObliqueFissurePoints.push_back( (*points)[i] );
+    this->RightObliqueFissurePoints.push_back( points[i] );
     }
 
-  this->RightObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightObliqueFissurePoints );
+  this->RightObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( this->RightObliqueFissurePoints );
   this->RightObliqueThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
 }
 
@@ -433,7 +433,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
       {
       this->GetInput()->TransformIndexToPhysicalPoint( indices[i], physicalPoint );
     
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = physicalPoint[0];
         point[1] = physicalPoint[1];
         point[2] = physicalPoint[2];
@@ -441,7 +441,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
       this->RightHorizontalFissurePoints.push_back( point );
       }  
 
-    this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightHorizontalFissurePoints );
+    this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetSurfacePoints( this->RightHorizontalFissurePoints );
     this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
     }
 }
@@ -449,14 +449,14 @@ cipLabelMapToLungLobeLabelMapImageFilter
 
 void
 cipLabelMapToLungLobeLabelMapImageFilter
-::SetRightHorizontalFissurePoints( std::vector< double* >* points )
+::SetRightHorizontalFissurePoints( const std::vector< cip::PointType >& points )
 {
-  for ( unsigned int i=0; i<points->size(); i++ )
+  for ( unsigned int i=0; i<points.size(); i++ )
     {
-    this->RightHorizontalFissurePoints.push_back( (*points)[i] );
+    this->RightHorizontalFissurePoints.push_back( points[i] );
     }
 
-  this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetSurfacePoints( &this->RightHorizontalFissurePoints );
+  this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetSurfacePoints( this->RightHorizontalFissurePoints );
   this->RightHorizontalThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
 }
 

@@ -11,7 +11,7 @@
 #if defined(WIN32) && !defined(VTKCIPUtilities_STATIC)
 #pragma warning ( disable : 4275 )
 
-#if defined(vtkCIPCommon_EXPORTS)
+#if defined(vtkCIPUtilities_EXPORTS)
 #define VTK_CIP_UTILITIES_EXPORT __declspec( dllexport ) 
 #else
 #define VTK_CIP_UTILITIES_EXPORT __declspec( dllimport ) 

@@ -50,11 +50,11 @@ namespace cip {
   cip::CTType::Pointer UpsampleCT(short samplingAmount, cip::CTType::Pointer inputCT);
 
   /** Get the magnitude of the indicated vector */
-  double GetVectorMagnitude(double vector[3]);
+  double GetVectorMagnitude(const cip::VectorType& vector);
 
   /** Get the angle between the two vectors. By default, the answer will be returned 
    * in radians, but it can also be returned in degrees by setting 'returnDegrees' to 'true'. */
-  double GetAngleBetweenVectors(double vec1[3], double vec2[3], bool returnDegrees = false);
+  double GetAngleBetweenVectors(const cip::VectorType& vec1, const cip::VectorType& vec2, bool returnDegrees = false);
 
   /** Render a vtk-style graph for visualization */
   void ViewGraph(vtkSmartPointer< vtkMutableDirectedGraph > graph);
@@ -111,7 +111,20 @@ namespace cip {
   
   /** Given a thin plate spline surface and a point, this function will find the minimum distance
    *  to the surface */
-  double GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface*, double* );
+  double GetDistanceToThinPlateSplineSurface( const cipThinPlateSplineSurface&, cip::PointType );
+
+  /**Transfers the contents of a VTK polydata's field data to point data and vice-versa. 
+   * Generally, field data applies to a dataset as a whole and need not have a one-to-one 
+   * correspondence with the points. However, this may be the case in some instances 
+   * (esp. with the particles datasets). In those cases it may be helpful to have the data 
+   * contained in field data arrays also stored in point data arrays (e.g. for rendering 
+   * purposes). Field data will only be transferred provided that the number of tuples in 
+   * the field data array is the same as the number of points. */
+  void TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData >, bool, bool, bool, bool );
+
+  /** Given a thin plate spline surface and some point in 3D space, this function will 
+   *  compute the closest point on the surface and set it to tpsPoint. */
+  void GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, cip::PointType tpsPoint );
 }  
 
 #endif

@@ -92,10 +92,7 @@ namespace
     void WriteTransitionDataISBI( std::vector<TRANSITION> transitionVec );
     void WriteEmissionDataISBI( std::map<unsigned char, std::vector<EMISSION> > emissionProbData );
   */
-    
- 
-    
-    
+         
   bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartPointer<vtkPolyData> particles,
 		     double* weight, double particleDistanceThreshold, double edgeWeightAngleSigma)
   {
@@ -112,7 +109,7 @@ namespace
     point2[1] = particles->GetPoint(particleID2)[1];
     point2[2] = particles->GetPoint(particleID2)[2];
         
-    double connectingVec[3];
+    cip::VectorType connectingVec(3);
     connectingVec[0] = point1[0] - point2[0];
     connectingVec[1] = point1[1] - point2[1];
     connectingVec[2] = point1[2] - point2[2];
@@ -124,15 +121,15 @@ namespace
 	return false;
       }
         
-    double particle1Hevec2[3];
-    particle1Hevec2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[0];
-    particle1Hevec2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[1];
-    particle1Hevec2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[2];
+    cip::VectorType particle1Hevec2(3);
+      particle1Hevec2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[0];
+      particle1Hevec2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[1];
+      particle1Hevec2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID1)[2];
         
-    double particle2Hevec2[3];
-    particle2Hevec2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[0];
-    particle2Hevec2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[1];
-    particle2Hevec2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[2];
+    cip::VectorType particle2Hevec2(3);
+      particle2Hevec2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[0];
+      particle2Hevec2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[1];
+      particle2Hevec2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(particleID2)[2];
         
     double angle1 =  cip::GetAngleBetweenVectors(particle1Hevec2, connectingVec, true);
     double angle2 =  cip::GetAngleBetweenVectors(particle2Hevec2, connectingVec, true);
@@ -220,10 +217,10 @@ namespace
 	    float particleType = particles->GetPointData()->GetArray("ChestType")->GetTuple(j)[0];
 	    if (refParticleType == particleType)
 	      {
-		double* vec = new double[3];
-		vec[0] = refParticles->GetPoint(i)[0] - particles->GetPoint(j)[0];
-		vec[1] = refParticles->GetPoint(i)[1] - particles->GetPoint(j)[1];
-		vec[2] = refParticles->GetPoint(i)[2] - particles->GetPoint(j)[2];
+		cip::VectorType vec(3);
+		  vec[0] = refParticles->GetPoint(i)[0] - particles->GetPoint(j)[0];
+		  vec[1] = refParticles->GetPoint(i)[1] - particles->GetPoint(j)[1];
+		  vec[2] = refParticles->GetPoint(i)[2] - particles->GetPoint(j)[2];
                     
 		double dist = cip::GetVectorMagnitude(vec);
 		if (dist <= epsilon)
@@ -231,15 +228,15 @@ namespace
 		    float scale1 = refParticles->GetPointData()->GetArray("scale")->GetTuple(i)[0];
 		    float scale2 = particles->GetPointData()->GetArray("scale")->GetTuple(j)[0];
                         
-		    double direction1[3];
-		    direction1[0] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[0];
-		    direction1[1] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[1];
-		    direction1[2] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[2];
+		    cip::VectorType direction1(3);
+		      direction1[0] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[0];
+		      direction1[1] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[1];
+		      direction1[2] = refParticles->GetPointData()->GetArray("hevec2")->GetTuple(i)[2];
                         
-		    double direction2[3];
-		    direction2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[0];
-		    direction2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[1];
-		    direction2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[2];
+		    cip::VectorType direction2(3);
+		      direction2[0] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[0];
+		      direction2[1] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[1];
+		      direction2[2] = particles->GetPointData()->GetArray("hevec2")->GetTuple(j)[2];
                         
 		    EMISSION emissionData;
 		    emissionData.distance = dist;

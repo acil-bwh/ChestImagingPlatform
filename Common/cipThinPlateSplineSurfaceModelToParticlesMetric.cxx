@@ -21,6 +21,7 @@ cipThinPlateSplineSurfaceModelToParticlesMetric
   this->AirwayParticles  = vtkPolyData::New();
   this->VesselParticles  = vtkPolyData::New();
 
+  this->RegularizationWeight = 0.0;
   this->NumberOfModes = 0; 
 
   this->NumberOfFissureParticles = 0;
@@ -62,7 +63,6 @@ void cipThinPlateSplineSurfaceModelToParticlesMetric::SetVesselParticles( vtkPol
 {
   this->VesselParticles = particles;
   this->NumberOfVesselParticles = this->VesselParticles->GetNumberOfPoints();
-  std::cout << "SETTING:\t" << this->NumberOfVesselParticles << std::endl;
 
   // If no particle weights have already been specified, set each
   // particle to have equal, unity weight
@@ -129,28 +129,23 @@ void cipThinPlateSplineSurfaceModelToParticlesMetric::SetVesselParticleWeights( 
 // Set the surface points of the mean surface model. These points --
 // in conjunction with the various model eigenvectors and eigenvalues
 // -- will be used to construct the TPS surfaces
-void cipThinPlateSplineSurfaceModelToParticlesMetric::SetMeanSurfacePoints( const std::vector< double* >* const meanPoints ) 
+void cipThinPlateSplineSurfaceModelToParticlesMetric::SetMeanSurfacePoints( const std::vector< cip::PointType >& meanPoints ) 
 {
-  this->NumberOfSurfacePoints = meanPoints->size();
+  this->NumberOfSurfacePoints = meanPoints.size();
 
   for ( unsigned int i=0; i<this->NumberOfSurfacePoints; i++ )
     {
-    double* meanPoint = new double[3];
-      meanPoint[0] = (*meanPoints)[i][0];
-      meanPoint[1] = (*meanPoints)[i][1];
-      meanPoint[2] = (*meanPoints)[i][2];
+      cip::PointType point(3);
+        point[0] = meanPoints[i][0];
+	point[1] = meanPoints[i][1];
+	point[2] = meanPoints[i][2];
 
-    this->MeanPoints.push_back( meanPoint );
+      this->MeanPoints.push_back( point );
     
-    // We will also initialize 'SurfacePoints' here. Calls to the
-    // 'GetValue' method will alter the z-values of 'SurfacePoints',
-    // but the x and y locations will remain the same no matter what. 
-    double* surfacePoint = new double[3];
-      surfacePoint[0] = (*meanPoints)[i][0];
-      surfacePoint[1] = (*meanPoints)[i][1];
-      surfacePoint[2] = (*meanPoints)[i][2];
-
-    this->SurfacePoints.push_back( surfacePoint );
+      // We will also initialize 'SurfacePoints' here. Calls to the
+      // 'GetValue' method will alter the z-values of 'SurfacePoints',
+      // but the x and y locations will remain the same no matter what. 
+      this->SurfacePoints.push_back( point );
     }
 }
 

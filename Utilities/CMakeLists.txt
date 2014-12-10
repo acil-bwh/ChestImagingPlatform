@@ -24,6 +24,12 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/VTK/${configure_header_file}
   )
 
+set(configure_header_file itkFactoryRegistrationConfigure.h)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/ITK/${configure_header_file}.in
+  ${CMAKE_CURRENT_BINARY_DIR}/ITK/${configure_header_file}
+  )  
+
 # --------------------------------------------------------------------------
 # Install headers
 # --------------------------------------------------------------------------
@@ -42,6 +48,7 @@ endif()
 # Sources
 # --------------------------------------------------------------------------
 SET (CIP_UTILITIES_VTK ${CMAKE_SOURCE_DIR}/Utilities/VTK)
+SET (CIP_UTILITIES_ITK ${CMAKE_SOURCE_DIR}/Utilities/ITK)
 
 SET ( CIPUtilities_SRCS
   ${CIP_UTILITIES_VTK}/vtkSuperquadricTensorGlyphFilter.cxx
@@ -51,6 +58,7 @@ SET ( CIPUtilities_SRCS
   ${CIP_UTILITIES_VTK}/vtkImageNeighborhoodFilter.cxx
   ${CIP_UTILITIES_VTK}/vtkNRRDReader.cxx
   ${CIP_UTILITIES_VTK}/vtkNRRDWriter.cxx
+  ${CIP_UTILITIES_ITK}/itkFactoryRegistration.cxx
 )
 
 # --------------------------------------------------------------------------
@@ -63,7 +71,7 @@ add_library(${LIB_NAME}
          ${CIPUtilities_SRCS} 
   )
 
-TARGET_LINK_LIBRARIES ( ${LIB_NAME} ${VTK_LIBRARIES} ${Teem_LIBRARIES} )
+TARGET_LINK_LIBRARIES ( ${LIB_NAME} ${VTK_LIBRARIES} ${Teem_LIBRARIES} ${ITK_LIBRARIES} )
 
 # --------------------------------------------------------------------------
 # Export target

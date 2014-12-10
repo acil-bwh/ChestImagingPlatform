@@ -19,9 +19,9 @@ public:
     * to the specified parameters. */
   double GetValue( const std::vector< double >* const ); 
 
-  cipThinPlateSplineSurface* GetLeftObliqueThinPlateSplineSurface()
+  const cipThinPlateSplineSurface& GetLeftObliqueThinPlateSplineSurface()
     {
-      return LeftObliqueThinPlateSplineSurface;
+      return LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface();
     }
 
 private:
@@ -29,11 +29,9 @@ private:
   double GetVesselTermValue();
   double GetAirwayTermValue();
 
-  std::vector< double* > LeftObliqueSurfacePoints;
+  std::vector< cip::PointType > LeftObliqueSurfacePoints;
 
-  cipNewtonOptimizer< 2 >*                     LeftObliqueNewtonOptimizer;
-  cipThinPlateSplineSurface*                   LeftObliqueThinPlateSplineSurface;
-  cipParticleToThinPlateSplineSurfaceMetric*   LeftObliqueParticleToTPSMetric;
+  cipNewtonOptimizer< 2 >  LeftObliqueNewtonOptimizer;
 };
 
 

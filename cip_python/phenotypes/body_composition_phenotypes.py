@@ -29,6 +29,24 @@ class BodyCompositionPhenotypes(Phenotypes):
     'HUMin': Min HU value for the structure
     'HUMax': Max HU value for the structure
 
+    The following set of phenotypes are identical to the above except that
+    computation is isolated to the HU interval [-50, 90]. These phenotypes are
+    capture lean muscle information and only have meaning for muscle structures.
+    'leanAxialCSA': Axial cross-sectional area 
+    'leanCoronalCSA': Coronoal cross-sectional area
+    'leanSagittalCSA': Sagitall cross-sectional area
+    'leanHUMean': Mean value of the structure's HU values
+    'leanHUStd': Standard deviation of the structure's HU values
+    'leanHUKurtosis': Kurtosis of the structure's HU values. Fisher's definition is
+    used, meaning that normal distribution has kurtosis of 0. The calculation
+    is corrected for statistical bias.
+    'leanHUSkewness': Skewness of the structure's HU values. The calculation is
+    corrected for statistical bias.
+    'leanHUMode': Mode of the structure's HU values
+    'leanHUMedian': Median of the structure's HU values
+    'leanHUMin': Min HU value for the structure
+    'leanHUMax': Max HU value for the structure
+
     Parameters
     ----------
     chest_regions : array, shape ( R ), optional
@@ -91,7 +109,9 @@ class BodyCompositionPhenotypes(Phenotypes):
         """
         names = ['AxialCSA', 'CoronalCSA', 'SagittalCSA', 'HUMean', 'HUStd',
                  'HUKurtosis', 'HUSkewness', 'HUMode', 'HUMedian', 'HUMin',
-                 'HUMax']
+                 'HUMax', 'leanAxialCSA', 'leanCoronalCSA', 'leanSagittalCSA',
+                 'leanHUMean', 'leanHUStd', 'leanHUKurtosis', 'leanHUSkewness',
+                 'leanHUMode', 'leanHUMedian', 'leanHUMin', 'leanHUMax']
         
         return names
 
@@ -125,6 +145,25 @@ class BodyCompositionPhenotypes(Phenotypes):
         'HUMedian': Median of the structure's HU values
         'HUMin': Min HU value for the structure
         'HUMax': Max HU value for the structure
+
+        The following set of phenotypes are identical to the above except that
+        computation is isolated to the HU interval [-50, 90]. These phenotypes
+        are capture lean muscle information and only have meaning for muscle
+        structures.
+        'leanAxialCSA': Axial cross-sectional area 
+        'leanCoronalCSA': Coronoal cross-sectional area
+        'leanSagittalCSA': Sagitall cross-sectional area
+        'leanHUMean': Mean value of the structure's HU values
+        'leanHUStd': Standard deviation of the structure's HU values
+        'leanHUKurtosis': Kurtosis of the structure's HU values. Fisher's
+        definition is used, meaning that normal distribution has kurtosis of 0.
+        The calculation is corrected for statistical bias.
+        'leanHUSkewness': Skewness of the structure's HU values. The calculation
+        is corrected for statistical bias.
+        'leanHUMode': Mode of the structure's HU values
+        'leanHUMedian': Median of the structure's HU values
+        'leanHUMin': Min HU value for the structure
+        'leanHUMax': Max HU value for the structure
 
         Parameters
         ----------
@@ -218,30 +257,52 @@ class BodyCompositionPhenotypes(Phenotypes):
             ts = parser.get_chest_types()
             ps = parser.get_all_pairs()
 
+        lean_ct_mask = np.logical_and(ct >= -50, ct <= 90)
+
         # Now compute the phenotypes and populate the data frame
         c = ChestConventions()
         if rs is not None:
             for r in rs:
                 if r != 0:
                     mask = parser.get_mask(chest_region=r)
+                    lean_mask = np.logical_and(mask, lean_ct_mask)
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask, c.GetChestRegionName(r),
-                                             c.GetChestWildCardName(), n)
+                        if 'lean' in n:
+                            self.add_pheno_group(ct, lean_mask,
+                                c.GetChestRegionName(r),
+                                c.GetChestWildCardName(), n)
+                        else:
+                            self.add_pheno_group(ct, mask,
+                                c.GetChestRegionName(r),
+                                c.GetChestWildCardName(), n)
         if ts is not None:
             for t in ts:
                 if t != 0:
                     mask = parser.get_mask(chest_type=t)
+                    lean_mask = np.logical_and(mask, lean_ct_mask)
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask, c.GetChestWildCardName(),
-                                             c.GetChestTypeName(r), n)
+                        if 'lean' in n:
+                            self.add_pheno_group(ct, lean_mask,
+                                c.GetChestWildCardName(),
+                                c.GetChestTypeName(r), n)
+                        else:
+                            self.add_pheno_group(ct, mask,
+                                c.GetChestWildCardName(),
+                                c.GetChestTypeName(r), n)
         if ps is not None:
             for p in ps:            
                 if not (p[0] == 0 and p[1] == 0):
                     mask = parser.get_mask(chest_region=p[0], chest_type=p[1])
+                    lean_mask = np.logical_and(mask, lean_ct_mask)
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask,
-                            c.GetChestRegionName(p[0]),
-                            c.GetChestTypeName(p[1]), n)
+                        if 'lean' in n:
+                            self.add_pheno_group(ct, lean_mask,
+                                c.GetChestRegionName(p[0]),
+                                c.GetChestTypeName(p[1]), n)
+                        else:
+                            self.add_pheno_group(ct, mask,
+                                c.GetChestRegionName(p[0]),
+                                c.GetChestTypeName(p[1]), n)
 
         return self._df
 
@@ -271,33 +332,40 @@ class BodyCompositionPhenotypes(Phenotypes):
             Name of the phenotype used to populate the dataframe
         """
         assert pheno_name in self.pheno_names_, "Invalid phenotype name"
-        #print "Region: %s, Type: %s, Pheno: %s" % \
-        #    (chest_region, chest_type, pheno_name)
+
         pheno_val = None
         mask_sum = np.sum(mask)
-        if pheno_name == 'AxialCSA':
+        if pheno_name == 'AxialCSA' or pheno_name == 'leanAxialCSA':
             pheno_val = self._spacing[0]*self._spacing[1]*mask_sum
-        elif pheno_name == 'CoronalCSA':
+        elif pheno_name == 'CoronalCSA' or pheno_name == 'leanCoronalCSA':
             pheno_val = self._spacing[0]*self._spacing[2]*mask_sum
-        elif pheno_name == 'SagittalCSA':
+        elif pheno_name == 'SagittalCSA' or pheno_name == 'leanSagittalCSA':
             pheno_val = self._spacing[1]*self._spacing[2]*mask_sum
-        elif pheno_name == 'HUMean':
+        elif (pheno_name == 'HUMean' or pheno_name == 'leanHUMean') and \
+            mask_sum > 0:
             pheno_val = np.mean(ct[mask])
-        elif pheno_name == 'HUStd':
+        elif (pheno_name == 'HUStd' or pheno_name == 'leanHUStd') and \
+            mask_sum > 0:
             pheno_val = np.std(ct[mask])
-        elif pheno_name == 'HUKurtosis':
+        elif (pheno_name == 'HUKurtosis' or pheno_name == 'leanHUKurtosis') \
+            and mask_sum > 0:
             pheno_val = kurtosis(ct[mask], bias=False, fisher=True)
-        elif pheno_name == 'HUSkewness':
+        elif (pheno_name == 'HUSkewness' or pheno_name == 'leanHUSkewness') \
+            and mask_sum > 0:
             pheno_val = skew(ct[mask], bias=False)
-        elif pheno_name == 'HUMode':
+        elif (pheno_name == 'HUMode' or pheno_name == 'leanHUMode') \
+            and mask_sum > 0:
             min_val = np.min(ct[mask])
             pheno_val = np.argmax(np.bincount(ct[mask] + np.abs(min_val))) - \
                 np.abs(min_val)
-        elif pheno_name == 'HUMedian':
+        elif (pheno_name == 'HUMedian' or pheno_name == 'leanHUMedian') and \
+            mask_sum > 0:
             pheno_val = np.median(ct[mask])
-        elif pheno_name == 'HUMin':
+        elif (pheno_name == 'HUMin' or pheno_name == 'leanHUMin') and \
+            mask_sum > 0:
             pheno_val = np.min(ct[mask])
-        elif pheno_name == 'HUMax':
+        elif (pheno_name == 'HUMax' or pheno_name == 'leanHUMax') and \
+            mask_sum > 0:
             pheno_val = np.max(ct[mask])
 
         if pheno_val is not None:

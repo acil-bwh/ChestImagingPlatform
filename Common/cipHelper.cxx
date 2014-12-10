@@ -245,14 +245,15 @@ cip::CTType::Pointer cip::DownsampleCT(short samplingAmount, cip::CTType::Pointe
   return outputCT;
 }
 
-double cip::GetVectorMagnitude(double vector[3])
+double cip::GetVectorMagnitude(const cip::VectorType& vector)
 {
   double magnitude = vcl_sqrt(std::pow(vector[0], 2) + std::pow(vector[1], 2) + std::pow(vector[2], 2));
 
   return magnitude;
 }
 
-double cip::GetAngleBetweenVectors(double vec1[3], double vec2[3], bool returnDegrees)
+double cip::GetAngleBetweenVectors(const cip::VectorType& vec1, 
+				   const cip::VectorType& vec2, bool returnDegrees)
 {
   double vec1Mag = cip::GetVectorMagnitude(vec1);
   double vec2Mag = cip::GetVectorMagnitude(vec2);
@@ -942,26 +943,150 @@ void cip::GraftPointDataArrays( vtkSmartPointer< vtkPolyData > fromPoly, vtkSmar
     }
 }
 
-double cip::GetDistanceToThinPlateSplineSurface( cipThinPlateSplineSurface* tps, double* point )
+double cip::GetDistanceToThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point )
 {
-  cipNewtonOptimizer< 2 >::PointType* domainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
-  (*domainParams)[0] = point[0];
-  (*domainParams)[1] = point[1];
+  cipNewtonOptimizer< 2 >::PointType* domainParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
+  (*domainParams)[0] = point[0]; 
+  (*domainParams)[1] = point[1]; 
+  
+  cipParticleToThinPlateSplineSurfaceMetric tpsMetric;
+    tpsMetric.SetThinPlateSplineSurface( tps );
+    tpsMetric.SetParticle( point );
 
-  cipParticleToThinPlateSplineSurfaceMetric* tpsMetric = new cipParticleToThinPlateSplineSurfaceMetric();
-    tpsMetric->SetThinPlateSplineSurface( tps );
-    tpsMetric->SetParticle( point );
+  cipNewtonOptimizer< 2 > optimizer;
+    optimizer.SetMetric( tpsMetric );
+    optimizer.SetInitialParameters( domainParams );
+    optimizer.Update();
 
-  cipNewtonOptimizer< 2 >* optimizer = new cipNewtonOptimizer< 2 >();
-    optimizer->SetMetric( tpsMetric );
-    optimizer->SetInitialParameters( domainParams );
-    optimizer->Update();
+  double distance = vcl_sqrt( optimizer.GetOptimalValue() );
+  
+  return distance;  
+}
 
-  double distance = vcl_sqrt( optimizer->GetOptimalValue() );
+void cip::GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, cip::PointType tpsPoint )
+{
+  cipNewtonOptimizer< 2 >::PointType* optimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
 
+  cipNewtonOptimizer< 2 >::PointType* domainParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
+  (*domainParams)[0] = point[0]; 
+  (*domainParams)[1] = point[1]; 
+  
+  cipParticleToThinPlateSplineSurfaceMetric tpsMetric;
+    tpsMetric.SetThinPlateSplineSurface( tps );
+    tpsMetric.SetParticle( point );
+
+  cipNewtonOptimizer< 2 > optimizer;
+    optimizer.SetMetric( tpsMetric );
+    optimizer.SetInitialParameters( domainParams );
+    optimizer.Update();
+    optimizer.GetOptimalParameters( optimalParams );
+
+  tpsPoint[0] = (*optimalParams)[0];
+  tpsPoint[1] = (*optimalParams)[1];
+  tpsPoint[2] = tps.GetSurfaceHeight( tpsPoint[0], tpsPoint[1] );
+
+  delete optimalParams;
   delete domainParams;
-  delete tpsMetric;
-  delete optimizer;
+}
 
-  return distance ;
+void cip::TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData > inPolyData, vtkSmartPointer< vtkPolyData > outPolyData,
+					    bool fieldToPoint, bool pointToField, bool maintainPoint, bool maintainField )
+{
+  unsigned int numberOfPoints = inPolyData->GetNumberOfPoints();
+  unsigned int numberOfFieldDataArrays = inPolyData->GetFieldData()->GetNumberOfArrays();
+  unsigned int numberOfPointDataArrays = inPolyData->GetPointData()->GetNumberOfArrays();
+
+  vtkSmartPointer< vtkPoints > outputPoints = vtkSmartPointer< vtkPoints >::New();
+
+  outPolyData->SetPoints( inPolyData->GetPoints() );
+
+  // First create a list of the point data already stored in the input polydata.
+  // We will only transfer field data provided there is not already corresponding
+  // point data. Do the same for the field data array names.
+  std::vector< std::string > pointDataArrayNames;
+  for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
+    {
+      std::string name = inPolyData->GetPointData()->GetArray(i)->GetName();
+      pointDataArrayNames.push_back(name);
+    }
+  std::vector< std::string > fieldDataArrayNames;
+  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+    {
+      std::string name = inPolyData->GetFieldData()->GetArray(i)->GetName();
+      fieldDataArrayNames.push_back(name);
+    }
+
+  // Transfer the field data to point data if requested
+  if ( fieldToPoint )
+    {
+      bool alreadyPresent;
+      for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+	{
+	  alreadyPresent = false;
+	  std::string fieldDataArrayName = inPolyData->GetFieldData()->GetArray(i)->GetName();
+	  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
+	    {
+	      if ( fieldDataArrayName.compare(pointDataArrayNames[j]) == 0 )
+		{
+		  alreadyPresent = true;
+		  break;
+		}
+	    }
+
+	  if ( !alreadyPresent )
+	    {
+	      // The number of array tuples must be the same as the number of points
+	      if ( inPolyData->GetFieldData()->GetArray(i)->GetNumberOfTuples() == numberOfPoints )
+		{
+		  outPolyData->GetPointData()->AddArray( inPolyData->GetFieldData()->GetArray(i) );
+		}
+	    }
+	}
+    }
+
+  // Transfer the point data to field data if requested. Note that this is not the
+  // "preferred" direction to go in, but we support it so that code in the cip
+  // that depends on field data storage can be accomodated. Eventually, all point-
+  // specific data should be recorded as point data.
+  if ( pointToField )
+    {
+      bool alreadyPresent;
+      for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
+	{
+	  alreadyPresent = false;
+	  std::string pointDataArrayName = inPolyData->GetPointData()->GetArray(i)->GetName();
+	  for ( unsigned int j=0; j<numberOfFieldDataArrays; j++ )
+	    {
+	      if ( pointDataArrayName.compare(fieldDataArrayNames[j]) == 0 )
+		{
+		  alreadyPresent = true;
+		  break;
+		}
+	    }
+
+	  if ( !alreadyPresent )
+	    {
+	      outPolyData->GetFieldData()->AddArray( inPolyData->GetPointData()->GetArray(i) );
+	    }
+	}
+    }
+
+  // Add the field data to the output if requested
+  if ( maintainField )
+    {
+      for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
+	{
+	  outPolyData->GetFieldData()->AddArray( inPolyData->GetFieldData()->GetArray(i) );
+	}
+    }
+
+  // Add the point data to the output if requested
+  if ( maintainPoint )
+    {
+      for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
+	{
+	  outPolyData->GetPointData()->AddArray( inPolyData->GetPointData()->GetArray(i) );
+	}
+    }  
+>>>>>>> master
 }

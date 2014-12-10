@@ -90,9 +90,13 @@ int main( int argc, char *argv[] )
   std::cout << "Writing filtered particles ..." << std::endl;
   vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInputData( particleFilter.GetOutput() );
-    filteredWriter->Write();
+    filteredWriter->SetInput( particleFilter.GetOutput() );
+    filteredWriter->SetFileTypeToBinary();
+    filteredWriter->Write();  
 
+  reader->Delete();
+  filteredWriter->Delete();
+   
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;

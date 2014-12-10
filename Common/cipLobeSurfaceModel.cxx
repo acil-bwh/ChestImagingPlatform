@@ -96,28 +96,28 @@ double cipLobeSurfaceModel::GetEigenvalueSum() const
 }
 
 
-void cipLobeSurfaceModel::SetMeanSurfacePoints( std::vector< double* > const* points )
+void cipLobeSurfaceModel::SetMeanSurfacePoints( const std::vector< cip::PointType >& points ) 
 {
   this->MeanSurfacePoints.clear();
 
-  for ( unsigned int i=0; i<(*points).size(); i++ )
+  for ( unsigned int i=0; i<points.size(); i++ )
     {
-    double* point = new double[3];
-      point[0] = (*points)[i][0];
-      point[1] = (*points)[i][1];
-      point[2] = (*points)[i][2];
+      cip::PointType point(3);
+        point[0] = points[i][0];
+	point[1] = points[i][1];
+	point[2] = points[i][2];
 
     this->MeanSurfacePoints.push_back( point );
     }
 }
 
 
-std::vector< double* > const* cipLobeSurfaceModel::GetMeanSurfacePoints() const
+const std::vector< cip::PointType >& cipLobeSurfaceModel::GetMeanSurfacePoints() const
 {
-  return &this->MeanSurfacePoints;
+  return this->MeanSurfacePoints;
 }
 
-std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightObliqueSurfacePoints()
+const std::vector< cip::PointType >& cipLobeSurfaceModel::GetMeanRightObliqueSurfacePoints() 
 {
  if ( !this->IsRightLungSurfaceModel )
     {
@@ -130,7 +130,7 @@ std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightObliqueSurfacePoi
 
   for ( unsigned int i=0; i<this->MeanSurfacePoints.size()/2; i++ )
     {
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = this->MeanSurfacePoints[i][0];
 	point[1] = this->MeanSurfacePoints[i][1];
 	point[2] = this->MeanSurfacePoints[i][2];
@@ -138,10 +138,10 @@ std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightObliqueSurfacePoi
       this->MeanRightObliqueSurfacePoints.push_back( point );
     }
 
-  return &this->MeanRightObliqueSurfacePoints;
+  return this->MeanRightObliqueSurfacePoints;
 }
 
-std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightHorizontalSurfacePoints()
+const std::vector< cip::PointType >& cipLobeSurfaceModel::GetMeanRightHorizontalSurfacePoints()
 {
  if ( !this->IsRightLungSurfaceModel )
     {
@@ -157,7 +157,7 @@ std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightHorizontalSurface
     {
       index = i + this->MeanSurfacePoints.size()/2;
 
-      double* point = new double[3];
+      cip::PointType point(3);
         point[0] = this->MeanSurfacePoints[index][0];
 	point[1] = this->MeanSurfacePoints[index][1];
 	point[2] = this->MeanSurfacePoints[index][2];
@@ -165,17 +165,17 @@ std::vector< double* > const* cipLobeSurfaceModel::GetMeanRightHorizontalSurface
       this->MeanRightHorizontalSurfacePoints.push_back( point );
     }
 
-  return &this->MeanRightHorizontalSurfacePoints;
+  return this->MeanRightHorizontalSurfacePoints;
 }
 
-std::vector< double* > const* cipLobeSurfaceModel::GetWeightedSurfacePoints()
+const std::vector< cip::PointType >& cipLobeSurfaceModel::GetWeightedSurfacePoints()
 {
   this->ComputeWeightedSurfacePoints();
 
-  return &this->WeightedSurfacePoints;
+  return this->WeightedSurfacePoints;
 }
 
-std::vector< double* > const* cipLobeSurfaceModel::GetRightHorizontalWeightedSurfacePoints()
+const std::vector< cip::PointType >& cipLobeSurfaceModel::GetRightHorizontalWeightedSurfacePoints()
 {
   if ( !this->IsRightLungSurfaceModel )
     {
@@ -192,7 +192,7 @@ std::vector< double* > const* cipLobeSurfaceModel::GetRightHorizontalWeightedSur
 
   this->ComputeRightHorizontalWeightedSurfacePoints();
 
-  return &this->RightHorizontalWeightedSurfacePoints;
+  return this->RightHorizontalWeightedSurfacePoints;
 }
 
 void cipLobeSurfaceModel::ComputeRightHorizontalWeightedSurfacePoints()
@@ -204,7 +204,7 @@ void cipLobeSurfaceModel::ComputeRightHorizontalWeightedSurfacePoints()
     {
     index = i + this->MeanSurfacePoints.size()/2;
 
-    double* point = new double[3];
+    cip::PointType point(3);
       point[0] = this->MeanSurfacePoints[index][0];
       point[1] = this->MeanSurfacePoints[index][1];
       point[2] = this->MeanSurfacePoints[index][2];
@@ -218,7 +218,7 @@ void cipLobeSurfaceModel::ComputeRightHorizontalWeightedSurfacePoints()
     }
 }
 
-std::vector< double* > const* cipLobeSurfaceModel::GetRightObliqueWeightedSurfacePoints()
+const std::vector< cip::PointType >& cipLobeSurfaceModel::GetRightObliqueWeightedSurfacePoints()
 {
   if ( !this->IsRightLungSurfaceModel )
     {
@@ -235,7 +235,7 @@ std::vector< double* > const* cipLobeSurfaceModel::GetRightObliqueWeightedSurfac
 
   this->ComputeRightObliqueWeightedSurfacePoints();
 
-  return &this->RightObliqueWeightedSurfacePoints;
+  return this->RightObliqueWeightedSurfacePoints;
 }
 
 void cipLobeSurfaceModel::ComputeRightObliqueWeightedSurfacePoints()
@@ -245,7 +245,7 @@ void cipLobeSurfaceModel::ComputeRightObliqueWeightedSurfacePoints()
   unsigned int index;
   for ( unsigned int i=0; i<this->MeanSurfacePoints.size()/2; i++ )
     {
-    double* point = new double[3];
+    cip::PointType point(3);
       point[0] = this->MeanSurfacePoints[i][0];
       point[1] = this->MeanSurfacePoints[i][1];
       point[2] = this->MeanSurfacePoints[i][2];
@@ -265,7 +265,7 @@ void cipLobeSurfaceModel::ComputeWeightedSurfacePoints()
   
   for ( unsigned int i=0; i<this->MeanSurfacePoints.size(); i++ )
     {
-    double* point = new double[3];
+    cip::PointType point(3);
       point[0] = this->MeanSurfacePoints[i][0];
       point[1] = this->MeanSurfacePoints[i][1];
       point[2] = this->MeanSurfacePoints[i][2];

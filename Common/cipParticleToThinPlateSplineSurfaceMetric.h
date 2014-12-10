@@ -22,8 +22,8 @@
 class cipParticleToThinPlateSplineSurfaceMetric
 {
 public:
-  cipParticleToThinPlateSplineSurfaceMetric();
-  ~cipParticleToThinPlateSplineSurfaceMetric();
+  cipParticleToThinPlateSplineSurfaceMetric() {};
+  ~cipParticleToThinPlateSplineSurfaceMetric() {};
 
   typedef vnl_vector< double >   VectorType;
   typedef vnl_vector< double >   PointType;
@@ -42,12 +42,18 @@ public:
   double GetValueGradientAndHessian( PointType*, VectorType*, MatrixType* ) const;
 
   /** Set the x, y, and z coordinates of the particle */
-  void SetParticle( double* );
+  void SetParticle( cip::PointType );
 
-  void SetThinPlateSplineSurface( cipThinPlateSplineSurface* );
+  void SetThinPlateSplineSurface( const cipThinPlateSplineSurface& );
+
+  /** Expose the TPS surface so that it can be modified */
+  cipThinPlateSplineSurface& GetThinPlateSplineSurface()
+  {
+    return ThinPlateSplineSurface;
+  }
 
 private:
-  cipThinPlateSplineSurface* ThinPlateSplineSurface;
+  cipThinPlateSplineSurface ThinPlateSplineSurface;
 
   double GetVectorMagnitude( const double[3] ) const;
   double GetAngleBetweenVectors( const double[3], const double[3] ) const;

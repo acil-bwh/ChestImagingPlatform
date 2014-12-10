@@ -40,9 +40,9 @@ struct PARTICLEINFO
   unsigned char         cipType;
 };
 
-void GetParticleDistanceAndAngle( vtkPolyData*, unsigned int, cipThinPlateSplineSurface*, double*, double* );
-void TallyParticleInfo( vtkPolyData*, std::vector< cipThinPlateSplineSurface* >, std::map< unsigned int, PARTICLEINFO >* );
-void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >*, std::vector< cipThinPlateSplineSurface* >, double, double, double );
+void GetParticleDistanceAndAngle( vtkPolyData*, unsigned int, const cipThinPlateSplineSurface&, double*, double* );
+void TallyParticleInfo( vtkPolyData*, std::vector< cipThinPlateSplineSurface >, std::map< unsigned int, PARTICLEINFO >* );
+void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >*, std::vector< cipThinPlateSplineSurface >, double, double, double );
 void WriteParticlesToFile( vtkSmartPointer< vtkPolyData >, std::map< unsigned int, PARTICLEINFO >, std::string, unsigned char );
 
 int main( int argc, char *argv[] )
@@ -56,7 +56,7 @@ int main( int argc, char *argv[] )
     particlesReader->Update();
 
   // Read shape models
-  std::vector< cipThinPlateSplineSurface* > tpsVec;
+  std::vector< cipThinPlateSplineSurface > tpsVec;
 
   if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     {
@@ -74,15 +74,15 @@ int main( int argc, char *argv[] )
       }
       rightShapeModelIO->GetOutput()->SetRightLungSurfaceModel( true );
 
-    cipThinPlateSplineSurface* roTPS = new cipThinPlateSplineSurface();
-      roTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
+    cipThinPlateSplineSurface roTPS;
+      roTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
     // before the RH (assumed when we execute 'TallyParticleInfo')
     tpsVec.push_back( roTPS );
 
-    cipThinPlateSplineSurface* rhTPS = new cipThinPlateSplineSurface();
-      rhTPS->SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
+    cipThinPlateSplineSurface rhTPS;
+      rhTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
     // before the RH (assumed when we execute 'TallyParticleInfo')
@@ -95,8 +95,8 @@ int main( int argc, char *argv[] )
       leftShapeModelIO->SetFileName( leftShapeModelFileName );
       leftShapeModelIO->Read();
 
-    cipThinPlateSplineSurface* loTPS = new cipThinPlateSplineSurface();
-      loTPS->SetSurfacePoints( leftShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
+    cipThinPlateSplineSurface loTPS;
+      loTPS.SetSurfacePoints( leftShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
 
     tpsVec.push_back( loTPS );
     }
@@ -138,18 +138,18 @@ int main( int argc, char *argv[] )
   return 0;
 }
 
-void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichParticle, cipThinPlateSplineSurface* tps,
-                                  double* distance, double* angle )
+void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichParticle, const cipThinPlateSplineSurface& tps,
+                                  double* distance, double* angle ) 
 {
-  cipParticleToThinPlateSplineSurfaceMetric* particleToTPSMetric = new cipParticleToThinPlateSplineSurfaceMetric();
-    particleToTPSMetric->SetThinPlateSplineSurface( tps );
+  cipParticleToThinPlateSplineSurfaceMetric particleToTPSMetric;
+    particleToTPSMetric.SetThinPlateSplineSurface( tps );
 
   cipNewtonOptimizer< 2 >* newtonOptimizer = new cipNewtonOptimizer< 2 >();
     newtonOptimizer->SetMetric( particleToTPSMetric );
 
-  double* position    = new double[3];
-  double* normal      = new double[3];
-  double* orientation = new double[3];
+  cip::PointType position(3);
+  cip::VectorType normal(3);
+  cip::VectorType orientation(3);
 
   cipNewtonOptimizer< 2 >::PointType* domainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   cipNewtonOptimizer< 2 >::PointType* optimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
@@ -162,7 +162,7 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
   orientation[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[1];
   orientation[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[2];
 
-  particleToTPSMetric->SetParticle( position );
+  particleToTPSMetric.SetParticle( position );
 
   (*domainParams)[0] = position[0];
   (*domainParams)[1] = position[1];
@@ -173,7 +173,7 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
 
   *distance = vcl_sqrt( newtonOptimizer->GetOptimalValue() );
 
-  tps->GetSurfaceNormal( (*optimalParams)[0], (*optimalParams)[1], normal );
+  tps.GetSurfaceNormal( (*optimalParams)[0], (*optimalParams)[1], normal );
 
   *angle = cip::GetAngleBetweenVectors( normal, orientation, true );
 }
@@ -182,7 +182,7 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
 // convention is that if the 'tpsVec' contains surfaces for the right
 // lung, the first element of the vector corresponds to the oblique,
 // and the second element corresponds to the horizontal.
-void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineSurface* > tpsVec,
+void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineSurface > tpsVec, 
 			std::map< unsigned int, PARTICLEINFO >* particleToInfoMap )
 {
   if ( tpsVec.size() == 1 )
@@ -209,8 +209,8 @@ void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineS
       {
       PARTICLEINFO pInfo;
 
-      roSurfaceHeight = tpsVec[0]->GetSurfaceHeight( particles->GetPoint(i)[0], particles->GetPoint(i)[1] );
-      rhSurfaceHeight = tpsVec[1]->GetSurfaceHeight( particles->GetPoint(i)[0], particles->GetPoint(i)[1] );
+      roSurfaceHeight = tpsVec[0].GetSurfaceHeight( particles->GetPoint(i)[0], particles->GetPoint(i)[1] );
+      rhSurfaceHeight = tpsVec[1].GetSurfaceHeight( particles->GetPoint(i)[0], particles->GetPoint(i)[1] ); 
 
       if ( roSurfaceHeight > rhSurfaceHeight )
         {
@@ -242,7 +242,7 @@ void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineS
     }
 }
 
-void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMap, std::vector< cipThinPlateSplineSurface* > tpsVec,
+void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMap, std::vector< cipThinPlateSplineSurface > tpsVec, 
                         double distanceWeight, double angleWeight, double threshold )
 {
   std::map< unsigned int, PARTICLEINFO >::iterator it = (*particleToInfoMap).begin();

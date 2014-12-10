@@ -8,7 +8,7 @@
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.
@@ -17,35 +17,37 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <string>
+    <geometry type="model">
       <name>inFileName</name>
       <label>Input particles file name</label>
       <channel>input</channel>
       <flag>i</flag>
+      <longflag>in</longflag>
       <description><![CDATA[Input particles file name]]></description>
       <default>NA</default>
-    </string>  
-
-    <string>
-      <name>outFileName</name>
-      <label>Output particles file name</label>
-      <channel>input</channel>
-      <flag>o</flag>
-      <description><![CDATA[Output particle data set file name. The particles in the output will consist\
-      of the particles in the data set specified with the -i flag minus the particles in\
-      the data set specified with the -r flag.Output particle data set file name]]></description>
-      <default>NA</default>
-    </string>  
-
-    <string>
-      <name>removeFileName</name>
-      <label>Remove particles file name</label>
-      <channel>input</channel>
-      <flag>r</flag>
-      <description><![CDATA[Particle data set file name indicating which particles should be removed from\
-      the input data set]]></description>
-      <default>NA</default>
-    </string>  
+    </geometry>
+    
+    <geometry type="model">
+        <name>removeFileName</name>
+        <label>Remove particles file name</label>
+        <channel>input</channel>
+        <flag>r</flag>
+        <description><![CDATA[Particle data set file name indicating which particles should be removed from \
+            the input data set]]></description>
+        <default>NA</default>
+    </geometry>
+    
+    <geometry type="model">
+        <name>outFileName</name>
+        <label>Output particles file name</label>
+        <channel>output</channel>
+        <flag>o</flag>
+        <longflag>out</longflag>
+        <description><![CDATA[Output particle data set file name. The particles in the output will consist \
+            of the particles in the data set specified with the -i flag minus the particles in \
+            the data set specified with the -r flag.]]></description>
+        <default>NA</default>
+    </geometry>
 
   </parameters>
 </executable>

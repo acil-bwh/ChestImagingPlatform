@@ -207,7 +207,7 @@ bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartP
     point2[1] = particles->GetPoint(particleID2)[1];
     point2[2] = particles->GetPoint(particleID2)[2];
 
-  double connectingVec[3];
+  cip::VectorType connectingVec(3);
     connectingVec[0] = point1[0] - point2[0];
     connectingVec[1] = point1[1] - point2[1];
     connectingVec[2] = point1[2] - point2[2];
@@ -219,12 +219,12 @@ bool GetEdgeWeight(unsigned int particleID1, unsigned int particleID2, vtkSmartP
     return false;
     }
 
-  double particle1Hevec2[3];
+  cip::VectorType particle1Hevec2(3);
     particle1Hevec2[0] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID1)[0];
     particle1Hevec2[1] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID1)[1];
     particle1Hevec2[2] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID1)[2];
 
-  double particle2Hevec2[3];
+  cip::VectorType particle2Hevec2(3);
     particle2Hevec2[0] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID2)[0];
     particle2Hevec2[1] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID2)[1];
     particle2Hevec2[2] = particles->GetPointData()->GetArray(vecName.c_str())->GetTuple(particleID2)[2];

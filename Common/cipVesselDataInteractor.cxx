@@ -127,7 +127,7 @@ void cipVesselDataInteractor::SetIntermediateNode( vtkActor* actor )
   // labeled. We'll need this in case we want to undo the labeling.
   std::vector< unsigned int > labeledIDs;
   
-  double* refVec = new double[3];
+  cip::VectorType refVec(3);
   for ( unsigned int i=0; i<idList->GetNumberOfIds(); i++ )
     {
       if ( this->VesselParticles->GetPointData()->GetArray("ChestType")->GetTuple(idList->GetId(i))[0] == float(cip::UNDEFINEDTYPE) )
@@ -169,19 +169,23 @@ void cipVesselDataInteractor::SetIntermediateNode( vtkActor* actor )
 // process to ensure that all labeled particles have minor eigenvectors oriented in a consistent
 // way, which is necessary for some registration routines that take as input the labeled
 // particles datasets.
-void cipVesselDataInteractor::OrientParticle( unsigned int particleID, double* refVec )
+void cipVesselDataInteractor::OrientParticle( unsigned int particleID, const cip::VectorType& refVec )
 {
-  double angle = cip::GetAngleBetweenVectors( this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID ),
-					      refVec, false );
+  cip::VectorType hevec0(3);
+    hevec0[0] = this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[0];
+    hevec0[1] = this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[1];
+    hevec0[2] = this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[2];
 
-  float* hevec0 = new float[3];
+  double angle = cip::GetAngleBetweenVectors( hevec0, refVec, false );
+
   if ( angle > vnl_math::pi/2.0 )
     {
-      hevec0[0] = -this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[0];
-      hevec0[1] = -this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[1];
-      hevec0[2] = -this->VesselParticles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID )[2];
+      float* hevec0flipped = new float[3];
+        hevec0flipped[0] = -hevec0[0];
+	hevec0flipped[1] = -hevec0[1];
+	hevec0flipped[2] = -hevec0[2];
 
-      this->VesselParticles->GetPointData()->GetArray("hevec0")->SetTuple( particleID, hevec0 );
+      this->VesselParticles->GetPointData()->GetArray("hevec0")->SetTuple( particleID, hevec0flipped );
     }
 }
 
@@ -466,7 +470,7 @@ bool cipVesselDataInteractor::GetEdgeWeight( unsigned int particleID1, unsigned 
     point2[1] = particles->GetPoint( particleID2 )[1];
     point2[2] = particles->GetPoint( particleID2 )[2];
 
-  double connectingVec[3];
+  cip::VectorType connectingVec(3);
     connectingVec[0] = point1[0] - point2[0];
     connectingVec[1] = point1[1] - point2[1];
     connectingVec[2] = point1[2] - point2[2];
@@ -478,12 +482,12 @@ bool cipVesselDataInteractor::GetEdgeWeight( unsigned int particleID1, unsigned 
     return false;
     }
 
-  double particle1Hevec0[3];
+  cip::VectorType particle1Hevec0(3);
     particle1Hevec0[0] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID1 )[0];
     particle1Hevec0[1] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID1 )[1];
     particle1Hevec0[2] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID1 )[2];
 
-  double particle2Hevec0[3];
+  cip::VectorType particle2Hevec0(3);
     particle2Hevec0[0] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID2 )[0];
     particle2Hevec0[1] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID2 )[1];
     particle2Hevec0[2] = particles->GetPointData()->GetArray( "hevec0" )->GetTuple( particleID2 )[2];

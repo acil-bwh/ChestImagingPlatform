@@ -465,8 +465,8 @@ if __name__ == "__main__":
                       dataframe', dest='out_csv', metavar='<string>',
                       default=None)
     parser.add_option('--cid',
-                      help='The case ID', dest='cid', metavar='<string>',
-                      default=None)
+                      help='The database case ID', dest='cid',
+                      metavar='<string>', default=None)
     parser.add_option('-r',
                       help='Chest regions. Should be specified as a \
                       common-separated list of string values indicating the \

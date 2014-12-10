@@ -181,7 +181,7 @@ void ReadFissurePointsFromFile( const std::string fileName,
       unsigned char cipRegion = regionsTypesIO.GetOutput()->GetChestRegionValue( i );
       unsigned char cipType   = regionsTypesIO.GetOutput()->GetChestTypeValue( i );
 
-      double* point = new double[3];
+      cip::PointType point(3);
       regionsTypesIO.GetOutput()->GetLocation( i, point );
       ImageType::PointType itkPoint;
         itkPoint[0] = point[0];
@@ -194,7 +194,7 @@ void ReadFissurePointsFromFile( const std::string fileName,
 	{
 	  if ( cipType == static_cast< unsigned char >( cip::OBLIQUEFISSURE ) )
 	    {
-	      (*leftObliquePointsVec).push_back( point ); 
+	      (*leftObliquePointsVec).push_back( itkPoint ); 
 	    }
 	}
       else if ( cipRegion == static_cast< unsigned char >( cip::RIGHTLUNG ) ||
@@ -204,11 +204,11 @@ void ReadFissurePointsFromFile( const std::string fileName,
 	{
 	  if ( cipType == static_cast< unsigned char >( cip::OBLIQUEFISSURE ) )
 	    {
-	      (*rightObliquePointsVec).push_back( point ); 
+	      (*rightObliquePointsVec).push_back( itkPoint ); 
 	    }
 	  else if ( cipType == static_cast< unsigned char >( cip::HORIZONTALFISSURE ) )
 	    {
-	      (*rightHorizontalPointsVec).push_back( point ); 
+	      (*rightHorizontalPointsVec).push_back( itkPoint ); 
 	    }
 	}
     }  
@@ -455,20 +455,19 @@ void GetDomainPoints( std::vector< std::vector< ImageType::PointType > > transPo
 void GetZValuesFromTPS( std::vector< ImageType::PointType > domainPointsVec, std::vector< double >* rangeValuesVec, 
                         std::vector< ImageType::PointType > surfacePoints, ImageType::Pointer image )
 {
-  std::vector< double* > surfacePointPtrs;
+  std::vector< cip::PointType > surfacePointPtrs;
 
   for ( unsigned int i=0; i<surfacePoints.size(); i++ )
     {
-    double* point = new double[3];
-
-    point[0] = surfacePoints[i][0];
-    point[1] = surfacePoints[i][1];
-    point[2] = surfacePoints[i][2];
-
-    surfacePointPtrs.push_back( point );
+      cip::PointType point(3);
+        point[0] = surfacePoints[i][0];
+	point[1] = surfacePoints[i][1];
+	point[2] = surfacePoints[i][2];
+      
+      surfacePointPtrs.push_back( point );
     }
 
-  cipThinPlateSplineSurface tpsSurface( &surfacePointPtrs );
+  cipThinPlateSplineSurface tpsSurface( surfacePointPtrs );
 
   for ( unsigned int i=0; i<domainPointsVec.size(); i++ )
     {

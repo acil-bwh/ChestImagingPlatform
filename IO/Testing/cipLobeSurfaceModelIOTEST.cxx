@@ -80,9 +80,9 @@ int main( int argc, char* argv[] )
 
     for ( unsigned int i=0; i<dimension; i++ )
       {
-    	if ( gtMean[i] != (*leftModelReader.GetOutput()->GetMeanSurfacePoints())[i][2] ||
-	     gtDomainLocs[i][0] != (*leftModelReader.GetOutput()->GetMeanSurfacePoints())[i][0] || 
-	     gtDomainLocs[i][1] != (*leftModelReader.GetOutput()->GetMeanSurfacePoints())[i][1] )
+    	if ( gtMean[i] != leftModelReader.GetOutput()->GetMeanSurfacePoints()[i][2] ||
+	     gtDomainLocs[i][0] != leftModelReader.GetOutput()->GetMeanSurfacePoints()[i][0] || 
+	     gtDomainLocs[i][1] != leftModelReader.GetOutput()->GetMeanSurfacePoints()[i][1] )
     	  {
     	    std::cout << "FAILED" << std::endl;
     	    return 1;

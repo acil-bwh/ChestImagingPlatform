@@ -34,6 +34,7 @@ int main( int argc, char *argv[] )
     leftMetric->SetAirwaySigmaTheta( airwaySigmaTheta );
     leftMetric->SetFissureTermWeight( 5.0 ); // Make fissures much more "important"
     leftMetric->SetVesselTermWeight( 1.0 );
+    leftMetric->SetRegularizationWeight( regularizationWeight );
 
   cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric* rightMetric = 
     new cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric();
@@ -45,6 +46,7 @@ int main( int argc, char *argv[] )
     rightMetric->SetAirwaySigmaTheta( airwaySigmaTheta );
     rightMetric->SetFissureTermWeight( 5.0 ); // Make fissures much more "important"
     rightMetric->SetVesselTermWeight( 1.0 );
+    rightMetric->SetRegularizationWeight( regularizationWeight );
 
   if ( leftFissureParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -53,10 +55,13 @@ int main( int argc, char *argv[] )
         leftFissureParticlesReader->SetFileName( leftFissureParticlesFileName.c_str() );
 	leftFissureParticlesReader->Update();    
 
-      std::cout << "Asserting chest-region chest-type existence..." << std::endl;
-      cip::AssertChestRegionChestTypeArrayExistence( leftFissureParticlesReader->GetOutput() );
+      vtkSmartPointer< vtkPolyData > leftFissureParticles = vtkSmartPointer< vtkPolyData >::New();
+      cip::TransferFieldDataToFromPointData( leftFissureParticlesReader->GetOutput(), leftFissureParticles, true, false, true, true );
 
-      leftMetric->SetFissureParticles( leftFissureParticlesReader->GetOutput() );
+      std::cout << "Asserting chest-region chest-type existence..." << std::endl;
+      cip::AssertChestRegionChestTypeArrayExistence( leftFissureParticles );
+
+      leftMetric->SetFissureParticles( leftFissureParticles );
     }
   if ( leftVesselParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -64,6 +69,9 @@ int main( int argc, char *argv[] )
       vtkPolyDataReader* leftVesselParticlesReader = vtkPolyDataReader::New();
         leftVesselParticlesReader->SetFileName( leftVesselParticlesFileName.c_str() );
 	leftVesselParticlesReader->Update();    
+
+      vtkSmartPointer< vtkPolyData > leftVesselParticles = vtkSmartPointer< vtkPolyData >::New();
+      cip::TransferFieldDataToFromPointData( leftVesselParticlesReader->GetOutput(), leftVesselParticles, true, false, true, true );
 
       std::cout << "Filtering left vessel particles..." << std::endl;
       cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
@@ -75,7 +83,7 @@ int main( int argc, char *argv[] )
 	filter->SetMaximumComponentSize( 10000 );
 	filter->SetMaximumAllowableScale( 5.0 );
 	filter->SetMinimumAllowableScale( 0.0 );
-	filter->SetInput( leftVesselParticlesReader->GetOutput() );
+	filter->SetInput( leftVesselParticles );
 	filter->Update();
 
     leftMetric->SetVesselParticles( filter->GetOutput() );
@@ -87,7 +95,10 @@ int main( int argc, char *argv[] )
         leftAirwayParticlesReader->SetFileName( leftAirwayParticlesFileName.c_str() );
 	leftAirwayParticlesReader->Update();    
 
-    leftMetric->SetAirwayParticles( leftAirwayParticlesReader->GetOutput() );
+      vtkSmartPointer< vtkPolyData > leftAirwayParticles = vtkSmartPointer< vtkPolyData >::New();
+      cip::TransferFieldDataToFromPointData( leftAirwayParticlesReader->GetOutput(), leftAirwayParticles, true, false, true, true );
+
+      leftMetric->SetAirwayParticles( leftAirwayParticlesReader->GetOutput() );
     }
 
   if ( rightFissureParticlesFileName.compare( "NA" ) != 0 )
@@ -97,10 +108,13 @@ int main( int argc, char *argv[] )
         rightFissureParticlesReader->SetFileName( rightFissureParticlesFileName.c_str() );
 	rightFissureParticlesReader->Update();    
 
-      std::cout << "Asserting chest-region chest-type existence..." << std::endl;
-      cip::AssertChestRegionChestTypeArrayExistence( rightFissureParticlesReader->GetOutput() );
+      vtkSmartPointer< vtkPolyData > rightFissureParticles = vtkSmartPointer< vtkPolyData >::New();
+      cip::TransferFieldDataToFromPointData( rightFissureParticlesReader->GetOutput(), rightFissureParticles, true, false, true, true );
 
-      rightMetric->SetFissureParticles( rightFissureParticlesReader->GetOutput() );
+      std::cout << "Asserting chest-region chest-type existence..." << std::endl;
+      cip::AssertChestRegionChestTypeArrayExistence( rightFissureParticles );
+
+      rightMetric->SetFissureParticles( rightFissureParticles );
     }
   if ( rightVesselParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -108,6 +122,9 @@ int main( int argc, char *argv[] )
       vtkPolyDataReader* rightVesselParticlesReader = vtkPolyDataReader::New();
         rightVesselParticlesReader->SetFileName( rightVesselParticlesFileName.c_str() );
 	rightVesselParticlesReader->Update();    
+
+      vtkSmartPointer< vtkPolyData > rightVesselParticles = vtkSmartPointer< vtkPolyData >::New();
+      cip::TransferFieldDataToFromPointData( rightVesselParticlesReader->GetOutput(), rightVesselParticles, true, false, true, true );
 
       std::cout << "Filtering right vessel particles..." << std::endl;
       cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
@@ -119,7 +136,7 @@ int main( int argc, char *argv[] )
 	filter->SetMaximumComponentSize( 10000 );
 	filter->SetMaximumAllowableScale( 5.0 );
 	filter->SetMinimumAllowableScale( 0.0 );
-	filter->SetInput( rightVesselParticlesReader->GetOutput() );
+	filter->SetInput( rightVesselParticles );
 	filter->Update();
 
     rightMetric->SetVesselParticles( filter->GetOutput() );
@@ -131,7 +148,10 @@ int main( int argc, char *argv[] )
         rightAirwayParticlesReader->SetFileName( rightAirwayParticlesFileName.c_str() );
 	rightAirwayParticlesReader->Update();    
 
-    rightMetric->SetAirwayParticles( rightAirwayParticlesReader->GetOutput() );
+      vtkSmartPointer< vtkPolyData > rightAirwayParticles = vtkSmartPointer< vtkPolyData >::New();
+      cip::TransferFieldDataToFromPointData( rightAirwayParticlesReader->GetOutput(), rightAirwayParticles, true, false, true, true );
+
+      rightMetric->SetAirwayParticles( rightAirwayParticlesReader->GetOutput() );
     }
 
   // Read the left surface model
@@ -144,7 +164,6 @@ int main( int argc, char *argv[] )
       leftModelIO->SetFileName( inLeftModelFileName );
       leftModelIO->Read();
       leftMetric->SetMeanSurfacePoints( leftModelIO->GetOutput()->GetMeanSurfacePoints() );
-
       while ( leftWeightAccumulator < 0.99 && numberLeftModesUsed < 10 )
 	{      
 	  leftMetric->SetEigenvectorAndEigenvalue( &(*leftModelIO->GetOutput()->GetEigenvectors())[numberLeftModesUsed],       

@@ -103,6 +103,12 @@
 #define MAXBB 10000
 #define MINBB -10000
 
+extern "C" int CheckPointEntryPoint()
+{
+	 std::cout << "This is a dummy checkpoint test for demo purposes" << std::endl;
+	 return cip::EXITSUCCESS;
+}
+
 namespace
 {
 typedef itk::GDCMImageIO                                                          ImageIOType;

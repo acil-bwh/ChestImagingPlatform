@@ -52,6 +52,7 @@ int main( int argc, char *argv[] )
   vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
     particlesWriter->SetInputData( cleanedParticles );
     particlesWriter->SetFileName( outFileName.c_str() );
+    particlesWriter->SetFileTypeToBinary();
     particlesWriter->Write();
 
   std::cout << "DONE." << std::endl;
@@ -62,7 +63,7 @@ int main( int argc, char *argv[] )
 void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer< vtkPolyData > removeParticles,
                       vtkSmartPointer< vtkPolyData > cleanedParticles )
 {
-  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();;
+  unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
   vtkPoints* points = vtkPoints::New();
 
@@ -116,10 +117,16 @@ void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer<
     }
 
   cleanedParticles->SetPoints( points );
+  points->Delete();
+
   for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
     {
     cleanedParticles->GetPointData()->AddArray( arrayVec[j] );
+    //Array has been added and register with container class. Delete the pointer
+    arrayVec[j]->Delete();
+
     }
+    
 }
 
 #endif

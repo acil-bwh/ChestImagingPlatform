@@ -48,6 +48,7 @@ int main( int argc, char *argv[] )
   double maxAllowableDistance = 3.0; 
   double particleAngleThreshold = 70.0;
   unsigned int componentSizeThreshold = 10;
+  unsigned int maxComponentSize = 10000;
 
   // Input descriptions for user convenience
   std::string programDesc = "This program can be used to label fissure \
@@ -69,6 +70,7 @@ eigenvector pointing in the direction of the fissure axis is then considered. Fo
 the specified threshold for the particles to be connected";
   std::string componentSizeThresholdDesc = "Component size cardinality threshold. Only components with this many particles or more \
 will be retained in the output";
+  std::string maxComponentSizeDesc = "The maximum number of particles than can be in a single component";
 
   // Parse the input arguments
   try
@@ -83,17 +85,18 @@ will be retained in the output";
     TCLAP::ValueArg<double>        maxAllowableDistanceArg( "d", "", maxAllowableDistanceDesc, false, maxAllowableDistance, "double", cl );
     TCLAP::ValueArg<double>        particleAngleThresholdArg( "", "angle", particleAngleThresholdDesc, false, particleAngleThreshold, "double", cl );
     TCLAP::ValueArg<unsigned int>  componentSizeThresholdArg( "", "cs", componentSizeThresholdDesc, false, componentSizeThreshold, "unsigned int", cl );
+    TCLAP::ValueArg<unsigned int>  maxComponentSizeArg( "", "max", maxComponentSizeDesc, false, maxComponentSize, "unsigned int", cl );
 
     cl.parse( argc, argv );
 
     maxAllowableDistance   = maxAllowableDistanceArg.getValue();
     particleAngleThreshold = particleAngleThresholdArg.getValue();
     componentSizeThreshold = componentSizeThresholdArg.getValue();
-
-    inParticlesFileName     = inParticlesFileNameArg.getValue();
-    outParticlesFileName    = outParticlesFileNameArg.getValue();
-    ctFileName              = ctFileNameArg.getValue();
-    particleSize            = particleSizeArg.getValue();
+    maxComponentSize       = maxComponentSizeArg.getValue();
+    inParticlesFileName    = inParticlesFileNameArg.getValue();
+    outParticlesFileName   = outParticlesFileNameArg.getValue();
+    ctFileName             = ctFileNameArg.getValue();
+    particleSize           = particleSizeArg.getValue();
     }
   catch ( TCLAP::ArgException excp )
     {
@@ -140,7 +143,6 @@ will be retained in the output";
   std::cout << "Asserting ChestRegion and ChestType array existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
 
-  // Optionally filter particles
   std::cout << "Filtering particles..." << std::endl;
   cipFissureParticleConnectedComponentFilter* filter = new cipFissureParticleConnectedComponentFilter();
     filter->SetInterParticleSpacing( interParticleSpacing );
@@ -148,6 +150,7 @@ will be retained in the output";
     filter->SetInput( particlesReader->GetOutput() );
     filter->SetComponentSizeThreshold( componentSizeThreshold );
     filter->SetParticleAngleThreshold( particleAngleThreshold );
+    filter->SetMaximumComponentSize( maxComponentSize );
     filter->Update();
 
   // Give the output file name to the interactor. This will allow the user to
@@ -186,20 +189,19 @@ void AddComponentsToInteractor( cipFissureDataInteractor* interactor, vtkSmartPo
 
   unsigned short component;
   std::vector< unsigned short > componentVec;
-  std::vector< unsigned char > cipTypeVec;
+  //std::vector< unsigned char > cipTypeVec;
 
   // First get all previously labeled fissure particles
-  std::vector< unsigned int > labeledIDs;
-  for ( unsigned int i=0; i<numberParticles; i++ )
-    {
-      if ( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::FISSURE) )
-	{
-	  labeledIDs.push_back( i );
-	}
-    }
-
-  AddSpecifiedParticlesToInteractor( interactor, particles, "ChestType", float(cip::ARTERY), "artery", particleSize );
-  AddSpecifiedParticlesToInteractor( interactor, particles, "ChestType", float(cip::VEIN), "vein", particleSize );
+  // std::vector< unsigned int > labeledIDs;
+  // for ( unsigned int i=0; i<numberParticles; i++ )
+  //   {
+  //     if ( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::FISSURE) ||
+  // 	   *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::OBLIQUEFISSURE) ||
+  // 	   *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::HORIZONTALFISSURE) )
+  // 	{
+  // 	  labeledIDs.push_back( i );
+  // 	}
+  //   }
 
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
@@ -224,7 +226,7 @@ void AddComponentsToInteractor( cipFissureDataInteractor* interactor, vtkSmartPo
       if ( addComponent )
 	  {
 	    componentVec.push_back( component );
-	    cipTypeVec.push_back( cipType );
+	    //cipTypeVec.push_back( cipType );
 	  }
     }
   
@@ -240,13 +242,14 @@ void AddComponentsToInteractor( cipFissureDataInteractor* interactor, vtkSmartPo
 
       (*componentLabelToNameMap)[componentVec[c]] = actorName;
 
-      AddSpecifiedParticlesToInteractor( interactor, particles, "unmergedComponents", componentVec[c], actorName, particleSize );
+      AddSpecifiedParticlesToInteractor( interactor, particles, "unmergedComponents", componentVec[c], 
+					 actorName, particleSize );
     }  
 }
 
 void AddSpecifiedParticlesToInteractor( cipFissureDataInteractor* interactor, vtkSmartPointer< vtkPolyData > particles,
-					std::string specifiedArrayName, float specifiedArrayVal, std::string interactorActorName,
-					double particleSize )
+					std::string specifiedArrayName, float specifiedArrayVal,
+					std::string interactorActorName, double particleSize )
 {
   cip::ChestConventions conventions;
 
@@ -279,7 +282,6 @@ void AddSpecifiedParticlesToInteractor( cipFissureDataInteractor* interactor, vt
 	  // for the specification have the same type, so we can grab the type of any one of them for the
 	  // color.
 	  cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(p)) );
-
 	  points->InsertNextPoint( particles->GetPoint(p) );
 
 	  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
@@ -353,18 +355,27 @@ vtkSmartPointer< vtkPolyData > GetLabeledFissureParticles( cipFissureDataInterac
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
     unsigned short componentLabel = particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)[0];
+    float cipType = particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0];
     std::string name = (*componentLabelToNameMap)[componentLabel];
     
     if ( interactor->Exists( name ) )
       {
 	interactor->GetActorColor( name, actorColor ); 	
-	unsigned char cipType = conventions.GetChestTypeFromColor( actorColor );
-	if ( cipType == cip::FISSURE || cipType == cip::OBLIQUEFISSURE || cipType == cip::HORIZONTALFISSURE )
+	unsigned char cipTypeFromColor = conventions.GetChestTypeFromColor( actorColor );
+	if ( cipTypeFromColor == cip::FISSURE || cipTypeFromColor == cip::OBLIQUEFISSURE || cipTypeFromColor == cip::HORIZONTALFISSURE ||
+	     cipType == cip::FISSURE || cipType == cip::OBLIQUEFISSURE || cipType == cip::HORIZONTALFISSURE )
 	  {
 	    outPoints->InsertNextPoint( particles->GetPoint(i) );
-	    float tmp = float(cipType);
+	    float tmp;
+	    if ( cipTypeFromColor != 0 )
+	      {
+		tmp = float(cipTypeFromColor);
+	      }
+	    else
+	      {
+		tmp = cipType;
+	      }
 	    particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &tmp );
-
 	    for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
 	      {
 		arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(i) );

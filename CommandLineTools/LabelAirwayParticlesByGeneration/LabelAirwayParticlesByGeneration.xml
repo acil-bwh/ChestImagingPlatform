@@ -10,7 +10,7 @@
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.
@@ -19,32 +19,32 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <string>
+    <geometry type="model">
       <name>inParticlesFileName</name>
       <label>Input particles file name</label>
       <channel>input</channel>
       <flag>i</flag>
-      <longflag>--inPart</longflag>
+      <longflag>inPart</longflag>
       <default>NA</default>
       <description><![CDATA[Input particles file name]]></description>
-    </string>  
+    </geometry>
 
-    <string>
+    <geometry type="model">
       <name>outParticlesFileName</name>
       <label>Output particles file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <flag>o</flag>
-      <longflag>--outPart</longflag>
+      <longflag>outPart</longflag>
       <default>NA</default>
       <description><![CDATA[Output particles file name]]></description>
-    </string>  
+    </geometry>
 
     <string-vector>
       <name>airwayGenerationLabeledAtlasFileNames</name>
       <label>Atlas file names</label>
       <channel>input</channel>
       <flag>a</flag>
-      <longflag>--atlas</longflag>
+      <longflag>atlas</longflag>
       <description><![CDATA[Airway generation labeled atlas file name. \
       An airway generation labeled atlas is a particles data set that has point data array point named \
       'ChestType' that, for each particle, has a correctly labeled airway generation label. \

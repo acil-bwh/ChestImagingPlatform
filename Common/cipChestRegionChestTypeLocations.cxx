@@ -1,5 +1,5 @@
 #include "cipChestRegionChestTypeLocations.h"
-
+#include "cipExceptionObject.h"
 
 cipChestRegionChestTypeLocations::cipChestRegionChestTypeLocations()
 {
@@ -44,11 +44,13 @@ void cipChestRegionChestTypeLocations::SetChestRegionChestTypeLocation( unsigned
 }
 
 
-void cipChestRegionChestTypeLocations::GetLocation( unsigned int whichPoint, double* location ) const
+void cipChestRegionChestTypeLocations::GetLocation( unsigned int whichPoint, cip::PointType& location ) const
 {
   if ( whichPoint >= this->NumberOfTuples )
     {
-    location = NULL;
+     throw cip::ExceptionObject( __FILE__, __LINE__, 
+				  "cipChestRegionChestTypeLocations::GetLocation( unsigned int, cip::PointType )", 
+				  "Requested invalid point" );
     }
 
   location[0] = this->Locations[whichPoint][0];

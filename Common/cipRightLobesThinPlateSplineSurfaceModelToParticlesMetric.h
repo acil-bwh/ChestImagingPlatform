@@ -20,14 +20,14 @@ public:
     * to the specified parameters. */
   double GetValue( const std::vector< double >* const ); 
 
-  cipThinPlateSplineSurface* GetRightHorizontalThinPlateSplineSurface()
+  const cipThinPlateSplineSurface& GetRightHorizontalThinPlateSplineSurface()
     {
-      return RightHorizontalThinPlateSplineSurface;
+      return RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface();
     }
 
-  cipThinPlateSplineSurface* GetRightObliqueThinPlateSplineSurface()
+  const cipThinPlateSplineSurface& GetRightObliqueThinPlateSplineSurface()
     {
-      return RightObliqueThinPlateSplineSurface;
+      return RightObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface();
     }
 
 private:
@@ -35,16 +35,16 @@ private:
   double GetVesselTermValue();
   double GetAirwayTermValue();
 
-  std::vector< double* > RightObliqueSurfacePoints;
-  std::vector< double* > RightHorizontalSurfacePoints;
+  std::vector< cip::PointType > RightObliqueSurfacePoints;
+  std::vector< cip::PointType > RightHorizontalSurfacePoints;
 
-  cipNewtonOptimizer< 2 >*                     RightObliqueNewtonOptimizer;
-  cipThinPlateSplineSurface*                   RightObliqueThinPlateSplineSurface;
-  cipParticleToThinPlateSplineSurfaceMetric*   RightObliqueParticleToTPSMetric;
+  cipNewtonOptimizer< 2 >  RightObliqueNewtonOptimizer;
+  /* cipThinPlateSplineSurface                    RightObliqueThinPlateSplineSurface; */
+  /* cipParticleToThinPlateSplineSurfaceMetric    RightObliqueParticleToTPSMetric; */
 
-  cipNewtonOptimizer< 2 >*                     RightHorizontalNewtonOptimizer;
-  cipThinPlateSplineSurface*                   RightHorizontalThinPlateSplineSurface;
-  cipParticleToThinPlateSplineSurfaceMetric*   RightHorizontalParticleToTPSMetric;
+  cipNewtonOptimizer< 2 >  RightHorizontalNewtonOptimizer;
+  /* cipThinPlateSplineSurface                    RightHorizontalThinPlateSplineSurface; */
+  /* cipParticleToThinPlateSplineSurfaceMetric    RightHorizontalParticleToTPSMetric; */
 };
 
 

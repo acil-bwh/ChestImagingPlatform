@@ -15,16 +15,6 @@
 cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric
 ::cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric()
 {
-  // The 'cipThinPlateSplineSurface' class wraps functionality for
-  // constructing and accessing data for a TPS interpolating surface
-  // given a set of surface points 
-  this->LeftObliqueThinPlateSplineSurface = new cipThinPlateSplineSurface();
-
-  this->LeftObliqueParticleToTPSMetric = new cipParticleToThinPlateSplineSurfaceMetric();
-  this->LeftObliqueParticleToTPSMetric->SetThinPlateSplineSurface( this->LeftObliqueThinPlateSplineSurface );
-
-  this->LeftObliqueNewtonOptimizer = new cipNewtonOptimizer< 2 >();
-  this->LeftObliqueNewtonOptimizer->SetMetric( this->LeftObliqueParticleToTPSMetric );
 }
 
 
@@ -52,7 +42,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
     {
       for ( unsigned int i=0; i<this->NumberOfSurfacePoints; i++ )
 	{
-	  double* tmp = new double[3];
+	  cip::PointType tmp(3);
 	    tmp[0] = this->MeanPoints[i][0];
 	    tmp[1] = this->MeanPoints[i][1];
 	    tmp[2] = this->MeanPoints[i][2];
@@ -82,7 +72,14 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
 
   // Now that we have our surface points, we can construct the TPS
   // surfaces corresponding to the left oblique boundaries
-  this->LeftObliqueThinPlateSplineSurface->SetSurfacePoints( &this->LeftObliqueSurfacePoints );
+  this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+    SetSurfacePoints( this->LeftObliqueSurfacePoints );
+
+  double regularizer = 0;
+  for ( unsigned int m=0; m<this->NumberOfModes; m++ )      
+    {
+      regularizer += std::pow((*params)[m], 2);
+    }
 
   double fissureTermValue = this->GetFissureTermValue();
   double vesselTermValue = this->GetVesselTermValue();
@@ -91,8 +88,10 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
   // the fissue metric value per fissure particle is roughtly 500 times that of the 
   // vessel metric value per vessel particle. We want these two terms to be roughly equal
   // so that the user-defined term weights are intuitive to use.
-  double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue;
-  
+  double value = this->FissureTermWeight*fissureTermValue + 
+    500.0*this->VesselTermWeight*vesselTermValue +
+    this->RegularizationWeight*regularizer;
+
   return value;
 }
 
@@ -100,9 +99,9 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
 {
   double fissureTermValue = 0.0;
 
-  double* position    = new double[3];
-  double* loNormal    = new double[3];
-  double* orientation = new double[3];
+  cip::PointType position(3);
+  cip::VectorType loNormal(3);
+  cip::VectorType orientation(3);
 
   cipNewtonOptimizer< 2 >::PointType* loDomainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   cipNewtonOptimizer< 2 >::PointType* loOptimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
@@ -119,7 +118,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
 
     // Determine the domain locations for which the particle is closest
     // to the left oblique
-    this->LeftObliqueParticleToTPSMetric->SetParticle( position );
+    this->LeftObliqueNewtonOptimizer.GetMetric().SetParticle( position );
 
     // The particle's x, and y location are a good place to initialize
     // the search for the domain locations that result in the smallest
@@ -129,17 +128,18 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
 
     // Perform Newton line search to determine the closest point on
     // the current TPS surfaces
-    this->LeftObliqueNewtonOptimizer->SetInitialParameters( loDomainParams );
-    this->LeftObliqueNewtonOptimizer->Update();
-    this->LeftObliqueNewtonOptimizer->GetOptimalParameters( loOptimalParams );
+    this->LeftObliqueNewtonOptimizer.SetInitialParameters( loDomainParams );
+    this->LeftObliqueNewtonOptimizer.Update();
+    this->LeftObliqueNewtonOptimizer.GetOptimalParameters( loOptimalParams );
 
     // Get the distances between the particle and the TPS surfaces. This
     // is just the square root of the objective function value
     // optimized by the Newton method.
-    double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer->GetOptimalValue() );
+    double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
-    this->LeftObliqueThinPlateSplineSurface->GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
+    this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
     double loTheta = cip::GetAngleBetweenVectors( loNormal, orientation, true );
 
     // Now that we have the surface normals and distances, we can compute this 
@@ -148,10 +148,6 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
       std::exp( -loTheta/this->FissureSigmaTheta );
     }
 
-  delete position;
-  delete loNormal;
-  delete orientation;
-
   return fissureTermValue;
 }
 
@@ -159,9 +155,9 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermVa
 {
   double vesselTermValue = 0.0;
 
-  double* position    = new double[3];
-  double* loNormal    = new double[3];
-  double* orientation = new double[3];
+  cip::PointType position(3);
+  cip::VectorType loNormal(3);
+  cip::VectorType orientation(3);
 
   cipNewtonOptimizer< 2 >::PointType* loDomainParams  = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
   cipNewtonOptimizer< 2 >::PointType* loOptimalParams = new cipNewtonOptimizer< 2 >::PointType( 2, 2 );
@@ -178,7 +174,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermVa
 
     // Determine the domain locations for which the particle is closest
     // to the left oblique TPS surfaces
-    this->LeftObliqueParticleToTPSMetric->SetParticle( position );
+    this->LeftObliqueNewtonOptimizer.GetMetric().SetParticle( position );
 
     // The particle's x, and y location are a good place to initialize
     // the search for the domain locations that result in the smallest
@@ -188,17 +184,19 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermVa
 
     // Perform Newton line search to determine the closest point on
     // the current TPS surfaces
-    this->LeftObliqueNewtonOptimizer->SetInitialParameters( loDomainParams );
-    this->LeftObliqueNewtonOptimizer->Update();
-    this->LeftObliqueNewtonOptimizer->GetOptimalParameters( loOptimalParams );
+    this->LeftObliqueNewtonOptimizer.SetInitialParameters( loDomainParams );
+    this->LeftObliqueNewtonOptimizer.Update();
+    this->LeftObliqueNewtonOptimizer.GetOptimalParameters( loOptimalParams );
 
     // Get the distances between the particle and the TPS surfaces. This
     // is just the square root of the objective function value
     // optimized by the Newton method.
-    double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer->GetOptimalValue() );
+    double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
-    this->LeftObliqueThinPlateSplineSurface->GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
+    this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
+      GetSurfaceNormal( (*loOptimalParams)[0], (*loOptimalParams)[1], loNormal );
+
     double loTheta = cip::GetAngleBetweenVectors( loNormal, orientation, true );
 
     // Now that we have the surface normals and distances, we can compute this 
@@ -206,10 +204,6 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermVa
     vesselTermValue += this->VesselParticleWeights[i]*std::exp( -loDistance/this->VesselSigmaDistance )*
       std::exp( -loTheta/this->VesselSigmaTheta );
     }
-
-  delete position;
-  delete loNormal;
-  delete orientation;
 
   return vesselTermValue;
 }

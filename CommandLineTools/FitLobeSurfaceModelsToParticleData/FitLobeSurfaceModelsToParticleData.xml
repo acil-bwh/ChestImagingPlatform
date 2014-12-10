@@ -2,9 +2,9 @@
 <executable>
   <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>FitFissureSurfaceModelToParticleData</title>
-  <description><![CDATA[This program is used to fit a left oblique shape model to fissure \
-  particles data. It is expected that the input shape model is generated with the 'GenerateFissureShapeModels' \
-  program. The output shape model has the same form as the input shape model, but it indicates how much to \
+  <description><![CDATA[This program is used to fit left and right lobe boundary shape models to \
+  particles data. It is expected that the input shape model is generated with the 'GenerateLobeSurfaceModels' \
+  program. The output shape models have the same form as the input shape models, but they indicate how much to \
   weight each of the primary modes of variation in order to achieve a good fit to the particles data.]]>
   </description>
   <version>0.0.1</version>
@@ -167,6 +167,14 @@
       <description>Airway sigma theta value for the TPS to particles optimization</description>
       <label>Airway Sigma Theta</label>
       <default>20.0</default>
+    </double>
+
+    <double>
+      <name>regularizationWeight</name>
+      <longflag>reg</longflag>
+      <description>The higher this value, the more departures from the mean shape are penalized</description>
+      <label>Regularization weight</label>
+      <default>0</default>
     </double>
 
     <boolean>
