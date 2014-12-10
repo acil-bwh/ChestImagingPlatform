@@ -15,10 +15,10 @@ cipMacroBuildCLI(
 
 SET (RIGHTLUNG_TEST_NAME ${MODULE_NAME}_RightLung_Test)
 ADD_TEST(NAME ${RIGHTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compare 
+    --compareCT 
       ${BASELINE_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_ct.nrrd
       ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_ct.nrrd
-    --compare 
+    --compareLabelMap 
       ${BASELINE_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_lm.nrrd
       ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_lm.nrrd    
     ModuleEntryPoint
@@ -35,10 +35,10 @@ ADD_TEST(NAME ${RIGHTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE
 if ( CIP_BUILD_TESTING_LARGE )
   SET (LEFTLUNG_TEST_NAME ${MODULE_NAME}_LeftLung_Test) 
   MIDAS_ADD_TEST( NAME ${LEFTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test> MIDAS_TOKEN{${MIDAS_AUTH_TOKEN}} 
-      --compare 
+      --compareCT 
          MIDAS{${LEFTLUNG_TEST_NAME}_ct.nrrd.md5}
          ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_ct.nrrd
-      --compare 
+      --compareLabelMap 
          MIDAS{${LEFTLUNG_TEST_NAME}_lm.nrrd.md5}
          ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd
        ModuleEntryPoint
