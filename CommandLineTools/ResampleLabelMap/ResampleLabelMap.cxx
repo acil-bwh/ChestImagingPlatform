@@ -85,6 +85,7 @@ namespace
   {
 
     PARSE_ARGS;
+    std::cout<<"in DOIT args parsed"<<std::endl;
     //dimension specific typedefs
     typedef itk::Image< unsigned short, TDimension >                              LabelMapType;
     typedef itk::NearestNeighborInterpolateImageFunction< LabelMapType, double >  InterpolatorType;
@@ -155,6 +156,7 @@ namespace
     } 
   transform->SetAllTransformsToOptimizeOn();		
   
+  std::cout<<transform<<std::endl;
   // Resample the label map
   typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
@@ -182,9 +184,9 @@ namespace
   // Write the resampled label map to file
   std::cout << "Writing resampled label map..." << std::endl;
   typename LabelMapWriterType::Pointer writer = LabelMapWriterType::New();
-    writer->SetFileName( resampledFileName.c_str());
+  writer->SetFileName( resampledFileName.c_str());
     writer->UseCompressionOn();
-    writer->SetInput( resampler->GetOutput() );
+    writer->SetInput( resampler->GetOutput() ); //labelMapReader->GetOutput() );
   try
     {
     writer->Update();
@@ -210,16 +212,20 @@ int main( int argc, char *argv[] )
   //In ANTs, dimensionality is an input arg
 
   PARSE_ARGS;
-  
+  std::cout<<dimension<<std::endl;
   switch(dimension)
     {
     case 2:
       {
+	std::cout<<"2 dimensional "<<std::endl;
 	 DoIT<2>( argc, argv);
+	 break;
       }
     case 3:
       {
+	std::cout<<"I have no business being here"<<std::endl;
 	 DoIT<3>( argc, argv);
+	 break;
       }
     default:
       {
