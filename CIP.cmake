@@ -96,41 +96,25 @@ get_filename_component( CIP_PARENT_DIR ${CMAKE_BINARY_DIR} DIRECTORY )
 set( CIP_LIBRARY_PATH "${CIP_PARENT_DIR}/lib" )
 set( CIP_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}" )
 
-#---------------------------------------------------------------------
-# Include directories
 
-set( CIP_INCLUDE_DIRECTORIES 
-  "${CIP_SOURCE_DIR}/Common"
-  "${CIP_SOURCE_DIR}/Utilities/ITK"
-  "${CIP_SOURCE_DIR}/Utilities/VTK"
-  "${CIP_SOURCE_DIR}/IO"
-  "${CMAKE_BINARY_DIR}/Common"
-  "${CMAKE_BINARY_DIR}/Utilities/VTK"
-  "${CMAKE_BINARY_DIR}/Utilities/ITK"
-  "${CMAKE_BINARY_DIR}/IO"
-)
-
-include_directories( ${CIP_INCLUDE_DIRECTORIES} )
 
 #---------------------------------------------------------------------
-# Link libraries
+# Testing
 
-SET( CIP_LIBRARIES CIPCommon CIPUtilities CIPIO)
+set( CIP_BUILD_TESTING ON CACHE BOOL "Perform some tests on basic functionality of CIP." )
 
-#---------------------------------------------------------------------
-# Define where to install CIP
-
-if( WIN32 )
-set( CIP_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
-else()  
-set( CIP_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/bin )
-endif()
+if ( CIP_BUILD_TESTING )
+  enable_testing()
+  include( CTest )  
+  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE" "Build large tests that require MIDAS server")
+  SET(CIP_BUILD_TESTING_PYTHON ON CACHE BOOL "CIP_BUILD_TESTING_PYTHON" "Build Python tests") 
+else( CIP_BUILD_TESTING )
+  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE" "Build large tests that require MIDAS server")
+  SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON" "Build Python tests")
+endif( CIP_BUILD_TESTING )
 
 #---------------------------------------------------------------------
 # MIDAS configuration (used in LARGE Testing to store data files)
-
-
-
 if ( CIP_BUILD_TESTING_LARGE )  
   include(MIDAS)
   include(MIDASAPILogin)
@@ -160,20 +144,36 @@ if ( CIP_BUILD_TESTING_LARGE )
   endif()
 endif()
 
+
 #---------------------------------------------------------------------
-# Testing
+# Include directories
 
-set( CIP_BUILD_TESTING ON CACHE BOOL "Perform some tests on basic functionality of CIP." )
+set( CIP_INCLUDE_DIRECTORIES 
+  "${CIP_SOURCE_DIR}/Common"
+  "${CIP_SOURCE_DIR}/Utilities/ITK"
+  "${CIP_SOURCE_DIR}/Utilities/VTK"
+  "${CIP_SOURCE_DIR}/IO"
+  "${CMAKE_BINARY_DIR}/Common"
+  "${CMAKE_BINARY_DIR}/Utilities/VTK"
+  "${CMAKE_BINARY_DIR}/Utilities/ITK"
+  "${CMAKE_BINARY_DIR}/IO"
+)
 
-if ( CIP_BUILD_TESTING )
-  enable_testing()
-  include( CTest )  
-  SET(CIP_BUILD_TESTING_LARGE ON CACHE BOOL "CIP_BUILD_TESTING_LARGE")
-  SET(CIP_BUILD_TESTING_PYTHON ON CACHE BOOL "CIP_BUILD_TESTING_PYTHON") 
-else( CIP_BUILD_TESTING )
-  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE")
-  SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON")
-endif( CIP_BUILD_TESTING )
+include_directories( ${CIP_INCLUDE_DIRECTORIES} )
+
+#---------------------------------------------------------------------
+# Link libraries
+
+SET( CIP_LIBRARIES CIPCommon CIPUtilities CIPIO)
+
+#---------------------------------------------------------------------
+# Define where to install CIP
+
+if( WIN32 )
+set( CIP_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
+else()  
+set( CIP_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/bin )
+endif()
  
 
 #---------------------------------------------------------------------
