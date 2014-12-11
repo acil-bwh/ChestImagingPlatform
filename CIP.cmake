@@ -107,18 +107,16 @@ set( CIP_BUILD_TESTING ON CACHE BOOL "Perform some tests on basic functionality 
 if ( CIP_BUILD_TESTING )
   enable_testing()
   include( CTest )  
-  MESSAGE("Including testing settings")
-  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE" "Build large tests that require MIDAS server")
-  SET(CIP_BUILD_TESTING_PYTHON ON CACHE BOOL "CIP_BUILD_TESTING_PYTHON" "Build Python tests") 
+  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "Build large tests that require MIDAS server")  
+  SET(CIP_BUILD_TESTING_PYTHON ON CACHE BOOL "Build Python tests") 
 else( CIP_BUILD_TESTING )
-  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE" "Build large tests that require MIDAS server")
-  SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "CIP_BUILD_TESTING_PYTHON" "Build Python tests")
+  SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "Build large tests that require MIDAS server")
+  SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "Build Python tests")
 endif( CIP_BUILD_TESTING )
 
 #---------------------------------------------------------------------
 # MIDAS configuration (used in LARGE Testing to store data files)
-if ( CIP_BUILD_TESTING_LARGE )  
-  MESSAGE("LARGE IS ON")
+if ( CIP_BUILD_TESTING_LARGE )    
   include(MIDAS)
   include(MIDASAPILogin)
  

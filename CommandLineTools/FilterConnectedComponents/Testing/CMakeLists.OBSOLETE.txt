@@ -16,5 +16,5 @@ SET_TARGET_PROPERTIES ( FilterConnectedComponentsTEST
 )
 
 
-ADD_TEST( FilterConnectedComponentsTEST FilterConnectedComponentsTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd)
+CIP_ADD_TEST( FilterConnectedComponentsTEST FilterConnectedComponentsTEST ${CMAKE_SOURCE_DIR}/Testing/Data/Input/simple_lm.nrrd)
 
