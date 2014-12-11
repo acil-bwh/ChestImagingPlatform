@@ -92,7 +92,8 @@ set( EXECUTABLE_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
 
 mark_as_advanced( LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH )
 
-get_filename_component( CIP_PARENT_DIR ${CMAKE_BINARY_DIR} DIRECTORY )
+get_filename_component( CIP_PARENT_DIR ${CMAKE_BINARY_DIR} PATH )
+
 set( CIP_LIBRARY_PATH "${CIP_PARENT_DIR}/lib" )
 set( CIP_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}" )
 
@@ -106,6 +107,7 @@ set( CIP_BUILD_TESTING ON CACHE BOOL "Perform some tests on basic functionality 
 if ( CIP_BUILD_TESTING )
   enable_testing()
   include( CTest )  
+  MESSAGE("Including testing settings")
   SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "CIP_BUILD_TESTING_LARGE" "Build large tests that require MIDAS server")
   SET(CIP_BUILD_TESTING_PYTHON ON CACHE BOOL "CIP_BUILD_TESTING_PYTHON" "Build Python tests") 
 else( CIP_BUILD_TESTING )
@@ -116,6 +118,7 @@ endif( CIP_BUILD_TESTING )
 #---------------------------------------------------------------------
 # MIDAS configuration (used in LARGE Testing to store data files)
 if ( CIP_BUILD_TESTING_LARGE )  
+  MESSAGE("LARGE IS ON")
   include(MIDAS)
   include(MIDASAPILogin)
  
