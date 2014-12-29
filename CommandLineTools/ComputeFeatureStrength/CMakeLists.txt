@@ -15,14 +15,29 @@ cipMacroBuildCLI(
 SET (TEST_NAME ${MODULE_NAME}_Test)
 add_test(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
     --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_vessel_frangi.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_vessel_frangi.nrrd
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/dummy_ct.nrrd
-      -l ${INPUT_DATA_DIR}/dummy_lm.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      --opl ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+    -m Frangi 
+    -f RidgeLine 
+    --C 200 
+    -i ${INPUT_DATA_DIR}/vessel.nrrd
+    --std 0.6,5,4
+    -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_vessel_frangi.nrrd
 )
+
+SET (TEST_NAME ${MODULE_NAME}_Test2)
+add_test(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+    --compare 
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_airway_frangi.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_frangi.nrrd
+    ModuleEntryPoint
+    -m Frangi 
+    -f Valley 
+    --C 100
+    -i ${INPUT_DATA_DIR}/airway.nrrd
+    --std 0.6,5,4
+    -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_frangi.nrrd
+)
+
+
