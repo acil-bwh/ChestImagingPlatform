@@ -15,7 +15,7 @@ cipMacroBuildCLI(
     )
     
 SET (TEST_NAME ${MODULE_NAME}_Test)
-add_test(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
     --compareLabelMap 
       ${BASELINE_DATA_DIR}/${TEST_NAME}_lm.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_lm.nrrd

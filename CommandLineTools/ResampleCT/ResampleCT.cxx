@@ -36,25 +36,25 @@
  */
 
 #include "cipChestConventions.h"
-#include "cipHelper.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkAffineTransform.h"
+#include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
+#include "itkImageRegionIteratorWithIndex.h"
 #include "itkMatrix.h"
 #include "itkTransformFileReader.h"
 #include "itkResampleImageFilter.h"
 //#include "itkMetaImageIO.h" // not needed (fix build error)
-#include "ResampleLabelMapCLP.h"
+#include "ResampleCTCLP.h"
 #include <itkCompositeTransform.h>
-
+#include "itkImageRegistrationMethod.h"
 
 namespace
 {
-  //typedef map <string, Value, less<string>, __gnu_cxx::malloc_allocator<std::string> > type;
-  //typedef std::map<std::string, TDimension> dimension;
 
+  //TransformType::Pointer GetTransformFromFile( std::string );
   template <unsigned int TDimension> typename itk::AffineTransform< double, TDimension >::Pointer GetTransformFromFile( std::string fileName )
   {
 
@@ -79,32 +79,53 @@ namespace
     return transform;
   }
 
+   template <unsigned int TDimension> typename itk::Image< short, TDimension >::Pointer ReadCTFromFile( std::string fileName )
+  {
+    typedef itk::Image< short, TDimension >                                         ShortImageType;
+    typedef itk::ImageFileReader< ShortImageType >                                  ShortReaderType;
+    typename ShortReaderType::Pointer reader = ShortReaderType::New();
+    reader->SetFileName( fileName );
+    try
+      {
+	reader->Update();
+      }
+    catch ( itk::ExceptionObject &excp )
+      {
+	std::cerr << "Exception caught reading CT image:";
+	std::cerr << excp << std::endl;
+	return NULL;
+      }
+        
+    return reader->GetOutput();
+  }
+
+
+
 
   template <unsigned int TDimension>
   int DoIT(int argc, char * argv[])
-  {
-
+  {	
     PARSE_ARGS;
-    std::cout<<"in DOIT args parsed"<<std::endl;
     //dimension specific typedefs
-    typedef itk::Image< unsigned short, TDimension >                              LabelMapType;
-    typedef itk::NearestNeighborInterpolateImageFunction< LabelMapType, double >  InterpolatorType;
-    typedef itk::ResampleImageFilter< LabelMapType,LabelMapType >                 ResampleType;
-    typedef itk::AffineTransform< double, TDimension >                            TransformType;
-    typedef itk::CompositeTransform< double, TDimension >                         CompositeTransformType;
-    typedef itk::ImageFileReader< LabelMapType >                                  LabelMapReaderType;
-    typedef itk::ImageFileWriter< LabelMapType >                                  LabelMapWriterType;
+    typedef itk::Image< short, TDimension >                                         ShortImageType;
+    typedef itk::LinearInterpolateImageFunction< ShortImageType, double >           InterpolatorType;
+    typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >               ResampleType;
+    typedef itk::AffineTransform< double, TDimension >                              TransformType;
+    typedef itk::CompositeTransform< double, TDimension >                           CompositeTransformType;
+    typedef itk::ImageFileWriter< ShortImageType >                                  ShortWriterType2D;
+    typedef itk::ImageFileReader< ShortImageType >                                  ShortReaderType;
+    typedef itk::ImageRegistrationMethod<ShortImageType,ShortImageType >            CTRegistrationType;
 
-   
+    //
     // Read the destination image information for spacing, origin, and
     // size information (neede for the resampling process).
-        
-    typename LabelMapType::SpacingType spacing;
-    typename LabelMapType::SizeType    size;
-    typename LabelMapType::PointType   origin;
- 
+    //
+    typename ShortImageType::SpacingType spacing;
+    typename ShortImageType::SizeType    size;
+    typename ShortImageType::PointType   origin;
+    
     std::cout << "Reading destination information..." << std::endl;
-    typename LabelMapReaderType::Pointer destinationReader = LabelMapReaderType::New();
+    typename ShortReaderType::Pointer destinationReader = ShortReaderType::New();
     destinationReader->SetFileName( destinationFileName.c_str() );
     try
       {
@@ -122,49 +143,57 @@ namespace
     size    = destinationReader->GetOutput()->GetLargestPossibleRegion().GetSize();
     origin  = destinationReader->GetOutput()->GetOrigin();
   
-    // Read the label map image
-    std::cout << "Reading label map image..." << std::endl;
-    typename LabelMapReaderType::Pointer labelMapReader = LabelMapReaderType::New();
-    labelMapReader->SetFileName( labelMapFileName.c_str() );
+    //
+    // Read the ct image
+    //
+    std::cout << "Reading ct image..." << std::endl;
+    typename ShortReaderType::Pointer shortReader = ShortReaderType::New();
+    shortReader->SetFileName( labelMapFileName.c_str() );
     try
       {
-	labelMapReader->Update();
+	shortReader->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
 	std::cerr << "Exception caught reading label map:";
 	std::cerr << excp << std::endl;
-    
-	return cip::LABELMAPREADFAILURE;
+	
+	return cip::NRRDREADFAILURE;
       }
 
-    // Read the transform (last transform applied first)
+    //
+    // Read the transform
+    //
+    
+    //last transform applied first, so make last transform
     typename CompositeTransformType::Pointer transform = CompositeTransformType::New();
-    //the_types<dimensions>::CompositeTransformType::Pointer transform = the_types<dimensions>:CompositeTransformType::New();
+    typename TransformType::Pointer transformTemp2 = TransformType::New();
     for ( unsigned int i=0; i<transformFileName.size(); i++ )
       { 
-	// Invert the transformation if specified by command like argument.
-	// Only inverting the first transformation
-	std::cout << "Adding transform: " << i << std::endl;
+	std::cout<<"adding transform: "<<i<<std::endl;
 	typename TransformType::Pointer transformTemp = TransformType::New();
 	transformTemp = GetTransformFromFile<TDimension>((transformFileName[i]).c_str() );
-	if( i==0 && isInvertTransformation == true )
+	// Invert the transformation if specified by command like argument. Only inverting the first transformation
+      
+	if((i==0)&& (isInvertTransformation == true))
 	  {
 	    transformTemp->GetInverse( transformTemp );
 	  }
-        transform->AddTransform(transformTemp);
-      } 
+	transform->AddTransform(transformTemp);
+      }
+    
     transform->SetAllTransformsToOptimizeOn();		
-  
-    std::cout<<transform<<std::endl;
+
+    //
     // Resample the label map
+    //
     typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
     std::cout << "Resampling..." << std::endl;
     typename ResampleType::Pointer resampler = ResampleType::New();
     resampler->SetTransform( transform );
     resampler->SetInterpolator( interpolator );
-    resampler->SetInput( labelMapReader->GetOutput() );
+    resampler->SetInput( shortReader->GetOutput() );
     resampler->SetSize( size );
     resampler->SetOutputSpacing( spacing );
     resampler->SetOutputOrigin( origin );
@@ -181,12 +210,15 @@ namespace
 	return cip::RESAMPLEFAILURE;
       }
 
+    //
     // Write the resampled label map to file
+    //
     std::cout << "Writing resampled label map..." << std::endl;
-    typename LabelMapWriterType::Pointer writer = LabelMapWriterType::New();
+
+    typename ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
     writer->SetFileName( resampledFileName.c_str());
     writer->UseCompressionOn();
-    writer->SetInput( resampler->GetOutput() ); //labelMapReader->GetOutput() );
+    writer->SetInput( resampler->GetOutput() );
     try
       {
 	writer->Update();
@@ -199,20 +231,17 @@ namespace
 	return cip::LABELMAPWRITEFAILURE;
       }
 
-    std::cout << "DONE." << std::endl;   
+    std::cout << "DONE." << std::endl;
+
     return cip::EXITSUCCESS;
   }
-  
 } // end of anonymous namespace
 
 
 int main( int argc, char *argv[] )
 {
 
-  //In ANTs, dimensionality is an input arg
-
   PARSE_ARGS;
-  std::cout<<dimension<<std::endl;
   switch(dimension)
     {
     case 2:

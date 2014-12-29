@@ -1,6 +1,7 @@
 # SlicerExecutionModel
 find_package(SlicerExecutionModel NO_MODULE REQUIRED GenerateCLP)
 include(${SlicerExecutionModel_USE_FILE})
+include(CIP_AddTests)
 
 #FIND_PACKAGE( CIP REQUIRED )
 

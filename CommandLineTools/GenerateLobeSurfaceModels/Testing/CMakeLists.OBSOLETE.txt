@@ -16,5 +16,5 @@ SET_TARGET_PROPERTIES ( GenerateLobeSurfaceModelsTEST
     RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/CommandLineTools/GenerateLobeSurfaceModels/Testing"
 )
 
-ADD_TEST( GenerateLobeSurfaceModelsTEST GenerateLobeSurfaceModelsTEST )
+CIP_ADD_TEST( GenerateLobeSurfaceModelsTEST GenerateLobeSurfaceModelsTEST )
 
