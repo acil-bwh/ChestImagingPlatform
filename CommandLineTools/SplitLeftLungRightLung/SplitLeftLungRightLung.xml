@@ -15,23 +15,30 @@
 
   <parameters>
   <label>I/O</label>
-      <image type="label">
-          <name>inLabelMapFileName</name>
-          <label>input LabelMap FileName</label>
+      <image>
+          <name>ctFileName</name>
+          <label>Input CT file name</label>
           <channel>input</channel>
-          <flag>i</flag>
-          <longflag>in</longflag>
-          <description><![CDATA["Input label map file name]]></description>
-          <default>q</default>
+          <longflag>ct</longflag>
+          <description><![CDATA["Input CT file name]]></description>
+          <default>NA</default>
       </image>
       <image type="label">
-          <name>outLabelMapFileName</name>
-          <label>output LabelMap FileName</label>
+          <name>lmFileName</name>
+          <label>Input label map file name</label>
+          <channel>input</channel>
+          <longflag>lm</longflag>
+          <description><![CDATA["Input label map file name]]></description>
+          <default>NA</default>
+      </image>
+      <image type="label">
+          <name>outFileName</name>
+          <label>Output label map file name</label>
           <channel>output</channel>
           <flag>o</flag>
           <longflag>out</longflag>
           <description><![CDATA["Output label map file name]]></description>
-          <default>q</default>
+          <default>NA</default>
       </image>
       
     </parameters>
@@ -55,8 +62,19 @@
         <flag>c</flag>
         <longflag>coefficient</longflag>
         <description><![CDATA[Exponential coefficient.]]></description>
-        <default>200.0;</default>   
+        <default>200.0</default>   
     </double>
         
+    <integer>
+        <name>splitRadius</name>
+        <label>Left-right split radius</label>
+        <channel>input</channel>
+        <flag>r</flag>
+        <longflag>rad</longflag>
+        <description><![CDATA[The radius to use when splitting. The larger the radius, the larger the \
+	cleaved split through the label map.]]></description>
+        <default>1</default>   
+    </integer>
+
   </parameters>
 </executable>
