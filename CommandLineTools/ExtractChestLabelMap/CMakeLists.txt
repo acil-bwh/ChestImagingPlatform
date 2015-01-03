@@ -27,18 +27,6 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       -r RightLung
 )
 
-SET (TEST_NAME ${MODULE_NAME}_Test_RightLung)
-CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compareLabelMap 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}.nrrd
-    ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/simple_lm.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}.nrrd
-      -r RightLung
-)
-
-
 SET (TEST_NAME ${MODULE_NAME}_Test_LeftLung)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
     --compareLabelMap 
