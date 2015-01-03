@@ -66,10 +66,6 @@
  *   -h,  --help
  *     Displays usage information and exits.
  *
- *  $Date: 2012-10-02 15:54:43 -0400 (Tue, 02 Oct 2012) $
- *  $Revision: 283 $
- *  $Author: jross $
- *
  */
 
 #include "vtkPolyDataReader.h"
@@ -81,47 +77,40 @@
 #include "itkNumericTraits.h"
 #include "cipChestConventions.h"
 #include "vtkIndent.h"
+#include "vtkSmartPointer.h"
 #include "FilterAirwayParticleDataCLP.h"
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
-
   PARSE_ARGS;
 
   unsigned int maxComponentSize       = (unsigned int) maxComponentSizeTemp;
   unsigned int componentSizeThreshold = (unsigned int) componentSizeThresholdTemp;
 
   std::cout << "Reading particles ..." << std::endl;
-  vtkPolyDataReader* reader = vtkPolyDataReader::New();
+  vtkSmartPointer< vtkPolyDataReader > reader = vtkSmartPointer< vtkPolyDataReader >::New();
     reader->SetFileName( inParticlesFileName.c_str() );
     reader->Update();
 
   std::cout << "Filtering particles..." << std::endl;
-  cipAirwayParticleConnectedComponentFilter* filter = new cipAirwayParticleConnectedComponentFilter();
-    filter->SetInterParticleSpacing( interParticleSpacing );
-    filter->SetComponentSizeThreshold( componentSizeThreshold );
-    filter->SetParticleDistanceThreshold( maxAllowableDistance );
-    filter->SetParticleAngleThreshold( particleAngleThreshold );
-    filter->SetScaleRatioThreshold( scaleRatioThreshold );
-    filter->SetMaximumComponentSize( maxComponentSize );
-    filter->SetMaximumAllowableScale( maxAllowableScale );
-    filter->SetMinimumAllowableScale( minAllowableScale );
-    filter->SetInput( reader->GetOutput() );
-    filter->Update();
+  cipAirwayParticleConnectedComponentFilter filter;
+    filter.SetInterParticleSpacing( interParticleSpacing );
+    filter.SetComponentSizeThreshold( componentSizeThreshold );
+    filter.SetParticleDistanceThreshold( maxAllowableDistance );
+    filter.SetParticleAngleThreshold( particleAngleThreshold );
+    filter.SetScaleRatioThreshold( scaleRatioThreshold );
+    filter.SetMaximumComponentSize( maxComponentSize );
+    filter.SetMaximumAllowableScale( maxAllowableScale );
+    filter.SetMinimumAllowableScale( minAllowableScale );
+    filter.SetInput( reader->GetOutput() );
+    filter.Update();
 
   std::cout << "Writing filtered particles ..." << std::endl;
-  vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
+  vtkSmartPointer< vtkPolyDataWriter > filteredWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInputData( filter->GetOutput() );
+    filteredWriter->SetInputData( filter.GetOutput() );
     filteredWriter->SetFileTypeToBinary();
     filteredWriter->Write();
-
-  reader->Delete();
-  delete filter;
-  filteredWriter->Delete();
     
   std::cout << "DONE." << std::endl;
 
