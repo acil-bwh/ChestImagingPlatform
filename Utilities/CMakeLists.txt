@@ -62,6 +62,38 @@ SET ( CIPUtilities_SRCS
 )
 
 # --------------------------------------------------------------------------
+# Adding ITK Factory components in charge of registering the default ITK factories.
+# --------------------------------------------------------------------------
+set(ITK_IO_MODULES_USED
+  ITKIOJPEG
+  ITKIOGDCM
+  ITKIOBMP
+  ITKIOLSM
+  ITKIOPNG
+  ITKIOTIFF
+  ITKIOVTK
+  ITKIOStimulate
+  ITKIOBioRad
+  ITKIOMeta
+  ITKIOMRC
+  ITKIONIFTI
+  ITKIONRRD
+  ITKIOGIPL
+  ITKIOTransformHDF5
+  ITKIOTransformInsightLegacy
+  ITKIOTransformMatlab
+  )
+
+set(${PROJECT_NAME}_ITK_COMPONENTS
+  ITKIOImageBase
+  ITKIOTransformBase
+  ${ITK_IO_MODULES_USED}
+  )
+
+set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 0)
+
+
+# --------------------------------------------------------------------------
 # Build library
 # --------------------------------------------------------------------------
 

@@ -20,14 +20,16 @@
       <name>inputVolume</name>
       <label>Input Volume</label>
       <channel>input</channel>
-      <index>0</index>
+      <flag>i</flag>
+      <longflag>input</longflag>
       <description>Input Chest CT volume</description>
     </image>
     <image type="label">
       <name>outputVolume</name>
       <label>Output Volume</label>
       <channel>output</channel>
-      <index>2</index>
+      <flag>o</flag>
+      <longflag>output</longflag>
       <description>Output Lung Mask</description>
     </image>
   </parameters>
