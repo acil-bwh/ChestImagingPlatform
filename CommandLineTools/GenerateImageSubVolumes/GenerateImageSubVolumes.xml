@@ -33,7 +33,6 @@
       <string>
           <name>ctSubVolumeFileNamePrefix</name>
           <label>ctSubVolumeFileNamePrefix</label>
-          <channel>input</channel>
           <longflag>ctPre</longflag>
           <description><![CDATA[CT sub-volume file name prefix. Each sub-volume extracted will be written to file. The file name used will be this prefix plus a numerical identifier followed by the .nhdr file extension.]]></description>
           <default>q</default>
@@ -42,7 +41,6 @@
       <string>
           <name>labelMapSubVolumeFileNamePrefix</name>
           <label>labelMapSubVolumeFileNamePrefix</label>
-          <channel>input</channel>
           <longflag>lmPre</longflag>
           <description><![CDATA[Label map sub-volume file name prefix. This is an optional argument and will have no effect unless the --wls flag is set to 1. Each sub-volume extracted will be written to file. The file name used will be this prefix plus a numerical identifier followed by the .nhdr file extension.]]></description>
           <default>q</default>
@@ -50,7 +48,6 @@
       <boolean>
           <name>writeLabelMapSubVolumes</name>
           <label>writeLabelMapSubVolumes</label>
-          <channel>input</channel>
           <longflag>wls</longflag>
           <description><![CDATA[Boolean flag to indicate whether label map sub-volumes should be written in addition to the CT sub-volumes. Default: False.]]></description>
           <default>false</default>
