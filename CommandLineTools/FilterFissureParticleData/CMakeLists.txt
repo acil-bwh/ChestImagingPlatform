@@ -18,7 +18,7 @@ cipMacroBuildCLI(
     
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compare 
+    --compareVTKPolyData 
       ${BASELINE_DATA_DIR}/${TEST_NAME}_case_fissure_particles.vtk
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_fissure_particles.vtk
     ModuleEntryPoint

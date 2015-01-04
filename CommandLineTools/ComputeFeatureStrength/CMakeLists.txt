@@ -33,7 +33,7 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_frangi.nrrd
     ModuleEntryPoint
     -m Frangi 
-    -f Valley 
+    -f ValleyLine 
     --C 100
     -i ${INPUT_DATA_DIR}/airway.nrrd
     --std 0.6,5,4
