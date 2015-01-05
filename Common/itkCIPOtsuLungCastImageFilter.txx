@@ -7,6 +7,7 @@
 #include "itkCIPOtsuLungCastImageFilter.h"
 #include "cipChestConventions.h"
 #include "cipExceptionObject.h"
+#include "itkImageFileWriter.h" //DEBUG
 
 namespace itk
 {
@@ -60,8 +61,9 @@ CIPOtsuLungCastImageFilter< TInputImage, TOutputImage >
   // thresholded image
   typename ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();
     connectedComponent->SetInput( this->GetOutput() );
+    connectedComponent->SetFullyConnected( true );
     connectedComponent->Update();
-      
+
   // Relabel the connected components
   Relabel3DType::Pointer relabelComponent = Relabel3DType::New();
     relabelComponent->SetInput( connectedComponent->GetOutput() );
