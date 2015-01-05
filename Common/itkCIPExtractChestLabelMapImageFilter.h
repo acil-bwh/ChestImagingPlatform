@@ -72,13 +72,13 @@ public:
   itkTypeMacro(CIPExtractChestLabelMapImageFilter, ImageToImageFilter);
   
   /** Image typedef support. */
-  typedef InputImageType::PixelType  InputPixelType;
-  typedef OutputImageType::PixelType OutputPixelType;
+  typedef typename InputImageType::PixelType  InputPixelType;
+  typedef typename OutputImageType::PixelType OutputPixelType;
 
-  typedef InputImageType::RegionType  InputImageRegionType;
-  typedef OutputImageType::RegionType OutputImageRegionType;
+  typedef typename InputImageType::RegionType  InputImageRegionType;
+  typedef typename OutputImageType::RegionType OutputImageRegionType;
 
-  typedef InputImageType::SizeType InputSizeType;
+  typedef typename InputImageType::SizeType InputSizeType;
 
   typedef itk::ImageRegionIteratorWithIndex< OutputImageType > OutputIteratorType;
   typedef itk::ImageRegionConstIterator< InputImageType >      InputIteratorType;

@@ -21,9 +21,6 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
     --compare 
       ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
     ModuleEntryPoint
       -i ${INPUT_DATA_DIR}/dummy_ct.nrrd
       -l ${INPUT_DATA_DIR}/dummy_lm.nrrd

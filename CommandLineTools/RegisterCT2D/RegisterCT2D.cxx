@@ -77,14 +77,14 @@ namespace
   typedef itk::Image< unsigned short, 2 >                                                           LabelMapType2D; 
   typedef itk::Image< short, 2 >                                                                    ShortImageType2D;
 
-  typedef itk::ImageRegionIterator< ShortImageType2D >                                   CTImageIteratorType;  
+  typedef itk::ImageRegionIterator< ShortImageType2D >                                              CTImageIteratorType;  
   typedef itk::GDCMImageIO                                                                          ImageIOType;
   typedef itk::GDCMSeriesFileNames                                                                  NamesGeneratorType;
   typedef itk::ImageFileReader< LabelMapType2D >                                                    LabelMap2DReaderType;
   typedef itk::ImageFileReader< ShortImageType2D >                                                  ShortReaderType;
   typedef itk::ImageFileWriter< ShortImageType2D >                                                  ImageWriterType;
 
-  typedef itk::CIPExtractChestLabelMapImageFilter                                                   LabelMapExtractorType;
+  typedef itk::CIPExtractChestLabelMapImageFilter< 2 >                                              LabelMapExtractorType;
   typedef itk::ImageMaskSpatialObject< 2 >                                                          MaskType;
   typedef itk::Image< unsigned char, 2 >                                                            ImageMaskType;
   typedef itk::ImageFileReader< ImageMaskType >                                                     MaskReaderType;

@@ -58,7 +58,7 @@
 #include "cipHelper.h"
 #include "ExtractChestLabelMapCLP.h"
 
-typedef itk::CIPExtractChestLabelMapImageFilter       LabelMapExtractorType;
+typedef itk::CIPExtractChestLabelMapImageFilter< 3 >  LabelMapExtractorType;
 typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;
 
 int main( int argc, char *argv[] )

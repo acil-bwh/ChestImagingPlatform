@@ -48,7 +48,7 @@ namespace
   typedef itk::RegionOfInterestImageFilter< cip::LabelMapType, cip::LabelMapType >                  RegionOfInterestType;
   typedef itk::ResampleImageFilter< cip::LabelMapType, cip::LabelMapType >                          ResampleType;
   typedef itk::IdentityTransform< double, 3 >                                                       IdentityType;
-  typedef itk::CIPExtractChestLabelMapImageFilter                                                   LabelMapExtractorType;
+  typedef itk::CIPExtractChestLabelMapImageFilter< 3 >                                              LabelMapExtractorType;
   typedef itk::ImageSeriesReader< cip::CTType >                                                     CTSeriesReaderType;
   typedef itk::GDCMImageIO                                                                          ImageIOType;
   typedef itk::GDCMSeriesFileNames                                                                  NamesGeneratorType;

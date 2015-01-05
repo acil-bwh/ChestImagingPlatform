@@ -4,8 +4,8 @@
 namespace itk
 {
 
-
-CIPExtractChestLabelMapImageFilter
+template < unsigned int Dimension >
+CIPExtractChestLabelMapImageFilter< Dimension >
 ::CIPExtractChestLabelMapImageFilter()
 {
 //  this->m_RegionVec.push_back( cip::UNDEFINEDREGION );
@@ -17,9 +17,9 @@ CIPExtractChestLabelMapImageFilter
 //   this->m_RegionAndTypeVec.push_back( regionTypeTemp );
 }
 
-
+template < unsigned int Dimension >
 void
-CIPExtractChestLabelMapImageFilter
+CIPExtractChestLabelMapImageFilter< Dimension >
 ::GenerateData()
 {
   this->InitializeMaps();
@@ -52,9 +52,9 @@ CIPExtractChestLabelMapImageFilter
     }
 }
 
-
+template < unsigned int Dimension >
 void
-CIPExtractChestLabelMapImageFilter
+CIPExtractChestLabelMapImageFilter< Dimension >
 ::InitializeMaps()
 {
   // First collect the values in the label map. We will then figure out
@@ -132,8 +132,9 @@ CIPExtractChestLabelMapImageFilter
 /**
  * Standard "PrintSelf" method
  */
+template < unsigned int Dimension >
 void
-CIPExtractChestLabelMapImageFilter
+CIPExtractChestLabelMapImageFilter< Dimension >
 ::PrintSelf(
   std::ostream& os, 
   Indent indent) const

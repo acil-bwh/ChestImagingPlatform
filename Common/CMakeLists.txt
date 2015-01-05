@@ -46,7 +46,6 @@ SET ( CIPCommon_SRCS
   cipSphereStencil.cxx
   cipCylinderStencil.cxx
   cipChestDataViewer.cxx
-  itkCIPExtractChestLabelMapImageFilter.cxx
   itkCIPMergeChestLabelMapsImageFilter.cxx
   cipParticleConnectedComponentFilter.cxx
   cipVesselParticleConnectedComponentFilter.cxx

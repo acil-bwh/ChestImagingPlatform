@@ -115,7 +115,7 @@ typedef itk::GDCMImageIO                                                        
 typedef itk::GDCMSeriesFileNames                                                  NamesGeneratorType;
 typedef itk::ImageSeriesReader< cip::CTType >                                     CTSeriesReaderType;
 typedef itk::ImageFileReader< cip::CTType >                                       CTFileReaderType;
-typedef itk::CIPExtractChestLabelMapImageFilter                                   LabelMapExtractorType;
+typedef itk::CIPExtractChestLabelMapImageFilter< 3 >                              LabelMapExtractorType;
 typedef itk::RegionOfInterestImageFilter< cip::CTType, cip::CTType >              RegionOfInterestFilterType;
 typedef itk::RegionOfInterestImageFilter< cip::LabelMapType, cip::LabelMapType >  RegionOfInterestLabelMapFilterType;
 typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                    LabelMapIteratorType;

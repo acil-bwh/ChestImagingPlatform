@@ -84,7 +84,7 @@ namespace{
     typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType >                        LabelMapIteratorType;
     typedef itk::ImageRegionIteratorWithIndex< DistanceMapType >                          DistanceMapIteratorType;
     typedef itk::IdentityTransform< double, 3 >                                           IdentityType;
-    typedef itk::CIPExtractChestLabelMapImageFilter                                       LabelMapExtractorType;
+    typedef itk::CIPExtractChestLabelMapImageFilter< 3 >                                  LabelMapExtractorType;
 
     cip::LabelMapType::Pointer ResampleImage( cip::LabelMapType::Pointer image, float downsampleFactor )
     {

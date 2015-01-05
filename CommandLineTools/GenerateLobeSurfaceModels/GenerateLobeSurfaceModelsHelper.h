@@ -42,7 +42,7 @@ typedef itk::ImageRegionIteratorWithIndex< ImageType >                          
 typedef itk::ImageRegionIteratorWithIndex< ImageSliceType >                         SliceIteratorType;
 typedef itk::ResampleImageFilter< ImageType, ImageType >                            ResampleType;
 typedef itk::IdentityTransform< double, 3 >                                         IdentityType;
-typedef itk::CIPExtractChestLabelMapImageFilter                                     LabelMapExtractorType;
+typedef itk::CIPExtractChestLabelMapImageFilter< 3 >                                LabelMapExtractorType;
 typedef itk::TransformFileReader::TransformListType*                                TransformListType;
 typedef itk::ContinuousIndex< double, 3 >                                           ContinuousIndexType;
 

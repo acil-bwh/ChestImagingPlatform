@@ -74,7 +74,7 @@ namespace
   typedef itk::AffineTransform<double, 2 >                                                      TransformType2D; 
 
   typedef itk::Image< unsigned short, 2 >                                                       LabelMapType2D; 
-  typedef itk::CIPExtractChestLabelMapImageFilter                                               LabelMapExtractorType; 
+  typedef itk::CIPExtractChestLabelMapImageFilter< 3 >                                          LabelMapExtractorType; 
   typedef itk::GDCMImageIO                                                                      ImageIOType;
   typedef itk::GDCMSeriesFileNames                                                              NamesGeneratorType; 
   typedef itk::Image< short, 2 >                                                                ShortImageType2D;

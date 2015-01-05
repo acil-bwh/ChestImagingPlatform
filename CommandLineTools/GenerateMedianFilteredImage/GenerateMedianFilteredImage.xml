@@ -23,42 +23,27 @@ and does not necessarily represent the official views of the National Institutes
 
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-<<<<<<< HEAD
-    <image>
-=======
 
-    <string>
->>>>>>> 3014cb9cb4dd6fe40eedd3379125294ff449fcaf
+    <image>
       <name>ctFileName</name>
       <label>Input Filename</label>
       <channel>input</channel>
       <flag>i</flag>
       <longflag>--inputFile</longflag>
       <description><![CDATA[Input CT file name]]></description>
-<<<<<<< HEAD
       <default>q</default>
     </image>
-    <image>
-=======
-      <default>NA</default>
-    </string>
 
-    <string>
->>>>>>> 3014cb9cb4dd6fe40eedd3379125294ff449fcaf
+    <image>
       <name>outputFileName</name>
       <label>Output File</label>
       <flag>o</flag>
       <longflag>--outputFile</longflag>
       <channel>output</channel>
       <description><![CDATA[Output CT file name]]></description>
-<<<<<<< HEAD
       <default>q</default>
     </image>
-=======
-      <default>NA</default>
-    </string>
 
->>>>>>> 3014cb9cb4dd6fe40eedd3379125294ff449fcaf
     <directory>
       <name>ctDir</name>
       <flag>d</flag>

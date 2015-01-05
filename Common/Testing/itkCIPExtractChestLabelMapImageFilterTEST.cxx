@@ -5,7 +5,7 @@
 
 int main( int argc, char* argv[] )
 {
-  typedef itk::CIPExtractChestLabelMapImageFilter        ExtractorType;
+  typedef itk::CIPExtractChestLabelMapImageFilter< 3 >   ExtractorType;
   typedef itk::ImageRegionIterator< cip::LabelMapType >  IteratorType;
 
   std::cout << "Reading label map..." << std::endl;
