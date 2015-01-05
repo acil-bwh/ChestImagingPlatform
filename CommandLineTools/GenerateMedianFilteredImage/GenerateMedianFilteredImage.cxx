@@ -27,39 +27,6 @@ typedef itk::GDCMImageIO                                          ImageIOType;
 typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
 typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
 
-void LowerClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
-{
-  ShortIteratorType iIt( image, image->GetBufferedRegion() );
-
-  iIt.GoToBegin();
-  while ( !iIt.IsAtEnd() )
-    {
-    if ( iIt.Get() < clipValue )
-      {
-      iIt.Set( replacementValue );
-      }
-
-    ++iIt;
-    }
-}
-
-
-void UpperClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
-{
-  ShortIteratorType iIt( image, image->GetBufferedRegion() );
-
-  iIt.GoToBegin();
-  while ( !iIt.IsAtEnd() )
-    {
-    if ( iIt.Get() > clipValue )
-      {
-      iIt.Set( replacementValue );
-      }
-
-    ++iIt;
-    }
-}
-
 
 ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
 {
@@ -116,17 +83,10 @@ int main( int argc, char * argv[] )
 
   typedef itk::MedianImageFilter< ShortImageType, ShortImageType > MedianType;
 
-  short lowerClipValue = lowerClipValues[0];
-  short lowerReplacementValue = lowerClipValues[1];
-  short upperClipValue = upperClipValues[0];
-  short upperReplacementValue = upperClipValues[1];
- 
-  //-------
   // Read the CT image
-  //
   ShortImageType::Pointer ctImage = ShortImageType::New();
 
-  if ( strcmp( ctDir.c_str(), "q") != 0 )
+  if ( strcmp( ctDir.c_str(), "NA") != 0 )
     {
     std::cout << "Reading CT from directory..." << std::endl;
     ctImage = ReadCTFromDirectory( ctDir );
@@ -135,7 +95,7 @@ int main( int argc, char * argv[] )
         return cip::DICOMREADFAILURE;
         }
     }
-  else if ( strcmp( ctFileName.c_str(), "q") != 0 )
+  else if ( strcmp( ctFileName.c_str(), "NA") != 0 )
     {
     std::cout << "Reading CT from file..." << std::endl;
     ctImage = ReadCTFromFile( ctFileName );
@@ -149,12 +109,6 @@ int main( int argc, char * argv[] )
     std::cerr << "ERROR: No CT image specified" << std::endl;
     return cip::EXITFAILURE;
     }
-
-  std::cout << "Clipping low CT image values..." << std::endl;
-  LowerClipImage( ctImage, lowerClipValue, lowerReplacementValue );
-
-  std::cout << "Clipping upper CT image values..." << std::endl;
-  UpperClipImage( ctImage, upperClipValue, upperReplacementValue );
 
   ShortImageType::SizeType medianRadius;
     medianRadius[0] = radiusValue;
@@ -184,6 +138,5 @@ int main( int argc, char * argv[] )
 
   std::cout << "DONE." << std::endl;
 
-  //return cip::EXITSUCCESS;
-  return EXIT_SUCCESS;
+  return cip::EXITSUCCESS;
 }
