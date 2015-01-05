@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
     <category>Chest Imaging Platform.Toolkit.Particles</category>
-    <title>FilterAirwayParticleData</title>
+    <title>PerturbParticles</title>
     <description><![CDATA[This program can used to perturb a particles dataset. This kind of operation can be useful for experimentation purposes. Currently, the program simply translates the particles dataset by a random offset in the x, y, and z directions. The user can control the magnitude of the random offset that is used.]]>
     </description>
     <version>0.0.1</version>

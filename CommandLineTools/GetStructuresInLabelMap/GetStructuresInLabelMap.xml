@@ -12,7 +12,7 @@
   </acknowledgements>
   <parameters>
 
-    <string>
+     <image type="label">
       <name>labelMapFileName</name>
       <label>label Map File Name</label>
       <channel>input</channel>
@@ -20,7 +20,7 @@
       <longflag>--input</longflag>
       <description><![CDATA[Input label map file name.]]></description>
       <default>NA</default>
-    </string>
+    </image>
 
  
 

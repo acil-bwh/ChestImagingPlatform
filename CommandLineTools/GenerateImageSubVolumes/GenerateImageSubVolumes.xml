@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Processing</category>
-  <title>GenerateStenciledLabelMapFromParticles</title>
+  <title>GenerateImageSubVolumes</title>
     <description><![CDATA[This program accepts as input a CT image and a corresponding label map. It produces a collection of subvolumes of the CT image and (optionally) of the label map image. The user specifies the size of the sub-volume to extract and can optionally supply an overlap value (the amount of overlap between sub-volumes). Sub-volumes over a given region of the image will only be extracted provided that there is at least one foreground label map voxel in that region. The user only specifies an output prefix; each of the subvolumes written will have a numerical suffix attached to it.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>

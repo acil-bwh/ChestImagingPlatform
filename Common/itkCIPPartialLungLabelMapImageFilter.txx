@@ -116,7 +116,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       dilater->SetKernel( structuringElement );
       dilater->SetDilateValue( (unsigned char)(cip::AIRWAY) );
       dilater->Update();
-    
+
     // Remove the airways from the output label map
     UCharIteratorType dIt( dilater->GetOutput(), dilater->GetOutput()->GetBufferedRegion() );
 
@@ -142,11 +142,11 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     // of the label map region.
     ConnectedComponent3DType::Pointer connectedComponent = ConnectedComponent3DType::New();
       connectedComponent->SetInput( this->GetOutput() );
-    
+
     Relabel3DType::Pointer relabelComponent = Relabel3DType::New();
       relabelComponent->SetInput( connectedComponent->GetOutput() );
       relabelComponent->Update();
-    
+
     unsigned int totalSize = 0;
     for ( unsigned int i=0; i<relabelComponent->GetNumberOfObjects(); i++ )
       {
@@ -162,7 +162,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
 	    break;
 	  }
       }
-    
+
     ComponentIteratorType rIt( relabelComponent->GetOutput(), relabelComponent->GetOutput()->GetBufferedRegion() );
     oIt.GoToBegin();
     rIt.GoToBegin();
@@ -185,7 +185,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       splitter->SetLeftRightLungSplitRadius( this->m_LeftRightLungSplitRadius );
       splitter->SetLungLabelMap( this->GetOutput() );
       splitter->Update();
-    
+
     LabelMapIteratorType lIt( splitter->GetOutput(), splitter->GetOutput()->GetBufferedRegion() );
     oIt.GoToBegin();
     lIt.GoToBegin();

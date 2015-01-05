@@ -205,7 +205,7 @@ int main( int argc, char *argv[] )
     {
       std::cout << "Reading label map from file..." << std::endl;
 
-      fixedLabelMap  = ReadLabelMapFromFile( fixedImageFileName );
+      fixedLabelMap  = ReadLabelMapFromFile( fixedImageFileName.c_str() );
       if (fixedLabelMap.GetPointer() == NULL)
 	{
 	  return cip::LABELMAPREADFAILURE;
@@ -226,7 +226,7 @@ int main( int argc, char *argv[] )
   if ( strcmp( movingImageFileName.c_str(), "q") != 0 )
     {
       std::cout << "Reading label map from file..." << std::endl;
-      movingLabelMap = ReadLabelMapFromFile( movingImageFileName );
+      movingLabelMap = ReadLabelMapFromFile( movingImageFileName.c_str() );
 
       if (movingLabelMap.GetPointer() == NULL)
 	{
@@ -481,7 +481,7 @@ int main( int argc, char *argv[] )
 
       cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
         writer->SetInput(resample->GetOutput());
-	writer->SetFileName( outputImageFileName );
+	writer->SetFileName( outputImageFileName.c_str() );
 	writer->UseCompressionOn();
       try
 	{

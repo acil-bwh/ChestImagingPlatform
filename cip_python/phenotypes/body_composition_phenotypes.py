@@ -70,6 +70,8 @@ class BodyCompositionPhenotypes(Phenotypes):
     """
     def __init__(self, chest_regions=None, chest_types=None, pairs=None,
                  pheno_names=None):
+        #rola changed len(chest_regions.shape) to len(shape(chest_regions))
+
         if chest_regions is not None:
             if len(chest_regions.shape) != 1:
                 raise ValueError(\
@@ -78,10 +80,12 @@ class BodyCompositionPhenotypes(Phenotypes):
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
         if chest_types is not None:
-            if len(chest_types.shape) != 1:
+            chest_types = map(int, chest_types) #rola
+            print(type(chest_types))
+            if len(np.shape(chest_types)) != 1:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
-            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
+            if np.max(np.array(chest_types)) > 255 or np.min(np.array(chest_types)) < 0:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
         if pairs is not None:

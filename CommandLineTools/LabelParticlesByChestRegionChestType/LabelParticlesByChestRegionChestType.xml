@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Quantification</category>
-  <title>GetTransformationSimilarityMetric</title>
+  <title>LabelParticlesByChestRegionChestType</title>
     <description><![CDATA[This program is used to label particles datasets by chest region and chest type. The user must specify the type of the input particles, but the chest region can either be determined by an input label map or be specified at the command line.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>

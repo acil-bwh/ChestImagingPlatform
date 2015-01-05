@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Processing</category>
-  <title>ResampleLabelMap</title>
+  <title>ResampleCT2D</title>
   <description><![CDATA[This program resamples a label map using an affine transform (read from file)]]></description>
   <version>0.0.1</version>
   <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>

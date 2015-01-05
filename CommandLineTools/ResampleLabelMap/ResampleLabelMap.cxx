@@ -52,8 +52,7 @@
 
 namespace
 {
-  //typedef map <string, Value, less<string>, __gnu_cxx::malloc_allocator<std::string> > type;
-  //typedef std::map<std::string, TDimension> dimension;
+
 
   template <unsigned int TDimension> typename itk::AffineTransform< double, TDimension >::Pointer GetTransformFromFile( std::string fileName )
   {
@@ -74,7 +73,7 @@ namespace
   
     itk::TransformFileReader::TransformListType::const_iterator it;
     it = transformReader->GetTransformList()->begin();
-
+ 
     typename TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() ); 
     return transform;
   }
@@ -140,7 +139,7 @@ namespace
 
     // Read the transform (last transform applied first)
     typename CompositeTransformType::Pointer transform = CompositeTransformType::New();
-    //the_types<dimensions>::CompositeTransformType::Pointer transform = the_types<dimensions>:CompositeTransformType::New();
+
     for ( unsigned int i=0; i<transformFileName.size(); i++ )
       { 
 	// Invert the transformation if specified by command like argument.

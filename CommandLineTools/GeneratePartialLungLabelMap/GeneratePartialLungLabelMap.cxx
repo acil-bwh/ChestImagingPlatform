@@ -119,7 +119,7 @@ int main( int argc, char *argv[] )
   std::cout << "Writing lung mask image..." << std::endl;
   cip::LabelMapWriterType::Pointer maskWriter = cip::LabelMapWriterType::New(); 
     maskWriter->SetInput( partialLungFilter->GetOutput() );
-    maskWriter->SetFileName( outputLungMaskFileName );
+    maskWriter->SetFileName( outputLungMaskFileName.c_str() );
     maskWriter->UseCompressionOn();
   try
     {
@@ -202,7 +202,7 @@ ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
 ShortImageType::Pointer ReadCTFromFile( std::string fileName )
 {
   cip::CTReaderType::Pointer reader = cip::CTReaderType::New();
-    reader->SetFileName( fileName );
+    reader->SetFileName( fileName.c_str() );
   try
     {
     reader->Update();

@@ -67,7 +67,7 @@ int main( int argc, char *argv[] )
   //
   std::cout << "Reading label map..." << std::endl;
   ReaderType::Pointer reader = ReaderType::New();
-    reader->SetFileName( inFileName );
+    reader->SetFileName( inFileName.c_str() );
   try
     {
     reader->Update();

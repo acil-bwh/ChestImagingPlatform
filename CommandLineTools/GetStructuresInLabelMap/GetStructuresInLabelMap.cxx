@@ -24,7 +24,7 @@ int main( int argc, char *argv[] )
 
   std::cout << "Reading label map..." << std::endl;
   cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
-    reader->SetFileName(labelMapFileName);
+    reader->SetFileName(labelMapFileName.c_str());
   try
     {
     reader->Update();

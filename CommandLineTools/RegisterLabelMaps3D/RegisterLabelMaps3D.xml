@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Registration</category>
-  <title>RegisterLabelMaps</title>
+  <title>RegisterLabelMaps3D</title>
   <description><![CDATA[This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.]]></description>
   <version>0.0.1</version>
   <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
@@ -22,7 +22,6 @@
       <description><![CDATA[fixed Image File Name]]></description>
       <default>q</default>
     </image>   
-
     <image>
       <name>movingImageFileName</name>
       <label>moving Image FileName</label>
@@ -32,7 +31,7 @@
       <description><![CDATA[moving Image FileName]]></description>
       <default>q</default>
     </image>   
-    <image>
+    <image type="label">
       <name>outputImageFileName</name>
       <label>output Image FileName</label>
       <channel>output</channel>
@@ -41,7 +40,7 @@
       <description><![CDATA[Output image file name]]></description>
       <default>q</default>
     </image> 
-    <transform>
+    <string>
       <name>outputTransformFileName</name>
       <label>output Transform FileName</label>
       <channel>output</channel>
@@ -49,7 +48,7 @@
       <longflag>outputTransform</longflag>
       <description><![CDATA[Output transform file name]]></description>
       <default>q</default>
-    </transform> 
+    </string> 
     <string> 
       <name>movingImageID</name>
       <label>moving Image subject ID</label>
