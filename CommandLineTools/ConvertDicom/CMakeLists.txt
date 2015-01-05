@@ -18,9 +18,6 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
     --compareCT 
       ${BASELINE_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
     ModuleEntryPoint
       --inputDicomDirectory ${INPUT_DATA_DIR}/ct-64Dicom/
       -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
