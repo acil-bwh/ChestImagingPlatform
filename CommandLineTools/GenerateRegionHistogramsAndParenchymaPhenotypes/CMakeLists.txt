@@ -16,15 +16,15 @@ cipMacroBuildCLI(
     
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+    --compareCSV 
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_parenchymaPhenotypes.csv
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_parenchymaPhenotypes.csv
+    --compareCSV 
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_regionHistogram.csv
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_regionHistogram.csv
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/dummy_ct.nrrd
-      -l ${INPUT_DATA_DIR}/dummy_lm.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      --opl ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+      -c ${INPUT_DATA_DIR}/ct-64.nrrd
+      -p ${INPUT_DATA_DIR}/lm-64.nrrd
+      --op ${OUTPUT_DATA_DIR}/${TEST_NAME}_parenchymaPhenotypes.csv
+      --oh ${OUTPUT_DATA_DIR}/${TEST_NAME}_regionHistogram.csv
 )

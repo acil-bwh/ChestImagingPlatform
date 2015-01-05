@@ -16,16 +16,15 @@ cipMacroBuildCLI(
     
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+    --compareLabelMap 
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/dummy_ct.nrrd
-      -l ${INPUT_DATA_DIR}/dummy_lm.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      --opl ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+      -c ${INPUT_DATA_DIR}/ct-64.nrrd
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
+      --lcv -1200
+      --lrv -1200
+      --ucv 100
+      --urv 100
 )   
  
