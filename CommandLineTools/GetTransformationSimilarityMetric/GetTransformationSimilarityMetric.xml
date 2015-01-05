@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <title>GetTransformationSimilarityMetric</title>
+  <description><![CDATA[This program calculates a similarity measure between 2 CT images in \
+  a region specified by a label map. It takes as input the 2 CT images and their corresponding \
+  label maps, and a transformation file, and appends the values of the similarity metric to an \
+  existing xml file if one is provided.]]></description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+   <image>
+      <name>fixedCTFileName</name>
+      <label>fixed CT FileName</label>
+      <channel>input</channel>
+      <flag>g</flag>
+      <longflag>fixedCTFileName</longflag>
+      <description><![CDATA[fixed CT File Name]]></description>
+      <default>e</default>
+    </image>   
+    <image>
+      <name>movingCTFileName</name>
+      <label>moving CT FileName</label>
+      <channel>input</channel>
+      <flag>a</flag>
+      <longflag>movingCTFileName</longflag>
+      <description><![CDATA[moving CT FileName]]></description>
+      <default>e</default>
+    </image>
+   <string-vector>
+      <name>inputTransformFileName</name>
+      <label>input Transform FileNames</label>
+      <channel>input</channel>
+      <flag>q</flag>
+      <longflag>inputTransform</longflag>
+      <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
+      <default>q</default>
+    </string-vector>    
+    <image type="label">
+      <name>fixedLabelmapFileName</name>
+      <label>fixed LabelMap FileName</label>
+      <channel>input</channel>
+      <flag>f</flag>
+      <longflag>fixedLabelMapFileName</longflag>
+      <description><![CDATA[fixed Image File Name]]></description>
+      <default>q</default>
+    </image> 
+
+   <image type="label">
+      <name>movingLabelmapFileName</name>
+      <label>moving LabelMap FileName</label>
+      <channel>input</channel>
+      <flag>m</flag>
+      <longflag>movingLabelMapFileName</longflag>
+      <description><![CDATA[moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.]]></description>
+      <default>q</default>
+    </image>
+
+    <file fileExtensions=".xml">
+      <name>outputXMLFileName</name>
+      <label>output XML File</label>
+      <channel>output</channel>
+      <flag>e</flag>
+      <longflag>outputXMLFile</longflag>
+      <description><![CDATA[The name of the output xml file. If not specified, no xml file will be output. ]]></description>
+      <default>q</default>
+    </file>
+    </parameters>
+
+    <parameters>
+    <label>Similarity parameters</label>
+    <string>
+      <name>similarityMetric</name>
+      <label>Similarity Metric</label>
+      <channel>input</channel>
+      <flag>v</flag>
+      <longflag>SimilarityMetric</longflag>
+      <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual \
+          information), NMI (for normalized mutual information), and mean squares (msqr), \
+      NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
+      <default>MI</default>
+    </string>
+    <string>
+      <name>movingImageID</name>
+      <label>moving Image subject ID</label>
+      <channel>input</channel>
+      <flag>s</flag>
+      <longflag>movingImageID</longflag>
+      <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be null.]]></description>
+      <default>q</default>
+    </string>   
+    <string>
+      <name>fixedImageID</name>
+      <label>Fixed Image subject ID</label>
+      <channel>input</channel>
+      <flag>u</flag>
+      <longflag>fixedImageID</longflag>
+      <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be null.]]></description>
+      <default>q</default>
+    </string> 
+    <integer-vector>
+      <name>invertTransform</name>
+      <label>Invert Transformations</label>
+      <channel>input</channel>
+      <longflag>invertTransformations</longflag>
+      <description><![CDATA[Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).]]></description>
+    </integer-vector> 
+  </parameters>
+</executable>
