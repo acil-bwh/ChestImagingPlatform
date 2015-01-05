@@ -40,8 +40,8 @@
 namespace itk
 {
 
-class ITK_EXPORT CIPExtractChestLabelMapImageFilter :
-    public ImageToImageFilter< itk::Image<unsigned short, 3>, itk::Image<unsigned short, 3> >
+template <unsigned int TDimension> class ITK_EXPORT CIPExtractChestLabelMapImageFilter :
+    public ImageToImageFilter< itk::Image<unsigned short, TDimension>, itk::Image<unsigned short, TDimension> >
 {
 protected:
   struct REGIONANDTYPE
@@ -52,12 +52,12 @@ protected:
 
 public:
   /** Extract dimension from input and output image. */
-  itkStaticConstMacro( InputImageDimension, unsigned int, 3 );
-  itkStaticConstMacro( OutputImageDimension, unsigned int, 3 );
+  itkStaticConstMacro( InputImageDimension, unsigned int, TDimension );
+  itkStaticConstMacro( OutputImageDimension, unsigned int, TDimension );
 
   /** Convenient typedefs for simplifying declarations. */
-  typedef itk::Image< unsigned short, 3 >   InputImageType;
-  typedef itk::Image< unsigned short, 3 >   OutputImageType;
+  typedef itk::Image< unsigned short, TDimension >   InputImageType;
+  typedef itk::Image< unsigned short, TDimension >   OutputImageType;
 
   /** Standard class typedefs. */
   typedef CIPExtractChestLabelMapImageFilter                     Self;
@@ -113,7 +113,7 @@ public:
 
 protected:
   CIPExtractChestLabelMapImageFilter();
-  virtual ~CIPExtractChestLabelMapImageFilter() {}
+  //virtual ~CIPExtractChestLabelMapImageFilter() {}
 
   void GenerateData();
 
@@ -134,5 +134,7 @@ private:
 };
   
 } // end namespace itk
+
+#include "itkCIPExtractChestLabelMapImageFilter.txx"
 
 #endif
