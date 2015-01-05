@@ -15,7 +15,7 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
-    <image>
+    <image type="label">
       <name>outputLungMaskFileName</name>
       <label>Output segmentation file name</label>
       <channel>output</channel>

@@ -17,7 +17,7 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
 
   <parameters>
 
-    <string>
+    <image type="label">
       <name>inFileName</name>
       <label>Input Filename</label>
       <channel>input</channel>
@@ -25,7 +25,7 @@ spacing value to give the cross sectional areas. Quantities are printed to std o
       <longflag>--inputFile</longflag>
       <description><![CDATA[e]]></description>
       <default>NA</default>
-    </string>
+    </image>
 
     <string>
       <name>outFileName</name>

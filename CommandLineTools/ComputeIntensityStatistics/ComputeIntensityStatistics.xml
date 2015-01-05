@@ -13,7 +13,7 @@
     </acknowledgements>
 
   <parameters>
-    <string>
+    <image type="label">
       <name>labelMapFileName</name>
       <label>Label Map FileName</label>
       <channel>input</channel>
@@ -21,8 +21,8 @@
       <longflag>--labelMapFileName</longflag>
       <description><![CDATA[Input label map file name]]></description>
       <default>NA</default>
-    </string>   
-    <string>
+    </image>   
+    <image>
       <name>ctFileName</name>
       <label>ct File Name</label>
       <channel>input</channel>
@@ -30,7 +30,7 @@
       <longflag>--ctFileName</longflag>
       <description><![CDATA[Input CT file name]]></description>
       <default>NA</default>
-    </string>
+    </image>
     <string>
       <name>outFileName</name>
       <label>output Filename</label>

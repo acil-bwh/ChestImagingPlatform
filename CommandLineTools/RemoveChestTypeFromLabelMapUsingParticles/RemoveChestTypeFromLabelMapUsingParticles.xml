@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Processing</category>
-  <title>GenerateStenciledLabelMapFromParticles</title>
+  <title>RemoveChestTypeFromLabelMapUsingParticles</title>
     <description><![CDATA[This program ...]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>

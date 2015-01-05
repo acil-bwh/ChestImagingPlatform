@@ -38,7 +38,7 @@
     </integer-vector>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-    <string>
+    <image>
       <name>ctFileName</name>
       <label>Input Filename</label>
       <channel>input</channel>
@@ -46,8 +46,8 @@
       <longflag>--inputFile</longflag>
       <description><![CDATA[Input CT file name]]></description>
       <default>q</default>
-    </string>
-    <string>
+    </image>
+    <image>
       <name>outputFileName</name>
       <label>Output File</label>
       <flag>o</flag>
@@ -55,7 +55,7 @@
       <channel>output</channel>
       <description><![CDATA[Output CT file name]]></description>
       <default>q</default>
-    </string>
+    </image>
     <directory>
       <name>ctDir</name>
       <flag>d</flag>

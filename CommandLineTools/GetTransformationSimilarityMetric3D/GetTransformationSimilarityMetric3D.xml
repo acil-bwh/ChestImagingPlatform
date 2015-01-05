@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Quantification</category>
-  <title>GetTransformationSimilarityMetric</title>
+  <title>GetTransformationSimilarityMetric3D</title>
   <description><![CDATA[This program calculates a similarity measure between 2 CT images in \
   a region specified by a label map. It takes as input the 2 CT images and their corresponding \
   label maps, and a transformation file, and appends the values of the similarity metric to an \
