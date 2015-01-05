@@ -66,32 +66,7 @@ namespace
 {
 #define MY_ENCODING "ISO-8859-1"
 
-  //images
-typedef itk::Image< unsigned short, 2 >       LabelMapType2D;
-typedef itk::ImageFileReader< LabelMapType2D >  LabelMapReaderType2D;
-typedef itk::Image< short, 2 >                ShortImageType;
-typedef itk::ImageFileReader< ShortImageType > ShortReaderType;
-typedef itk::ImageFileReader< ShortImageType >                                                            CTFileReaderType;
-typedef itk::ImageFileWriter< ShortImageType >  ShortWriterType2D;
 
-  //registration
-typedef itk::RegularStepGradientDescentOptimizer                                                       OptimizerType;
-typedef itk::ImageRegistrationMethod< ShortImageType, ShortImageType >                                 RegistrationType;
-typedef itk::LinearInterpolateImageFunction< ShortImageType, double >                         InterpolatorType;
-typedef itk::AffineTransform<double, 2 >                                                               TransformType;
-typedef itk::CenteredTransformInitializer< TransformType, ShortImageType, ShortImageType >             InitializerType;
-typedef OptimizerType::ScalesType                                                                      OptimizerScalesType;
-typedef itk::IdentityTransform< double, 2 >                                                            IdentityType;
-typedef itk::CompositeTransform< double, 2 > CompositeTransformType;
-typedef itk::TranslationTransform< double, 2 >  TranslationTransformType;
-typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >           ResampleType;
-
-  //similarity metrics
-typedef itk::MutualInformationImageToImageMetric<ShortImageType, ShortImageType >                      MIMetricType;
-typedef itk::NormalizedMutualInformationHistogramImageToImageMetric< ShortImageType, ShortImageType >  NMIMetricType;
-typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >                         msqrMetricType;
-typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  >                 ncMetricType;
-typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
 
 
 
@@ -117,9 +92,11 @@ struct REGIONTYPEPAIR
     std::string extention;
   };
 
- //Reads a .tfm file and returns an itkTransform
-  TransformType::Pointer GetTransformFromFile( std::string fileName )
+  template <unsigned int TDimension> typename itk::AffineTransform< double, TDimension >::Pointer GetTransformFromFile( std::string fileName )
   {
+
+    typedef itk::AffineTransform< double, TDimension >  TransformType;
+
     itk::TransformFileReader::Pointer transformReader = itk::TransformFileReader::New();
     transformReader->SetFileName( fileName );
     try
@@ -131,19 +108,20 @@ struct REGIONTYPEPAIR
 	std::cerr << "Exception caught reading transform:";
 	std::cerr << excp << std::endl;
       }
-        
+  
     itk::TransformFileReader::TransformListType::const_iterator it;
-        
     it = transformReader->GetTransformList()->begin();
-        
-    TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() );
-        
+ 
+    typename TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() ); 
     return transform;
   }
     
-  LabelMapType2D::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
+  template <unsigned int TDimension> typename itk::Image< unsigned short, TDimension >::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
   {
-    LabelMapReaderType2D::Pointer reader = LabelMapReaderType2D::New(); 
+    typedef itk::Image< unsigned short, TDimension >       LabelMapType;
+    typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
+
+    typename LabelMapReaderType::Pointer reader = LabelMapReaderType::New(); 
     reader->SetFileName( labelMapFileName );
     try
       {
@@ -159,9 +137,11 @@ struct REGIONTYPEPAIR
   }
 
 
-  ShortImageType::Pointer ReadCTFromFile( std::string fileName )
+   template <unsigned int TDimension> typename itk::Image< short, TDimension >::Pointer ReadCTFromFile( std::string fileName )
   {
-    ShortReaderType::Pointer reader = ShortReaderType::New();
+    typedef itk::Image< short, TDimension >                                         ShortImageType;
+    typedef itk::ImageFileReader< ShortImageType >                                  ShortReaderType;
+    typename ShortReaderType::Pointer reader = ShortReaderType::New();
     reader->SetFileName( fileName );
     try
       {
@@ -173,7 +153,7 @@ struct REGIONTYPEPAIR
 	std::cerr << excp << std::endl;
 	return NULL;
       }
-
+        
     return reader->GetOutput();
   }
 
@@ -232,7 +212,7 @@ struct REGIONTYPEPAIR
 
 } //end namespace
 
-int main( int argc, char *argv[] )
+template <unsigned int TDimension>  int DoIT(int argc, char * argv[])
 {
    std::vector< unsigned char >  regionVec;
    std::vector< unsigned char >  typeVec;
@@ -241,6 +221,35 @@ int main( int argc, char *argv[] )
    const char* similarity_type;
   
   PARSE_ARGS;
+
+  //images
+typedef itk::Image< unsigned short, TDimension >       LabelMapType;
+typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
+typedef itk::Image< short, TDimension>                ShortImageType;
+typedef itk::ImageFileReader< ShortImageType > ShortReaderType;
+typedef itk::ImageFileReader< ShortImageType >                                                            CTFileReaderType;
+typedef itk::ImageFileWriter< ShortImageType >  ShortWriterType;
+
+  //registration
+typedef itk::RegularStepGradientDescentOptimizer                                                       OptimizerType;
+typedef itk::ImageRegistrationMethod< ShortImageType, ShortImageType >                                 RegistrationType;
+typedef itk::LinearInterpolateImageFunction< ShortImageType, double >                         InterpolatorType;
+typedef itk::AffineTransform<double, TDimension >                                                               TransformType;
+typedef itk::CenteredTransformInitializer< TransformType, ShortImageType, ShortImageType >             InitializerType;
+typedef OptimizerType::ScalesType                                                                      OptimizerScalesType;
+typedef itk::IdentityTransform< double, TDimension >                                                            IdentityType;
+typedef itk::CompositeTransform< double, TDimension > CompositeTransformType;
+typedef itk::TranslationTransform< double, TDimension >  TranslationTransformType;
+typedef itk::ResampleImageFilter< ShortImageType,ShortImageType >           ResampleType;
+
+  //similarity metrics
+typedef itk::MutualInformationImageToImageMetric<ShortImageType, ShortImageType >                      MIMetricType;
+typedef itk::NormalizedMutualInformationHistogramImageToImageMetric< ShortImageType, ShortImageType >  NMIMetricType;
+typedef itk::MeanSquaresImageToImageMetric<  ShortImageType, ShortImageType  >                         msqrMetricType;
+typedef itk::NormalizedCorrelationImageToImageMetric<ShortImageType, ShortImageType  >                 ncMetricType;
+typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType  >                  gdMetricType;
+
+
 
   //fill out the isInvertTransform vector
   bool *isInvertTransform = new bool[inputTransformFileName.size()];
@@ -254,29 +263,29 @@ int main( int argc, char *argv[] )
     }  
    
     //Read the CT images
-  ShortImageType::Pointer ctFixedImage = ShortImageType::New();
-  ctFixedImage = ReadCTFromFile( fixedCTFileName );
+  typename ShortImageType::Pointer ctFixedImage = ShortImageType::New();
+  ctFixedImage = ReadCTFromFile<TDimension>( fixedCTFileName );
   if (ctFixedImage.GetPointer() == NULL)
       {
         return cip::NRRDREADFAILURE;
       }
 
-  ShortImageType::Pointer ctMovingImage = ShortImageType::New();
-  ctMovingImage = ReadCTFromFile( movingCTFileName);
+  typename ShortImageType::Pointer ctMovingImage = ShortImageType::New();
+  ctMovingImage = ReadCTFromFile<TDimension>( movingCTFileName);
   if (ctMovingImage.GetPointer() == NULL)
       {
         return cip::NRRDREADFAILURE;
       }
 
   //Set mask  object
-  typedef itk::ImageMaskSpatialObject< 2 >   MaskType;
-  MaskType::Pointer  fixedSpatialObjectMask = MaskType::New();
-  MaskType::Pointer  movingSpatialObjectMask = MaskType::New();
+  typedef itk::ImageMaskSpatialObject< TDimension >   MaskType;
+  typename  MaskType::Pointer  fixedSpatialObjectMask = MaskType::New();
+  typename MaskType::Pointer  movingSpatialObjectMask = MaskType::New();
 
-  typedef itk::Image< unsigned char, 2 >   ImageMaskType;
+  typedef itk::Image< unsigned char, TDimension >   ImageMaskType;
   typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
-  MaskReaderType::Pointer  fixedMaskReader = MaskReaderType::New();
-  MaskReaderType::Pointer  movingMaskReader = MaskReaderType::New();
+  typename MaskReaderType::Pointer  fixedMaskReader = MaskReaderType::New();
+  typename MaskReaderType::Pointer  movingMaskReader = MaskReaderType::New();
   
  if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
@@ -322,18 +331,18 @@ int main( int argc, char *argv[] )
   //parse transform arg  and join transforms together
   
    //last transform applied first, so make last transform
-  TransformType::Pointer transformTemp = TransformType::New();
-  TransformType::Pointer transformTempInv = TransformType::New();
+  typename TransformType::Pointer transformTemp = TransformType::New();
+  typename TransformType::Pointer transformTempInv = TransformType::New();
 
-  CompositeTransformType::Pointer test_inverse_transform = CompositeTransformType::New();
-  CompositeTransformType::Pointer transform = CompositeTransformType::New();
+  typename CompositeTransformType::Pointer test_inverse_transform = CompositeTransformType::New();
+  typename CompositeTransformType::Pointer transform = CompositeTransformType::New();
    transform->SetAllTransformsToOptimizeOn();
 if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
     {
   for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
      
-      transformTemp = GetTransformFromFile(inputTransformFileName[i] );
+      transformTemp = GetTransformFromFile<TDimension>(inputTransformFileName[i] );
       // Invert the transformation if specified by command like argument. Only inverting the first transformation
       if(isInvertTransform[i] == true)
         {
@@ -357,16 +366,16 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
      transformTemp->SetIdentity();
      transform->AddTransform(transformTemp);
    }
-  CompositeTransformType::Pointer transform_forsim = CompositeTransformType::New();
-  TransformType::Pointer id_transform = TransformType::New();
+  typename CompositeTransformType::Pointer transform_forsim = CompositeTransformType::New();
+  typename TransformType::Pointer id_transform = TransformType::New();
   id_transform->SetIdentity();
   transform_forsim->AddTransform(id_transform);
   transform_forsim->SetAllTransformsToOptimizeOn();
 
-  InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
   double similarityValue;
 
-  ResampleType::Pointer resampler = ResampleType::New();
+  typename ResampleType::Pointer resampler = ResampleType::New();
     resampler->SetTransform( transform );
     resampler->SetInterpolator( interpolator );
     resampler->SetInput( ctMovingImage);
@@ -386,8 +395,8 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
     return cip::RESAMPLEFAILURE;
     }
 
-ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
-  writer->SetFileName("/Users/rolaharmouche/Documents/Data/test_resampled.nrrd");
+  typename ShortWriterType::Pointer writer = ShortWriterType::New();
+  /*  writer->SetFileName("/Users/rolaharmouche/Documents/Data/test_resampled.nrrd");
     writer->UseCompressionOn();
     writer->SetInput( resampler->GetOutput() );
   try
@@ -403,10 +412,11 @@ ShortWriterType2D::Pointer writer = ShortWriterType2D::New();
     }
 
 std::cout<<"wrote"<<std::endl;
-  //initialize metric 
-  if (similarityMetric =="nc")
+//initialize metric 
+*/ 
+ if (similarityMetric =="nc")
       {
-         ncMetricType::Pointer metric = ncMetricType::New();
+         typename ncMetricType::Pointer metric = ncMetricType::New();
 	 transform_forsim->SetAllTransformsToOptimizeOn();
 	 metric->SetInterpolator( interpolator );
 	 metric->SetTransform(transform_forsim);
@@ -418,12 +428,12 @@ std::cout<<"wrote"<<std::endl;
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
 
-	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
 	 metric->SetFixedImageRegion(fixedRegion);
 	 metric->Initialize();
 	 
 
-	 ncMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+	 typename ncMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
 	 zero_params = transform_forsim->GetParameters();
 
 	 similarityValue = metric->GetValue(zero_params );
@@ -433,8 +443,8 @@ std::cout<<"wrote"<<std::endl;
       }
   else if (similarityMetric =="NMI")
     {
-      NMIMetricType::Pointer metric = NMIMetricType::New();
-      NMIMetricType::HistogramType::SizeType histogramSize;
+      typename NMIMetricType::Pointer metric = NMIMetricType::New();
+      typename NMIMetricType::HistogramType::SizeType histogramSize;
       histogramSize.SetSize(2);
       histogramSize[0] = 20;
       histogramSize[1] = 20;
@@ -450,11 +460,11 @@ std::cout<<"wrote"<<std::endl;
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetFixedImageMask( fixedSpatialObjectMask );  
       
-      ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+      typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
       metric->SetFixedImageRegion(fixedRegion);
       metric->Initialize();
       
-      msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+      typename  msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
       zero_params = transform_forsim->GetParameters();
       
       similarityValue = metric->GetValue(zero_params );
@@ -466,7 +476,7 @@ std::cout<<"wrote"<<std::endl;
     else if (similarityMetric =="msqr")
       {
 
-	msqrMetricType::Pointer metric = msqrMetricType::New();
+	typename msqrMetricType::Pointer metric = msqrMetricType::New();
 
 	 transform_forsim->SetAllTransformsToOptimizeOn();
 	 metric->SetInterpolator( interpolator );
@@ -479,11 +489,11 @@ std::cout<<"wrote"<<std::endl;
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
 
-	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
 	 metric->SetFixedImageRegion(fixedRegion);
 	 metric->Initialize();
 
-	 msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+	 typename msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
 	 zero_params = transform_forsim->GetParameters();
 
 	 similarityValue = metric->GetValue(zero_params );
@@ -496,7 +506,7 @@ std::cout<<"wrote"<<std::endl;
     else if (similarityMetric =="gd")
       {
 
-	 gdMetricType::Pointer metric = gdMetricType::New();
+	 typename gdMetricType::Pointer metric = gdMetricType::New();
 
 	 transform->SetAllTransformsToOptimizeOn();
 	 metric->SetInterpolator( interpolator );
@@ -509,11 +519,11 @@ std::cout<<"wrote"<<std::endl;
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
 
-	 ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+	 typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
 	 metric->SetFixedImageRegion(fixedRegion);
 	 metric->Initialize();
 
-	 gdMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+	 typename gdMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
 	 zero_params = transform_forsim->GetParameters();
 
 	 similarityValue = metric->GetValue(zero_params );
@@ -524,7 +534,7 @@ std::cout<<"wrote"<<std::endl;
    else //MI is default
      {
 
-      MIMetricType::Pointer metric = MIMetricType::New();
+      typename MIMetricType::Pointer metric = MIMetricType::New();
       transform_forsim->SetAllTransformsToOptimizeOn();
 
       metric->SetFixedImageStandardDeviation( 13.5 );
@@ -540,11 +550,11 @@ std::cout<<"wrote"<<std::endl;
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetFixedImageMask( fixedSpatialObjectMask );  
 
-      ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
+      typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
       metric->SetFixedImageRegion(fixedRegion);
       metric->Initialize();      
            
-      MIMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
+      typename MIMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
       zero_params = transform_forsim->GetParameters();
      
       similarityValue = metric->GetValue(zero_params );
@@ -632,4 +642,31 @@ std::cout<<"wrote"<<std::endl;
  
   return 0;
 
+}
+
+
+int main( int argc, char *argv[] )
+{
+
+  PARSE_ARGS;
+
+   switch(dimension)
+     {
+     case 2:
+       {
+   	DoIT<2>( argc, argv);
+   	break;
+       }
+     case 3:
+       {
+   	DoIT<3>( argc, argv);
+   	break;
+       }
+     default:
+       {
+   	std::cerr << "Bad dimensions:";
+   	return cip::EXITFAILURE;
+       }
+     }
+  return cip::EXITSUCCESS;
 }

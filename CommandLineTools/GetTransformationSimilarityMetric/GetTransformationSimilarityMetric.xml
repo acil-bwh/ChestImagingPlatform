@@ -111,5 +111,14 @@
       <longflag>invertTransformations</longflag>
       <description><![CDATA[Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).]]></description>
     </integer-vector> 
+
+  <integer>
+      <name>dimension</name>
+      <label>Image dimension</label>
+      <channel>input</channel>
+      <longflag>dimension</longflag>
+      <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
+     <default>3</default>
+ </integer> 
   </parameters>
 </executable>
