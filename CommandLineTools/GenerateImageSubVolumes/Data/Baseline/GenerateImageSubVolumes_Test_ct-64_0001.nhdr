@@ -1,0 +1,13 @@
+NRRD0004
+# Complete NRRD file format specification at:
+# http://teem.sourceforge.net/nrrd/format.html
+type: short
+dimension: 3
+space: left-posterior-superior
+sizes: 50 50 47
+space directions: (4.1718719999999996,0,0) (0,4.1718719999999996,0) (0,0,3.9873417721518987)
+kinds: domain domain domain
+endian: little
+encoding: gzip
+space origin: (-128.41380599999999,-264.41380599999997,-232.66139240506328)
+data file: GenerateImageSubVolumes_Test_ct-64_0001.raw.gz
