@@ -336,8 +336,9 @@ void WriteSubVolume( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer la
       
       std::cout << "---Writing CT sub-volume..." << std::endl;
       cip::CTWriterType::Pointer ctWriter = cip::CTWriterType::New();
-        ctWriter->SetFileName( ctFileName );
-	ctWriter->SetInput( ctExtractor->GetOutput() );
+      ctWriter->SetFileName( ctFileName );
+	    ctWriter->SetInput( ctExtractor->GetOutput() );
+      ctWriter->UseCompressionOn();
       try
 	{
 	ctWriter->Update();
