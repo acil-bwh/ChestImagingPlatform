@@ -12,17 +12,22 @@ cipMacroBuildCLI(
     SRCS ${MODULE_SRCS}
     )
 
-SET (TEST_NAME ${MODULE_NAME}_Test)
+SET (TEST_NAME ${MODULE_NAME}_Test_vtk)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+    --compareVTKPolyData
+      ${BASELINE_DATA_DIR}/${TEST_NAME}.vtk
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}.vtk
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/dummy_ct.nrrd
-      -l ${INPUT_DATA_DIR}/dummy_lm.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      --opl ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+      -i ${INPUT_DATA_DIR}/case_airwayRegionAndTypesPoints.csv
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}.vtk
+)
+
+SET (TEST_NAME ${MODULE_NAME}_Test_csv)
+CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+    --compareCSV
+      ${BASELINE_DATA_DIR}/${TEST_NAME}.csv
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}.csv
+    ModuleEntryPoint
+      -i ${INPUT_DATA_DIR}/case_airwayRegionAndTypesPoints.vtk
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}.csv
 )

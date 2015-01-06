@@ -5,23 +5,25 @@ PROJECT( RemoveParticlesFromParticlesDataSet )
 SET ( MODULE_NAME RemoveParticlesFromParticlesDataSet )
 SET ( MODULE_SRCS RemoveParticlesFromParticlesDataSet.cxx )
 
-FIND_PACKAGE ( SlicerExecutionModel REQUIRED )
-INCLUDE ( ${SlicerExecutionModel_USE_FILE} )
-
-FIND_PACKAGE( CIP REQUIRED )
-
 SET ( MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
   )
 
 
-SEMMacroBuildCLI (
-  NAME ${MODULE_NAME}
-  TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
-  INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
-  ADDITIONAL_SRCS ${MODULE_SRCS}
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-  EXECUTABLE_ONLY
-  )
-
-
+cipMacroBuildCLI(
+    NAME ${MODULE_NAME}
+    ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+    ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+    SRCS ${MODULE_SRCS}
+    )
+    
+SET (TEST_NAME ${MODULE_NAME}_Test)
+CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+    --compareVTKPolyData 
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
+    ModuleEntryPoint
+      -i ${INPUT_DATA_DIR}/airway_particles.vtk
+      -r ${INPUT_DATA_DIR}/airway_particles.vtk
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
+)

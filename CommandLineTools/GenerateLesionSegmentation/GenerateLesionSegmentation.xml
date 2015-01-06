@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Segmentation</category>
+  <title>Lesion Segmentation</title>
+  <description><![CDATA[This program segmenta a nodular lesion for quantiative assesment]]>
+  </description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>inputImage</name>
+      <label>Input image</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>in</longflag>
+      <description><![CDATA[Input CT image]]></description>
+      <default>NA</default>
+    </image>  
+
+    <image>
+      <name>outputLevelSet</name>
+      <label>Output level set</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description><![CDATA[Output level set of the segmented nodule. The nodule boundary is set at the -0.5 level]]></description>
+      <default>NA</default>
+    </image>
+    </parameters>
+  
+    <parameters>
+    <label>Lesion ROI</label>
+    <description><![CDATA[Seeds on nodule]]></description>
+    <point multiple="true" coordinateSystem="lps">
+      <name>seedsFiducials</name>
+      <label>Seed Points</label>
+      <longflag>seeds</longflag>
+      <description><![CDATA[Seed points on module (LPS coordinates)]]></description>
+      <default>0,0,0</default>
+    </point>
+    <float>
+      <name>maximumRadius</name>
+      <label>Maximum Radius</label>
+      <longflag>maximumRadius</longflag>
+      <description><![CDATA[Maximum radius of the lesion in mm. This can be used as an alternate way of specifiying the bounds.]]></description>
+      <default>30.0</default>
+    </float>
+    
+    <double-vector>
+      <name>roi</name>
+      <label>Region of Interes</label>
+      <longflag>ROI</longflag>
+      <description><![CDATA[Bounds of the ROI if any: 6 parameters in LPS coordinates]]></description>
+      <default>0,0,0,0,0,0</default>
+    </double-vector>
+        
+    <boolean>
+      <name>outputROI</name>
+      <label>Output ROI</label>
+      <default>false</default>
+    </boolean>
+    <image>
+      <name>roiImage</name>
+      <label>ROI Image</label>
+      <channel>output</channel>
+    </image>
+        
+    </parameters>
+      
+    <parameters>
+    <label> Segmentation Options</label>
+    <float-vector>
+      <name>sigma</name>
+      <label>Sigma</label>
+      <longflag>sigma</longflag>
+      <description><![CDATA[Manually specify sigma. This is an array with 3 values in physical units. This defaults to the maximumsspacing in the dataset, if unspecified]]></description>
+      <default>0,0,0</default>
+    </float-vector>
+    
+      <boolean>
+        <name>partSolid</name>
+        <label>Part Solid</label>
+        <longflag>partSolid</longflag>
+        <description><![CDATA[Specify whether the lesion is part-solid. Default solid lesion.]]></description>
+        <default>false</default>
+      </boolean>
+    </parameters>
+
+</executable>
