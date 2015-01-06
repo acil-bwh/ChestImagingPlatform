@@ -34,7 +34,7 @@
     <image type="label">
       <name>resampledFileName</name>
       <label>resampled Filename</label>
-      <channel>outpout</channel>
+      <channel>output</channel>
       <flag>r</flag>
       <longflag>--resampledFile</longflag>
       <description><![CDATA[Resampled label map (output) file name]]></description>

@@ -357,6 +357,7 @@ if __name__ == "__main__":
     modules_list.sort()
     #Remove empty entries
     modules_list.remove('')
+    modules_list.remove('Testing')
   
     print 'Number of modules founds ' + str(len(modules_list))
 
