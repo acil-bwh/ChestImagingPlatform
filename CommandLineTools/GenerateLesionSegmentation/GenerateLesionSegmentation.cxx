@@ -9,8 +9,6 @@
 // This needs to come after the other includes to prevent the global definitions
 // of PixelType to be shadowed by other declarations.
 #include "itkLesionSegmentationImageFilter8.h"
-//#include "itkLesionSegmentationCommandLineProgressReporter.h"
-#include "itkPluginFilterWatcher.h"
 
 
 #include <GenerateLesionSegmentationCLP.h>
