@@ -153,10 +153,12 @@ set( CIP_INCLUDE_DIRECTORIES
   "${CIP_SOURCE_DIR}/Common"
   "${CIP_SOURCE_DIR}/Utilities/ITK"
   "${CIP_SOURCE_DIR}/Utilities/VTK"
+  "${CIP_SOURCE_DIR}/Utilities/LesionSizingToolkit"
   "${CIP_SOURCE_DIR}/IO"
   "${CMAKE_BINARY_DIR}/Common"
   "${CMAKE_BINARY_DIR}/Utilities/VTK"
   "${CMAKE_BINARY_DIR}/Utilities/ITK"
+  "${CMAKE_BINARY_DIR}/Utilities/LesionSizingToolkit"
   "${CMAKE_BINARY_DIR}/IO"
 )
 
