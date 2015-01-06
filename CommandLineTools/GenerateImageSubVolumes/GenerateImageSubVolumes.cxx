@@ -86,69 +86,15 @@ void WriteSubVolume( cip::CTType::Pointer, cip::LabelMapType::Pointer, cip::CTTy
 
 int main( int argc, char *argv[] )
 {
-    PARSE_ARGS;
-  //
-  // Definiton of command line argument variables
-  //
-  //std::string   ctFileName                       = "NA";
-  //std::string   labelMapFileName                 = "NA";
-  //std::string   ctSubVolumeFileNamePrefix        = "NA";
-  //std::string   labelMapSubVolumeFileNamePrefix  = "NA";
-  //bool          writeLabelMapSubVolumes          = false;
-    unsigned int  roiLength                        = (unsigned int) roiLengthInt; //31;
-    unsigned int  overlap                          = (unsigned int) overlapInt;
+  PARSE_ARGS;
 
-  //
-  // Descriptions on inputs for user help
-  //
-
-  //std::string ctFileNameDesc = "";
- // std::string ctSubVolumeFileNamePrefixDesc = "CT sub-volume file name prefix. Each sub-volume extracted \
-    //will be written to file. The file name used will be this prefix plus a numerical identifier followed by the \
-    .//nhdr file extension.";
- // std::string labelMapSubVolumeFileNamePrefixDesc = "";
-//  std::string writeLabelMapSubVolumesDesc = "Boolean flag to indicate whether label map sub-volumes should be \
-      //written in addition to the CT sub-volumes";
- // std::string roiLengthDesc = "Length in voxels of sub-volume edge to extract";
-//  std::string overlapDesc = "Length in voxels of overlap between sub-volume regions";
-
-  //
-  // Parse the input arguments
-  //
-/*  try
-    {
-    TCLAP::CmdLine cl( programDescription,  ' ', "$Revision: 383 $" );
-      
-    //TCLAP::ValueArg<std::string>   ctFileNameArg ( "c", "ct", ctFileNameDesc, true, ctFileName,"string", cl );
-    //TCLAP::ValueArg<std::string>   labelMapFileNameArg ( "l", "lm", labelMapFileNameDesc, true, labelMapFileName,"string", cl );
-    //TCLAP::ValueArg<std::string>   ctSubVolumeFileNamePrefixArg ( "", "ctPre", ctSubVolumeFileNamePrefixDesc, true, ctSubVolumeFileNamePrefix, "string", cl );
-   // TCLAP::ValueArg<std::string>   labelMapSubVolumeFileNamePrefixArg ( "", "lmPre", labelMapSubVolumeFileNamePrefixDesc, false, labelMapSubVolumeFileNamePrefix, "string", cl );
-   // TCLAP::ValueArg<unsigned int>  roiLengthArg ( "r", "roi", roiLengthDesc, false, roiLength, "unsigned int", cl );
-   // TCLAP::ValueArg<unsigned int>  overlapArg ( "o", "overlap", overlapDesc, false, overlap, "unsigned int", cl );
-   // TCLAP::SwitchArg               writeLabelMapSubVolumesArg( "", "wls", writeLabelMapSubVolumesDesc, cl, false );
-
-    cl.parse( argc, argv );
-    
-    ctFileName                       = ctFileNameArg.getValue();
-    labelMapFileName                 = labelMapFileNameArg.getValue();
-    ctSubVolumeFileNamePrefix        = ctSubVolumeFileNamePrefixArg.getValue();
-    labelMapSubVolumeFileNamePrefix  = labelMapSubVolumeFileNamePrefixArg.getValue();
-    writeLabelMapSubVolumes          = writeLabelMapSubVolumesArg.getValue();
-    roiLength                        = roiLengthArg.getValue();
-    overlap                          = overlapArg.getValue();
-    }
-  catch ( TCLAP::ArgException excp )
-    {
-      std::cerr << "Error: " << excp.error() << " for argument " << excp.argId() << std::endl;
-      return cip::ARGUMENTPARSINGERROR;
-    }   
-*/
-  //
+  unsigned int  roiLength  = (unsigned int) roiLengthInt; 
+  unsigned int  overlap    = (unsigned int) overlapInt;
+  
   // Read the CT image
-  //
   std::cout << "Reading CT from file..." << std::endl;
   cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
-  ctReader->SetFileName( ctFileName );
+    ctReader->SetFileName( ctFileName );
   try
     {
     ctReader->Update();
@@ -161,9 +107,7 @@ int main( int argc, char *argv[] )
     return cip::NRRDREADFAILURE;
     }
 
-  //
   // Read the label map (if required)
-  // 
   std::cout << "Reading label map image..." << std::endl;
   cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
     labelMapReader->SetFileName( labelMapFileName );
@@ -179,11 +123,11 @@ int main( int argc, char *argv[] )
     return cip::LABELMAPREADFAILURE;
     }
 
-  //
+  cip::CTType::SizeType size = ctReader->GetOutput()->GetBufferedRegion().GetSize();
+
   // Now iterate over the label map image to determine
   // the bounding box. Anything in the foreground will
   // be considered for computing the bounding box
-  //
   unsigned int xMax = 0;
   unsigned int yMax = 0;
   unsigned int zMax = 0;
@@ -228,26 +172,24 @@ int main( int argc, char *argv[] )
       ++lIt;
     }
 
-  //
   // Now we're ready to extract the sub-volumes
-  //
   cip::CTType::SizeType roiSize;
     roiSize[0] = roiLength;
     roiSize[1] = roiLength;
     roiSize[2] = roiLength;
 
   cip::CTType::RegionType roiRegion;
-    roiRegion.SetSize( roiSize );
-
   cip::CTType::RegionType::IndexType roiStart;
 
   int radius = (roiLength-1)/2;
 
   unsigned int fileNameIncrement = 0;
 
-  int i,j,k;
+  int i, j, k;
   for ( int x=xMin; x<=xMax; x=x+roiSize[0]-overlap )
     {
+      roiRegion.SetSize( roiSize );
+
       if ( x-radius >= 0 )
   	{
   	  roiStart[0] = x-radius;
@@ -279,19 +221,45 @@ int main( int argc, char *argv[] )
   		  roiStart[2] = 0;
   		}
   	      roiRegion.SetIndex( roiStart );
-  	      std::cout << "Considering sub-volume..." << std::endl;
+
+	      cip::CTType::SizeType tmpSize;
+
+	      if ( roiStart[0] + roiSize[0] > size[0] )
+		{
+		  tmpSize[0] = size[0] - roiStart[0];
+		}
+	      else
+		{
+		  tmpSize[0] = roiSize[0];
+		}
+	      if ( roiStart[1] + roiSize[1] > size[1] )
+		{
+		  tmpSize[1] = size[1] - roiStart[1];
+		}
+	      else
+		{
+		  tmpSize[1] = roiSize[1];
+		}
+	      if ( roiStart[2] + roiSize[2] > size[2] )
+		{
+		  tmpSize[2] = size[2] - roiStart[2];
+		}
+	      else
+		{
+		  tmpSize[2] = roiSize[2];
+		}
+	      
+	      roiRegion.SetSize( tmpSize );       
   	      WriteSubVolume( ctReader->GetOutput(), labelMapReader->GetOutput(), roiRegion, ctSubVolumeFileNamePrefix,
   			      labelMapSubVolumeFileNamePrefix, writeLabelMapSubVolumes, &fileNameIncrement );
   	    }
   	}
     }
-
   
-  std::cout<< "DONE." << std::endl;
+  std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
 }
-
 
 void WriteSubVolume( cip::CTType::Pointer ctImage, cip::LabelMapType::Pointer labelMap, cip::CTType::RegionType roiRegion, 
 		     std::string ctSubVolumeFileNamePrefix, std::string labelMapSubVolumeFileNamePrefix,
