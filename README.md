@@ -22,6 +22,11 @@ Python Dependencies
 * cython
 * nose
 
+Information for Users
+==========================
+
+We are happy to receive questions, comments, bug reports, etc. Please post any questions to _chestimagingplatform-users@googlegroups.com_
+
 Information for Developers
 ==========================
 
