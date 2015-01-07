@@ -401,8 +401,7 @@ will be retained in the output";
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
         writer->SetFileName( genParticlesFileName.c_str() );
-  	writer->SetInput( filter->GetOutput() );
-  	//writer->SetFileTypeToASCII();
+  	writer->SetInputData( filter->GetOutput() );
   	writer->Write();  
     }
   else if ( prune )
@@ -422,8 +421,7 @@ will be retained in the output";
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
         writer->SetFileName( genParticlesFileName.c_str() );
-      	writer->SetInput( outParticles );
-      	//writer->SetFileTypeToASCII();
+      	writer->SetInputData( outParticles );
       	writer->Write();  
     }
 
