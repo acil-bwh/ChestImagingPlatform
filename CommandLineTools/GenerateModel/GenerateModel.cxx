@@ -45,10 +45,10 @@
  */
 
 #include "cipChestConventions.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkVTKImageExport.h"
-#include "itkImageRegionIterator.h"
+// #include "itkImage.h"
+// #include "itkImageFileReader.h"
+// #include "itkVTKImageExport.h"
+// #include "itkImageRegionIterator.h"
 #include "vtkImageData.h"
 #include "vtkPolyDataNormals.h"
 #include "vtkDecimatePro.h"
@@ -59,112 +59,118 @@
 #include "vtkImageImport.h"
 #include "vtkSmartPointer.h"
 #include "GenerateModelCLP.h"
+//#include "itkImageToVTKImageFilter.h"
+#include "vtkNRRDReader.h"
 
-namespace
-{
-   typedef itk::Image< unsigned short, 3 >        ImageType;
-   typedef itk::ImageFileReader< ImageType >      ReaderType;
-   typedef itk::VTKImageExport< ImageType >       ExportType;
-   typedef itk::ImageRegionIterator< ImageType >  IteratorType;
+// namespace
+// {
+//    // typedef itk::Image< unsigned short, 3 >         ImageType;
+//    // typedef itk::ImageFileReader< ImageType >       ReaderType;
+//    // typedef itk::VTKImageExport< ImageType >        ExportType;
+//    // typedef itk::ImageRegionIterator< ImageType >   IteratorType;
 
-   void ConnectPipelines( ExportType::Pointer exporter, vtkImageImport* importer )
-   {
-    importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
-    importer->SetPipelineModifiedCallback(exporter->GetPipelineModifiedCallback());
-    importer->SetWholeExtentCallback(exporter->GetWholeExtentCallback());
-    importer->SetSpacingCallback(exporter->GetSpacingCallback());
-    importer->SetOriginCallback(exporter->GetOriginCallback());
-    importer->SetScalarTypeCallback(exporter->GetScalarTypeCallback());
-    importer->SetNumberOfComponentsCallback(exporter->GetNumberOfComponentsCallback());
-    importer->SetPropagateUpdateExtentCallback(exporter->GetPropagateUpdateExtentCallback());
-    importer->SetUpdateDataCallback(exporter->GetUpdateDataCallback());
-    importer->SetDataExtentCallback(exporter->GetDataExtentCallback());
-    importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
-    importer->SetCallbackUserData(exporter->GetCallbackUserData());
-    }
-}
+//    void ConnectPipelines( ExportType::Pointer exporter, vtkImageImport* importer )
+//    {
+//     importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
+//     importer->SetPipelineModifiedCallback(exporter->GetPipelineModifiedCallback());
+//     importer->SetWholeExtentCallback(exporter->GetWholeExtentCallback());
+//     importer->SetSpacingCallback(exporter->GetSpacingCallback());
+//     importer->SetOriginCallback(exporter->GetOriginCallback());
+//     importer->SetScalarTypeCallback(exporter->GetScalarTypeCallback());
+//     importer->SetNumberOfComponentsCallback(exporter->GetNumberOfComponentsCallback());
+//     importer->SetPropagateUpdateExtentCallback(exporter->GetPropagateUpdateExtentCallback());
+//     importer->SetUpdateDataCallback(exporter->GetUpdateDataCallback());
+//     importer->SetDataExtentCallback(exporter->GetDataExtentCallback());
+//     importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
+//     importer->SetCallbackUserData(exporter->GetCallbackUserData());
+//     }
+// }
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  unsigned int   smootherIterations           = (unsigned int) smootherIterationsTemp;
-  unsigned short foregroundLabel              = (unsigned short) foregroundLabelTemp;
+  unsigned int   smootherIterations = (unsigned int) smootherIterationsTemp;
+  unsigned short foregroundLabel    = (unsigned short) foregroundLabelTemp;
 
   std::cout << "Reading mask..." << std::endl;
-  ReaderType::Pointer maskReader = ReaderType::New();
-    maskReader->SetFileName( maskFileName );
-  try
-    {
-    maskReader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught while reading mask image:";
-    std::cerr << excp << std::endl;
+  vtkSmartPointer< vtkNRRDReader > maskReader = vtkSmartPointer< vtkNRRDReader >::New();
+  maskReader->SetFileName( maskFileName.c_str() );
+  maskReader->Update();
 
-    return cip::LABELMAPREADFAILURE;
-    }
+  // ReaderType::Pointer maskReader = ReaderType::New();
+  //   maskReader->SetFileName( maskFileName );
+  // try
+  //   {
+  //   maskReader->Update();
+  //   }
+  // catch ( itk::ExceptionObject &excp )
+  //   {
+  //   std::cerr << "Exception caught while reading mask image:";
+  //   std::cerr << excp << std::endl;
 
-  if ( setStandardOriginAndSpacing == true )
-    {
-    ImageType::SpacingType spacing;
-      spacing[0] = 1;
-      spacing[1] = 1;
-      spacing[2] = 1;
+  //   return cip::LABELMAPREADFAILURE;
+  //   }
 
-    ImageType::PointType origin;
-      origin[0] = 0.0;
-      origin[1] = 0.0;
-      origin[2] = 0.0;
+  // if ( setStandardOriginAndSpacing == true )
+  //   {
+  //   ImageType::SpacingType spacing;
+  //     spacing[0] = 1;
+  //     spacing[1] = 1;
+  //     spacing[2] = 1;
 
-    maskReader->GetOutput()->SetOrigin( origin );
-    maskReader->GetOutput()->SetSpacing( spacing );
-    }
+  //   ImageType::PointType origin;
+  //     origin[0] = 0.0;
+  //     origin[1] = 0.0;
+  //     origin[2] = 0.0;
 
-  IteratorType it( maskReader->GetOutput(), maskReader->GetOutput()->GetBufferedRegion() );
+  //   maskReader->GetOutput()->SetOrigin( origin );
+  //   maskReader->GetOutput()->SetSpacing( spacing );
+  //   }
+
+  //  IteratorType it( maskReader->GetOutput(), maskReader->GetOutput()->GetBufferedRegion() );
 
   //
   // If the user has not specified a foreground label, find the first
   // non-zero value and use that as the foreground value
   //
-  if ( foregroundLabel == -1 )
-    {
-    it.GoToBegin();
-    while ( !it.IsAtEnd() )
-      {
-      if ( it.Get() != 0 )
-        {
-        foregroundLabel = it.Get();
+  // if ( foregroundLabel == -1 )
+  //   {
+  //   it.GoToBegin();
+  //   while ( !it.IsAtEnd() )
+  //     {
+  //     if ( it.Get() != 0 )
+  //       {
+  //       foregroundLabel = it.Get();
 
-        break;
-        }
+  //       break;
+  //       }
 
-      ++it;
-      }
-    }
+  //     ++it;
+  //     }
+  //   }
 
-  it.GoToBegin();
-  while ( !it.IsAtEnd() )
-    {
-    if ( it.Get() == foregroundLabel )
-      {
-      it.Set( 1 );
-      }
-    else
-      {
-      it.Set( 0 );
-      }
+  // it.GoToBegin();
+  // while ( !it.IsAtEnd() )
+  //   {
+  //   if ( it.Get() == foregroundLabel )
+  //     {
+  //     it.Set( 1 );
+  //     }
+  //   else
+  //     {
+  //     it.Set( 0 );
+  //     }
 
-    ++it;
-    }
+  //   ++it;
+  //   }
 
-  ExportType::Pointer refExporter = ExportType::New();
-    refExporter->SetInput( maskReader->GetOutput() );
+  // ExportType::Pointer refExporter = ExportType::New();
+  //   refExporter->SetInput( maskReader->GetOutput() );
 
-  vtkSmartPointer< vtkImageImport > refImporter = vtkSmartPointer< vtkImageImport >::New();
+  // vtkSmartPointer< vtkImageImport > refImporter = vtkSmartPointer< vtkImageImport >::New();
 
-  ConnectPipelines( refExporter, refImporter );
+  // ConnectPipelines( refExporter, refImporter );
 
   //
   // Perform marching cubes on the reference binary image and then
@@ -172,7 +178,7 @@ int main( int argc, char *argv[] )
   //
   std::cout << "Running marching cubes..." << std::endl;
   vtkSmartPointer< vtkDiscreteMarchingCubes > cubes = vtkSmartPointer< vtkDiscreteMarchingCubes >::New();
-    cubes->SetInputConnection( refImporter->GetOutputPort() );
+    cubes->SetInputData( maskReader->GetOutput() );
     cubes->SetValue( 0, 1 );
     cubes->ComputeNormalsOff();
     cubes->ComputeScalarsOff();
