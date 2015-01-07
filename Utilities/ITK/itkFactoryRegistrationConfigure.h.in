@@ -2,6 +2,10 @@
 #ifndef __itkFactoryRegistrationConfigure_h
 #define __itkFactoryRegistrationConfigure_h
 
+#if defined(USE_STATIC_CIP_LIBS) || !defined(BUILD_SHARED_LIBS)
+#define ITKFactoryRegistration_STATIC
+#endif
+
 #if defined(WIN32) && !defined(ITKFactoryRegistration_STATIC)
 # if defined(ITKFactoryRegistration_EXPORTS)
 #  define ITKFactoryRegistration_EXPORT __declspec( dllexport ) 

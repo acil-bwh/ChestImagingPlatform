@@ -1,6 +1,6 @@
 #include "itkTestMain.h"
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(USE_STATIC_CIP_LIBS)
 #define MODULE_IMPORT __declspec(dllimport)
 #else
 #define MODULE_IMPORT
