@@ -116,7 +116,7 @@ void cipVesselDataInteractor::SetIntermediateNode( vtkActor* actor )
  
   vtkSmartPointer< vtkDijkstraGraphGeodesicPath > dijkstra = vtkSmartPointer< vtkDijkstraGraphGeodesicPath >::New();
   //dijkstra->SetInputConnection( graphToPolyData->GetOutputPort() );
-    dijkstra->SetInput( this->VesselParticles );
+    dijkstra->SetInputData( this->VesselParticles );
     dijkstra->SetStartVertex( this->MinimumSpanningTreeIntermediateNode );
     dijkstra->SetEndVertex( this->MinimumSpanningTreeRootNode );
     dijkstra->Update();
@@ -383,7 +383,7 @@ void cipVesselDataInteractor::SetConnectedVesselParticles( vtkSmartPointer< vtkP
     }
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-    mapper->SetInput( particles );
+    mapper->SetInputData( particles );
 
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
     actor->SetMapper( mapper );
@@ -432,13 +432,13 @@ void cipVesselDataInteractor::InitializeMinimumSpanningTree( vtkSmartPointer< vt
   weightedGraph->SetPoints( particles->GetPoints() );
 
   vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree > minimumSpanningTreeFilter = vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree >::New();
-    minimumSpanningTreeFilter->SetInput( weightedGraph );
+    minimumSpanningTreeFilter->SetInputData( weightedGraph );
     minimumSpanningTreeFilter->SetEdgeWeightArrayName( "Weights" );
     minimumSpanningTreeFilter->Update();
 
   vtkSmartPointer< vtkExtractSelectedGraph > extractSelection = vtkSmartPointer< vtkExtractSelectedGraph >::New();
-    extractSelection->SetInput( 0, weightedGraph );
-    extractSelection->SetInput( 1, minimumSpanningTreeFilter->GetOutput()) ;
+    extractSelection->SetInputData( 0, weightedGraph );
+    extractSelection->SetInputData( 1, minimumSpanningTreeFilter->GetOutput()) ;
     extractSelection->Update();
 
   this->MinimumSpanningTree = vtkMutableUndirectedGraph::SafeDownCast( extractSelection->GetOutput() );
@@ -451,7 +451,7 @@ void cipVesselDataInteractor::Write()
   std::cout << "---Writing labeled particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( this->FileName.c_str() );
-    writer->SetInput( this->VesselParticles );
+    writer->SetInputData( this->VesselParticles );
     writer->SetFileTypeToASCII();
     writer->Write();  
 }

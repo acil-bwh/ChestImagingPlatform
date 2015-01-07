@@ -226,7 +226,7 @@ void cipAirwayDataInteractor::SetIntermediateNode( vtkActor* actor )
   this->MinimumSpanningTreeIntermediateNode = this->ActorToParticleIDMap[actor];  
 
  vtkSmartPointer< vtkGraphToPolyData > graphToPolyData = vtkSmartPointer< vtkGraphToPolyData >::New();
-   graphToPolyData->SetInput( this->MinimumSpanningTree );
+   graphToPolyData->SetInputData( this->MinimumSpanningTree );
    graphToPolyData->Update();
  
  vtkSmartPointer< vtkDijkstraGraphGeodesicPath > dijkstra = vtkSmartPointer< vtkDijkstraGraphGeodesicPath >::New();
@@ -523,13 +523,13 @@ void cipAirwayDataInteractor::InitializeMinimumSpanningTree( vtkSmartPointer< vt
   weightedGraph->SetPoints( particles->GetPoints() );
 
   vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree > minimumSpanningTreeFilter = vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree >::New();
-    minimumSpanningTreeFilter->SetInput( weightedGraph );
+    minimumSpanningTreeFilter->SetInputData( weightedGraph );
     minimumSpanningTreeFilter->SetEdgeWeightArrayName( "Weights" );
     minimumSpanningTreeFilter->Update();
 
   vtkSmartPointer< vtkExtractSelectedGraph > extractSelection = vtkSmartPointer< vtkExtractSelectedGraph >::New();
-    extractSelection->SetInput( 0, weightedGraph );
-    extractSelection->SetInput( 1, minimumSpanningTreeFilter->GetOutput()) ;
+    extractSelection->SetInputData( 0, weightedGraph );
+    extractSelection->SetInputData( 1, minimumSpanningTreeFilter->GetOutput()) ;
     extractSelection->Update();
 
   this->MinimumSpanningTree = vtkMutableUndirectedGraph::SafeDownCast( extractSelection->GetOutput() );

@@ -273,22 +273,27 @@ static void vtkImageStatisticsExecute(vtkImageStatistics *self,
 // algorithm to fill the output from the input.
 // It just executes a switch statement to call the correct function for
 // the datas data types.
-void vtkImageStatistics::RequestData(
-                        vtkInformation *vtkNotUsed(request),
-                        vtkInformationVector **vtkNotUsed(inputVector),
-                        vtkInformationVector *vtkNotUsed(outputVector),
-                        vtkImageData ***inputData,
-                        vtkImageData **outputData,
-                        int outExt[6], int id)
+
+//----------------------------------------------------------------------------
+int vtkImageStatistics::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+  int updateExtent[6];
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
+               updateExtent);
+  vtkImageData *outData = static_cast<vtkImageData *>(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  this->AllocateOutputData(outData, outInfo, updateExtent);
+
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkImageData *inData = static_cast<vtkImageData *>(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   void *inPtr;
   int *outPtr;
-
-  vtkImageData *inData = inputData[0][0];
-  vtkImageData *outData = outputData[0];
-
-  outData->SetExtent(outExt);
-  outData->AllocateScalars(inData->GetScalarType(), inData->GetNumberOfScalarComponents());
 
   inPtr  = inData->GetScalarPointer();
   outPtr = (int *)outData->GetScalarPointer();
@@ -300,7 +305,7 @@ void vtkImageStatistics::RequestData(
           << "must be the same as in ScalarType"
                   << inData->GetScalarType()
                   <<"\n");
-    return;
+    return 0;
   }
 
   if (inData->GetNumberOfScalarComponents() != 1)
@@ -308,7 +313,7 @@ void vtkImageStatistics::RequestData(
     vtkErrorMacro(<< "Execute: Number of scalar components "
                   << outData->GetScalarType()
           << " is not 1\n");
-    return;
+    return 0;
   }
 
   switch (inData->GetScalarType())
@@ -318,8 +323,9 @@ void vtkImageStatistics::RequestData(
                                                 (VTK_TT *)(outPtr));
     default:
       vtkErrorMacro(<< "Execute: Unknown ScalarType");
-      return;
+      return 0;
     }
+  return 1;
 }
 
 //------------------------------------------------------------------------------

@@ -45,12 +45,20 @@ ENDIF ( ITK_FOUND )
 #---------------------------------------------------------------------
 # Find VTK.
 
-FIND_PACKAGE ( VTK )
+FIND_PACKAGE ( VTK REQUIRED NO_MODULE)
 IF ( VTK_FOUND )
   INCLUDE(${VTK_USE_FILE})
 ELSE ( VTK_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
 ENDIF ( VTK_FOUND )
+
+#Check Boost status
+if(TARGET vtkInfovisBoostGraphAlgorithms)
+  message(STATUS "VTK Built with BOOST Graph")
+  SET(CIP_USE_BOOST ON)
+else()
+  SET(CIP_USE_BOOST OFF)
+endif()
 
 #---------------------------------------------------------------------
 # Find Teem

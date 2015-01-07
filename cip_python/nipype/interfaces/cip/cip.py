@@ -139,46 +139,6 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'outLabelMap':'outLabelMap.nii'}
 
 
-class GenerateStatisticsForAirwayGenerationLabelingInputSpec(CommandLineInputSpec):
-    input = InputMultiPath(traits.Str, desc="Input particles file names.", sep=",", argstr="--input %s")
-    ref = File(desc="Specify a (labeled) reference particle dataset to compute statistics for emission probabilities. For each particle in this dataset, every other particle in the files specified with the -i flag will be considered. If the two particles have the same generation label and are within the distance specified by the --ed flag, then the scale difference, angle, and distance between the particles will be computed and used to compute the class conditional probabilities for that generation. This is an optional argument. Note that if it is specified, the same file should not also appear as an input specified with the -i flag.", exists=True, argstr="--ref %s")
-    emissionProbsFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the computed emission probability statistics.", argstr="--emissionProbsFileName %s")
-    ntp = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the computed transition probability scale and angle statics.", argstr="--ntp %s")
-    tp = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the transition probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' generation and the columns represent the 'to' generation. The probabilities are computed simply by counting the number of times a given transition occurs and then normalizing.", argstr="--tp %s")
-    distThresh = traits.Float(desc="Particle distance threshold for constructing minimum spanning tree. Particles further apart than this distance will not have an edge placed between them in the weighted graph passed to the min spanning tree algorithm", argstr="--distThresh %f")
-    ed = traits.Float(desc="The radius of the epsilon ball used when considering if a particle should be considered for computing the class-conditional emission probabilities. Only necessary if a reference particle dataset is specified with the --ed flag.", argstr="--ed %f")
-
-
-class GenerateStatisticsForAirwayGenerationLabelingOutputSpec(TraitedSpec):
-    emissionProbsFileName = File(desc="csv file in which to write the computed emission probability statistics.", exists=True)
-    ntp = File(desc="csv file in which to write the computed transition probability scale and angle statics.", exists=True)
-    tp = File(desc="csv file in which to write the transition probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' generation and the columns represent the 'to' generation. The probabilities are computed simply by counting the number of times a given transition occurs and then normalizing.", exists=True)
-
-
-class GenerateStatisticsForAirwayGenerationLabeling(SEMLikeCommandLine):
-    """title: GenerateStatisticsForAirwayGenerationLabeling
-
-category: Chest Imaging Platform.Toolkit.Particles
-
-description: This program computes statistics needed as inputs to the LabelAirwayParticlesByGeneration program. It computes these statistics over (possibly) multiple, labeled input airway particles datasets. The user must specify information needed to construct the minimum spanning tree (which encodes topology over the particles). This information should be the same that is used for the LabelAirwayParticlesByGeneration program.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
-  
-
-"""
-
-    input_spec = GenerateStatisticsForAirwayGenerationLabelingInputSpec
-    output_spec = GenerateStatisticsForAirwayGenerationLabelingOutputSpec
-    _cmd = " GenerateStatisticsForAirwayGenerationLabeling "
-    _outputs_filenames = {'ntp':'ntp.csv','emissionProbsFileName':'emissionProbsFileName.csv','tp':'tp.csv'}
-
-
 class ReadNRRDsWriteVTKInputSpec(CommandLineInputSpec):
     inFileName = InputMultiPath(File(exists=True), desc="Specify an input NRRD file name followed by a string (using the -a or --arrayName flags) \n                designating the name of the array in the output vtk file. Can specify multiple inputs. Note that a file name specified \n                with this flag must immediately be followed by a corresponding array name using the -a or --arrayName flags. \n                Files that are 1xN are assumed to have scalar data, 3xN are assumed to have vector data, and 9xN are assumed to \n                have matrix data. A 4xN file is assumed to contain spatial coordinates for the first 3 components and a scale \n                component for the 4th. Note that in this case, the string value assigned to this file is just a placeholder -- \n                the scale data will be placed in matrix with name 'scale'. 7xN files are assumed to have the following format: \n                mask xx xy xz yy yz zz, so a matrix is constructed using the components in the following order: [1 2 3 2 4 5 3 5 6] \n                (zero-based indexing)", argstr="--inFileName %s...")
     arrayName = InputMultiPath(traits.Str, desc="Array names corresponding to files immediately preceding invocation of this flag (specified \n                with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \n                data arrays", argstr="--arrayName %s...")
@@ -2247,45 +2207,6 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = GenerateDistanceMapFromLabelMapOutputSpec
     _cmd = " GenerateDistanceMapFromLabelMap "
     _outputs_filenames = {}
-
-
-class LabelAirwayParticlesByGenerationInputSpec(CommandLineInputSpec):
-    inPart = File(desc="Input particles file name", exists=True, argstr="--inPart %s")
-    outPart = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--outPart %s")
-    atlas = InputMultiPath(traits.Str, desc="Airway generation labeled atlas file name. \n      An airway generation labeled atlas is a particles data set that has point data array point named \n      'ChestType' that, for each particle, has a correctly labeled airway generation label. \n      Labeling must conform to the standards set forth in 'cipConventions.h'. \n      The atlas must be in the same coordinate frame as the input dataset that \n      is to be labeled. Multiple atlases may be specified. These atlases are \n      used to compute the emission probabilities (see descriptions of the HMM \n      algorithm) using kernel density estimation.", sep=",", argstr="--atlas %s")
-    distThresh = traits.Float(desc="Particle distance threshold. If two particles are \n      farther apart than this threshold, they will not considered connected. Otherwise, a graph edge \n      will be formed between the particles where the edge weight is a function of the distance \n      between the particles. The weighted graph is then fed to a minimum spanning tree algorithm, the \n      output of which is used to establish directionality throught the particles for HMM analysis.", argstr="--distThresh %f")
-    kdeROI = traits.Float(desc="The spherical radius region of interest \n      over which contributions to the kernel density estimation are made. Only atlas particles that \n      are within this physical distance will contribute to the estimate. By default, all atlas \n      particles will contribute to the estimate.", argstr="--kdeROI %f")
-    root = traits.Int(desc="The particle ID of the airway tree root if known.", argstr="--root %d")
-    results = traits.Bool(desc="Print results. Setting this flag assumes that the input particles \n      have been labeled. This option can be used for debugging and for quality assessment.", argstr="--results ")
-    kdeMode = traits.Bool(desc="Set to 1 to use KDE-based classification for airway label assignment. \n      This is equivalent to only using the emission probabilities from the overall HMTM model.", argstr="--kdeMode ")
-
-
-class LabelAirwayParticlesByGenerationOutputSpec(TraitedSpec):
-    outPart = File(desc="Output particles file name", exists=True)
-
-
-class LabelAirwayParticlesByGeneration(SEMLikeCommandLine):
-    """title: LabelAirwayParticlesByGeneration
-
-category: Chest Imaging Platform.Toolkit.Particles
-
-description: This program takes an input airway particles dataset \n  and assigns airway generation labels to each particle. The assigned labels are \n  coded in the ChestType point data arrays in the output particles data set. \n  The algorithm uses a Hidden Markov Model framework work to perform the generation \n  labeling.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
-  
-
-"""
-
-    input_spec = LabelAirwayParticlesByGenerationInputSpec
-    output_spec = LabelAirwayParticlesByGenerationOutputSpec
-    _cmd = " LabelAirwayParticlesByGeneration "
-    _outputs_filenames = {'outPart':'outPart.vtk'}
 
 
 class ResampleLabelMapInputSpec(CommandLineInputSpec):

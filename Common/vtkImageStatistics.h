@@ -100,11 +100,10 @@ class VTK_CIP_COMMON_EXPORT vtkImageStatistics : public vtkImageAlgorithm
                                  vtkInformationVector** inputVector,
                                  vtkInformationVector* outputVector);
 
-  void RequestData(vtkInformation *request,
-                   vtkInformationVector **inputVector,
-                   vtkInformationVector *outputVector,
-                   vtkImageData ***inData, vtkImageData **outData,
-                   int extent[6], int id);
+ virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+
 };
 
 #endif
