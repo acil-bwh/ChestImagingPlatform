@@ -592,7 +592,7 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeSu
 											 vtkSmartPointer< vtkPolyData > particles )
 {
   vtkSmartPointer< vtkBoostConnectedComponents > connectedComponents = vtkSmartPointer< vtkBoostConnectedComponents >::New();
-    connectedComponents->SetInputConnection( spanningTree->GetProducerPort() );
+    connectedComponents->SetInputData( spanningTree );
     connectedComponents->Update();
   
   vtkSmartPointer< vtkIntArray > components = 
@@ -633,8 +633,8 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeSu
         selection->AddNode( nodes );
       
       vtkSmartPointer< vtkExtractSelectedGraph > extractSelectedGraph = vtkSmartPointer< vtkExtractSelectedGraph >::New();
-        extractSelectedGraph->SetInput( 0, spanningTree );
-	extractSelectedGraph->SetInput( 1, selection );
+        extractSelectedGraph->SetInputData( 0, spanningTree );
+	extractSelectedGraph->SetInputData( 1, selection );
 	extractSelectedGraph->Update();
      
       vtkSmartPointer< vtkMutableUndirectedGraph > subgraph = vtkSmartPointer< vtkMutableUndirectedGraph >::New();
@@ -719,13 +719,13 @@ void vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter::InitializeMi
 
   vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree > minimumSpanningTreeFilter = 
     vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree >::New();
-    minimumSpanningTreeFilter->SetInput( weightedGraph );
+    minimumSpanningTreeFilter->SetInputData( weightedGraph );
     minimumSpanningTreeFilter->SetEdgeWeightArrayName( "Weights" );
     minimumSpanningTreeFilter->Update();
 
   vtkSmartPointer< vtkExtractSelectedGraph > extractSelection = vtkSmartPointer< vtkExtractSelectedGraph >::New();
-    extractSelection->SetInput( 0, weightedGraph );
-    extractSelection->SetInput( 1, minimumSpanningTreeFilter->GetOutput()) ;
+    extractSelection->SetInputData( 0, weightedGraph );
+    extractSelection->SetInputData( 1, minimumSpanningTreeFilter->GetOutput()) ;
     extractSelection->Update();
 
   this->MinimumSpanningTree = vtkMutableUndirectedGraph::SafeDownCast( extractSelection->GetOutput() );

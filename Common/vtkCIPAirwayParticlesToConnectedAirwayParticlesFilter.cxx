@@ -125,7 +125,7 @@ int vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter::RequestData(vtkInform
   std::cout << "Computing minimum spanning tree..." << std::endl;
   vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree > minimumSpanningTreeFilter = 
     vtkSmartPointer< vtkBoostKruskalMinimumSpanningTree >::New();
-    minimumSpanningTreeFilter->SetInput( weightedGraph );
+    minimumSpanningTreeFilter->SetInputData( weightedGraph );
     minimumSpanningTreeFilter->SetEdgeWeightArrayName( "Weights" );
     minimumSpanningTreeFilter->Update();
 

@@ -132,7 +132,7 @@ void cipFissureDataInteractor::SetConnectedFissureParticles( vtkSmartPointer< vt
     }
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-    mapper->SetInput( particles );
+    mapper->SetInputData( particles );
 
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
     actor->SetMapper( mapper );
@@ -147,7 +147,7 @@ void cipFissureDataInteractor::Write()
   std::cout << "---Writing labeled particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( this->FileName.c_str() );
-    writer->SetInput( this->FissureParticles );
+    writer->SetInputData( this->FissureParticles );
     writer->SetFileTypeToASCII();
     writer->Write();  
 }
