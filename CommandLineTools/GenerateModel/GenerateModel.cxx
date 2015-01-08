@@ -38,17 +38,9 @@
  *   -h,  --help
  *     Displays usage information and exits.
  *
- *  $Date: 2012-09-19 17:00:08 -0400 (Wed, 19 Sep 2012) $
- *  $Revision: 281 $
- *  $Author: jross $
- *
  */
 
 #include "cipChestConventions.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkVTKImageExport.h"
-#include "itkImageRegionIterator.h"
 #include "vtkImageData.h"
 #include "vtkPolyDataNormals.h"
 #include "vtkDecimatePro.h"
@@ -58,121 +50,73 @@
 #include "vtkPolyData.h"
 #include "vtkImageImport.h"
 #include "vtkSmartPointer.h"
+#include "vtkNRRDReader.h"
+#include "vtkNRRDWriter.h"
+#include "vtkImageIterator.h"
+
 #include "GenerateModelCLP.h"
-
-namespace
-{
-   typedef itk::Image< unsigned short, 3 >        ImageType;
-   typedef itk::ImageFileReader< ImageType >      ReaderType;
-   typedef itk::VTKImageExport< ImageType >       ExportType;
-   typedef itk::ImageRegionIterator< ImageType >  IteratorType;
-
-   void ConnectPipelines( ExportType::Pointer exporter, vtkImageImport* importer )
-   {
-    importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
-    importer->SetPipelineModifiedCallback(exporter->GetPipelineModifiedCallback());
-    importer->SetWholeExtentCallback(exporter->GetWholeExtentCallback());
-    importer->SetSpacingCallback(exporter->GetSpacingCallback());
-    importer->SetOriginCallback(exporter->GetOriginCallback());
-    importer->SetScalarTypeCallback(exporter->GetScalarTypeCallback());
-    importer->SetNumberOfComponentsCallback(exporter->GetNumberOfComponentsCallback());
-    importer->SetPropagateUpdateExtentCallback(exporter->GetPropagateUpdateExtentCallback());
-    importer->SetUpdateDataCallback(exporter->GetUpdateDataCallback());
-    importer->SetDataExtentCallback(exporter->GetDataExtentCallback());
-    importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
-    importer->SetCallbackUserData(exporter->GetCallbackUserData());
-    }
-}
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  unsigned int   smootherIterations           = (unsigned int) smootherIterationsTemp;
-  unsigned short foregroundLabel              = (unsigned short) foregroundLabelTemp;
+  unsigned int smootherIterations = (unsigned int) smootherIterationsTemp;
 
   std::cout << "Reading mask..." << std::endl;
-  ReaderType::Pointer maskReader = ReaderType::New();
-    maskReader->SetFileName( maskFileName );
-  try
-    {
+  vtkSmartPointer< vtkNRRDReader > maskReader = vtkSmartPointer< vtkNRRDReader >::New();
+    maskReader->SetFileName( maskFileName.c_str() );
     maskReader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught while reading mask image:";
-    std::cerr << excp << std::endl;
 
-    return cip::LABELMAPREADFAILURE;
-    }
+  vtkImageIterator< unsigned short > it( maskReader->GetOutput(), maskReader->GetOutput()->GetExtent() );
 
-  if ( setStandardOriginAndSpacing == true )
-    {
-    ImageType::SpacingType spacing;
-      spacing[0] = 1;
-      spacing[1] = 1;
-      spacing[2] = 1;
-
-    ImageType::PointType origin;
-      origin[0] = 0.0;
-      origin[1] = 0.0;
-      origin[2] = 0.0;
-
-    maskReader->GetOutput()->SetOrigin( origin );
-    maskReader->GetOutput()->SetSpacing( spacing );
-    }
-
-  IteratorType it( maskReader->GetOutput(), maskReader->GetOutput()->GetBufferedRegion() );
-
-  //
   // If the user has not specified a foreground label, find the first
   // non-zero value and use that as the foreground value
-  //
   if ( foregroundLabel == -1 )
     {
-    it.GoToBegin();
-    while ( !it.IsAtEnd() )
-      {
-      if ( it.Get() != 0 )
-        {
-        foregroundLabel = it.Get();
+      while( !it.IsAtEnd() )
+	{
+	  unsigned short* valIt = it.BeginSpan();
+	  unsigned short* valEnd = it.EndSpan();
+	  while ( valIt != valEnd )
+	    {
+	      if ( *valIt != 0 )
+		{
+		  foregroundLabel = int(*valIt);
+		  break;
+		}
+	      ++valIt;
+	    }
 
-        break;
-        }
-
-      ++it;
-      }
+	  it.NextSpan();
+	}
     }
 
-  it.GoToBegin();
+  it.Initialize( maskReader->GetOutput(), maskReader->GetOutput()->GetExtent() );
   while ( !it.IsAtEnd() )
     {
-    if ( it.Get() == foregroundLabel )
-      {
-      it.Set( 1 );
-      }
-    else
-      {
-      it.Set( 0 );
-      }
-
-    ++it;
+      unsigned short* valIt = it.BeginSpan();
+      unsigned short* valEnd = it.EndSpan();
+      while ( valIt != valEnd )
+	{
+	  if ( int(*valIt) == foregroundLabel )
+	    {
+	      *valIt = 1;
+	    }
+	  else
+	    {
+	      *valIt = 0;
+	    }
+	  ++valIt;
+	}
+      
+      it.NextSpan();
     }
 
-  ExportType::Pointer refExporter = ExportType::New();
-    refExporter->SetInput( maskReader->GetOutput() );
-
-  vtkSmartPointer< vtkImageImport > refImporter = vtkSmartPointer< vtkImageImport >::New();
-
-  ConnectPipelines( refExporter, refImporter );
-
-  //
   // Perform marching cubes on the reference binary image and then
   // decimate
-  //
   std::cout << "Running marching cubes..." << std::endl;
   vtkSmartPointer< vtkDiscreteMarchingCubes > cubes = vtkSmartPointer< vtkDiscreteMarchingCubes >::New();
-    cubes->SetInputConnection( refImporter->GetOutputPort() );
+    cubes->SetInputData( maskReader->GetOutput() );
     cubes->SetValue( 0, 1 );
     cubes->ComputeNormalsOff();
     cubes->ComputeScalarsOff();
@@ -213,20 +157,3 @@ int main( int argc, char *argv[] )
 
   return cip::EXITSUCCESS;
 }
-
-// void ConnectUCharPipelines( UCharExportType::Pointer exporter, vtkImageImport* importer )
-// {
-//   importer->SetUpdateInformationCallback(exporter->GetUpdateInformationCallback());
-//   importer->SetPipelineModifiedCallback(exporter->GetPipelineModifiedCallback());
-//   importer->SetWholeExtentCallback(exporter->GetWholeExtentCallback());
-//   importer->SetSpacingCallback(exporter->GetSpacingCallback());
-//   importer->SetOriginCallback(exporter->GetOriginCallback());
-//   importer->SetScalarTypeCallback(exporter->GetScalarTypeCallback());
-//   importer->SetNumberOfComponentsCallback(exporter->GetNumberOfComponentsCallback());
-//   importer->SetPropagateUpdateExtentCallback(exporter->GetPropagateUpdateExtentCallback());
-//   importer->SetUpdateDataCallback(exporter->GetUpdateDataCallback());
-//   importer->SetDataExtentCallback(exporter->GetDataExtentCallback());
-//   importer->SetBufferPointerCallback(exporter->GetBufferPointerCallback());
-//   importer->SetCallbackUserData(exporter->GetCallbackUserData());
-// }
-

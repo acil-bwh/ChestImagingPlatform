@@ -23,15 +23,16 @@
       <default>NA</default>
     </string>   
 
-      <string>
-          <name>outputModelFileName</name>
-          <label>output Model FileName</label>
-          <channel>output</channel>
-          <flag>o</flag>
-          <longflag>--out</longflag>
-          <description><![CDATA[Output model file name]]></description>
-          <default>NA</default>
-      </string>  
+    <string>
+      <name>outputModelFileName</name>
+      <label>output Model FileName</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>--out</longflag>
+      <description><![CDATA[Output model file name]]></description>
+      <default>NA</default>
+    </string>  
+
     <integer>
       <name>smootherIterationsTemp</name>
       <label>smoother Iterations</label>
@@ -41,9 +42,10 @@
       <description><![CDATA[Number of smoothing iterations.]]></description>
       <default>2</default>
     </integer>   
+
     <integer>
-        <name>foregroundLabelTemp</name>
-        <label>foreground Label</label>
+        <name>foregroundLabel</name>
+        <label>Foreground Label</label>
         <channel>input</channel>
         <flag>l</flag>
         <longflag>--label</longflag>
@@ -51,14 +53,6 @@
         <default>-1</default>
     </integer>
       
-      <boolean>
-          <name>setStandardOriginAndSpacing</name>
-          <longflag>origSp</longflag>
-          <description>Set to 1 to used standard origin and spacing. Set to 0 by default.</description>
-          <label>setStandard Origin And Spacing</label>
-          <default>false</default>
-      </boolean>
-
     <float>
       <name>decimatorTargetReduction</name>
       <label>decimator Target Reduction</label>
