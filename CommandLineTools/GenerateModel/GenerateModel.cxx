@@ -208,7 +208,6 @@ int main( int argc, char *argv[] )
     modelWriter->SetFileName( outputModelFileName.c_str() );
     modelWriter->SetInputConnection( normals->GetOutputPort() );
     modelWriter->Write();
-    modelWriter->Delete();
 
   std::cout << "DONE." << std::endl;
 
