@@ -63,7 +63,7 @@ SET ( CIPCommon_SRCS
   cipChestConventions.cxx
   )
 
-IF(VTK_USE_BOOST)
+IF(CIP_USE_BOOST)
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
   SET ( CIPCommon_SRCS 
         ${CIPCommon_SRCS}
@@ -73,7 +73,7 @@ IF(VTK_USE_BOOST)
         cipVesselDataInteractor.cxx
         cipFissureDataInteractor.cxx
        )
-ENDIF (VTK_USE_BOOST)
+ENDIF (CIP_USE_BOOST)
        
 # --------------------------------------------------------------------------
 # Build library

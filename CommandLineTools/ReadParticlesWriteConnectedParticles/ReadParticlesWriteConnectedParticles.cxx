@@ -109,14 +109,14 @@ int main( int argc, char *argv[] )
     {
     // First convert the graph to polydata
     vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
-      graphToPolyData->SetInput(minimumSpanningTree);
+      graphToPolyData->SetInputData(minimumSpanningTree);
       graphToPolyData->Update();
 
     cip::GraftPointDataArrays( particlesReader->GetOutput(), graphToPolyData->GetOutput() );
 
     std::cout << "Writing connected particles..." << std::endl;
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
-      writer->SetInput(graphToPolyData->GetOutput());
+      writer->SetInputData(graphToPolyData->GetOutput());
       writer->SetFileName(outParticlesFileName.c_str());
       writer->Update();
     }
@@ -168,13 +168,13 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GetMinimumSpanningTree(vtkSmartPointe
 
   vtkSmartPointer<vtkBoostKruskalMinimumSpanningTree> minimumSpanningTreeFilter = 
     vtkSmartPointer<vtkBoostKruskalMinimumSpanningTree>::New();
-    minimumSpanningTreeFilter->SetInput(weightedGraph);
+    minimumSpanningTreeFilter->SetInputData(weightedGraph);
     minimumSpanningTreeFilter->SetEdgeWeightArrayName("Weights");
     minimumSpanningTreeFilter->Update();
 
   vtkSmartPointer<vtkExtractSelectedGraph> extractSelection = vtkSmartPointer<vtkExtractSelectedGraph>::New();
-    extractSelection->SetInput(0, weightedGraph);
-    extractSelection->SetInput(1, minimumSpanningTreeFilter->GetOutput()) ;
+    extractSelection->SetInputData(0, weightedGraph);
+    extractSelection->SetInputData(1, minimumSpanningTreeFilter->GetOutput()) ;
     extractSelection->Update();
 
   return vtkMutableUndirectedGraph::SafeDownCast(extractSelection->GetOutput());
