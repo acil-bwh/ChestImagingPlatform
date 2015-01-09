@@ -58,8 +58,8 @@ SET ( CIPUtilities_SRCS
   ${CIP_UTILITIES_VTK}/vtkImageConnectivity.cxx           
   ${CIP_UTILITIES_VTK}/vtkImageErode.cxx
   ${CIP_UTILITIES_VTK}/vtkImageNeighborhoodFilter.cxx
-  ${CIP_UTILITIES_VTK}/vtkNRRDReader.cxx
-  ${CIP_UTILITIES_VTK}/vtkNRRDWriter.cxx
+  ${CIP_UTILITIES_VTK}/vtkNRRDReaderCIP.cxx
+  ${CIP_UTILITIES_VTK}/vtkNRRDWriterCIP.cxx
   ${CIP_UTILITIES_ITK}/itkFactoryRegistration.cxx
 )
 

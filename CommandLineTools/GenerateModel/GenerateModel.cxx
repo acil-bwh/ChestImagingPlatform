@@ -50,8 +50,8 @@
 #include "vtkPolyData.h"
 #include "vtkImageImport.h"
 #include "vtkSmartPointer.h"
-#include "vtkNRRDReader.h"
-#include "vtkNRRDWriter.h"
+#include "vtkNRRDReaderCIP.h"
+#include "vtkNRRDWriterCIP.h"
 #include "vtkImageIterator.h"
 
 #include "GenerateModelCLP.h"
@@ -63,7 +63,7 @@ int main( int argc, char *argv[] )
   unsigned int smootherIterations = (unsigned int) smootherIterationsTemp;
 
   std::cout << "Reading mask..." << std::endl;
-  vtkSmartPointer< vtkNRRDReader > maskReader = vtkSmartPointer< vtkNRRDReader >::New();
+  vtkSmartPointer< vtkNRRDReaderCIP > maskReader = vtkSmartPointer< vtkNRRDReaderCIP >::New();
     maskReader->SetFileName( maskFileName.c_str() );
     maskReader->Update();
 
