@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>RemapLabelMap</title>
+    <description><![CDATA[This program is used to map label map values \
+in an input image to designated values in the output image.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+    <image>
+      <name>inLabelMap</name>
+      <label>Input label map</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>--in</longflag>
+      <description><![CDATA[Input label map]]></description>
+      <default>NA</default>
+    </image>
+
+    <image>
+      <name>outLabelMap</name>
+      <label>Output label map</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>--out</longflag>
+      <description><![CDATA[Output label map]]></description>
+      <default>NA</default>
+    </image>
+
+    <integer-vector>
+        <name>inLabels</name>
+        <label>Input labels</label>
+        <channel>input</channel>
+        <longflag>--il</longflag>
+        <description><![CDATA[Comma separated list of input labels to map. The elements \
+in this list will have a one-to-one correspondence with the elements of the output labels]]></description>
+    </integer-vector>
+
+    <integer-vector>
+        <name>outLabels</name>
+        <label>Output labels</label>
+        <channel>input</channel>
+        <longflag>--ol</longflag>
+        <description><![CDATA[Comma separated list of output labels to map. The elements \
+in this list will have a one-to-one correspondence with the elements of the input labels]]></description>
+    </integer-vector>
+
+  </parameters>
+</executable>
