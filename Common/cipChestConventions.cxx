@@ -331,6 +331,13 @@ cip::ChestConventions::ChestConventions()
   ParenchymaPhenotypeNames.push_back( "HUMax500" );
   ParenchymaPhenotypeNames.push_back( "Volume" );
   ParenchymaPhenotypeNames.push_back( "Mass" );
+  ParenchymaPhenotypeNames.push_back( "NormalParenchyma" );
+  ParenchymaPhenotypeNames.push_back( "PanlobularEmphysema" );
+  ParenchymaPhenotypeNames.push_back( "ParaseptalEmphysema" );
+  ParenchymaPhenotypeNames.push_back( "MildCentrilobularEmphysema" );
+  ParenchymaPhenotypeNames.push_back( "ModerateCentrilobularEmphysema" );
+  ParenchymaPhenotypeNames.push_back( "SevereCentrilobularEmphysema" );
+  ParenchymaPhenotypeNames.push_back( "MildParaseptalEmphysema" );
 
   //
   // Each type is associated with a color. This is generally
@@ -804,6 +811,36 @@ bool cip::ChestConventions::IsPhenotypeName( std::string pheno ) const
   for ( int i=0; i<this->HistogramPhenotypeNames.size(); i++ )
     {
       if ( !this->HistogramPhenotypeNames[i].compare( pheno ) )
+	{
+	  return true;
+	}
+    }
+  
+  return false;
+}
+
+/** Returns true if the passed string name is among the enumerated chest
+ *  types and returns false otherwise */
+bool cip::ChestConventions::IsChestType( std::string chestType ) const
+{  
+  for ( int i=0; i<this->ChestTypeNames.size(); i++ )
+    {
+      if ( !this->ChestTypeNames[i].compare( chestType ) )
+	{
+	  return true;
+	}
+    }
+  
+  return false;
+}
+
+/** Returns true if the passed string name is among the enumerated chest
+ *  regions and returns false otherwise */
+bool cip::ChestConventions::IsChestRegion( std::string chestRegion ) const
+{  
+  for ( int i=0; i<this->ChestRegionNames.size(); i++ )
+    {
+      if ( !this->ChestRegionNames[i].compare( chestRegion ) )
 	{
 	  return true;
 	}

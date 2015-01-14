@@ -18,6 +18,8 @@ cdef extern from "cipChestConventions.h" namespace "cip":
         unsigned char GetChestTypeValueFromName(string typeString) const
         bool CheckSubordinateSuperiorChestRegionRelationship(unsigned char subordinate, unsigned char superior)
         bool IsPhenotypeName(string) const
+        bool IsChestRegion(string) const
+        bool IsChestType(string) const
 
 cdef class ChestConventions:
     cdef _ChestConventions *thisptr
@@ -69,3 +71,9 @@ cdef class ChestConventions:
 
     cpdef bool IsPhenotypeName(self, string name):    
         return self.thisptr.IsPhenotypeName(name)
+
+    cpdef bool IsChestRegion(self, string name):    
+        return self.thisptr.IsChestRegion(name)
+
+    cpdef bool IsChestType(self, string name):    
+        return self.thisptr.IsChestType(name)
