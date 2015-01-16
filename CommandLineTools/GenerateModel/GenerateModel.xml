@@ -41,8 +41,9 @@
       <description><![CDATA[Number of smoothing iterations.]]></description>
       <default>2</default>
     </integer>   
+
     <integer>
-        <name>foregroundLabelTemp</name>
+        <name>foregroundLabel</name>
         <label>foreground Label</label>
         <channel>input</channel>
         <flag>l</flag>
@@ -51,14 +52,6 @@
         <default>-1</default>
     </integer>
       
-      <boolean>
-          <name>setStandardOriginAndSpacing</name>
-          <longflag>origSp</longflag>
-          <description>Set to 1 to used standard origin and spacing. Set to 0 by default.</description>
-          <label>setStandard Origin And Spacing</label>
-          <default>false</default>
-      </boolean>
-
     <float>
       <name>decimatorTargetReduction</name>
       <label>decimator Target Reduction</label>

@@ -29,7 +29,7 @@
 #include "vtkIndent.h"
 
 #ifdef WIN32
-#include <time.h>
+#include <ctime>
 #endif
 
 int main( int argc, char *argv[] )

@@ -52,7 +52,25 @@ class ParenchymaPhenotypes(Phenotypes):
     that are <= -500 HU
     'Volume': Volume of the structure, measured in liters
     'Mass': Mass of the structure measure in grams    
-
+    'NormalParenchyma': A "chest-type-based" phenotype. It is the percentage of
+    a given region occupied by the 'NormalParenchyma' chest-type
+    'PanlobularEmphysema': A "chest-type-based" phenotype. It is the percentage 
+    of a given region occupied by the 'PanlobularEmphysema' chest-type
+    'ParaseptalEmphysema': A "chest-type-based" phenotype. It is the percentage 
+    of a given region occupied by the 'ParaseptalEmphysema' chest-type
+    'MildCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
+    percentage of a given region occupied by the 'MildCentrilobularEmphysema' 
+    chest-type
+    'ModerateCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
+    percentage of a given region occupied by the 'ModerateCentrilobularEmphysema' 
+    chest-type
+    'SevereCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
+    percentage of a given region occupied by the 'SevereCentrilobularEmphysema' 
+    chest-type
+    'MildParaseptalEmphysema': A "chest-type-based" phenotype. It is the 
+    percentage of a given region occupied by the 'MildParaseptalEmphysema' 
+    chest-type
+    
     Parameters
     ----------
     chest_regions : list of strings
@@ -120,7 +138,10 @@ class ParenchymaPhenotypes(Phenotypes):
                  'HUSkewness', 'HUMode', 'HUMedian', 'HUMin', 'HUMax',
                  'HUMean500', 'HUStd500', 'HUKurtosis500', 'HUSkewness500',
                  'HUMode500', 'HUMedian500', 'HUMin500', 'HUMax500', 'Volume',
-                 'Mass']
+                 'Mass', 'NormalParenchyma', 'PanlobularEmphysema', 
+                 'ParaseptalEmphysema', 'MildCentrilobularEmphysema', 
+                 'ModerateCentrilobularEmphysema', 
+                 'SevereCentrilobularEmphysema', 'MildParaseptalEmphysema']
         
         return names
 
@@ -180,7 +201,28 @@ class ParenchymaPhenotypes(Phenotypes):
         values that are <= -500 HU
         'Volume': Volume of the structure, measured in liters
         'Mass': Mass of the structure measure in grams    
-
+        'NormalParenchyma': A "chest-type-based" phenotype. It is the 
+        percentage of a given region occupied by the 'NormalParenchyma' 
+        chest-type
+        'PanlobularEmphysema': A "chest-type-based" phenotype. It is the 
+        percentage of a given region occupied by the 'PanlobularEmphysema' 
+        chest-type
+        'ParaseptalEmphysema': A "chest-type-based" phenotype. It is the 
+        percentage of a given region occupied by the 'ParaseptalEmphysema' 
+        chest-type
+        'MildCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
+        percentage of a given region occupied by the 
+        'MildCentrilobularEmphysema' chest-type
+        'ModerateCentrilobularEmphysema': A "chest-type-based" phenotype. It is 
+        the percentage of a given region occupied by the 
+        'ModerateCentrilobularEmphysema' chest-type
+        'SevereCentrilobularEmphysema': A "chest-type-based" phenotype. It is 
+        the percentage of a given region occupied by the 
+        'SevereCentrilobularEmphysema' chest-type
+        'MildParaseptalEmphysema': A "chest-type-based" phenotype. It is the 
+        percentage of a given region occupied by the 'MildParaseptalEmphysema' 
+        chest-type
+    
         Parameters
         ----------
         ct : array, shape ( X, Y, Z )
@@ -280,15 +322,33 @@ class ParenchymaPhenotypes(Phenotypes):
                 if r != 0:
                     mask = parser.get_mask(chest_region=r)
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask, c.GetChestRegionName(r),
-                                             c.GetChestWildCardName(), n)
+                        # First check to see if 'pheno_name' is a valid chest
+                        # type. If it is, then it as a "chest-type-based"
+                        # phenotype, and it is computed as the percentage of the
+                        # given region occupied by the given chest-type
+                        if c.IsChestType(n):
+                            chest_type_val = \
+                              c.GetChestTypeValueFromName(n)
+                            tmp_mask = \
+                              parser.get_mask(chest_type=chest_type_val)
+                            pheno_val = \
+                              np.sum(np.logical_and(tmp_mask, mask))/\
+                              float(np.sum(mask))
+                            self.add_pheno([c.GetChestRegionName(r), 
+                                            c.GetChestWildCardName()], 
+                                            n, pheno_val)
+                        else:
+                            self.add_pheno_group(ct, mask, 
+                                                    c.GetChestRegionName(r),
+                                                    c.GetChestWildCardName(), n)
         if ts is not None:
             for t in ts:
                 if t != 0:
                     mask = parser.get_mask(chest_type=t)
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask, c.GetChestWildCardName(),
-                                             c.GetChestTypeName(t), n)
+                        self.add_pheno_group(ct, mask, 
+                                                c.GetChestWildCardName(),
+                                                c.GetChestTypeName(t), n)
         if ps is not None:
             for i in xrange(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
@@ -302,9 +362,11 @@ class ParenchymaPhenotypes(Phenotypes):
         return self._df
 
     def add_pheno_group(self, ct, mask, chest_region, chest_type, pheno_name):
-        """For a given mask, this function computes all phenotypes corresponding
-        to the masked structure and adds them to the dataframe with the
-        'add_pheno' method
+        """For a given mask, this function computes all non chest-type-based 
+        phenotypes corresponding to the masked structure and adds them to the 
+        dataframe with the 'add_pheno' method. (Chest-type-based phenotypes are
+        phenotypes computed as the percentage of a given chest-type in a given
+        region).
 
         Parameters
         ----------

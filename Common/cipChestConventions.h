@@ -342,6 +342,14 @@ public:
    *  phenotype names and returns false otherwise */
   bool IsPhenotypeName( std::string ) const;
 
+  /** Returns true if the passed string name is among the enumerated chest
+   *  types and returns false otherwise */
+  bool IsChestType( std::string ) const;
+
+  /** Returns true if the passed string name is among the enumerated chest
+   *  regions and returns false otherwise */
+  bool IsChestRegion( std::string ) const;
+
 public:
   std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;
   std::vector< unsigned char >              ChestRegions;
