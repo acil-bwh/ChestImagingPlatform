@@ -1189,7 +1189,7 @@ std::string exec(const char* cmd)
 bool DoesRemoteFileExist(std::string study, std::string patientID, std::string caseName, std::string fileName)
 {
   std::stringstream stream;
-  stream << "ssh copd@mad.research.partners.org ls /mad/store-replicated/clients/copd/Processed/" << study << "/" << patientID << "/" << caseName << "/" << fileName;
+  stream << "ssh copd@mad-replicated1.research.partners.org ls /mad/store-replicated/clients/copd/Processed/" << study << "/" << patientID << "/" << caseName << "/" << fileName;
   std::string command = stream.str(); 
 
   std::string status = exec(command.c_str());
@@ -1221,24 +1221,24 @@ void CopySessionDataFromMAD( SESSIONDATA data )
 
   // Now copy over the CT data
   std::stringstream permissionHeaderStream;
-  permissionHeaderStream << "ssh copd@mad.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
+  permissionHeaderStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
     data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr'";
   std::string permissionCTheader = permissionHeaderStream.str();
   system( permissionCTheader.c_str() );
 
   std::stringstream headerStream;
-  headerStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr " << data.caseTmpDir;
+  headerStream << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr " << data.caseTmpDir;
   std::string cpCTheader = headerStream.str();
   system( cpCTheader.c_str() );
 
   std::stringstream permissionRawStream;
-  permissionRawStream << "ssh copd@mad.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
+  permissionRawStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
     data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".raw.gz'";
   std::string permissionCTraw = permissionRawStream.str();
   system( permissionCTraw.c_str() );
 
   std::stringstream rawStream;
-  rawStream << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".raw.gz " << data.caseTmpDir;
+  rawStream << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".raw.gz " << data.caseTmpDir;
   std::string cpCTraw = rawStream.str();
   system( cpCTraw.c_str() );
 
@@ -1246,24 +1246,24 @@ void CopySessionDataFromMAD( SESSIONDATA data )
   if (data.inLabelMapFileNameHeader.compare("NA") != 0)
     {
       std::stringstream permissionHeaderStream2;
-      permissionHeaderStream2 << "ssh copd@mad.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
+      permissionHeaderStream2 << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
 	data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameHeader << "'";
       std::string permissionCTheader2 = permissionHeaderStream2.str();
       system( permissionCTheader2.c_str() );
 
       std::stringstream headerStream2;
-      headerStream2 << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameHeader << " " << data.caseTmpDir;
+      headerStream2 << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameHeader << " " << data.caseTmpDir;
       std::string permissionInLabelMapHeader = headerStream2.str();
       system( permissionInLabelMapHeader.c_str() );
       
       std::stringstream permissionRawStream2;
-      permissionRawStream2 << "ssh copd@mad.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
+      permissionRawStream2 << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
 	data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameRaw << "'";
       std::string permissionCTraw2 = permissionRawStream2.str();
       system( permissionCTraw2.c_str() );
 
       std::stringstream rawStream2;
-      rawStream2 << "scp copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameRaw << " " << data.caseTmpDir;
+      rawStream2 << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameRaw << " " << data.caseTmpDir;
       std::string cpInLabelMapRaw = rawStream2.str();
       system( cpInLabelMapRaw.c_str() );
     }
@@ -1275,24 +1275,24 @@ void CopySessionDataToMAD( SESSIONDATA data )
   if (data.outLabelMapFileNameHeader.compare("NA") != 0)
     {
       std::stringstream permissionHeaderStream;
-      permissionHeaderStream << "ssh copd@mad.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
+      permissionHeaderStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
 	data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.outLabelMapFileNameHeader << "'";
       std::string permissionHeader = permissionHeaderStream.str();
       system( permissionHeader.c_str() );
 
       std::stringstream headerStream;
-      headerStream << "scp " << data.outLabelMapTmpDirAndFileNameHeader << " copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
+      headerStream << "scp " << data.outLabelMapTmpDirAndFileNameHeader << " copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
       std::string cpOutLabelMapHeader = headerStream.str();
       system( cpOutLabelMapHeader.c_str() );
       
       std::stringstream permissionRawStream;
-      permissionRawStream << "ssh copd@mad.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
+      permissionRawStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
 	data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.outLabelMapFileNameRaw << "'";
       std::string permissionRaw = permissionRawStream.str();
       system( permissionRaw.c_str() );
 
       std::stringstream rawStream;
-      rawStream << "scp " << data.outLabelMapTmpDirAndFileNameRaw << " copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
+      rawStream << "scp " << data.outLabelMapTmpDirAndFileNameRaw << " copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
       std::string cpOutLabelMapRaw = rawStream.str();
       system( cpOutLabelMapRaw.c_str() );    
       
@@ -1312,13 +1312,13 @@ void CopySessionDataToMAD( SESSIONDATA data )
   if (data.regionTypeIndicesFileName.compare("NA") != 0)
     {
       std::stringstream permissionStream;
-      permissionStream << "ssh copd@mad.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
+      permissionStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
 	data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.regionTypeIndicesFileName << "'";
       std::string permission = permissionStream.str();
       system( permission.c_str() );
 
       std::stringstream stream;
-      stream << "scp " << data.regionTypeIndicesTmpDirAndFileName << " copd@mad.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
+      stream << "scp " << data.regionTypeIndicesTmpDirAndFileName << " copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
       std::string cpRegionTypeIndices = stream.str();
       system( cpRegionTypeIndices.c_str() );
       
