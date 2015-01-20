@@ -393,6 +393,10 @@ if __name__ == "__main__":
     parser.add_option('--cid',
                       help='The case ID', dest='cid', metavar='<string>',
                       default=None)    
+    parser.add_option('--pheno_names',
+                      help='Comma separated list of phenotype value names to \
+                      compute.', dest='pheno_names', metavar='<string>',
+                      default=None)     
 
     (options, args) = parser.parse_args()
 
@@ -404,7 +408,20 @@ if __name__ == "__main__":
     spacing[1] = ct_header['space directions'][1][1]
     spacing[2] = ct_header['space directions'][2][2]
 
+    pheno_names = None
+    if options.pheno_names is not None:
+        pheno_names = options.pheno_names.split(',')
+    
     bc_pheno = BodyCompositionPhenotypes()    
-    df = bc_pheno.execute(ct, lm, options.cid, spacing)
+    df = bc_pheno.execute(ct, lm, options.cid, spacing, pheno_names=pheno_names)
+    
     if options.out_csv is not None:
-        df.to_csv(options.out_csv)
+        if pheno_names is None:
+            df.to_csv(options.out_csv, index=False)
+        else:
+            cols = bc_pheno.static_names_handler_.keys()        
+            for p in pheno_names:
+                cols.append(p)
+            for k in bc_pheno.key_names_:
+                cols.append(k)        
+            df[cols].to_csv(options.out_csv, index=False)
