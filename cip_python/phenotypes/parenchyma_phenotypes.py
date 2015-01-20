@@ -399,30 +399,34 @@ class ParenchymaPhenotypes(Phenotypes):
         #    (chest_region, chest_type, pheno_name)
         pheno_val = None
         mask_sum = np.sum(mask)
+
+        if mask_sum == 0:
+            return
+        
         if pheno_name == 'LAA950':
-            pheno_val = float(np.sum(ct[mask] <= -950.))/mask_sum
+                pheno_val = float(np.sum(ct[mask] <= -950.))/mask_sum
         elif pheno_name == 'LAA910':
-            pheno_val = float(np.sum(ct[mask] <= -910.))/mask_sum            
+                pheno_val = float(np.sum(ct[mask] <= -910.))/mask_sum            
         elif pheno_name == 'LAA856':
-            pheno_val = float(np.sum(ct[mask] <= -856.))/mask_sum            
+                pheno_val = float(np.sum(ct[mask] <= -856.))/mask_sum            
         elif pheno_name == 'HAA700':
-            pheno_val = float(np.sum(ct[mask] >= -700.))/mask_sum            
+                pheno_val = float(np.sum(ct[mask] >= -700.))/mask_sum            
         elif pheno_name == 'HAA600':
-            pheno_val = float(np.sum(ct[mask] >= -600))/mask_sum            
+                pheno_val = float(np.sum(ct[mask] >= -600))/mask_sum            
         elif pheno_name == 'HAA500':
-            pheno_val = float(np.sum(ct[mask] >= -500))/mask_sum
+                pheno_val = float(np.sum(ct[mask] >= -500))/mask_sum
         elif pheno_name == 'HAA250':
-            pheno_val = float(np.sum(ct[mask] >= -250))/mask_sum            
+                pheno_val = float(np.sum(ct[mask] >= -250))/mask_sum 
         elif pheno_name == 'Perc15':
-            pheno_val = np.percentile(ct[mask], 15)
+                pheno_val = np.percentile(ct[mask], 15)
         elif pheno_name == 'Perc10':
-            pheno_val = np.percentile(ct[mask], 10)            
+                pheno_val = np.percentile(ct[mask], 10)            
         elif pheno_name == 'HUMean':
-            pheno_val = np.mean(ct[mask])
+                pheno_val = np.mean(ct[mask])
         elif pheno_name == 'HUStd':
-            pheno_val = np.std(ct[mask])
+                pheno_val = np.std(ct[mask])
         elif pheno_name == 'HUKurtosis':
-            pheno_val = kurtosis(ct[mask], bias=False, fisher=True)
+                pheno_val = kurtosis(ct[mask], bias=False, fisher=True)
         elif pheno_name == 'HUSkewness':
             pheno_val = skew(ct[mask], bias=False)
         elif pheno_name == 'HUMode':
