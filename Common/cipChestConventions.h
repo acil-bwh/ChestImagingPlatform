@@ -65,6 +65,8 @@ enum ChestRegion {
   SPLEEN,                 //26
   ABDOMEN,                //27
   PARAVERTEBRAL,          //28
+  OUTSIDELUNG,            //29
+  OUTSIDEBODY,            //30
 };
 
 

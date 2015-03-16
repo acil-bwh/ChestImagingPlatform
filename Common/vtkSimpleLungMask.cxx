@@ -49,23 +49,26 @@ vtkSimpleLungMask::vtkSimpleLungMask()
   this->NumberOfDilatations = 1;
   this->NumberOfErosions = 1;
 
+  this->WholeLungLabel = 4; //This is a tmp label to assign
   this->LeftLungLabel = 3;
-  this->RightLungLabel = 12;
-  this->TracheaLabel = 1;
-  this->VesselsLabel = 2;
-  this->BodyLabel = 13;
-  this->AirLabel = 14;
-  this->UpperTracheaLabel = 15;
+  this->RightLungLabel = 2;
+  this->TracheaLabel = 31;
+  this->VesselsLabel = 768;
+  this->BodyLabel = 29;
+  this->AirLabel = 30;
+  this->UpperTracheaLabel = 15; //This value does not conform to combentions
 
   this->TracheaInitZ = 0;
   this->TracheaEndZ = 0;
 
+  this->NumVoxelWholeLung =0;
   this->NumVoxelLeftLung = 0;
   this->NumVoxelRightLung = 0;
   this->NumVoxelTrachea = 0;
 
-  this->BaseLabelLeftLung = 5;
-  this->BaseLabelRightLung = 8;
+  this->BaseLabelLeftLung = 9;
+  this->BaseLabelRightLung = 12;
+  this->BaseLabelWholeLung = 20;
 
   this->RasToVtk = NULL;
 
@@ -251,7 +254,7 @@ vtkImageData *vtkSimpleLungMask::PreVolumeProcessing(vtkImageData *in, int &ZCen
 
     for (int i=0; i< th->GetOutput()->GetNumberOfPoints(); i++) {
     	if (*mask == 1 && *bg == 0) {
-		*mask = this->LeftLungLabel;
+		*mask = this->WholeLungLabel;
 	} else {
 		*mask = 0;
 	}
@@ -271,9 +274,9 @@ vtkImageData *vtkSimpleLungMask::PreVolumeProcessing(vtkImageData *in, int &ZCen
     // Here we should have a decent lung mask
     vtkImageSeedConnectivity *connect = vtkImageSeedConnectivity::New();
     connect->SetInputConnection(th->GetOutputPort());
-    connect->SetInputConnectValue(this->LeftLungLabel);
+    connect->SetInputConnectValue(this->WholeLungLabel);
     //connect->SetOutputConnectedValue(1);
-    connect->SetOutputConnectedValue(this->LeftLungLabel);
+    connect->SetOutputConnectedValue(this->WholeLungLabel);
     connect->SetOutputUnconnectedValue(0);
     connect->AddSeed(this->LCentroid[0],this->LCentroid[1],this->LCentroid[2]);
     connect->AddSeed(this->RCentroid[0],this->RCentroid[1],this->RCentroid[2]);
@@ -302,7 +305,7 @@ vtkImageData *vtkSimpleLungMask::PreVolumeProcessing(vtkImageData *in, int &ZCen
 
   //1. Dilate
   di_er->SetForeground(0);
-  //di_er->SetBackground(this->LeftLungLabel);
+  //di_er->SetBackground(this->WholeLungLabel);
   di_er->SetNeighborTo8();
   for (int i=0; i<this->GetNumberOfDilatations(); i++) {
     di_er->SetInput(tmp);
@@ -313,7 +316,7 @@ vtkImageData *vtkSimpleLungMask::PreVolumeProcessing(vtkImageData *in, int &ZCen
   //2. Erode
    vtkImageErode *di_er = vtkImageErode::New();
   di_er->SetBackground(0);
-  di_er->SetForeground(this->LeftLungLabel);
+  di_er->SetForeground(this->WholeLungLabel);
   di_er->SetNeighborTo4();
   for (int i=0; i<this->GetNumberOfErosions(); i++) {
     di_er->SetInput(tmp);
@@ -634,7 +637,7 @@ void vtkSimpleLungMask::ExecuteDataWithInformation(vtkDataObject *output, vtkInf
 
   vtkImageConnectivity *con  = vtkImageConnectivity::New();
   con->SetInputData(tmp);
-  con->SetBackground(this->LeftLungLabel);
+  con->SetBackground(this->WholeLungLabel);
   con->SetMinForeground(-256);
   con->SetMaxForeground(256);
   con->SetFunctionToRemoveIslands();
@@ -650,7 +653,7 @@ void vtkSimpleLungMask::ExecuteDataWithInformation(vtkDataObject *output, vtkInf
   cout<<"Cleaning Remove Islands"<<endl;
   outPtr = (short *) outData->GetScalarPointer();
   for (int i=0; i<outData->GetNumberOfPoints();i++) {
-    if (*conPtr == this->LeftLungLabel || *conPtr == this->TracheaLabel)
+    if (*conPtr == this->WholeLungLabel || *conPtr == this->TracheaLabel)
       {
       *outPtr = *conPtr;
       }
@@ -1061,19 +1064,19 @@ void vtkSimpleLungMask::ExtractTrachea(vtkImageData *in) {
            vtkImageErode *di_er = vtkImageErode::New();
            di_er->SetInputData(slice);
            di_er->SetBackground(0);
-           di_er->SetForeground(this->LeftLungLabel);
+           di_er->SetForeground(this->WholeLungLabel);
            di_er->SetNeighborTo4();
            di_er->Update();
 
             vtkImageSeedConnectivity *cc = vtkImageSeedConnectivity::New();
             cc->SetInputData(di_er->GetOutput());
             cc->AddSeed(C[0],C[1]);
-            cc->SetInputConnectValue(this->LeftLungLabel);
-            cc->SetOutputConnectedValue(this->LeftLungLabel);
+            cc->SetInputConnectValue(this->WholeLungLabel);
+            cc->SetOutputConnectedValue(this->WholeLungLabel);
             cc->SetOutputUnconnectedValue(0);
             //cout<<"Doing CC"<<endl;
             cc->Update();
-	    di_er->Delete();
+	          di_er->Delete();
             //cout<<"CC done"<<endl;
             //cout<<"Getting inPtr"<<endl;
             inPtr = (unsigned char *)cc->GetOutput()->GetScalarPointer(0,0,0);
@@ -1089,36 +1092,37 @@ void vtkSimpleLungMask::ExtractTrachea(vtkImageData *in) {
 	    count = (int) (count * sp[0]*sp[1]);
 
 	    if (count > this->TracheaAreaTh) {
-	    	cout<<"We walk into the lung at "<<k<<endl;
-		cc->Delete();
-		break;
+        cout<<"We walk into the lung at "<<k<<endl;
+        cc->Delete();
+        break;
 	    }
               // Dilate to compensate for the erosion:
 	    vtkImageErode *di_er2 = vtkImageErode::New();
-            di_er2->SetForeground(0);
-            di_er2->SetBackground(this->LeftLungLabel);
-            di_er2->SetNeighborTo8();
-            di_er2->SetInputConnection(cc->GetOutputPort());
-            di_er2->Update();
+      di_er2->SetForeground(0);
+      di_er2->SetBackground(this->WholeLungLabel);
+      di_er2->SetNeighborTo8();
+      di_er2->SetInputConnection(cc->GetOutputPort());
+      di_er2->Update();
 	    cc->Delete();
+      
 	    inPtr = (unsigned char *)di_er2->GetOutput()->GetScalarPointer(0,0,0);
 	    outPtr = (unsigned char *)in->GetScalarPointerForExtent(testext);
 	    //cout<<"Copy process input in output"<<endl;
-            for (int i = 0; i< numPoints; i++) {
-                if ((short) (*inPtr) == this->LeftLungLabel)
-                    *outPtr = (unsigned char) (this->TracheaLabel);
-                inPtr++;
-                outPtr++;
-            }
+      for (int i = 0; i< numPoints; i++) {
+          if ((short) (*inPtr) == this->WholeLungLabel)
+              *outPtr = (unsigned char) (this->TracheaLabel);
+          inPtr++;
+          outPtr++;
+      }
 
             // Recompute centroid for seed point for next iteration
 	    // Now extent is for a single slice.
 	    testext[4]=0;
 	    testext[5]=0;
-            this->ComputeCentroid(di_er2->GetOutput(),testext,C);
-            //cout<<"New seed: "<<C[0]<<" "<<C[1]<<" "<<C[2]<<endl;
-            // Delete Objects
-            di_er2->Delete();
+      this->ComputeCentroid(di_er2->GetOutput(),testext,C);
+      //cout<<"New seed: "<<C[0]<<" "<<C[1]<<" "<<C[2]<<endl;
+      // Delete Objects
+      di_er2->Delete();
 
     k = k + sign;
     } while(k != endZ);
@@ -1233,15 +1237,15 @@ void vtkSimpleLungMask::ExtractTracheaOLD(vtkImageData *in) {
            vtkImageErode *di_er = vtkImageErode::New();
            di_er->SetInputData(slice);
            di_er->SetBackground(0);
-           di_er->SetForeground(this->LeftLungLabel);
+           di_er->SetForeground(this->WholeLungLabel);
            di_er->SetNeighborTo4();
            di_er->Update();
 
             vtkImageSeedConnectivity *cc = vtkImageSeedConnectivity::New();
             cc->SetInputConnection(di_er->GetOutputPort());
             cc->AddSeed(C[0],C[1]);
-            cc->SetInputConnectValue(this->LeftLungLabel);
-            cc->SetOutputConnectedValue(this->LeftLungLabel);
+            cc->SetInputConnectValue(this->WholeLungLabel);
+            cc->SetOutputConnectedValue(this->WholeLungLabel);
             cc->SetOutputUnconnectedValue(0);
             //cout<<"Doing CC"<<endl;
             cc->Update();
@@ -1266,7 +1270,7 @@ void vtkSimpleLungMask::ExtractTracheaOLD(vtkImageData *in) {
 	    }
               // Dilate to compensate for the erosion:
             di_er->SetForeground(0);
-            di_er->SetBackground(this->LeftLungLabel);
+            di_er->SetBackground(this->WholeLungLabel);
             di_er->SetNeighborTo8();
             di_er->SetInputConnection(cc->GetOutputPort());
             di_er->Update();
@@ -1274,7 +1278,7 @@ void vtkSimpleLungMask::ExtractTracheaOLD(vtkImageData *in) {
 	    inPtr = (unsigned char *)di_er->GetOutput()->GetScalarPointer(0,0,0);
 	    //cout<<"Copy process input in output"<<endl;
             for (int i = 0; i< numPoints; i++) {
-                if ((short) (*inPtr) == this->LeftLungLabel)
+                if ((short) (*inPtr) == this->WholeLungLabel)
                     *outPtr = (unsigned char) (this->TracheaLabel);
                inPtr++;
                 outPtr++;
@@ -1337,7 +1341,7 @@ void vtkSimpleLungMask::ExtractUpperTrachea(vtkImageData *outData) {
     for (int ii=0; ii<numPoints; ii++) {
       if (foundTopLung == 0)
         {
-        if ( this->LeftLungLabel == (short) (*outPtr))
+        if ( this->WholeLungLabel == (short) (*outPtr))
           {
           //found=1;
           count++;
@@ -1361,10 +1365,13 @@ void vtkSimpleLungMask::ExtractUpperTrachea(vtkImageData *outData) {
 void vtkSimpleLungMask::SplitLung(vtkImageData *outData) {
  short *outPtr = (short *) outData->GetScalarPointer();
 
+ this->NumVoxelWholeLung = 0;
  this->NumVoxelLeftLung = 0;
  this->NumVoxelRightLung = 0;
  this->NumVoxelTrachea = 0;
  for(int i=0; i<outData->GetNumberOfPoints();i++) {
+   if (*outPtr == this->WholeLungLabel)
+     this->NumVoxelWholeLung++;
    if (*outPtr == this->LeftLungLabel)
      this->NumVoxelLeftLung++;
    if (*outPtr == this->RightLungLabel)
@@ -1385,23 +1392,43 @@ void vtkSimpleLungMask::SplitLung(vtkImageData *outData) {
      else
         IS =1;
 
+ int thirdW = (int) this->NumVoxelWholeLung/3;
  int thirdL = (int) this->NumVoxelLeftLung/3;
  int thirdR = (int) this->NumVoxelRightLung/3;
 
  outPtr = (short *) outData->GetScalarPointer();
+ int labelW;
  int labelL;
  int labelR;
  if (IS == 0) {
    labelL = this->BaseLabelLeftLung;
    labelR = this->BaseLabelRightLung;
+   labelW = this->BaseLabelWholeLung;
  } else {
    labelL = this->BaseLabelLeftLung+2;
    labelR = this->BaseLabelRightLung+2;
+   labelW = this->BaseLabelWholeLung+2;
  }
+ int cW = 0;
  int cL = 0;
  int cR = 0;
 
  for(int i=0; i<outData->GetNumberOfPoints();i++) {
+   
+   if (*outPtr == this->WholeLungLabel) {
+     if (cW < thirdW)
+       *outPtr = labelW;
+     else {
+       if (IS ==0)
+         labelW++;
+       else
+         labelW--;
+       cW = 0;
+       *outPtr = labelW;
+     }
+     cW++;
+   }
+   
    if (*outPtr == this->LeftLungLabel) {
      if (cL < thirdL)
        *outPtr = labelL;
@@ -1492,7 +1519,7 @@ void vtkSimpleLungMask::DensityMaskAnalysis()
 void vtkSimpleLungMask::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
-
+  os << indent << "Whole Lung Label:  " << this->GetWholeLungLabel() << "\n";
   os << indent << "Left Lung Label:  " << this->GetLeftLungLabel() << "\n";
   os << indent << "Right Lung Label: " << (this->GetRightLungLabel() );
 }
