@@ -70,29 +70,31 @@ class BodyCompositionPhenotypes(Phenotypes):
     """
     def __init__(self, chest_regions=None, chest_types=None, pairs=None,
                  pheno_names=None):
-        #rola changed len(chest_regions.shape) to len(shape(chest_regions))
-
         if chest_regions is not None:
-            if len(chest_regions.shape) != 1:
+            if len(np.shape(chest_regions)) != 1:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
+            print(chest_regions)
+            print(type(chest_regions))
+            print(np.max(chest_regions))
+            print(np.min(chest_regions))
             if np.max(chest_regions) > 255 or np.min(chest_regions) < 0:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
         if chest_types is not None:
-            chest_types = map(int, chest_types) #rola
+            print(chest_types)
             print(type(chest_types))
             if len(np.shape(chest_types)) != 1:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
-            if np.max(np.array(chest_types)) > 255 or np.min(np.array(chest_types)) < 0:
+            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
         if pairs is not None:
-            if len(pairs.shape) != 2:
+            if len(np.shape(pairs)) != 2:
                 raise ValueError(\
                 'cpairs must be a 1D array with elements in [0, 255]')
-            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
+            if np.max(pairs) > 255 or np.min(pairs) < 0:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
                 
@@ -221,6 +223,8 @@ class BodyCompositionPhenotypes(Phenotypes):
             Dataframe containing info about machine, run time, and chest region
             chest type phenotype quantities.         
         """
+
+        print("Executing new\n");
         assert len(ct.shape) == len(lm.shape), \
             "CT and label map are not the same dimension"    
 
@@ -400,6 +404,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
 
+    
     lm, lm_header = nrrd.read(options.in_lm)
     ct, ct_header = nrrd.read(options.in_ct)
 
