@@ -3,22 +3,22 @@
   <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>FilterVesselParticleData</title>
   <description><![CDATA[This program reads vessels particles and filters them \
-  based on connected components analysis. Particles are placed in \
-  the same component provided they are sufficiently close to one \
-  another, have scale that is sufficiently similar, and sufficiently \
-  define a local cylinder (i.e. they are sufficiently parallel with the \
-  vector connecting the two paticle spatial locations). Only \
-  components that have cardinality greater than or equal to that \
-  specified by the user will be retained in the output. Furthermore, \
-  the output particles will have a defined 'unmergedComponents' \
-  array that indicates the component label assigned to each particle.]]>
+based on connected components analysis. Particles are placed in \
+the same component provided they are sufficiently close to one \
+another, have scale that is sufficiently similar, and sufficiently \
+define a local cylinder (i.e. they are sufficiently parallel with the \
+vector connecting the two paticle spatial locations). Only \
+components that have cardinality greater than or equal to that \
+specified by the user will be retained in the output. Furthermore, \
+the output particles will have a defined 'unmergedComponents' \
+array that indicates the component label assigned to each particle.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-    and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
@@ -60,7 +60,7 @@
       <flag>d</flag>
       <longflag>distance</longflag>
       <description>Maximum inter-particle distance. Two particles must be at least this close \
-      together to be considered for connectivity </description>
+together to be considered for connectivity </description>
       <label>Max allowable distance</label>
       <default>3.0</default>
     </double>
@@ -70,9 +70,9 @@
       <flag>a</flag>
       <longflag>angle</longflag>
       <description>Particle angle threshold used to test the connectivity between two particles (in degrees). \
-      The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \
-      eigenvector pointing in the direction of the vessel axis is then considered. For both particles, this angle must be below \
-      the specified threshold for the particles to be connected</description>
+The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \
+eigenvector pointing in the direction of the vessel axis is then considered. For both particles, this angle must be below \
+the specified threshold for the particles to be connected</description>
       <label>Particle angle threshold</label>
       <default>20.0</default>
     </double>
@@ -82,8 +82,8 @@
       <flag>r</flag>
       <longflag>ratio</longflag>
       <description>Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \
-      two particles can differ in scale and still be considered for connectivity. The higher the value, \
-      the more permisse the filter is with respect to scale differences</description>
+two particles can differ in scale and still be considered for connectivity. The higher the value, \
+the more permisse the filter is with respect to scale differences</description>
       <label>Scale ratio threshold</label>
       <default>1.0</default>
     </double>
@@ -93,7 +93,7 @@
       <flag>s</flag>
       <longflag>size</longflag>
       <description>Component size cardinality threshold. Only components with this many particles or more \
-      will be retained in the output</description>
+will be retained in the output</description>
       <label>Component size threshold</label>
       <default>0</default>
     </integer>
@@ -111,7 +111,7 @@
       <name>maxAllowableScale</name>
       <longflag>maxScale</longflag>
       <description>Max allowable scale. No connection will be made between two particles if either of them \
-      have a scale that exceeds this amount.</description>
+have a scale that exceeds this amount.</description>
       <label>Maximum allowable scale</label>
       <default>1.79769e+308</default>
     </double>
@@ -120,7 +120,7 @@
       <name>minAllowableScale</name>
       <longflag>minScale</longflag>
       <description>Min  allowable scale. No connection will be made between two particles if either of them \
-        have a scale that exceeds this amount.</description>
+have a scale that exceeds this amount.</description>
       <label>Minimum allowable scale</label>
       <default>0</default>
     </double>
