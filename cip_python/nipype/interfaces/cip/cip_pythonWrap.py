@@ -26,10 +26,10 @@ class parenchyma_phenotypesInputSpec(BaseInterfaceInputSpec):
                      mandatory=True)
     chest_regions = traits.Str(desc='Chest regions',
                 mandatory=False)
-        #chest_types = traits.Str(desc='Chest types',
-    #                     mandatory=False)
-        #pairs = traits.Str(desc='Chest region/type pairs',
-    #                    mandatory=False)
+    chest_types = traits.Str(desc='Chest types',
+                         mandatory=False)
+    pairs = traits.Str(desc='Chest region/type pairs',
+                        mandatory=False)
     pheno_names = traits.Str(desc='Phenotype names',
                            mandatory=False)
     out_csv = File( desc='Output csv file in which to store the computed \
@@ -52,26 +52,30 @@ class parenchyma_phenotypes(BaseInterface):
         spacing[1] = ct_header['space directions'][1][1]
         spacing[2] = ct_header['space directions'][2][2]
     
-        #regions = None
-        #print(self.inputs.chest_regions)
-            #if self.inputs.chest_regions is not None:
-        #regions = self.inputs.chest_regions.split(',')
-        #types = None
-            #if self.inputs.chest_types is not None:
-        #types = self.inputs.chest_types.split(',')
-        #pairs = None
-            #if self.inputs.options.pairs is not None:
-            #tmp = pairs.split(',')
-            #assert len(tmp)%2 == 0, 'Specified pairs not understood'
-            #pairs = []
-                #for i in xrange(0, len(tmp)/2):
-                #pairs.append([tmp[2*i], tmp[2*i+1]])
+        regions = None
+        print(self.inputs.chest_regions)
+        if hasattr(self, 'inputs.chest_regions'):
+        #if self.inputs.chest_regions is not '_Undefined':
+            regions = self.inputs.chest_regions.split(',')
+        types = None
+        print(self.inputs.chest_types)
+        if hasattr(self, 'inputs.chest_types'):
+        #if self.inputs.chest_types is not '_Undefined':
+            types = self.inputs.chest_types.split(',')
+        pairs = None
+        if hasattr(self, 'inputs.pairs'):
+        #if self.inputs.options.pairs is not None:
+            tmp = pairs.split(',')
+            assert len(tmp)%2 == 0, 'Specified pairs not understood'
+            pairs = []
+            for i in xrange(0, len(tmp)/2):
+                pairs.append([tmp[2*i], tmp[2*i+1]])
         pheno_names = None
         if self.inputs.pheno_names is not None:
             pheno_names = self.inputs.pheno_names.split(',')
     
-        paren_pheno = ParenchymaPhenotypes(chest_regions=self.inputs.chest_regions,
-                                       chest_types=None, pairs=None, pheno_names=pheno_names)
+        paren_pheno = ParenchymaPhenotypes(chest_regions=regions,  #self.inputs.chest_regions,
+                                       chest_types=types, pairs=pairs, pheno_names=pheno_names)
     
         df = paren_pheno.execute(ct, lm, self.inputs.cid, spacing)
     
