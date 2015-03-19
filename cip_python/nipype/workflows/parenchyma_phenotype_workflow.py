@@ -32,7 +32,7 @@ class ParenchymaPhenotypesWorkflow(CipWorkflow):
         self.pheno_names = pheno_names 
         self.filter_image = filter_image
         
-        cip_workflow.__init__(self, "ParenchymaPhenotypesWorkflow")  
+        CipWorkflow.__init__(self, "ParenchymaPhenotypesWorkflow")  
         
         #""" create the nodes and add them to the workflow"""
         #self.param.node_name.append('GenerateMedianFilteredImage')
