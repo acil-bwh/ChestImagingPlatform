@@ -1,6 +1,6 @@
 #include <map>
 
-#include "vtkNRRDWriter.h"
+#include "vtkNRRDWriterCIP.h"
 
 
 #include "vtkImageData.h"
@@ -11,10 +11,10 @@
 
 class AttributeMapType: public std::map<std::string, std::string> {};
 
-vtkStandardNewMacro(vtkNRRDWriter);
+vtkStandardNewMacro(vtkNRRDWriterCIP);
 
 //----------------------------------------------------------------------------
-vtkNRRDWriter::vtkNRRDWriter()
+vtkNRRDWriterCIP::vtkNRRDWriterCIP()
 {
   this->FileName = NULL;
   this->BValues = vtkDoubleArray::New();
@@ -29,7 +29,7 @@ vtkNRRDWriter::vtkNRRDWriter()
 }
 
 //----------------------------------------------------------------------------
-vtkNRRDWriter::~vtkNRRDWriter()
+vtkNRRDWriterCIP::~vtkNRRDWriterCIP()
 {
   if ( this->FileName )
     {
@@ -59,19 +59,19 @@ vtkNRRDWriter::~vtkNRRDWriter()
 }
 
 //----------------------------------------------------------------------------
-vtkImageData* vtkNRRDWriter::GetInput()
+vtkImageData* vtkNRRDWriterCIP::GetInput()
 {
   return vtkImageData::SafeDownCast(this->Superclass::GetInput());
 }
 
 //----------------------------------------------------------------------------
-vtkImageData* vtkNRRDWriter::GetInput(int port)
+vtkImageData* vtkNRRDWriterCIP::GetInput(int port)
 {
   return vtkImageData::SafeDownCast(this->Superclass::GetInput(port));
 }
 
 //----------------------------------------------------------------------------
-int vtkNRRDWriter::FillInputPortInformation(
+int vtkNRRDWriterCIP::FillInputPortInformation(
   int vtkNotUsed(port), vtkInformation *info)
 {
   info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
@@ -81,7 +81,7 @@ int vtkNRRDWriter::FillInputPortInformation(
 
 //----------------------------------------------------------------------------
 // Writes all the data from the input.
-void vtkNRRDWriter::vtkImageDataInfoToNrrdInfo(vtkImageData *in, int &kind, size_t &numComp, int &vtkType, void **buffer)
+void vtkNRRDWriterCIP::vtkImageDataInfoToNrrdInfo(vtkImageData *in, int &kind, size_t &numComp, int &vtkType, void **buffer)
 {
 
   vtkDataArray *array;
@@ -142,7 +142,7 @@ void vtkNRRDWriter::vtkImageDataInfoToNrrdInfo(vtkImageData *in, int &kind, size
      }
 }
 
-int vtkNRRDWriter::VTKToNrrdPixelType( const int vtkPixelType )
+int vtkNRRDWriterCIP::VTKToNrrdPixelType( const int vtkPixelType )
   {
   switch( vtkPixelType )
     {
@@ -187,7 +187,7 @@ int vtkNRRDWriter::VTKToNrrdPixelType( const int vtkPixelType )
 
 //----------------------------------------------------------------------------
 // Writes all the data from the input.
-void vtkNRRDWriter::WriteData()
+void vtkNRRDWriterCIP::WriteData()
 {
   this->WriteErrorOff();
   if (this->GetFileName() == NULL)
@@ -365,7 +365,7 @@ void vtkNRRDWriter::WriteData()
   return;
 }
 
-void vtkNRRDWriter::PrintSelf(ostream& os, vtkIndent indent)
+void vtkNRRDWriterCIP::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
@@ -375,7 +375,7 @@ void vtkNRRDWriter::PrintSelf(ostream& os, vtkIndent indent)
      this->MeasurementFrameMatrix->PrintSelf(os,indent);
 }
 
-void vtkNRRDWriter::SetAttribute(const std::string& name, const std::string& value)
+void vtkNRRDWriterCIP::SetAttribute(const std::string& name, const std::string& value)
 {
   if (!this->Attributes)
     {

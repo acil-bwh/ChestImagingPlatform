@@ -35,6 +35,9 @@ public:
 
   vtkGetMacro(LungThreshold,int);
 
+  vtkSetMacro(WholeLungLabel,int);
+  vtkGetMacro(WholeLungLabel,int);
+
   vtkSetMacro(LeftLungLabel,int);
   vtkGetMacro(LeftLungLabel,int);
 
@@ -61,6 +64,7 @@ public:
   vtkGetMacro(VesselsThreshold,int);
 
   //Density Mask Get methods
+  vtkGetMacro(NumVoxelWholeLung,int)
   vtkGetMacro(NumVoxelLeftLung,int);
   vtkGetMacro(NumVoxelRightLung,int);
   vtkGetMacro(NumVoxelTrachea,int);
@@ -101,6 +105,7 @@ protected:
   int NumberOfDilatations;
   int NumberOfErosions;
 
+  short WholeLungLabel; //greater than 1
   short LeftLungLabel; //greater than 1
   short RightLungLabel; //greater than 1
   short TracheaLabel;
@@ -109,9 +114,11 @@ protected:
   short AirLabel;
   short UpperTracheaLabel;
 
+  int BaseLabelWholeLung;
   int BaseLabelLeftLung;
   int BaseLabelRightLung;
 
+  int NumVoxelWholeLung;
   int NumVoxelLeftLung;
   int NumVoxelRightLung;
   int NumVoxelTrachea;

@@ -6,7 +6,7 @@
   or http://www.slicer.org/copyright/copyright.txt for details.
 
   Program:   3D Slicer
-  Module:    $RCSfile: vtkNRRDReader.cxx,v $
+  Module:    $RCSfile: vtkNRRDReaderCIP.cxx,v $
   Date:      $Date: 2007/06/12 19:13:58 $
   Version:   $Revision: 1.7.2.1 $
 
@@ -14,7 +14,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkNRRDReader.cxx,v $
+  Module:    $RCSfile: vtkNRRDReaderCIP.cxx,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -26,7 +26,7 @@
 
 =========================================================================*/
 // vtkTeem includes
-#include "vtkNRRDReader.h"
+#include "vtkNRRDReaderCIP.h"
 
 // VTK includes
 #include "vtkBitArray.h"
@@ -51,9 +51,9 @@
 // Teem includes
 #include "teem/ten.h"
 
-vtkStandardNewMacro(vtkNRRDReader);
+vtkStandardNewMacro(vtkNRRDReaderCIP);
 
-vtkNRRDReader::vtkNRRDReader()
+vtkNRRDReaderCIP::vtkNRRDReaderCIP()
 {
   RasToIjkMatrix = NULL;
   NRRDWorldToRasMatrix = NULL;
@@ -65,7 +65,7 @@ vtkNRRDReader::vtkNRRDReader()
   ReadStatus = 0;
 }
 
-vtkNRRDReader::~vtkNRRDReader()
+vtkNRRDReaderCIP::~vtkNRRDReaderCIP()
 {
   if (RasToIjkMatrix) {
     RasToIjkMatrix->Delete();
@@ -93,19 +93,19 @@ vtkNRRDReader::~vtkNRRDReader()
   nrrdNuke(this->nrrd);
 }
 
-vtkMatrix4x4* vtkNRRDReader::GetRasToIjkMatrix()
+vtkMatrix4x4* vtkNRRDReaderCIP::GetRasToIjkMatrix()
 {
   this->ExecuteInformation();
   return this->RasToIjkMatrix;
 }
 
-vtkMatrix4x4* vtkNRRDReader::GetMeasurementFrameMatrix()
+vtkMatrix4x4* vtkNRRDReaderCIP::GetMeasurementFrameMatrix()
 {
   this->ExecuteInformation();
   return MeasurementFrameMatrix;
 }
 
-char* vtkNRRDReader::GetHeaderKeys()
+char* vtkNRRDReaderCIP::GetHeaderKeys()
 {
   std::string keys;
   for (std::map<std::string,std::string>::iterator i = HeaderKeyValue.begin();
@@ -128,7 +128,7 @@ char* vtkNRRDReader::GetHeaderKeys()
   return HeaderKeys;
 }
 
-std::vector<std::string> vtkNRRDReader::GetHeaderKeysVector()
+std::vector<std::string> vtkNRRDReaderCIP::GetHeaderKeysVector()
 {
   std::vector<std::string> keys;
 
@@ -140,7 +140,7 @@ std::vector<std::string> vtkNRRDReader::GetHeaderKeysVector()
   return keys;
 }
 
-const char* vtkNRRDReader::GetHeaderValue(const char *key)
+const char* vtkNRRDReaderCIP::GetHeaderValue(const char *key)
 {
   std::map<std::string,std::string>::iterator i = HeaderKeyValue.find(key);
   if (i != HeaderKeyValue.end()) {
@@ -151,7 +151,7 @@ const char* vtkNRRDReader::GetHeaderValue(const char *key)
   }
 }
 
-int vtkNRRDReader::CanReadFile(const char* filename)
+int vtkNRRDReaderCIP::CanReadFile(const char* filename)
 {
 
   // Check the extension first to avoid opening files that do not
@@ -210,7 +210,7 @@ int vtkNRRDReader::CanReadFile(const char* filename)
 
 
 
-void vtkNRRDReader::ExecuteInformation()
+void vtkNRRDReaderCIP::ExecuteInformation()
 {
    // This method determines the following and sets the appropriate value in
    // the parent IO class:
@@ -335,7 +335,7 @@ void vtkNRRDReader::ExecuteInformation()
     }
 
 
-   // vtkNRRDReader only supports 3 or 4 dimensional image with scalar, vector,
+   // vtkNRRDReaderCIP only supports 3 or 4 dimensional image with scalar, vector,
    // normal or tensor data. Other dimensionality is considered a multicomponent scalar field.
 
    if ( 3 == this->nrrd->dim && 0 == rangeAxisNum) {
@@ -643,9 +643,9 @@ void vtkNRRDReader::ExecuteInformation()
 }
 
 #if (VTK_MAJOR_VERSION <= 5)
-vtkImageData *vtkNRRDReader::AllocateOutputData(vtkDataObject *out) {
+vtkImageData *vtkNRRDReaderCIP::AllocateOutputData(vtkDataObject *out) {
 #else
-vtkImageData *vtkNRRDReader::AllocateOutputData(vtkDataObject *out, vtkInformation* outInfo){
+vtkImageData *vtkNRRDReaderCIP::AllocateOutputData(vtkDataObject *out, vtkInformation* outInfo){
 #endif
  vtkImageData *res = vtkImageData::SafeDownCast(out);
   if (!res)
@@ -673,9 +673,9 @@ vtkImageData *vtkNRRDReader::AllocateOutputData(vtkDataObject *out, vtkInformati
 }
 
 #if (VTK_MAJOR_VERSION <= 5)
-void vtkNRRDReader::AllocatePointData(vtkImageData *out) {
+void vtkNRRDReaderCIP::AllocatePointData(vtkImageData *out) {
 #else
-void vtkNRRDReader::AllocatePointData(vtkImageData *out, vtkInformation* outInfo) {
+void vtkNRRDReaderCIP::AllocatePointData(vtkImageData *out, vtkInformation* outInfo) {
 #endif
 
  vtkDataArray *pd = NULL;
@@ -801,7 +801,7 @@ void vtkNRRDReader::AllocatePointData(vtkImageData *out, vtkInformation* outInfo
 }
 
 int
-vtkNRRDReader::tenSpaceDirectionReduce(Nrrd *nout, const Nrrd *nin, double SD[9]) {
+vtkNRRDReaderCIP::tenSpaceDirectionReduce(Nrrd *nout, const Nrrd *nin, double SD[9]) {
   char me[]="tenSpaceDirectionReduce", err[BUFSIZ];
   double SDT[9], tenMeasr[9], tenSlice[9];
   size_t ii, nn;
@@ -876,12 +876,12 @@ vtkNRRDReader::tenSpaceDirectionReduce(Nrrd *nout, const Nrrd *nin, double SD[9]
 // This function reads a data from a file.  The datas extent/axes
 // are assumed to be the same as the file extent/order.
 #if (VTK_MAJOR_VERSION <= 5)
-void vtkNRRDReader::ExecuteData(vtkDataObject *output)
+void vtkNRRDReaderCIP::ExecuteData(vtkDataObject *output)
 {
   output->SetUpdateExtentToWholeExtent();
   vtkImageData *data = this->AllocateOutputData(output);
 #else
-void vtkNRRDReader::ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo)
+void vtkNRRDReaderCIP::ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo)
 {
   this->SetUpdateExtentToWholeExtent();
   vtkImageData *data = this->AllocateOutputData(output, outInfo);
@@ -1081,7 +1081,7 @@ void vtkNRRDReader::ExecuteDataWithInformation(vtkDataObject *output, vtkInforma
 
 
 //----------------------------------------------------------------------------
-void vtkNRRDReader::PrintSelf(ostream& os, vtkIndent indent)
+void vtkNRRDReaderCIP::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 }

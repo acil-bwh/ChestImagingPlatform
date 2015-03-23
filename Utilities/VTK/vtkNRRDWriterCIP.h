@@ -1,5 +1,5 @@
-#ifndef __vtkNRRDWriter_h
-#define __vtkNRRDWriter_h
+#ifndef __vtkNRRDWriterCIP_h
+#define __vtkNRRDWriterCIP_h
 
 #include "vtkWriter.h"
 
@@ -14,17 +14,17 @@ class AttributeMapType;
 
 /// \brief Writes PNG files.
 ///
-/// vtkNRRDWriter writes NRRD files.
+/// vtkNRRDWriterCIP writes NRRD files.
 ///
-/// \sa vtkNRRDReader
-class VTK_CIP_UTILITIES_EXPORT vtkNRRDWriter : public vtkWriter
+/// \sa vtkNRRDReaderCIP
+class VTK_CIP_UTILITIES_EXPORT vtkNRRDWriterCIP : public vtkWriter
 {
 public:
 
-  vtkTypeMacro(vtkNRRDWriter,vtkWriter);
+  vtkTypeMacro(vtkNRRDWriterCIP,vtkWriter);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  static vtkNRRDWriter *New();
+  static vtkNRRDWriterCIP *New();
 
   ///
   /// Get the input to this writer.
@@ -66,8 +66,8 @@ public:
   void SetAttribute(const std::string& name, const std::string& value);
 
 protected:
-  vtkNRRDWriter();
-  ~vtkNRRDWriter();
+  vtkNRRDWriterCIP();
+  ~vtkNRRDWriterCIP();
 
   virtual int FillInputPortInformation(int port, vtkInformation *info);
 
@@ -93,8 +93,8 @@ protected:
   AttributeMapType *Attributes;
 
 private:
-  vtkNRRDWriter(const vtkNRRDWriter&);  /// Not implemented.
-  void operator=(const vtkNRRDWriter&);  /// Not implemented.
+  vtkNRRDWriterCIP(const vtkNRRDWriterCIP&);  /// Not implemented.
+  void operator=(const vtkNRRDWriterCIP&);  /// Not implemented.
   void vtkImageDataInfoToNrrdInfo(vtkImageData *in, int &nrrdKind, size_t &numComp, int &vtkType, void **buffer);
   int VTKToNrrdPixelType( const int vtkPixelType );
   int DiffusionWeigthedData;

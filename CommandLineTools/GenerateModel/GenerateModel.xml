@@ -23,15 +23,16 @@
       <default>NA</default>
     </string>   
 
-      <string>
-          <name>outputModelFileName</name>
-          <label>output Model FileName</label>
-          <channel>output</channel>
-          <flag>o</flag>
-          <longflag>--out</longflag>
-          <description><![CDATA[Output model file name]]></description>
-          <default>NA</default>
-      </string>  
+    <string>
+      <name>outputModelFileName</name>
+      <label>output Model FileName</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>--out</longflag>
+      <description><![CDATA[Output model file name]]></description>
+      <default>NA</default>
+    </string>  
+
     <integer>
       <name>smootherIterationsTemp</name>
       <label>smoother Iterations</label>
@@ -44,7 +45,7 @@
 
     <integer>
         <name>foregroundLabel</name>
-        <label>foreground Label</label>
+        <label>Foreground Label</label>
         <channel>input</channel>
         <flag>l</flag>
         <longflag>--label</longflag>

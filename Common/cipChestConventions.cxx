@@ -48,12 +48,26 @@ cip::ChestConventions::ChestConventions()
 					       (unsigned char)( AORTA ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ), 
 					       (unsigned char)( PULMONARYARTERY ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LOWERTHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LOWERTHIRD ),
 					       (unsigned char)( WHOLELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MIDDLETHIRD ), 
 					       (unsigned char)( WHOLELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( UPPERTHIRD ), 
 					       (unsigned char)( WHOLELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ),
+                 (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLEHEART ),
+                 (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( AORTA ),
+                 (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LIVER ),
+                 (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SPLEEN ),
+                 (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( ABDOMEN ),
+                 (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PARAVERTEBRAL ),
+                 (unsigned char)( OUTSIDELUNG ) ) );
   
   ChestRegions.push_back( (unsigned char)( UNDEFINEDREGION ) );
   ChestRegions.push_back( (unsigned char)( WHOLELUNG ) );
@@ -84,6 +98,8 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( SPLEEN ) );
   ChestRegions.push_back( (unsigned char)( ABDOMEN ) );
   ChestRegions.push_back( (unsigned char)( PARAVERTEBRAL ) );
+  ChestRegions.push_back( (unsigned char)( OUTSIDELUNG ) );
+  ChestRegions.push_back( (unsigned char)( OUTSIDEBODY ) );
   
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
   ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
@@ -197,6 +213,8 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "Spleen" );
   ChestRegionNames.push_back( "Abdomen" );
   ChestRegionNames.push_back( "Paravertebral" );
+  ChestRegionNames.push_back( "OutsideLung" );
+  ChestRegionNames.push_back( "OutsideBody" );
   
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );

@@ -13,8 +13,8 @@
 #include "vtkSmartPointer.h"
 #include "vtkTimerLog.h"
 
-#include "vtkNRRDReader.h"
-#include "vtkNRRDWriter.h"
+#include "vtkNRRDReaderCIP.h"
+#include "vtkNRRDWriterCIP.h"
 #include "vtkImageData.h"
 #include "GenerateSimpleLungMaskCLP.h"
 
@@ -28,7 +28,7 @@ int main( int argc, char * argv[] ){
   PARSE_ARGS;
 
   // Read in volume inputs
-  vtkNRRDReader *readerA = vtkNRRDReader::New();
+  vtkNRRDReaderCIP *readerA = vtkNRRDReaderCIP::New();
   readerA->SetFileName(inputVolume.c_str());
   readerA->Update();
 
@@ -118,7 +118,7 @@ int main( int argc, char * argv[] ){
 
   // Output
   std::cout<<"Reade To Write File"<<endl;
-  vtkNRRDWriter *writer = vtkNRRDWriter::New();
+  vtkNRRDWriterCIP *writer = vtkNRRDWriterCIP::New();
   writer->SetFileName(outputVolume.c_str());
   writer->SetInputData( vol );
   readerA->GetRasToIjkMatrix()->Invert();

@@ -6,7 +6,7 @@
   or http://www.slicer.org/copyright/copyright.txt for details.
 
   Program:   3D Slicer
-  Module:    $RCSfile: vtkNRRDReader.h,v $
+  Module:    $RCSfile: vtkNRRDReaderCIP.h,v $
   Date:      $Date: 2007/06/12 19:13:59 $
   Version:   $Revision: 1.3.2.1 $
 
@@ -14,7 +14,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkNRRDReader.h,v $
+  Module:    $RCSfile: vtkNRRDReaderCIP.h,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -26,8 +26,8 @@
 
 =========================================================================*/
 
-#ifndef __vtkNRRDReader_h
-#define __vtkNRRDReader_h
+#ifndef __vtkNRRDReaderCIP_h
+#define __vtkNRRDReaderCIP_h
 
 #include <string>
 #include <map>
@@ -50,12 +50,12 @@
 /// Reads Nearly Raw Raster Data files using the nrrdio library as used in ITK
 //
 /// \sa vtkImageReader2
-class VTK_CIP_UTILITIES_EXPORT vtkNRRDReader : public vtkMedicalImageReader2
+class VTK_CIP_UTILITIES_EXPORT  vtkNRRDReaderCIP : public vtkMedicalImageReader2
 {
 public:
-  static vtkNRRDReader *New();
+  static vtkNRRDReaderCIP *New();
 
-  vtkTypeMacro(vtkNRRDReader,vtkMedicalImageReader2);
+  vtkTypeMacro(vtkNRRDReaderCIP,vtkMedicalImageReader2);
 
   ///
   /// Returns a IJK to RAS transformation matrix
@@ -231,8 +231,8 @@ void AllocatePointData(vtkImageData *out, vtkInformation* outInfo);
 #endif
 
 protected:
-  vtkNRRDReader();
-  ~vtkNRRDReader();
+  vtkNRRDReaderCIP();
+  ~vtkNRRDReaderCIP();
 
   vtkMatrix4x4* RasToIjkMatrix;
   vtkMatrix4x4* MeasurementFrameMatrix;
@@ -262,8 +262,8 @@ protected:
   int tenSpaceDirectionReduce(Nrrd *nout, const Nrrd *nin, double SD[9]);
 
 private:
-  vtkNRRDReader(const vtkNRRDReader&);  /// Not implemented.
-  void operator=(const vtkNRRDReader&);  /// Not implemented.
+  vtkNRRDReaderCIP(const vtkNRRDReaderCIP&);  /// Not implemented.
+  void operator=(const vtkNRRDReaderCIP&);  /// Not implemented.
 };
 
 #endif
