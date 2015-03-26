@@ -3,7 +3,7 @@
 
 cip::ChestConventions::ChestConventions()
 {
-  m_NumberOfEnumeratedChestRegions = 32;
+  m_NumberOfEnumeratedChestRegions = 48;
   m_NumberOfEnumeratedChestTypes   = 82;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
@@ -42,12 +42,12 @@ cip::ChestConventions::ChestConventions()
 					       (unsigned char)( RIGHTLUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLELUNG ), 
 					       (unsigned char)( UNDEFINEDREGION ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ), 
-					       (unsigned char)( WHOLEHEART ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ), 
-					       (unsigned char)( AORTA ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ), 
-					       (unsigned char)( PULMONARYARTERY ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLEHEART ), 
+					       (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( AORTA ), 
+					       (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PULMONARYARTERY ), 
+					       (unsigned char)( MEDIASTINUM ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LOWERTHIRD ),
 					       (unsigned char)( WHOLELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MIDDLETHIRD ), 
@@ -55,20 +55,74 @@ cip::ChestConventions::ChestConventions()
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( UPPERTHIRD ), 
 					       (unsigned char)( WHOLELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ),
-                 (unsigned char)( OUTSIDELUNG ) ) );
+                                               (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLEHEART ),
-                 (unsigned char)( OUTSIDELUNG ) ) );
+                                               (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( AORTA ),
-                 (unsigned char)( OUTSIDELUNG ) ) );
+                                               (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LIVER ),
-                 (unsigned char)( OUTSIDELUNG ) ) );
+                                               (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SPLEEN ),
-                 (unsigned char)( OUTSIDELUNG ) ) );
+                                               (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( ABDOMEN ),
-                 (unsigned char)( OUTSIDELUNG ) ) );
+                                               (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PARAVERTEBRAL ),
-                 (unsigned char)( OUTSIDELUNG ) ) );
-  
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
+                                               (unsigned char)( UNDEFINED ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( STERNUM ),
+                                               (unsigned char)( SKELETON ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( HUMERI ),
+                                               (unsigned char)( SKELETON ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTHUMERUS ),
+                                               (unsigned char)( HUMERI ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTHUMERUS ),
+                                               (unsigned char)( HUMERI ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTHUMERUS ),
+                                               (unsigned char)( LEFT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTHUMERUS ),
+                                               (unsigned char)( RIGHT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SCAPULAE ),
+                                               (unsigned char)( SKELETON ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTSCAPULA ),
+                                               (unsigned char)( SCAPULAE ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTSCAPULA ),
+                                               (unsigned char)( SCAPULAE ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTSCAPULA ),
+                                               (unsigned char)( LEFT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTSCAPULA ),
+                                               (unsigned char)( RIGHT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( HILA ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTHILUM ),
+                                               (unsigned char)( HILA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTHILUM ),
+                                               (unsigned char)( HILA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTHILUM ),
+                                               (unsigned char)( LEFT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTHILUM ),
+                                               (unsigned char)( RIGHT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( KIDNEYS ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTKIDNEY ),
+                                               (unsigned char)( KIDNEYS ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTKIDNEY ),
+                                               (unsigned char)( KIDNEYS ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTKIDNEY ),
+                                               (unsigned char)( LEFT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTKIDNEY ),
+                                               (unsigned char)( RIGHT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( ASCENDINGAORTA ),
+                                               (unsigned char)( AORTA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( TRANSVERSALAORTA ),
+                                               (unsigned char)( AORTA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( DESCENDINGAORTA ),
+                                               (unsigned char)( AORTA ) ) );
+
+
+
   ChestRegions.push_back( (unsigned char)( UNDEFINEDREGION ) );
   ChestRegions.push_back( (unsigned char)( WHOLELUNG ) );
   ChestRegions.push_back( (unsigned char)( RIGHTLUNG ) );
@@ -100,7 +154,24 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( PARAVERTEBRAL ) );
   ChestRegions.push_back( (unsigned char)( OUTSIDELUNG ) );
   ChestRegions.push_back( (unsigned char)( OUTSIDEBODY ) );
+  ChestRegions.push_back( (unsigned char)( SKELETON ) );
   ChestRegions.push_back( (unsigned char)( STERNUM ) );
+  ChestRegions.push_back( (unsigned char)( HUMERI) );
+  ChestRegions.push_back( (unsigned char)( LEFTHUMERUS ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTHUMERUS ) );
+  ChestRegions.push_back( (unsigned char)( SCAPULAE) );
+  ChestRegions.push_back( (unsigned char)( LEFTSCAPULA ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTSCAPULA ) );
+  ChestRegions.push_back( (unsigned char)( HILA) );
+  ChestRegions.push_back( (unsigned char)( LEFTHILUM ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTHILUM ) );
+  ChestRegions.push_back( (unsigned char)( KIDNEYS) );
+  ChestRegions.push_back( (unsigned char)( LEFTKIDNEY ) );
+  ChestRegions.push_back( (unsigned char)( RIGHKIDNEY ) );
+  ChestRegions.push_back( (unsigned char)( ASCENDINGAORTA) );
+  ChestRegions.push_back( (unsigned char)( TRANSVERSALAORTA ) );
+  ChestRegions.push_back( (unsigned char)( DESCENDINGAORTA ) );
+
   
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
   ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
@@ -216,7 +287,23 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "Paravertebral" );
   ChestRegionNames.push_back( "OutsideLung" );
   ChestRegionNames.push_back( "OutsideBody" );
+  ChestRegionNames.push_back( "Skeleton" );
   ChestRegionNames.push_back( "Sternum" );
+  ChestRegionNames.push_back( "Humeri" );
+  ChestRegionNames.push_back( "LeftHumerus" );
+  ChestRegionNames.push_back( "RightHumerus" );
+  ChestRegionNames.push_back( "Scapulae" );
+  ChestRegionNames.push_back( "LeftScapula" );
+  ChestRegionNames.push_back( "RightScapula" );
+  ChestRegionNames.push_back( "Hila" );
+  ChestRegionNames.push_back( "LeftHilum" );
+  ChestRegionNames.push_back( "RightHilum" );
+  ChestRegionNames.push_back( "Kidneys" );
+  ChestRegionNames.push_back( "LeftKidney" );
+  ChestRegionNames.push_back( "RightKidney" );
+  ChestRegionNames.push_back( "AscendingAorta" );
+  ChestRegionNames.push_back( "TransversalAorta" );
+  ChestRegionNames.push_back( "DescendingAorta" );
   
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );
@@ -489,7 +576,26 @@ cip::ChestConventions::ChestConventions()
   double* r026 = new double[3]; r026[0] = 0.66; r026[1] = 0.36; r026[2] = 0.40; ChestRegionColors.push_back( r026 ); //LIVER
   double* r027 = new double[3]; r027[0] = 1.00; r027[1] = 1.00; r027[2] = 0.01; ChestRegionColors.push_back( r027 ); //SPLEEN
   double* r028 = new double[3]; r028[0] = 1.00; r028[1] = 0.50; r028[2] = 0.01; ChestRegionColors.push_back( r028 ); //ABDOMEN
-  double* r029 = new double[3]; r029[0] = 1.00; r029[1] = 0.51; r029[2] = 0.01; ChestRegionColors.push_back( r029 ); //PARAVERTEBRAL  
+  double* r029 = new double[3]; r029[0] = 1.00; r029[1] = 0.51; r029[2] = 0.01; ChestRegionColors.push_back( r029 ); //PARAVERTEBRAL
+  double* r030 = new double[3]; r030[0] = 0.49; r030[1] = 0.49; r030[2] = 0.49; ChestRegionColors.push_back( r030 ); //OUTSIDELUNG
+  double* r031 = new double[3]; r031[0] = 0.49; r031[1] = 0.49; r031[2] = 0.50; ChestRegionColors.push_back( r031 ); //OUTSIDEBODY
+  double* r032 = new double[3]; r032[0] = 0.49; r032[1] = 0.49; r032[2] = 0.51; ChestRegionColors.push_back( r032 ); //SKELETON
+  double* r033 = new double[3]; r033[0] = 0.49; r033[1] = 0.49; r033[2] = 0.52; ChestRegionColors.push_back( r033 ); //STERNUM
+  double* r034 = new double[3]; r034[0] = 0.49; r034[1] = 0.49; r034[2] = 0.53; ChestRegionColors.push_back( r034 ); //HUMERI
+  double* r035 = new double[3]; r035[0] = 0.49; r035[1] = 0.49; r035[2] = 0.54; ChestRegionColors.push_back( r035 ); //LEFTHUMERUS
+  double* r036 = new double[3]; r036[0] = 0.49; r036[1] = 0.49; r036[2] = 0.55; ChestRegionColors.push_back( r036 ); //RIGHTHUMERUS
+  double* r037 = new double[3]; r037[0] = 0.49; r037[1] = 0.49; r037[2] = 0.56; ChestRegionColors.push_back( r037 ); //SCAPULAE
+  double* r038 = new double[3]; r038[0] = 0.49; r038[1] = 0.49; r038[2] = 0.57; ChestRegionColors.push_back( r038 ); //LEFTSCAPULA
+  double* r039 = new double[3]; r039[0] = 0.49; r039[1] = 0.49; r039[2] = 0.58; ChestRegionColors.push_back( r039 ); //RIGHTSCAPULA
+  double* r040 = new double[3]; r040[0] = 0.49; r040[1] = 0.49; r040[2] = 0.59; ChestRegionColors.push_back( r040 ); //HILA
+  double* r041 = new double[3]; r041[0] = 0.49; r041[1] = 0.49; r041[2] = 0.60; ChestRegionColors.push_back( r041 ); //LEFTHILUM
+  double* r042 = new double[3]; r042[0] = 0.49; r042[1] = 0.49; r042[2] = 0.61; ChestRegionColors.push_back( r042 ); //RIGHTHILUM
+  double* r043 = new double[3]; r043[0] = 0.49; r043[1] = 0.49; r043[2] = 0.62; ChestRegionColors.push_back( r043 ); //KIDNEYS
+  double* r044 = new double[3]; r044[0] = 0.49; r044[1] = 0.49; r044[2] = 0.63; ChestRegionColors.push_back( r044 ); //LEFTKIDNEY
+  double* r045 = new double[3]; r045[0] = 0.49; r045[1] = 0.49; r045[2] = 0.64; ChestRegionColors.push_back( r045 ); //RIGHTKIDNEY
+  double* r046 = new double[3]; r046[0] = 0.49; r046[1] = 0.49; r046[2] = 0.65; ChestRegionColors.push_back( r046 ); //ASCENDINGAORTA
+  double* r047 = new double[3]; r047[0] = 0.49; r047[1] = 0.49; r047[2] = 0.66; ChestRegionColors.push_back( r047 ); //TRANSVERSALAORTA
+  double* r048 = new double[3]; r048[0] = 0.49; r048[1] = 0.49; r048[2] = 0.67; ChestRegionColors.push_back( r048 ); //DESCENDINGAORTA
 }
 
 cip::ChestConventions::~ChestConventions()

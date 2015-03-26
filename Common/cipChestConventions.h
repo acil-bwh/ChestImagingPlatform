@@ -67,7 +67,23 @@ enum ChestRegion {
   PARAVERTEBRAL,          //28
   OUTSIDELUNG,            //29
   OUTSIDEBODY,            //30
-  STERNUM,                //31
+  SKELETON,               //31
+  STERNUM,                //32
+  HUMERI,                 //33
+  LEFTHUMERUS,            //34
+  RIGHTHUMERUS,           //35
+  SCAPULAE,               //36
+  LEFTSCAPULA,            //37
+  RIGHTSCAPULA,           //38
+  HILA,                   //39
+  LEFTHILUM,              //40
+  RIGHTHILUM,             //41
+  KIDNEYS,                //42
+  LEFTKIDNEY,             //43
+  RIGHTKIDNEY,            //44
+  ASCENDINGAORTA,         //45
+  TRANSVERSALAORTA,       //46
+  DESCENDINGAORTA,        //47
 };
 
 
