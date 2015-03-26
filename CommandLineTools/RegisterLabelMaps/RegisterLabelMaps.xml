@@ -8,11 +8,11 @@
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
-   </acknowledgements>
+  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+  and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
   <parameters>
-  <label>I/O</label>
+    <label>I/O</label>
     <image>
       <name>fixedImageFileName</name>
       <label>fixed Image FileName</label>
@@ -20,8 +20,8 @@
       <flag>f</flag>
       <longflag>fixedImageFileName</longflag>
       <description><![CDATA[fixed Image File Name]]></description>
-      <default>q</default>
-    </image>   
+      <default>NA</default>
+    </image>       
 
     <image>
       <name>movingImageFileName</name>
@@ -30,17 +30,18 @@
       <flag>m</flag>
       <longflag>movingImageFileName</longflag>
       <description><![CDATA[moving Image FileName]]></description>
-      <default>q</default>
+      <default>NA</default>
     </image>   
+
     <image>
-      <name>outputImageFileName</name>
-      <label>output Image FileName</label>
+      <name>resampledLabelMapFileName</name>
+      <label>Resampled Labelmap</label>
       <channel>output</channel>
-      <flag>z</flag>
-      <longflag>outputImage</longflag>
-      <description><![CDATA[Output image file name]]></description>
-      <default>q</default>
+      <flag>r</flag>
+      <description><![CDATA[Resampled label map file name]]></description>
+      <default>NA</default>
     </image> 
+
     <transform>
       <name>outputTransformFileName</name>
       <label>output Transform FileName</label>
@@ -48,8 +49,9 @@
       <flag>q</flag>
       <longflag>outputTransform</longflag>
       <description><![CDATA[Output transform file name]]></description>
-      <default>q</default>
+      <default>NA</default>
     </transform> 
+
     <string> 
       <name>movingImageID</name>
       <label>moving Image subject ID</label>
@@ -57,8 +59,9 @@
       <flag>s</flag>
       <longflag>movingImageID</longflag>
       <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
-      <default>q</default>
+      <default>NA</default>
     </string>   
+
     <string>
       <name>fixedImageID</name>
       <label>Fixed Image subject ID</label>
@@ -66,8 +69,9 @@
       <flag>u</flag>
       <longflag>fixedImageID</longflag>
       <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
-      <default>q</default>
+      <default>NA</default>
     </string> 
+
     <string>
       <name>registrationID</name>
       <label>registration ID ID</label>
@@ -76,18 +80,21 @@
       <longflag>registrationID</longflag>
       <default>NA</default>
       <description><![CDATA[unique Id for the registration process.]]></description>
-    </string> 
-    </parameters>
-    <parameters>
+    </string>     
+  </parameters>
+
+  <parameters>
     <label>Registration parameters</label>
+
     <float>
       <name>downsampleFactor</name>
       <label>downsample Factor</label>
       <channel>input</channel>
-      <flag>d</flag>
+      <longflag>down</longflag>
       <description><![CDATA[downsampleFactor]]></description>
       <default>1.0</default>
     </float>  
+
     <float>
       <name>maxStepLength</name>
       <label>max Step Length</label>
@@ -96,7 +103,8 @@
       <longflag>max</longflag>
       <description><![CDATA[maxStepLength]]></description>
       <default>1.0</default>
-    </float>  
+    </float>     
+
     <float>
       <name>minStepLength</name>
       <label>min Step Length</label>
@@ -106,6 +114,7 @@
       <description><![CDATA[minStepLength]]></description>
       <default>0.001</default>
     </float> 
+
     <integer>
       <name>numberOfIterations</name>
       <label>number Of Iterations</label>
@@ -115,6 +124,7 @@
       <description><![CDATA[Number of iterations. ]]></description>
       <default>20</default>
     </integer>   
+
     <float>
       <name>translationScale</name>
       <label>translation Scale</label>
@@ -124,46 +134,16 @@
       <description><![CDATA[translationScale]]></description>
       <default>0.001</default>
     </float> 
-<integer-vector>
-      <name>regionVecArg</name>
-      <longflag>regionVec</longflag>
-      <flag>r</flag>
-      <label>regionVec</label>
-      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
 
-<integer-vector>
-      <name>typeVecArg</name>
-      <longflag>typeVec</longflag>
-      <flag>c</flag>
-      <label>typeVec</label>
-      <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
-
-<integer-vector>
-      <name>typePairVecArg</name>
-      <longflag>typePairVec</longflag>
-      <flag>a</flag>
-      <label>typePairVec</label>
-      <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag]]></description>
-</integer-vector>
-
-<integer-vector>
-      <name>regionPairVecArg</name>
-      <longflag>regionPairVec</longflag>
-      <flag>b</flag>
-      <label>regionPairVec</label>
-      <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-</integer-vector>
-  <integer>
+    <integer>
       <name>dimension</name>
       <label>Image dimension</label>
       <channel>input</channel>
-      <flag>m</flag>
+      <flag>d</flag>
       <longflag>dimension</longflag>
       <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
-     <default>3</default>
- </integer> 
-      
+      <default>3</default>
+    </integer> 
+
   </parameters>
 </executable>
