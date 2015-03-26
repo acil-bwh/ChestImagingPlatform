@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>ResampleLabelMap</title>
+  <description><![CDATA[This program rescales (either upsamples or downsamples) a label map by a specified amount]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+  and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+    <label>I/O</label>
+    <image type="label">
+      <name>labelMapFileName</name>
+      <label>Label Map File Name</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>in</longflag>
+      <description><![CDATA[Label map file name to resample]]></description>
+      <default>NA</default>
+    </image>
+    <image type="label">
+      <name>rescaledFileName</name>
+      <label>Rescaled File Name</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description><![CDATA[Rescaled label map (output) file name]]></description>
+      <default>NA</default>
+    </image>
+  </parameters>
+  <parameters>
+    <label>Rescaling parameters</label>
+    <integer>
+      <name>upScale</name>
+      <label>Up-scale Factor</label>
+      <channel>input</channel>
+      <longflag>up</longflag>
+      <description><![CDATA[Up-scale factor]]></description>
+      <default>1</default>
+    </integer> 
+    <integer>
+      <name>downScale</name>
+      <label>Down-scale Factor</label>
+      <channel>input</channel>
+      <longflag>down</longflag>
+      <description><![CDATA[Down-scale factor]]></description>
+      <default>1</default>
+    </integer> 
+    <integer>
+      <name>dimension</name>
+      <label>Image dimension</label>
+      <channel>input</channel>
+      <flag>d</flag>
+      <longflag>dim</longflag>
+      <description><![CDATA[Dimension of the image being rescaled. Default: 3.]]></description>
+      <default>3</default>
+    </integer> 
+  </parameters>
+</executable>

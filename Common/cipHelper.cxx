@@ -38,9 +38,7 @@
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
 
-//
 // Code modified from //http://www.itk.org/Wiki/ITK/Examples/ImageProcessing/Upsampling
-//
 cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap)
 {
   cip::LabelMapType::Pointer outputLabelMap;
@@ -92,6 +90,54 @@ cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::La
   return outputLabelMap;
 }
 
+cip::LabelMapSliceType::Pointer cip::DownsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap)
+{
+  cip::LabelMapSliceType::Pointer outputLabelMap;
+
+  typedef itk::IdentityTransform<double, 2>                                             TransformType;
+  typedef itk::NearestNeighborInterpolateImageFunction<cip::LabelMapSliceType, double>  InterpolatorType;
+  typedef itk::ResampleImageFilter<cip::LabelMapSliceType, cip::LabelMapSliceType>      ResampleType;
+
+  // Instantiate the transform, the nearest-neighbour interpolator and the resampler
+  TransformType::Pointer idTransform = TransformType::New();
+    idTransform->SetIdentity();
+
+  InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
+
+  // Compute and set the output spacing from the input spacing and samplingAmount
+  const cip::LabelMapSliceType::RegionType& inputRegion = inputLabelMap->GetLargestPossibleRegion();
+  const cip::LabelMapSliceType::SizeType& inputSize = inputRegion.GetSize();
+
+  unsigned int originalWidth  = inputSize[0];
+  unsigned int originalLength = inputSize[1];
+
+  unsigned int newWidth  = (unsigned int)(double(originalWidth)/double(samplingAmount));
+  unsigned int newLength = (unsigned int)(double(originalLength)/double(samplingAmount));
+
+  const cip::LabelMapSliceType::SpacingType& inputSpacing = inputLabelMap->GetSpacing();
+
+  double outputSpacing[2];
+    outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
+    outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
+
+  // Set the resampler with the calculated parameters and resample
+  itk::Size< 2 > outputSize = { {newWidth, newLength} };
+
+  ResampleType::Pointer resizeFilter = ResampleType::New();
+    resizeFilter->SetTransform( idTransform );
+    resizeFilter->SetInterpolator( imageInterpolator );
+    resizeFilter->SetOutputOrigin( inputLabelMap->GetOrigin() );
+    resizeFilter->SetOutputSpacing( outputSpacing );
+    resizeFilter->SetSize( outputSize );
+    resizeFilter->SetInput( inputLabelMap );
+    resizeFilter->Update();
+
+  // Save the resampled output to the output image and return
+  outputLabelMap = resizeFilter->GetOutput();
+
+  return outputLabelMap;
+}
+
 cip::LabelMapType::Pointer cip::UpsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap)
 {
   cip::LabelMapType::Pointer outputLabelMap;
@@ -127,6 +173,54 @@ cip::LabelMapType::Pointer cip::UpsampleLabelMap(short samplingAmount, cip::Labe
 
   // Set the resampler with the calculated parameters and resample
   itk::Size< 3 > outputSize = { {newWidth, newLength, newHeight} };
+
+  ResampleType::Pointer resizeFilter = ResampleType::New();
+    resizeFilter->SetTransform( idTransform );
+    resizeFilter->SetInterpolator( imageInterpolator );
+    resizeFilter->SetOutputOrigin( inputLabelMap->GetOrigin() );
+    resizeFilter->SetOutputSpacing( outputSpacing );
+    resizeFilter->SetSize( outputSize );
+    resizeFilter->SetInput( inputLabelMap );
+    resizeFilter->Update();
+
+  // Save the resampled output to the output image and return
+  outputLabelMap= resizeFilter->GetOutput();
+
+  return outputLabelMap;
+}
+
+cip::LabelMapSliceType::Pointer cip::UpsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap)
+{
+  cip::LabelMapSliceType::Pointer outputLabelMap;
+
+  typedef itk::IdentityTransform<double, 2>                                             TransformType;
+  typedef itk::NearestNeighborInterpolateImageFunction<cip::LabelMapSliceType, double>  InterpolatorType;
+  typedef itk::ResampleImageFilter<cip::LabelMapSliceType, cip::LabelMapSliceType>      ResampleType;
+
+  // Instantiate the transform, the b-spline interpolator and the resampler
+  TransformType::Pointer idTransform = TransformType::New();
+    idTransform->SetIdentity();
+
+  InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
+
+  // Compute and set the output spacing from the input spacing and samplingAmount
+  const LabelMapSliceType::RegionType& inputRegion = inputLabelMap->GetLargestPossibleRegion();
+  const LabelMapSliceType::SizeType& inputSize = inputRegion.GetSize();
+
+  unsigned int originalWidth = inputSize[0];
+  unsigned int originalLength = inputSize[1];
+
+  unsigned int newWidth  = (unsigned int)(double(originalWidth)*double(samplingAmount));
+  unsigned int newLength = (unsigned int)(double(originalLength)*double(samplingAmount));
+
+  const cip::LabelMapSliceType::SpacingType& inputSpacing = inputLabelMap->GetSpacing();
+
+  double outputSpacing[2];
+    outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
+    outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
+
+  // Set the resampler with the calculated parameters and resample
+  itk::Size< 2 > outputSize = { {newWidth, newLength} };
 
   ResampleType::Pointer resizeFilter = ResampleType::New();
     resizeFilter->SetTransform( idTransform );
