@@ -1,45 +1,3 @@
-/** \file
- *  \ingroup commandLineTools
- *  \details This program will generate a 3D model from an input
- *  3D label map using the discrete marching cubes algorithm
- *
- *  USAGE:
- *
- *  GenerateModel  [-r \<float\>] [--origSp \<bool\>] [-l \<unsigned short\>]
- *                 [-s \<unsigned int\>] -o \<string\> -i \<string\> [--]
- *                 [--version] [-h]
- *
- *  Where:
- *
- *   -r \<float\>,  --reduc \<float\>
- *     Target reduction fraction for decimation
- *
- *   --origSp \<bool\>
- *     Set to 1 to used standard origin and spacing. Set to 0 by default.
- *
- *   -l \<unsigned short\>,  --label \<unsigned short\>
- *     Foreground label in the label map to be used for generating the model
- *
- *   -s \<unsigned int\>,  --smooth \<unsigned int\>
- *     Number of smoothing iterations
- *
- *   -o \<string\>,  --out \<string\>
- *     (required)  Output model file name
- *
- *   -i \<string\>,  --in \<string\>
- *     (required)  Input mask file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
- */
-
 #include "cipChestConventions.h"
 #include "vtkImageData.h"
 #include "vtkPolyDataNormals.h"
@@ -50,13 +8,8 @@
 #include "vtkPolyData.h"
 #include "vtkImageImport.h"
 #include "vtkSmartPointer.h"
-<<<<<<< HEAD
-#include "vtkNRRDReader.h"
-#include "vtkNRRDWriter.h"
-=======
 #include "vtkNRRDReaderCIP.h"
 #include "vtkNRRDWriterCIP.h"
->>>>>>> release
 #include "vtkImageIterator.h"
 
 #include "GenerateModelCLP.h"
@@ -68,11 +21,7 @@ int main( int argc, char *argv[] )
   unsigned int smootherIterations = (unsigned int) smootherIterationsTemp;
 
   std::cout << "Reading mask..." << std::endl;
-<<<<<<< HEAD
-  vtkSmartPointer< vtkNRRDReader > maskReader = vtkSmartPointer< vtkNRRDReader >::New();
-=======
   vtkSmartPointer< vtkNRRDReaderCIP > maskReader = vtkSmartPointer< vtkNRRDReaderCIP >::New();
->>>>>>> release
     maskReader->SetFileName( maskFileName.c_str() );
     maskReader->Update();
 

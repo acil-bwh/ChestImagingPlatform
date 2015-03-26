@@ -100,39 +100,39 @@ namespace
 	// Only inverting the first transformation
 	std::cout << "Adding transform: " << i << std::endl;
 	typename TransformType::Pointer transformTemp = TransformType::New();
-	  transformTemp = GetTransformFromFile<TDimension>((transformFileName[i]).c_str() );
+	transformTemp = GetTransformFromFile<TDimension>((transformFileName[i]).c_str() );
 	if( i==0 && isInvertTransformation == true )
 	  {
-	  transformTemp->GetInverse( transformTemp );
+	    transformTemp->GetInverse( transformTemp );
 	  }
-          transform->AddTransform(transformTemp);
+	transform->AddTransform(transformTemp);
       } 
     transform->SetAllTransformsToOptimizeOn();		
     
     // Resample the label map
     typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
-
+    
     std::cout << "Resampling..." << std::endl;
     typename ResampleType::Pointer resampler = ResampleType::New();
-      resampler->SetTransform( transform );
-      resampler->SetInterpolator( interpolator );
-      resampler->SetInput( labelMapReader->GetOutput() );
-      resampler->SetSize( size );
-      resampler->SetOutputSpacing( spacing );
-      resampler->SetOutputOrigin( origin );
-      resampler->SetOutputDirection( destinationReader->GetOutput()->GetDirection() );
+    resampler->SetTransform( transform );
+    resampler->SetInterpolator( interpolator );
+    resampler->SetInput( labelMapReader->GetOutput() );
+    resampler->SetSize( size );
+    resampler->SetOutputSpacing( spacing );
+    resampler->SetOutputOrigin( origin );
+    resampler->SetOutputDirection( destinationReader->GetOutput()->GetDirection() );
     try
       {
-      resampler->Update();
+	resampler->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
-      std::cerr << "Exception caught resampling:";
-      std::cerr << excp << std::endl;
-
-      return cip::RESAMPLEFAILURE;
+	std::cerr << "Exception caught resampling:";
+	std::cerr << excp << std::endl;
+	
+	return cip::RESAMPLEFAILURE;
       }
-
+  
     // Write the resampled label map to file
     std::cout << "Writing resampled label map..." << std::endl;
     typename LabelMapWriterType::Pointer writer = LabelMapWriterType::New();
@@ -166,12 +166,12 @@ int main( int argc, char *argv[] )
     {
     case 2:
       {
-	DoIT<2>( argc, argv);
+	DoIT<2>( argc, argv );
 	break;
       }
     case 3:
       {
-	DoIT<3>( argc, argv);
+	DoIT<3>( argc, argv );
 	break;
       }
     default:
