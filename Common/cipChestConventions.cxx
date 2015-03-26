@@ -3,7 +3,7 @@
 
 cip::ChestConventions::ChestConventions()
 {
-  m_NumberOfEnumeratedChestRegions = 29;
+  m_NumberOfEnumeratedChestRegions = 32;
   m_NumberOfEnumeratedChestTypes   = 82;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
@@ -100,6 +100,7 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( PARAVERTEBRAL ) );
   ChestRegions.push_back( (unsigned char)( OUTSIDELUNG ) );
   ChestRegions.push_back( (unsigned char)( OUTSIDEBODY ) );
+  ChestRegions.push_back( (unsigned char)( STERNUM ) );
   
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
   ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
@@ -215,6 +216,7 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "Paravertebral" );
   ChestRegionNames.push_back( "OutsideLung" );
   ChestRegionNames.push_back( "OutsideBody" );
+  ChestRegionNames.push_back( "Sternum" );
   
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );

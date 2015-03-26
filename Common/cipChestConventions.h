@@ -67,6 +67,7 @@ enum ChestRegion {
   PARAVERTEBRAL,          //28
   OUTSIDELUNG,            //29
   OUTSIDEBODY,            //30
+  STERNUM,                //31
 };
 
 
