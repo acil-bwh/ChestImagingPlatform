@@ -71,7 +71,7 @@ cip::ChestConventions::ChestConventions()
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
                                                (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
-                                               (unsigned char)( UNDEFINED ) ) );
+                                               (unsigned char)( UNDEFINEDREGION ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( STERNUM ),
                                                (unsigned char)( SKELETON ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( HUMERI ),
