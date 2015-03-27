@@ -3,7 +3,7 @@
 
 cip::ChestConventions::ChestConventions()
 {
-  m_NumberOfEnumeratedChestRegions = 48;
+  m_NumberOfEnumeratedChestRegions = 53;
   m_NumberOfEnumeratedChestTypes   = 82;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
@@ -120,6 +120,22 @@ cip::ChestConventions::ChestConventions()
                                                (unsigned char)( AORTA ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( DESCENDINGAORTA ),
                                                (unsigned char)( AORTA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTSUBCLAVIAN ),
+                                               (unsigned char)( TRANSVERSALAORTA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTSUBCLAVIAN ),
+                                               (unsigned char)( TRANSVERSALAORTA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTSUBCLAVIAN ),
+                                               (unsigned char)( LEFT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTSUBCLAVIAN ),
+                                               (unsigned char)( RIGHT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTCORONARYARTERY ),
+                                               (unsigned char)( ASCENDINGAORTA ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTCORONARYARTERY ),
+                                               (unsigned char)( LEFT ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SPINE ),
+                                               (unsigned char)( SKELETON ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTVENTRICLE ),
+                                               (unsigned char)( WHOLEHEART ) ) );
 
 
 
@@ -171,7 +187,11 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( ASCENDINGAORTA) );
   ChestRegions.push_back( (unsigned char)( TRANSVERSALAORTA ) );
   ChestRegions.push_back( (unsigned char)( DESCENDINGAORTA ) );
-
+  ChestRegions.push_back( (unsigned char)( LEFTSUBCLAVIAN ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTSUBCLAVIAN ) );
+  ChestRegions.push_back( (unsigned char)( LEFTCORONARYARTERY ) );
+  ChestRegions.push_back( (unsigned char)( SPINE ) );
+  ChestRegions.push_back( (unsigned char)( LEFTVENTRICLE ) );
   
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
   ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
@@ -304,6 +324,11 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "AscendingAorta" );
   ChestRegionNames.push_back( "TransversalAorta" );
   ChestRegionNames.push_back( "DescendingAorta" );
+  ChestRegionNames.push_back( "LeftSubclavian" );
+  ChestRegionNames.push_back( "RightSubclavian" );
+  ChestRegionNames.push_back( "LeftCoronaryArtery" );
+  ChestRegionNames.push_back( "Spine" );
+  ChestRegionNames.push_back( "LeftVentricle" );
   
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );
@@ -595,7 +620,12 @@ cip::ChestConventions::ChestConventions()
   double* r045 = new double[3]; r045[0] = 0.49; r045[1] = 0.49; r045[2] = 0.64; ChestRegionColors.push_back( r045 ); //RIGHTKIDNEY
   double* r046 = new double[3]; r046[0] = 0.49; r046[1] = 0.49; r046[2] = 0.65; ChestRegionColors.push_back( r046 ); //ASCENDINGAORTA
   double* r047 = new double[3]; r047[0] = 0.49; r047[1] = 0.49; r047[2] = 0.66; ChestRegionColors.push_back( r047 ); //TRANSVERSALAORTA
-  double* r048 = new double[3]; r048[0] = 0.49; r048[1] = 0.49; r048[2] = 0.67; ChestRegionColors.push_back( r048 ); //DESCENDINGAORTA
+  double* r048 = new double[3]; r048[0] = 0.49; r048[1] = 0.49; r048[2] = 0.68; ChestRegionColors.push_back( r048 ); //DESCENDINGAORTA
+  double* r049 = new double[3]; r049[0] = 0.49; r049[1] = 0.49; r049[2] = 0.69; ChestRegionColors.push_back( r049 ); //LEFTSUBCLAVIAN
+  double* r050 = new double[3]; r050[0] = 0.49; r050[1] = 0.49; r050[2] = 0.70; ChestRegionColors.push_back( r050 ); //RIGHTSUBCLAVIAN
+  double* r051 = new double[3]; r051[0] = 0.49; r051[1] = 0.49; r051[2] = 0.71; ChestRegionColors.push_back( r051 ); //LEFTCORONARYARTERY
+  double* r052 = new double[3]; r052[0] = 0.49; r052[1] = 0.49; r052[2] = 0.72; ChestRegionColors.push_back( r052 ); //SPINE
+  double* r053 = new double[3]; r053[0] = 0.49; r053[1] = 0.49; r053[2] = 0.73; ChestRegionColors.push_back( r053 ); //LEFTVENTRICLE
 }
 
 cip::ChestConventions::~ChestConventions()

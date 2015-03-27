@@ -84,6 +84,11 @@ enum ChestRegion {
   ASCENDINGAORTA,         //45
   TRANSVERSALAORTA,       //46
   DESCENDINGAORTA,        //47
+  LEFTSUBCLAVIAN,         //48
+  RIGHTSUBCLAVIAN,        //49
+  LEFTCORONARYARTERY,     //50
+  SPINE,                  //51
+  LEFTVENTRICLE,          //52
 };
 
 
