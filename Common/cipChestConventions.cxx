@@ -167,7 +167,7 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( RIGHTHILUM ) );
   ChestRegions.push_back( (unsigned char)( KIDNEYS) );
   ChestRegions.push_back( (unsigned char)( LEFTKIDNEY ) );
-  ChestRegions.push_back( (unsigned char)( RIGHKIDNEY ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTKIDNEY ) );
   ChestRegions.push_back( (unsigned char)( ASCENDINGAORTA) );
   ChestRegions.push_back( (unsigned char)( TRANSVERSALAORTA ) );
   ChestRegions.push_back( (unsigned char)( DESCENDINGAORTA ) );
