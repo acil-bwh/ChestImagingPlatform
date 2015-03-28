@@ -5,7 +5,7 @@ PROJECT(GetTransformationSimilarityMetric)
 set(MODULE_NAME GetTransformationSimilarityMetric)
 set(MODULE_SRCS )
 
-find_package(LibXml2 REQUIRED)
+find_package(LibXml2)
 
  FIND_PACKAGE( VTK REQUIRED )
 

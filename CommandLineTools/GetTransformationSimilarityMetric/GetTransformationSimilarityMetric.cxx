@@ -55,6 +55,7 @@
 #include <libxml/xmlIO.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
+#undef reference // to use vtklibxml2
 
 #include "GetTransformationSimilarityMetricCLP.h"
 #include "cipChestConventions.h"

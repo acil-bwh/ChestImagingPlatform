@@ -5,7 +5,7 @@ PROJECT(RegisterCT2D)
 set(MODULE_NAME RegisterCT2D)
 set(MODULE_SRCS )
 
-find_package(LibXml2 REQUIRED)
+find_package(LibXml2)
 
  set (UUID_LIBS -luuid)
  

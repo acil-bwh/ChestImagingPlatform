@@ -5,7 +5,7 @@ PROJECT(RegisterLabelMaps)
 set(MODULE_NAME RegisterLabelMaps)
 set(MODULE_SRCS itkCIPMergeChestLabelMapsImageFilter2D3D.cxx )
 
-find_package(LibXml2 REQUIRED)
+find_package(LibXml2)
 
  set (UUID_LIBS -luuid)
  

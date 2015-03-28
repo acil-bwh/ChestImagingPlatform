@@ -5,7 +5,7 @@ PROJECT(GetTransformationKappa)
 set(MODULE_NAME GetTransformationKappa)
 set(MODULE_SRCS )
 
-find_package(LibXml2 REQUIRED)
+find_package(LibXml2)
 
  FIND_PACKAGE( VTK REQUIRED )
 
