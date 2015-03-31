@@ -23,8 +23,6 @@ set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
 
 set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build. Version 6 is strongly recommended.")
 set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
-#set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "6")
-
 
 
 #-----------------------------------------------------------------------------
@@ -236,7 +234,8 @@ set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   Boost
   teem
   OpenCV
-  ${LIBXML2_EXTERNAL_NAME}
+  ${LIBXML2_EXTERNAL_NAME}  
+  CIPPython
   )
 
 #-----------------------------------------------------------------------------
