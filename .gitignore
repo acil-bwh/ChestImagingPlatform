@@ -18,7 +18,6 @@ cip_python/ChestConventions.so
 cip_python/wrap_ChestConventions.cpp
 MyInsideClass.*
 Sandbox
-SuperBuild
 gitignore
 Testing/Data/Input/CropLung_LeftLung_Test_ct.nrrd
 

@@ -71,6 +71,11 @@ ELSE ( Teem_FOUND )
 ENDIF ( Teem_FOUND )
 
 #---------------------------------------------------------------------
+# Find OpenCV
+
+FIND_PACKAGE ( OpenCV REQUIRED )
+
+#---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
 # They hide real warnings.
 
