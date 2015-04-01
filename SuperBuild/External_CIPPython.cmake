@@ -6,7 +6,7 @@ if (UNIX)
 	if (APPLE)
 		set (INSTALL_COMMAND bash ${CIP_PYTHON_DIR}/Miniconda-MacOSX-64.sh -f -b -p ${CIP_PYTHON_DIR}-install)
 	else()
-		set (INSTALL_COMMAND bash ${CIP_PYTHON_DIR}/Miniconda-Win-x86_64.exe -f -b -p ${CIP_PYTHON_DIR}-install)
+		set (INSTALL_COMMAND bash ${CIP_PYTHON_DIR}/Miniconda-Linux-x86_64.sh -f -b -p ${CIP_PYTHON_DIR}-install)
 	endif()
 else()
       # Windows
@@ -59,7 +59,12 @@ ExternalProject_Add_Step(${proj} installnose
 	DEPENDEES install
 )
 
+ExternalProject_Add_Step(${proj} installpip
+	COMMAND ${CIP_PYTHON_DIR}-install/bin/conda install --yes --quiet pip  
+	DEPENDEES install
+)
+
 ExternalProject_Add_Step(${proj} installpynrrd
-	COMMAND ${CIP_PYTHON_DIR}-install/bin/conda install --yes --quiet pynrrd  
+	COMMAND ${CIP_PYTHON_DIR}-install/bin/pip install --quiet pynrrd  
 	DEPENDEES install
 )
