@@ -15,7 +15,7 @@ CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/setup_ChestConventions.py.in
   ${CMAKE_CURRENT_BINARY_DIR}/setup_ChestConventions.py @ONLY )
 
 ADD_CUSTOM_TARGET ( ${PROJECT_NAME} ALL
-  COMMAND python ${CMAKE_CURRENT_BINARY_DIR}/setup_ChestConventions.py build_ext -b ${CMAKE_CURRENT_SOURCE_DIR}/
+  COMMAND ${CIP_PYTHON_DIR}/bin/python ${CMAKE_CURRENT_BINARY_DIR}/setup_ChestConventions.py build_ext -b ${CMAKE_CURRENT_SOURCE_DIR}/
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 ADD_DEPENDENCIES ( ${PROJECT_NAME} ChestConventions )

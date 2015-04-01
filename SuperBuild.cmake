@@ -217,7 +217,8 @@ option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 
-set(CIP_PYTHON_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the Python that CIP will use by default is installed" )
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
+set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
 
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
