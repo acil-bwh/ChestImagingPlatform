@@ -12,6 +12,7 @@ SET ( CIPIO_SRCS
   cipLobeSurfaceModelIO.cxx
   cipChestRegionChestTypeLocationsIO.cxx
   cipThinPlateSplineSurfaceIO.cxx
+  cipGeometryTopologyDataIO.cxx
   )
 
 set( LIB_NAME CIPIO )
