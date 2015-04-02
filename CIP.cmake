@@ -71,6 +71,11 @@ ELSE ( Teem_FOUND )
 ENDIF ( Teem_FOUND )
 
 #---------------------------------------------------------------------
+# Find OpenCV
+
+FIND_PACKAGE ( OpenCV REQUIRED )
+
+#---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
 # They hide real warnings.
 
@@ -272,8 +277,17 @@ if(APPLE)
   set(CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6")
 
 endif()
-
-
+    #-----------------------------------------------------------------------------
+# Add needed flag for gnu on linux like enviroments to build static common libs
+# suitable for linking with shared object libs.
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+  if(NOT "${CMAKE_CXX_FLAGS}" MATCHES "-fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  endif()
+  if(NOT "${CMAKE_C_FLAGS}" MATCHES "-fPIC")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+  endif()
+endif()
 
 export( PACKAGE CIP )
 

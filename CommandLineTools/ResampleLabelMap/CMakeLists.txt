@@ -5,7 +5,7 @@ project(ResampleLabelMap )
 set(MODULE_NAME ResampleLabelMap)
 set(MODULE_SRCS )
 
-find_package(LibXml2 REQUIRED)
+find_package(LibXml2)
 
  set (UUID_LIBS -luuid)
  

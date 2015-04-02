@@ -49,6 +49,7 @@
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 #include <libxml/xmlmemory.h>
+#undef reference // to use vtklibxml2
 
 #include "GetTransformationSimilarityMetric3DCLP.h"
 #include "cipChestConventions.h"
