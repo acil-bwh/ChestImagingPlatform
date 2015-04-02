@@ -29,6 +29,11 @@ ExternalProject_Add(${proj}
 	INSTALL_COMMAND ${INSTALL_COMMAND}
 )
 
+ExternalProject_Add_Step(${proj} installpip
+	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pip  
+	DEPENDEES install
+)
+
 ExternalProject_Add_Step(${proj} installnumpy
 	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet numpy  
 	DEPENDEES install
@@ -59,12 +64,11 @@ ExternalProject_Add_Step(${proj} installnose
 	DEPENDEES install
 )
 
-ExternalProject_Add_Step(${proj} installpip
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pip  
-	DEPENDEES install
-)
-
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_DIR}/bin/pip install --quiet pynrrd  
-	DEPENDEES install
+	DEPENDEES installpip
 )
+
+
+
+
