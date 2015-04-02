@@ -69,6 +69,11 @@ ExternalProject_Add_Step(${proj} installpynrrd
 	DEPENDEES installpip
 )
 
+ExternalProject_Add_Step(${proj} installpydicom
+	COMMAND ${CIP_PYTHON_DIR}/bin/pip install --quiet pydicom  
+	DEPENDEES installpip
+)
+
 
 
 
