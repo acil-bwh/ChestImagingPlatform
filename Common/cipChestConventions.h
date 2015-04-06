@@ -197,8 +197,7 @@ enum ChestType {
   NONBRONCHIECTATICAIRWAY,        //78
   AMBIGUOUSBRONCHIECTATICAIRWAY,  //79
   MUSCLE,                         //80
-  DIAPHRAGM,                      //81
-  HERNIA,                         //82
+  HERNIA,                         //81
 };
 
 enum ReturnCode {
