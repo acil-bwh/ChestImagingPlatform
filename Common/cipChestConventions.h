@@ -89,6 +89,20 @@ enum ChestRegion {
   LEFTCORONARYARTERY,     //50
   SPINE,                  //51
   LEFTVENTRICLE,          //52
+  RIGHTVENTRICLE,         //53
+  LEFTATRIUM,             //54
+  RIGHTATRIUM,            //55
+  LEFTPECTORALIS,         //56
+  RIGHTPECTORALIS,        //57
+  TRACHEA2,               //58
+  LEFTMAINBRONCHUS,       //59
+  RIGHTMAINBRONCHUS,      //60
+  ESOPHAGUS,              //61
+  LEFTCHESTWALL,          //62
+  RIGHTCHESTWALL,         //63
+  LEFTDIAPHRAGM,          //64
+  RIGHTDIAPHRAGM,         //65
+  HIATUS,                 //66
 };
 
 
@@ -184,6 +198,7 @@ enum ChestType {
   AMBIGUOUSBRONCHIECTATICAIRWAY,  //79
   MUSCLE,                         //80
   DIAPHRAGM,                      //81
+  HERNIA,                         //82
 };
 
 enum ReturnCode {
