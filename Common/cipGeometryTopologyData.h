@@ -24,6 +24,8 @@ namespace cip {
   public:
     GeometryTopologyData();
     GeometryTopologyData& operator= (const GeometryTopologyData &geometryTopology);
+    bool operator== (const GeometryTopologyData &geometryTopology) const;
+    bool operator!= (const GeometryTopologyData &geometryTopology) const;
     ~GeometryTopologyData();
     
     typedef std::vector< float > CoordinateType;
@@ -34,8 +36,8 @@ namespace cip {
      *  bounding box's start coordinate. 'size' indicates the extent of the bounding box
      *  in the x, y, and z direction, respectively (in physical units). 'cipRegion' and
      *  'cipType' are UNDEFINEDREGION and UNDEFINEDTYPE by default. */
-    void InsertBoundingBox( float start[3], float size[3], unsigned char cipRegion, 
-			    unsigned char cipType );
+    void InsertBoundingBox( StartType start, SizeType size, unsigned char cipRegion, 
+			    unsigned char cipType, std::string );
 
     unsigned int GetNumberOfBoundingBoxes() const
     {
@@ -58,10 +60,14 @@ namespace cip {
      *	bounding boxes. */
     SizeType GetBoundingBoxSize( unsigned int ) const;
 
+    /** Returns the bounding box description given the specified index in the vector of 
+     *	bounding boxes. */
+    std::string GetBoundingBoxDescription( unsigned int ) const;
+
     /** Insert a new point. 'coordinate' is the 3d physical coordinate of the point. 
      *  'cipRegion' and 'cipType' are UNDEFINEDREGION and UNDEFINEDTYPE by default. */
-    void InsertPoint( float coordinate[3], unsigned char cipRegion, 
-		      unsigned char cipType );
+    void InsertPoint( CoordinateType coordinate, unsigned char cipRegion, 
+		      unsigned char cipType, std::string );
     
     /** Returns the chest-region of the point given the specified index
      *  in the vector of point. */
@@ -70,6 +76,10 @@ namespace cip {
     /** Returns the chest-region of the point given the specified index
      *  in the vector of point. */
     unsigned char GetPointChestType( unsigned int ) const;
+
+    /** Returns the point description given the specified index in the vector of 
+     *	points. */
+    std::string GetPointDescription( unsigned int ) const;
 
     unsigned int GetNumberOfPoints() const
     {
@@ -86,6 +96,7 @@ namespace cip {
       SizeType size;
       unsigned char cipRegion;
       unsigned char cipType;
+      std::string description;
     };
 
     struct POINT
@@ -93,6 +104,7 @@ namespace cip {
       CoordinateType coordinate;
       unsigned char cipRegion;
       unsigned char cipType;
+      std::string description;
     };
     
     std::vector< BOUNDINGBOX > m_BoundingBoxes;

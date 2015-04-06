@@ -11,6 +11,8 @@
 
 #include "cipGeometryTopologyData.h"
 #include <string>
+#include <libxml/xmlwriter.h> 
+#include <libxml/parser.h>
 
 namespace cip
 {
@@ -34,9 +36,12 @@ namespace cip
     void SetInput( cip::GeometryTopologyData& );
     
   private:
+    void ParsePoint( xmlNodePtr );
+    void ParseBoundingBox( xmlNodePtr );
+
     cip::GeometryTopologyData* m_GeometryTopologyData;
     
-    std::string FileName;
+    std::string m_FileName;
   };
   
 } // end namespace cip
