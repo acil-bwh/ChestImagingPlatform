@@ -27,8 +27,6 @@ if(NOT DEFINED OpenCV_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
   set(EP_INSTALL_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
 
-  message(STATUS "HOLA HOLAVTK_DIR " ${VTK_VERSION_MAJOR})
-
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY "${git_protocol}://github.com/Itseez/opencv.git"
