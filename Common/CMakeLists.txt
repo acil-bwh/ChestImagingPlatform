@@ -61,6 +61,7 @@ SET ( CIPCommon_SRCS
   vtkImageStatistics.cxx
   cipExceptionObject.cxx
   cipChestConventions.cxx
+  cipGeometryTopologyData.cxx
   )
 
 IF(CIP_USE_BOOST)
