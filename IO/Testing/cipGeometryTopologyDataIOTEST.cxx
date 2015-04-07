@@ -34,7 +34,7 @@ int main( int argc, char* argv[] )
 
   cip::GeometryTopologyData geomTop;
     geomTop.InsertPoint( coordinate3D, (unsigned char)(cip::WHOLELUNG), 
-			 (unsigned char)(cip::AIRWAY), "WholeLung-Airway" );
+			 (unsigned char)(cip::AIRWAY), "" );
     geomTop.InsertBoundingBox( start3D, size3D, (unsigned char)(cip::LEFTLUNG), 
 			       (unsigned char)(cip::VESSEL), "LeftLung-Vessel" );
     geomTop.InsertPoint( coordinate2D, (unsigned char)(cip::RIGHTLUNG), 
