@@ -59,6 +59,8 @@
 #include "itkQuaternionRigidTransform.h"
 #include "itkSimilarity2DTransform.h"
 #include "itkRigid2DTransform.h"
+//#include "itkRigid3DTransform.h"
+#include "itkMatrixOffsetTransformBase.h"
 #include "itkMeanSquaresImageToImageMetric.h"
 #include "itkBinaryThresholdImageFilter.h"
 //#include "itkRegularStepGradientDescentOptimizerv4.h"
@@ -759,10 +761,13 @@ int DoIT3(int argc, char * argv[])
   std::cout<<"initializing transform"<<std::endl;
   
 
-  typedef itk::Rigid3DTransform< double>            RigidTransformType;
-  typedef itk::CenteredTransformInitializer< RigidTransformType, ShortImageType, ShortImageType >  RigidInitializerTypeIntensity;
+  //typedef itk::Rigid3DTransform< double>            RigidTransformType3D;
+  typedef itk::MatrixOffsetTransformBase< double, 3, 3 > RigidTransformType3D;
+  //itk::TransformFactory<RigidTransformType3D>::RegisterTransform();
+  
+  typedef itk::CenteredTransformInitializer< RigidTransformType3D, ShortImageType, ShortImageType >  RigidInitializerTypeIntensity;
  
-  typename RigidTransformType::Pointer rigidTransform = RigidTransformType::New();
+  typename RigidTransformType3D::Pointer rigidTransform = RigidTransformType3D::New();
   typename CTInterpolatorType::Pointer CTinterpolator = CTInterpolatorType::New();  
   
   //initial registration with a rigid transform      
