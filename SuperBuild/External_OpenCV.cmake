@@ -27,6 +27,8 @@ if(NOT DEFINED OpenCV_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
   set(EP_INSTALL_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
 
+  message(STATUS "HOLA HOLAVTK_DIR " ${VTK_VERSION_MAJOR})
+
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY "${git_protocol}://github.com/Itseez/opencv.git"
@@ -40,6 +42,16 @@ if(NOT DEFINED OpenCV_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      -DVTK_DIR:PATH=${VTK_DIR}
+      -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
+      ##Remove OpenCV packages that are not needed
+      -DBUILD_opencv_video:BOOLEAN=OFF
+      -DBUILD_opencv_videoio:BOOLEAN=OFF
+      -DBUILD_opencv_videostab:BOOLEAN=OFF
+      -DBUILD_opencv_calib3d:BOOLEAN=OFF
+      -DBUILD_opencv_viz:BOOLEAN=OFF
+      ##Disable VTK in opencv. There is not need now to do VTK vis in opencv
+      -DWITH_VTK:BOOLEAN=OFF
     DEPENDS
       ${${proj}_DEPENDENCIES}
     )
