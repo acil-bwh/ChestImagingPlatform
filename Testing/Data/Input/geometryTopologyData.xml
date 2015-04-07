@@ -3,7 +3,7 @@
   <Point>
     <ChestRegion>1</ChestRegion>
     <ChestType>2</ChestType>
-    <Description/>
+    <Description>WholeLung-Airway</Description>
     <Coordinate>
       <value>0</value>
       <value>1.5</value>
@@ -13,7 +13,7 @@
   <Point>
     <ChestRegion>2</ChestRegion>
     <ChestType>1</ChestType>
-    <Description/>
+    <Description>RightLung-NormalParenchyma</Description>
     <Coordinate>
       <value>9</value>
       <value>10</value>
@@ -22,7 +22,7 @@
   <BoundingBox>
     <ChestRegion>3</ChestRegion>
     <ChestType>3</ChestType>
-    <Description/>
+    <Description>LeftLung-Vessel</Description>
     <Start>
       <value>3</value>
       <value>4</value>
@@ -37,7 +37,7 @@
   <BoundingBox>
     <ChestRegion>4</ChestRegion>
     <ChestType>0</ChestType>
-    <Description/>
+    <Description>RightSuperiorLobe-UndefinedType</Description>
     <Start>
       <value>11</value>
       <value>12</value>

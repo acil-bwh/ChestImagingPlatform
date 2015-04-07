@@ -27,6 +27,7 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
       BOUNDINGBOX bb;
       bb.cipRegion = geometryTopology.GetBoundingBoxChestRegion(i);
       bb.cipType = geometryTopology.GetBoundingBoxChestType(i);
+      bb.description = geometryTopology.GetBoundingBoxDescription(i);
 
       for ( unsigned int j=0; j<geometryTopology.GetBoundingBoxStart(i).size(); j++ )
       	{
@@ -44,6 +45,7 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
       POINT p;
       p.cipRegion = geometryTopology.GetPointChestRegion(i);
       p.cipType = geometryTopology.GetPointChestType(i);
+      p.description = geometryTopology.GetPointDescription(i);
 
       for ( unsigned int j=0; j<geometryTopology.GetPointCoordinate(i).size(); j++ )
   	{
@@ -334,8 +336,6 @@ bool cip::GeometryTopologyData::operator== (const GeometryTopologyData &geometry
 	      found = true;
 	      break;
 	    }
-	  found = true;
-	  break;	   
 	}
       if ( !found )
 	{
