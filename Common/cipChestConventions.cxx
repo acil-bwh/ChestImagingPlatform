@@ -136,9 +136,41 @@ cip::ChestConventions::ChestConventions()
                                                (unsigned char)( SKELETON ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTVENTRICLE ),
                                                (unsigned char)( WHOLEHEART ) ) );
-
-
-
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTVENTRICLE ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTVENTRICLE ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTATRIUM ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTATRIUM ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTATRIUM ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTPECTORALIS ),
+                                               (unsigned char)( PECTORALIS ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTPECTORALIS ),
+                                               (unsigned char)( PECTORALIS ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( TRACHEA2 ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTMAINBRONCHUS ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMAINBRONCHUS ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( ESOPHAGUS ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTCHESTWALL ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTCHESTWALL ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTDIAPHRAGM ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTDIAPHRAGM ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( HIATUS ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PECTORALIS ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  
   ChestRegions.push_back( (unsigned char)( UNDEFINEDREGION ) );
   ChestRegions.push_back( (unsigned char)( WHOLELUNG ) );
   ChestRegions.push_back( (unsigned char)( RIGHTLUNG ) );
@@ -192,6 +224,22 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( LEFTCORONARYARTERY ) );
   ChestRegions.push_back( (unsigned char)( SPINE ) );
   ChestRegions.push_back( (unsigned char)( LEFTVENTRICLE ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTVENTRICLE ) );
+  ChestRegions.push_back( (unsigned char)( LEFTATRIUM ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTATRIUM ) );
+  ChestRegions.push_back( (unsigned char)( LEFTPECTORALIS ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTPECTORALIS ) );
+  ChestRegions.push_back( (unsigned char)( TRACHEA2 ) );
+  ChestRegions.push_back( (unsigned char)( LEFTMAINBRONCHUS ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTMAINBRONCHUS ) );
+  ChestRegions.push_back( (unsigned char)( ESOPHAGUS ) );
+  ChestRegions.push_back( (unsigned char)( LEFTCHESTWALL ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTCHESTWALL ) );
+  ChestRegions.push_back( (unsigned char)( LEFTDIAPHRAGM ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTDIAPHRAGM ) );
+  ChestRegions.push_back( (unsigned char)( HIATUS ) );
+  ChestRegions.push_back( (unsigned char)( PECTORALIS ) );
+
   
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
   ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
@@ -274,7 +322,7 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( NONBRONCHIECTATICAIRWAY ) );
   ChestTypes.push_back( (unsigned char)( AMBIGUOUSBRONCHIECTATICAIRWAY ) );
   ChestTypes.push_back( (unsigned char)( MUSCLE ) );
-  ChestTypes.push_back( (unsigned char)( DIAPHRAGM ) );
+  ChestTypes.push_back( (unsigned char)( HERNIA ) );
   
   ChestRegionNames.push_back( "UndefinedRegion" );
   ChestRegionNames.push_back( "WholeLung" ); 
@@ -329,7 +377,22 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "LeftCoronaryArtery" );
   ChestRegionNames.push_back( "Spine" );
   ChestRegionNames.push_back( "LeftVentricle" );
-  
+  ChestRegionNames.push_back( "RightVentricle" );
+  ChestRegionNames.push_back( "LeftAtrium" );
+  ChestRegionNames.push_back( "RightAtrium" );
+  ChestRegionNames.push_back( "LeftPectoralis" );
+  ChestRegionNames.push_back( "RightPectoralis" );
+  ChestRegionNames.push_back( "Trachea2" );
+  ChestRegionNames.push_back( "LeftMainBronchus" );
+  ChestRegionNames.push_back( "RightMainBronchus" );
+  ChestRegionNames.push_back( "Esophagus" );
+  ChestRegionNames.push_back( "LeftChestWall" );
+  ChestRegionNames.push_back( "RightChestWall" );
+  ChestRegionNames.push_back( "LeftDiaphragm" );
+  ChestRegionNames.push_back( "RightDiaphragm" );
+  ChestRegionNames.push_back( "Hiatus" );
+  ChestRegionNames.push_back( "Pectoralis" );
+
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );
   ChestTypeNames.push_back( "Airway" );
@@ -411,7 +474,7 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "NonBronchiectaticAirway" );
   ChestTypeNames.push_back( "AmbiguousBronchiectaticAirway" );
   ChestTypeNames.push_back( "Muscle" );
-  ChestTypeNames.push_back( "Diaphragm" );
+  ChestTypeNames.push_back( "Hernia" );
   
   BodyCompositionPhenotypeNames.push_back( "AxialCSA" );
   BodyCompositionPhenotypeNames.push_back( "CoronalCSA" );
