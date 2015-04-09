@@ -35,7 +35,7 @@ namespace cip {
  *  to update m_NumberOfEnumeratedChestRegions member variable and the
  *  'ChestRegionNames'. Also update 'ChestRegionColors' appropriately.
  */
-enum ChestRegion { 
+enum ChestRegion {
   UNDEFINEDREGION,        //0
   WHOLELUNG,              //1
   RIGHTLUNG,              //2
@@ -109,19 +109,19 @@ enum ChestRegion {
 
 /**
  *  If you add a type to the enumerated list here, you should also
- *  update the ChestTypes below (in the class constructor). 
+ *  update the ChestTypes below (in the class constructor).
  *  Also need to update m_NumberOfEnumeratedChestTypes member variable
  *  and the 'ChestTypeNames' as well as 'ChestTypeColors'
  *
- *  Some notes about the types below. Segmental bronchi are considered 
+ *  Some notes about the types below. Segmental bronchi are considered
  *  generation 3, sub-segmental are considered generation 4, etc.
  */
-enum ChestType { 
-  UNDEFINEDTYPE,                  //0 
+enum ChestType {
+  UNDEFINEDTYPE,                  //0
   NORMALPARENCHYMA,               //1
   AIRWAY,                         //2
   VESSEL,                         //3
-  EMPHYSEMATOUS,                  //4 
+  EMPHYSEMATOUS,                  //4
   GROUNDGLASS,                    //5
   RETICULAR,                      //6
   NODULAR,                        //7
@@ -199,6 +199,8 @@ enum ChestType {
   AMBIGUOUSBRONCHIECTATICAIRWAY,  //79
   MUSCLE,                         //80
   HERNIA,                         //81
+  BONEMARROW,                     //82
+  BONE                            //83
 };
 
 enum ReturnCode {
@@ -239,6 +241,17 @@ enum ReturnCode {
  /*   HUMEDIAN, */
  /*   HUMIN, */
  /*   HUMAX, */
+ /*   LEANAXIALCSA    */
+ /*   LEANCORONALCSA    */
+ /*   LEANSAGITTALCSA    */
+ /*   LEANHUMEAN    */
+ /*   LEANHUSTD    */
+ /*   LEANHUKURTOSIS    */
+ /*   LEANHUSKEWNESS    */
+ /*   LEANHUMODE    */
+ /*   LEANHUMEDIAN    */
+ /*   LEANHUMIN    */
+ /*   LEANHUMAX    */
  /* }; */
 
  /* enum ParenchymaPhenotypes { */
@@ -269,7 +282,14 @@ enum ReturnCode {
  /*   HUMAX500, */
  /*   VOLUME, */
  /*   MASS, */
- /* }; */
+ /*   NORMALPARENCHYMA   */
+ /*   PANLOBULAREMPHYSEMA   */
+ /*   PARASEPTALEMPHYSEMA   */
+ /*   MILDCENTRILOBULAREMPHYSEMA   */
+ /*   MODERATECENTRILOBULAREMPHYSEMA   */
+ /*   SEVERECENTRILOBULAREMPHYSEMA   */
+ /*   MILDPARASEPTALEMPHYSEMA   */
+/* }; */
 
 /**
  *  The following class will define the hierarchy among the various
@@ -301,22 +321,22 @@ public:
   /** The 'color' param is assumed to have three components, each in
    *  the interval [0,1]. All chest type colors will be tested until a
    *  color match is found. If no match is found, 'UNDEFINEDTYPYE'
-   *  will be returned */  
+   *  will be returned */
   unsigned char GetChestTypeFromColor( double* color ) const;
 
   /** The 'color' param is assumed to have three components, each in
    *  the interval [0,1]. All chest region colors will be tested until a
    *  color match is found. If no match is found, 'UNDEFINEDTYPYE'
-   *  will be returned */  
+   *  will be returned */
   unsigned char GetChestRegionFromColor(double* color) const;
 
   /** Given an unsigned short value, this method will compute the
    *  8-bit type value corresponding to the input */
   unsigned char GetChestTypeFromValue( unsigned short value ) const;
-  
+
   /** A label map voxel value consists of a chest-region designation
    *  and a chest-type designation. For the purposes of representing a
-   *  wild card entry (e.g. when using regions and types as keys for 
+   *  wild card entry (e.g. when using regions and types as keys for
    *  populating a database), this method is provided. */
   std::string GetChestWildCardName() const;
 
@@ -333,9 +353,9 @@ public:
   void GetChestRegionColor(unsigned char whichRegion, double* color) const;
 
   /** Get the color corresponding to the chest-region chest-pair pair. The
-   * color is computed as the average of the two corresponding region and type 
+   * color is computed as the average of the two corresponding region and type
    * colors unless the region or type is undefined, in which case the color of
-   * the defined region or type is returned. The 'color' param is assumed to be 
+   * the defined region or type is returned. The 'color' param is assumed to be
    * an allocated 3 dimensional double pointer */
   void GetColorFromChestRegionChestType(unsigned char whichRegion, unsigned char whichType, double* color) const;
 
@@ -369,7 +389,7 @@ public:
   /** Get the ith chest type */
   unsigned char GetChestType( unsigned int i ) const;
 
-  /** Returns true if the passed string name is among the allowed body composition 
+  /** Returns true if the passed string name is among the allowed body composition
    *  phenotype names and returns false otherwise */
   bool IsBodyCompositionPhenotypeName( std::string ) const;
 
@@ -404,7 +424,7 @@ public:
 
 private:
   unsigned char m_NumberOfEnumeratedChestRegions;
-  unsigned char m_NumberOfEnumeratedChestTypes;  
+  unsigned char m_NumberOfEnumeratedChestTypes;
 };
 
 } // namespace cip
