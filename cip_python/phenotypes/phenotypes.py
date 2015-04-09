@@ -111,7 +111,7 @@ class Phenotypes:
         os_arch : string
             The OS architecture on which the phenotype data is generated.
         """
-        return os.uname()[2]
+        return os.uname()[4]
 
     def get_os_kernel(self):
         """Get the OS kernel on which the phenotype data is generated.
