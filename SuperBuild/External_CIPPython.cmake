@@ -20,6 +20,7 @@ else()
 	set (tag master)
 endif()
 
+# Install Miniconda
 ExternalProject_Add(${proj}
 	GIT_REPOSITORY "${git_protocol}://github.com/acil-bwh/CIPPython.git"
 	GIT_TAG ${tag}
@@ -29,49 +30,54 @@ ExternalProject_Add(${proj}
 	INSTALL_COMMAND ${INSTALL_COMMAND}
 )
 
-ExternalProject_Add_Step(${proj} installpip
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pip  
-	DEPENDEES install
-)
 
-ExternalProject_Add_Step(${proj} installnumpy
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet numpy  
-	DEPENDEES install
-)
+# Install Python packages. 
+# Every package depends on the previous one to allow multi-threading in cmake. Otherwise conda will make trouble when installing packages in parallel
 
-ExternalProject_Add_Step(${proj} installscipy
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet scipy  
-	DEPENDEES install
-)
-
-ExternalProject_Add_Step(${proj} installvtk
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet vtk  
-	DEPENDEES install
-)
-
-ExternalProject_Add_Step(${proj} installpandas
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pandas  
-	DEPENDEES install
-)
+# Note: pip not needed because it is installed by cython. It causes some conflicts otherwise
+# ExternalProject_Add_Step(${proj} installpip
+# 	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pip  
+# 	DEPENDEES install
+# )
 
 ExternalProject_Add_Step(${proj} installcython
 	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet cython  
 	DEPENDEES install
 )
 
+ExternalProject_Add_Step(${proj} installnumpy
+	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet numpy  
+	DEPENDEES installcython
+)
+
+ExternalProject_Add_Step(${proj} installscipy
+	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet scipy  
+	DEPENDEES installnumpy
+)
+
+ExternalProject_Add_Step(${proj} installvtk
+	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet vtk  
+	DEPENDEES installscipy
+)
+
+ExternalProject_Add_Step(${proj} installpandas
+	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pandas  
+	DEPENDEES installvtk
+)
+
 ExternalProject_Add_Step(${proj} installnose
 	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet nose  
-	DEPENDEES install
+	DEPENDEES installpandas
 )
 
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_DIR}/bin/pip install --quiet pynrrd  
-	DEPENDEES installpip
+	DEPENDEES installnose
 )
 
 ExternalProject_Add_Step(${proj} installpydicom
 	COMMAND ${CIP_PYTHON_DIR}/bin/pip install --quiet pydicom  
-	DEPENDEES installpip
+	DEPENDEES installpynrrd
 )
 
 
