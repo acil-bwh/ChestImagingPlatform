@@ -23,8 +23,6 @@ set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
 
 set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build. Version 6 is strongly recommended.")
 set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
-#set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "6")
-
 
 
 #-----------------------------------------------------------------------------
@@ -219,6 +217,14 @@ option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
+set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
+
+mark_as_superbuild(
+ VARS
+   CIP_PYTHON_DIR:PATH
+)
+
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
@@ -236,7 +242,8 @@ set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   Boost
   teem
   OpenCV
-  ${LIBXML2_EXTERNAL_NAME}
+  ${LIBXML2_EXTERNAL_NAME}  
+  CIPPython
   )
 
 #-----------------------------------------------------------------------------
