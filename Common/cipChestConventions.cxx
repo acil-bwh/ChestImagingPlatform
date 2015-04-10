@@ -3,13 +3,8 @@
 
 cip::ChestConventions::ChestConventions()
 {
-<<<<<<< HEAD
   m_NumberOfEnumeratedChestRegions = 68;
-  m_NumberOfEnumeratedChestTypes   = 82;
-=======
-  m_NumberOfEnumeratedChestRegions = 53;
   m_NumberOfEnumeratedChestTypes   = 84;
->>>>>>> 05513b90e45a2b875de2ab621e74a850a6b54567
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
