@@ -40,8 +40,6 @@ cip::ChestConventions::ChestConventions()
 					       (unsigned char)( RIGHTLUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTLOWERTHIRD ),
 					       (unsigned char)( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLELUNG ),
-					       (unsigned char)( UNDEFINEDREGION ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLEHEART ),
 					       (unsigned char)( MEDIASTINUM ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( AORTA ),
@@ -70,8 +68,6 @@ cip::ChestConventions::ChestConventions()
                                                (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
                                                (unsigned char)( OUTSIDELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
-                                               (unsigned char)( UNDEFINEDREGION ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( STERNUM ),
                                                (unsigned char)( SKELETON ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( HUMERI ),
@@ -721,45 +717,33 @@ unsigned char cip::ChestConventions::GetNumberOfEnumeratedChestTypes() const
 }
 
 /** This method checks if the chest region 'subordinate' is within
- *  the chest region 'superior'. It assumes that all chest regions are
- *  within the WHOLELUNG lung region. TODO: extend do deal with
- *  chest, not just lung */
+ *  the chest region 'superior'. */
 bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( unsigned char subordinate, unsigned char superior )
 {
-  //
   // No matter what the superior and subordinate regions are (even
   // if they are undefined regions), if they are the same then by
   // convention the subordinate is a subset of the superior, so
   // return true
-  //
   if ( subordinate == superior )
     {
       return true;
     }
 
-  //
   // The undefined region does not belong to any other
   // region (except the undefined region itself). Similarly,
   // nothing belongs to the undefined region (except the undefined
   // region). So if the above test failed, then we're considering
   // the relationship between a defined region and and undefined
   // region. Therefore return false.
-  //
   if ( subordinate == (unsigned char)( UNDEFINEDREGION ) ||
        superior == (unsigned char)( UNDEFINEDREGION ) )
     {
       return false;
     }
 
-  if ( superior == (unsigned char)( WHOLELUNG ) )
-    {
-      return true;
-    }
-
   unsigned char subordinateTemp = subordinate;
-
-  while ( subordinateTemp != (unsigned char)( WHOLELUNG ) &&
-	  subordinateTemp != (unsigned char)( UNDEFINEDREGION ) )
+  
+  while ( ChestRegionHierarchyMap.find(subordinateTemp) != ChestRegionHierarchyMap.end() )
     {
       if ( ChestRegionHierarchyMap[subordinateTemp] == superior )
 	{
