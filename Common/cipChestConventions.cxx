@@ -3,7 +3,7 @@
 
 cip::ChestConventions::ChestConventions()
 {
-  m_NumberOfEnumeratedChestRegions = 53;
+  m_NumberOfEnumeratedChestRegions = 68;
   m_NumberOfEnumeratedChestTypes   = 82;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
