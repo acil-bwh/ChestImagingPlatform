@@ -43,6 +43,7 @@ if(NOT DEFINED OpenCV_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DVTK_DIR:PATH=${VTK_DIR}
       -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
       ##Remove OpenCV packages that are not needed
+      -DBUILD_opencv_java:BOOLEAN=OFF
       -DBUILD_opencv_video:BOOLEAN=OFF
       -DBUILD_opencv_videoio:BOOLEAN=OFF
       -DBUILD_opencv_videostab:BOOLEAN=OFF
