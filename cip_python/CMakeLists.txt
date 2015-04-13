@@ -15,11 +15,16 @@ CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/setup_ChestConventions.py.in
   ${CMAKE_CURRENT_BINARY_DIR}/setup_ChestConventions.py @ONLY )
 message("CIP_PYTHON=${CIP_PYTHON_DIR}")
 ADD_CUSTOM_TARGET ( ${PROJECT_NAME} ALL
-  COMMAND ${CIP_PYTHON_DIR}/bin/python ${CMAKE_CURRENT_BINARY_DIR}/setup_ChestConventions.py build_ext -b ${CMAKE_CURRENT_SOURCE_DIR}/
+  COMMAND ${CIP_PYTHON_DIR}/bin/python ${CMAKE_CURRENT_BINARY_DIR}/setup_ChestConventions.py build_ext -b ${CMAKE_CURRENT_BINARY_DIR}/
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 ADD_DEPENDENCIES ( ${PROJECT_NAME} ChestConventions )
 
+FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR} 
+	DESTINATION ${CMAKE_BINARY_DIR}
+	FILES_MATCHING PATTERN "*.py")
+
+# Include current tests in order that can be identified by ctest
 IF ( CIP_BUILD_TESTING )
  SUBDIRS ( particles )
  SUBDIRS ( phenotypes )
