@@ -87,24 +87,34 @@ class VesselParticles(ChestParticles):
   
         self._srad_phase1 = 1.2
         self._srad_phase2 = 2
-        self._srad_phase3 = 4  
-
-    def execute(self):        
-        # Temporary nrrd particles points
-        out_particles = os.path.join(self._tmp_dir, "pass%d.nrrd")
-        #Pass 1
-        #Init params
-        self._use_strength = False
-        self._inter_particle_energy_type = "uni"
+        self._srad_phase3 = 4
+  
+        self._alpha_param=[1.0 0.0 0.25]
+        self._beta_param=[0.7 0.5 0.25]
+        self._gamma_param=[0.0 0.0 0.002]
+  
+        #Default init mode
         self._init_mode = "PerVoxel"
         self._ppv = 1
         self._nss = 3
 
+    def execute(self):
+      
+        self.pre_processing()
+      
+        # Temporary nrrd particles points
+        out_particles = os.path.join(self._tmp_dir, "pass%d.nrrd")
+        
+        #Pass 1
+        #Init params
+        self._use_strength = False
+        self._inter_particle_energy_type = "uni"
+
         # Energy
         # Radial energy function (psi_1 in the paper)
         self._inter_particle_enery_type = "uni"
-        self._beta  = 0.7 # Irrelevant for pass 1
-        self._alpha = 1.0
+        self._alpha = self._alpha_param[0]
+        self._beta  = self._beta_param[0] # Irrelevant for pass 1
         self._irad = self._irad_phase1
         self._srad = self._srad_phase1
         self._iterations = self._iterations_phase1
@@ -121,8 +131,6 @@ class VesselParticles(ChestParticles):
         # Pass 2
         # Init params
         self._init_mode = "Particles"
-        self._ppv = 1
-        self._nss = 3
         self._in_particles_file_name = out_particles % 1
         self._use_mask = True 
 
@@ -130,11 +138,10 @@ class VesselParticles(ChestParticles):
         # Radial energy function (psi_2 in the paper).
         # Addition of 2 components: scale and space
         self._inter_particle_energy_type = "add"
-        self._alpha = 0
-
+        self._alpha = self._alpha_param[1]
         # Controls blending in scale and space with respect to
         # function psi_2
-        self._beta = 0.5
+        self._beta = self._beta_param[1]
         self._irad = self._irad_phase2
         self._srad = self._srad_phase2
         self._use_strength = True
@@ -155,9 +162,9 @@ class VesselParticles(ChestParticles):
 
         # Energy
         self._inter_particle_energy_type = "add"
-        self._alpha = 0.25
-        self._beta = 0.25
-        self._gamma = 0.002
+        self._alpha = self._alpha_param[2]
+        self._beta = self._beta_param[2]
+        self._gamma = self._gamma_param[2]
         self._irad = self._irad_phase3
         self._srad = self._srad_phase3
         self._use_strength = True
@@ -175,9 +182,7 @@ class VesselParticles(ChestParticles):
         print "Probing..."
         self.probe_quantities(self._in_file_name, out_particles % 3)
         print "Finished probing."
-        #Adjust scale if down-sampling was performed
-        if self._down_sample_rate > 1:
-            self.adjust_scale(out_particles % 3)
+
         print "Saving to vtk..."
         self.save_vtk(out_particles % 3)
 
@@ -197,9 +202,9 @@ if __name__ == "__main__":
                     dest="down_sample_rate", default=1.0)
   parser.add_option("-n", help='number of scale volumes', 
                     dest="scale_samples", default=10)
-  parser.add_option("--lth", help='live threshold (>0)', dest="live_th", 
+  parser.add_option("--lth", help='live threshold (<0)', dest="live_th",
                     default=-100)
-  parser.add_option("--sth", help='seed threshold (>0)', dest="seed_th",
+  parser.add_option("--sth", help='seed threshold (<0)', dest="seed_th",
                     default=-80)
   parser.add_option("--minI", help='min intensity for feature', 
                     dest="min_intensity", default=-800)
