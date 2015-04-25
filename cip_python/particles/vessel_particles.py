@@ -77,7 +77,7 @@ class VesselParticles(ChestParticles):
         self._mode_thresh = -0.3
         self._population_control_period = 6
   
-        self._iterations_phase1 = 15
+        self._iterations_phase1 = 10
         self._iterations_phase2 = 20
         self._iterations_phase3 = 70
   
@@ -89,9 +89,9 @@ class VesselParticles(ChestParticles):
         self._srad_phase2 = 2
         self._srad_phase3 = 4
   
-        self._alpha_param=[1.0 0.0 0.25]
-        self._beta_param=[0.7 0.5 0.25]
-        self._gamma_param=[0.0 0.0 0.002]
+        self._alpha_param=[1.0,0.0,0.25]
+        self._beta_param=[0.7,0.5,0.25]
+        self._gamma_param=[0.0,0.0,0.002]
   
         #Default init mode
         self._init_mode = "PerVoxel"
@@ -100,7 +100,7 @@ class VesselParticles(ChestParticles):
 
     def execute(self):
       
-        self.pre_processing()
+        self.preprocessing()
       
         # Temporary nrrd particles points
         out_particles = os.path.join(self._tmp_dir, "pass%d.nrrd")
@@ -127,12 +127,15 @@ class VesselParticles(ChestParticles):
         print "Starting pass 1..."
         self.execute_pass(out_particles % 1)
         print "Finished pass 1."
+        self.probe_quantities(self._in_file_name, out_particles % 1)
+        self.save_vtk(out_particles % 1)
+
 
         # Pass 2
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
-        self._use_mask = True 
+        self._use_mask = False
 
         # Energy
         # Radial energy function (psi_2 in the paper).
@@ -154,11 +157,12 @@ class VesselParticles(ChestParticles):
         print "Starting pass 2..."
         self.execute_pass(out_particles % 2)
         print "Finished pass 2."
+        self.save_vtk(out_particles % 2)
 
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
-        self._use_mask = True
+        self._use_mask = False
 
         # Energy
         self._inter_particle_energy_type = "add"

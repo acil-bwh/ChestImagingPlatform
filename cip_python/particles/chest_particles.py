@@ -462,7 +462,7 @@ class ChestParticles:
         for quant in self._probing_quantities.keys():
             self.probe_points(in_volume, in_particles, quant, self._probing_quantities[quant][1])
 
-    def preprocessing(self)
+    def preprocessing(self):
         if self._down_sample_rate > 1:
             downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
             self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5',self.down_sample_rate)
