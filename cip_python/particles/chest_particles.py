@@ -80,12 +80,6 @@ class ChestParticles:
         # after execution
         self._clean_tmp_dir = False
 
-        # Temp filenames:
-        # -------------------
-        # Volume name that is going to be used for scale-space particles.
-        # This volume is the result of any pre-processing
-        self._tmp_in_file_name = self._in_file_name
-        self._tmp_mask_file_name = self._mask_file_name
         # Nrrd file to contain particle data.
         self._tmp_particles_file_name  = "nrrdParticlesFileName.nrrd"  
 
@@ -101,13 +95,14 @@ class ChestParticles:
         else:
             self._use_mask = False
 
-        self._single_scale = 0            
+        self._single_scale = 0
         self._max_scale = max_scale
         self._scale_samples = scale_samples
         self._iterations = 50
 
         self._verbose = 1
-        self._permissive = True #Allow volumes to have different shapes (false is safer)
+        self._permissive = False # Allow volumes to have different 
+                                 # shapes (false is safer)
 
         # Energy specific params:
         # -----------------------
@@ -131,7 +126,7 @@ class ChestParticles:
         # -----------------
         # Binning width as mulitple of irad. Increase this value run into
         # overflow of maximum number of bins.
-        self._binning_width = 1.2 
+        self._binning_width = 1.3 
         # Population control period
         self._population_control_period = 5
         # If enabled, it does not add points during population control
@@ -167,36 +162,36 @@ class ChestParticles:
         self._probing_quantities["hevec1"]=["hevec1",0]
         self._probing_quantities["hevec2"]=["hevec2",0]
         self._probing_quantities["hess"]=["hess",0]
-        self._probing_quantities["gvec"]=["gvec",0]
-        self._probing_quantities["gmag"]=["gmag",1]
-        self._probing_quantities["lapl"]=["lapl",1]
-        self._probing_quantities["hf"]=["hf",0]
-        self._probing_quantities["2dd"]=["2dd",1]
-        self._probing_quantities["kappa1"]=["kappa1",1]
-        self._probing_quantities["kappa2"]=["kappa2",1]
-        self._probing_quantities["totalcurv"]=["totalcurv",1]
-        self._probing_quantities["st"]=["st",1]
-        self._probing_quantities["si"]=["si",1]
-        self._probing_quantities["meancurv"]=["meancurv",1]
-        self._probing_quantities["gausscurv"]=["gausscurv",1]
-        self._probing_quantities["curvdir1"]=["curvdir1",1]
-        self._probing_quantities["curvdir2"]=["curvdir2",1]
-        self._probing_quantities["flowlinecurv"]=["flowlinecurv",1]
-        self._probing_quantities["median"]=["median",1]
+        #self._probing_quantities["gvec"]=["gvec",0]
+        #self._probing_quantities["gmag"]=["gmag",1]
+        #self._probing_quantities["lapl"]=["lapl",1]
+        #self._probing_quantities["hf"]=["hf",0]
+        #self._probing_quantities["2dd"]=["2dd",1]
+        #self._probing_quantities["kappa1"]=["kappa1",1]
+        #self._probing_quantities["kappa2"]=["kappa2",1]
+        #self._probing_quantities["totalcurv"]=["totalcurv",1]
+        #self._probing_quantities["st"]=["st",1]
+        #self._probing_quantities["si"]=["si",1]
+        #self._probing_quantities["meancurv"]=["meancurv",1]
+        #self._probing_quantities["gausscurv"]=["gausscurv",1]
+        #self._probing_quantities["curvdir1"]=["curvdir1",1]
+        #self._probing_quantities["curvdir2"]=["curvdir2",1]
+        #self._probing_quantities["flowlinecurv"]=["flowlinecurv",1]
+        #self._probing_quantities["median"]=["median",1]
 
     def set_vol_params(self):
         if self._single_scale == 0:
-            self._volParams = " -vol " + self._tmp_in_file_name + \
+            self._volParams = " -vol " + self._in_file_name + \
                 ":scalar:0-" + str(self._scale_samples) + "-" + \
-                str(self._max_scale) + "-o:V " + self._tmp_in_file_name + \
+                str(self._max_scale) + "-o:V " + self._in_file_name + \
                 ":scalar:0-" + str(self._scale_samples) + "-" + \
                 str(self._max_scale) + "-on:VSN"
         else:
-            self._volParams = " -vol " + self._tmp_in_file_name + \
+            self._volParams = " -vol " + self._in_file_name + \
                 ":scalar:V"
 
-        if self._use_mask == True and self._tmp_mask_file_name is not None:
-            self._volParams += " " + self._tmp_mask_file_name + ":scalar:M"
+        if self._use_mask == True and self._mask_file_name is not None:
+            self._volParams += " " + self._mask_file_name + ":scalar:M"
 
         if self._permissive == True:
             self._volParams += " " + "-usa true"
@@ -209,7 +204,7 @@ class ChestParticles:
 
         if self._feature_type == "ridge_line":
             self._info_params = (
-                " -info  h-c:V:val:0:-1 hgvec:V:gvec \
+            " -info h-c:V:val:0:-1 hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec1 tan2:V:hevec2 ")
             self._info_params += (
                 "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + ":-1 "
@@ -218,7 +213,8 @@ class ChestParticles:
                  "strn:" + volTag + ":heval1:0:-1 ")
             if self._use_mode_thresh == True:
                 self._info_params += (
-                "lthr2:" + volTag + ":hmode:" + str(self._mode_thresh) + ":1 ")
+                    "lthr2:" + volTag + ":hmode:" + \
+                    str(self._mode_thresh) + ":1 ")
         elif self._feature_type == "valley_line":
             self._info_params = (
                 " -info  h-c:V:val:0:1  hgvec:V:gvec \
@@ -251,7 +247,7 @@ class ChestParticles:
             #Here we don't give an option for mode thresh. Always active
 
         if self._use_mask == True:
-            maskVal = "0.5"
+            maskVal = "-0.5"
             self._info_params += " spthr:M:val:" + maskVal + ":1"
 
     def set_kernel_params(self):
@@ -282,15 +278,16 @@ class ChestParticles:
         if self._single_scale == 0:
             self._reconKernelParams = self._reconKernelParams + " -kssr hermite"
             if self._blurring_kernel_type == "DiscreteGaussian":
-              self._reconKernelParams = self._reconKernelParams + " -kssb ds:1,5"
+                self._reconKernelParams = self._reconKernelParams + \
+                  " -kssb ds:1,5"
             elif self._blurring_kernel_type == "ContinuousGaussian":
-              self._reconKernelParams = self._reconKernelParams + \
-                " -kssb gauss:1,5"
+                self._reconKernelParams = self._reconKernelParams + \
+                  " -kssb gauss:1,5"
 
     def set_optimizer_params(self):
         self._optimizerParams = \
             "-pcp "+ str(self._population_control_period) + " -edpcmin 0.1 \
-            -edmin 0.0000001 -eip 0.001 -ess 0.2 -oss 1.9 -step 1 -maxci 10 \
+            -edmin 0.0000001 -eip 0.00001 -ess 0.5 -oss 2.0 -step 1 -maxci 10 \
             -rng 45 -bws "+ str(self._binning_width)
         
         if self._no_add == 1:
@@ -299,7 +296,7 @@ class ChestParticles:
     def set_energy_params(self):
         self._energyParams = \
             "-enr qwell:0.7 -ens bparab:10,0.7,-0.00 -enw butter:10,0.7"
-        self._energyParams += " -efs " + str(self._use_strength)
+        self._energyParams += " -efs " + str(self._use_strength).lower()
         self._energyParams += " -int "+ self._inter_particle_energy_type
         self._energyParams += " -irad "+ str(self._irad)
         self._energyParams += " -srad "+ str(self._srad)
@@ -313,7 +310,9 @@ class ChestParticles:
         elif self._init_mode == "Halton":
             self._init_params = "-np "+ str(self._number_init_particles) + "-halton"
         elif self._init_mode == "Particles":
-            self._init_params = "-pi "+ self._in_particles_file_name
+            self._init_params = "-pi " + self._in_particles_file_name + \
+              " -ppv " + str(self._ppv) + " -nss " + \
+            str(self._nss) + " -jit " + str(self._jit)            
         elif self._init_mode == "PerVoxel":
             self._init_params = " -ppv " + str(self._ppv) + " -nss " + \
                 str(self._nss) + " -jit " + str(self._jit)
@@ -345,29 +344,12 @@ class ChestParticles:
         self.set_misc_params()
 
     def execute(self):
-        if self._down_sample_rate > 1:
-            downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
-            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5',self.down_sample_rate)
-            if self._use_mask == True:
-                downsampledMask = os.path.join(self._tmp_dir, "mask-down.nrrd")
-                self.down_sample(self._mask_file_name,downsampledMask,'cheap',self.down_sample_rate)
-                self._tmp_mask_file_name = downsampledMask
-        else:
-            downsampledVolume = self._in_file_name
-            self._tmp_mask_file_name = self._mask_file_name
-
-        deconvolvedVolume = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
-        self.deconvolve(downsampledVolume,deconvolvedVolume)
-
-        self._tmp_in_file_name = deconvolvedVolume
         self.build_params()
         outputParticles=os.path.join(self._tmp_dir, \
                                      self._tmp_particles_file_name)
         self.execute_pass(outputParticles)
-        self.probe_quantities(self._tmp_in_file_name,outputParticles)
-        #Adjust scale if down-sampling was performed
-        if self._down_sample_rate > 1:
-                self.adjust_scale(outputParticles)
+        self.probe_quantities(self._in_file_name, outputParticles)        
+
         #Save NRRD data to VTK
         self.save_vtk(outputParticles)
 
@@ -376,11 +358,11 @@ class ChestParticles:
 
     def execute_pass(self, output):
         #Check inputs files are in place
-        if os.path.exists(self._tmp_in_file_name) == False:
-            return False
+        #if os.path.exists(self._tmp_in_file_name) == False:
+        #    return False
 
-        if self._use_mask==True and self._tmp_mask_file_name is not None:
-            if os.path.exists(self._tmp_mask_file_name) == False:
+        if self._use_mask==True and self._mask_file_name is not None:
+            if os.path.exists(self._mask_file_name) == False:
                 return False
 
         if self._single_scale == 1:
@@ -388,6 +370,7 @@ class ChestParticles:
                 " -s x1 x1 x1 -k dgauss:" + str(self._max_scale) + \
                 ",3 -t float -o " + self._tmp_in_file_name
 
+            #print tmp_command
             subprocess.call(tmp_command, shell=True)
 
         tmp_command = "puller -sscp " + self._tmp_dir + \
@@ -396,20 +379,19 @@ class ChestParticles:
             self._init_params + " " + self._reconKernelParams + " " + \
             self._optimizerParams + " -o " + output + " -maxi " + \
             str(self._iterations)
-        if self._verbose > 0:
-                print tmp_command
 
+        #print tmp_command
         subprocess.call(tmp_command, shell=True)
-
+        
         # Trick to add scale value
         if self._single_scale == 1:
-          tmp_command = "unu crop -min M 0 -max M M -i " + output + \
-                      " | unu 2op + - " + str(self._max_scale) + \
-                      " | unu inset -min M 0 -s - -i " + output + " -o " + output
-          if self._verbose > 0:
-            print tmp_command
-          subprocess.call( tmp_command, shell=True )
-            
+            tmp_command = "unu crop -min M 0 -max M M -i " + output + \
+                        " | unu 2op + - " + str(self._max_scale) + \
+                        " | unu inset -min M 0 -s - -i " + output + " -o " + output
+        
+            #print tmp_command
+            subprocess.call( tmp_command, shell=True )
+          
     def probe_points(self, in_volume, inputParticles, quantity,
                      normalizedDerivatives=0):
         output = os.path.join(self._tmp_dir, quantity+".nrrd")
@@ -450,6 +432,7 @@ class ChestParticles:
         if self._verbose > 0:
           print tmp_command
 
+        #print tmp_command
         subprocess.call( tmp_command, shell=True )
 
     def probe_quantities(self, in_volume, in_particles):
@@ -480,6 +463,7 @@ class ChestParticles:
         if self._verbose > 0:
             print tmp_command
 
+        #print tmp_command
         subprocess.call( tmp_command, shell=True)
 
     def down_sample(self, inputVol, outputVol, kernel,down_rate):
@@ -494,19 +478,8 @@ class ChestParticles:
         if self._verbose > 0:
             print tmp_command
 
+        #print tmp_command            
         subprocess.call( tmp_command, shell=True)
-
-    def adjust_scale(self, in_particles):
-        #Trick to multiply scale if we have down-sampled before saving to VTK
-        if self._down_sample_rate > 1:
-            tmp_command = "unu crop -i %(output)s -min 3 0 -max 3 M | \
-            unu 2op x - %(rate)f | unu inset -i %(output)s -s - \
-            -min 3 0 -o %(output)s"
-            
-            tmp_command = tmp_command % {'output':in_particles, \
-                'rate':self._down_sample_rate}
-            print tmp_command
-            subprocess.call( tmp_command, shell=True )
     
     def save_vtk(self, in_particles):
         reader_writer = ReadNRRDsWriteVTK(self._out_particles_file_name)
@@ -523,6 +496,8 @@ class ChestParticles:
         if self._clean_tmp_dir == True:
             print "Cleaning tempoarary directory..."
             tmp_command = "/bin/rm " + os.path.join(self._tmp_dir, "*")
+
+            #print tmp_command
             subprocess.call( tmp_command, shell=True )
 
     def merge_particles(self,input_list,output_merged):
@@ -530,6 +505,8 @@ class ChestParticles:
         for input_particles in input_list:
             particles = particles + " " + str(input_particles)
         tmp_command = "unu join -a 1 -i " + particles + " -o "+ output_merged
+
+        #print tmp_command
         subprocess.call(tmp_command, shell=True)
 
     def differential_mask (self, current_down_rate, previous_down_rate,
@@ -552,5 +529,6 @@ class ChestParticles:
                                          'previous':downsampled_mask_prev,
                                          'out':output_mask}
 
+            #print tmp_command
             subprocess.call(tmp_command, shell=True)
 
