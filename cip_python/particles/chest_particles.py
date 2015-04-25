@@ -80,8 +80,19 @@ class ChestParticles:
         # after execution
         self._clean_tmp_dir = False
 
+        # Scale-particles filenames:
+        # -------------------
+        # Volume name that is going to be used for scale-space particles.
+        # This volume is the result of any pre-processing
+        self._sp_in_file_name = self._in_file_name
+        self._sp_mask_file_name = self._mask_file_name
         # Nrrd file to contain particle data.
-        self._tmp_particles_file_name  = "nrrdParticlesFileName.nrrd"  
+        self._sp_particles_file_name  = "nrrdParticlesFileName.nrrd"
+              
+        # Debug params:
+        # ----------------
+        self._verbose = 0 #Verbosity level for puller
+        self._debug = False #Print class commands
 
         # Particle system setup params:
         # -----------------------------
@@ -100,7 +111,6 @@ class ChestParticles:
         self._scale_samples = scale_samples
         self._iterations = 50
 
-        self._verbose = 1
         self._permissive = False # Allow volumes to have different 
                                  # shapes (false is safer)
 
@@ -181,17 +191,17 @@ class ChestParticles:
 
     def set_vol_params(self):
         if self._single_scale == 0:
-            self._volParams = " -vol " + self._in_file_name + \
+            self._volParams = " -vol " + self._sp_in_file_name + \
                 ":scalar:0-" + str(self._scale_samples) + "-" + \
-                str(self._max_scale) + "-o:V " + self._in_file_name + \
+                str(self._max_scale) + "-o:V " + self._sp_in_file_name + \
                 ":scalar:0-" + str(self._scale_samples) + "-" + \
                 str(self._max_scale) + "-on:VSN"
         else:
-            self._volParams = " -vol " + self._in_file_name + \
+            self._volParams = " -vol " + self._sp_in_file_name + \
                 ":scalar:V"
 
-        if self._use_mask == True and self._mask_file_name is not None:
-            self._volParams += " " + self._mask_file_name + ":scalar:M"
+        if self._use_mask == True and self._sp_mask_file_name is not None:
+            self._volParams += " " + self._sp_mask_file_name + ":scalar:M"
 
         if self._permissive == True:
             self._volParams += " " + "-usa true"
@@ -217,7 +227,7 @@ class ChestParticles:
                     str(self._mode_thresh) + ":1 ")
         elif self._feature_type == "valley_line":
             self._info_params = (
-                " -info  h-c:V:val:0:1  hgvec:V:gvec \
+                " -info h-c:V:val:0:1  hgvec:V:gvec \
                 hhess:V:hess tan1:V:hevec0 tan2:V:hevec1 ")
             self._info_params += (
                 "sthr:" + volTag + ":heval1:" + str(self._seed_thresh) + ":1 "
@@ -247,7 +257,7 @@ class ChestParticles:
             #Here we don't give an option for mode thresh. Always active
 
         if self._use_mask == True:
-            maskVal = "-0.5"
+            maskVal = "0.5"
             self._info_params += " spthr:M:val:" + maskVal + ":1"
 
     def set_kernel_params(self):
@@ -310,9 +320,7 @@ class ChestParticles:
         elif self._init_mode == "Halton":
             self._init_params = "-np "+ str(self._number_init_particles) + "-halton"
         elif self._init_mode == "Particles":
-            self._init_params = "-pi " + self._in_particles_file_name + \
-              " -ppv " + str(self._ppv) + " -nss " + \
-            str(self._nss) + " -jit " + str(self._jit)            
+            self._init_params = "-pi " + self._in_particles_file_name            
         elif self._init_mode == "PerVoxel":
             self._init_params = " -ppv " + str(self._ppv) + " -nss " + \
                 str(self._nss) + " -jit " + str(self._jit)
@@ -344,11 +352,14 @@ class ChestParticles:
         self.set_misc_params()
 
     def execute(self):
+      
+        self.preprocessing()
+      
         self.build_params()
         outputParticles=os.path.join(self._tmp_dir, \
                                      self._tmp_particles_file_name)
         self.execute_pass(outputParticles)
-        self.probe_quantities(self._in_file_name, outputParticles)        
+        self.probe_quantities(self._sp_in_file_name, outputParticles)
 
         #Save NRRD data to VTK
         self.save_vtk(outputParticles)
@@ -358,19 +369,20 @@ class ChestParticles:
 
     def execute_pass(self, output):
         #Check inputs files are in place
-        #if os.path.exists(self._tmp_in_file_name) == False:
-        #    return False
+        if os.path.exists(self._sp_in_file_name) == False:
+            return False
 
-        if self._use_mask==True and self._mask_file_name is not None:
-            if os.path.exists(self._mask_file_name) == False:
+        if self._use_mask==True and self._sp_mask_file_name is not None:
+            if os.path.exists(self._sp_mask_file_name) == False:
                 return False
 
         if self._single_scale == 1:
-            tmp_command = "unu resample -i " + self._tmp_in_file_name + \
+            tmp_command = "unu resample -i " + self._sp_in_file_name + \
                 " -s x1 x1 x1 -k dgauss:" + str(self._max_scale) + \
-                ",3 -t float -o " + self._tmp_in_file_name
+                ",3 -t float -o " + self._sp_in_file_name
 
-            #print tmp_command
+            if self._debug == True:
+                print tmp_command
             subprocess.call(tmp_command, shell=True)
 
         tmp_command = "puller -sscp " + self._tmp_dir + \
@@ -380,7 +392,9 @@ class ChestParticles:
             self._optimizerParams + " -o " + output + " -maxi " + \
             str(self._iterations)
 
-        #print tmp_command
+        if self._debug == True:
+            print tmp_command
+
         subprocess.call(tmp_command, shell=True)
         
         # Trick to add scale value
@@ -390,6 +404,8 @@ class ChestParticles:
                         " | unu inset -min M 0 -s - -i " + output + " -o " + output
         
             #print tmp_command
+            if self._debug == True:
+                print tmp_command
             subprocess.call( tmp_command, shell=True )
           
     def probe_points(self, in_volume, inputParticles, quantity,
@@ -429,7 +445,7 @@ class ChestParticles:
             if normalizedDerivatives == 1:
                 tmp_command += " -ssnd"
 
-        if self._verbose > 0:
+        if self._debug == True:
           print tmp_command
 
         #print tmp_command
@@ -446,6 +462,23 @@ class ChestParticles:
         for quant in self._probing_quantities.keys():
             self.probe_points(in_volume, in_particles, quant, self._probing_quantities[quant][1])
 
+    def preprocessing(self)
+        if self._down_sample_rate > 1:
+            downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
+            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5',self.down_sample_rate)
+            if self._use_mask == True:
+                downsampledMask = os.path.join(self._tmp_dir, "mask-down.nrrd")
+                self.down_sample(self._mask_file_name,downsampledMask,'cheap',self.down_sample_rate)
+                self._sp_mask_file_name = downsampledMask
+        else:
+            downsampledVolume = self._in_file_name
+            self._sp_mask_file_name = self._mask_file_name
+
+        deconvolvedVolume = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
+        self.deconvolve(downsampledVolume,deconvolvedVolume)
+
+        self._sp_in_file_name = deconvolvedVolume
+        
     def deconvolve(self, in_vol, out_vol):
         """
         Parameters
@@ -460,10 +493,9 @@ class ChestParticles:
             " | unu resample -s x1 x1 x1 " + self._inverse_kernel_params + \
             " -t float -o " + out_vol
 
-        if self._verbose > 0:
+        if self._debug == True:
             print tmp_command
 
-        #print tmp_command
         subprocess.call( tmp_command, shell=True)
 
     def down_sample(self, inputVol, outputVol, kernel,down_rate):
@@ -475,13 +507,33 @@ class ChestParticles:
         val = 1.0/down_rate
         tmp_command = tmp_command %  {'rate':val,'kernel':kernel}
 
-        if self._verbose > 0:
+        if self._debug == True:
             print tmp_command
 
         #print tmp_command            
         subprocess.call( tmp_command, shell=True)
     
+
+    def adjust_scale(self, in_particles):
+        #Trick to multiply scale if we have down-sampled before saving to VTK
+        if self._down_sample_rate > 1:
+            tmp_command = "unu crop -i %(output)s -min 3 0 -max 3 M | \
+            unu 2op x - %(rate)f | unu inset -i %(output)s -s - \
+            -min 3 0 -o %(output)s"
+        
+            tmp_command = tmp_command % {'output':in_particles, \
+          'rate':self._down_sample_rate}
+            if self._debug == True:
+                print tmp_command
+            subprocess.call( tmp_command, shell=True )
+
+
     def save_vtk(self, in_particles):
+      
+        #Adjust scale if down-sampling was performed
+        if self._down_sample_rate > 1:
+            self.adjust_scale(in_particles)
+
         reader_writer = ReadNRRDsWriteVTK(self._out_particles_file_name)
         reader_writer.add_file_name_array_name_pair(in_particles, "NA")
 
@@ -497,7 +549,8 @@ class ChestParticles:
             print "Cleaning tempoarary directory..."
             tmp_command = "/bin/rm " + os.path.join(self._tmp_dir, "*")
 
-            #print tmp_command
+            if self._debug == True:
+                print tmp_command
             subprocess.call( tmp_command, shell=True )
 
     def merge_particles(self,input_list,output_merged):
@@ -506,7 +559,8 @@ class ChestParticles:
             particles = particles + " " + str(input_particles)
         tmp_command = "unu join -a 1 -i " + particles + " -o "+ output_merged
 
-        #print tmp_command
+        if self._debug == True:
+            print tmp_command
         subprocess.call(tmp_command, shell=True)
 
     def differential_mask (self, current_down_rate, previous_down_rate,
@@ -529,6 +583,7 @@ class ChestParticles:
                                          'previous':downsampled_mask_prev,
                                          'out':output_mask}
 
-            #print tmp_command
+            if self._debug == True:
+                print tmp_command
             subprocess.call(tmp_command, shell=True)
 
