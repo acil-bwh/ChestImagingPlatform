@@ -12,28 +12,34 @@ class GeometryTopologyData:
 #         self.numDimensions = 0
         self.points = []
         self.boundingBoxes = []
-    
+
     def addPoint(self, point):
         """Add a new Point from a vector of float coordinates"""
         self.points.append(point)
-    
+
     def addBoundingBox(self, boundingBox):
         self.boundingBoxes.append(boundingBox)
-    
+
     def toXml(self):
         """Generate the XML string representation of this object.
         It doesn't use any special module to keep compatibility with Slicer"""
         output = '<?xml version="1.0" encoding="utf8"?><GeometryTopologyData>'
-#         if self.numDimensions != 0: 
-#             output = output +  ('<numDimensions>%i</numDimensions>' % self.numDimensions) 
-        
+#         if self.numDimensions != 0:
+#             output = output +  ('<numDimensions>%i</numDimensions>' % self.numDimensions)
+
         # Concatenate points
         points = "".join(map(lambda i:i.toXml(), self.points))
         # Concatenate bounding boxes
         boundingBoxes = "".join(map(lambda i:i.toXml(), self.boundingBoxes))
-        
+
         return output + points + boundingBoxes + "</GeometryTopologyData>"
-   
+
+    @staticmethod
+    def fromFile(fileName):
+        with open (fileName, "r") as myfile:
+            data=myfile.read()
+        return GeometryTopologyData.fromXml(data)
+
     @staticmethod
     def fromXml(xml):
         """Build a GeometryTopologyData object from a xml string.
@@ -58,12 +64,12 @@ class GeometryTopologyData:
                 coordinates.append(float(coord.text))
             chestRegion = int(point.find("ChestRegion").text)
             chestType = int(point.find("ChestType").text)
-            
+
             # Description
             desc = point.find("Description")
             if not desc is None:
                 desc = desc.text
-                
+
             geometryTopology.addPoint(Point(coordinates, chestRegion, chestType, description=desc))
 
         # BoundingBoxes
@@ -76,18 +82,16 @@ class GeometryTopologyData:
                 coordinatesSize.append(float(coord.text))
             chestRegion = int(bb.find("ChestRegion").text)
             chestType = int(bb.find("ChestType").text)
-            
+
             # Description
             desc = bb.find("Description")
             if not desc is None:
                 desc = desc.text
-                            
+
             geometryTopology.addBoundingBox(BoundingBox(coordinatesStart, coordinatesSize, chestRegion, chestType, description=desc))
 
-       
-
         return geometryTopology
-        
+
 class Point:
     def __init__(self, coordinate, chestRegion, chestType, description=None, format="%f"):
         """
@@ -103,20 +107,20 @@ class Point:
         self.chestType = chestType
         self.description = description
         self.format = format
-    
+
     def toXml(self):
         coords = self.toXmlVector(self.coordinate)
         descriptionStr = ''
         if not self.description is None:
             descriptionStr = '<Description>%s</Description>' % self.description
-            
+
         return '<Point><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType>%s<Coordinate>%s</Coordinate></Point>' % \
             (self.chestRegion, self.chestType, descriptionStr, coords)
-            
+
     def toXmlVector(self, array):
         output = ''
         for i in array:
-            output = ("%s<value>" + self.format + "</value>") % (output, i) 
+            output = ("%s<value>" + self.format + "</value>") % (output, i)
         return output
 
 class BoundingBox:
@@ -137,7 +141,7 @@ class BoundingBox:
         self.description = description
         self.format = format       # Default format to print the xml output coordinate values (also acceptable: %i or customized)
 
-    
+
     def toXml(self):
         startStr = self.toXmlVector(self.start)
         sizeStr = self.toXmlVector(self.size)
@@ -146,11 +150,10 @@ class BoundingBox:
             descriptionStr = '<Description>%s</Description>' % self.description
         return '<BoundingBox><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % \
             (self.chestRegion, self.chestType, descriptionStr, startStr, sizeStr)
-            
+
 
     def toXmlVector(self, array):
         output = ''
         for i in array:
             output = ("%s<value>" + self.format + "</value>") % (output, i)
         return output
-

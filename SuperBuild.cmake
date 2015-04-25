@@ -236,6 +236,7 @@ endif()
 
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
 set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+  CIPPython
   SlicerExecutionModel
   ${ITK_EXTERNAL_NAME}
   ${VTK_EXTERNAL_NAME}
@@ -243,7 +244,6 @@ set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   teem
   OpenCV
   ${LIBXML2_EXTERNAL_NAME}  
-  CIPPython
   )
 
 #-----------------------------------------------------------------------------

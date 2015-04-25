@@ -68,7 +68,8 @@ class ParenchymaPhenotypesWorkflow(CipWorkflow):
             test_workflow = pe.Workflow(name='generate_lung_phenotype_workflo2w')
             test_workflow.add_nodes([median_filter_generator]) 
         
-            self.add_nodes([median_filter_generator])           
+            self.add_nodes([median_filter_generator])
+            param = ParameterFactory.buildParameter('inputFile')
             self.add_node_param('generate_median_filtered_image', 'inputFile', self.input_CT)
             self.add_node_param('generate_median_filtered_image', 'outputFile', self.median_filtered_file)
             self.add_node_param('generate_median_filtered_image', 'Radius', self.median_filter_radius)
