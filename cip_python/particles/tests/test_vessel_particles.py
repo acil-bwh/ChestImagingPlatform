@@ -4,35 +4,36 @@ import numpy as np
 from numpy import sum, sqrt
 import vtk
 import pdb
-from cip_python.particles.airway_particles import AirwayParticles
+from cip_python.particles.vessel_particles import VesselParticles
 
-def test_airway_particles():
+def test_vessel_particles():
     # Get the path to the this test so that we can reference the test data
     this_dir = os.path.dirname(os.path.realpath(__file__))
 
     # Set up the inputs to AirwayParticles
-    input_ct = this_dir + '/../../../Testing/Data/Input/airway.nrrd'
-    output_particles = this_dir + '/../../../Testing/tmp/airway_particles.vtk'
+    input_ct = this_dir + '/../../../Testing/Data/Input/vessel.nrrd'
+    output_particles = this_dir + '/../../../Testing/tmp/vessel_particles.vtk'
     tmp_dir = this_dir + '/../../../Testing/tmp/'
-    input_mask = None
+    input_mask = this_dir + '/../../../Testing/Data/Input/vessel_mask.nrrd'
     max_scale = 6.0
-    live_th = 50.0
-    seed_th = 40.0
-    scale_samples = 5
+    live_th = -100.0
+    seed_th = -80.0
+    scale_samples = 10
     down_sample_rate = 1.0
-    min_intensity = -1100
-    max_intensity = -400
+    min_intensity = -800
+    max_intensity = 400
 
     # Generate the airway particles
-    ap = AirwayParticles(input_ct, output_particles, tmp_dir, input_mask,
-                         max_scale, live_th, seed_th, scale_samples,
-                         down_sample_rate, min_intensity, max_intensity)
-    ap.execute()
+    vp = VesselParticles(input_ct, output_particles, tmp_dir, 
+                         input_mask, max_scale, live_th, seed_th, 
+                         scale_samples, down_sample_rate,
+                         min_intensity, max_intensity)    
+    vp.execute()
     
     # Read in the reference data set for comparison
     ref_reader = vtk.vtkPolyDataReader()
     ref_reader.SetFileName(this_dir +
-                    '/../../../Testing/Data/Input/airway_particles.vtk')
+                    '/../../../Testing/Data/Input/vessel_particles.vtk')
     ref_reader.Update()
 
     # Now read in the output data set
@@ -43,7 +44,7 @@ def test_airway_particles():
     # The test passes provided that every particle in the reference data set
     # has a partner within an '_irad' distance of some particle in the test
     # data set and vice versa
-    irad = ap._irad
+    irad = vp._irad
     
     for i in xrange(0, ref_reader.GetOutput().GetNumberOfPoints()):
         ref_point = np.array(ref_reader.GetOutput().GetPoint(i))
@@ -54,7 +55,7 @@ def test_airway_particles():
             if dist <= irad:
                 test_pass = True
                 break
-        assert test_pass, 'Airway particle has no match'
+        assert test_pass, 'Vessel particle has no match'
 
     for i in xrange(0, test_reader.GetOutput().GetNumberOfPoints()):
         test_point = np.array(test_reader.GetOutput().GetPoint(i))
@@ -65,7 +66,7 @@ def test_airway_particles():
             if dist <= irad:
                 test_pass = True
                 break
-        assert test_pass, 'Airway particle has no match'
+        assert test_pass, 'Vessel particle has no match'
 
     # Clean up the tmp directory. Note that this block should probably change
     # if this test is altered
@@ -80,7 +81,7 @@ def test_airway_particles():
              'lapl.nrrd', 'meancurv.nrrd', 'median.nrrd',
              'si.nrrd', 'st.nrrd', 'totalcurv.nrrd']
 
-    for f in files:
-        if os.path.isfile(tmp_dir + f):
-            subprocess.call("rm " + tmp_dir + f, shell=True)
+    #for f in files:
+    #    if os.path.isfile(tmp_dir + f):
+    #        subprocess.call("rm " + tmp_dir + f, shell=True)
     
