@@ -36,11 +36,11 @@ class VesselParticles(ChestParticles):
         represented at a scale of 12, keep 'max_scale' at 6 and downsample by
         2. The scale of the output particles is handled properly.    
 
-    live_thresh : float (optional)
-        Default is 50. Possible interval to explore: [30, 150]
+    live_thresh_param : list of float (optional)
+        Default is -100. Possible interval to explore: [-30, -200]
 
-    seed_thresh : float (optional)
-        Default is 40. Possible interval to explore: [30, 200]
+    seed_thresh_param : list of float (optional)
+        Default is -80. Possible interval to explore: [-30, -200]
 
     scale_samples : int (optional)
         The number of pre-blurrings performed on the input image. These
@@ -57,8 +57,8 @@ class VesselParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6, live_thresh=-100.,
-                 seed_thresh=-80, scale_samples=10, down_sample_rate=1, 
+                 mask_file_name=None, max_scale=6, live_thresh=-100,
+                 seed_thresh=-80, scale_samples=10, down_sample_rate=1,
                  min_intensity=-800, max_intensity=400):
         ChestParticles.__init__(self, feature_type="ridge_line",
                                 in_file_name=in_file_name,
@@ -69,21 +69,22 @@ class VesselParticles(ChestParticles):
                                 down_sample_rate=down_sample_rate)
         self._max_intensity = max_intensity
         self._min_intensity = min_intensity
-        self._live_thresh = live_thresh
-        self._seed_thresh = seed_thresh
         self._scale_samples = scale_samples
         self._down_sample_rate = down_sample_rate
+      
+        self._live_thresh= live_thresh
+        self._seed_thresh= seed_thresh
 
         self._mode_thresh = -0.3
-        self._population_control_period = 6
+        self._population_control_period = 3
   
-        self._iterations_phase1 = 10
+        self._iterations_phase1 = 60
         self._iterations_phase2 = 20
-        self._iterations_phase3 = 70
+        self._iterations_phase3 = 40
   
-        self._irad_phase1 = 1.7
+        self._irad_phase1 = 1.5
         self._irad_phase2 = 1.15
-        self._irad_phase3 = 0.6
+        self._irad_phase3 = 0.8
   
         self._srad_phase1 = 1.2
         self._srad_phase2 = 2
@@ -95,8 +96,8 @@ class VesselParticles(ChestParticles):
   
         #Default init mode
         self._init_mode = "PerVoxel"
-        self._ppv = 1
-        self._nss = 3
+        self._ppv = 2
+        self._nss = 2
 
     def execute(self):
       
@@ -108,7 +109,7 @@ class VesselParticles(ChestParticles):
         #Pass 1
         #Init params
         self._use_strength = False
-        self._inter_particle_energy_type = "uni"
+        self._inter_particle_energy_type = "uni"      
 
         # Energy
         # Radial energy function (psi_1 in the paper)
@@ -127,15 +128,13 @@ class VesselParticles(ChestParticles):
         print "Starting pass 1..."
         self.execute_pass(out_particles % 1)
         print "Finished pass 1."
-        self.probe_quantities(self._in_file_name, out_particles % 1)
-        self.save_vtk(out_particles % 1)
-
-
+      
         # Pass 2
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
         self._use_mask = False
+        self._population_control_period = 6
 
         # Energy
         # Radial energy function (psi_2 in the paper).
@@ -157,12 +156,12 @@ class VesselParticles(ChestParticles):
         print "Starting pass 2..."
         self.execute_pass(out_particles % 2)
         print "Finished pass 2."
-        self.save_vtk(out_particles % 2)
 
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
         self._use_mask = False
+        self._population_control_period = 6
 
         # Energy
         self._inter_particle_energy_type = "add"
@@ -184,7 +183,7 @@ class VesselParticles(ChestParticles):
 
         # Probe quantities and save to VTK
         print "Probing..."
-        self.probe_quantities(self._in_file_name, out_particles % 3)
+        self.probe_quantities(self._sp_in_file_name, out_particles % 3)
         print "Finished probing."
 
         print "Saving to vtk..."
