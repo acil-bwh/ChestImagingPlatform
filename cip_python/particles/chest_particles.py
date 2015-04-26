@@ -332,6 +332,10 @@ class ChestParticles:
             verbose = self._verbose -1
         self._miscParams="-nave true -v "+str(verbose)+" -pbm 0"
 
+        #Set boundary behaviour for scale-space blurring to bleed (gprobe uses that)
+        #This allows us to reuse the blurStack when probing
+        self._miscParams = self._miscParams + " -bsp bleed"
+
     def reset_params(self):
         self._info_params = ""
         self._volParams  = ""
@@ -528,13 +532,15 @@ class ChestParticles:
             subprocess.call( tmp_command, shell=True )
 
 
-    def save_vtk(self, in_particles):
+    def save_vtk(self, in_particles,out_particles=None):
       
+        if out_particles == None:
+            out_particles = self._out_particles_file_name
         #Adjust scale if down-sampling was performed
         if self._down_sample_rate > 1:
             self.adjust_scale(in_particles)
 
-        reader_writer = ReadNRRDsWriteVTK(self._out_particles_file_name)
+        reader_writer = ReadNRRDsWriteVTK(out_particles)
         reader_writer.add_file_name_array_name_pair(in_particles, "NA")
 
         for quant in self._probing_quantities.keys():
