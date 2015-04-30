@@ -78,9 +78,7 @@ class VesselParticles(ChestParticles):
         self._mode_thresh = -0.3
         self._population_control_period = 3
   
-        self._iterations_phase1 = 60
-        self._iterations_phase2 = 20
-        self._iterations_phase3 = 40
+        self._phase_iterations = [60,20,40]
   
         self._irad_phase1 = 1.5
         self._irad_phase2 = 1.15
@@ -90,9 +88,10 @@ class VesselParticles(ChestParticles):
         self._srad_phase2 = 2
         self._srad_phase3 = 4
   
-        self._alpha_param=[1.0,0.0,0.25]
-        self._beta_param=[0.7,0.5,0.25]
-        self._gamma_param=[0.0,0.0,0.002]
+        self._phase_population_control_periods=[3,6,6]
+        self._phase_alphas=[1.0,0.0,0.25]
+        self._phase_betas=[0.7,0.5,0.25]
+        self._phase_gammas=[0.0,0.0,0.002]
   
         #Default init mode
         self._init_mode = "PerVoxel"
@@ -114,11 +113,13 @@ class VesselParticles(ChestParticles):
         # Energy
         # Radial energy function (psi_1 in the paper)
         self._inter_particle_enery_type = "uni"
-        self._alpha = self._alpha_param[0]
-        self._beta  = self._beta_param[0] # Irrelevant for pass 1
+        self._alpha = self._phase_alphas[0]
+        self._beta  = self._phase_betas[0] # Irrelevant for pass 1
+        self._gamma = self._phase_gammas[0]
         self._irad = self._irad_phase1
         self._srad = self._srad_phase1
-        self._iterations = self._iterations_phase1
+        self._iterations = self._phase_iterations[0]
+        self._population_control_period = self._phase_population_control_periods[0]
 
         #Build parameters and run
         print "Resetting param groups..."
@@ -134,21 +135,23 @@ class VesselParticles(ChestParticles):
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
         self._use_mask = False
-        self._population_control_period = 6
 
         # Energy
         # Radial energy function (psi_2 in the paper).
         # Addition of 2 components: scale and space
         self._inter_particle_energy_type = "add"
-        self._alpha = self._alpha_param[1]
+        self._alpha = self._phase_alphas[1]
         # Controls blending in scale and space with respect to
         # function psi_2
-        self._beta = self._beta_param[1]
+        self._beta = self._phase_betas[1]
+        self._gamma = self._phase_gammas[1]
         self._irad = self._irad_phase2
         self._srad = self._srad_phase2
         self._use_strength = True
 
-        self._iterations = self._iterations_phase2
+        self._iterations = self._phase_iterations[1]
+        self._population_control_period = self._phase_population_control_periods[1]
+
 
         # Build parameters and run
         self.reset_params()
@@ -161,19 +164,20 @@ class VesselParticles(ChestParticles):
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
         self._use_mask = False
-        self._population_control_period = 6
+        self._population_control_period = self._phase_population_control_periods[2]
 
         # Energy
         self._inter_particle_energy_type = "add"
-        self._alpha = self._alpha_param[2]
-        self._beta = self._beta_param[2]
-        self._gamma = self._gamma_param[2]
+        self._alpha = self._phase_alphas[2]
+        self._beta = self._phase_betas[2]
+        self._gamma = self._phase_gammas[2]
         self._irad = self._irad_phase3
         self._srad = self._srad_phase3
         self._use_strength = True
         self._use_mode_thresh = True
-        self._iterations = self._iterations_phase3
-        
+        self._iterations = self._phase_iterations[2]
+        self._population_control_period = self._phase_population_control_periods[2]
+
         # Build parameters and run
         self.reset_params()
         self.build_params()
