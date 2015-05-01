@@ -75,7 +75,6 @@ def evaluate_vessel_particles(skel, poly, spacing, origin, irad):
         else:
             FP += 1
 
-
     # Now we need to compute the FNs by finding all the skeleton indices and
     # looking around the particles dataset to find any particles in the
     # neighborhood. If there are none, then we have a FN.
