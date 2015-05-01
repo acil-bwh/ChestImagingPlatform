@@ -5,19 +5,17 @@ import nipype.pipeline.engine as pe         # the workflow and node wrappers
 import sys
 import os 
 from nipype import SelectFiles, Node
-from cip_workflow import CipWorkflow
 
 # http://nipy.sourceforge.net/nipype/users/tutorial_101.html
-# wrap python. xml definition? 
-           
-  
+# wrap python. xml definition?              
                
-class ParenchymaPhenotypesWorkflow(CipWorkflow):
+class ParenchymaPhenotypesWorkflow(pe.Workflow):
 
-    def __init__(self, cid, case_dir, input_ct, lung_labelmap, phenotype_csv, median_filtered_file, filter_image = False, chest_regions = None, \
-            chest_types = None, pairs = None, pheno_names = None, median_filter_radius=None):
-            
-        
+    def __init__(self, cid, case_dir, input_ct, lung_labelmap, phenotype_csv, 
+                 median_filtered_file, filter_image = False, 
+                 chest_regions = None, chest_types = None, pairs = None, 
+                 pheno_names = None, median_filter_radius=None):
+                    
         """ set up inputs to workflow"""
         self.cid = cid
         self.input_CT = input_ct 
@@ -45,9 +43,7 @@ class ParenchymaPhenotypesWorkflow(CipWorkflow):
         #    
         #node = Node(interface=int)
         #node.params.add(name,value)
- 
-
-             
+              
     def get_cid(self):
         """Get the case ID (CID)
 
@@ -59,8 +55,8 @@ class ParenchymaPhenotypesWorkflow(CipWorkflow):
         return self.cid_
           
     def set_up_workflow(self):
-
-        """ Set up nodes that will make the wf  """
+        """ Set up nodes that will make the wf  
+        """
         if self.filter_image is True:
             median_filter_generator = pe.Node(interface=cip.GenerateMedianFilteredImage( ),
                    name='generate_median_filtered_image') # (the input names come from argstr from the interface)
@@ -104,10 +100,7 @@ class ParenchymaPhenotypesWorkflow(CipWorkflow):
                                                       
         #in_ct =self.input_CT, pheno_names=self.pheno_names,chest_regions=self.regions,\
         #    chest_types=self.types, out_csv = self.phenotype_csv,cid = self.cid),
-                    
-        
-                
-  
+                                        
         self.base_dir = self.root_dir
 
         """ connect nodes based on whether we are performing median filtering or not"""
@@ -118,27 +111,4 @@ class ParenchymaPhenotypesWorkflow(CipWorkflow):
             self.connect(label_map_generator, 'out', lung_parenchyma_generator, 'in_lm')
             
         self.write_graph(dotfilename="parenchyma_workflow_graph.dot")
-
-
-    #def run(self):
-    #    self.run()
-
-# if __main__:
-#
-#     pf_ob_wf=pf_wf()
-#
-#     pf_ob_wf.run()
-#
-#
-#
-#
-#
-#     #Nipype crap IO
-#     
-#     pf_ob_wf=pf_wf()
-#
-#     wf = pf_ob_wf.get_wf()
-
-
-     
 
