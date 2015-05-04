@@ -63,7 +63,7 @@
             <channel>input</channel>
             <flag>m</flag>
             <longflag>dimension</longflag>
-            <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
+            <description><![CDATA[Dimension of the image being resampled.]]></description>
             <default>3</default>
         </integer> 
   </parameters>
