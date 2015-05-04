@@ -7,6 +7,7 @@ import vtk
 from vtk.util.numpy_support import vtk_to_numpy
 import pdb
 from cip_python.particles.vessel_particles import VesselParticles
+from cip_python.particles.particle_metrics import ParticleMetrics
 
 def test_vessel_particles():
     try:
@@ -38,47 +39,21 @@ def test_vessel_particles():
 
         # Read in the reference data set for comparison
         ref_reader = vtk.vtkPolyDataReader()
-        ref_reader.SetFileName(this_dir+'/../../../Testing/Data/Input/vessel_particles.vtk')
+        ref_reader.SetFileName(this_dir + \
+            '/../../../Testing/Data/Input/vessel_particles.vtk')
         ref_reader.Update()
 
         # Now read in the output data set
         test_reader = vtk.vtkPolyDataReader()
         test_reader.SetFileName(output_particles)
         test_reader.Update()
-      
+
+        pm = ParticleMetrics(ref_reader.GetOutput(), 
+                             test_reader.GetOutput(), 'vessel')
+
+        assert pm.get_particles_dice() > 0.97, \
+          "Vessel particle Dice score lower than expected"
         
-        # The test passes provided that every particle in the reference data set
-        # has a partner within an '_irad' distance of some particle in the test
-        # data set and vice versa
-        irad = vp._irad
-
-        ref_points = vtk_to_numpy(ref_reader.GetOutput().GetPoints().GetData())
-        test_points = vtk_to_numpy(test_reader.GetOutput().GetPoints().GetData())
-
-        #Compute pair-wise distance between all points (create 3D matrix to
-        #perform the computation using vectorization)
-        Np = ref_points.shape[0]
-        Mp = test_points.shape[0]
-        ref_tmp = np.expand_dims(ref_points,axis=2).repeat(Mp,axis=2)
-        test_tmp = np.expand_dims(test_points,axis=2).transpose([2,1,0]).repeat(Np,axis=0)
-
-        distance = np.sqrt(np.sum((ref_tmp-test_tmp)**2,axis=1)).squeeze()
-
-        #Distance matrix should be perfectly symmetric
-        # \|D-D.T\| should be zero for perfect matching
-        #We can relax a bit this condition as particles have a small jitter effect.
-        mindist_rows = np.sort(distance,axis=0)[0,:]
-        mindist_cols = np.sort(distance,axis=1)[:,0]
-        dist_test = (np.mean(mindist_rows[mindist_rows>0]) + np.mean(mindist_cols[mindist_cols>0]))*0.5
-        test_pass = False
-        if dist_test <= irad or dist_test == None:
-          test_pass = True
-      
-        assert test_pass, 'Vessel particle has no match ' + str(dist_test) + ' ' + str(Np) + ' ' + str(Mp)
-
-        #Compute differences in scale values
-            
-
     finally:
         #Clear particles cache
         vp._clean_tmp_dir=True
