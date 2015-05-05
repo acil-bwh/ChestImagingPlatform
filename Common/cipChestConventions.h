@@ -104,6 +104,7 @@ enum ChestRegion {
   RIGHTDIAPHRAGM,         //65
   HIATUS,                 //66
   PECTORALIS,             //67
+  SPINALCORD,             //68
 };
 
 
