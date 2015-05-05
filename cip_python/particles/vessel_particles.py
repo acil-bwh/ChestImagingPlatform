@@ -36,11 +36,11 @@ class VesselParticles(ChestParticles):
         represented at a scale of 12, keep 'max_scale' at 6 and downsample by
         2. The scale of the output particles is handled properly.    
 
-    live_thresh : float (optional)
-        Default is 50. Possible interval to explore: [30, 150]
+    live_thresh_param : list of float (optional)
+        Default is -100. Possible interval to explore: [-30, -200]
 
-    seed_thresh : float (optional)
-        Default is 40. Possible interval to explore: [30, 200]
+    seed_thresh_param : list of float (optional)
+        Default is -80. Possible interval to explore: [-30, -200]
 
     scale_samples : int (optional)
         The number of pre-blurrings performed on the input image. These
@@ -57,177 +57,172 @@ class VesselParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6., live_thresh=-100.,
-                 seed_thresh=-80., scale_samples=6, down_sample_rate=1, min_intensity=-800, max_intensity=400):
+                 mask_file_name=None, max_scale=6, live_thresh=-100,
+                 seed_thresh=-80, scale_samples=10, down_sample_rate=1,
+                 min_intensity=-800, max_intensity=400):
         ChestParticles.__init__(self, feature_type="ridge_line",
-                            in_file_name=in_file_name,
-                            out_particles_file_name=out_particles_file_name,
-                            tmp_dir=tmp_dir, mask_file_name=mask_file_name,
-                            max_scale=max_scale, scale_samples=scale_samples,
-                            down_sample_rate=down_sample_rate)
+                                in_file_name=in_file_name,
+                                out_particles_file_name=out_particles_file_name,
+                                tmp_dir=tmp_dir, mask_file_name=mask_file_name,
+                                max_scale=max_scale, 
+                                scale_samples=scale_samples,
+                                down_sample_rate=down_sample_rate)
         self._max_intensity = max_intensity
         self._min_intensity = min_intensity
-        self._live_thresh = live_thresh
-        self._seed_thresh = seed_thresh
         self._scale_samples = scale_samples
         self._down_sample_rate = down_sample_rate
+      
+        self._live_thresh= live_thresh
+        self._seed_thresh= seed_thresh
 
-        self._mode_thresh = -0.5
-        self._population_control_period = 6
+        self._mode_thresh = -0.3
+        self._population_control_period = 3
   
-        self._iterations_phase1 = 10
-        self._iterations_phase2 = 20
-        self._iterations_phase3 = 50
+        self._phase_iterations = [60,20,40]
   
-        self._irad_phase1 = 1.7
+        self._irad_phase1 = 1.5
         self._irad_phase2 = 1.15
-        self._irad_phase3 = 1.15
+        self._irad_phase3 = 0.8
   
         self._srad_phase1 = 1.2
         self._srad_phase2 = 2
         self._srad_phase3 = 4
   
+        self._phase_population_control_periods=[3,6,6]
+        self._phase_alphas=[1.0,0.0,0.25]
+        self._phase_betas=[0.7,0.5,0.25]
+        self._phase_gammas=[0.0,0.0,0.002]
+  
+        #Default init mode
+        self._init_mode = "PerVoxel"
+        self._ppv = 2
+        self._nss = 2
 
     def execute(self):
-        #Pre-processing
-        if self._down_sample_rate > 1:
-            downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
-            self.down_sample(self._in_file_name, downsampled_vol, \
-                             "cubic:0,0.5",self._down_sample_rate)
-            if self._use_mask == True:
-            	downsampled_mask = os.path.join(self._tmp_dir, \
-                                                "mask-down.nrrd")
-            	self.down_sample(self._mask_file_name, \
-                                 downsampled_mask, "cheap",self._down_sample_rate)
-            	self._tmp_mask_file_name = downsampled_mask
-            
-        else:
-            downsampled_vol = self._in_file_name
-            self._tmp_mask_file_name = self._mask_file_name
-
-        print "2"
-        deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
-        self.deconvolve(downsampled_vol, deconvolved_vol)
-        print "finished deconvolution\n"
-        print "loc1\n"
-        #Setting member variables that will not change
-        self._tmp_in_file_name = deconvolved_vol
-        print "loc2\n"
-        
+      
+        self.preprocessing()
+      
         # Temporary nrrd particles points
         out_particles = os.path.join(self._tmp_dir, "pass%d.nrrd")
-        print "loc3\n"
+        
         #Pass 1
         #Init params
         self._use_strength = False
-        self._inter_particle_energy_type = "uni"
-        self._init_mode = "PerVoxel"
-        self._ppv = 1
-        self._nss = 3
+        self._inter_particle_energy_type = "uni"      
 
         # Energy
         # Radial energy function (psi_1 in the paper)
         self._inter_particle_enery_type = "uni"
-        self._beta  = 0.7 # Irrelevant for pass 1
-        self._alpha = 1.0
+        self._alpha = self._phase_alphas[0]
+        self._beta  = self._phase_betas[0] # Irrelevant for pass 1
+        self._gamma = self._phase_gammas[0]
         self._irad = self._irad_phase1
         self._srad = self._srad_phase1
-        self._iterations = self._iterations_phase1
+        self._iterations = self._phase_iterations[0]
+        self._population_control_period = self._phase_population_control_periods[0]
 
         #Build parameters and run
-        print "resetting param groups\n"
+        print "Resetting param groups..."
         self.reset_params()
-        print "building param groups\n"
+        print "Building param groups..."
         self.build_params()
-        print "Starting pass 1\n"
+        print "Starting pass 1..."
         self.execute_pass(out_particles % 1)
-        print "Finished pass 1\n"
-
+        print "Finished pass 1."
+      
         # Pass 2
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
-        self._use_mask = False #TODO: was 0
+        self._use_mask = False
 
         # Energy
         # Radial energy function (psi_2 in the paper).
         # Addition of 2 components: scale and space
         self._inter_particle_energy_type = "add"
-        self._alpha = 0
-
+        self._alpha = self._phase_alphas[1]
         # Controls blending in scale and space with respect to
         # function psi_2
-        self._beta = 0.5
+        self._beta = self._phase_betas[1]
+        self._gamma = self._phase_gammas[1]
         self._irad = self._irad_phase2
         self._srad = self._srad_phase2
         self._use_strength = True
 
-        self._iterations = self._iterations_phase2
+        self._iterations = self._phase_iterations[1]
+        self._population_control_period = self._phase_population_control_periods[1]
+
 
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 2\n"
+        print "Starting pass 2..."
         self.execute_pass(out_particles % 2)
-        print "finished pass 2\n"
+        print "Finished pass 2."
 
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
-        self._use_mask = False # TODO: was 0
+        self._use_mask = False
+        self._population_control_period = self._phase_population_control_periods[2]
 
         # Energy
         self._inter_particle_energy_type = "add"
-        self._alpha = 0.25
-        self._beta = 0.25
-        self._gamma = 0.002
+        self._alpha = self._phase_alphas[2]
+        self._beta = self._phase_betas[2]
+        self._gamma = self._phase_gammas[2]
         self._irad = self._irad_phase3
         self._srad = self._srad_phase3
         self._use_strength = True
-        self._use_mode_th = True
-        self._iterations = self._iterations_phase3
+        self._use_mode_thresh = True
+        self._iterations = self._phase_iterations[2]
+        self._population_control_period = self._phase_population_control_periods[2]
 
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 3\n"
+        print "Starting pass 3..."
         self.execute_pass(out_particles % 3)
-        print "finished pass 3\n"
+        print "Finished pass 3."
 
         # Probe quantities and save to VTK
-        print "about to probe\n"
-        self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
-        print "finished probing\n"
-        #Adjust scale if down-sampling was performed
-        if self._down_sample_rate > 1:
-            self.adjust_scale(out_particles % 3)
-        print "about to save to vtk\n"
+        print "Probing..."
+        self.probe_quantities(self._sp_in_file_name, out_particles % 3)
+        print "Finished probing."
+
+        print "Saving to vtk..."
         self.save_vtk(out_particles % 3)
-        print "finished saving\#####n"
 
         #Clean tmp Directory
+        print "Cleaning tmp directory..."
         self.clean_tmp_dir()
 
-if __name__ == "__main__":
-  
+if __name__ == "__main__":  
   parser = OptionParser()
   parser.add_option("-i", help='input CT scan', dest="input_ct")
   parser.add_option("-m", help='input mask for seeding', dest="input_mask")
-  parser.add_option("-o", help='output particles (vtk format)', dest="output_particles")
+  parser.add_option("-o", help='output particles (vtk format)', 
+                    dest="output_particles")
   parser.add_option("-t", help='tmp directory', dest="tmp_dir")
-  parser.add_option("-s", help='max scale', dest="max_scale",default=6.0)
-  parser.add_option("-r", help='down sampling rate (>=1)', dest="down_sample_rate",default=1.0)
-  parser.add_option("-n", help='number of scale volumes', dest="scale_samples",default=5)
-  parser.add_option("--lth", help='live threshold (>0)', dest="live_th",default=50)
-  parser.add_option("--sth", help='seed threshold (>0)', dest="seed_th",default=40)
-  parser.add_option("--minI", help='min intensity for feature', dest="min_intensity",default=-800)
-  parser.add_option("--maxI", help='max intensity for feature', dest="max_intensity",default=400)
-
+  parser.add_option("-s", help='max scale', dest="max_scale", default=6)
+  parser.add_option("-r", help='down sampling rate (>=1)', 
+                    dest="down_sample_rate", default=1.0)
+  parser.add_option("-n", help='number of scale volumes', 
+                    dest="scale_samples", default=10)
+  parser.add_option("--lth", help='live threshold (<0)', dest="live_th",
+                    default=-100)
+  parser.add_option("--sth", help='seed threshold (<0)', dest="seed_th",
+                    default=-80)
+  parser.add_option("--minI", help='min intensity for feature', 
+                    dest="min_intensity", default=-800)
+  parser.add_option("--maxI", help='max intensity for feature', 
+                    dest="max_intensity", default=400)
   
   (op, args) = parser.parse_args()
-  print op.max_scale
   
-  vp=VesselParticles(op.input_ct,op.output_particles,op.tmp_dir,op.input_mask,float(op.max_scale),\
-                     float(op.live_th),float(op.seed_th),int(op.scale_samples),float(op.down_sample_rate),\
-                     float(op.min_intensity),float(op.max_intensity))
+  vp = VesselParticles(op.input_ct, op.output_particles, op.tmp_dir, 
+                       op.input_mask, float(op.max_scale),
+                       float(op.live_th), float(op.seed_th), 
+                       int(op.scale_samples), float(op.down_sample_rate),
+                       float(op.min_intensity), float(op.max_intensity))
   vp.execute()

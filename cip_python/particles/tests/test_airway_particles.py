@@ -37,8 +37,7 @@ def test_airway_particles():
 
     # Now read in the output data set
     test_reader = vtk.vtkPolyDataReader()
-    test_reader.SetFileName(this_dir +
-                    '/../../../Testing/Data/Input/airway_particles.vtk')
+    test_reader.SetFileName(output_particles)
     test_reader.Update()
 
     # The test passes provided that every particle in the reference data set

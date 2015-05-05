@@ -207,24 +207,27 @@ class AirwayParticles(ChestParticles):
 
 if __name__ == "__main__":  
   parser = OptionParser()
-  parser.add_option("-i", help='input CT scan', dest="input_ct")
-  parser.add_option("-m", help='input mask for seeding', dest="input_mask",
+  parser.add_option("-i", help='Input CT scan', dest="input_ct")
+  parser.add_option("-m", help='Input mask for seeding', dest="input_mask",
                     default=None)
-  parser.add_option("-o", help='output particles (vtk format)',
+  parser.add_option("-o", help='Output particles (vtk format)',
                     dest="output_particles")
   parser.add_option("-t", help='tmp directory', dest="tmp_dir")
-  parser.add_option("-s", help='max scale', dest="max_scale", default=6.0)
-  parser.add_option("-r", help='down sampling rate (>=1)',
+  parser.add_option("-s", help='Max scale. Default: [%default]', 
+                    dest="max_scale", default=6.0)
+  parser.add_option("-r", help='Down sampling rate (>=1). Default: [%default]',
                     dest="down_sample_rate", default=1.0)
-  parser.add_option("-n", help='number of scale volumes',
+  parser.add_option("-n", help='Number of scale volumes. Default: [%default]',
                     dest="scale_samples", default=5)
-  parser.add_option("--lth", help='live threshold (>0)', dest="live_th",
-                    default=50)
-  parser.add_option("--sth", help='seed threshold (>0)', dest="seed_th",
-                    default=40)
-  parser.add_option("--minI", help='min intensity for feature',
+  parser.add_option("--lth", help='Live threshold (>0). Default: [%default]', 
+                    dest="live_th", default=50)
+  parser.add_option("--sth", help='Seed threshold (>0). Default: [%default]', 
+                    dest="seed_th", default=40)
+  parser.add_option("--minI", 
+                    help='Min intensity for feature. Default: [%default]',
                     dest="min_intensity", default=-1100)
-  parser.add_option("--maxI", help='max intensity for feature',
+  parser.add_option("--maxI", 
+                    help='Max intensity for feature. Default [%default]',
                     dest="max_intensity", default=-400)
 
   (op, args) = parser.parse_args()
