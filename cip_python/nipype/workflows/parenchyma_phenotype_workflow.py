@@ -58,8 +58,9 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         """ Set up nodes that will make the wf  
         """
         if self.filter_image is True:
-            median_filter_generator = pe.Node(interface=cip.GenerateMedianFilteredImage( ),
-                   name='generate_median_filtered_image') # (the input names come from argstr from the interface)
+            median_filter_generator = \
+              pe.Node(interface=cip.GenerateMedianFilteredImage(),
+                      name='generate_median_filtered_image') # (the input names come from argstr from the interface)
         
             test_workflow = pe.Workflow(name='generate_lung_phenotype_workflo2w')
             test_workflow.add_nodes([median_filter_generator]) 
