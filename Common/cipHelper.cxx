@@ -507,7 +507,7 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
 
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;
@@ -571,7 +571,7 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
 
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;
@@ -637,7 +637,7 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     roiExtractor->SetInput(labelMap);
 
   // Set up the kernel
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;
@@ -721,7 +721,7 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
 
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;
