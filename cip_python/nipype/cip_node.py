@@ -1,13 +1,13 @@
 import nipype.pipeline.engine as pe
-import CIPConventionManager
+import cip_convention_manager as cm
 
 class CIPNode(pe.Node):
     """
     """
-    def __init__(self):
-        self._convention_manager = CIPConventionManager.CIPConventionManager()
+    def __init__(self, interface, name, iterables=None, itersource=None, synchronize=False, overwrite=None, needed_outputs=None, run_without_submitting=False):
+        pe.Node.__init__(self, interface, name=name, iterables=iterables, itersource=itersource, synchronize=synchronize, overwrite=overwrite, needed_outputs=needed_outputs, run_without_submitting=run_without_submitting)
 
-    def addParameter(self, name, value, convention_id = 0):
+    def set_input(self, name, value, convention_id = 0):
         """
 
         Parameters
@@ -19,7 +19,9 @@ class CIPNode(pe.Node):
         conventions_id :
         
         """
-        if conventionId != self.conventionManager.UNKNOWN:
-            value = self.conventionManager.applyConvention(value, conventionId)
-        pe.Node.addParameter(name, value)
+        if convention_id != cm.CIPConventionManager.NONE:
+            value = cm.CIPConventionManager.applyConvention(value, convention_id)
+        
+        super(CIPNode, self).set_input(name, value)        
+        #self.set_input(name, value)
 
