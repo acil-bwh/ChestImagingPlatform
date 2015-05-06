@@ -1,4 +1,6 @@
 import cip_python.nipype.interfaces.cip as cip
+import cip_python.nipype.interfaces.unu as unu
+import cip_python.nipype.interfaces.ITKTools as tools
 import cip_python.nipype.interfaces.cip.cip_pythonWrap as cip_python_interfaces
 import nipype.interfaces.spm as spm         # the spm interfaces
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
@@ -23,8 +25,12 @@ class VesselParticlesMaskWorkflow(Workflow):
     def __init__(self):
         Workflow.__init__(self, 'VesselParticlesMaskWorkflow')
     
-        # Compute feature strength
+        # Params for feature strength computation
         self._ct_file_name = '/Users/jross/Downloads/ChestImagingPlatform/Testing/Data/Input/vessel.nrrd' 
+        self._label_map_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/volume_mask_eroded.nrrd'
+        self._distance_map_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/distance_map.nrrd'
+        self._feature_mask_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/feature_mask.nrrd'
+        self._masked_strength_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/masked_strength.nrrd'
         self._strength_file_name = '/Users/jross/tmp/tmp_strength.nrrd'
         self._scale_file_name = '/Users/jross/tmp/tmp_scale.nrrd'
         self._sigma_step_method = 1
@@ -33,42 +39,83 @@ class VesselParticlesMaskWorkflow(Workflow):
         self._method = 'Frangi'
         self._alpha = 0.5 # In [0, 1]
         self._beta = 0.5 # In [0. 1]
-        self._C = 0.5 # In [0, 300]
+        self._C = 250 # In [0, 300]
         self._alphase = 0.25 # In [0, 1]
         self._nu = 0 # In [-1, 0.5]
         self._kappa = 0.5 # In [0.01, 2]
         self._betase = 0.1 # In [0.01, 2]
-
         self._sigma = 1.0
-        self._sigma_min = 1.0 
-        self._sigma_max = 2.0
-        self._num_steps = 3
-        
-        #self._gaussianStd = [self._sigma, self._sigma_min, self._sigma_max, self._num_steps]
-        self._gaussianStd = [self._sigma]        
-        #Gaussian smoothing standard deviation. 1 value: sigma, 3 values: sigmaMin, sigmaMax, numberOfSteps
+        self._sigma_min = 0.7 
+        self._sigma_max = 4.0
+        self._num_steps = 4         
+        self._gaussianStd = [self._sigma_min, self._sigma_max, self._num_steps]
 
+        # Params for histogram equalization (unu heq node)
+        self._bin = 10000
+        self._amount = 0.5
+        self._smart = 2
+
+        # Params for 'unu_2op_lt' node
+        self._distance_from_wall = -2.0
+
+        # Create distance transform node. We want to isolate a region that is 
+        # not too close to the lung periphery (particles can pick up noise in
+        # that region)
+        px_distance_transform = pe.Node(interface=tools.pxdistancetransform(), 
+                                        name='px_distance_transform')
+        px_distance_transform.inputs.i = self._label_map_file_name
+        px_distance_transform.inputs.out = self._distance_map_file_name
+
+        # Create node for thresholding the distance map
+        unu_2op_lt = pe.Node(interface=unu.unu_2op(), name='unu_2op_lt')
+        unu_2op_lt.inputs.operator = 'lt'
+        unu_2op_lt.inputs.type = 'short'
+        unu_2op_lt.inputs.in2_scalar = self._distance_from_wall
+        unu_2op_lt.inputs.output = self._feature_mask_file_name
+
+        self.connect(px_distance_transform, 'out', unu_2op_lt, 'in1_file')
+
+        # Create node for generating the vesselness feature strength image
         compute_feature_strength = \
           pe.Node(interface=cip.ComputeFeatureStrength(),
                   name='compute_feature_strength')
-        self.add_nodes([compute_feature_strength])
-        self.get_node('compute_feature_strength').set_input('inFileName', self._ct_file_name)
-        self.get_node('compute_feature_strength').set_input('outFileName', self._strength_file_name)    
-        self.get_node('compute_feature_strength').set_input('outScaleFileName', self._scale_file_name)    
-        self.get_node('compute_feature_strength').set_input('ssm', self._sigma_step_method)    
-        self.get_node('compute_feature_strength').set_input('rescale', self._rescale)    
-        self.get_node('compute_feature_strength').set_input('threads', self._threads)    
-        self.get_node('compute_feature_strength').set_input('method', self._method)    
-        self.get_node('compute_feature_strength').set_input('feature', 'RidgeLine')    
-        self.get_node('compute_feature_strength').set_input('alpha', self._alpha)    
-        self.get_node('compute_feature_strength').set_input('beta', self._beta)    
-        self.get_node('compute_feature_strength').set_input('C', self._C)
-        self.get_node('compute_feature_strength').set_input('alphase', self._alphase)                                        
-        self.get_node('compute_feature_strength').set_input('nu', self._nu)
-        self.get_node('compute_feature_strength').set_input('kappa', self._kappa)
-        self.get_node('compute_feature_strength').set_input('betase', self._betase)
-        self.get_node('compute_feature_strength').set_input('std', self._gaussianStd)    
-        self.run()
+        compute_feature_strength.inputs.inFileName = self._ct_file_name
+        compute_feature_strength.inputs.outFileName = self._strength_file_name  
+        compute_feature_strength.inputs.ssm = self._sigma_step_method
+        compute_feature_strength.inputs.rescale = self._rescale
+        compute_feature_strength.inputs.threads = self._threads
+        compute_feature_strength.inputs.method = self._method
+        compute_feature_strength.inputs.feature = 'RidgeLine'
+        compute_feature_strength.inputs.alpha = self._alpha
+        compute_feature_strength.inputs.beta = self._beta  
+        compute_feature_strength.inputs.C = self._C
+        compute_feature_strength.inputs.alphase = self._alphase
+        compute_feature_strength.inputs.nu = self._nu
+        compute_feature_strength.inputs.kappa = self._kappa
+        compute_feature_strength.inputs.betase = self._betase
+        compute_feature_strength.inputs.std = self._gaussianStd
+
+        unu_2op_x = pe.Node(interface=unu.unu_2op(), name='unu_2op_x')
+        unu_2op_x.inputs.operator = 'x'
+        unu_2op_x.inputs.type = 'float'
+        unu_2op_x.inputs.output = self._masked_strength_file_name
+
+        self.connect(unu_2op_lt, 'output', unu_2op_x, 'in1_file')
+        self.connect(compute_feature_strength, 'outFileName', unu_2op_x, 'in2_file')        
+        
+#        #unu 2op x %(feat)s %(mask)s -t float
+#        
+#        unu_heq = pe.Node(interface=unu.unu_heq(), name='unu_heq')
+#        self.add_nodes([unu_heq])
+#        self.get_node('unu_heq').set_input('bin', self._bin)
+#        self.get_node('unu_heq').set_input('amount', self._amount)        
+#        self.get_node('unu_heq').set_input('smart', self._smart)
+#        self.get_node('unu_heq').set_input('input', )
+#        self.get_node('unu_heq').set_input('output', )
+#
+#        self.connect(compute_feature_strength, 'outFileName',
+#                     unu_2op, 'in1')
+        
     #    self.write_graph(dotfilename="/Users/jross/tmp/tmp.dot")    
     #    generate_binary_thinning_3d = \
     #      CIPNode(interface=cip.GenerateBinaryThinning3D(),
