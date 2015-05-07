@@ -16,6 +16,8 @@ class unu_heqInputSpec(CommandLineInputSpec):
     bin = traits.Int(desc="bins to use in histogram that is created in order \
     to calculate the mapping that achieves the equalization.", 
     argstr="--bin %d")
+    output = traits.Either(traits.Bool, File(), hash_files=False, 
+                           desc="Output nrrd (string)", argstr="--output %s")
     
 class unu_heqOutputSpec(TraitedSpec):
     output = File(desc="Output nrrd (string)", exists=True)
@@ -29,6 +31,11 @@ class unu_heq(CommandLine):
     input_spec = unu_heqInputSpec
     output_spec = unu_heqOutputSpec
 
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        outputs['output'] = os.path.abspath(self.inputs.output)
+        return outputs    
+    
 class unu_2opInputSpec(CommandLineInputSpec):
     operator = traits.Str(desc="Binary operator", position = 0, argstr="%s")
     in1_file = File(desc="First input. Must be a nrrd.", position = 1, 
@@ -66,4 +73,23 @@ class unu_2op(CommandLine):
         outputs = self.output_spec().get()
         outputs['output'] = os.path.abspath(self.inputs.output)
         return outputs
+
+class unu_convertInputSpec(CommandLineInputSpec):
+    type = traits.Str(desc="type to convert to", argstr="--type %s")
+    input = File(desc="input nrrd", argstr="--input %s")
+    output = traits.Either(traits.Bool, File(), hash_files=False, 
+                           desc="Output nrrd (string)", argstr="--output %s")
+    
+class unu_convertOutputSpec(TraitedSpec):
+    output = File(desc="Output nrrd (string)", exists=True)
+    
+class unu_convert(CommandLine):
+    _cmd = 'unu convert '
+    input_spec = unu_convertInputSpec
+    output_spec = unu_convertOutputSpec    
+
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        outputs['output'] = os.path.abspath(self.inputs.output)
+        return outputs    
     

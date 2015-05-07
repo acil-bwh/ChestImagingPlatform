@@ -31,6 +31,10 @@ class VesselParticlesMaskWorkflow(Workflow):
         self._distance_map_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/distance_map.nrrd'
         self._feature_mask_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/feature_mask.nrrd'
         self._masked_strength_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/masked_strength.nrrd'
+        self._equalized_strength_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/equalized_strength_file_name.nrrd'
+        self._thresholded_equalized_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/thresholded_equalized_file_name.nrrd'
+        self._converted_thresholded_equalized_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/converted_thresholded_equalized_file_name.nrrd'
+        self._vessel_seeds_mask_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/vessel_seeds_mask.nrrd'        
         self._strength_file_name = '/Users/jross/tmp/tmp_strength.nrrd'
         self._scale_file_name = '/Users/jross/tmp/tmp_scale.nrrd'
         self._sigma_step_method = 1
@@ -55,17 +59,21 @@ class VesselParticlesMaskWorkflow(Workflow):
         self._amount = 0.5
         self._smart = 2
 
+        # Param for thresholding the histogram-equalized strength image
+        self._vesselness_th = 0.5
+        
         # Params for 'unu_2op_lt' node
         self._distance_from_wall = -2.0
 
-        # Create distance transform node. We want to isolate a region that is 
+        # Create distance map node. We want to isolate a region that is 
         # not too close to the lung periphery (particles can pick up noise in
         # that region)
-        px_distance_transform = pe.Node(interface=tools.pxdistancetransform(), 
-                                        name='px_distance_transform')
-        px_distance_transform.inputs.i = self._label_map_file_name
-        px_distance_transform.inputs.out = self._distance_map_file_name
-
+        compute_distance_transform = \
+          pe.Node(interface=cip.ComputeDistanceMap(), 
+                  name='compute_distance_transform')
+        compute_distance_transform.inputs.labelMap = self._label_map_file_name
+        compute_distance_transform.inputs.distanceMap = self._distance_map_file_name
+        
         # Create node for thresholding the distance map
         unu_2op_lt = pe.Node(interface=unu.unu_2op(), name='unu_2op_lt')
         unu_2op_lt.inputs.operator = 'lt'
@@ -73,7 +81,8 @@ class VesselParticlesMaskWorkflow(Workflow):
         unu_2op_lt.inputs.in2_scalar = self._distance_from_wall
         unu_2op_lt.inputs.output = self._feature_mask_file_name
 
-        self.connect(px_distance_transform, 'out', unu_2op_lt, 'in1_file')
+        #self.connect(px_distance_transform, 'out', unu_2op_lt, 'in1_file')
+        self.connect(compute_distance_transform, 'distanceMap', unu_2op_lt, 'in1_file')        
 
         # Create node for generating the vesselness feature strength image
         compute_feature_strength = \
@@ -102,19 +111,38 @@ class VesselParticlesMaskWorkflow(Workflow):
 
         self.connect(unu_2op_lt, 'output', unu_2op_x, 'in1_file')
         self.connect(compute_feature_strength, 'outFileName', unu_2op_x, 'in2_file')        
+
+        # Create node for histogram equalization
+        unu_heq = pe.Node(interface=unu.unu_heq(), name='unu_heq')
+        unu_heq.inputs.bin = self._bin
+        unu_heq.inputs.amount = self._amount
+        unu_heq.inputs.smart = self._smart
+        unu_heq.inputs.output = self._equalized_strength_file_name
+
+        self.connect(unu_2op_x, 'output', unu_heq, 'input')
+
+        # Set up thresholder to isolate all histogram-equalized voxels that
+        # are above a pre-defined threshold
+        unu_2op_gt = pe.Node(interface=unu.unu_2op(), name='unu_2op_gt')
+        unu_2op_gt.inputs.operator = 'gt'
+        unu_2op_gt.inputs.in2_scalar = self._vesselness_th = 0.5
+        unu_2op_gt.inputs.output = self._thresholded_equalized_file_name
         
-#        #unu 2op x %(feat)s %(mask)s -t float
-#        
-#        unu_heq = pe.Node(interface=unu.unu_heq(), name='unu_heq')
-#        self.add_nodes([unu_heq])
-#        self.get_node('unu_heq').set_input('bin', self._bin)
-#        self.get_node('unu_heq').set_input('amount', self._amount)        
-#        self.get_node('unu_heq').set_input('smart', self._smart)
-#        self.get_node('unu_heq').set_input('input', )
-#        self.get_node('unu_heq').set_input('output', )
-#
-#        self.connect(compute_feature_strength, 'outFileName',
-#                     unu_2op, 'in1')
+        self.connect(unu_heq, 'output', unu_2op_gt, 'in1_file')
+
+        # Now convert the equalized, thresholded image to short type
+        unu_convert = pe.Node(interface=unu.unu_convert(), name='unu_convert')
+        unu_convert.inputs.type = 'short'
+        unu_convert.inputs.output = self._converted_thresholded_equalized_file_name
+
+        self.connect(unu_2op_gt, 'output', unu_convert, 'input')
+
+        generate_binary_thinning_3d = \
+          pe.Node(interface=cip.GenerateBinaryThinning3D(), 
+                  name='generate_binary_thinning_3d')
+        generate_binary_thinning_3d.inputs.out = self._vessel_seeds_mask_file_name
+
+        self.connect(unu_convert, 'output', generate_binary_thinning_3d, 'opt_in')
         
     #    self.write_graph(dotfilename="/Users/jross/tmp/tmp.dot")    
     #    generate_binary_thinning_3d = \
