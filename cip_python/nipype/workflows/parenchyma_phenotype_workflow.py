@@ -48,9 +48,9 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
     def set_up_workflow(self):
         """ Set up nodes that will make the wf  
         """
-        subject_list= [self.cid_]
+        subject_list= [self.cid_, "10633T_INSP_STD_NJC_COPD"]
         print(subject_list)
-        info = dict(normal_run = [['subject_id', self.cid_]])
+        #info = dict(normal_run = [['subject_id', self.cid_]])
         infosource = pe.Node(interface=util.IdentityInterface(fields=['subject_id']),
                      name="infosource")
         infosource.iterables = ('subject_id', subject_list)
@@ -58,10 +58,10 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         datasource = pe.Node(interface=nio.DataGrabber(infields=['subject_id'], outfields=['normal_run']),
                      name = 'datasource')
         datasource.inputs.base_directory = self.root_dir
-        datasource.inputs.template = '%s.nhdr' #CIPConventionManager.CT
-        #datasource.inputs.field_template = dict(ct='%s.nhdr')
-        datasource.inputs.template_args = info #dict(ct=[['subject_id',self.cid_]])
-        
+        #datasource.inputs.template = '%s.nhdr' #CIPConventionManager.CT
+        ##datasource.inputs.field_template = dict(ct='%s.nhdr')
+        #datasource.inputs.template_args = info #dict(ct=[['subject_id',self.cid_]])
+        #
                                        
         datasource.inputs.template = '%s.nhdr'
         datasource.inputs.field_template = dict(normal_run='%s.nhdr')
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     the_pheno_names =  "Volume"#,Mass"
     regions = "WholeLung"
     median_filter_radius = [1,2]
-    my_workflow = ParenchymaPhenotypesWorkflow('11088Z_INSP_STD_TEM_COPD', '/Users/rolaharmouche/Documents/Data/COPDGene/11088Z/11088Z_INSP_STD_TEM_COPD/', filter_image = True, 
+    my_workflow = ParenchymaPhenotypesWorkflow('11088Z_INSP_STD_TEM_COPD', '/Users/rolaharmouche/Documents/Data/COPDGene/data_for_nypipe/', filter_image = True, 
                  chest_regions = regions, chest_types = None, pairs = None, pheno_names = the_pheno_names, median_filter_radius=1.0)
     my_workflow.set_up_workflow()
     my_workflow.run()             
