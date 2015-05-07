@@ -8,6 +8,8 @@ from cip_python.nipype.cip_node import CIPNode
 from cip_python.nipype.cip_convention_manager import CIPConventionManager
 import cip_python.nipype.interfaces.cip as cip
 import cip_python.nipype.interfaces.cip.cip_pythonWrap as cip_python_interfaces
+import nipype.interfaces.utility as util     # utility
+import nipype.interfaces.io as nio           # Data i/o
 #from cip_workflow import CIPWorkflow
 
 # http://nipy.sourceforge.net/nipype/users/tutorial_101.html
@@ -46,11 +48,31 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
     def set_up_workflow(self):
         """ Set up nodes that will make the wf  
         """
+        subject_list= [self.cid_]
+        print(subject_list)
+        info = dict(normal_run = [['subject_id', self.cid_]])
+        infosource = pe.Node(interface=util.IdentityInterface(fields=['subject_id']),
+                     name="infosource")
+        infosource.iterables = ('subject_id', subject_list)
+
+        datasource = pe.Node(interface=nio.DataGrabber(infields=['subject_id'], outfields=['normal_run']),
+                     name = 'datasource')
+        datasource.inputs.base_directory = self.root_dir
+        datasource.inputs.template = '%s.nhdr' #CIPConventionManager.CT
+        #datasource.inputs.field_template = dict(ct='%s.nhdr')
+        datasource.inputs.template_args = info #dict(ct=[['subject_id',self.cid_]])
+        
+                                       
+        datasource.inputs.template = '%s.nhdr'
+        datasource.inputs.field_template = dict(normal_run='%s.nhdr')
+        datasource.inputs.template_args = dict(ct_input=[['subject_id']])
+        datasource.inputs.sort_filelist = True
+                                                                                                                
         if self.filter_image is True:
             median_filter_generator_node = \
               CIPNode(interface=cip.GenerateMedianFilteredImage(),
                       name='generate_median_filtered_image') # (the input names come from argstr from the interface)
-            median_filter_generator_node.set_input('inputFile', os.path.join(self.root_dir,self.cid_), CIPConventionManager.CT)
+            #median_filter_generator_node.set_input('inputFile', os.path.join(self.root_dir,self.cid_), CIPConventionManager.CT)
             median_filter_generator_node.set_input('outputFile', os.path.join(self.root_dir,self.cid_), CIPConventionManager.MedianFilteredImage)
             median_filter_generator_node.set_input('Radius', self.median_filter_radius, CIPConventionManager.NONE)
             self.add_nodes([median_filter_generator_node])
@@ -76,6 +98,7 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         lung_parenchyma_generator_node.set_input('in_ct', os.path.join(self.root_dir,self.cid_), CIPConventionManager.CT)
         lung_parenchyma_generator_node.set_input('pheno_names', self.pheno_names, CIPConventionManager.NONE)
         lung_parenchyma_generator_node.set_input('out_csv', os.path.join(self.root_dir,self.cid_), CIPConventionManager.ParenchymaPhenotypes)
+        
         lung_parenchyma_generator_node.set_input('cid', self.cid_, CIPConventionManager.NONE)
         
         if (self.regions is not None):
@@ -89,14 +112,21 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
 
         self.base_dir = self.root_dir
 
+         
         """connect nodes based on whether we are performing median filtering or not"""
-        self.connect(label_map_generator_node, 'out', lung_parenchyma_generator_node, 'in_lm')
-
+       
+        #self.connect(infosource, datasource, [('subject_id', 'subject_id')])    
+        self.connect(infosource, 'subject_id', datasource, 'subject_id')    
         if self.filter_image is True:
             self.connect(median_filter_generator_node, 'outputFile', label_map_generator_node, 'ct')
+            #self.connect(datasource, median_filter_generator_node, [('ct_input', 'inputFile')])  
+            self.connect(datasource, 'ct_input', median_filter_generator_node,  'inputFile')  
+            
+        self.connect(label_map_generator_node, 'out', lung_parenchyma_generator_node, 'in_lm')
 #        else:
 #            self.connect(label_map_generator_node, 'out', lung_parenchyma_generator_node, 'in_lm')
 #            
+
         self.write_graph(dotfilename="parenchyma_workflow_graph.dot")
 
 
@@ -105,8 +135,8 @@ if __name__ == "__main__":
     the_pheno_names =  "Volume"#,Mass"
     regions = "WholeLung"
     median_filter_radius = [1,2]
-    my_workflow = ParenchymaPhenotypesWorkflow('11088Z_INSP_STD_TEM_COPD', '/Users/rolaharmouche/Documents/Data/COPDGene/11088Z/11088Z_INSP_STD_TEM_COPD/', filter_image = False, 
-                 chest_regions = regions, chest_types = None, pairs = None, pheno_names = the_pheno_names, median_filter_radius=None)
+    my_workflow = ParenchymaPhenotypesWorkflow('11088Z_INSP_STD_TEM_COPD', '/Users/rolaharmouche/Documents/Data/COPDGene/11088Z/11088Z_INSP_STD_TEM_COPD/', filter_image = True, 
+                 chest_regions = regions, chest_types = None, pairs = None, pheno_names = the_pheno_names, median_filter_radius=1.0)
     my_workflow.set_up_workflow()
     my_workflow.run()             
                     
