@@ -197,3 +197,62 @@ class body_composition_phenotypes(BaseInterface):
         outputs["out_csv"] = os.path.abspath(fname)
         return outputs
 
+
+
+
+#########################################################################
+"""
+input is some temp_{convention}.nhdr and a case_id.
+outputs are case_id_{convention}.nhdr and case_id.raw.gz 
+"""
+
+class nhdr_handlerInputSpec(BaseInterfaceInputSpec):
+    in_ct = File(exists=True, desc='Input CT file', mandatory=True)
+    
+    #in_convention = traits.Str(desc='the suffix to be applied to the output file',
+    #                 mandatory=True)
+
+    caseid_ct = traits.Str(desc='input caseid CT file', mandatory=True)     
+
+    out_nhdr = File( desc='Output nhdr renamed file', mandatory=False)
+    out_rawgz = File( desc='Output raw.gz renamed file', mandatory=False)                    
+                                                            
+class nhdr_handlerOutputSpec(TraitedSpec):
+    out_nhdr = File( desc='Output nhdr renamed file', mandatory=True)
+    out_rawgz = File( desc='Output raw.gz renamed file', mandatory=False)
+
+class nhdr_handler(BaseInterface):
+    input_spec = nhdr_handlerInputSpec
+    output_spec = nhdr_handlerOutputSpec
+    
+    def _run_interface(self, runtime):
+        
+        file_to_read, lm_header = nrrd.read(self.inputs.in_ct)
+        caseid =  ('_').join(self.inputs.caseid_ct.split(".")[0].split("_")[0:-1])
+        # extract the extension from the input file
+        suffix = "_"+self.inputs.in_ct.split(".")[0].split("_")[-1]
+        
+        print("****************************Here ok are you happy???")
+        print(self._outputs)
+        print("output_spec: ", self.output_spec)
+        self.output_spec.out_nhdr =  caseid+suffix+".nhdr"  
+        self.output_spec.out_rawgz =  caseid+suffix+'.raw.gz'            
+        
+        #print("out nhdr is "+ self.inputs.out_nhdr)
+        nrrd.write(self.output_spec.out_nhdr, file_to_read, lm_header , True, True)
+        return runtime
+    
+    def _list_outputs(self):
+        print("****************************Yes, I am happy")
+        print("_outputs=", self._outputs())
+        outputs = self._outputs().get()
+        print ("outputs = " , outputs)
+        fname = outputs.out_nhdr
+        _, base, _ = split_filename(fname)
+        outputs["out_nhdr"] = os.path.abspath(fname)
+        
+        fname =  outputs.out_rawgz
+        _, base, _ = split_filename(fname)
+        outputs["out_rawgz"] = os.path.abspath(fname)
+
+        return outputs
