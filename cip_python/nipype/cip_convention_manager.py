@@ -1,5 +1,4 @@
 
-
 class CIPConventionManager:
     NONE = 0
     CT = 1
@@ -7,6 +6,7 @@ class CIPConventionManager:
     PartialLungLabelmap = 100
     ParenchymaPhenotypes = 200
 
+    _vesselSeedsMask = '_vesselSeedsMask.nhdr'
     
     @staticmethod
     def applyConvention(value, conventionId):
@@ -16,7 +16,6 @@ class CIPConventionManager:
 
         if conventionId == CIPConventionManager.MedianFilteredImage:
             return value + "_medianFilteredImage.nhdr"
-
                 
         # Labelmaps
         if conventionId == CIPConventionManager.PartialLungLabelmap:

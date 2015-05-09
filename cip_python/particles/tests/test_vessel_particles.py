@@ -14,9 +14,10 @@ def test_vessel_particles():
         # Get the path to the this test so that we can reference the test data
         this_dir = os.path.dirname(os.path.realpath(__file__))
 
-        # Set up the inputs to AirwayParticles
+        # Set up the inputs to VesselParticles
         input_ct = this_dir + '/../../../Testing/Data/Input/vesselgauss.nrrd'
-        input_mask = this_dir + '/../../../Testing/Data/Input/vessel_mask.nrrd'
+        input_mask = \
+          this_dir + '/../../../Testing/Data/Input/vessel_vesselSeedsMask.nrrd'
 
         #tmp_dir = this_dir + '/../../../Testing/tmp/'
         tmp_dir = tempfile.mkdtemp()

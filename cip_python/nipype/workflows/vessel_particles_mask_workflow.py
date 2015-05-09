@@ -1,42 +1,79 @@
 import cip_python.nipype.interfaces.cip as cip
 import cip_python.nipype.interfaces.unu as unu
-import cip_python.nipype.interfaces.ITKTools as tools
 import cip_python.nipype.interfaces.cip.cip_pythonWrap as cip_python_interfaces
-import nipype.interfaces.spm as spm         # the spm interfaces
+from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype.pipeline.engine import Workflow
+import tempfile, shutil
 import pydot
 import sys
 import os 
-from nipype import SelectFiles, Node
 import pdb
 
 class VesselParticlesMaskWorkflow(Workflow):
-    """
+    """This workflow produces a vessel seeds mask that is intended to be used
+    as an input to the vessel particles routine. 
 
     Parameters
     ----------
     ct_file_name : str
+        The file name of the CT image (single file, 3D volume) in which to 
+        identify seeds as possible vessel locations.
     
-    method : string
-        Must be either 'Frangi' or 'StrainEnergy'
-    
+    label_map_file_name : str
+        File name for mask within which to idenfity vessel seeds.
+
+    tmp_dir : str
+        Directory in which to store intermediate files used for this computation
+        
+    vessel_seeds_mask_file_name : str, optional
+        File name of output vessel seeds mask. If none is specified, a file name
+        will be created using the CT file name prefix with the suffix
+        _vesselSeedsMask.nhdr. The seeds mask indicates possible vessel loctions
+        with the Vessel chest type label.
     """
-    def __init__(self):
+    def __init__(self, ct_file_name, label_map_file_name, 
+                 tmp_dir, vessel_seeds_mask_file_name=None):
         Workflow.__init__(self, 'VesselParticlesMaskWorkflow')
-    
+
+        assert ct_file_name.rfind('.') != -1, "Unrecognized CT file name format"
+        
+        self._tmp_dir = tmp_dir
+        self._cid = ct_file_name[max([ct_file_name.rfind('/'), 0])+1:\
+                                 ct_file_name.rfind('.')]
+
+        if ct_file_name.rfind('/') != -1:
+            self._dir = ct_file_name[0:ct_file_name.rfind('/')]
+        else:
+            self._dir = '.'
+
+        if vessel_seeds_mask_file_name is None:
+            self._vessel_seeds_mask_file_name = \
+              os.path.join(self._dir, self._cid + CM._vesselSeedsMask)
+        else:
+            self._vessel_seeds_mask_file_name = vessel_seeds_mask_file_name
+            
         # Params for feature strength computation
-        self._ct_file_name = '/Users/jross/Downloads/ChestImagingPlatform/Testing/Data/Input/vessel.nrrd' 
-        self._label_map_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/volume_mask_eroded.nrrd'
-        self._distance_map_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/distance_map.nrrd'
-        self._feature_mask_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/feature_mask.nrrd'
-        self._masked_strength_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/masked_strength.nrrd'
-        self._equalized_strength_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/equalized_strength_file_name.nrrd'
-        self._thresholded_equalized_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/thresholded_equalized_file_name.nrrd'
-        self._converted_thresholded_equalized_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/converted_thresholded_equalized_file_name.nrrd'
-        self._vessel_seeds_mask_file_name = '/Users/jross/Downloads/acil/Experiments/tune_vessel_particles_mask/Data/vessel_seeds_mask.nrrd'        
-        self._strength_file_name = '/Users/jross/tmp/tmp_strength.nrrd'
-        self._scale_file_name = '/Users/jross/tmp/tmp_scale.nrrd'
+        self._ct_file_name = ct_file_name
+        self._label_map_file_name = label_map_file_name
+        self._distance_map_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_distanceMap.nhdr') 
+        self._feature_mask_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_featureMask.nhdr')
+        self._masked_strength_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_maskedStrength.nhdr')
+        self._equalized_strength_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_equalized.nhdr')
+        self._thresholded_equalized_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_thresholded.nhdr')
+        self._converted_thresholded_equalized_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_converted.nhdr')
+        self._strength_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_strength.nhdr')
+        self._scale_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_scale.nhdr')
+        self._thinned_file_name = \
+          os.path.join(self._tmp_dir, self._cid + '_thinned.nhdr')          
         self._sigma_step_method = 1
         self._rescale = False
         self._threads = 0
@@ -72,7 +109,8 @@ class VesselParticlesMaskWorkflow(Workflow):
           pe.Node(interface=cip.ComputeDistanceMap(), 
                   name='compute_distance_transform')
         compute_distance_transform.inputs.labelMap = self._label_map_file_name
-        compute_distance_transform.inputs.distanceMap = self._distance_map_file_name
+        compute_distance_transform.inputs.distanceMap = \
+          self._distance_map_file_name
         
         # Create node for thresholding the distance map
         unu_2op_lt = pe.Node(interface=unu.unu_2op(), name='unu_2op_lt')
@@ -80,9 +118,6 @@ class VesselParticlesMaskWorkflow(Workflow):
         unu_2op_lt.inputs.type = 'short'
         unu_2op_lt.inputs.in2_scalar = self._distance_from_wall
         unu_2op_lt.inputs.output = self._feature_mask_file_name
-
-        #self.connect(px_distance_transform, 'out', unu_2op_lt, 'in1_file')
-        self.connect(compute_distance_transform, 'distanceMap', unu_2op_lt, 'in1_file')        
 
         # Create node for generating the vesselness feature strength image
         compute_feature_strength = \
@@ -103,14 +138,12 @@ class VesselParticlesMaskWorkflow(Workflow):
         compute_feature_strength.inputs.kappa = self._kappa
         compute_feature_strength.inputs.betase = self._betase
         compute_feature_strength.inputs.std = self._gaussianStd
-
-        unu_2op_x = pe.Node(interface=unu.unu_2op(), name='unu_2op_x')
-        unu_2op_x.inputs.operator = 'x'
-        unu_2op_x.inputs.type = 'float'
-        unu_2op_x.inputs.output = self._masked_strength_file_name
-
-        self.connect(unu_2op_lt, 'output', unu_2op_x, 'in1_file')
-        self.connect(compute_feature_strength, 'outFileName', unu_2op_x, 'in2_file')        
+        
+        # Create node for isolating the strength values within the mask
+        unu_2op_x_iso = pe.Node(interface=unu.unu_2op(), name='unu_2op_x_iso')
+        unu_2op_x_iso.inputs.operator = 'x'
+        unu_2op_x_iso.inputs.type = 'float'
+        unu_2op_x_iso.inputs.output = self._masked_strength_file_name
 
         # Create node for histogram equalization
         unu_heq = pe.Node(interface=unu.unu_heq(), name='unu_heq')
@@ -119,58 +152,42 @@ class VesselParticlesMaskWorkflow(Workflow):
         unu_heq.inputs.smart = self._smart
         unu_heq.inputs.output = self._equalized_strength_file_name
 
-        self.connect(unu_2op_x, 'output', unu_heq, 'input')
-
         # Set up thresholder to isolate all histogram-equalized voxels that
         # are above a pre-defined threshold
         unu_2op_gt = pe.Node(interface=unu.unu_2op(), name='unu_2op_gt')
         unu_2op_gt.inputs.operator = 'gt'
         unu_2op_gt.inputs.in2_scalar = self._vesselness_th = 0.5
         unu_2op_gt.inputs.output = self._thresholded_equalized_file_name
-        
-        self.connect(unu_heq, 'output', unu_2op_gt, 'in1_file')
 
         # Now convert the equalized, thresholded image to short type
         unu_convert = pe.Node(interface=unu.unu_convert(), name='unu_convert')
         unu_convert.inputs.type = 'short'
-        unu_convert.inputs.output = self._converted_thresholded_equalized_file_name
+        unu_convert.inputs.output = \
+          self._converted_thresholded_equalized_file_name
 
-        self.connect(unu_2op_gt, 'output', unu_convert, 'input')
-
+        # Thin the thresholded image
         generate_binary_thinning_3d = \
           pe.Node(interface=cip.GenerateBinaryThinning3D(), 
                   name='generate_binary_thinning_3d')
-        generate_binary_thinning_3d.inputs.out = self._vessel_seeds_mask_file_name
+        generate_binary_thinning_3d.inputs.out = \
+          self._thinned_file_name
 
-        self.connect(unu_convert, 'output', generate_binary_thinning_3d, 'opt_in')
+        # Create node for isolating the strength values within the mask
+        unu_2op_x_ves = pe.Node(interface=unu.unu_2op(), name='unu_2op_x_ves')
+        unu_2op_x_ves.inputs.operator = 'x'
+        unu_2op_x_ves.inputs.output = self._vessel_seeds_mask_file_name
+        unu_2op_x_ves.inputs.in1_scalar = 768
         
-    #    self.write_graph(dotfilename="/Users/jross/tmp/tmp.dot")    
-    #    generate_binary_thinning_3d = \
-    #      CIPNode(interface=cip.GenerateBinaryThinning3D(),
-    #              name='generate_binary_thinning_3d')    
-    #    self.add_nodes([generate_binary_thinning_3d])
-    
-               # Compute Frangi
-    #                if self._init_method == 'Frangi':
-    #                    tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f RidgeLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.5 --beta 0.5 --C 250 -o %(out)s"
-    #                    tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
-    #                    
-    #                    #Hist equalization, threshold Feature strength and masking
-    #                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
-    #                    tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
-    #                elif self._init_method == 'StrainEnergy':
-    #                    tmpCommand = "ComputeFeatureStrength -i %(in)s -m StrainEnergy -f RidgeLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.2 --beta 0.1 --kappa 0.5 --nu 0.1 -o %(out)s"
-    #                    tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
-    #                    tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
-    #                    
-    #                    #Hist equalization, threshold Feature strength and masking
-    #                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
-    #                    tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
-    #                elif self._init_method == 'Threshold':
-    #                    tmpCommand = "unu 2op gt %(in)s %(intensity_th)f | unu 2op x - %(mask)s -o %(out)s"
-    #                    tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'mask':pl_file_nameRegion,'intensity_th':self._intensity_th,'out':maskFileNameRegion}
-    #                
-    #                #Binary Thinning
-    #                tmpCommand = "GenerateBinaryThinning3D -i %(in)s -o %(out)s"
-    #                tmpCommand = tmpCommand % {'in':maskFileNameRegion,'out':maskFileNameRegion}
-    
+        # Set up the workflow connections        
+        self.connect(compute_distance_transform, 'distanceMap', 
+                     unu_2op_lt, 'in1_file')
+        self.connect(unu_2op_lt, 'output', unu_2op_x_iso, 'in1_file')
+        self.connect(compute_feature_strength, 'outFileName', 
+                     unu_2op_x_iso, 'in2_file')
+        self.connect(unu_2op_x_iso, 'output', unu_heq, 'input')        
+        self.connect(unu_heq, 'output', unu_2op_gt, 'in1_file')        
+        self.connect(unu_2op_gt, 'output', unu_convert, 'input')
+        self.connect(unu_convert, 'output', 
+                     generate_binary_thinning_3d, 'opt_in')
+        self.connect(generate_binary_thinning_3d, 'out', 
+                     unu_2op_x_ves, 'in2_file')                
