@@ -11,8 +11,9 @@ if (UNIX)
 		set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/linuxScript.sh ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_DIR})
 	endif()
 else()
-      # Windows
-	set (INSTALL_COMMAND ${CIP_PYTHON_SOURCE_DIR}/Miniconda-3.8.3-Windows-x86_64.exe /InstallationType=AllUsers /S /D=${CIP_PYTHON_DIR})
+    # Windows
+    file (TO_NATIVE_PATH ${CIP_PYTHON_DIR} CIP_PYTHON_DIR_NATIVE) # install fails without native path
+	set (INSTALL_COMMAND ${CIP_PYTHON_SOURCE_DIR}/winScript.bat ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_DIR_NATIVE})
 endif()
 
 # Select the master branch by default
@@ -42,66 +43,73 @@ ExternalProject_Add(${proj}
 # 	DEPENDEES install
 # )
 
+if (UNIX)      
+	SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_DIR}/bin)
+else() # Windows
+    SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_DIR}/Scripts)
+endif()
+
 ExternalProject_Add_Step(${proj} installcython
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet cython  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet cython  
 	DEPENDEES install
 )
 
 ExternalProject_Add_Step(${proj} installnumpy
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet numpy  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet numpy  
 	DEPENDEES installcython
 )
 
 ExternalProject_Add_Step(${proj} installscipy
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet scipy  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scipy  
 	DEPENDEES installnumpy
 )
 
 ExternalProject_Add_Step(${proj} installvtk
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet vtk  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet vtk  
 	DEPENDEES installscipy
 )
 
 ExternalProject_Add_Step(${proj} installpandas
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pandas  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet pandas  
 	DEPENDEES installvtk
 )
 
 ExternalProject_Add_Step(${proj} installnose
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet nose  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet nose  
 	DEPENDEES installpandas
 )
 
 ExternalProject_Add_Step(${proj} installsphinx
-	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet sphinx 
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet sphinx 
 	DEPENDEES install
 )
 
 ExternalProject_Add_Step(${proj} installpynrrd
-	COMMAND ${CIP_PYTHON_DIR}/bin/pip install --quiet pynrrd  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
 	DEPENDEES installnose
 )
 
 ExternalProject_Add_Step(${proj} installpydicom
-	COMMAND ${CIP_PYTHON_DIR}/bin/pip install --quiet pydicom  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pydicom  
 	DEPENDEES installpynrrd
 )
 
-#Set Python variables that can be referenced by other modules
-set(CIP_PYTHON_EXECUTABLE ${CIP_PYTHON_DIR}/bin/python2.7 )
-set(CIP_PYTHON_INCLUDE_DIR ${CIP_PYTHON_DIR}/include/python2.7 )
-set(CIP_PYTHON_PACKAGES_PATH ${CIP_PYTHON_DIR}/lib/python2.7/site-packages )
-
- if (UNIX)      
+if (UNIX)      
+  #Set Python variables that can be referenced by other modules
+  set (CIP_PYTHON_EXECUTABLE ${CIP_PYTHON_DIR}/bin/python2.7)
+  set (CIP_PYTHON_INCLUDE_DIR ${CIP_PYTHON_DIR}/include/python2.7)
+  set (CIP_PYTHON_PACKAGES_PATH ${CIP_PYTHON_DIR}/lib/python2.7/site-packages)
   if (APPLE)
     set (CIP_PYTHON_LIBRARY ${CIP_PYTHON_DIR}/lib/libpython2.7.dylib)
   else()
     set (CIP_PYTHON_LIBRARY ${CIP_PYTHON_DIR}/lib/libpython2.7.so)
-
   endif()
-else()
-  # Windows
-  set (CIP_PYTHON_LIBRARY ${CIP_PYTHON_DIR}/lib/python2.7.dll)
+else() # Windows
+  #Set Python variables that can be referenced by other modules
+  set (CIP_PYTHON_EXECUTABLE ${CIP_PYTHON_DIR}/python)
+  set (CIP_PYTHON_INCLUDE_DIR ${CIP_PYTHON_DIR}/include)
+  set (CIP_PYTHON_PACKAGES_PATH ${CIP_PYTHON_DIR}/Lib/site-packages)
+  set (CIP_PYTHON_LIBRARY ${CIP_PYTHON_DIR}/python27.dll)
 endif()
 
 

@@ -23,25 +23,17 @@ cipMacroBuildCLI(
     ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
     SRCS ${MODULE_SRCS}
     )
-#IF ( CIP_BUILD_TESTING )
-#  SUBDIRS ( Testing )
-#ENDIF( CIP_BUILD_TESTING ) 
 
-# TODO: WRITE TEST
-#SET (TEST_NAME ${MODULE_NAME}_Test)
-#CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-#    --compare 
-#      ${INPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-#      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-#      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-#    --compare 
-#      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-#      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-#    ModuleEntryPoint
-#      -i ${INPUT_DATA_DIR}/simple_lm.nrrd
-#      --vol 
-#      -s 2 
-#      --regionPairVecInclude 0,2 
-#      --typePairVecInclude 2,3
-#      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-#)
+SET (TEST_NAME ${MODULE_NAME}_Test)
+CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+    --compare 
+      ${INPUT_DATA_DIR}/simple_lm_filtered1.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+    ModuleEntryPoint
+      -i ${INPUT_DATA_DIR}/simple_lm.nrrd
+      --vol 
+      -s 2 
+      --regionPairVecInclude 0,2 
+      --typePairVecInclude 2,3
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+)
