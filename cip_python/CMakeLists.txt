@@ -14,7 +14,7 @@ ELSE ( WIN32 )
 ENDIF ( WIN32 )
 
 IF ( NOT CIP_PYTHON_DIR ) # probably built by SlicerCIP
-  SET ( CIP_PYTHON_CMD python ) # use system Python
+  SET ( CIP_PYTHON_CMD ${SLICER_PYTHON_CMD} ) # use Slicer Python
 ENDIF()
 
 CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/setup_ChestConventions.py.in 
