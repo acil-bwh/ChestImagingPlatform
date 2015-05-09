@@ -173,13 +173,13 @@ private:
   InputPixelType  m_AirwayMinIntensityThreshold;
   bool            m_AirwayMinIntensityThresholdSet;
 
-  double           m_ExponentialCoefficient;
-  double           m_ExponentialTimeConstant;
-  bool             m_HeadFirst;
-  bool             m_Supine;
-  bool             m_AggressiveLeftRightSplitter;
-  unsigned long    m_ClosingNeighborhood[3];
-  int              m_LeftRightLungSplitRadius;
+  double             m_ExponentialCoefficient;
+  double             m_ExponentialTimeConstant;
+  bool               m_HeadFirst;
+  bool               m_Supine;
+  bool               m_AggressiveLeftRightSplitter;
+  itk::SizeValueType m_ClosingNeighborhood[3];
+  int                m_LeftRightLungSplitRadius;
 };
   
 } // end namespace itk

@@ -3,7 +3,7 @@
 
 cip::ChestConventions::ChestConventions()
 {
-  m_NumberOfEnumeratedChestRegions = 68;
+  m_NumberOfEnumeratedChestRegions = 69;
   m_NumberOfEnumeratedChestTypes   = 84;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
@@ -166,6 +166,9 @@ cip::ChestConventions::ChestConventions()
                                                (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PECTORALIS ),
                                                (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SPINALCORD ),
+                                               (unsigned char)( SPINE ) ) );
+
 
   ChestRegions.push_back( (unsigned char)( UNDEFINEDREGION ) );
   ChestRegions.push_back( (unsigned char)( WHOLELUNG ) );
@@ -235,6 +238,7 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( RIGHTDIAPHRAGM ) );
   ChestRegions.push_back( (unsigned char)( HIATUS ) );
   ChestRegions.push_back( (unsigned char)( PECTORALIS ) );
+  ChestRegions.push_back( (unsigned char)( SPINALCORD ) );
 
 
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
@@ -390,6 +394,7 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "RightDiaphragm" );
   ChestRegionNames.push_back( "Hiatus" );
   ChestRegionNames.push_back( "Pectoralis" );
+  ChestRegionNames.push_back( "SpinalCord" );
 
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );
@@ -691,6 +696,22 @@ cip::ChestConventions::ChestConventions()
   double* r051 = new double[3]; r051[0] = 0.49; r051[1] = 0.49; r051[2] = 0.71; ChestRegionColors.push_back( r051 ); //LEFTCORONARYARTERY
   double* r052 = new double[3]; r052[0] = 0.49; r052[1] = 0.49; r052[2] = 0.72; ChestRegionColors.push_back( r052 ); //SPINE
   double* r053 = new double[3]; r053[0] = 0.49; r053[1] = 0.49; r053[2] = 0.73; ChestRegionColors.push_back( r053 ); //LEFTVENTRICLE
+  double* r054 = new double[3]; r054[0] = 0.49; r054[1] = 0.49; r054[2] = 0.74; ChestRegionColors.push_back( r054 ); //RIGHTVENTRICLE
+  double* r055 = new double[3]; r055[0] = 0.49; r055[1] = 0.49; r055[2] = 0.75; ChestRegionColors.push_back( r055 ); //LEFTATRIUM
+  double* r056 = new double[3]; r056[0] = 0.49; r056[1] = 0.49; r056[2] = 0.76; ChestRegionColors.push_back( r056 ); //RIGHTATRIUM
+  double* r057 = new double[3]; r057[0] = 0.49; r057[1] = 0.49; r057[2] = 0.77; ChestRegionColors.push_back( r057 ); //LEFTPECTORALIS
+  double* r058 = new double[3]; r058[0] = 0.49; r058[1] = 0.49; r058[2] = 0.78; ChestRegionColors.push_back( r058 ); //RIGHTPECTORALIS
+  double* r059 = new double[3]; r059[0] = 0.49; r059[1] = 0.49; r059[2] = 0.79; ChestRegionColors.push_back( r059 ); //TRACHEA2
+  double* r060 = new double[3]; r060[0] = 0.49; r060[1] = 0.49; r060[2] = 0.80; ChestRegionColors.push_back( r060 ); //LEFTMAINBRONCHIUS
+  double* r061 = new double[3]; r061[0] = 0.49; r061[1] = 0.49; r061[2] = 0.81; ChestRegionColors.push_back( r061 ); //RIGHTMANINBRONCHIUS
+  double* r062 = new double[3]; r062[0] = 0.49; r062[1] = 0.49; r062[2] = 0.82; ChestRegionColors.push_back( r062 ); //ESOPHAGUS
+  double* r063 = new double[3]; r063[0] = 0.49; r063[1] = 0.49; r063[2] = 0.83; ChestRegionColors.push_back( r063 ); //LEFTCHESTWALL
+  double* r064 = new double[3]; r064[0] = 0.49; r064[1] = 0.49; r064[2] = 0.84; ChestRegionColors.push_back( r064 ); //RIGHTCHESTWALL
+  double* r065 = new double[3]; r065[0] = 0.49; r065[1] = 0.49; r065[2] = 0.85; ChestRegionColors.push_back( r065 ); //LEFTDIAPHRAGM
+  double* r066 = new double[3]; r066[0] = 0.49; r066[1] = 0.49; r066[2] = 0.86; ChestRegionColors.push_back( r066 ); //RIGHTDIAPHRAGM
+  double* r067 = new double[3]; r067[0] = 0.49; r067[1] = 0.49; r067[2] = 0.87; ChestRegionColors.push_back( r067 ); //HIATUS
+  double* r068 = new double[3]; r068[0] = 0.49; r068[1] = 0.49; r068[2] = 0.88; ChestRegionColors.push_back( r068 ); //PECTORALIS
+  double* r069 = new double[3]; r069[0] = 0.49; r069[1] = 0.49; r069[2] = 0.89; ChestRegionColors.push_back( r069 ); //SPINALCORD
 }
 
 cip::ChestConventions::~ChestConventions()

@@ -13,12 +13,12 @@
     </acknowledgements>
   <parameters>
     <image>
-      <name>labelMapFileName</name>
-      <label>Label Map Filename</label>
+      <name>ctFileName</name>
+      <label>CT  Filename</label>
       <channel>input</channel>
       <flag>l</flag>
-      <longflag>--labelMapFile</longflag>
-      <description><![CDATA[Label map file name to resample]]></description>
+      <longflag>--ctFileName</longflag>
+      <description><![CDATA[CT file name to resample]]></description>
       <default>q</default>
     </image>
     <string-vector>
@@ -63,7 +63,7 @@
             <channel>input</channel>
             <flag>m</flag>
             <longflag>dimension</longflag>
-            <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
+            <description><![CDATA[Dimension of the image being resampled.]]></description>
             <default>3</default>
         </integer> 
   </parameters>

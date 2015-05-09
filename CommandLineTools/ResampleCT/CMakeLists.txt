@@ -28,19 +28,16 @@ cipMacroBuildCLI(
     SRCS ${MODULE_SRCS}
     )
 
-# TODO: WRITE TEST
-#SET (TEST_NAME ${MODULE_NAME}_Test)
-#CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-#    --compare 
-#      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-#      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-#    --compare 
-#      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-#      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-#    ModuleEntryPoint
-#      -i ${INPUT_DATA_DIR}/dummy_ct.nrrd
-#      -l ${INPUT_DATA_DIR}/dummy_lm.nrrd
-#      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-#      --opl ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-#)
-#
+SET (TEST_NAME ${MODULE_NAME}_Test)
+CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+    --compareCT 
+      ${INPUT_DATA_DIR}/ct-64-transformed.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
+    --compareIntensityTolerance 4	
+    ModuleEntryPoint
+      -l ${INPUT_DATA_DIR}/ct-64.nrrd
+      -d ${INPUT_DATA_DIR}/ct-64-transformed.nrrd
+      -t ${INPUT_DATA_DIR}/TranslationRotation.tfm
+      -m 3		
+      -r ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
+)
