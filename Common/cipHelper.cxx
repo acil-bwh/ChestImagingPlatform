@@ -37,6 +37,60 @@
 #include "vtkGlyphSource2D.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
+#include "itkGDCMImageIO.h"
+#include "itkGDCMSeriesFileNames.h"
+
+
+cip::CTType::Pointer cip::ReadCTFromDirectory( std::string ctDir )
+{
+  
+  
+  typedef itk::GDCMImageIO                      ImageIOType;
+  typedef itk::GDCMSeriesFileNames              NamesGeneratorType;
+  
+  ImageIOType::Pointer gdcmIO = ImageIOType::New();
+  
+  std::cout << "---Getting file names..." << std::endl;
+  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
+  namesGenerator->SetInputDirectory( ctDir );
+  
+  const cip::CTSeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
+  
+  std::cout << "---Reading DICOM image..." << std::endl;
+  cip::CTSeriesReaderType::Pointer dicomReader = cip::CTSeriesReaderType::New();
+  dicomReader->SetImageIO( gdcmIO );
+  dicomReader->SetFileNames( filenames );
+  try
+  {
+    dicomReader->Update();
+  }
+  catch (itk::ExceptionObject &excp)
+  {
+    std::cerr << "Exception caught while reading dicom:";
+    std::cerr << excp << std::endl;
+    return NULL;
+  }
+  
+  return dicomReader->GetOutput();
+}
+
+cip::CTType::Pointer cip::ReadCTFromFile( std::string fileName )
+{
+  cip::CTReaderType::Pointer reader = cip::CTReaderType::New();
+  reader->SetFileName( fileName );
+  try
+  {
+    reader->Update();
+  }
+  catch ( itk::ExceptionObject &excp )
+  {
+    std::cerr << "Exception caught reading CT image:";
+    std::cerr << excp << std::endl;
+    return NULL;
+  }
+  
+  return reader->GetOutput();
+}
 
 // Code modified from //http://www.itk.org/Wiki/ITK/Examples/ImageProcessing/Upsampling
 cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap)
