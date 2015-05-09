@@ -1,7 +1,6 @@
 
 import sys
 import os
-import nipype.interfaces.spm as spm         # the spm interfaces
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype import SelectFiles, Node
 from cip_python.nipype.cip_node import CIPNode
