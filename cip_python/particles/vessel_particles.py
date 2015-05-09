@@ -57,8 +57,8 @@ class VesselParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6, live_thresh=-100,
-                 seed_thresh=-80, scale_samples=10, down_sample_rate=1,
+                 mask_file_name=None, max_scale=6, live_thresh=-95,
+                 seed_thresh=-70, scale_samples=10, down_sample_rate=1,
                  min_intensity=-800, max_intensity=400):
         ChestParticles.__init__(self, feature_type="ridge_line",
                                 in_file_name=in_file_name,
@@ -78,7 +78,7 @@ class VesselParticles(ChestParticles):
         self._mode_thresh = -0.3
         self._population_control_period = 3
   
-        self._phase_iterations = [60,20,40]
+        self._phase_iterations = [100, 10, 75]
   
         self._irad_phase1 = 1.5
         self._irad_phase2 = 1.15
@@ -88,10 +88,10 @@ class VesselParticles(ChestParticles):
         self._srad_phase2 = 2
         self._srad_phase3 = 4
   
-        self._phase_population_control_periods=[3,6,6]
-        self._phase_alphas=[1.0,0.0,0.25]
-        self._phase_betas=[0.7,0.5,0.25]
-        self._phase_gammas=[0.0,0.0,0.002]
+        self._phase_population_control_periods = [6, 20, 17]
+        self._phase_alphas = [1.0, 0.35, 0.84]
+        self._phase_betas = [0.77, 0.75, 0.57]
+        self._phase_gammas = [0.37, 0.53, 0.57]
   
         #Default init mode
         self._init_mode = "PerVoxel"
@@ -210,9 +210,9 @@ if __name__ == "__main__":
   parser.add_option("-n", help='number of scale volumes', 
                     dest="scale_samples", default=10)
   parser.add_option("--lth", help='live threshold (<0)', dest="live_th",
-                    default=-100)
+                    default=-95)
   parser.add_option("--sth", help='seed threshold (<0)', dest="seed_th",
-                    default=-80)
+                    default=-70)
   parser.add_option("--minI", help='min intensity for feature', 
                     dest="min_intensity", default=-800)
   parser.add_option("--maxI", help='max intensity for feature', 
