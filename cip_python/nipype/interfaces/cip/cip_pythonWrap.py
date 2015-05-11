@@ -11,7 +11,7 @@ from nipype.interfaces.base import BaseInterface, \
 from nipype.utils.filemanip import split_filename
 from cip_python.phenotypes.parenchyma_phenotypes import ParenchymaPhenotypes
 from cip_python.phenotypes.body_composition_phenotypes import BodyCompositionPhenotypes
-import pdb
+#import pdb
 #import cip_convention_manager as cm
 
 
@@ -100,7 +100,7 @@ class parenchyma_phenotypes(BaseInterface):
         return runtime
     
     def _list_outputs(self):
-        pdb.set_trace()
+        #pdb.set_trace()
         outputs = self._outputs().get()
         fname = self.inputs.out_csv
         _, base, _ = split_filename(fname)
@@ -197,7 +197,7 @@ class body_composition_phenotypes(BaseInterface):
         fname = self.inputs.out_csv
         _, base, _ = split_filename(fname)
         outputs["out_csv"] = os.path.abspath(fname)
-        pdb.set_trace()
+        #pdb.set_trace()
         return outputs
 
 

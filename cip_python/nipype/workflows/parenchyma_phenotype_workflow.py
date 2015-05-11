@@ -37,7 +37,7 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
 
     def getstripdir(subject_id):
         sid = subject_id.split('_')[0]
-        return os.path.join(os.path.abspath('.'),sid, subject_id)
+        return os.path.join(os.path.abspath('.'),sid, subject_id) # too acilish
 
                     
     def get_cid(self):
@@ -54,7 +54,7 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         """ Set up nodes that will make the wf  
         """
                 
-        self.config['execution'] = {'remove_unnecessary_outputs': 'False'}
+        self.config['execution'] = {'remove_unnecessary_outputs': 'False'} #'remove_node_directories': 'True' remove_node_directories not working
         # node.output_dir( returns the output directory if we want to remove temp files)
                                    
         subject_list= self.list_of_cases_#,"10633T_INSP_STD_NJC_COPD"]
@@ -122,14 +122,14 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         
         datasink = pe.Node(interface=nio.DataSink(), name="datasink")
         datasink.inputs.base_directory = '/Users/rolaharmouche/Documents/Data/COPDGeneNP'
+        #datasink.inputs.base_directory = 'scp rharmo\@spl.bwh.harvard.edu:/projects/lmi/people/rharmo'
+        datasink.inputs.parameterization = False # to remove the creation of a subdirectory for each run
         #datasink.inputs.substitutions = [('_variable', 'subject_id'),
         #                         ('temp', '')]
  
         #getstripdir(subject_id)
         
         self.base_dir = self.root_dir
-
-         
         """connect nodes based on whether we are performing median filtering or not"""
        
         self.connect(infosource, 'subject_id', datasource, 'subject_id')    
@@ -143,25 +143,27 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         self.connect(datasource, 'ct_input', parenchyma_phenotype_generator_node,  'in_ct')    
         self.connect(infosource, 'subject_id', parenchyma_phenotype_generator_node,  'cid')
         
-        # Renaming for output
+#        # Renaming for output
         self.connect(datasource, 'ct_input', lung_labelmap_rename_node, 'caseid_ct')
         self.connect(label_map_generator_node, 'out', lung_labelmap_rename_node, 'in_ct')
-        self.connect(lung_labelmap_rename_node, 'out_nhdr', datasink, 'rename')
-        self.connect(lung_labelmap_rename_node, 'out_rawgz', datasink, 'rename2')   
-
+     
         self.connect(parenchyma_phenotype_generator_node, 'out_csv', csv_rename, 'in_file')  
         self.connect(infosource, 'subject_id', csv_rename, 'subject_id')
-        self.connect(csv_rename, 'out_file', datasink, 'csvfile')                                        
+        self.connect(csv_rename, 'out_file', datasink, '@case')                          
+        self.connect(lung_labelmap_rename_node, 'out_nhdr', datasink, '@caserename')
+        self.connect(lung_labelmap_rename_node, 'out_rawgz', datasink, '@caserename2') 
         self.write_graph(dotfilename="parenchyma_workflow_graph.dot")
 
 
+        #self.connect(infosource, 'subject_id', datasink, 'container') # creates a subject_id subdirectory in the sink folder
+
 if __name__ == "__main__": 
     
-    the_pheno_names =  "Volume"#,Mass"
+    the_pheno_names =  "Volume,Mass"
     regions = "WholeLung"
     median_filter_radius = [1,2]
-    my_workflow = ParenchymaPhenotypesWorkflow(['11088Z_INSP_STD_TEM_COPD'], '/Users/rolaharmouche/Documents/Data/COPDGene/data_for_nypipe/', filter_image = True, 
+    my_workflow = ParenchymaPhenotypesWorkflow(['11088Z_INSP_STD_TEM_COPD','10633T_INSP_STD_NJC_COPD'], '/Users/rolaharmouche/Documents/Data/COPDGene/data_for_nypipe/', filter_image = True, 
                  chest_regions = regions, chest_types = None, pairs = None, pheno_names = the_pheno_names, median_filter_radius=1.0)
     my_workflow.set_up_workflow()
-    my_workflow.run()             
+    my_workflow.run(plugin='MultiProc')#plugin='MultiProc', plugin_args={'n_procs' : 2})             
                     
