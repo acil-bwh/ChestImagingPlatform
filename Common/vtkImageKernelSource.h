@@ -8,12 +8,12 @@
 #include "vtkImageAlgorithm.h"
 #include "vtkImageKernel.h"
 #include "vtkMultiThreader.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 // VTK6 migration note:
 // - replaced superclass vtkImageSource with vtkImageAlgorithm
 
-class VTK_CIP_UTILITIES_EXPORT vtkImageKernelSource : public vtkImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkImageKernelSource : public vtkImageAlgorithm
 {
 public:
   static vtkImageKernelSource *New();

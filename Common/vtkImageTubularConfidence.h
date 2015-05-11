@@ -22,7 +22,7 @@
 #ifndef __vtkImageTubularConfidence_h
 #define __vtkImageTubularConfidence_h
 
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #include "vtkThreadedImageAlgorithm.h"
 #include "vtkImageData.h"
@@ -34,7 +34,7 @@
 // VTK6 migration note:
 // Replaced suplerclass vtkImageToImageFilter with vtkThreadedImageAlgorithm.
 
-class VTK_CIP_UTILITIES_EXPORT vtkImageTubularConfidence : public vtkThreadedImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkImageTubularConfidence : public vtkThreadedImageAlgorithm
 {
 public:
   static vtkImageTubularConfidence *New();
