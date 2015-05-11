@@ -35,7 +35,7 @@
 // VTK6 migration note:
 // Replaced superclass vtkPolyDataToPolyDataFilter with vtkPolyDataAlgorithm.
 
-class VTK_CIP_UTILITIES_EXPORT vtkComputeAirwayWallPolyData : public vtkPolyDataAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkComputeAirwayWallPolyData : public vtkPolyDataAlgorithm
 {
 public:
   static vtkComputeAirwayWallPolyData *New();

@@ -26,14 +26,14 @@
 #define __vtkComputeCentroid_h
 
 #include "vtkImageAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 // VTK6 migration note:
 // Replaced suplerclass vtkImageToImageFilter with vtkImageAlgorithm
 // instead of vtkThreadedImageAlgorithm since this class did not provide
 // ThreadedExecute() method and overrided ExecuteData() originally.
 
-class VTK_CIP_UTILITIES_EXPORT vtkComputeCentroid : public vtkImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkComputeCentroid : public vtkImageAlgorithm
 {
 public:
   static vtkComputeCentroid *New();
