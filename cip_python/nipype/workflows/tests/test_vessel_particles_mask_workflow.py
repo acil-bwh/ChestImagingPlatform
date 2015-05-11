@@ -30,4 +30,4 @@ def test_vessel_particles_mask_workflow():
     dice = compute_dice_coefficient(ref, test, 1)
     shutil.rmtree(tmp_dir)
     
-    assert dice > 0.69, "Dice coefficient lower than expected"
+    assert dice > 0.995, "Dice coefficient lower than expected"
