@@ -78,9 +78,9 @@ class VesselParticlesMaskWorkflow(Workflow):
         self._rescale = False
         self._threads = 0
         self._method = 'Frangi'
-        self._alpha = 0.5 # In [0, 1]
-        self._beta = 0.5 # In [0. 1]
-        self._C = 250 # In [0, 300]
+        self._alpha = 0.63 # In [0, 1]
+        self._beta = 0.51 # In [0. 1]
+        self._C = 245 # In [0, 300]
         self._alphase = 0.25 # In [0, 1]
         self._nu = 0 # In [-1, 0.5]
         self._kappa = 0.5 # In [0.01, 2]
@@ -88,13 +88,13 @@ class VesselParticlesMaskWorkflow(Workflow):
         self._sigma = 1.0
         self._sigma_min = 0.7 
         self._sigma_max = 4.0
-        self._num_steps = 4         
+        self._num_steps = 7         
         self._gaussianStd = [self._sigma_min, self._sigma_max, self._num_steps]
 
         # Params for histogram equalization (unu heq node)
         self._bin = 10000
-        self._amount = 0.5
-        self._smart = 2
+        self._amount = 0.96
+        self._smart = 5
 
         # Param for thresholding the histogram-equalized strength image
         self._vesselness_th = 0.5
@@ -138,7 +138,7 @@ class VesselParticlesMaskWorkflow(Workflow):
         compute_feature_strength.inputs.kappa = self._kappa
         compute_feature_strength.inputs.betase = self._betase
         compute_feature_strength.inputs.std = self._gaussianStd
-        
+
         # Create node for isolating the strength values within the mask
         unu_2op_x_iso = pe.Node(interface=unu.unu_2op(), name='unu_2op_x_iso')
         unu_2op_x_iso.inputs.operator = 'x'
