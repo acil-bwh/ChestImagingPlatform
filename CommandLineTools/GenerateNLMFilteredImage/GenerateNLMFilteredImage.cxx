@@ -1,17 +1,14 @@
-#include "cipHelper.cxx"
-#include "itkSmoothingRecursiveGaussianImageFilter.h"
-#include "GenerateMedianFilteredImageCLP.h"
+#include "cipHelper.h"
+#include "GenerateNLMFilteredImageCLP.h"
 #include "cipChestConventions.h"
 #include "itkImage.h"
 #include "itkImageRegionIteratorWithIndex.h"
-#include "itkMedianImageFilter.h"
+#include "itkPFNLMFilter.h"
 
 
 int main( int argc, char * argv[] )
 {
   PARSE_ARGS;
-
-  typedef itk::MedianImageFilter< cip::CTType, cip::CTType > MedianType;
 
   // Read the CT image
   cip::CTType::Pointer ctImage = cip::CTType::New();
@@ -39,21 +36,45 @@ int main( int argc, char * argv[] )
     std::cerr << "ERROR: No CT image specified" << std::endl;
     return cip::EXITFAILURE;
     }
-
-  cip::CTType::SizeType medianRadius;
-    medianRadius[0] = radiusValue;
-    medianRadius[1] = radiusValue;
-    medianRadius[2] = radiusValue;
-
-  std::cout << "Executing median filter..." << std::endl;
-  MedianType::Pointer median = MedianType::New();
-    median->SetInput( ctImage );
-    median->SetRadius( medianRadius );
-    median->Update();
+  
+  typedef itk::PFNLMFilter< cip::CTType, cip::CTType > FilterType;
+  FilterType::Pointer filter = FilterType::New();
+  filter->SetInput( ctImage );
+  
+  /** SET PARAMETERS TO THE FILTER */
+	// The power of noise:
+  unsigned int DIMENSION=3;
+	filter->SetSigma( iSigma );
+	// The search radius
+	typename FilterType::InputImageSizeType radius;
+	for( unsigned int d=0; d<DIMENSION; ++d )
+		radius[d] = iRadiusSearch[d];
+	filter->SetRSearch( radius );
+	// The comparison radius:
+	for( unsigned int d=0; d<DIMENSION; ++d )
+		radius[d] = iRadiusComp[d];
+	filter->SetRComp( radius );
+	// The "h" parameter:
+	filter->SetH( iH );
+	// The preselection threshold:
+	filter->SetPSTh( iPs );
+	
+	// Run the filter:
+	try
+  {
+		filter->Update();
+  }
+	catch ( itk::ExceptionObject & e )
+  {
+		std::cerr << "exception in filter" << std::endl;
+		std::cerr << e.GetDescription() << std::endl;
+		std::cerr << e.GetLocation() << std::endl;
+		return cip::EXITFAILURE;
+  }
 
   std::cout << "Writing filtered image..." << std::endl;
   cip::CTWriterType::Pointer writer = cip::CTWriterType::New();
-    writer->SetInput( median->GetOutput() );
+    writer->SetInput( filter->GetOutput() );
     writer->SetFileName( outputFileName );
     writer->UseCompressionOn();
   try
@@ -64,6 +85,7 @@ int main( int argc, char * argv[] )
     {
     std::cerr << "Exception caught while writing filtered image:";
     std::cerr << excp << std::endl;
+    return cip::EXITFAILURE;
     }
 
   std::cout << "DONE." << std::endl;
