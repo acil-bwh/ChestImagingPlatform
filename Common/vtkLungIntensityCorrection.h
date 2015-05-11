@@ -26,7 +26,7 @@
 #define __vtkLungIntensityCorrection_h
 
 #include "vtkThreadedImageAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #define DCLOW 0
 #define DCMEAN 1
@@ -38,7 +38,7 @@ class vtkDoubleArray;
 // VTK6 migration note:
 // Replaced suplerclass vtkImageToImageFilter with vtkThreadedImageAlgorithm.
 
-class VTK_CIP_UTILITIES_EXPORT vtkLungIntensityCorrection : public vtkThreadedImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkLungIntensityCorrection : public vtkThreadedImageAlgorithm
 {
 public:
   static vtkLungIntensityCorrection *New();
