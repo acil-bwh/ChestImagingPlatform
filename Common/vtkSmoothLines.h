@@ -10,12 +10,12 @@
 
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkDoubleArray.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 // VTK6 migration note:
 // - replaced super class vtkPolyDataToPolyDataFilter with vtkPolyDataAlgorithm
 
-class VTK_CIP_UTILITIES_EXPORT vtkSmoothLines : public vtkPolyDataAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkSmoothLines : public vtkPolyDataAlgorithm
 {
 public:
   static vtkSmoothLines *New();
