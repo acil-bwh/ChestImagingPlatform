@@ -11,9 +11,9 @@
 #define __vtkGeneralizedQuadratureKernelSource_h
 
 #include "vtkImageKernelSource.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
-class VTK_CIP_UTILITIES_EXPORT vtkGeneralizedQuadratureKernelSource : public vtkImageKernelSource
+class VTK_CIP_COMMON_EXPORT vtkGeneralizedQuadratureKernelSource : public vtkImageKernelSource
 {
 public:
   static vtkGeneralizedQuadratureKernelSource *New();
