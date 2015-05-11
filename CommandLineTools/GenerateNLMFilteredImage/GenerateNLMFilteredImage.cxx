@@ -46,7 +46,7 @@ int main( int argc, char * argv[] )
   unsigned int DIMENSION=3;
 	filter->SetSigma( iSigma );
 	// The search radius
-	typename FilterType::InputImageSizeType radius;
+	FilterType::InputImageSizeType radius;
 	for( unsigned int d=0; d<DIMENSION; ++d )
 		radius[d] = iRadiusSearch[d];
 	filter->SetRSearch( radius );
