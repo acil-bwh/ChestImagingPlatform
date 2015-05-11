@@ -23,14 +23,14 @@
 #define __vtkMultipleReconstructionKernelsPhaseCongruency_h
 
 #include "vtkThreadedImageAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 class vtkImageStencilData;
 
 // VTK6 migration note:
 // - replaced super class vtkImageMultipleInputFilter with vtkThreadedImageAlgorithm
 
-class VTK_CIP_UTILITIES_EXPORT vtkMultipleReconstructionKernelsPhaseCongruency : public vtkThreadedImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkMultipleReconstructionKernelsPhaseCongruency : public vtkThreadedImageAlgorithm
 {
 public:
   static vtkMultipleReconstructionKernelsPhaseCongruency *New();

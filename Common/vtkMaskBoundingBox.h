@@ -10,11 +10,11 @@
 
 #include "vtkAlgorithm.h"
 #include "vtkImageStencilData.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 class vtkImageData;
 
-class VTK_CIP_UTILITIES_EXPORT vtkMaskBoundingBox : public vtkAlgorithm 
+class VTK_CIP_COMMON_EXPORT vtkMaskBoundingBox : public vtkAlgorithm 
 {
   public:
   static vtkMaskBoundingBox *New();
