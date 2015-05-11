@@ -225,19 +225,22 @@ void PFNLMFilter< TInputImage, TOutputImage >
 						float temp       = 1.0f/(1.0f-weight);
 						weight           = temp*(0.5f*(2.0f+weight)) - temp*temp*(0.5f*weight);
 						//==========================================================================
-						filtered        += ( (float)(search.Get()) ) * ( (float)(search.Get()) ) * weight;
+						//filtered        += ( (float)(search.Get()) ) * ( (float)(search.Get()) ) * weight;  //Rician noise
+            filtered  += ( (float)(search.Get()) ) * weight;
 						norm            += weight;
 					}
 				}
 			}
 			else{
 				weight   = 0.367879441171442f;
-				filtered += ( (float)(search.Get()) ) * ( (float)(search.Get()) ) * weight;
+				// filtered += ( (float)(search.Get()) ) * ( (float)(search.Get()) ) * weight; // Rician noise
+        filtered  += ( (float)(search.Get()) ) * weight;
 				norm     += weight;
 			}
 		}
-		filtered = filtered/norm - 2.0f*m_Sigma*m_Sigma;
-		filtered = ( filtered>0.0f ? ::sqrt(filtered) : 0.0f );
+		// filtered = filtered/norm - 2.0f*m_Sigma*m_Sigma;
+		// filtered = ( filtered>0.0f ? ::sqrt(filtered) : 0.0f );
+    filtered = filtered/norm;
 		// Set the output pixel
 		it.Set(   static_cast<OutputPixelType>( filtered )   );
 	}
