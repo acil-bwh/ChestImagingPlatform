@@ -207,11 +207,14 @@ class body_composition_phenotypes(BaseInterface):
 """
 input: case_id, input file, convention
 outputs are case_id_{convention}.nhdr and case_id_{convention}.raw.gz 
+
+assumption: input file has the formet {somename}_{convention}.nhdr, where
+there are no underscores in "{somename}"
 """
 
 class nhdr_handlerInputSpec(BaseInterfaceInputSpec):
-    in_nhdr = File(exists=True, desc='Input CT file', mandatory=True)
-
+    in_nhdr = File(exists=True, desc='Input nhdr file', mandatory=True)
+    case_id = File( desc='Input case_id', mandatory=False)
     out_nhdr = File( desc='Output nhdr renamed file', mandatory=False)
     out_rawgz = File( desc='Output raw.gz renamed file', mandatory=False)                    
                                                             
@@ -225,19 +228,29 @@ class nhdr_handler(BaseInterface):
     
     def _run_interface(self, runtime):
                
-        #print(self._outputs)
-        self.output_spec.out_nhdr =  os.path.abspath(self.inputs.in_ct.split(".")[0]+".nhdr")  
-        self.output_spec.out_rawgz =   os.path.abspath(self.inputs.in_ct.split(".")[0]+'.raw.gz')            
+        if(len(self.inputs.in_nhdr.split(".")[0].split("_"))>1):
+            suffix = ('_')+self.inputs.in_nhdr.split(".")[0].split("_")[-1]
+        else:
+            suffix=""
+        self.output_spec.out_nhdr =  os.path.abspath(self.inputs.case_id+suffix+".nhdr")  
+        self.output_spec.out_rawgz =   os.path.abspath(self.inputs.case_id+suffix+'.raw.gz')            
         
+        print("************************")
+        print(self.inputs.in_nhdr)
+        print("************************")
+        print(self.output_spec.out_nhdr )
+        print("************************")
         return runtime
     
     def _list_outputs(self):
         outputs = self._outputs().get()       
-        caseid =  ('_').join(self.inputs.caseid_ct.split(".")[0].split("_")[0:-1])
-        # extract the extension from the input file
-        suffix = "_"+self.inputs.in_ct.split(".")[0].split("_")[-1]
-        outputs["out_nhdr"] = os.path.abspath(self.inputs.in_ct.split(".")[0]+".nhdr")  
-        outputs["out_rawgz"] = os.path.abspath(self.inputs.in_ct.split(".")[0]+'.raw.gz'   )
+        if(len(self.inputs.in_nhdr.split(".")[0].split("_"))>1):
+            suffix = ('_')+self.inputs.in_nhdr.split(".")[0].split("_")[-1]
+        else:
+            suffix=""
+            
+        outputs["out_nhdr"] = os.path.abspath(self.inputs.case_id+suffix+".nhdr")  
+        outputs["out_rawgz"] = os.path.abspath(self.inputs.case_id+suffix+'.raw.gz')     
         #pdb.set_trace()
         return outputs
 
