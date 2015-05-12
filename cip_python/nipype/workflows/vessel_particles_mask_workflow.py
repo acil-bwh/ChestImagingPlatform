@@ -1,3 +1,4 @@
+from optparse import OptionParser
 import cip_python.nipype.interfaces.cip as cip
 import cip_python.nipype.interfaces.unu as unu
 import cip_python.nipype.interfaces.cip.cip_pythonWrap as cip_python_interfaces
@@ -191,3 +192,33 @@ class VesselParticlesMaskWorkflow(Workflow):
                      generate_binary_thinning_3d, 'opt_in')
         self.connect(generate_binary_thinning_3d, 'out', 
                      unu_2op_x_ves, 'in2_file')                
+
+
+        self.config['execution'] = {'remove_unnecessary_outputs': 'False'}
+        
+if __name__ == "__main__":
+    desc = """This workflow produces a vessel seeds mask that is intended to be 
+    used as an input to the vessel particles routine"""
+
+    parser = OptionParser(description=desc)
+    parser.add_option('--in_ct', help='The file name of the CT image (single \
+                       file, 3D volume) in which to identify seeds as possible \
+                       vessel locations', dest='in_ct', metavar='<string>', 
+                       default=None)
+    parser.add_option('--in_lm', help='File name for mask within which to \
+                      idenfity vessel seeds.', dest='in_lm', metavar='<string>', 
+                      default=None)
+    parser.add_option('--out', help='File name of output vessel seeds mask. \
+                      If none is specified, a file name will be created using \
+                      the CT file name prefix with the suffix \
+                      _vesselSeedsMask.nhdr. The seeds mask indicates possible \
+                      vessel loctions with the Vessel chest type label.', 
+                      dest='out', metavar='<string>', default=None)                      
+
+    (op, args) = parser.parse_args()
+    
+    tmp_dir = tempfile.mkdtemp()
+    wf = VesselParticlesMaskWorkflow(op.in_ct, op.in_lm, tmp_dir, op.out)
+    wf.run()
+    shutil.rmtree(tmp_dir)
+    
