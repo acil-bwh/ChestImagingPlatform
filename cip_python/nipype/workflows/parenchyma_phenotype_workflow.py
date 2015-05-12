@@ -106,14 +106,15 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
             parenchyma_phenotype_generator_node.set_input('pairs', self.pairs, CIPConventionManager.NONE)                                                      
 
 
-        ## nodes to handle the saving of raw.gz files
-        #median_filter_rename_node = CIPNode(interface=cip_python_interfaces.nhdr_handler(),
-        #    name='median_filter_rename_node') 
-        #median_filter_rename_node.set_input('in_ct','temp', CIPConventionManager.MedianFilteredImage) ###actually connect to output of medianfiltered image
-        #median_filter_rename_node.set_input('caseid_ct','temp', CIPConventionManager.NONE) 
-        lung_labelmap_rename_node = CIPNode(interface=cip_python_interfaces.nhdr_handler(),
+
+        
+        lung_labelmap_rename_node = CIPNode(cip.ReadWriteImageData(),
             name='lung_labelmap_rename_node')             
-        lung_labelmap_rename_node.set_input('caseid_ct','temp', CIPConventionManager.NONE) 
+        lung_labelmap_rename_node.set_input('ol','%(subject_id)s', CIPConventionManager.PartialLungLabelmap) # connect to infosource
+        
+        lung_labelmap_nrrd_identity_node = CIPNode(interface=cip_python_interfaces.nhdr_handler(),
+            name='lung_labelmap_identity_node')             
+       
         
         # data sink for csv file
         csv_rename = pe.Node(niu.Rename(format_string='%(subject_id)s_parenchymaPhenotypes',
@@ -122,10 +123,8 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         
         datasink = pe.Node(interface=nio.DataSink(), name="datasink")
         datasink.inputs.base_directory = '/Users/rolaharmouche/Documents/Data/COPDGeneNP'
-        #datasink.inputs.base_directory = 'scp rharmo\@spl.bwh.harvard.edu:/projects/lmi/people/rharmo'
         datasink.inputs.parameterization = False # to remove the creation of a subdirectory for each run
-        #datasink.inputs.substitutions = [('_variable', 'subject_id'),
-        #                         ('temp', '')]
+
  
         #getstripdir(subject_id)
         
@@ -143,15 +142,18 @@ class ParenchymaPhenotypesWorkflow(pe.Workflow):
         self.connect(datasource, 'ct_input', parenchyma_phenotype_generator_node,  'in_ct')    
         self.connect(infosource, 'subject_id', parenchyma_phenotype_generator_node,  'cid')
         
-#        # Renaming for output
-        self.connect(datasource, 'ct_input', lung_labelmap_rename_node, 'caseid_ct')
-        self.connect(label_map_generator_node, 'out', lung_labelmap_rename_node, 'in_ct')
-     
+        # Renaming for output
+        self.connect(label_map_generator_node, 'out', lung_labelmap_rename_node, 'il')
+        self.connect(lung_labelmap_rename_node, 'ol', lung_labelmap_nrrd_identity_node, 'in_nhdr')
+        
         self.connect(parenchyma_phenotype_generator_node, 'out_csv', csv_rename, 'in_file')  
         self.connect(infosource, 'subject_id', csv_rename, 'subject_id')
+        
+        
+        # data sink
         self.connect(csv_rename, 'out_file', datasink, '@case')                          
-        self.connect(lung_labelmap_rename_node, 'out_nhdr', datasink, '@caserename')
-        self.connect(lung_labelmap_rename_node, 'out_rawgz', datasink, '@caserename2') 
+        self.connect(lung_labelmap_nrrd_identity_node, 'out_nhdr', datasink, '@caserename')
+        self.connect(lung_labelmap_nrrd_identity_node, 'out_rawgz', datasink, '@caserename2') 
         self.write_graph(dotfilename="parenchyma_workflow_graph.dot")
 
 

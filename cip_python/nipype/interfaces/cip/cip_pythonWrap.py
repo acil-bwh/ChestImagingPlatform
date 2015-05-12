@@ -210,9 +210,7 @@ outputs are case_id_{convention}.nhdr and case_id_{convention}.raw.gz
 """
 
 class nhdr_handlerInputSpec(BaseInterfaceInputSpec):
-    in_ct = File(exists=True, desc='Input CT file', mandatory=True)
-
-    caseid_ct = traits.Str(desc='input caseid CT file', mandatory=True)     
+    in_nhdr = File(exists=True, desc='Input CT file', mandatory=True)
 
     out_nhdr = File( desc='Output nhdr renamed file', mandatory=False)
     out_rawgz = File( desc='Output raw.gz renamed file', mandatory=False)                    
@@ -226,18 +224,11 @@ class nhdr_handler(BaseInterface):
     output_spec = nhdr_handlerOutputSpec
     
     def _run_interface(self, runtime):
+               
+        #print(self._outputs)
+        self.output_spec.out_nhdr =  os.path.abspath(self.inputs.in_ct.split(".")[0]+".nhdr")  
+        self.output_spec.out_rawgz =   os.path.abspath(self.inputs.in_ct.split(".")[0]+'.raw.gz')            
         
-        file_to_read, lm_header = nrrd.read(self.inputs.in_ct)
-        caseid =  ('_').join(self.inputs.caseid_ct.split(".")[0].split("_")[0:-1])
-        # extract the extension from the input file
-        suffix = "_"+self.inputs.in_ct.split(".")[0].split("_")[-1]
-        
-        print(self._outputs)
-        self.output_spec.out_nhdr =  caseid+suffix+".nhdr"  
-        self.output_spec.out_rawgz =  caseid+suffix+'.raw.gz'            
-        
-        #print("out nhdr is "+ self.inputs.out_nhdr)
-        nrrd.write(self.output_spec.out_nhdr, file_to_read, lm_header , True, True)
         return runtime
     
     def _list_outputs(self):
@@ -245,8 +236,8 @@ class nhdr_handler(BaseInterface):
         caseid =  ('_').join(self.inputs.caseid_ct.split(".")[0].split("_")[0:-1])
         # extract the extension from the input file
         suffix = "_"+self.inputs.in_ct.split(".")[0].split("_")[-1]
-        outputs["out_nhdr"] = os.path.abspath(caseid+suffix+".nhdr"  )
-        outputs["out_rawgz"] = os.path.abspath(caseid+suffix+'.raw.gz' )
+        outputs["out_nhdr"] = os.path.abspath(self.inputs.in_ct.split(".")[0]+".nhdr")  
+        outputs["out_rawgz"] = os.path.abspath(self.inputs.in_ct.split(".")[0]+'.raw.gz'   )
         #pdb.set_trace()
         return outputs
 
