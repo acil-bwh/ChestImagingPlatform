@@ -22,7 +22,7 @@
 #ifndef __vtkTubularScaleSelection_h
 #define __vtkTubularScaleSelection_h
 
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #include "vtkThreadedImageAlgorithm.h"
 #include "vtkImageData.h"
@@ -34,7 +34,7 @@
 // VTK6 migration note:
 // Replaced suplerclass vtkImageToImageFilter with vtkThreadedImageAlgorithm.
 
-class VTK_CIP_UTILITIES_EXPORT vtkTubularScaleSelection : public vtkThreadedImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkTubularScaleSelection : public vtkThreadedImageAlgorithm
 {
 public:
   static vtkTubularScaleSelection *New();

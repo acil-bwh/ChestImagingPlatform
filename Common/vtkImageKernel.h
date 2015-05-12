@@ -7,14 +7,14 @@
 #define __vtkImageKernel_h
 
 #include "vtkImageData.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #define VTK_KERNEL_FOURIER_DOMAIN 0
 #define VTK_KERNEL_SPATIAL_DOMAIN 1
 #define VTK_KERNEL_ZERO_FREQUENCY_CENTER 0
 #define VTK_KERNEL_ZERO_FREQUENCY_ORIGIN 1
 
-class VTK_CIP_UTILITIES_EXPORT vtkImageKernel : public vtkImageData
+class VTK_CIP_COMMON_EXPORT vtkImageKernel : public vtkImageData
 {
 public:
   static vtkImageKernel *New();

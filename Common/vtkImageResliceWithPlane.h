@@ -26,7 +26,7 @@
 #define __vtkImageResliceWithPlane_h
 
 #include "vtkImageAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #include "vtkImageReslice.h"
 
@@ -35,7 +35,7 @@
 // instead of vtkThreadedImageAlgorithm since this class did not provide
 // ThreadedExecute() method and overrided ExecuteData() originally.
 
-class VTK_CIP_UTILITIES_EXPORT vtkImageResliceWithPlane : public vtkImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkImageResliceWithPlane : public vtkImageAlgorithm
 {
 public:
   static vtkImageResliceWithPlane *New();

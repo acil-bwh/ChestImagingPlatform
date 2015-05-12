@@ -30,7 +30,7 @@
 #define __vtkNRRDExport_h
 
 #include "vtkAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #include "teem/nrrd.h"
 
@@ -39,7 +39,7 @@ class vtkImageData;
 // VTK6 migration note:
 // Replaced superclass vtkProcessObject with vtkAlgorithm
 
-class VTK_CIP_UTILITIES_EXPORT vtkNRRDExport : public vtkAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkNRRDExport : public vtkAlgorithm
 {
 public:
   static vtkNRRDExport *New();

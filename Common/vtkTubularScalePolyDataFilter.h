@@ -8,7 +8,7 @@
 #ifndef __vtkTubularScalePolyDataFilter_h
 #define __vtkTubularScalePolyDataFilter_h
 
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkDoubleArray.h"
 #include "vtkTubularScaleSelection.h"
@@ -16,7 +16,7 @@
 // VTK6 migration note:
 // Replaced superclass vtkPolyDataToPolyDataFilter with vtkPolyDataAlgorithm.
 
-class VTK_CIP_UTILITIES_EXPORT vtkTubularScalePolyDataFilter : public vtkPolyDataAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkTubularScalePolyDataFilter : public vtkPolyDataAlgorithm
 {
 public:
   static vtkTubularScalePolyDataFilter *New();

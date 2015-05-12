@@ -22,7 +22,7 @@
 #define __vtkGeneralizedPhaseCongruency_h
 
 #include "vtkImageAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #include "vtkImageKernelSource.h"
 #include "vtkDoubleArray.h"
@@ -32,7 +32,7 @@
 // instead of vtkThreadedImageAlgorithm since this class did not provide
 // ThreadedExecute() method and overrided ExecuteData() originally.
 
-class VTK_CIP_UTILITIES_EXPORT vtkGeneralizedPhaseCongruency : public vtkImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkGeneralizedPhaseCongruency : public vtkImageAlgorithm
 {
 public:
   static vtkGeneralizedPhaseCongruency *New();

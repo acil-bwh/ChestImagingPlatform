@@ -22,7 +22,7 @@
 #define __vtkImageReformatAlongRay2_h
 
 #include "vtkImageAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #include "vtkImageKernelSource.h"
 #include "teem/nrrd.h"
@@ -36,7 +36,7 @@
 // instead of vtkThreadedImageAlgorithm since this class did not provide
 // ThreadedExecute() method and overrided ExecuteData() originally.
 
-class VTK_CIP_UTILITIES_EXPORT vtkImageReformatAlongRay2 : public vtkImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkImageReformatAlongRay2 : public vtkImageAlgorithm
 {
 public:
   static vtkImageReformatAlongRay2 *New();

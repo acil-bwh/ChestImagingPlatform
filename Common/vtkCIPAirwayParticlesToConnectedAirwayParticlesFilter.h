@@ -108,9 +108,10 @@
 #include "vtkMutableDirectedGraph.h" 
 #include <map>
 #include <vector>
+#include "vtkCIPCommonConfigure.h"
 
  
-class vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter : public vtkPolyDataAlgorithm 
+class VTK_CIP_COMMON_EXPORT vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter : public vtkPolyDataAlgorithm 
 {
 public:
   vtkTypeMacro(vtkCIPAirwayParticlesToConnectedAirwayParticlesFilter,vtkPolyDataAlgorithm);
