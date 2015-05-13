@@ -32,51 +32,50 @@ set(CMAKE_MODULE_PATH
   )
 set(CIP_CMAKE_DIR ${CIP_SOURCE_DIR}/CMake)
 
+
+
 #--------------------------------------------------------------------
 # Find ITK.
-if (NOT ${ITK_USE_FILE})
-  FIND_PACKAGE ( ITK )
-  if ( ITK_FOUND )
-    INCLUDE(${ITK_USE_FILE})
-  else ( ITK_FOUND )
-    MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
-  endif ( ITK_FOUND )
-else()
-  INCLUDE(${ITK_USE_FILE})
-endif()
 
-#---------------------------------------------------------------------
-# Find VTK.
+# FIND_PACKAGE ( ITK )
+# if ( ITK_FOUND )
+#   INCLUDE(${ITK_USE_FILE})
+# else ( ITK_FOUND )
+#   MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
+# endif ( ITK_FOUND )
 
-FIND_PACKAGE ( VTK REQUIRED NO_MODULE)
-if ( VTK_FOUND )
-  INCLUDE(${VTK_USE_FILE})
-else ( VTK_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
-endif ( VTK_FOUND )
+# #---------------------------------------------------------------------
+# # Find VTK.
 
-#Check Boost status
-if(TARGET vtkInfovisBoostGraphAlgorithms)
-  message(STATUS "VTK Built with BOOST Graph")
-  SET(CIP_USE_BOOST ON)
-else()
-  SET(CIP_USE_BOOST OFF)
-endif()
+# FIND_PACKAGE ( VTK REQUIRED NO_MODULE)
+# if ( VTK_FOUND )
+#   INCLUDE(${VTK_USE_FILE})
+# else ( VTK_FOUND )
+#   MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
+# endif ( VTK_FOUND )
 
-#---------------------------------------------------------------------
-# Find Teem
+# #Check Boost status
+# if(TARGET vtkInfovisBoostGraphAlgorithms)
+#   message(STATUS "VTK Built with BOOST Graph")
+#   SET(CIP_USE_BOOST ON)
+# else()
+#   SET(CIP_USE_BOOST OFF)
+# endif()
 
-FIND_PACKAGE ( Teem )
-if ( Teem_FOUND )
-  INCLUDE(${Teem_USE_FILE})
-else ( Teem_FOUND )
-  MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
-endif( Teem_FOUND )
+# #---------------------------------------------------------------------
+# # Find Teem
 
-#---------------------------------------------------------------------
-# Find OpenCV
+# FIND_PACKAGE ( Teem )
+# if ( Teem_FOUND )
+#   INCLUDE(${Teem_USE_FILE})
+# else ( Teem_FOUND )
+#   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
+# endif( Teem_FOUND )
 
-FIND_PACKAGE ( OpenCV )
+# #---------------------------------------------------------------------
+# # Find OpenCV
+
+# FIND_PACKAGE ( OpenCV )
 
 #---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
