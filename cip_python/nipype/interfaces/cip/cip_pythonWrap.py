@@ -11,8 +11,8 @@ from nipype.interfaces.base import BaseInterface, \
 from nipype.utils.filemanip import split_filename
 from cip_python.phenotypes.parenchyma_phenotypes import ParenchymaPhenotypes
 from cip_python.phenotypes.body_composition_phenotypes import BodyCompositionPhenotypes
-
-
+#import pdb
+#import cip_convention_manager as cm
 
 
 # example http://nipy.sourceforge.net/nipype/devel/python_interface_devel.html
@@ -43,7 +43,6 @@ class parenchyma_phenotypes(BaseInterface):
     output_spec = parenchyma_phenotypesOutputSpec
     
     def _run_interface(self, runtime):
-        
         lm, lm_header = nrrd.read(self.inputs.in_lm)
         ct, ct_header = nrrd.read(self.inputs.in_ct)
     
@@ -82,6 +81,7 @@ class parenchyma_phenotypes(BaseInterface):
         if self.inputs.out_csv is not None:
             df.to_csv(self.inputs.out_csv, index=False)
         
+        #pdb.set_trace()
         
         
 #fname = self.inputs.volume
@@ -100,10 +100,12 @@ class parenchyma_phenotypes(BaseInterface):
         return runtime
     
     def _list_outputs(self):
+        #pdb.set_trace()
         outputs = self._outputs().get()
         fname = self.inputs.out_csv
         _, base, _ = split_filename(fname)
         outputs["out_csv"] = os.path.abspath(fname)
+        #pdb.set_trace()
         return outputs
 
 
@@ -195,6 +197,7 @@ class body_composition_phenotypes(BaseInterface):
         fname = self.inputs.out_csv
         _, base, _ = split_filename(fname)
         outputs["out_csv"] = os.path.abspath(fname)
+        #pdb.set_trace()
         return outputs
 
 
@@ -202,18 +205,16 @@ class body_composition_phenotypes(BaseInterface):
 
 #########################################################################
 """
-input is some temp_{convention}.nhdr and a case_id.
-outputs are case_id_{convention}.nhdr and case_id.raw.gz 
+input: case_id, input file, convention
+outputs are case_id_{convention}.nhdr and case_id_{convention}.raw.gz 
+
+assumption: input file has the formet {somename}_{convention}.nhdr, where
+there are no underscores in "{somename}"
 """
 
 class nhdr_handlerInputSpec(BaseInterfaceInputSpec):
-    in_ct = File(exists=True, desc='Input CT file', mandatory=True)
-    
-    #in_convention = traits.Str(desc='the suffix to be applied to the output file',
-    #                 mandatory=True)
-
-    caseid_ct = traits.Str(desc='input caseid CT file', mandatory=True)     
-
+    in_nhdr = File(exists=True, desc='Input nhdr file', mandatory=True)
+    case_id = File( desc='Input case_id', mandatory=False)
     out_nhdr = File( desc='Output nhdr renamed file', mandatory=False)
     out_rawgz = File( desc='Output raw.gz renamed file', mandatory=False)                    
                                                             
@@ -226,33 +227,36 @@ class nhdr_handler(BaseInterface):
     output_spec = nhdr_handlerOutputSpec
     
     def _run_interface(self, runtime):
+               
+        if(len(self.inputs.in_nhdr.split(".")[0].split("_"))>1):
+            suffix = ('_')+self.inputs.in_nhdr.split(".")[0].split("_")[-1]
+        else:
+            suffix=""
+        self.output_spec.out_nhdr =  os.path.abspath(self.inputs.case_id+suffix+".nhdr")  
+        self.output_spec.out_rawgz =   os.path.abspath(self.inputs.case_id+suffix+'.raw.gz')            
         
-        file_to_read, lm_header = nrrd.read(self.inputs.in_ct)
-        caseid =  ('_').join(self.inputs.caseid_ct.split(".")[0].split("_")[0:-1])
-        # extract the extension from the input file
-        suffix = "_"+self.inputs.in_ct.split(".")[0].split("_")[-1]
-        
-        print("****************************Here ok are you happy???")
-        print(self._outputs)
-        print("output_spec: ", self.output_spec)
-        self.output_spec.out_nhdr =  caseid+suffix+".nhdr"  
-        self.output_spec.out_rawgz =  caseid+suffix+'.raw.gz'            
-        
-        #print("out nhdr is "+ self.inputs.out_nhdr)
-        nrrd.write(self.output_spec.out_nhdr, file_to_read, lm_header , True, True)
+        print("************************")
+        print(self.inputs.in_nhdr)
+        print("************************")
+        print(self.output_spec.out_nhdr )
+        print("************************")
         return runtime
     
     def _list_outputs(self):
-        print("****************************Yes, I am happy")
-        print("_outputs=", self._outputs())
-        outputs = self._outputs().get()
-        print ("outputs = " , outputs)
-        fname = outputs.out_nhdr
-        _, base, _ = split_filename(fname)
-        outputs["out_nhdr"] = os.path.abspath(fname)
-        
-        fname =  outputs.out_rawgz
-        _, base, _ = split_filename(fname)
-        outputs["out_rawgz"] = os.path.abspath(fname)
-
+        outputs = self._outputs().get()       
+        if(len(self.inputs.in_nhdr.split(".")[0].split("_"))>1):
+            suffix = ('_')+self.inputs.in_nhdr.split(".")[0].split("_")[-1]
+        else:
+            suffix=""
+            
+        outputs["out_nhdr"] = os.path.abspath(self.inputs.case_id+suffix+".nhdr")  
+        outputs["out_rawgz"] = os.path.abspath(self.inputs.case_id+suffix+'.raw.gz')     
+        #pdb.set_trace()
         return outputs
+
+
+"""
+input is some temp_{convention}.nhdr and a case_id.
+outputs are case_id_{convention}.nhdr and case_id.raw.gz 
+"""
+
