@@ -251,6 +251,13 @@ include(cipMacroBuildCLI)
 # to create package registry (under .cmake directory) for some reason...
 SET( CIP_DIR ${CIP_BINARY_DIR} )
 
+
+# Option to disable ChestConventions wrapping when cip python is not going to be needed.
+SET(CIP_WRAPCHESTCONVENTIONS ON CACHE BOOL "Wrap ChestConventions, needed for python modules")
+mark_as_advanced(FORCE CIP_WRAPCHESTCONVENTIONS)
+message("ChestConv: ${CIP_WRAPCHESTCONVENTIONS}")
+
+
 # The "use" file.
 SET( CIP_USE_FILE ${CIP_CMAKE_DIR}/UseFile.cmake )
 
