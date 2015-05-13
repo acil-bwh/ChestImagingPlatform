@@ -18,9 +18,9 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # the RPATH to be used when installing, but only if it's not a system directory
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
+IF("${isSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-endif("${isSystemDir}" STREQUAL "-1")
+ENDIF("${isSystemDir}" STREQUAL "-1")
 ############## RPATH Stuff end #########################
 
 #-----------------------------------------------------------------------------
@@ -32,50 +32,43 @@ set(CMAKE_MODULE_PATH
   )
 set(CIP_CMAKE_DIR ${CIP_SOURCE_DIR}/CMake)
 
-
-
 #--------------------------------------------------------------------
 # Find ITK.
 
-# FIND_PACKAGE ( ITK )
-# if ( ITK_FOUND )
-#   INCLUDE(${ITK_USE_FILE})
-# else ( ITK_FOUND )
-#   MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
-# endif ( ITK_FOUND )
+FIND_PACKAGE ( ITK )
+IF ( ITK_FOUND )
+  INCLUDE(${ITK_USE_FILE})
+ELSE ( ITK_FOUND )
+  MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
+ENDIF ( ITK_FOUND )
 
-# #---------------------------------------------------------------------
-# # Find VTK.
+#---------------------------------------------------------------------
+# Find VTK.
 
-# FIND_PACKAGE ( VTK REQUIRED NO_MODULE)
-# if ( VTK_FOUND )
-#   INCLUDE(${VTK_USE_FILE})
-# else ( VTK_FOUND )
-#   MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
-# endif ( VTK_FOUND )
+FIND_PACKAGE ( VTK REQUIRED NO_MODULE)
+IF ( VTK_FOUND )
+  INCLUDE(${VTK_USE_FILE})
+ELSE ( VTK_FOUND )
+  MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
+ENDIF ( VTK_FOUND )
 
-# #Check Boost status
-# if(TARGET vtkInfovisBoostGraphAlgorithms)
-#   message(STATUS "VTK Built with BOOST Graph")
-#   SET(CIP_USE_BOOST ON)
-# else()
-#   SET(CIP_USE_BOOST OFF)
-# endif()
+#Check Boost status
+if(TARGET vtkInfovisBoostGraphAlgorithms)
+  message(STATUS "VTK Built with BOOST Graph")
+  SET(CIP_USE_BOOST ON)
+else()
+  SET(CIP_USE_BOOST OFF)
+endif()
 
-# #---------------------------------------------------------------------
-# # Find Teem
+#---------------------------------------------------------------------
+# Find Teem
 
-# FIND_PACKAGE ( Teem )
-# if ( Teem_FOUND )
-#   INCLUDE(${Teem_USE_FILE})
-# else ( Teem_FOUND )
-#   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
-# endif( Teem_FOUND )
-
-# #---------------------------------------------------------------------
-# # Find OpenCV
-
-# FIND_PACKAGE ( OpenCV )
+FIND_PACKAGE ( Teem )
+IF ( Teem_FOUND )
+  INCLUDE(${Teem_USE_FILE})
+ELSE ( Teem_FOUND )
+  MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
+ENDIF ( Teem_FOUND )
 
 #---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
@@ -201,38 +194,38 @@ set( CIP_BUILD_CLI_EXECUTABLEONLY ON CACHE BOOL "Build CLIs only with executable
 # Compilation options
 
 SET(BUILD_UTILITIES ON CACHE BOOL "BUILD_UTILITIES")
-if(BUILD_UTILITIES)
+IF(BUILD_UTILITIES)
   SUBDIRS (Utilities)
-endif(BUILD_UTILITIES)
+ENDIF(BUILD_UTILITIES)
 
 SET(BUILD_COMMON ON CACHE BOOL "BUILD_COMMON")
-if(BUILD_COMMON)
+IF(BUILD_COMMON)
   SUBDIRS (Common)
-endif(BUILD_COMMON)
+ENDIF(BUILD_COMMON)
 
 SET(BUILD_IO ON CACHE BOOL "BUILD_IO")
-if(BUILD_IO)
+IF(BUILD_IO)
   SUBDIRS (IO)
-endif(BUILD_IO)
+ENDIF(BUILD_IO)
 
 SET(BUILD_COMMANDLINETOOLS ON CACHE BOOL "BUILD_COMMANDLINETOOLS")
-if(BUILD_COMMANDLINETOOLS)
+IF(BUILD_COMMANDLINETOOLS)
   SUBDIRS (CommandLineTools)
-endif(BUILD_COMMANDLINETOOLS)
+ENDIF(BUILD_COMMANDLINETOOLS)
 
 SET(BUILD_INTERACTIVETOOLS OFF CACHE BOOL "BUILD_INTERACTIVETOOLS")
-if(BUILD_INTERACTIVETOOLS)
+IF(BUILD_INTERACTIVETOOLS)
   SUBDIRS (InteractiveTools)
-endif(BUILD_INTERACTIVETOOLS)
+ENDIF(BUILD_INTERACTIVETOOLS)
 
 SET(BUILD_SANDBOX OFF CACHE BOOL "BUILD_SANDBOX")
-if(BUILD_SANDBOX)
+IF(BUILD_SANDBOX)
   SUBDIRS (Sandbox)
-endif(BUILD_SANDBOX)
+ENDIF(BUILD_SANDBOX)
 
-if ( CIP_BUILD_TESTING_PYTHON )
+IF ( CIP_BUILD_TESTING_PYTHON )
  SUBDIRS ( cip_python )
-endif( CIP_BUILD_TESTING_PYTHON ) 
+ENDIF( CIP_BUILD_TESTING_PYTHON ) 
 
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
