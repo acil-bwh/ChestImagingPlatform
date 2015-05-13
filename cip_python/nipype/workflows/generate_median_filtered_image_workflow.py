@@ -25,26 +25,36 @@ class GenerateMedianFilteredImageWorkflow(Workflow):
     def __init__(self, ct_file_name, median_filtered_file_name):
         Workflow.__init__(self, 'GenerateMedianFilteredImageWorkflow')
 
-        assert ct_file_name.rfind('.') != -1, "Unrecognized CT file name format"
-        
-        self._cid = ct_file_name[max([ct_file_name.rfind('/'), 0])+1:\
-                                 ct_file_name.rfind('.')]
+        if False:
+            assert ct_file_name.rfind('.') != -1, "Unrecognized CT file name format"
+            
+            self._cid = ct_file_name[max([ct_file_name.rfind('/'), 0])+1:\
+                                     ct_file_name.rfind('.')]
+    
+            if ct_file_name.rfind('/') != -1:
+                self._dir = ct_file_name[0:ct_file_name.rfind('/')]
+            else:
+                self._dir = '.'
 
-        if ct_file_name.rfind('/') != -1:
-            self._dir = ct_file_name[0:ct_file_name.rfind('/')]
-        else:
-            self._dir = '.'
-
-        generate_median_filtered_image = \
+        generate_median_filtered_image1 = \
           pe.Node(interface=cip.GenerateMedianFilteredImage(),
-                  name='generate_median_filtered_image') 
-        generate_median_filtered_image.inputs.outputFile = \
-          median_filtered_file_name
-        generate_median_filtered_image.inputs.Radius = 1
+                  name='generate_median_filtered_image1') 
+        generate_median_filtered_image1.inputs.outputFile = \
+          '/Users/jross/tmp/foo_nipype/test_cache/m1.nhdr'
+        generate_median_filtered_image1.inputs.inputFile = \
+          '/Users/jross/Downloads/ChestImagingPlatform/Testing/Data/Input/vessel.nrrd'          
+        generate_median_filtered_image1.inputs.Radius = 1
+
+        generate_median_filtered_image2 = \
+          pe.Node(interface=cip.GenerateMedianFilteredImage(),
+                  name='generate_median_filtered_image2') 
+        generate_median_filtered_image2.inputs.outputFile = \
+          '/Users/jross/tmp/foo_nipype/test_cache/m2.nhdr'
+        generate_median_filtered_image2.inputs.Radius = 1
         
         # Set up the workflow connections        
-        self.connect(compute_distance_transform, 'distanceMap', 
-                     unu_2op_lt, 'in1_file')
+        self.connect(generate_median_filtered_image1, 'outputFile', 
+                     generate_median_filtered_image2, 'inputFile')
         
 if __name__ == "__main__":
     desc = """This workflow generates a median filtered image"""
