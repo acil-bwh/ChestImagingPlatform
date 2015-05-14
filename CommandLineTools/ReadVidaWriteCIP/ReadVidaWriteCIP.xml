@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>ReadVidaWriteCIP</title>
-  <description><![CDATA[This program calculates a similarity measure between 2 CT images in \
-  a region specified by a label map. It takes as input the 2 CT images and their corresponding \
-  label maps, and a transformation file, and appends the values of the similarity metric to an \
-  existing xml file if one is provided.]]></description>
+  <description><![CDATA[This program converts VIDA labelmap information to CIP labelmap following the CIP chest conventions.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
         Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
         and does not necessarily represent the official views of the National Institutes of Health.
