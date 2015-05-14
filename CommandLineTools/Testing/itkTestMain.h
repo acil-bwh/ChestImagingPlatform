@@ -880,6 +880,9 @@ int RegressionTestLabelMap( const char *testImageFilename,
   status = diff->GetNumberOfPixelsWithDifferences();
   
   return ( status > numberOfPixelsTolerance ) ? 1 : 0;
+    
+    
+  // try with Dice
 }
 
 //

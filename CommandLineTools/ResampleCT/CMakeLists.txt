@@ -35,9 +35,9 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
     --compareIntensityTolerance 4	
     ModuleEntryPoint
-      -l ${INPUT_DATA_DIR}/ct-64.nrrd
-      -d ${INPUT_DATA_DIR}/ct-64-transformed.nrrd
-      -t ${INPUT_DATA_DIR}/TranslationRotation.tfm
-      -m 3		
-      -r ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
+      --ict ${INPUT_DATA_DIR}/ct-64.nrrd
+      --destct ${INPUT_DATA_DIR}/ct-64-transformed.nrrd
+      --itx ${INPUT_DATA_DIR}/TranslationRotation.tfm
+      --dim 3		
+      --oct ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
 )
