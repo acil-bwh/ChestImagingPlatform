@@ -102,7 +102,7 @@ class VesselParticlesMaskWorkflow(Workflow):
         
         # Params for 'unu_2op_lt' node
         self._distance_from_wall = -2.0
-
+        
         # Create distance map node. We want to isolate a region that is 
         # not too close to the lung periphery (particles can pick up noise in
         # that region)
@@ -192,7 +192,6 @@ class VesselParticlesMaskWorkflow(Workflow):
                      generate_binary_thinning_3d, 'opt_in')
         self.connect(generate_binary_thinning_3d, 'out', 
                      unu_2op_x_ves, 'in2_file')                
-
 
         self.config['execution'] = {'remove_unnecessary_outputs': 'False'}
         
