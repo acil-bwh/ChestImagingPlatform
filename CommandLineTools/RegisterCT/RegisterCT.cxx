@@ -236,7 +236,7 @@ int DoIT2(int argc, char * argv[])
     typedef itk::LinearInterpolateImageFunction< ShortImageType, double >                           CTInterpolatorType;
     typedef itk::ResampleImageFilter< ShortImageType, ShortImageType >                              ResampleFilterType;
     
-    
+    /*
     //Read in region and type pair
     std::vector< REGIONTYPEPAIR > regionTypePairVec;
     
@@ -261,7 +261,7 @@ int DoIT2(int argc, char * argv[])
             regionTypePairVec.push_back( regionTypePairTemp );
         }
     }
-    
+    */
     //Read in fixed image label map from file and subsample
     typename  LabelMapType::Pointer fixedLabelMap = LabelMapType::New();
     typename  LabelMapType::Pointer movingLabelMap =LabelMapType::New();
@@ -645,7 +645,7 @@ int DoIT3(int argc, char * argv[])
     typedef itk::LinearInterpolateImageFunction< ShortImageType, double >                   CTInterpolatorType;
     typedef itk::ResampleImageFilter< ShortImageType, ShortImageType >                      ResampleFilterType;
     
-    
+    /*
     //Read in region and type pair
     std::vector< REGIONTYPEPAIR > regionTypePairVec;
     
@@ -670,7 +670,7 @@ int DoIT3(int argc, char * argv[])
             regionTypePairVec.push_back( regionTypePairTemp );
         }
     }
-    
+    */
     //Read in fixed image label map from file and subsample
     typename  LabelMapType::Pointer fixedLabelMap = LabelMapType::New();
     typename  LabelMapType::Pointer movingLabelMap =LabelMapType::New();

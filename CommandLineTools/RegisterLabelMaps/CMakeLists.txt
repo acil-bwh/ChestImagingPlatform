@@ -27,13 +27,14 @@ cipMacroBuildCLI(
 
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compare 
+    --compareLabelMapDice 
       ${INPUT_DATA_DIR}/lm-64.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+    --diceTolerance 99	
     ModuleEntryPoint
-      -m ${INPUT_DATA_DIR}/lm-64-transformed.nrrd
-      -f ${INPUT_DATA_DIR}/lm-64.nrrd
-      -r ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      -q ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_tx.tfm	
-      -d 3
+      --mlm ${INPUT_DATA_DIR}/lm-64-transformed.nrrd
+      --flm ${INPUT_DATA_DIR}/lm-64.nrrd
+      --olm ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+      --otx ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_tx.tfm	
+      --dim 3
 )

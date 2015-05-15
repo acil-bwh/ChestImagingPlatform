@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Particles</category>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>GenerateStatisticsForAirwayGenerationLabeling</title>
     <description><![CDATA[This program computes statistics needed as inputs to the LabelAirwayParticlesByGeneration program. It computes these statistics over (possibly) multiple, labeled input airway particles datasets. The user must specify information needed to construct the minimum spanning tree (which encodes topology over the particles). This information should be the same that is used for the LabelAirwayParticlesByGeneration program.]]>
     </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
   <label>I/O</label>
+  <description>Input/Output</description>
       <string-vector>
           <name>inParticlesFileNamesArg</name>
           <longflag>input</longflag>
@@ -60,6 +61,7 @@
 
     <parameters>
     <label>Parameters</label>
+    <description>Parameters</description>
     <double>
       <name>particleDistanceThreshold</name>
       <label>Particle Distance Threshold</label>

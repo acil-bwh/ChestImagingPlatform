@@ -33,9 +33,9 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
     --compareIntensityTolerance 4	
     ModuleEntryPoint
-      -f ${INPUT_DATA_DIR}/ct-64.nrrd
-      -m ${INPUT_DATA_DIR}/ct-64-transformed.nrrd
-      --outputTransform ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_tx.tfm
-      --dimension 3		
-      --resampled ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
+      --fct ${INPUT_DATA_DIR}/ct-64.nrrd
+      --mct ${INPUT_DATA_DIR}/ct-64-transformed.nrrd
+      --otx ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_tx.tfm
+      --dim 3		
+      --oct ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
 )

@@ -17,8 +17,7 @@
       <name>fixedImageFileName</name>
       <label>fixed Image FileName</label>
       <channel>input</channel>
-      <flag>f</flag>
-      <longflag>--fixedImageFileName</longflag>
+      <longflag>--fct</longflag>
       <description><![CDATA[fixed Image File Name]]></description>
       <default>q</default>
     </image>   
@@ -26,8 +25,7 @@
       <name>movingImageFileName</name>
       <label>moving Image FileName</label>
       <channel>input</channel>
-      <flag>m</flag>
-      <longflag>--movingImageFileName</longflag>
+      <longflag>--mct</longflag>
       <description><![CDATA[moving Image FileName]]></description>
       <default>q</default>
     </image>   
@@ -35,7 +33,7 @@
       <name>outputTransformFileName</name>
       <label>output Transform FileName</label>
       <channel>output</channel>
-      <longflag>--outputTransform</longflag>
+      <longflag>--otx</longflag>
       <description><![CDATA[Output transform file name]]></description>
       <default>q</default>
     </transform>
@@ -43,15 +41,15 @@
       <name>resampledCTFileName</name>
       <label>Resampled CT FileName</label>
       <channel>output</channel>
-      <longflag>--resampled</longflag>
-      <description><![CDATA[utput Resampled CT FileName]]></description>
+      <longflag>--oct</longflag>
+      <description><![CDATA[output Resampled CT FileName]]></description>
       <default>q</default>
     </image>
     <image type="label">
           <name>movingLabelmapFileName</name>
           <label>moving LabelMap FileName</label>
           <channel>input</channel>
-          <longflag>--movingLabelmapFileName</longflag>
+          <longflag>--mlm</longflag>
           <description><![CDATA[moving LabelMap FileName]]></description>
           <default>q</default>
      </image>
@@ -125,7 +123,7 @@
     </float>  
   <integer-vector>
       <name>regionVecArg</name>
-      <longflag>regionVec</longflag>
+      <longflag>ciprVec</longflag>
       <label>regionVec</label>
       <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
   </integer-vector>
@@ -147,20 +145,13 @@
       <label>regionPairVec</label>
       <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
   </integer-vector>
-  <boolean>
-    <name>isIntensity</name>
-    <label>Invert Transformation</label>
-    <channel>input</channel>
-    <longflag>--isIntensity</longflag>
-    <description><![CDATA[Uses intensity based registration if true]]></description>
-    <default>false</default>
-  </boolean>      
+   
 
   <integer>
       <name>dimension</name>
       <label>Image dimension</label>
       <channel>input</channel>
-      <longflag>dimension</longflag>
+      <longflag>dim</longflag>
       <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
      <default>3</default>
  </integer> 
