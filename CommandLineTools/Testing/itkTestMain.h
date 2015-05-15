@@ -482,8 +482,6 @@ int CompareFieldData(vtkFieldData *test,vtkFieldData *baseline,double tolerance)
 int RegressionTestVTKPolyData( const char *testVtkFilename,
 			       const char *baselineVtkFilename,double tolerance)
 {
-  return 0;
-
   vtkSmartPointer<vtkPolyDataReader> testReader = vtkSmartPointer<vtkPolyDataReader>::New();
     testReader->SetFileName(testVtkFilename);
     testReader->Update();
