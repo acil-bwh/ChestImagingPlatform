@@ -59,7 +59,8 @@
 #include "vtkFieldData.h"
 #include "vtkDataArray.h"
 #include "itkImageRegionIterator.h"
-
+#include "itkKappaStatisticImageToImageMetric.h"
+#include <itkAffineTransform.h>
 
 #define ITK_TEST_DIMENSION_MAX 6
 
@@ -137,7 +138,7 @@ int main(int ac, char *av[])
   unsigned int numberOfPixelsTolerance = 0;
   unsigned int radiusTolerance = 0;
   double       pointTolerance = 0.001;
-
+    double       diceTolerance = 1.0;
   //typedef std::pair<char *, char *> ComparePairType;
   //std::vector<ComparePairType> compareList;
   //std::vector<ComparePairType> compareCTList;
@@ -210,12 +211,12 @@ int main(int ac, char *av[])
 	      av += 3;
 	      ac -= 3;
 	    }
-      /*else if( ac > 3 && strcmp(av[1], "--compareLabelMapDice") == 0 )
+      else if( ac > 3 && strcmp(av[1], "--compareLabelMapDice") == 0 )
       {
 	      compareList.push_back( CompareTupleType("compareLabelMapDice",ComparePairType(av[2], av[3])) );
 	      av += 3;
 	      ac -= 3;
-      }*/
+      }
 	  else if( ac > 3 && strcmp(av[1], "--compareCSV") == 0 )
 	    {
 	      compareList.push_back( CompareTupleType("compareCSV",ComparePairType(av[2], av[3])) );
@@ -252,6 +253,12 @@ int main(int ac, char *av[])
 	      av +=2;
 	      ac -= 2;
 	    }
+      else if( ac > 2 && strcmp(av[1], "--diceTolerance") == 0 )
+      {
+	      diceTolerance = atof(av[2]);
+	      av += 2;
+	      ac -= 2;
+      }
 	  else
 	    {
 	      testToRun = av[1];
@@ -843,7 +850,7 @@ int RegressionTestLabelMap( const char *testImageFilename,
 			    unsigned int radiusTolerance)
 {
   typedef itk::Testing::ComparisonImageFilter< cip::LabelMapType, cip::LabelMapType > DiffType;
-  
+    
   // Read the baseline file
   cip::LabelMapReaderType::Pointer baselineReader = cip::LabelMapReaderType::New();
   baselineReader->SetFileName(baselineImageFilename);
@@ -898,6 +905,9 @@ int RegressionTestLabelMap( const char *testImageFilename,
   itk::SizeValueType status = itk::NumericTraits<itk::SizeValueType>::Zero;
   status = diff->GetNumberOfPixelsWithDifferences();
   
+    
+    
+    
   return ( status > numberOfPixelsTolerance ) ? 1 : 0;
 
 }
@@ -907,12 +917,12 @@ int RegressionTestLabelMap( const char *testImageFilename,
 int RegressionTestLabelMapDice( const char *testImageFilename,
                            const char *baselineImageFilename,
                            int reportErrors,
-                           ::itk::SizeValueType numberOfPixelsTolerance,
-                           unsigned int radiusTolerance)
+                           double diceTolerance )
 {
     typedef itk::Testing::ComparisonImageFilter< cip::LabelMapType, cip::LabelMapType > DiffType;
     typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;
-
+    typedef itk::KappaStatisticImageToImageMetric<cip::LabelMapType, cip::LabelMapType >  metricType;
+    typedef itk::AffineTransform<double, 3 >      TransformType;
     
     // Read the baseline file
     cip::LabelMapReaderType::Pointer baselineReader = cip::LabelMapReaderType::New();
@@ -982,15 +992,32 @@ int RegressionTestLabelMapDice( const char *testImageFilename,
     }
     
     // Now compare the two images
-    DiffType::Pointer diff = DiffType::New();
+    /*DiffType::Pointer diff = DiffType::New();
     diff->SetValidInput( baselineReader->GetOutput() );
     diff->SetTestInput( testReader->GetOutput() );
     diff->SetToleranceRadius(radiusTolerance);
     diff->UpdateLargestPossibleRegion();
     itk::SizeValueType status = itk::NumericTraits<itk::SizeValueType>::Zero;
     status = diff->GetNumberOfPixelsWithDifferences();
+    */
     
-    return ( status > numberOfPixelsTolerance ) ? 1 : 0;
+    // Dice test
+    TransformType::Pointer id_transform = TransformType::New();
+    id_transform->SetIdentity();
+    metricType::Pointer metric = metricType::New();
+    metric->SetForegroundValue( 1 );
+    //metric->SetInterpolator( interpolator );
+    metric->SetTransform(id_transform);
+    metric->SetFixedImage( baselineReader->GetOutput() );
+    metric->SetMovingImage( testReader->GetOutput());
+    
+    cip::LabelMapType::RegionType fixedRegion = baselineReader->GetOutput()->GetBufferedRegion();
+    metric->SetFixedImageRegion(fixedRegion);
+    metric->Initialize();
+    double status = metric->GetValue(id_transform->GetParameters() );
+
+    std::cout<<status<<std::endl;
+    return ( status <= diceTolerance ) ? 1 : 0;
     
 }
 

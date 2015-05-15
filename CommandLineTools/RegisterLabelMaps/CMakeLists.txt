@@ -30,7 +30,7 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
     --compareLabelMapDice 
       ${INPUT_DATA_DIR}/lm-64.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-    --compareNumberOfPixelsTolerance 2	
+    --diceTolerance 99	
     ModuleEntryPoint
       --mlm ${INPUT_DATA_DIR}/lm-64-transformed.nrrd
       --flm ${INPUT_DATA_DIR}/lm-64.nrrd
