@@ -2,19 +2,27 @@ import os.path
 import subprocess
 import numpy as np
 from numpy import sum, sqrt
+import tempfile, shutil
 import vtk
+from vtk.util.numpy_support import vtk_to_numpy
 import pdb
 from cip_python.particles.airway_particles import AirwayParticles
+from cip_python.particles.particle_metrics import ParticleMetrics
 
 def test_airway_particles():
+  try:
     # Get the path to the this test so that we can reference the test data
     this_dir = os.path.dirname(os.path.realpath(__file__))
 
     # Set up the inputs to AirwayParticles
-    input_ct = this_dir + '/../../../Testing/Data/Input/airway.nrrd'
-    output_particles = this_dir + '/../../../Testing/tmp/airway_particles.vtk'
-    tmp_dir = this_dir + '/../../../Testing/tmp/'
-    input_mask = None
+    input_ct = this_dir + '/../../../Testing/Data/Input/airwaygauss.nrrd'
+    input_mask = this_dir + '/../../../Testing/Data/Input/airwaygauss_mask.nrrd'
+      
+    #tmp_dir = this_dir + '/../../../Testing/tmp/'
+    tmp_dir = tempfile.mkdtemp()
+    output_particles = os.path.join(tmp_dir,'airway_particles.vtk')
+    print tmp_dir
+
     max_scale = 6.0
     live_th = 50.0
     seed_th = 40.0
@@ -39,48 +47,15 @@ def test_airway_particles():
     test_reader = vtk.vtkPolyDataReader()
     test_reader.SetFileName(output_particles)
     test_reader.Update()
-
-    # The test passes provided that every particle in the reference data set
-    # has a partner within an '_irad' distance of some particle in the test
-    # data set and vice versa
-    irad = ap._irad
     
-    for i in xrange(0, ref_reader.GetOutput().GetNumberOfPoints()):
-        ref_point = np.array(ref_reader.GetOutput().GetPoint(i))
-        test_pass = False
-        for j in xrange(0, test_reader.GetOutput().GetNumberOfPoints()):
-            test_point = np.array(test_reader.GetOutput().GetPoint(j))
-            dist = sqrt(sum((ref_point - test_point)**2))
-            if dist <= irad:
-                test_pass = True
-                break
-        assert test_pass, 'Airway particle has no match'
+    pm = ParticleMetrics(ref_reader.GetOutput(),
+                         test_reader.GetOutput(), 'airway')
+      
+    assert pm.get_particles_dice() > 0.97, \
+        "Airway particle Dice score lower than expected"
 
-    for i in xrange(0, test_reader.GetOutput().GetNumberOfPoints()):
-        test_point = np.array(test_reader.GetOutput().GetPoint(i))
-        test_pass = False
-        for j in xrange(0, ref_reader.GetOutput().GetNumberOfPoints()):
-            ref_point = np.array(ref_reader.GetOutput().GetPoint(j))
-            dist = sqrt(sum((ref_point - test_point)**2))
-            if dist <= irad:
-                test_pass = True
-                break
-        assert test_pass, 'Airway particle has no match'
-
-    # Clean up the tmp directory. Note that this block should probably change
-    # if this test is altered
-    files = ['V-000-005.nrrd', 'V-001-005.nrrd', 'V-002-005.nrrd',
-             'V-003-005.nrrd', 'V-004-005.nrrd', 'airway_particles.vtk',
-             'ct-deconv.nrrd', 'hess.nrrd', 'heval0.nrrd', 'heval1.nrrd',
-             'heval2.nrrd', 'hevec0.nrrd', 'hevec1.nrrd', 'hevec2.nrrd',
-             'hmode.nrrd', 'pass1.nrrd', 'pass2.nrrd', 'pass3.nrrd',
-             'val.nrrd', '2dd.nrrd', 'curvdir1.nrrd', 'curvdir2.nrrd',
-             'flowlinecurv.nrrd', 'gausscurv.nrrd', 'gmag.nrrd',
-             'gvec.nrrd', 'hf.nrrd', 'kappa1.nrrd', 'kappa2.nrrd',
-             'lapl.nrrd', 'meancurv.nrrd', 'median.nrrd',
-             'si.nrrd', 'st.nrrd', 'totalcurv.nrrd']
-
-    for f in files:
-        if os.path.isfile(tmp_dir + f):
-            subprocess.call("rm " + tmp_dir + f, shell=True)
-    
+  finally:
+    #Clear particles cache
+    ap._clean_tmp_dir=True
+    ap.clean_tmp_dir()
+    shutil.rmtree(tmp_dir)
