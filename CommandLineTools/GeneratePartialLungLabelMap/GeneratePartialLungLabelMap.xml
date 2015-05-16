@@ -15,6 +15,15 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
+    <image>
+      <name>ctFileName</name>
+      <label>CT file name</label>
+      <channel>input</channel>
+      <flag>c</flag>
+      <longflag>--ct</longflag>
+      <description><![CDATA[CT image file name]]></description>
+      <default>NA</default>
+    </image>
     <image type="label">
       <name>outputLungMaskFileName</name>
       <label>Output segmentation file name</label>
@@ -25,17 +34,7 @@
       <default>NA</default>
     </image>  
 
-    <image>
-      <name>ctFileName</name>
-      <label>CT file name</label>
-      <channel>input</channel>
-      <flag>c</flag>
-      <longflag>--ct</longflag>
-      <description><![CDATA[CT image file name]]></description>
-      <default>NA</default>
-    </image>  
-
-    <image>
+    <image type="label">
       <name>helperMaskFileName</name>
       <label>Helper mask file name</label>
       <channel>input</channel>
@@ -55,7 +54,9 @@
     </string>  
   </parameters>
 
-  <parameters>
+  <parameters advanced="true">
+  <label>Parameters</label>
+  <description>Parameters</description>
     <integer>
       <name>lowerClipValue</name>
       <longflag>lcv</longflag>
