@@ -172,22 +172,25 @@ class ChestParticles:
         self._probing_quantities["hevec1"]=["hevec1",0]
         self._probing_quantities["hevec2"]=["hevec2",0]
         self._probing_quantities["hess"]=["hess",0]
-        #self._probing_quantities["gvec"]=["gvec",0]
-        #self._probing_quantities["gmag"]=["gmag",1]
-        #self._probing_quantities["lapl"]=["lapl",1]
-        #self._probing_quantities["hf"]=["hf",0]
-        #self._probing_quantities["2dd"]=["2dd",1]
-        #self._probing_quantities["kappa1"]=["kappa1",1]
-        #self._probing_quantities["kappa2"]=["kappa2",1]
-        #self._probing_quantities["totalcurv"]=["totalcurv",1]
-        #self._probing_quantities["st"]=["st",1]
-        #self._probing_quantities["si"]=["si",1]
-        #self._probing_quantities["meancurv"]=["meancurv",1]
-        #self._probing_quantities["gausscurv"]=["gausscurv",1]
-        #self._probing_quantities["curvdir1"]=["curvdir1",1]
-        #self._probing_quantities["curvdir2"]=["curvdir2",1]
-        #self._probing_quantities["flowlinecurv"]=["flowlinecurv",1]
-        #self._probing_quantities["median"]=["median",1]
+      
+        self._advanced_probing = False
+        if self._advanced_probing == True:
+            self._probing_quantities["gvec"]=["gvec",0]
+            self._probing_quantities["gmag"]=["gmag",1]
+            self._probing_quantities["lapl"]=["lapl",1]
+            self._probing_quantities["hf"]=["hf",0]
+            self._probing_quantities["2dd"]=["2dd",1]
+            self._probing_quantities["kappa1"]=["kappa1",1]
+            self._probing_quantities["kappa2"]=["kappa2",1]
+            self._probing_quantities["totalcurv"]=["totalcurv",1]
+            self._probing_quantities["st"]=["st",1]
+            self._probing_quantities["si"]=["si",1]
+            self._probing_quantities["meancurv"]=["meancurv",1]
+            self._probing_quantities["gausscurv"]=["gausscurv",1]
+            self._probing_quantities["curvdir1"]=["curvdir1",1]
+            self._probing_quantities["curvdir2"]=["curvdir2",1]
+            self._probing_quantities["flowlinecurv"]=["flowlinecurv",1]
+            self._probing_quantities["median"]=["median",1]
 
     def set_vol_params(self):
         if self._single_scale == 0:
@@ -468,20 +471,20 @@ class ChestParticles:
 
     def preprocessing(self):
         if self._down_sample_rate > 1:
-            downsampledVolume = os.path.join(self._tmp_dir, "ct-down.nrrd")
-            self.down_sample(self._in_file_name,downsampledVolume,'cubic:0,0.5',self.down_sample_rate)
+            downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
+            self.down_sample(self._in_file_name,downsampled_vol,'cubic:0,0.5',self.down_sample_rate)
             if self._use_mask == True:
-                downsampledMask = os.path.join(self._tmp_dir, "mask-down.nrrd")
-                self.down_sample(self._mask_file_name,downsampledMask,'cheap',self.down_sample_rate)
-                self._sp_mask_file_name = downsampledMask
+                downsampled_mask = os.path.join(self._tmp_dir, "mask-down.nrrd")
+                self.down_sample(self._mask_file_name,downsampled_mask,'cheap',self.down_sample_rate)
+                self._sp_mask_file_name = downsampled_mask
         else:
-            downsampledVolume = self._in_file_name
+            downsampled_vol = self._in_file_name
             self._sp_mask_file_name = self._mask_file_name
 
-        deconvolvedVolume = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
-        self.deconvolve(downsampledVolume,deconvolvedVolume)
+        deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
+        self.deconvolve(downsampled_vol,deconvolved_vol)
 
-        self._sp_in_file_name = deconvolvedVolume
+        self._sp_in_file_name = deconvolved_vol
         
     def deconvolve(self, in_vol, out_vol):
         """

@@ -358,3 +358,9 @@ IF(BUILD_GENERATENLMFILTEREDIMAGE)
   SUBDIRS(GenerateNLMFilteredImage)
 ENDIF(BUILD_GENERATENLMFILTEREDIMAGE)
 
+SET(BUILD_ComputeAirwayWallFromParticles ON CACHE BOOL
+"BUILD_ComputeAirwayWallFromParticles")
+IF(BUILD_ComputeAirwayWallFromParticles)
+  SUBDIRS(ComputeAirwayWallFromParticles)
+ENDIF(BUILD_ComputeAirwayWallFromParticles)
+
