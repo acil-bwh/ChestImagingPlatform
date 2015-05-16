@@ -8,7 +8,6 @@
 
 import os
 import pdb
-from optparse import OptionParser
 from cip_python.particles.chest_particles import ChestParticles
 
 class VesselParticles(ChestParticles):
@@ -69,6 +68,7 @@ class VesselParticles(ChestParticles):
                                 down_sample_rate=down_sample_rate)
         self._max_intensity = max_intensity
         self._min_intensity = min_intensity
+        self._max_scale = max_scale
         self._scale_samples = scale_samples
         self._down_sample_rate = down_sample_rate
       
@@ -79,15 +79,10 @@ class VesselParticles(ChestParticles):
         self._population_control_period = 3
   
         self._phase_iterations = [100, 10, 75]
-  
-        self._irad_phase1 = 1.5
-        self._irad_phase2 = 1.15
-        self._irad_phase3 = 0.8
-  
-        self._srad_phase1 = 1.2
-        self._srad_phase2 = 2
-        self._srad_phase3 = 4
-  
+      
+        self._phase_irads = [1.5,1.15,0.8]
+        self._phase_srads = [1.2,2,4]
+
         self._phase_population_control_periods = [6, 20, 17]
         self._phase_alphas = [1.0, 0.35, 0.84]
         self._phase_betas = [0.77, 0.75, 0.57]
@@ -116,8 +111,8 @@ class VesselParticles(ChestParticles):
         self._alpha = self._phase_alphas[0]
         self._beta  = self._phase_betas[0] # Irrelevant for pass 1
         self._gamma = self._phase_gammas[0]
-        self._irad = self._irad_phase1
-        self._srad = self._srad_phase1
+        self._irad = self._phase_irads[0]
+        self._srad = self._phase_srads[0]
         self._iterations = self._phase_iterations[0]
         self._population_control_period = self._phase_population_control_periods[0]
 
@@ -145,8 +140,8 @@ class VesselParticles(ChestParticles):
         # function psi_2
         self._beta = self._phase_betas[1]
         self._gamma = self._phase_gammas[1]
-        self._irad = self._irad_phase2
-        self._srad = self._srad_phase2
+        self._irad = self._phase_irads[1]
+        self._srad = self._phase_srads[1]
         self._use_strength = True
 
         self._iterations = self._phase_iterations[1]
@@ -171,8 +166,8 @@ class VesselParticles(ChestParticles):
         self._alpha = self._phase_alphas[2]
         self._beta = self._phase_betas[2]
         self._gamma = self._phase_gammas[2]
-        self._irad = self._irad_phase3
-        self._srad = self._srad_phase3
+        self._irad = self._phase_irads[2]
+        self._srad = self._phase_srads[2]
         self._use_strength = True
         self._use_mode_thresh = True
         self._iterations = self._phase_iterations[2]
@@ -194,35 +189,47 @@ class VesselParticles(ChestParticles):
         self.save_vtk(out_particles % 3)
 
         #Clean tmp Directory
-        print "Cleaning tmp directory..."
         self.clean_tmp_dir()
 
-if __name__ == "__main__":  
-  parser = OptionParser()
-  parser.add_option("-i", help='input CT scan', dest="input_ct")
-  parser.add_option("-m", help='input mask for seeding', dest="input_mask")
-  parser.add_option("-o", help='output particles (vtk format)', 
-                    dest="output_particles")
-  parser.add_option("-t", help='tmp directory', dest="tmp_dir")
-  parser.add_option("-s", help='max scale', dest="max_scale", default=6)
-  parser.add_option("-r", help='down sampling rate (>=1)', 
-                    dest="down_sample_rate", default=1.0)
-  parser.add_option("-n", help='number of scale volumes', 
-                    dest="scale_samples", default=10)
-  parser.add_option("--lth", help='live threshold (<0)', dest="live_th",
-                    default=-95)
-  parser.add_option("--sth", help='seed threshold (<0)', dest="seed_th",
-                    default=-70)
-  parser.add_option("--minI", help='min intensity for feature', 
-                    dest="min_intensity", default=-800)
-  parser.add_option("--maxI", help='max intensity for feature', 
-                    dest="max_intensity", default=400)
+if __name__ == "__main__":
+  from argparse import ArgumentParser
   
-  (op, args) = parser.parse_args()
+  parser = ArgumentParser(description='Vessel particles generation tool.')
+
+  parser.add_argument("-i", help='input CT scan', dest="input_ct")
+  parser.add_argument("-m", help='input mask for seeding', dest="input_mask", default=None)
+  parser.add_argument("-p", help='input particle points to initialize (if not specified a per-voxel approach is used)', dest="input_particles", default=None)
+  parser.add_argument("-o", help='output particles (vtk format)',
+                    dest="output_particles")
+  parser.add_argument("-t", help='tmp directory', dest="tmp_dir")
+  parser.add_argument("-s", help='max scale [default: %(default)s)]',
+                      dest="max_scale", default=6.0, type=float)
+  parser.add_argument("-r", help='down sampling rate (>=1) [default: %(default)s]',
+                    dest="down_sample_rate", default=1.0, type=float)
+  parser.add_argument("-n", help='number of scale volumes [default: %(default)s]',
+                    dest="scale_samples", default=10, type=int)
+  parser.add_argument("--lth", help='live threshold (<0) [default: %(default)s]', dest="live_th",
+                    default=-95.0, type=float)
+  parser.add_argument("--sth", help='seed threshold (<0) [default: %(default)s]', dest="seed_th",
+                    default=-70.0, type=float)
+  parser.add_argument("--minI", help='min intensity for feature [default: %(default)s]',
+                    dest="min_intensity", default=-800, type=float)
+  parser.add_argument("--maxI", help='max intensity for feature [default: %(default)s]',
+                    dest="max_intensity", default=400, type=float)
+  
+  op = parser.parse_args()
   
   vp = VesselParticles(op.input_ct, op.output_particles, op.tmp_dir, 
                        op.input_mask, float(op.max_scale),
                        float(op.live_th), float(op.seed_th), 
                        int(op.scale_samples), float(op.down_sample_rate),
                        float(op.min_intensity), float(op.max_intensity))
+  if op.input_particles == None:
+    pass
+  else:
+    vp._init_mode="Particles"
+    vp._in_particles_file_name = op.input_particles
+  
   vp.execute()
+
+
