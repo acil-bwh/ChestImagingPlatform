@@ -712,27 +712,6 @@ cip::ChestConventions::ChestConventions()
   double* r067 = new double[3]; r067[0] = 0.49; r067[1] = 0.49; r067[2] = 0.87; ChestRegionColors.push_back( r067 ); //HIATUS
   double* r068 = new double[3]; r068[0] = 0.49; r068[1] = 0.49; r068[2] = 0.88; ChestRegionColors.push_back( r068 ); //PECTORALIS
   double* r069 = new double[3]; r069[0] = 0.49; r069[1] = 0.49; r069[2] = 0.89; ChestRegionColors.push_back( r069 ); //SPINALCORD
-
-
-
-  LEFTVENTRICLE,          //52
-  RIGHTVENTRICLE,         //53
-  LEFTATRIUM,             //54
-  RIGHTATRIUM,            //55
-  LEFTPECTORALIS,         //56
-  RIGHTPECTORALIS,        //57
-  TRACHEA2,               //58
-  LEFTMAINBRONCHUS,       //59
-  RIGHTMAINBRONCHUS,      //60
-  ESOPHAGUS,              //61
-  LEFTCHESTWALL,          //62
-  RIGHTCHESTWALL,         //63
-  LEFTDIAPHRAGM,          //64
-  RIGHTDIAPHRAGM,         //65
-  HIATUS,                 //66
-  PECTORALIS,             //67
-  SPINALCORD,             //68
-
 }
 
 cip::ChestConventions::~ChestConventions()
