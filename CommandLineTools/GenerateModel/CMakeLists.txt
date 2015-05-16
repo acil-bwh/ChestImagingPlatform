@@ -6,7 +6,7 @@ set(MODULE_NAME GenerateModel)
 
 set(MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
-  CIPUtilities
+  ${ITK_LIBRARIES}
   )
 
 set(MODULE_SRCS )
