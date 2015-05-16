@@ -8,7 +8,6 @@
 
 import os
 import pdb
-from optparse import OptionParser
 from cip_python.particles.chest_particles import ChestParticles
 
 class AirwayParticles(ChestParticles):
@@ -68,70 +67,50 @@ class AirwayParticles(ChestParticles):
                             down_sample_rate=down_sample_rate)
         self._max_intensity = max_intensity
         self._min_intensity = min_intensity
-        self._live_thresh = live_thresh
-        self._seed_thresh = seed_thresh
         self._max_scale = max_scale
         self._scale_samples = scale_samples
         self._down_sample_rate = down_sample_rate
+          
+        self._live_thresh = live_thresh
+        self._seed_thresh = seed_thresh
+       
+        self._phase_iterations = [100, 10, 75]
 
-        self._population_control_period = 6
-  
-        self._iterations_phase1 = 10
-        self._iterations_phase2 = 20
-        self._iterations_phase3 = 50
-      
-        self._irad_phase1 = 1.7
-        self._irad_phase2 = 1.15
-        self._irad_phase3 = 1.15
-      
-        self._srad_phase1 = 1.2
-        self._srad_phase2 = 2
-        self._srad_phase3 = 4
+        self._phase_irads=[1.7,1.15,1.15]
+        self._phase_srads=[1.2,2,4]
+
+        self._phase_population_control_periods = [6,20,17]
+        self._phase_alphas = [1.0, 0.35, 0.84]
+        self._phase_betas = [0.77, 0.75, 0.57]
+        self._phase_gammas = [0.37, 0.53, 0.57]
+          
+        #Default init
+        self._init_mode = "PerVoxel"
+        self._ppv = 2
+        self._nss = 2
 
     def execute(self):
-        #Pre-processing
-        if self._down_sample_rate > 1:
-            downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
-            self.down_sample(self._in_file_name, downsampled_vol, \
-                             "cubic:0,0.5",self._down_sample_rate)
-            if self._use_mask == True:
-            	downsampled_mask = os.path.join(self._tmp_dir, \
-                                                "mask-down.nrrd")
-            	self.down_sample(self._mask_file_name, \
-                                 downsampled_mask, "cheap",
-                                 self._down_sample_rate)
-            	self._tmp_mask_file_name = downsampled_mask
-            
-        else:
-            downsampled_vol = self._in_file_name
-            self._tmp_mask_file_name = self._mask_file_name
 
-        deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
-        self.deconvolve(downsampled_vol, deconvolved_vol)
-        print "finished deconvolution\n"
-
-        #Setting member variables that will not change
-        self._tmp_in_file_name = deconvolved_vol
-        
+        self.preprocessing()
+              
         # Temporary nrrd particles points
         out_particles = os.path.join(self._tmp_dir, "pass%d.nrrd")
-
+              
         #Pass 1
         #Init params
         self._use_strength = False
         self._inter_particle_energy_type = "uni"
-        self._init_mode = "PerVoxel"
-        self._ppv = 1
-        self._nss = 2
 
         # Energy
         # Radial energy function (psi_1 in the paper)
         self._inter_particle_enery_type = "uni"
-        self._beta  = 0.7 # Irrelevant for pass 1
-        self._alpha = 1.0
-        self._irad = self._irad_phase1
-        self._srad = self._srad_phase1
-        self._iterations = self._iterations_phase1
+        self._alpha = self._phase_alphas[0]
+        self._beta  = self._phase_betas[0] # Irrelevant for pass 1
+        self._gamma = self._phase_gammas[0]
+        self._irad = self._phase_irads[0]
+        self._srad = self._phase_srads[0]
+        self._iterations = self._phase_iterations[0]
+        self._population_control_period = self._phase_population_control_periods[0]
 
         #Build parameters and run
         print "resetting param groups\n"
@@ -146,21 +125,23 @@ class AirwayParticles(ChestParticles):
         # Init params
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 1
+        self._use_mask = False
 
         # Energy
         # Radial energy function (psi_2 in the paper).
         # Addition of 2 components: scale and space
         self._inter_particle_energy_type = "add"
-        self._alpha = 0
-
+        self._alpha = self._phase_alphas[1]
         # Controls blending in scale and space with respect to
         # function psi_2
-        self._beta = 0.5
-        self._irad = self._irad_phase2
-        self._srad = self._srad_phase2
+        self._beta = self._phase_betas[1]
+        self._gamma = self._phase_gammas[1]
+        self._irad = self._phase_irads[1]
+        self._srad = self._phase_srads[1]
         self._use_strength = True
 
-        self._iterations = self._iterations_phase2
+        self._iterations = self._phase_iterations[1]
+        self._population_control_period = self._phase_population_control_periods[1]
 
         # Build parameters and run
         self.reset_params()
@@ -172,17 +153,19 @@ class AirwayParticles(ChestParticles):
         # Pass 3
         self._init_mode = "Particles"
         self._in_particles_file_name = out_particles % 2
+        self._use_mask = False
 
         # Energy
         self._inter_particle_energy_type = "add"
-        self._alpha = 0.5
-        self._beta = 0.5
-        self._gamma = 0.000002
-        self._irad = self._irad_phase3
-        self._srad = self._srad_phase3
+        self._alpha = self._phase_alphas[2]
+        self._beta = self._phase_betas[2]
+        self._gamma = self._phase_gammas[2]
+        self._irad = self._phase_irads[2]
+        self._srad = self._phase_srads[2]
         self._use_strength = True
 
-        self._iterations = self._iterations_phase3
+        self._iterations = self._phase_iterations[2]
+        self._population_control_period = self._phase_population_control_periods[2]
 
         # Build parameters and run
         self.reset_params()
@@ -193,49 +176,58 @@ class AirwayParticles(ChestParticles):
 
         # Probe quantities and save to VTK
         print "about to probe\n"
-        self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
+        self.probe_quantities(self._sp_in_file_name, out_particles % 3)
         print "finished probing\n"
-        #Adjust scale if down-sampling was performed
-        if self._down_sample_rate > 1:
-            self.adjust_scale(out_particles % 3)
-        print "about to save to vtk\n"
+
+        print "Saving to vtk..."
         self.save_vtk(out_particles % 3)
         print "finished saving\#####n"
 
         #Clean tmp Directory
         self.clean_tmp_dir()
 
-if __name__ == "__main__":  
-  parser = OptionParser()
-  parser.add_option("-i", help='Input CT scan', dest="input_ct")
-  parser.add_option("-m", help='Input mask for seeding', dest="input_mask",
-                    default=None)
-  parser.add_option("-o", help='Output particles (vtk format)',
-                    dest="output_particles")
-  parser.add_option("-t", help='tmp directory', dest="tmp_dir")
-  parser.add_option("-s", help='Max scale. Default: [%default]', 
-                    dest="max_scale", default=6.0)
-  parser.add_option("-r", help='Down sampling rate (>=1). Default: [%default]',
-                    dest="down_sample_rate", default=1.0)
-  parser.add_option("-n", help='Number of scale volumes. Default: [%default]',
-                    dest="scale_samples", default=5)
-  parser.add_option("--lth", help='Live threshold (>0). Default: [%default]', 
-                    dest="live_th", default=50)
-  parser.add_option("--sth", help='Seed threshold (>0). Default: [%default]', 
-                    dest="seed_th", default=40)
-  parser.add_option("--minI", 
-                    help='Min intensity for feature. Default: [%default]',
-                    dest="min_intensity", default=-1100)
-  parser.add_option("--maxI", 
-                    help='Max intensity for feature. Default [%default]',
-                    dest="max_intensity", default=-400)
+if __name__ == "__main__":
+  from argparse import ArgumentParser
 
-  (op, args) = parser.parse_args()
+  parser = ArgumentParser(description='Airway particles generation tool.')
+  
+  parser.add_argument("-i", help='input CT scan', dest="input_ct")
+  parser.add_argument("-m", help='input mask for seeding', dest="input_mask",
+                    default=None)
+  parser.add_argument("-p", help='input particle points to initialize (if not specified a per-voxel approach is used)', dest="input_particles", default=None)
+  parser.add_argument("-o", help='output particles (vtk format)',
+                    dest="output_particles")
+  parser.add_argument("-t", help='tmp directory', dest="tmp_dir")
+  parser.add_argument("-s", help='max scale [default: %(default)s)]',
+                    dest="max_scale", default=6.0, type=float)
+  parser.add_argument("-r", help='down sampling rate (>=1) [default: %(default)s]',
+                    dest="down_sample_rate", default=1.0, type=float)
+  parser.add_argument("-n", help='number of scale volumes [default: %(default)s]',
+                    dest="scale_samples", default=5, type=int)
+  parser.add_argument("--lth", help='live threshold (>0) [default: %(default)s]',
+                    dest="live_th", default=50.0, type=float)
+  parser.add_argument("--sth", help='seed threshold (>0) [default: %(default)s]',
+                    dest="seed_th", default=40.0, type=float)
+  parser.add_argument("--minI",
+                    help='min intensity for feature [default: %(default)s]',
+                    dest="min_intensity", default=-1100, type=float)
+  parser.add_argument("--maxI",
+                    help='max intensity for feature [default: %(default)s]',
+                    dest="max_intensity", default=-400, type=float)
+
+  op = parser.parse_args()
   
   ap = AirwayParticles(op.input_ct, op.output_particles, op.tmp_dir,
                        op.input_mask, float(op.max_scale), float(op.live_th),
                        float(op.seed_th), int(op.scale_samples),
                        float(op.down_sample_rate), float(op.min_intensity),
                        float(op.max_intensity))
+
+  if op.input_particles == None:
+    pass
+  else:
+    ap._init_mode="Particles"
+    ap._in_particles_file_name = op.input_particles
+  
   ap.execute()
 
