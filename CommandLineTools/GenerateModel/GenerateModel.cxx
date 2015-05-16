@@ -32,21 +32,21 @@ int main( int argc, char *argv[] )
   if ( foregroundLabel == -1 )
     {
       while( !it.IsAtEnd() )
-	{
-	  unsigned short* valIt = it.BeginSpan();
-	  unsigned short* valEnd = it.EndSpan();
-	  while ( valIt != valEnd )
-	    {
-	      if ( *valIt != 0 )
-		{
-		  foregroundLabel = int(*valIt);
-		  break;
-		}
-	      ++valIt;
-	    }
+  	{
+  	  unsigned short* valIt = it.BeginSpan();
+  	  unsigned short* valEnd = it.EndSpan();
+  	  while ( valIt != valEnd )
+  	    {
+  	      if ( *valIt != 0 )
+  		{
+  		  foregroundLabel = int(*valIt);
+  		  break;
+  		}
+  	      ++valIt;
+  	    }
 
-	  it.NextSpan();
-	}
+  	  it.NextSpan();
+  	}
     }
 
   it.Initialize( maskReader->GetOutput(), maskReader->GetOutput()->GetExtent() );
@@ -55,17 +55,17 @@ int main( int argc, char *argv[] )
       unsigned short* valIt = it.BeginSpan();
       unsigned short* valEnd = it.EndSpan();
       while ( valIt != valEnd )
-	{
-	  if ( int(*valIt) == foregroundLabel )
-	    {
-	      *valIt = 1;
-	    }
-	  else
-	    {
-	      *valIt = 0;
-	    }
-	  ++valIt;
-	}
+  	{
+  	  if ( int(*valIt) == foregroundLabel )
+  	    {
+  	      *valIt = 1;
+  	    }
+  	  else
+  	    {
+  	      *valIt = 0;
+  	    }
+  	  ++valIt;
+  	}
       
       it.NextSpan();
     }

@@ -9,12 +9,12 @@
 #define __vtkEllipseFitting_h
 
 #include "vtkPolyDataAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 // VTK6 migration note:
 // - replaced super class vtkPolyDataToPolyDataFilter with vtkPolyDataAlgorithm
 
-class VTK_CIP_UTILITIES_EXPORT vtkEllipseFitting : public vtkPolyDataAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkEllipseFitting : public vtkPolyDataAlgorithm
 {
 public:
   static vtkEllipseFitting *New();

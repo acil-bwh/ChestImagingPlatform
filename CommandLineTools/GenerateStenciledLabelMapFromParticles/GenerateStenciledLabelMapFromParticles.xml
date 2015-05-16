@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>GenerateStenciledLabelMapFromParticles</title>
     <description><![CDATA[This program reads a particles dataset and creates a stenciled label map corresponding to them. An input label map is used simply to get spacing, origin, and dimensions of the output label map. Particles can correspond to vessels, airways, or fissures. Currently, sphere and cylinder stencils are supported. The user has the option of scaling the stencil pattern using the particle scale. Scaling in this case means scaling the radius for both the sphere and cylinder stencils. The height of the cylinder stencil remains fixed.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
+  
   <parameters>
   <label>I/O</label>
- 
+  <description>Input/output parameters</description>
+
       <image type="label">
           <name>inLabelMapFileName</name>
           <label>inLabelMapFileName</label>
@@ -38,7 +40,11 @@
           <description><![CDATA[Input particles file name]]></description>
           <default>q</default>
       </geometry>
-      
+  </parameters>
+  
+  <parameters>
+  <label>Parameters</label>
+  <description>Parameters</description>
       <double>
           <name>ctPointSpreadSigma</name>
           <longflag>ctSigma</longflag>

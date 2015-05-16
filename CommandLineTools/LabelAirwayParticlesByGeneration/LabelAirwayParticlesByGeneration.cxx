@@ -58,49 +58,49 @@ int main( int argc, char *argv[] )
   PARSE_ARGS;
 
   // Read the particles to which generation labels are to be assigned
-  std::cout << "Reading airway particles..." << std::endl;
-  vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
-    particlesReader->SetFileName( inParticlesFileName.c_str() );
-    particlesReader->Update();
+  // std::cout << "Reading airway particles..." << std::endl;
+  // vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
+  //   particlesReader->SetFileName( inParticlesFileName.c_str() );
+  //   particlesReader->Update();
 
-  vtkSmartPointer< vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter > particlesToGenLabeledParticles = 
-    vtkSmartPointer< vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter >::New();
-    particlesToGenLabeledParticles->SetInput( particlesReader->GetOutput() );
-    particlesToGenLabeledParticles->SetParticleDistanceThreshold( particleDistanceThreshold );
-    particlesToGenLabeledParticles->SetKernelDensityEstimationROIRadius( kernelDensityEstimationROIRadius );
-    if ( kdeMode )
-      {
-	particlesToGenLabeledParticles->SetModeToKDE();
-      }
-    if ( particleRoot >= 0 )
-      {
-	particlesToGenLabeledParticles->SetParticleRootNodeID( particleRoot );
-      }
+  // vtkSmartPointer< vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter > particlesToGenLabeledParticles = 
+  //   vtkSmartPointer< vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter >::New();
+  //   particlesToGenLabeledParticles->SetInput( particlesReader->GetOutput() );
+  //   particlesToGenLabeledParticles->SetParticleDistanceThreshold( particleDistanceThreshold );
+  //   particlesToGenLabeledParticles->SetKernelDensityEstimationROIRadius( kernelDensityEstimationROIRadius );
+  //   if ( kdeMode )
+  //     {
+  // 	particlesToGenLabeledParticles->SetModeToKDE();
+  //     }
+  //   if ( particleRoot >= 0 )
+  //     {
+  // 	particlesToGenLabeledParticles->SetParticleRootNodeID( particleRoot );
+  //     }
 
-  for ( unsigned int i=0; i<airwayGenerationLabeledAtlasFileNames.size(); i++ )
-    {
-    std::cout << "Reading atlas..." << std::endl;
-    vtkSmartPointer< vtkPolyDataReader > atlasReader = vtkSmartPointer< vtkPolyDataReader >::New();
-      atlasReader->SetFileName( airwayGenerationLabeledAtlasFileNames[i].c_str() );
-      atlasReader->Update();
+  // for ( unsigned int i=0; i<airwayGenerationLabeledAtlasFileNames.size(); i++ )
+  //   {
+  //   std::cout << "Reading atlas..." << std::endl;
+  //   vtkSmartPointer< vtkPolyDataReader > atlasReader = vtkSmartPointer< vtkPolyDataReader >::New();
+  //     atlasReader->SetFileName( airwayGenerationLabeledAtlasFileNames[i].c_str() );
+  //     atlasReader->Update();
 
-    particlesToGenLabeledParticles->AddAirwayGenerationLabeledAtlas( atlasReader->GetOutput() );
-    }
-  particlesToGenLabeledParticles->Update();
+  //   particlesToGenLabeledParticles->AddAirwayGenerationLabeledAtlas( atlasReader->GetOutput() );
+  //   }
+  // particlesToGenLabeledParticles->Update();
 
-  std::cout << "Writing generation-labeled airway particles..." << std::endl;
-  vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
-    particlesWriter->SetFileName( outParticlesFileName.c_str() );
-    particlesWriter->SetInput( particlesToGenLabeledParticles->GetOutput() ); 
-    particlesWriter->Update();
+  // std::cout << "Writing generation-labeled airway particles..." << std::endl;
+  // vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
+  //   particlesWriter->SetFileName( outParticlesFileName.c_str() );
+  //   particlesWriter->SetInput( particlesToGenLabeledParticles->GetOutput() ); 
+  //   particlesWriter->Update();
 
-  // Optionally print results
-  if ( printResults )
-    {
-      PrintResults( particlesReader->GetOutput(), particlesToGenLabeledParticles->GetOutput() );
-    }
+  // // Optionally print results
+  // if ( printResults )
+  //   {
+  //     PrintResults( particlesReader->GetOutput(), particlesToGenLabeledParticles->GetOutput() );
+  //   }
 
-  std::cout << "DONE." << std::endl;
+  // std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
 }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>TransferFieldDataToFromPointData</title>
     <description><![CDATA[This program can be used to transfer the contents of a VTK polydata's field data to point data and vice-versa. Generally, field data applies to a dataset as a whole and need not have a one-to-one correspondence with the points. However, this may be the case in some instances (esp. with the particles datasets). In those cases it may be helpful to have the data contained in field data arrays also stored in point data arrays (e.g. for rendering purposes). Field data will only be transferred provided that the number of tuples in the field data array is the same as the number of points.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
   <parameters>
@@ -17,7 +17,7 @@
           <flag>i</flag>
           <longflag>input</longflag>
           <description><![CDATA[Input VTK polydata file name].]]></description>
-          <default>q</default>
+          <default>NA</default>
       </geometry>
       <geometry type="model">
           <name>outFileName</name>
@@ -26,7 +26,7 @@
           <flag>o</flag>
           <longflag>output</longflag>
           <description><![CDATA[Output VTK polydata file name].]]></description>
-          <default>q</default>
+          <default>NA</default>
       </geometry>
          
   </parameters>
@@ -38,8 +38,7 @@
             <label>maintainField</label>
             <channel>input</channel>
             <longflag>mf</longflag>
-            <description><![CDATA[Setting this to true will maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data.]]></description>
-            <default>true</default>
+            <description><![CDATA[Use this flag to maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data.]]></description>
         </boolean>
 
         <boolean>
@@ -47,8 +46,7 @@
             <label>maintainPoint</label>
             <channel>input</channel>
             <longflag>mp</longflag>
-            <description><![CDATA[Setting this to true will maintain the point data. Setting it to false will eliminate the point data from the output. Only relevant if requesting to transfer point data to field data.]]></description>
-            <default>true</default>
+            <description><![CDATA[Use this flag to maintain the point data. Only relevant if requesting to transfer point data to field data.]]></description>
         </boolean>
         
         <boolean>
@@ -56,8 +54,7 @@
             <label>fieldToPoint</label>
             <channel>input</channel>
             <longflag>fp</longflag>
-            <description><![CDATA[Set to true to transfer field data to point data.]]></description>
-            <default>true</default>
+            <description><![CDATA[Use this flag to transfer field data to point data.]]></description>
         </boolean>
       
         <boolean>
@@ -65,8 +62,7 @@
             <label>pointToField</label>
             <channel>input</channel>
             <longflag>pf</longflag>
-            <description><![CDATA[Set to true to transfer point data to field data.]]></description>
-            <default>true</default>
+            <description><![CDATA[Use this flag to transfer point data to field data.]]></description>
         </boolean>
       
         <boolean>
@@ -76,7 +72,6 @@
           <flag>b</flag>
           <longflag>binary</longflag>
           <description><![CDATA[Set to true to save data to binary.]]></description>
-          <default>true</default>
         </boolean>
                  
     </parameters>

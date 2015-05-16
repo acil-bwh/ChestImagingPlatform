@@ -114,7 +114,7 @@ namespace
         //
         std::cout << "Reading ct image..." << std::endl;
         typename ShortReaderType::Pointer shortReader = ShortReaderType::New();
-        shortReader->SetFileName( labelMapFileName.c_str() );
+        shortReader->SetFileName( ctFileName.c_str() );
         try
         {
             shortReader->Update();

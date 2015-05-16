@@ -65,6 +65,7 @@
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
+#include "cipHelper.h"
 
 typedef itk::Image< unsigned short, 3 >                           UShortImageType;
 typedef itk::Image< short, 3 >                                    ShortImageType;
@@ -94,17 +95,17 @@ int main( int argc, char *argv[] )
   short upperReplacementValue = (short)upperReplacementValueTemp;
 
   // Read the CT image
-  ShortImageType::Pointer ctImage = ShortImageType::New();
+  cip::CTType::Pointer ctImage = cip::CTType::New();
 
   if ( ctDir.compare("NA") != 0 )
     {
     std::cout << "Reading CT from directory..." << std::endl;
-    ctImage = ReadCTFromDirectory( ctDir );
+      ctImage = cip::ReadCTFromDirectory( ctDir );
     }
   else if ( ctFileName.compare("NA") != 0 )
     {
     std::cout << "Reading CT from file..." << std::endl;
-    ctImage = ReadCTFromFile( ctFileName );
+      ctImage = cip::ReadCTFromFile( ctFileName );
     }
   else
     {
@@ -137,56 +138,12 @@ int main( int argc, char *argv[] )
     {
     std::cerr << "Exception caught while writing lung mask:";
     std::cerr << excp << std::endl;
+    return cip::EXITFAILURE;
     }
 
   std::cout << "DONE." << std::endl;
 
-  return 0;
-}
-
-ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
-{
-  ImageIOType::Pointer gdcmIO = ImageIOType::New();
-
-  std::cout << "---Getting file names..." << std::endl;
-  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
-    namesGenerator->SetInputDirectory( ctDir );
-
-  const SeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
-
-  std::cout << "---Reading DICOM image..." << std::endl;
-  SeriesReaderType::Pointer dicomReader = SeriesReaderType::New();
-    dicomReader->SetImageIO( gdcmIO );
-    dicomReader->SetFileNames( filenames );
-  try
-    {
-    dicomReader->Update();
-    }
-  catch (itk::ExceptionObject &excp)
-    {
-    std::cerr << "Exception caught while reading dicom:";
-    std::cerr << excp << std::endl;
-    }  
-
-  return dicomReader->GetOutput();
-}
-
-
-ShortImageType::Pointer ReadCTFromFile( std::string fileName )
-{
-  ShortReaderType::Pointer reader = ShortReaderType::New();
-    reader->SetFileName( fileName );
-  try
-    {
-    reader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught reading CT image:";
-    std::cerr << excp << std::endl;
-    }
-
-  return reader->GetOutput();
+  return cip::EXITSUCCESS;
 }
 
 void LowerClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>CovertDicom</title>
     <description><![CDATA[This simple program takes as an argument a directory \
         containing DICOM images, and produces a single file as \
@@ -9,7 +9,7 @@
   <version>0.0.1</version>
   <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
         Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
         and does not necessarily represent the official views of the National Institutes of Health.

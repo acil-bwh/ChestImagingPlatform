@@ -13,7 +13,7 @@ if (UNIX)
 else()
     # Windows
     file (TO_NATIVE_PATH ${CIP_PYTHON_DIR} CIP_PYTHON_DIR_NATIVE) # install fails without native path
-	set (INSTALL_COMMAND ${CIP_PYTHON_SOURCE_DIR}/Miniconda-Win-x86_64.exe /InstallationType=AllUsers /S /D=${CIP_PYTHON_DIR_NATIVE})
+	set (INSTALL_COMMAND ${CIP_PYTHON_SOURCE_DIR}/winScript.bat ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_DIR_NATIVE})
 endif()
 
 # Select the master branch by default

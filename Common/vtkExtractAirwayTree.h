@@ -14,7 +14,7 @@
 
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkMath.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 #include "teem/gage.h"
 
 #define VTK_VALLEY 1
@@ -93,7 +93,7 @@ public:
 
 // VTK6 migration note:
 // - replaced super class vtkStructuredPointsToPolyDataFilter with vtkPolyDataAlgorithm
-class VTK_CIP_UTILITIES_EXPORT vtkExtractAirwayTree : public vtkPolyDataAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkExtractAirwayTree : public vtkPolyDataAlgorithm
 {
 public:
   static vtkExtractAirwayTree *New();

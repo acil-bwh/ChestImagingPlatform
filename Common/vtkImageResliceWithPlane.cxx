@@ -28,7 +28,7 @@
 #include "vtkCell.h"
 #include "vtkExtractAirwayTree.h"
 #include "vtkPointData.h"
-#include "vtkNRRDReader.h"
+#include "vtkNrrdReader.h"
 #include "teem/nrrd.h"
 #include "teem/gage.h"
 

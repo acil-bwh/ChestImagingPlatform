@@ -22,7 +22,7 @@
 #define __vtkComputeMonogenicSignal_h
 
 #include "vtkImageAlgorithm.h"
-#include "vtkCIPUtilitiesConfigure.h"
+#include "vtkCIPCommonConfigure.h"
 
 #include "vtkGeneralizedQuadratureKernelSource.h"
 
@@ -31,7 +31,7 @@
 // instead of vtkThreadedImageAlgorithm since this class did not provide
 // ThreadedExecute() method and overrided ExecuteData() originally.
 
-class VTK_CIP_UTILITIES_EXPORT vtkComputeMonogenicSignal : public vtkImageAlgorithm
+class VTK_CIP_COMMON_EXPORT vtkComputeMonogenicSignal : public vtkImageAlgorithm
 {
 public:
   static vtkComputeMonogenicSignal *New();
