@@ -23,8 +23,6 @@ set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
 
 set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build. Version 6 is strongly recommended.")
 set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
-#set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "6")
-
 
 
 #-----------------------------------------------------------------------------
@@ -144,6 +142,9 @@ find_package(Git REQUIRED)
 
 set(ep_common_c_flags "${CMAKE_C_FLAGS_INIT} ${ADDITIONAL_C_FLAGS}")
 set(ep_common_cxx_flags "${CMAKE_CXX_FLAGS_INIT} ${ADDITIONAL_CXX_FLAGS}")
+if (APPLE)
+  set(ep_common_cxx_flags "${ep_common_cxx_flags} -stdlib=libstdc++ -mmacosx-version-min=10.6")
+endif()
 
 include(ExternalProject)
 include(ExternalProjectDependency)
@@ -216,6 +217,14 @@ option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
+set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
+
+mark_as_superbuild(
+ VARS
+   CIP_PYTHON_DIR:PATH
+)
+
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
@@ -227,12 +236,14 @@ endif()
 
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
 set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+  CIPPython
   SlicerExecutionModel
   ${ITK_EXTERNAL_NAME}
   ${VTK_EXTERNAL_NAME}
   Boost
   teem
-  ${LIBXML2_EXTERNAL_NAME}
+  OpenCV
+  ${LIBXML2_EXTERNAL_NAME}  
   )
 
 #-----------------------------------------------------------------------------

@@ -10,6 +10,10 @@
  *  Hello common
  */
 
+/** \defgroup interactiveTools InteractiveTools
+ *  Hello interactive tools
+ */
+
 /** \defgroup scripts Scripts
  *  Hello scripts
  */

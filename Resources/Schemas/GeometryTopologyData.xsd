@@ -1,0 +1,48 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="GeometryTopologyData">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element type="xs:byte" name="NumDimensions"/>
+        <xs:element name="Point" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="ChestRegion"/>
+              <xs:element type="xs:byte" name="ChestType"/>
+              <xs:element type="xs:string" name="Description" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="Coordinate">
+                <xs:complexType>
+                  <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element type="xs:float" name="value"/>
+                  </xs:choice>
+                </xs:complexType>
+              </xs:element>              
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="BoundingBox" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="ChestRegion"/>
+              <xs:element type="xs:byte" name="ChestType"/>
+              <xs:element type="xs:string" name="Description" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="Start">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:float" name="value" minOccurs="0" maxOccurs="unbounded" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Size">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:float" name="value" minOccurs="0" maxOccurs="unbounded" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>              
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

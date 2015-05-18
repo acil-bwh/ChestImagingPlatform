@@ -37,10 +37,62 @@
 #include "vtkGlyphSource2D.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
+#include "itkGDCMImageIO.h"
+#include "itkGDCMSeriesFileNames.h"
 
-//
+
+cip::CTType::Pointer cip::ReadCTFromDirectory( std::string ctDir )
+{
+  
+  
+  typedef itk::GDCMImageIO                      ImageIOType;
+  typedef itk::GDCMSeriesFileNames              NamesGeneratorType;
+  
+  ImageIOType::Pointer gdcmIO = ImageIOType::New();
+  
+  std::cout << "---Getting file names..." << std::endl;
+  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
+  namesGenerator->SetInputDirectory( ctDir );
+  
+  const cip::CTSeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
+  
+  std::cout << "---Reading DICOM image..." << std::endl;
+  cip::CTSeriesReaderType::Pointer dicomReader = cip::CTSeriesReaderType::New();
+  dicomReader->SetImageIO( gdcmIO );
+  dicomReader->SetFileNames( filenames );
+  try
+  {
+    dicomReader->Update();
+  }
+  catch (itk::ExceptionObject &excp)
+  {
+    std::cerr << "Exception caught while reading dicom:";
+    std::cerr << excp << std::endl;
+    return NULL;
+  }
+  
+  return dicomReader->GetOutput();
+}
+
+cip::CTType::Pointer cip::ReadCTFromFile( std::string fileName )
+{
+  cip::CTReaderType::Pointer reader = cip::CTReaderType::New();
+  reader->SetFileName( fileName );
+  try
+  {
+    reader->Update();
+  }
+  catch ( itk::ExceptionObject &excp )
+  {
+    std::cerr << "Exception caught reading CT image:";
+    std::cerr << excp << std::endl;
+    return NULL;
+  }
+  
+  return reader->GetOutput();
+}
+
 // Code modified from //http://www.itk.org/Wiki/ITK/Examples/ImageProcessing/Upsampling
-//
 cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap)
 {
   cip::LabelMapType::Pointer outputLabelMap;
@@ -92,6 +144,54 @@ cip::LabelMapType::Pointer cip::DownsampleLabelMap(short samplingAmount, cip::La
   return outputLabelMap;
 }
 
+cip::LabelMapSliceType::Pointer cip::DownsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap)
+{
+  cip::LabelMapSliceType::Pointer outputLabelMap;
+
+  typedef itk::IdentityTransform<double, 2>                                             TransformType;
+  typedef itk::NearestNeighborInterpolateImageFunction<cip::LabelMapSliceType, double>  InterpolatorType;
+  typedef itk::ResampleImageFilter<cip::LabelMapSliceType, cip::LabelMapSliceType>      ResampleType;
+
+  // Instantiate the transform, the nearest-neighbour interpolator and the resampler
+  TransformType::Pointer idTransform = TransformType::New();
+    idTransform->SetIdentity();
+
+  InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
+
+  // Compute and set the output spacing from the input spacing and samplingAmount
+  const cip::LabelMapSliceType::RegionType& inputRegion = inputLabelMap->GetLargestPossibleRegion();
+  const cip::LabelMapSliceType::SizeType& inputSize = inputRegion.GetSize();
+
+  unsigned int originalWidth  = inputSize[0];
+  unsigned int originalLength = inputSize[1];
+
+  unsigned int newWidth  = (unsigned int)(double(originalWidth)/double(samplingAmount));
+  unsigned int newLength = (unsigned int)(double(originalLength)/double(samplingAmount));
+
+  const cip::LabelMapSliceType::SpacingType& inputSpacing = inputLabelMap->GetSpacing();
+
+  double outputSpacing[2];
+    outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
+    outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
+
+  // Set the resampler with the calculated parameters and resample
+  itk::Size< 2 > outputSize = { {newWidth, newLength} };
+
+  ResampleType::Pointer resizeFilter = ResampleType::New();
+    resizeFilter->SetTransform( idTransform );
+    resizeFilter->SetInterpolator( imageInterpolator );
+    resizeFilter->SetOutputOrigin( inputLabelMap->GetOrigin() );
+    resizeFilter->SetOutputSpacing( outputSpacing );
+    resizeFilter->SetSize( outputSize );
+    resizeFilter->SetInput( inputLabelMap );
+    resizeFilter->Update();
+
+  // Save the resampled output to the output image and return
+  outputLabelMap = resizeFilter->GetOutput();
+
+  return outputLabelMap;
+}
+
 cip::LabelMapType::Pointer cip::UpsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap)
 {
   cip::LabelMapType::Pointer outputLabelMap;
@@ -127,6 +227,54 @@ cip::LabelMapType::Pointer cip::UpsampleLabelMap(short samplingAmount, cip::Labe
 
   // Set the resampler with the calculated parameters and resample
   itk::Size< 3 > outputSize = { {newWidth, newLength, newHeight} };
+
+  ResampleType::Pointer resizeFilter = ResampleType::New();
+    resizeFilter->SetTransform( idTransform );
+    resizeFilter->SetInterpolator( imageInterpolator );
+    resizeFilter->SetOutputOrigin( inputLabelMap->GetOrigin() );
+    resizeFilter->SetOutputSpacing( outputSpacing );
+    resizeFilter->SetSize( outputSize );
+    resizeFilter->SetInput( inputLabelMap );
+    resizeFilter->Update();
+
+  // Save the resampled output to the output image and return
+  outputLabelMap= resizeFilter->GetOutput();
+
+  return outputLabelMap;
+}
+
+cip::LabelMapSliceType::Pointer cip::UpsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap)
+{
+  cip::LabelMapSliceType::Pointer outputLabelMap;
+
+  typedef itk::IdentityTransform<double, 2>                                             TransformType;
+  typedef itk::NearestNeighborInterpolateImageFunction<cip::LabelMapSliceType, double>  InterpolatorType;
+  typedef itk::ResampleImageFilter<cip::LabelMapSliceType, cip::LabelMapSliceType>      ResampleType;
+
+  // Instantiate the transform, the b-spline interpolator and the resampler
+  TransformType::Pointer idTransform = TransformType::New();
+    idTransform->SetIdentity();
+
+  InterpolatorType::Pointer imageInterpolator = InterpolatorType::New();
+
+  // Compute and set the output spacing from the input spacing and samplingAmount
+  const LabelMapSliceType::RegionType& inputRegion = inputLabelMap->GetLargestPossibleRegion();
+  const LabelMapSliceType::SizeType& inputSize = inputRegion.GetSize();
+
+  unsigned int originalWidth = inputSize[0];
+  unsigned int originalLength = inputSize[1];
+
+  unsigned int newWidth  = (unsigned int)(double(originalWidth)*double(samplingAmount));
+  unsigned int newLength = (unsigned int)(double(originalLength)*double(samplingAmount));
+
+  const cip::LabelMapSliceType::SpacingType& inputSpacing = inputLabelMap->GetSpacing();
+
+  double outputSpacing[2];
+    outputSpacing[0] = inputSpacing[0]*(double(originalWidth)/double(newWidth));
+    outputSpacing[1] = inputSpacing[1]*(double(originalLength)/double(newLength));
+
+  // Set the resampler with the calculated parameters and resample
+  itk::Size< 2 > outputSize = { {newWidth, newLength} };
 
   ResampleType::Pointer resizeFilter = ResampleType::New();
     resizeFilter->SetTransform( idTransform );
@@ -413,7 +561,7 @@ void cip::DilateLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regi
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
 
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;
@@ -477,7 +625,7 @@ void cip::ErodeLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
 
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;
@@ -543,7 +691,7 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
     roiExtractor->SetInput(labelMap);
 
   // Set up the kernel
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;
@@ -627,7 +775,7 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
     roiExtractor->SetRegionOfInterest(roiPadded);
     roiExtractor->SetInput(labelMap);
 
-  unsigned long neighborhood[3];
+  itk::SizeValueType neighborhood[3];
     neighborhood[0] = kernelRadiusX;
     neighborhood[1] = kernelRadiusY;
     neighborhood[2] = kernelRadiusZ;

@@ -1,20 +1,3 @@
-//GetTransformationSimilarityMetric
-
-/** \file
- *  \ingroup commandLineTools 
- *  \details This program registers 2 label maps, source and target, and 
- * a transformation file as well as the transformed image 
- *
- *  USAGE: 
-
- *
- *  $Date: $
- *  $Revision: $
- *  $Author:  $
- *
- */
-
-
 //Image
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -44,6 +27,7 @@
 #include <libxml/xmlIO.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
+#undef reference // to use vtklibxml2
 
 #include "GetTransformationKappaCLP.h"
 #include "cipChestConventions.h"

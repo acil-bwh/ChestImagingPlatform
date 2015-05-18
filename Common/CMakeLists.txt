@@ -57,10 +57,33 @@ SET ( CIPCommon_SRCS
   cipNelderMeadSimplexOptimizer.cxx
   cipParticleToThinPlateSplineSurfaceMetric.cxx
   cipHelper.cxx
-  vtkSimpleLungMask.cxx
-  vtkImageStatistics.cxx
   cipExceptionObject.cxx
   cipChestConventions.cxx
+  cipGeometryTopologyData.cxx
+  vtkSimpleLungMask.cxx
+  vtkImageStatistics.cxx
+  vtkComputeAirwayWall.cxx
+  vtkImageReformatAlongRay2.cxx
+  vtkComputeAirwayWallPolyData.cxx          
+  vtkImageResliceWithPlane.cxx
+  vtkComputeCentroid.cxx                    
+  vtkImageTubularConfidence.cxx
+  vtkComputeMonogenicSignal.cxx             
+  vtkLungIntensityCorrection.cxx
+  vtkEllipseFitting.cxx                     
+  vtkMaskBoundingBox.cxx
+  vtkExtractAirwayTree.cxx                  
+  vtkMultipleReconstructionKernelsPhaseCongruency.cxx
+  vtkGeneralizedPhaseCongruency.cxx         
+  vtkNRRDExport.cxx
+  vtkGeneralizedQuadratureKernelSource.cxx  
+  vtkSmoothLines.cxx
+  vtkImageKernel.cxx                        
+  vtkTubularScalePolyDataFilter.cxx
+  vtkImageKernelSource.cxx                  
+  vtkTubularScaleSelection.cxx
+  vtkImageReformatAlongRay.cxx
+
   )
 
 IF(CIP_USE_BOOST)

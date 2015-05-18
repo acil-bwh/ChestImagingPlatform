@@ -2,8 +2,6 @@
 #include <itkImageDuplicator.h>
 
 
-//bool GetSliceHasForeground(cip::LabelMapType::Pointer, unsigned int, std::string );
-
 cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
 {
   std::cout << "Reading label map..." << std::endl;

@@ -2,35 +2,34 @@
 <executable>
     <category>Chest Imaging Platform.Toolkit.Utils</category>
     <title>ConvertChestRegionChestTypeToLabelMapValue</title>
-    <description><![CDATA[This simple program takes an region-type unsigned char value \
-        that conforms to the labeling conventions laid out in \
-        cipConventhions.h and writes to the command line the corresponding unsigned short encoding the chest \
-        region and chest type value.]]>
+    <description><![CDATA[This simple program takes chest-region and chest-type string specifications \
+(conforming to CIP standards laid out in cipChestConventions.h) and writes to the command line the \
+corresponding unsigned short encoding the chest region and chest type value.]]>
     </description>
     <version>0.0.1</version>
     <license>Slicer</license>
     <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
     
     <parameters>
         <label>IO</label>
         <description>Input/output parameters</description>
-        <integer>
+        <string>
             <name>region</name>
             <flag>r</flag>
             <longflag>region</longflag>
-            <description>The unsigned char region value</description>
-            <default>0</default>
-        </integer>
-        <integer>
+            <description>Region name</description>
+            <default>UndefinedRegion</default>
+        </string>
+        <string>
             <name>type</name>
             <flag>t</flag>
             <longflag>type</longflag>
-            <description>The unsigned char type value</description>
-            <default>0</default>
-        </integer>
+            <description>Type name</description>
+            <default>UndefinedType</default>
+        </string>
     </parameters>
 </executable>

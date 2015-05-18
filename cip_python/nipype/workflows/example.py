@@ -3,12 +3,13 @@ import cip_python.nipype.interfaces.cip as cip
 
 myfilter = cip.ConvertDicom()
 
-myfilter.run(inputDicomDirectory='/Users/rjosest/Data/COPDGene/Dicom/10766M_INSP_STD_NJC_COPD',output='/var/tmp/test.nrrd')
+myfilter.run(inputDicomDirectory='/Users/rolaharmouche/Documents/Data/STATCOPE/107896H55/107896H55_INSP_B31f_TEMPLE_STATCOPE',output='/Users/rolaharmouche/Documents/Data/STATCOPE/107896H55/test.nrrd')
 
-myfilter2 = cip.GeneratePartialLungLabelMap()
+#myfilter2 = cip.GeneratePartialLungLabelMap()
 
 
-myfilter2.run(ct='/var/tmp/test.nrrd',out='/var/tmp/test2.nrrd')
+
+#myfilter2.run(ct='/var/tmp/test.nrrd',out='/var/tmp/test2.nrrd')
 
 
 

@@ -21,25 +21,46 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "cipThinPlateSplineSurface.h"
+#include "itkImageSeriesReader.h"
+
 
 namespace cip {
   /**
    *  Define typedefs used throughout the cip
    */
   typedef itk::Image< unsigned short, 3 >       LabelMapType;
+  typedef itk::Image< unsigned short, 2 >       LabelMapSliceType;
   typedef itk::Image< short, 3 >                CTType;
+  typedef itk::Image< short, 2 >                CTSliceType;
   typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
   typedef itk::ImageFileWriter< LabelMapType >  LabelMapWriterType;
   typedef itk::ImageFileReader< CTType >        CTReaderType;
   typedef itk::ImageFileWriter< CTType >        CTWriterType;
 
-  /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and 
+  typedef itk::ImageSeriesReader< CTType >      CTSeriesReaderType;
+
+  
+  /** Function to read CT from Directory */
+  cip::CTType::Pointer ReadCTFromDirectory( std::string ctDir );
+  
+  /** Function to read CT from file */
+  cip::CTType::Pointer ReadCTFromFile( std::string fileName );
+
+  /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and
    * a pointer to a LabelMapType, and returns a pointer to a downsampled LabelMapType. */
   cip::LabelMapType::Pointer DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
 
   /** Function that upsamples a label map. Takes in as input a value for the upsampling
    *amount and a pointer to a LabelMapType, and returns a pointer to a upsampled LabelMapType. */
   cip::LabelMapType::Pointer UpsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
+
+  /** Function that downsamples a label map slice. Takes in as input a value for the downsampling amount and 
+   * a pointer to a LabelMapSliceType, and returns a pointer to a downsampled LabelMapSliceType. */
+  cip::LabelMapSliceType::Pointer DownsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+
+  /** Function that upsamples a label map slice. Takes in as input a value for the upsampling
+   *  amount and a pointer to a LabelMapSliceType, and returns a pointer to a upsampled LabelMapSliceType. */
+  cip::LabelMapSliceType::Pointer UpsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
 
   /** Function that downsamples a CT. Takes in as input a value for the downsampling amount and 
    * a pointer to a CTType, and returns a pointer to a downsampled CTType. */

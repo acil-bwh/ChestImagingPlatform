@@ -1,13 +1,22 @@
-/** \file
- *  \ingroup commandLineTools 
- *  \details This program performs connected components and removes components that are smaller than a specified size. If a set of inclusions is specified, 
- then, the connected components and removal will only be on these included  types, regions, and region and type pairs. Types are processed first, where a binarised labelmap for each type is extracted, connected components is performed. The type of each voxel from small components is then set to UNDEFINED and the region is preserved. Regions are then processed. Finally, region/type pairare processed. For each region/type pair component that is too small, if the region has been specified in the region vector, then do not delete that region value. Otherwise set the region ot undefined. Same thing applies for type.
-
-If no inclusions or exclusions are specified, then the whole labelmap is binarized and a connected components is performed on the entire image. If the exclusions options are specified, then removal will first be done using the overall binarised labelmap, then voxels that are part of the exclusions are added back in, using a precedence rule. Where we first add only the type values, then the region values, then the region/type pairs. 
-
+/**  This program performs connected components and removes components 
+ *  that are smaller than a specified size. If a set of inclusions is specified, 
+ *  then, the connected components and removal will only be on these included  
+ *  types, regions, and region and type pairs. Types are processed first, where 
+ *  a binarised labelmap for each type is extracted, connected components is 
+ *  performed. The type of each voxel from small components is then set to 
+ *  UNDEFINEDTYPE and the region is preserved. Regions are then processed. 
+ *  Finally, region/type pairare processed. For each region/type pair component 
+ *  that is too small, if the region has been specified in the region vector, 
+ *  then do not delete that region value. Otherwise set the region ot undefined. 
+ *  Same thing applies for type.
+ *
+ *  If no inclusions or exclusions are specified, then the whole labelmap is 
+ *  binarized and a connected components is performed on the entire image. If 
+ *  the exclusions options are specified, then removal will first be done 
+ *  using the overall binarised labelmap, then voxels that are part of the 
+ *  exclusions are added back in, using a precedence rule. Where we first 
+ *  add only the type values, then the region values, then the region/type pairs. 
  */
-
-//#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "FilterConnectedComponentsHelper.h"
 #include "FilterConnectedComponentsCLP.h"
@@ -15,8 +24,8 @@ If no inclusions or exclusions are specified, then the whole labelmap is binariz
 
 int main( int argc, char *argv[] )
 {
-  PARSE_ARGS;
-  
+  PARSE_ARGS;    
+
   std::vector< unsigned char >  regionVec;
   std::vector< unsigned char >  typeVec;
   std::vector< unsigned char >  regionPairVec;
@@ -55,7 +64,7 @@ int main( int argc, char *argv[] )
 	  regionTypePairTemp.type   = typePairVecArgInclude[i];
 
 	  regionTypePairVec.push_back( regionTypePairTemp );
-	  std::cout<<"reg and type: "<<regionPairVecArgInclude[i]<<" "<<typePairVecArgInclude[i]<<regionTypePairTemp.region<<" "<<regionTypePairTemp.type<<std::endl;
+	  std::cout<<"region and type: "<<regionPairVecArgInclude[i]<<" "<<typePairVecArgInclude[i]<<regionTypePairTemp.region<<" "<<regionTypePairTemp.type<<std::endl;
 	  is_include = true;
 	}
     }
@@ -201,5 +210,3 @@ int main( int argc, char *argv[] )
   return 0;
 
 }
-
-//#endif

@@ -14,7 +14,7 @@ and does not necessarily represent the official views of the National Institutes
   <parameters>
     <double>
       <name>radiusValue</name>
-      <longflag>Radius</longflag>
+      <longflag>radius</longflag>
       <flag>r</flag>
       <label>Radius</label>
       <description><![CDATA[Median filter radius]]></description>
@@ -29,7 +29,7 @@ and does not necessarily represent the official views of the National Institutes
       <label>Input Filename</label>
       <channel>input</channel>
       <flag>i</flag>
-      <longflag>--inputFile</longflag>
+      <longflag>--ict</longflag>
       <description><![CDATA[Input CT file name]]></description>
       <default>q</default>
     </image>
@@ -38,7 +38,7 @@ and does not necessarily represent the official views of the National Institutes
       <name>outputFileName</name>
       <label>Output File</label>
       <flag>o</flag>
-      <longflag>--outputFile</longflag>
+      <longflag>--oct</longflag>
       <channel>output</channel>
       <description><![CDATA[Output CT file name]]></description>
       <default>q</default>

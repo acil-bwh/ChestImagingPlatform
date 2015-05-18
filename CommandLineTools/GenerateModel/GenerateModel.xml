@@ -6,14 +6,17 @@
   <version>0.0.1</version>
   <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateModel</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
         Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
         and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
 
   <parameters>
-    <string>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+
+    <image type="label">
       <name>maskFileName</name>
       <label>mask File Name</label>
       <channel>input</channel>
@@ -21,9 +24,9 @@
       <longflag>--in</longflag>
         <description><![CDATA[Input mask file name]]></description>
       <default>NA</default>
-    </string>   
+    </image>
 
-    <string>
+    <geometry type="model">
       <name>outputModelFileName</name>
       <label>output Model FileName</label>
       <channel>output</channel>
@@ -31,8 +34,13 @@
       <longflag>--out</longflag>
       <description><![CDATA[Output model file name]]></description>
       <default>NA</default>
-    </string>  
-
+    </geometry>
+  </parameters>
+  
+  <parameters>
+    <label>Parameters</label>
+    <description>Parameters</description>
+    
     <integer>
       <name>smootherIterationsTemp</name>
       <label>smoother Iterations</label>
@@ -50,7 +58,7 @@
         <flag>l</flag>
         <longflag>--label</longflag>
         <description><![CDATA[Foreground label in the label map to be used for generating the model.]]></description>
-        <default>-1</default>
+        <default>1</default>
     </integer>
       
     <float>
@@ -61,7 +69,7 @@
       <longflag>--reduc</longflag>
       <description><![CDATA[Target reduction fraction for decimation]]></description>
       <default>0.9</default>
-    </float>  
- 
+    </float>
   </parameters>
+  
 </executable>
