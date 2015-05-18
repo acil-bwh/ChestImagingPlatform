@@ -36,10 +36,10 @@ class AirwayParticles(ChestParticles):
         2. The scale of the output particles is handled properly.    
 
     live_thresh : float (optional)
-        Default is 50. Possible interval to explore: [30, 150]
+        Default is 40. Possible interval to explore: [10, 150]
 
     seed_thresh : float (optional)
-        Default is 40. Possible interval to explore: [30, 200]
+        Default is 30. Possible interval to explore: [10, 200]
 
     scale_samples : int (optional)
         The number of pre-blurrings performed on the input image. These
@@ -56,8 +56,8 @@ class AirwayParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6., live_thresh=50.,
-                 seed_thresh=40., scale_samples=5, down_sample_rate=1,
+                 mask_file_name=None, max_scale=6., live_thresh=40.,
+                 seed_thresh=30., scale_samples=5, down_sample_rate=1,
                  min_intensity=-1100, max_intensity=-400):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
@@ -205,9 +205,9 @@ if __name__ == "__main__":
   parser.add_argument("-n", help='number of scale volumes [default: %(default)s]',
                     dest="scale_samples", default=5, type=int)
   parser.add_argument("--lth", help='live threshold (>0) [default: %(default)s]',
-                    dest="live_th", default=50.0, type=float)
+                    dest="live_th", default=40.0, type=float)
   parser.add_argument("--sth", help='seed threshold (>0) [default: %(default)s]',
-                    dest="seed_th", default=40.0, type=float)
+                    dest="seed_th", default=30.0, type=float)
   parser.add_argument("--minI",
                     help='min intensity for feature [default: %(default)s]',
                     dest="min_intensity", default=-1100, type=float)
