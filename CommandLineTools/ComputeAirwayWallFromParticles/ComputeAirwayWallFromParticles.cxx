@@ -75,12 +75,25 @@ int main( int argc, char *argv[] )
   }
   
   solver->SetNumberOfThetaSamples(numberOfRays);
-  
+
   // Airway wall computing filter
   vtkSmartPointer< vtkComputeAirwayWallPolyData > filter  = vtkSmartPointer< vtkComputeAirwayWallPolyData >::New();
   filter->SetInputData(particles);
   filter->SetImage(transformedCT->GetOutput());
   filter->SetWallSolver(solver);
+  
+  // Setting up thresholds
+  solver->SetGradientThreshold(gradientThreshold);
+  solver->SetWallThreshold(wallThreshold);
+  solver->SetPCThreshold(pcThreshold);
+  
+  if ( largeAirways == true)
+  {
+    solver->SetRMax(25);
+    filter->SetResolution(0.2);
+  }
+  
+  
   if (inPlane == true)
   {
     filter->ReformatOff();

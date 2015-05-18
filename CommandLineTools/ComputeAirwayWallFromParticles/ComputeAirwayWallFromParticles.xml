@@ -68,16 +68,69 @@
   <integer>
     <name>numberOfRays</name>
     <label>Number of rays</label>
+    <description>Number of rays to cast from the airway lumen center to compute the airway wall</description>
     <flag>n</flag>
     <longflag>numberOfRays</longflag>
+    <constraints>
+      <minimum>3</minimum>
+      <maximum>128</maximum>
+      <step>1</step>
+    </constraints>
     <default>30</default>
   </integer>
+    
+  <integer>
+    <name>wallThreshold</name>
+    <label>Wall contrast threshold</label>
+    <description>Wall constrast threshold at the candidate edge point to qualify (positive value).</description>
+    <longflag>wth</longflag>
+    <constraints>
+      <minimum>250</minimum>
+      <maximum>500</maximum>
+      <step>1</step>
+    </constraints>
+    <default>300</default>
+  </integer>
+    
+  <double>
+    <name>gradientThreshold</name>
+    <label>Gradient threshold</label>
+    <description>Gradient threshold at the candidate edge point to qualify.</description>
+    <longflag>gth</longflag>
+    <constraints>
+      <minimum>0</minimum>
+      <maximum>300</maximum>
+      <step>1</step>
+    </constraints>
+    <default>100</default>
+  </double>
+
+  <double>
+    <name>pcThreshold</name>
+    <label>Phase congruency threshold</label>
+    <description>Phase congruency value threshold at the candidate edge point to qualify.</description>
+    <longflag>pcth</longflag>
+    <constraints>
+      <minimum>0.3</minimum>
+      <maximum>1</maximum>
+      <step>0.05</step>
+    </constraints>
+    <default>0.6</default>
+  </double>
     
   <boolean>
     <name>inPlane</name>
     <label>In-plane mode</label>
     <longflag>inPlane</longflag>
     <description>Compute airway wall in-plane ignoring airway longitudinal axis.</description>
+    <default>false</default>
+  </boolean>
+    
+  <boolean>
+    <name>largeAirways</name>
+    <label>Large airways mode</label>
+    <longflag>largeAirways</longflag>
+    <description>Adjust parameters to measure large airways (main bronchi and trachea).</description>
     <default>false</default>
   </boolean>
     
@@ -95,11 +148,13 @@
     <longflag>saveDir</longflag>
     <description>Directory to save airway images</description>
   </directory>
+    
   <string>
     <name>saveAirwayPrefix</name>
     <label>Airway file prefix</label>
     <longflag>airwayPrefix</longflag>
     <description>Prefix for airway image file.</description>
+    <default>airwaySlice</default>
   </string>
     
   </parameters>
