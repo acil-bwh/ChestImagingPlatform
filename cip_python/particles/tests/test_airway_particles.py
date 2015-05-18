@@ -24,8 +24,8 @@ def test_airway_particles():
     print tmp_dir
 
     max_scale = 6.0
-    live_th = 50.0
-    seed_th = 40.0
+    live_th = 40.0
+    seed_th = 30.0
     scale_samples = 5
     down_sample_rate = 1.0
     min_intensity = -1100
