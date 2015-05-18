@@ -15,8 +15,8 @@ class BodyCompositionPhenotypes(Phenotypes):
     over all structures in the specified labelmap. The following phenotypes are
     computed using the 'execute' method:
     'AxialCSA': Axial cross-sectional area
-    'CoronalCSA': Coronoal cross-sectional area
-    'SagittalCSA': Sagitall cross-sectional area
+    'CoronalCSA': Coronal cross-sectional area
+    'SagittalCSA': Sagittal cross-sectional area
     'HUMean': Mean value of the structure's HU values
     'HUStd': Standard deviation of the structure's HU values
     'HUKurtosis': Kurtosis of the structure's HU values. Fisher's definition is
@@ -70,29 +70,31 @@ class BodyCompositionPhenotypes(Phenotypes):
     """
     def __init__(self, chest_regions=None, chest_types=None, pairs=None,
                  pheno_names=None):
-        #rola changed len(chest_regions.shape) to len(shape(chest_regions))
-
         if chest_regions is not None:
-            if len(chest_regions.shape) != 1:
+            if len(np.shape(chest_regions)) != 1:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
+            print(chest_regions)
+            print(type(chest_regions))
+            print(np.max(chest_regions))
+            print(np.min(chest_regions))
             if np.max(chest_regions) > 255 or np.min(chest_regions) < 0:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
         if chest_types is not None:
-            chest_types = map(int, chest_types) #rola
+            print(chest_types)
             print(type(chest_types))
             if len(np.shape(chest_types)) != 1:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
-            if np.max(np.array(chest_types)) > 255 or np.min(np.array(chest_types)) < 0:
+            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
         if pairs is not None:
-            if len(pairs.shape) != 2:
+            if len(np.shape(pairs)) != 2:
                 raise ValueError(\
                 'cpairs must be a 1D array with elements in [0, 255]')
-            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
+            if np.max(pairs) > 255 or np.min(pairs) < 0:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
                 
@@ -221,6 +223,8 @@ class BodyCompositionPhenotypes(Phenotypes):
             Dataframe containing info about machine, run time, and chest region
             chest type phenotype quantities.         
         """
+
+        print("Executing new\n");
         assert len(ct.shape) == len(lm.shape), \
             "CT and label map are not the same dimension"    
 
@@ -393,9 +397,14 @@ if __name__ == "__main__":
     parser.add_option('--cid',
                       help='The case ID', dest='cid', metavar='<string>',
                       default=None)    
+    parser.add_option('--pheno_names',
+                      help='Comma separated list of phenotype value names to \
+                      compute.', dest='pheno_names', metavar='<string>',
+                      default=None)     
 
     (options, args) = parser.parse_args()
 
+    
     lm, lm_header = nrrd.read(options.in_lm)
     ct, ct_header = nrrd.read(options.in_ct)
 
@@ -404,7 +413,20 @@ if __name__ == "__main__":
     spacing[1] = ct_header['space directions'][1][1]
     spacing[2] = ct_header['space directions'][2][2]
 
+    pheno_names = None
+    if options.pheno_names is not None:
+        pheno_names = options.pheno_names.split(',')
+    
     bc_pheno = BodyCompositionPhenotypes()    
-    df = bc_pheno.execute(ct, lm, options.cid, spacing)
+    df = bc_pheno.execute(ct, lm, options.cid, spacing, pheno_names=pheno_names)
+    
     if options.out_csv is not None:
-        df.to_csv(options.out_csv)
+        if pheno_names is None:
+            df.to_csv(options.out_csv, index=False)
+        else:
+            cols = bc_pheno.static_names_handler_.keys()        
+            for p in pheno_names:
+                cols.append(p)
+            for k in bc_pheno.key_names_:
+                cols.append(k)        
+            df[cols].to_csv(options.out_csv, index=False)

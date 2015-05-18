@@ -1,45 +1,3 @@
-/** \file
- *  \ingroup commandLineTools
- *  \details This program will generate a 3D model from an input
- *  3D label map using the discrete marching cubes algorithm
- *
- *  USAGE:
- *
- *  GenerateModel  [-r \<float\>] [--origSp \<bool\>] [-l \<unsigned short\>]
- *                 [-s \<unsigned int\>] -o \<string\> -i \<string\> [--]
- *                 [--version] [-h]
- *
- *  Where:
- *
- *   -r \<float\>,  --reduc \<float\>
- *     Target reduction fraction for decimation
- *
- *   --origSp \<bool\>
- *     Set to 1 to used standard origin and spacing. Set to 0 by default.
- *
- *   -l \<unsigned short\>,  --label \<unsigned short\>
- *     Foreground label in the label map to be used for generating the model
- *
- *   -s \<unsigned int\>,  --smooth \<unsigned int\>
- *     Number of smoothing iterations
- *
- *   -o \<string\>,  --out \<string\>
- *     (required)  Output model file name
- *
- *   -i \<string\>,  --in \<string\>
- *     (required)  Input mask file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
- */
-
 #include "cipChestConventions.h"
 #include "vtkImageData.h"
 #include "vtkPolyDataNormals.h"
@@ -74,21 +32,21 @@ int main( int argc, char *argv[] )
   if ( foregroundLabel == -1 )
     {
       while( !it.IsAtEnd() )
-	{
-	  unsigned short* valIt = it.BeginSpan();
-	  unsigned short* valEnd = it.EndSpan();
-	  while ( valIt != valEnd )
-	    {
-	      if ( *valIt != 0 )
-		{
-		  foregroundLabel = int(*valIt);
-		  break;
-		}
-	      ++valIt;
-	    }
+  	{
+  	  unsigned short* valIt = it.BeginSpan();
+  	  unsigned short* valEnd = it.EndSpan();
+  	  while ( valIt != valEnd )
+  	    {
+  	      if ( *valIt != 0 )
+  		{
+  		  foregroundLabel = int(*valIt);
+  		  break;
+  		}
+  	      ++valIt;
+  	    }
 
-	  it.NextSpan();
-	}
+  	  it.NextSpan();
+  	}
     }
 
   it.Initialize( maskReader->GetOutput(), maskReader->GetOutput()->GetExtent() );
@@ -97,17 +55,17 @@ int main( int argc, char *argv[] )
       unsigned short* valIt = it.BeginSpan();
       unsigned short* valEnd = it.EndSpan();
       while ( valIt != valEnd )
-	{
-	  if ( int(*valIt) == foregroundLabel )
-	    {
-	      *valIt = 1;
-	    }
-	  else
-	    {
-	      *valIt = 0;
-	    }
-	  ++valIt;
-	}
+  	{
+  	  if ( int(*valIt) == foregroundLabel )
+  	    {
+  	      *valIt = 1;
+  	    }
+  	  else
+  	    {
+  	      *valIt = 0;
+  	    }
+  	  ++valIt;
+  	}
       
       it.NextSpan();
     }

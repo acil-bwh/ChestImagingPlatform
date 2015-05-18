@@ -3,22 +3,22 @@
     <category>Chest Imaging Platform.Toolkit.Processing</category>
     <title>ComputeDistanceMap</title>
     <description><![CDATA[This program computes a distance map from an \
-        input binary map. A donwsampling can be applied prior to the distance map computation \
-        to improve performance. The resulting \
-        distance map will by upsampled by the same amount before writing.]]>
+input binary map. A donwsampling can be applied prior to the distance map computation \
+to improve performance. The resulting \
+distance map will by upsampled by the same amount before writing.]]>
     </description>
     <version>0.0.1</version>
     <license>Slicer</license>
     <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
     
     <parameters>
         <label>IO</label>
         <description>Input/output parameters</description>
-        <string>
+        <image>
             <name>labelMapFileName</name>
             <label>Label map file name</label>
             <channel>input</channel>
@@ -26,23 +26,23 @@
             <longflag>labelMap</longflag>
             <default>NA</default>
             <description><![CDATA[Input label map file name]]></description>
-        </string>
-        <string>
+        </image>
+        <image>
             <name>distanceMapFileName</name>
             <label>Distance map file name</label>
             <channel>output</channel>
             <flag>d</flag>
             <longflag>distanceMap</longflag>
-            <default>q</default>
+            <default>NA</default>
             <description><![CDATA[Output distance map file name]]></description>
-        </string>
+        </image>
         <double>
             <name>downsampleFactor</name>
             <flag>s</flag>
             <longflag>downsample</longflag>
             <description>Downsample factor. The input label map will be \
-                downsampled by the specified amount before the distance map is computed. The resulting \
-                distance map will then be scaled up by the same amount before writing.</description>
+downsampled by the specified amount before the distance map is computed. The resulting \
+distance map will then be scaled up by the same amount before writing.</description>
             <label>Downsample Factor</label>
             <default>1.0</default>
         </double>
@@ -51,11 +51,8 @@
             <flag>p</flag>
             <longflag>positive</longflag>
             <description>Set this flag to indicate that the interior \
-                of the structure of interest should be assigned positive distance values.</description>
+of the structure of interest should be assigned positive distance values.</description>
             <label>Interior Is Positive</label>
-            <default>false</default>
-        </boolean>
-        
-        
+        </boolean>                
     </parameters>
 </executable>

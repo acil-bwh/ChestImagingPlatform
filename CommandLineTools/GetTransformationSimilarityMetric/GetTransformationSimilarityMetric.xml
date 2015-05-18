@@ -19,8 +19,7 @@
       <name>fixedCTFileName</name>
       <label>fixed CT FileName</label>
       <channel>input</channel>
-      <flag>g</flag>
-      <longflag>fixedCTFileName</longflag>
+      <longflag>fct</longflag>
       <description><![CDATA[fixed CT File Name]]></description>
       <default>e</default>
     </image>   
@@ -28,8 +27,7 @@
       <name>movingCTFileName</name>
       <label>moving CT FileName</label>
       <channel>input</channel>
-      <flag>a</flag>
-      <longflag>movingCTFileName</longflag>
+      <longflag>mct</longflag>
       <description><![CDATA[moving CT FileName]]></description>
       <default>e</default>
     </image>
@@ -37,8 +35,7 @@
       <name>inputTransformFileName</name>
       <label>input Transform FileNames</label>
       <channel>input</channel>
-      <flag>q</flag>
-      <longflag>inputTransform</longflag>
+      <longflag>itx</longflag>
       <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
       <default>q</default>
     </string-vector>    
@@ -46,9 +43,8 @@
       <name>fixedLabelmapFileName</name>
       <label>fixed LabelMap FileName</label>
       <channel>input</channel>
-      <flag>f</flag>
-      <longflag>fixedLabelMapFileName</longflag>
-      <description><![CDATA[fixed Image File Name]]></description>
+      <longflag>flm</longflag>
+      <description><![CDATA[fixed labelmap File Name, will be used as mask]]></description>
       <default>q</default>
     </image> 
 
@@ -56,7 +52,6 @@
       <name>movingLabelmapFileName</name>
       <label>moving LabelMap FileName</label>
       <channel>input</channel>
-      <flag>m</flag>
       <longflag>movingLabelMapFileName</longflag>
       <description><![CDATA[moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.]]></description>
       <default>q</default>
@@ -66,8 +61,7 @@
       <name>outputXMLFileName</name>
       <label>output XML File</label>
       <channel>output</channel>
-      <flag>e</flag>
-      <longflag>outputXMLFile</longflag>
+      <longflag>oxml</longflag>
       <description><![CDATA[The name of the output xml file. If not specified, no xml file will be output. ]]></description>
       <default>q</default>
     </file>
@@ -79,7 +73,6 @@
       <name>similarityMetric</name>
       <label>Similarity Metric</label>
       <channel>input</channel>
-      <flag>v</flag>
       <longflag>SimilarityMetric</longflag>
       <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual \
           information), NMI (for normalized mutual information), and mean squares (msqr), \
@@ -90,7 +83,6 @@
       <name>movingImageID</name>
       <label>moving Image subject ID</label>
       <channel>input</channel>
-      <flag>s</flag>
       <longflag>movingImageID</longflag>
       <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be null.]]></description>
       <default>q</default>
@@ -99,7 +91,6 @@
       <name>fixedImageID</name>
       <label>Fixed Image subject ID</label>
       <channel>input</channel>
-      <flag>u</flag>
       <longflag>fixedImageID</longflag>
       <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be null.]]></description>
       <default>q</default>
@@ -108,7 +99,7 @@
       <name>invertTransform</name>
       <label>Invert Transformations</label>
       <channel>input</channel>
-      <longflag>invertTransformations</longflag>
+      <longflag>inverttx</longflag>
       <description><![CDATA[Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).]]></description>
     </integer-vector> 
 
@@ -116,7 +107,7 @@
       <name>dimension</name>
       <label>Image dimension</label>
       <channel>input</channel>
-      <longflag>dimension</longflag>
+      <longflag>dim</longflag>
       <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
      <default>3</default>
  </integer> 

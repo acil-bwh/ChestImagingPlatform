@@ -2,49 +2,6 @@
  *  \ingroup commandLineTools 
  *  \details This program can be used to extract regions, types, and
  *  region-type pairs of interest from an input chest label map.
- *
- *  $Date: 2012-10-02 15:54:43 -0400 (Tue, 02 Oct 2012) $
- *  $Revision: 283 $
- *  $Author: jross $
- *
- *  USAGE: 
- *
- *  ExtractChestLabelMap  [--typePair <unsigned char>] ...  [--regionPair
- *                        <unsigned char>] ...  [-t <unsigned char>] ... 
- *                        [-r <unsigned char>] ...  -o <string> -i
- *                        <string> [--] [--version] [-h]
- *
- *  Where: 
- *
- *   --typePair <unsigned char>  (accepted multiple times)
- *     Specify a type in a region-type pair you want to extract. This
- *     flagshould be used together with the -regionPair flag
- *
- *   --regionPair <unsigned char>  (accepted multiple times)
- *     Specify a region in a region-type pair you want to extract. This
- *     flagshould be used together with the -typePair flag
- *
- *   -t <unsigned char>,  --type <unsigned char>  (accepted multiple times)
- *     Specify a type you want to extract
- *
- *   -r <unsigned char>,  --region <unsigned char>  (accepted multiple times)
- *     Specify a region you want to extract
- *
- *   -o <string>,  --outFileName <string>
- *     (required)  Output label map file name
- *
- *   -i <string>,  --inFileName <string>
- *     (required)  Input label map file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS

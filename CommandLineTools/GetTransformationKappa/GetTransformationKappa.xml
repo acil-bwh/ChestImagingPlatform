@@ -19,8 +19,7 @@
       <name>fixedCTFileName</name>
       <label>fixed CT FileName</label>
       <channel>input</channel>
-      <flag>g</flag>
-      <longflag>fixedCTFileName</longflag>
+      <longflag>fct</longflag>
       <description><![CDATA[fixed CT File Name]]></description>
       <default>e</default>
     </image>   
@@ -28,8 +27,7 @@
       <name>movingCTFileName</name>
       <label>moving CT FileName</label>
       <channel>input</channel>
-      <flag>a</flag>
-      <longflag>movingCTFileName</longflag>
+      <longflag>mct</longflag>
       <description><![CDATA[moving CT FileName]]></description>
       <default>e</default>
     </image>
@@ -37,8 +35,8 @@
       <name>inputTransformFileName</name>
       <label>input Transform FileNames</label>
       <channel>input</channel>
-      <flag>q</flag>
-      <longflag>inputTransform</longflag>
+      <flag>t</flag>
+      <longflag>itx</longflag>
       <description><![CDATA[Input transform file name(s). The last transform entered will be applied first]]></description>
       <default>q</default>
     </string-vector>    
@@ -47,7 +45,7 @@
       <label>fixed LabelMap FileName</label>
       <channel>input</channel>
       <flag>f</flag>
-      <longflag>fixedLabelMapFileName</longflag>
+      <longflag>flm</longflag>
       <description><![CDATA[fixed Image File Name]]></description>
       <default>q</default>
     </image> 
@@ -57,7 +55,7 @@
       <label>moving LabelMap FileName</label>
       <channel>input</channel>
       <flag>m</flag>
-      <longflag>movingLabelMapFileName</longflag>
+      <longflag>mlm</longflag>
       <description><![CDATA[moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.]]></description>
       <default>q</default>
     </image>
@@ -66,8 +64,8 @@
       <name>outputXMLFileName</name>
       <label>output XML File</label>
       <channel>output</channel>
-      <flag>e</flag>
-      <longflag>outputXMLFile</longflag>
+      <flag>x</flag>
+      <longflag>oxml</longflag>
       <description><![CDATA[The name of the output xml file. If not specified, no xml file will be output. ]]></description>
       <default>q</default>
     </file>
@@ -75,17 +73,6 @@
 
     <parameters>
     <label>Similarity parameters</label>
-    <string>
-      <name>similarityMetric</name>
-      <label>Similarity Metric</label>
-      <channel>input</channel>
-      <flag>v</flag>
-      <longflag>SimilarityMetric</longflag>
-      <description><![CDATA[Similarity metric to be used. Choice between: MI (for mutual \
-          information), NMI (for normalized mutual information), and mean squares (msqr), \
-      NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI]]></description>
-      <default>MI</default>
-    </string>
     <string>
       <name>movingImageID</name>
       <label>moving Image subject ID</label>

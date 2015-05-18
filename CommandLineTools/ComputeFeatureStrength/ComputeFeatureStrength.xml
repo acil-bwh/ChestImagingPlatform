@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-    <category>Chest Imaging Platform.Toolkit</category>
+    <category>Chest Imaging Platform.Toolkit.Processing</category>
     <title>ComputeFeatureStrength</title>
     <description><![CDATA[Compute the feature strength for an image.\
         A feature can be a ridge line (vessel), valley line (airway), \

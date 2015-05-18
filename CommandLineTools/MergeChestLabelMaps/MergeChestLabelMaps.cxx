@@ -5,17 +5,14 @@
 #include "cipHelper.h"
 #include "MergeChestLabelMapsCLP.h"
 
-typedef itk::ImageFileReader< cip::LabelMapType > LabelMapReader;
-typedef itk::ImageFileWriter< cip::LabelMapType > LabelMapWriter;
-
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
   cip::ChestConventions conventions;
 
-  std::cout << "Reading base label mape..." << std::endl;
-  LabelMapReader::Pointer baseReader = LabelMapReader::New();
+  std::cout << "Reading base label map..." << std::endl;
+  cip::LabelMapReaderType::Pointer baseReader = cip::LabelMapReaderType::New();
     baseReader->SetFileName( baseLabelMapFileName );
   try
     {
@@ -27,8 +24,8 @@ int main( int argc, char *argv[] )
     std::cerr << excp << std::endl;
     }
 
-  std::cout << "Reading overlay label mape..." << std::endl;
-  LabelMapReader::Pointer overlayReader = LabelMapReader::New();
+  std::cout << "Reading overlay label map..." << std::endl;
+  cip::LabelMapReaderType::Pointer overlayReader = cip::LabelMapReaderType::New();
     overlayReader->SetFileName( overlayLabelMapFileName );
   try
     {
@@ -83,7 +80,7 @@ int main( int argc, char *argv[] )
     merger->Update();
 
   std::cout << "Writing merged label map..." << std::endl;
-  LabelMapWriter::Pointer writer = LabelMapWriter::New();
+  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
     writer->SetInput( merger->GetOutput() );
     writer->SetFileName( outLabelMapFileName );
     writer->UseCompressionOn();
