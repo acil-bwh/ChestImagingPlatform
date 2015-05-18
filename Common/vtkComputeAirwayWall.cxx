@@ -449,7 +449,7 @@ int idx=0;
     }
     loc1 = samples->GetValue(0);
     loc2 = samples->GetValue(1);
-    
+   
     if (loc1>loc2 && loc2!= -1) {
       cout<<"WARNING: Inner radius (loc1="<<loc1<<") is greater than outer radius (loc2="<<loc2<<")."<<endl;
       loc1=-1;
@@ -461,7 +461,7 @@ int idx=0;
 
     //if (th ==0) 
     //  cout<<"Loc1: "<<loc1<<" "<<"Loc2: "<<loc2<<endl;
-
+   
     //Take only into account good rays
     if (loc1 >0 && loc2 >0 ) {
         tmp = loc1*sp[0];
@@ -1056,7 +1056,8 @@ double lumenA1,lumenA2,lumenMin;
 int lumenSamples=0;
 meanLA = 0;
 stdLA = 0;
-for (int k=0; k<lumenA->GetNumberOfTuples()/2;k++)
+  
+for (int k=0; k< lumenA->GetNumberOfTuples()/2;k++)
   {
   lumenA1 = lumenA->GetValue(k);
   lumenA2 = lumenA->GetValue(k+gap);
@@ -1530,42 +1531,42 @@ for (int k=0; k<nzeros; k++) {
 	}
 	// Get valley locations at both size of the wall maxima.
 	if (k==0) 
-          {
+  {
 	  loc1=1;
-	  }
+  }
 	else
-          { 
-          loc1 = gzeros->GetValue(k-1);
-          }
-        if (k>=nzeros-1)
-          {
-          loc2 = ntuples-1;
-          }
-        else
-          {
-          loc2 = gzeros->GetValue(k+1);
-          }
+    { 
+    loc1 = gzeros->GetValue(k-1);
+    }
+  if (k>=nzeros-1)
+    {
+    loc2 = ntuples-1;
+    }
+  else
+    {
+    loc2 = gzeros->GetValue(k+1);
+    }
 
-        //Check loc1 is in the allowed range 
-        if (int(loc1) >=ntuples || int(loc1) <0) {
+  //Check loc1 is in the allowed range
+  if (int(loc1) >=ntuples || int(loc1) <0) {
 	  //Loc1 is out of range
 	  break;
 	} else {  
-            val1 = c->GetValue((int) loc1);
-            rmin=this->FindValue(c,(int) loc1,(val+val1)/2);
-            valg = cp->GetValue((int) rmin);
-            // Check that the inner wall location gradient is above the threshold.
-            if (fabs(valg)<this->GradientThreshold)
+    val1 = c->GetValue((int) loc1);
+    rmin=this->FindValue(c,(int) loc1,(val+val1)/2);
+    valg = cp->GetValue((int) rmin);
+    // Check that the inner wall location gradient is above the threshold.
+    if (fabs(valg)<this->GradientThreshold)
 	    {
 	      cout<<" Gradient= "<<fabs(valg)<<" at rmin="<<rmin<<endl;
               continue;
 	    }
             //cout<<"Find rmin: "<<rmin<<endl;
-        }
+    }
 	//Check loc2 is in the allowed range
-        if (int(loc2) >=ntuples || int(loc2) <0) {
+  if (int(loc2) >=ntuples || int(loc2) <0) {
 	  // Loc2 is out of range but loc1 was assigned, set rmax to -1 and let it finish.
-          rmax = -1;
+    rmax = -1;
 	} else {  
             val2 = c->GetValue((int) loc2);
             rmax=this->FindValue(c,(int) loc,(val+val2)/2);
@@ -1663,7 +1664,6 @@ for (int k=0; k<ngzeros; k++) {
         loc1=hzeros->GetValue(j);
         loc2=hzeros->GetValue(j+1);
         valg = cp->GetValue((int) loc1);
-
 	//Zero crossing is beyond zero gradient
         if (loc1> loc) {
           break;
