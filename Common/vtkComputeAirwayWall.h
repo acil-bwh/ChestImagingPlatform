@@ -43,9 +43,21 @@ public:
   vtkSetMacro(Method,int);
   vtkGetMacro(Method,int);
 
+  // Wall Threshol: minimum intensity value at
+  // candidate edget point to qualify
   vtkSetMacro(WallThreshold,int);
   vtkGetMacro(WallThreshold,int);
 
+  // Gradient Treshold: minimum gradient treshold at the
+  // candidate edge point to qualifiy.
+  vtkSetMacro(GradientThreshold,double);
+  vtkGetMacro(GradientThreshold,double);
+
+  // Phase Congruency Treshold: minimum PC value at the
+  // candidate edge point to qualifiy.
+  vtkSetMacro(PCThreshold,double);
+  vtkGetMacro(PCThreshold,double);
+  
   vtkSetMacro(NumberOfScales,int);
   vtkGetMacro(NumberOfScales,int);
 
