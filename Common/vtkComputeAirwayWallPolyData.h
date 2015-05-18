@@ -59,6 +59,11 @@ public:
   vtkGetMacro(Reformat,int);
   
   // Description:
+  // Reformat airway along airway long axis
+  vtkSetMacro(Resolution,double);
+  vtkGetMacro(Resolution,double);
+  
+  // Description:
   // Axis computation model: 
   // 0 = Hessian.
   // 1 = from vktPolyData line.
@@ -101,6 +106,7 @@ protected:
   void ComputeCellData();
   int AxisMode;
   int Reformat;
+  double Resolution;
   vtkComputeAirwayWall *WallSolver;
   vtkDoubleArray *AxisArray;
   double SelfTuneModelSmooth[3];
@@ -110,6 +116,14 @@ protected:
   double SegmentPercentage;
   int SaveAirwayImage;
   char *AirwayImagePrefix;
+  
+  //array names variables for the wall metrics
+  char arrayNameMean[256];
+  char arrayNameStd[256];
+  char arrayNameMin[256];
+  char arrayNameMax[256];
+  char arrayNameEllipse[256];
+  
   void SetWallSolver(vtkComputeAirwayWall *ref, vtkComputeAirwayWall *out);
   void ComputeAirwayAxisFromLines();
   void CreateAirwayImage(vtkImageData *resliceCT,vtkEllipseFitting *eifit,vtkEllipseFitting *eofit,vtkImageData *airwayImage);

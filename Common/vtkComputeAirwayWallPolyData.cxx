@@ -27,6 +27,10 @@
 #include "vtkLookupTable.h"
 #include "vtkPNGWriter.h"
 
+#include "vtkNRRDWriterCIP.h"
+#include "vtkSmartPointer.h"
+
+
 #ifdef WIN32
 #define round(x) floor((x)+0.5)
 #endif
@@ -47,12 +51,14 @@ vtkComputeAirwayWallPolyData::vtkComputeAirwayWallPolyData()
   this->SelfTuneModelSharp[2]=2.9639;
   
   this->SegmentPercentage = 0.5;
+  this->Resolution = 0.1;
   
   this->Reconstruction = VTK_SMOOTH;
   this->Image = NULL;
   
   this->AirwayImagePrefix= NULL;
   this->SaveAirwayImage=0;
+
 }
 
 vtkComputeAirwayWallPolyData::~vtkComputeAirwayWallPolyData()
@@ -212,17 +218,19 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   vtkPolyData *output = this->GetOutput();
   vtkImageData *im = this->GetImage();
   double orig[3];
+  int dim[3];
   double sp[3], p[3],ijk[3];
   double x[3],y[3],z[3];
   im->GetOrigin(orig);
   im->GetSpacing(sp);
+  im->GetDimensions(dim);
   
   output->DeepCopy(input);
   
   cout<<"Spacing: "<<sp[0]<<" "<<sp[1]<<" "<<sp[2]<<endl;
   cout<<"Origin: "<<orig[0]<<" "<<orig[1]<<" "<<orig[2]<<endl;
   
-  double resolution = 0.1;
+  double resolution = this->Resolution;
 
   //Create helper objects
   vtkImageResliceWithPlane *reslicer = vtkImageResliceWithPlane::New();
@@ -252,7 +260,7 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
       }
       break;
     case VTK_VECTOR:
-      if (input->GetPointData()->GetVectors() == NULL) 
+      if (input->GetPointData()->GetVectors() == NULL)
        {
         reslicer->ComputeAxesOn();
         this->SetAxisMode(VTK_HESSIAN);
@@ -266,62 +274,87 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
 
   // Allocate data
   //Create point Data for each stats
+  
   vtkDoubleArray *mean;
   vtkDoubleArray *std;
   vtkDoubleArray *min;
   vtkDoubleArray *max;
   vtkDoubleArray *ellipse;
-  if (output->GetFieldData()->GetArray("Mean") == NULL)
+  
+  std::string methodTag;
+  
+  if (this->WallSolver->GetMethod() == 0)
+  {
+    methodTag = "FWHM";
+  } else if (this->WallSolver->GetMethod() == 1)
+  {
+    methodTag = "ZC";
+  } else if (this->WallSolver->GetMethod() == 2)
+  {
+    methodTag = "PC";
+  }
+  
+  sprintf(this->arrayNameMean,"airwaymetrics-%s-mean",methodTag.c_str());
+  std::cout<<this->arrayNameMean<<std::endl;
+  if (output->GetPointData()->GetArray(arrayNameMean) == NULL)
   {
     mean = vtkDoubleArray::New();
-    mean->SetName("Mean");
-    this->GetOutput()->GetFieldData()->AddArray(mean);
+    mean->SetName(arrayNameMean);
+    this->GetOutput()->GetPointData()->AddArray(mean);
     mean->Delete();
     
   }
-  if (output->GetFieldData()->GetArray("Std") == NULL)
+  sprintf(this->arrayNameStd,"airwaymetrics-%s-std",methodTag.c_str());
+  if (output->GetPointData()->GetArray(arrayNameStd) == NULL)
   {
     std = vtkDoubleArray::New();
-    std->SetName("Std");
-    this->GetOutput()->GetFieldData()->AddArray(std);
+    std->SetName(arrayNameStd);
+    this->GetOutput()->GetPointData()->AddArray(std);
     std->Delete();
   }
-  if (output->GetFieldData()->GetArray("Min") == NULL)
+  
+  sprintf(this->arrayNameMin,"airwaymetrics-%s-min",methodTag.c_str());
+  if (output->GetPointData()->GetArray(arrayNameMin) == NULL)
   {
     min = vtkDoubleArray::New();
-    min->SetName("Min");
-    this->GetOutput()->GetFieldData()->AddArray(min);
+    min->SetName(arrayNameMin);
+    this->GetOutput()->GetPointData()->AddArray(min);
     min->Delete();
 
   }
-  if (output->GetFieldData()->GetArray("Max") == NULL)
+  
+  sprintf(this->arrayNameMax,"airwaymetrics-%s-max",methodTag.c_str());
+  if (output->GetPointData()->GetArray(arrayNameMax) == NULL)
   {
     max = vtkDoubleArray::New();
-    max->SetName("Max");
-    this->GetOutput()->GetFieldData()->AddArray(max);
+    max->SetName(arrayNameMax);
+    this->GetOutput()->GetPointData()->AddArray(max);
     max->Delete();
   }
-  if (output->GetFieldData()->GetArray("Ellipse") == NULL)
+  
+  sprintf(this->arrayNameEllipse,"airwaymetrics-%s-ellipse",methodTag.c_str());
+  if (output->GetPointData()->GetArray(arrayNameEllipse) == NULL)
   {
     ellipse = vtkDoubleArray::New();
-    ellipse->SetName("Ellipse");
-    this->GetOutput()->GetFieldData()->AddArray(ellipse);
+    ellipse->SetName(arrayNameEllipse);
+    this->GetOutput()->GetPointData()->AddArray(ellipse);
     ellipse->Delete();
   }
   
   // Pointer to data
-  mean = static_cast<vtkDoubleArray*> (output->GetFieldData()->GetArray("Mean"));
-  std = static_cast<vtkDoubleArray*> (output->GetFieldData()->GetArray("Std"));
-  min = static_cast<vtkDoubleArray*> (output->GetFieldData()->GetArray("Min"));
-  max = static_cast<vtkDoubleArray*> (output->GetFieldData()->GetArray("Max"));
-  ellipse = static_cast<vtkDoubleArray*> (output->GetFieldData()->GetArray("Ellipse"));
+  mean = static_cast<vtkDoubleArray*> (output->GetPointData()->GetArray(arrayNameMean));
+  std = static_cast<vtkDoubleArray*> (output->GetPointData()->GetArray(arrayNameStd));
+  min = static_cast<vtkDoubleArray*> (output->GetPointData()->GetArray(arrayNameMin));
+  max = static_cast<vtkDoubleArray*> (output->GetPointData()->GetArray(arrayNameMax));
+  ellipse = static_cast<vtkDoubleArray*> (output->GetPointData()->GetArray(arrayNameEllipse));
 
   int nc = this->WallSolver->GetNumberOfQuantities();
   int np = input->GetNumberOfPoints();
- 
     
-  if (mean == NULL) {
-     cout<<"Problem"<<endl;
+  if (mean == NULL || std == NULL || min == NULL || max == NULL || ellipse == NULL)
+  {
+    vtkErrorMacro("Airway metrics array were not properly allocated");
+    return 1;
   }
 
   
@@ -343,20 +376,17 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   // Loop through each point
   int npts = input->GetNumberOfPoints();
   for (vtkIdType k=0; k<npts; k++) {
-    //for (vtkIdType k=0; k<500; k++) {
+  //for (vtkIdType k=63; k<67; k++) {
     input->GetPoints()->GetPoint(k,p);
-
-    //cout<<"Processing point "<<k<<" out of "<<npts<<endl;
-  
+    cout<<"Processing point "<<k<<" out of "<<npts<<endl;
+    
    
   //reslicer->SetCenter(0.5+(p[0]+orig[0])/sp[0],511-((p[1]+orig[1])/sp[1])+0.5,(p[2]-orig[2])/sp[2]);
   ijk[0]=(p[0]-orig[0])/sp[0] ;
-  ijk[1]=511-((p[1]-orig[1])/sp[1]);
+  ijk[1]= (dim[1]-1) - (p[1]-orig[1])/sp[1];  // j coordinate has to be reflected (vtk origin is lower left and DICOM origing is upper left).
   ijk[2]=(p[2]-orig[2])/sp[2];
-  //cout<<"Ijk: "<<ijk[0]<<" "<<ijk[1]<<" "<<ijk[2]<<endl;
+  //std::cout<<"point id: "<<k<<"Ijk: "<<ijk[0]<<" "<<ijk[1]<<" "<<ijk[2]<<std::endl;
   reslicer->SetCenter(ijk[0],ijk[1],ijk[2]);
-  //cout<<"Original point: "<<k<<" "<<p[0]<<" "<<p[1]<<" "<<p[2]<<endl;
-  //cout<<"Proing point: "<<k<<" "<<ijk[0]<<" "<<ijk[1]<<" "<<ijk[2]<<endl;
    
    switch(this->GetAxisMode()) {
      case VTK_HESSIAN:
@@ -389,24 +419,15 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
    reslicer->Update();
    //cout<<"After reslice"<<endl;
    
-   /*
-   if (k<300)
-   {
-     vtkStructuredPointsWriter *w = vtkStructuredPointsWriter::New();
-     char file[256];
-     sprintf(file,"/var/tmp/kk-%d.vtk",k);
-     w->SetFileName(file);
-     w->SetInput(reslicer->GetOutput());
-     w->Write();
-   }
-   */
-   
-   this->WallSolver->SetInputData(reslicer->GetOutput());
+   vtkComputeAirwayWall *worker = this->WallSolver;
+   worker->SetInputData(reslicer->GetOutput());
+
+   //this->WallSolver->SetInputData(reslicer->GetOutput());
    //Maybe we have to update the threshold depending on the center value.
-   if (this->WallSolver->GetMethod()==2) {
+   if (worker->GetMethod()==2) {
      // Use self tune phase congruency
      vtkComputeAirwayWall *tmp = vtkComputeAirwayWall::New();
-     this->SetWallSolver(this->WallSolver,tmp);
+     this->SetWallSolver(worker,tmp);
      tmp->SetInputData(reslicer->GetOutput());
      tmp->ActivateSectorOff();
      tmp->SetBandwidth(1.577154);
@@ -429,38 +450,43 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
      double *factors;
      switch (this->Reconstruction) {
        case VTK_SMOOTH:
-	 factors = this->SelfTuneModelSmooth;
-	 break;
+         factors = this->SelfTuneModelSmooth;
+         break;
        case VTK_SHARP:
-	 factors = this->SelfTuneModelSharp;
-	 break;
+         factors = this->SelfTuneModelSharp;
+         break;
      }
      ml = exp(factors[0]*pow(log(wt*factors[1]),factors[2]));
-     this->WallSolver->SetMultiplicativeFactor(ml);
+     worker->SetMultiplicativeFactor(ml);
    }
    
    //cout<<"Update solver"<<endl;
-   this->WallSolver->Update();
+   worker->Update();
    //cout<<"Done solver"<<endl;
    
-   
    // Fit ellipse model to obtain those parameters ->Move this to compute airway wall
-   
+   vtkEllipseFitting *eifit = vtkEllipseFitting::New();
+   vtkEllipseFitting *eofit = vtkEllipseFitting::New();
    //cout<<"Ellipse fitting 1: "<<this->WallSolver->GetInnerContour()->GetNumberOfPoints()<<endl;
-   eifit->SetInputData(this->WallSolver->GetInnerContour());
-   eifit->Update();
+   if (worker->GetInnerContour()->GetNumberOfPoints() >= 3)
+   {
+     eifit->SetInputData(worker->GetInnerContour());
+     eifit->Update();
+   }
    //cout<<"Ellipse fitting 2: "<<this->WallSolver->GetOuterContour()->GetNumberOfPoints()<<endl;
-   eofit->SetInputData(this->WallSolver->GetOuterContour());
-   eofit->Update();
+    if (worker->GetOuterContour()->GetNumberOfPoints() >= 3)
+    {
+      eofit->SetInputData(worker->GetOuterContour());
+      eofit->Update();
+    }
    //cout<<"Done ellipse fitting"<<endl;
    
    // Collect results and assign them to polydata
- 
-   for (int c = 0; c<this->WallSolver->GetNumberOfQuantities();c++) {
-     mean->SetComponent(k,c,this->WallSolver->GetStatsMean()->GetComponent(2*c,0));
-     std->SetComponent(k,c,this->WallSolver->GetStatsMean()->GetComponent((2*c)+1,0));
-     min->SetComponent(k,c,this->WallSolver->GetStatsMinMax()->GetComponent(2*c,0));
-     max->SetComponent(k,c,this->WallSolver->GetStatsMinMax()->GetComponent((2*c)+1,0));
+   for (int c = 0; c < worker->GetNumberOfQuantities();c++) {
+     mean->SetComponent(k,c,worker->GetStatsMean()->GetComponent(2*c,0));
+     std->SetComponent(k,c,worker->GetStatsMean()->GetComponent((2*c)+1,0));
+     min->SetComponent(k,c,worker->GetStatsMinMax()->GetComponent(2*c,0));
+     max->SetComponent(k,c,worker->GetStatsMinMax()->GetComponent((2*c)+1,0));
    }
    
    ellipse->SetComponent(k,0,eifit->GetMinorAxisLength()*resolution);
@@ -483,10 +509,11 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
      writer->Delete();
   }
   
+    eifit->Delete();
+    eofit->Delete();
   }
   
-  eifit->Delete();
-  eofit->Delete();
+
   //Compute stats for each line if lines are available
   if (input->GetLines()) {
     this->ComputeCellData();
@@ -513,16 +540,16 @@ void vtkComputeAirwayWallPolyData::ComputeCellData()
    vtkDoubleArray *min = vtkDoubleArray::New();
    vtkDoubleArray *max = vtkDoubleArray::New();
   
-   mean->SetName("Mean");
+   mean->SetName(this->arrayNameMean);
    mean->SetNumberOfComponents(nc);
    mean->SetNumberOfTuples(nl);
-   std->SetName("Std");
+   std->SetName(this->arrayNameStd);
    std->SetNumberOfComponents(nc);
    std->SetNumberOfTuples(nl);
-   min->SetName("Min");
+   min->SetName(this->arrayNameMin);
    min->SetNumberOfComponents(nc);
    min->SetNumberOfTuples(nl);
-   max->SetName("Max");
+   max->SetName(this->arrayNameMax);
    max->SetNumberOfComponents(nc);
    max->SetNumberOfTuples(nl);
    
@@ -536,16 +563,15 @@ void vtkComputeAirwayWallPolyData::ComputeCellData()
    min->Delete();
    max->Delete();
   
-  vtkDataArray *meanp = output->GetPointData()->GetScalars("Mean");
-  vtkDataArray *stdp = output->GetPointData()->GetScalars("Std");
-  vtkDataArray *minp = output->GetPointData()->GetScalars("Min");
-  vtkDataArray *maxp = output->GetPointData()->GetScalars("Max");
+  vtkDataArray *meanp = output->GetPointData()->GetArray(this->arrayNameMean);
+  vtkDataArray *stdp = output->GetPointData()->GetArray(this->arrayNameStd);
+  vtkDataArray *minp = output->GetPointData()->GetArray(this->arrayNameMin);
+  vtkDataArray *maxp = output->GetPointData()->GetArray(this->arrayNameMax);
   
-  vtkDataArray *meanc = output->GetCellData()->GetScalars("Mean");
-  vtkDataArray *stdc = output->GetCellData()->GetScalars("Std");
-  vtkDataArray *minc = output->GetCellData()->GetScalars("Min");
-  vtkDataArray *maxc = output->GetCellData()->GetScalars("Max"); 
-  
+  vtkDataArray *meanc = output->GetCellData()->GetScalars(this->arrayNameMean);
+  vtkDataArray *stdc = output->GetCellData()->GetScalars(this->arrayNameStd);
+  vtkDataArray *minc = output->GetCellData()->GetScalars(this->arrayNameMin);
+  vtkDataArray *maxc = output->GetCellData()->GetScalars(this->arrayNameMax);
   
   inLines->InitTraversal();
   for (int id=0; inLines->GetNextCell(npts,pts); id++)
@@ -609,9 +635,6 @@ void vtkComputeAirwayWallPolyData::ComputeCellData()
   }
   
 }
-
-    
-    
     
 
 void vtkComputeAirwayWallPolyData::SetWallSolver(vtkComputeAirwayWall *ref, vtkComputeAirwayWall *out) {
