@@ -50,6 +50,11 @@
           <longflag>ctSigma</longflag>
           <description>The CT scanner point spread function sigma. 0.0 by default.</description>
           <label>Vessel Sigma Distance</label>
+          <constraints>
+            <minimum>0</minimum>
+            <maximum>5.0</maximum>
+            <step>0.1</step>
+          </constraints>
           <default>0.0</default>
       </double>
       
@@ -59,13 +64,24 @@
           <flag>r</flag>
           <description>Stencil radius in mm.</description>
           <label>radius</label>
+          <constraints>
+            <minimum>0.1</minimum>
+            <maximum>10</maximum>
+            <step>0.1</step>
+          </constraints>
           <default>1.0</default>
       </double>
+    
       <double>
           <name>height</name>
           <longflag>height</longflag>
           <description>Cylinder stencil height in mm. Default is 1mm. This should typically be set to the inter-particle distance.</description>
           <label>radius</label>
+          <constraints>
+            <minimum>0.1</minimum>
+            <maximum>10</maximum>
+            <step>0.1</step>
+          </constraints>
           <default>1.0</default>
       </double>
       
@@ -75,7 +91,7 @@
           <channel>input</channel>
           <flag>v</flag>
           <longflag>vessel</longflag>
-          <description><![CDATA[Set this flag to indicate that in the input particles correspond to vessels. Default: False.]]></description>
+          <description><![CDATA[Set this flag to indicate that in the input particles correspond to vessels.]]></description>
           <default>false</default>
       </boolean>
       <boolean>
@@ -84,7 +100,7 @@
           <channel>input</channel>
           <flag>a</flag>
           <longflag>airway</longflag>
-          <description><![CDATA[Set this flag to indicate that in the input particles correspond to airways. Default: False.]]></description>
+          <description><![CDATA[Set this flag to indicate that in the input particles correspond to airways.]]></description>
           <default>false</default>
       </boolean>
       <boolean>
@@ -93,7 +109,7 @@
           <channel>input</channel>
           <flag>f</flag>
           <longflag>fissure</longflag>
-          <description><![CDATA[Set this flag to indicate that in the input particles correspond to fissures. Default: False.]]></description>
+          <description><![CDATA[Set this flag to indicate that in the input particles correspond to fissures.]]></description>
           <default>false</default>
       </boolean>
       <boolean>
@@ -102,7 +118,7 @@
           <channel>input</channel>
           <flag>s</flag>
           <longflag>sphere</longflag>
-          <description><![CDATA[Set this flag to indicate that the sphere stencil should be used. Default: False.]]></description>
+          <description><![CDATA[Set this flag to indicate that the sphere stencil should be used.]]></description>
           <default>false</default>
       </boolean>
       <boolean>
@@ -111,7 +127,7 @@
           <channel>input</channel>
           <flag>c</flag>
           <longflag>cylinder</longflag>
-          <description><![CDATA[Set this flag to indicate that the cylinder stencil should be used. Default: False.]]></description>
+          <description><![CDATA[Set this flag to indicate that the cylinder stencil should be used.]]></description>
           <default>false</default>
       </boolean>
       <boolean>
@@ -119,7 +135,7 @@
           <label>scaleStencil</label>
           <channel>input</channel>
           <longflag>scale</longflag>
-          <description><![CDATA[Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag). Default: False.]]></description>
+          <description><![CDATA[Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).]]></description>
           <default>false</default>
       </boolean>
     </parameters>
