@@ -8,28 +8,26 @@
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-  and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
   <parameters>
     <label>I/O</label>
     <image>
       <name>fixedImageFileName</name>
-      <label>fixed Image FileName</label>
+      <label>fixed Labelmap FileName</label>
       <channel>input</channel>
-      <flag>f</flag>
-      <longflag>fixedImageFileName</longflag>
-      <description><![CDATA[fixed Image File Name]]></description>
+      <longflag>flm</longflag>
+      <description><![CDATA[fixed Labelmap File Name]]></description>
       <default>NA</default>
     </image>       
 
     <image>
       <name>movingImageFileName</name>
-      <label>moving Image FileName</label>
+      <label>moving Labelmap FileName</label>
       <channel>input</channel>
-      <flag>m</flag>
-      <longflag>movingImageFileName</longflag>
-      <description><![CDATA[moving Image FileName]]></description>
+      <longflag>mlm</longflag>
+      <description><![CDATA[moving Labelmap FileName]]></description>
       <default>NA</default>
     </image>   
 
@@ -37,8 +35,8 @@
       <name>resampledLabelMapFileName</name>
       <label>Resampled Labelmap</label>
       <channel>output</channel>
-      <flag>r</flag>
-      <description><![CDATA[Resampled label map file name]]></description>
+      <longflag>olm</longflag>
+      <description><![CDATA[Output Resampled label map file name]]></description>
       <default>NA</default>
     </image> 
 
@@ -46,8 +44,8 @@
       <name>outputTransformFileName</name>
       <label>output Transform FileName</label>
       <channel>output</channel>
-      <flag>q</flag>
-      <longflag>outputTransform</longflag>
+      <flag>t</flag>
+      <longflag>otx</longflag>
       <description><![CDATA[Output transform file name]]></description>
       <default>NA</default>
     </transform> 
@@ -56,7 +54,6 @@
       <name>movingImageID</name>
       <label>moving Image subject ID</label>
       <channel>input</channel>
-      <flag>s</flag>
       <longflag>movingImageID</longflag>
       <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
       <default>NA</default>
@@ -66,7 +63,6 @@
       <name>fixedImageID</name>
       <label>Fixed Image subject ID</label>
       <channel>input</channel>
-      <flag>u</flag>
       <longflag>fixedImageID</longflag>
       <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
       <default>NA</default>
@@ -76,7 +72,6 @@
       <name>registrationID</name>
       <label>registration ID ID</label>
       <channel>input</channel>
-      <flag>v</flag>
       <longflag>registrationID</longflag>
       <default>NA</default>
       <description><![CDATA[unique Id for the registration process.]]></description>
@@ -99,7 +94,6 @@
       <name>maxStepLength</name>
       <label>max Step Length</label>
       <channel>input</channel>
-      <flag>x</flag>
       <longflag>max</longflag>
       <description><![CDATA[maxStepLength]]></description>
       <default>1.0</default>
@@ -109,7 +103,6 @@
       <name>minStepLength</name>
       <label>min Step Length</label>
       <channel>input</channel>
-      <flag>y</flag>
       <longflag>min</longflag>
       <description><![CDATA[minStepLength]]></description>
       <default>0.001</default>
@@ -129,7 +122,6 @@
       <name>translationScale</name>
       <label>translation Scale</label>
       <channel>input</channel>
-      <flag>t</flag>
       <longflag>translationScale</longflag>
       <description><![CDATA[translationScale]]></description>
       <default>0.001</default>
@@ -140,7 +132,7 @@
       <label>Image dimension</label>
       <channel>input</channel>
       <flag>d</flag>
-      <longflag>dimension</longflag>
+      <longflag>dim</longflag>
       <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
       <default>3</default>
     </integer> 

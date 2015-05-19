@@ -3,8 +3,8 @@
 
 cip::ChestConventions::ChestConventions()
 {
-  m_NumberOfEnumeratedChestRegions = 53;
-  m_NumberOfEnumeratedChestTypes   = 82;
+  m_NumberOfEnumeratedChestRegions = 69;
+  m_NumberOfEnumeratedChestTypes   = 84;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -14,45 +14,43 @@ cip::ChestConventions::ChestConventions()
   // left lung, not lower third, etc. The exception to this rule
   // is that both left and right lungs are subordinate to
   // WHOLELUNG, not LEFT and RIGHT
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTSUPERIORLOBE ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTSUPERIORLOBE ),
 					       (unsigned char)( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTINFERIORLOBE ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTINFERIORLOBE ),
 					       (unsigned char)( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTSUPERIORLOBE ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTSUPERIORLOBE ),
 					       (unsigned char)( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMIDDLELOBE ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMIDDLELOBE ),
 					       (unsigned char)( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTINFERIORLOBE ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTINFERIORLOBE ),
 					       (unsigned char)( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTLUNG ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTLUNG ),
 					       (unsigned char)( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTLUNG ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTLUNG ),
 					       (unsigned char)( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTUPPERTHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTUPPERTHIRD ),
 					       (unsigned char)( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTMIDDLETHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTMIDDLETHIRD ),
 					       (unsigned char)( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTLOWERTHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTLOWERTHIRD ),
 					       (unsigned char)( LEFTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTUPPERTHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTUPPERTHIRD ),
 					       (unsigned char)( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMIDDLETHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMIDDLETHIRD ),
 					       (unsigned char)( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTLOWERTHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTLOWERTHIRD ),
 					       (unsigned char)( RIGHTLUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLELUNG ), 
-					       (unsigned char)( UNDEFINEDREGION ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLEHEART ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( WHOLEHEART ),
 					       (unsigned char)( MEDIASTINUM ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( AORTA ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( AORTA ),
 					       (unsigned char)( MEDIASTINUM ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PULMONARYARTERY ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PULMONARYARTERY ),
 					       (unsigned char)( MEDIASTINUM ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LOWERTHIRD ),
 					       (unsigned char)( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MIDDLETHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MIDDLETHIRD ),
 					       (unsigned char)( WHOLELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( UPPERTHIRD ), 
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( UPPERTHIRD ),
 					       (unsigned char)( WHOLELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( MEDIASTINUM ),
                                                (unsigned char)( OUTSIDELUNG ) ) );
@@ -70,8 +68,6 @@ cip::ChestConventions::ChestConventions()
                                                (unsigned char)( OUTSIDELUNG ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
                                                (unsigned char)( OUTSIDELUNG ) ) );
-  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SKELETON ),
-                                               (unsigned char)( UNDEFINEDREGION ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( STERNUM ),
                                                (unsigned char)( SKELETON ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( HUMERI ),
@@ -136,7 +132,42 @@ cip::ChestConventions::ChestConventions()
                                                (unsigned char)( SKELETON ) ) );
   ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTVENTRICLE ),
                                                (unsigned char)( WHOLEHEART ) ) );
-
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTVENTRICLE ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTVENTRICLE ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTATRIUM ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTATRIUM ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTATRIUM ),
+                                               (unsigned char)( WHOLEHEART ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTPECTORALIS ),
+                                               (unsigned char)( PECTORALIS ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTPECTORALIS ),
+                                               (unsigned char)( PECTORALIS ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( TRACHEA2 ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTMAINBRONCHUS ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTMAINBRONCHUS ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( ESOPHAGUS ),
+                                               (unsigned char)( MEDIASTINUM ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTCHESTWALL ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTCHESTWALL ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( LEFTDIAPHRAGM ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( RIGHTDIAPHRAGM ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( HIATUS ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( PECTORALIS ),
+                                               (unsigned char)( OUTSIDELUNG ) ) );
+  ChestRegionHierarchyMap.insert( Region_Pair( (unsigned char)( SPINALCORD ),
+                                               (unsigned char)( SPINE ) ) );
 
 
   ChestRegions.push_back( (unsigned char)( UNDEFINEDREGION ) );
@@ -192,7 +223,24 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( LEFTCORONARYARTERY ) );
   ChestRegions.push_back( (unsigned char)( SPINE ) );
   ChestRegions.push_back( (unsigned char)( LEFTVENTRICLE ) );
-  
+  ChestRegions.push_back( (unsigned char)( RIGHTVENTRICLE ) );
+  ChestRegions.push_back( (unsigned char)( LEFTATRIUM ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTATRIUM ) );
+  ChestRegions.push_back( (unsigned char)( LEFTPECTORALIS ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTPECTORALIS ) );
+  ChestRegions.push_back( (unsigned char)( TRACHEA2 ) );
+  ChestRegions.push_back( (unsigned char)( LEFTMAINBRONCHUS ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTMAINBRONCHUS ) );
+  ChestRegions.push_back( (unsigned char)( ESOPHAGUS ) );
+  ChestRegions.push_back( (unsigned char)( LEFTCHESTWALL ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTCHESTWALL ) );
+  ChestRegions.push_back( (unsigned char)( LEFTDIAPHRAGM ) );
+  ChestRegions.push_back( (unsigned char)( RIGHTDIAPHRAGM ) );
+  ChestRegions.push_back( (unsigned char)( HIATUS ) );
+  ChestRegions.push_back( (unsigned char)( PECTORALIS ) );
+  ChestRegions.push_back( (unsigned char)( SPINALCORD ) );
+
+
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
   ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
   ChestTypes.push_back( (unsigned char)( AIRWAY ) );
@@ -200,10 +248,10 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( EMPHYSEMATOUS ) );
   ChestTypes.push_back( (unsigned char)( GROUNDGLASS ) );
   ChestTypes.push_back( (unsigned char)( RETICULAR ) );
-  ChestTypes.push_back( (unsigned char)( NODULAR ) ); 
-  ChestTypes.push_back( (unsigned char)( OBLIQUEFISSURE ) ); 
-  ChestTypes.push_back( (unsigned char)( HORIZONTALFISSURE ) ); 
-  ChestTypes.push_back( (unsigned char)( MILDPARASEPTALEMPHYSEMA ) ); 
+  ChestTypes.push_back( (unsigned char)( NODULAR ) );
+  ChestTypes.push_back( (unsigned char)( OBLIQUEFISSURE ) );
+  ChestTypes.push_back( (unsigned char)( HORIZONTALFISSURE ) );
+  ChestTypes.push_back( (unsigned char)( MILDPARASEPTALEMPHYSEMA ) );
   ChestTypes.push_back( (unsigned char)( MODERATEPARASEPTALEMPHYSEMA ) );
   ChestTypes.push_back( (unsigned char)( SEVEREPARASEPTALEMPHYSEMA ) );
   ChestTypes.push_back( (unsigned char)( MILDBULLA ) );
@@ -274,22 +322,24 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( NONBRONCHIECTATICAIRWAY ) );
   ChestTypes.push_back( (unsigned char)( AMBIGUOUSBRONCHIECTATICAIRWAY ) );
   ChestTypes.push_back( (unsigned char)( MUSCLE ) );
-  ChestTypes.push_back( (unsigned char)( DIAPHRAGM ) );
-  
+  ChestTypes.push_back( (unsigned char)( HERNIA ) );
+  ChestTypes.push_back( (unsigned char)( BONEMARROW ) );
+  ChestTypes.push_back( (unsigned char)( BONE ) );
+
   ChestRegionNames.push_back( "UndefinedRegion" );
-  ChestRegionNames.push_back( "WholeLung" ); 
-  ChestRegionNames.push_back( "RightLung" ); 
-  ChestRegionNames.push_back( "LeftLung" ); 
+  ChestRegionNames.push_back( "WholeLung" );
+  ChestRegionNames.push_back( "RightLung" );
+  ChestRegionNames.push_back( "LeftLung" );
   ChestRegionNames.push_back( "RightSuperiorLobe" );
-  ChestRegionNames.push_back( "RightMiddleLobe" ); 
+  ChestRegionNames.push_back( "RightMiddleLobe" );
   ChestRegionNames.push_back( "RightInferiorLobe" );
-  ChestRegionNames.push_back( "LeftSuperiorLobe" ); 
+  ChestRegionNames.push_back( "LeftSuperiorLobe" );
   ChestRegionNames.push_back( "LeftInferiorLobe" );
-  ChestRegionNames.push_back( "LeftUpperThird" ); 
+  ChestRegionNames.push_back( "LeftUpperThird" );
   ChestRegionNames.push_back( "LeftMiddleThird" );
-  ChestRegionNames.push_back( "LeftLowerThird" ); 
+  ChestRegionNames.push_back( "LeftLowerThird" );
   ChestRegionNames.push_back( "RightUpperThird" );
-  ChestRegionNames.push_back( "RightMiddleThird" ); 
+  ChestRegionNames.push_back( "RightMiddleThird" );
   ChestRegionNames.push_back( "RightLowerThird" );
   ChestRegionNames.push_back( "Mediastinum" );
   ChestRegionNames.push_back( "WholeHeart" );
@@ -329,7 +379,23 @@ cip::ChestConventions::ChestConventions()
   ChestRegionNames.push_back( "LeftCoronaryArtery" );
   ChestRegionNames.push_back( "Spine" );
   ChestRegionNames.push_back( "LeftVentricle" );
-  
+  ChestRegionNames.push_back( "RightVentricle" );
+  ChestRegionNames.push_back( "LeftAtrium" );
+  ChestRegionNames.push_back( "RightAtrium" );
+  ChestRegionNames.push_back( "LeftPectoralis" );
+  ChestRegionNames.push_back( "RightPectoralis" );
+  ChestRegionNames.push_back( "Trachea2" );
+  ChestRegionNames.push_back( "LeftMainBronchus" );
+  ChestRegionNames.push_back( "RightMainBronchus" );
+  ChestRegionNames.push_back( "Esophagus" );
+  ChestRegionNames.push_back( "LeftChestWall" );
+  ChestRegionNames.push_back( "RightChestWall" );
+  ChestRegionNames.push_back( "LeftDiaphragm" );
+  ChestRegionNames.push_back( "RightDiaphragm" );
+  ChestRegionNames.push_back( "Hiatus" );
+  ChestRegionNames.push_back( "Pectoralis" );
+  ChestRegionNames.push_back( "SpinalCord" );
+
   ChestTypeNames.push_back( "UndefinedType" );
   ChestTypeNames.push_back( "NormalParenchyma" );
   ChestTypeNames.push_back( "Airway" );
@@ -337,10 +403,10 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "Emphysematous" );
   ChestTypeNames.push_back( "GroundGlass" );
   ChestTypeNames.push_back( "Reticular" );
-  ChestTypeNames.push_back( "Nodular" ); 
-  ChestTypeNames.push_back( "ObliqueFissure" ); 
-  ChestTypeNames.push_back( "HorizontalFissure" ); 
-  ChestTypeNames.push_back( "MildParaseptalEmphysema" ); 
+  ChestTypeNames.push_back( "Nodular" );
+  ChestTypeNames.push_back( "ObliqueFissure" );
+  ChestTypeNames.push_back( "HorizontalFissure" );
+  ChestTypeNames.push_back( "MildParaseptalEmphysema" );
   ChestTypeNames.push_back( "ModerateParaseptalEmphysema" );
   ChestTypeNames.push_back( "SevereParaseptalEmphysema" );
   ChestTypeNames.push_back( "MildBulla" );
@@ -411,8 +477,10 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "NonBronchiectaticAirway" );
   ChestTypeNames.push_back( "AmbiguousBronchiectaticAirway" );
   ChestTypeNames.push_back( "Muscle" );
-  ChestTypeNames.push_back( "Diaphragm" );
-  
+  ChestTypeNames.push_back( "Hernia" );
+  ChestTypeNames.push_back( "BoneMarrow" );
+  ChestTypeNames.push_back( "Bone" );
+
   BodyCompositionPhenotypeNames.push_back( "AxialCSA" );
   BodyCompositionPhenotypeNames.push_back( "CoronalCSA" );
   BodyCompositionPhenotypeNames.push_back( "SagittalCSA" );
@@ -534,7 +602,7 @@ cip::ChestConventions::ChestConventions()
   double* t053 = new double[3]; t053[0] = 0.48; t053[1] = 0.48; t053[2] = 0.48; ChestTypeColors.push_back( t053 ); //PECTORALISMINOR
   double* t054 = new double[3]; t054[0] = 0.47; t054[1] = 0.47; t054[2] = 0.47; ChestTypeColors.push_back( t054 ); //PECTORALISMAJOR
   double* t055 = new double[3]; t055[0] = 0.46; t055[1] = 0.46; t055[2] = 0.46; ChestTypeColors.push_back( t055 ); //ANTERIORSCALENE
-  double* t056 = new double[3]; t056[0] = 0.93; t056[1] = 0.01; t056[2] = 0.10; ChestTypeColors.push_back( t056 ); //FISSURE     
+  double* t056 = new double[3]; t056[0] = 0.93; t056[1] = 0.01; t056[2] = 0.10; ChestTypeColors.push_back( t056 ); //FISSURE
   // The vessel generation colors are identical to the airway generation colors except that the red chanel
   // is 0.01 less than the airway generation red channel. This ensures that the colors are unique
   double* t057 = new double[3]; t057[0] = 0.00; t057[1] = 0.00; t057[2] = 0.00; ChestTypeColors.push_back( t057 ); //VESSELGENERATION0
@@ -548,32 +616,34 @@ cip::ChestConventions::ChestConventions()
   double* t065 = new double[3]; t065[0] = 0.50; t065[1] = 0.50; t065[2] = 0.00; ChestTypeColors.push_back( t065 ); //VESSELGENERATION8
   double* t066 = new double[3]; t066[0] = 0.00; t066[1] = 0.50; t066[2] = 0.50; ChestTypeColors.push_back( t066 ); //VESSELGENERATION9
   double* t067 = new double[3]; t067[0] = 0.44; t067[1] = 0.44; t067[2] = 0.44; ChestTypeColors.push_back( t067 ); //VESSELGENERATION10
-  
+
   double* t068 = new double[3]; t068[0] = 0.00; t068[1] = 0.68; t068[2] = 0.00; ChestTypeColors.push_back( t068 ); //PARASEPTALEMPHYSEMA
   double* t069 = new double[3]; t069[0] = 0.00; t069[1] = 0.69; t069[2] = 0.69; ChestTypeColors.push_back( t069 ); //CENTRILOBULAREMPHYSEMA
   double* t070 = new double[3]; t070[0] = 0.00; t070[1] = 0.00; t070[2] = 0.70; ChestTypeColors.push_back( t070 ); //PANLOBULAREMPHYSEMA
-  
+
   double* t071 = new double[3]; t071[0] = 0.59; t071[1] = 0.65; t071[2] = 0.20; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
   double* t072 = new double[3]; t072[0] = 0.58; t072[1] = 0.65; t072[2] = 0.20; ChestTypeColors.push_back( t072 ); //VISCERALFAT
-  
+
   double* t073 = new double[3]; t073[0] = 0.85; t073[1] = 0.75; t073[2] = 0.85; ChestTypeColors.push_back( t073 ); //INTERMEDIATEBRONCHUS
   double* t074 = new double[3]; t074[0] = 1.00; t074[1] = 0.02; t074[2] = 0.00; ChestTypeColors.push_back( t074 ); //LOWERLOBEBRONCHUS
   double* t075 = new double[3]; t075[0] = 0.98; t075[1] = 0.50; t075[2] = 0.45; ChestTypeColors.push_back( t075 ); //SUPERIORDIVISIONBRONCHUS
   double* t076 = new double[3]; t076[0] = 0.00; t076[1] = 0.03; t076[2] = 1.00; ChestTypeColors.push_back( t076 ); //LINGULARBRONCHUS
   double* t077 = new double[3]; t077[0] = 0.25; t077[1] = 0.88; t077[2] = 0.82; ChestTypeColors.push_back( t077 ); //MIDDLELOBEBRONCHUS
-  
+
   double* t078 = new double[3]; t078[0] = 0.25; t078[1] = 0.88; t078[2] = 0.81; ChestTypeColors.push_back( t078 ); //BRONCHIECTATICAIRWAY
   double* t079 = new double[3]; t079[0] = 0.25; t079[1] = 0.87; t079[2] = 0.81; ChestTypeColors.push_back( t079 ); //NONBRONCHIECTATICAIRWAY
   double* t080 = new double[3]; t080[0] = 0.25; t080[1] = 0.86; t080[2] = 0.81; ChestTypeColors.push_back( t080 ); //AMBIGUOUSBRONCHIECTATICAIRWAY
   double* t081 = new double[3]; t081[0] = 0.90; t081[1] = 0.00; t081[2] = 0.00; ChestTypeColors.push_back( t081 ); //MUSCLE
-  double* t082 = new double[3]; t082[0] = 0.91; t082[1] = 0.00; t082[2] = 0.00; ChestTypeColors.push_back( t082 ); //DIAPHRAGM
-  
+  double* t082 = new double[3]; t082[0] = 0.91; t082[1] = 0.00; t082[2] = 0.00; ChestTypeColors.push_back( t082 ); //HERNIA
+  double* t083 = new double[3]; t083[0] = 0.92; t083[1] = 0.00; t083[2] = 0.00; ChestTypeColors.push_back( t083 ); //BONEMARROW
+  double* t084 = new double[3]; t084[0] = 0.93; t084[1] = 0.00; t084[2] = 0.00; ChestTypeColors.push_back( t084 ); //BONE
+
   //
   // Each region is associated with a color. This is generally
-  // useful creating overlay images for quick segmentation inspectio, 
-  // e.g. If colors are reassigned here, they should be UNIQUE. 
+  // useful creating overlay images for quick segmentation inspectio,
+  // e.g. If colors are reassigned here, they should be UNIQUE.
   //
-  double* r001 = new double[3]; r001[0] = 0.00; r001[1] = 0.00; r001[2] = 0.00; ChestRegionColors.push_back( r001 ); //UNDEFINEDREGION      
+  double* r001 = new double[3]; r001[0] = 0.00; r001[1] = 0.00; r001[2] = 0.00; ChestRegionColors.push_back( r001 ); //UNDEFINEDREGION
   double* r002 = new double[3]; r002[0] = 0.42; r002[1] = 0.38; r002[2] = 0.75; ChestRegionColors.push_back( r002 ); //WHOLELUNG
   double* r003 = new double[3]; r003[0] = 0.26; r003[1] = 0.64; r003[2] = 0.10; ChestRegionColors.push_back( r003 ); //RIGHTLUNG
   double* r004 = new double[3]; r004[0] = 0.80; r004[1] = 0.11; r004[2] = 0.36; ChestRegionColors.push_back( r004 ); //LEFTLUNG
@@ -626,6 +696,22 @@ cip::ChestConventions::ChestConventions()
   double* r051 = new double[3]; r051[0] = 0.49; r051[1] = 0.49; r051[2] = 0.71; ChestRegionColors.push_back( r051 ); //LEFTCORONARYARTERY
   double* r052 = new double[3]; r052[0] = 0.49; r052[1] = 0.49; r052[2] = 0.72; ChestRegionColors.push_back( r052 ); //SPINE
   double* r053 = new double[3]; r053[0] = 0.49; r053[1] = 0.49; r053[2] = 0.73; ChestRegionColors.push_back( r053 ); //LEFTVENTRICLE
+  double* r054 = new double[3]; r054[0] = 0.49; r054[1] = 0.49; r054[2] = 0.74; ChestRegionColors.push_back( r054 ); //RIGHTVENTRICLE
+  double* r055 = new double[3]; r055[0] = 0.49; r055[1] = 0.49; r055[2] = 0.75; ChestRegionColors.push_back( r055 ); //LEFTATRIUM
+  double* r056 = new double[3]; r056[0] = 0.49; r056[1] = 0.49; r056[2] = 0.76; ChestRegionColors.push_back( r056 ); //RIGHTATRIUM
+  double* r057 = new double[3]; r057[0] = 0.49; r057[1] = 0.49; r057[2] = 0.77; ChestRegionColors.push_back( r057 ); //LEFTPECTORALIS
+  double* r058 = new double[3]; r058[0] = 0.49; r058[1] = 0.49; r058[2] = 0.78; ChestRegionColors.push_back( r058 ); //RIGHTPECTORALIS
+  double* r059 = new double[3]; r059[0] = 0.49; r059[1] = 0.49; r059[2] = 0.79; ChestRegionColors.push_back( r059 ); //TRACHEA2
+  double* r060 = new double[3]; r060[0] = 0.49; r060[1] = 0.49; r060[2] = 0.80; ChestRegionColors.push_back( r060 ); //LEFTMAINBRONCHIUS
+  double* r061 = new double[3]; r061[0] = 0.49; r061[1] = 0.49; r061[2] = 0.81; ChestRegionColors.push_back( r061 ); //RIGHTMANINBRONCHIUS
+  double* r062 = new double[3]; r062[0] = 0.49; r062[1] = 0.49; r062[2] = 0.82; ChestRegionColors.push_back( r062 ); //ESOPHAGUS
+  double* r063 = new double[3]; r063[0] = 0.49; r063[1] = 0.49; r063[2] = 0.83; ChestRegionColors.push_back( r063 ); //LEFTCHESTWALL
+  double* r064 = new double[3]; r064[0] = 0.49; r064[1] = 0.49; r064[2] = 0.84; ChestRegionColors.push_back( r064 ); //RIGHTCHESTWALL
+  double* r065 = new double[3]; r065[0] = 0.49; r065[1] = 0.49; r065[2] = 0.85; ChestRegionColors.push_back( r065 ); //LEFTDIAPHRAGM
+  double* r066 = new double[3]; r066[0] = 0.49; r066[1] = 0.49; r066[2] = 0.86; ChestRegionColors.push_back( r066 ); //RIGHTDIAPHRAGM
+  double* r067 = new double[3]; r067[0] = 0.49; r067[1] = 0.49; r067[2] = 0.87; ChestRegionColors.push_back( r067 ); //HIATUS
+  double* r068 = new double[3]; r068[0] = 0.49; r068[1] = 0.49; r068[2] = 0.88; ChestRegionColors.push_back( r068 ); //PECTORALIS
+  double* r069 = new double[3]; r069[0] = 0.49; r069[1] = 0.49; r069[2] = 0.89; ChestRegionColors.push_back( r069 ); //SPINALCORD
 }
 
 cip::ChestConventions::~ChestConventions()
@@ -652,45 +738,33 @@ unsigned char cip::ChestConventions::GetNumberOfEnumeratedChestTypes() const
 }
 
 /** This method checks if the chest region 'subordinate' is within
- *  the chest region 'superior'. It assumes that all chest regions are
- *  within the WHOLELUNG lung region. TODO: extend do deal with
- *  chest, not just lung */
+ *  the chest region 'superior'. */
 bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( unsigned char subordinate, unsigned char superior )
 {
-  //
   // No matter what the superior and subordinate regions are (even
   // if they are undefined regions), if they are the same then by
   // convention the subordinate is a subset of the superior, so
   // return true
-  //
   if ( subordinate == superior )
     {
       return true;
     }
-  
-  //
+
   // The undefined region does not belong to any other
   // region (except the undefined region itself). Similarly,
   // nothing belongs to the undefined region (except the undefined
   // region). So if the above test failed, then we're considering
   // the relationship between a defined region and and undefined
   // region. Therefore return false.
-  //
   if ( subordinate == (unsigned char)( UNDEFINEDREGION ) ||
        superior == (unsigned char)( UNDEFINEDREGION ) )
     {
       return false;
     }
-  
-  if ( superior == (unsigned char)( WHOLELUNG ) )
-    {
-      return true;
-    }
-  
+
   unsigned char subordinateTemp = subordinate;
   
-  while ( subordinateTemp != (unsigned char)( WHOLELUNG ) && 
-	  subordinateTemp != (unsigned char)( UNDEFINEDREGION ) )
+  while ( ChestRegionHierarchyMap.find(subordinateTemp) != ChestRegionHierarchyMap.end() )
     {
       if ( ChestRegionHierarchyMap[subordinateTemp] == superior )
 	{
@@ -701,7 +775,7 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( uns
           subordinateTemp = ChestRegionHierarchyMap[subordinateTemp];
 	}
     }
-  
+
   return false;
 }
 
@@ -720,13 +794,13 @@ unsigned char cip::ChestConventions::GetChestRegionFromValue( unsigned short val
 /** The 'color' param is assumed to have three components, each in
  *  the interval [0,1]. All chest type colors will be tested until a
  *  color match is found. If no match is found, 'UNDEFINEDTYPYE'
- *  will be returned */  
+ *  will be returned */
 unsigned char cip::ChestConventions::GetChestTypeFromColor( double* color ) const
 {
   for ( unsigned int i=0; i<m_NumberOfEnumeratedChestTypes; i++ )
     {
-      if ( ChestTypeColors[i][0] == color[0] && ChestTypeColors[i][1] == color[1] && 
-  	   ChestTypeColors[i][2] == color[2] )          
+      if ( ChestTypeColors[i][0] == color[0] && ChestTypeColors[i][1] == color[1] &&
+  	   ChestTypeColors[i][2] == color[2] )
   	{
           return (unsigned char)( i );
   	}
@@ -737,13 +811,13 @@ unsigned char cip::ChestConventions::GetChestTypeFromColor( double* color ) cons
 /** The 'color' param is assumed to have three components, each in
  *  the interval [0,1]. All chest region colors will be tested until a
  *  color match is found. If no match is found, 'UNDEFINEDTYPYE'
- *  will be returned */  
+ *  will be returned */
 unsigned char cip::ChestConventions::GetChestRegionFromColor(double* color) const
 {
   for (unsigned int i=0; i<m_NumberOfEnumeratedChestRegions; i++)
     {
-      if (ChestRegionColors[i][0] == color[0] && ChestRegionColors[i][1] == color[1] && 
-  	  ChestRegionColors[i][2] == color[2] )          
+      if (ChestRegionColors[i][0] == color[0] && ChestRegionColors[i][1] == color[1] &&
+  	  ChestRegionColors[i][2] == color[2] )
   	{
   	  return (unsigned char)(i);
   	}
@@ -766,7 +840,7 @@ std::string cip::ChestConventions::GetChestTypeName( unsigned char whichType ) c
     {
       return "UNDEFINEDTYPE";
     }
-  
+
   return ChestTypeNames[int( whichType )];
 }
 
@@ -790,9 +864,9 @@ void cip::ChestConventions::GetChestRegionColor(unsigned char whichRegion, doubl
 }
 
 /** Get the color corresponding to the chest-region chest-pair pair. The
- * color is computed as the average of the two corresponding region and type 
+ * color is computed as the average of the two corresponding region and type
  * colors unless the region or type is undefined, in which case the color of
- * the defined region or type is returned. The 'color' param is assumed to be 
+ * the defined region or type is returned. The 'color' param is assumed to be
  * an allocated 3 dimensional double pointer */
 void cip::ChestConventions::GetColorFromChestRegionChestType(unsigned char whichRegion, unsigned char whichType, double* color) const
 {
@@ -824,7 +898,7 @@ std::string cip::ChestConventions::GetChestRegionName( unsigned char whichRegion
     {
       return "UNDEFINEDREGION";
     }
-  
+
   return ChestRegionNames[int( whichRegion )];
 }
 
@@ -833,9 +907,9 @@ std::string cip::ChestConventions::GetChestRegionName( unsigned char whichRegion
 std::string cip::ChestConventions::GetChestRegionNameFromValue( unsigned short value ) const
 {
   unsigned char regionValue = 0;
-  
+
   regionValue = this->GetChestRegionFromValue(value);
-  
+
   return this->GetChestRegionName(regionValue);
 };
 
@@ -844,7 +918,7 @@ std::string cip::ChestConventions::GetChestRegionNameFromValue( unsigned short v
 std::string cip::ChestConventions::GetChestTypeNameFromValue( unsigned short value ) const
 {
   unsigned char typeValue = 0;
-      
+
   typeValue = this->GetChestTypeFromValue(value);
   return this->GetChestTypeName(typeValue);
 }
@@ -876,7 +950,7 @@ unsigned char cip::ChestConventions::GetChestRegionValueFromName( std::string re
           return ChestRegions[i];
 	}
     }
-  
+
   return (unsigned char)( UNDEFINEDREGION );
 }
 
@@ -898,7 +972,7 @@ unsigned char cip::ChestConventions::GetChestTypeValueFromName( std::string type
           return ChestTypes[i];
 	}
     }
-  
+
   return (unsigned char)( UNDEFINEDTYPE );
 }
 
@@ -914,10 +988,10 @@ unsigned char cip::ChestConventions::GetChestType( unsigned int i ) const
   return (unsigned char)( ChestTypes[i] );
 }
 
-/** Returns true if the passed string name is among the allowed body composition 
+/** Returns true if the passed string name is among the allowed body composition
  *  phenotype names and returns false otherwise */
 bool cip::ChestConventions::IsBodyCompositionPhenotypeName( std::string pheno ) const
-{  
+{
   for ( int i=0; i<this->BodyCompositionPhenotypeNames.size(); i++ )
     {
       if ( !this->BodyCompositionPhenotypeNames[i].compare( pheno ) )
@@ -925,14 +999,14 @@ bool cip::ChestConventions::IsBodyCompositionPhenotypeName( std::string pheno ) 
 	  return true;
 	}
     }
-  
+
   return false;
 }
 
 /** Returns true if the passed string name is among the allowed parenchyma
  *  phenotype names and returns false otherwise */
 bool cip::ChestConventions::IsParenchymaPhenotypeName( std::string pheno ) const
-{  
+{
   for ( int i=0; i<this->ParenchymaPhenotypeNames.size(); i++ )
     {
       if ( !this->ParenchymaPhenotypeNames[i].compare( pheno ) )
@@ -940,14 +1014,14 @@ bool cip::ChestConventions::IsParenchymaPhenotypeName( std::string pheno ) const
 	  return true;
 	}
     }
-  
+
   return false;
 }
 
-/** Returns true if the passed string name is among the allowed 
+/** Returns true if the passed string name is among the allowed
  *  phenotype names and returns false otherwise */
 bool cip::ChestConventions::IsPhenotypeName( std::string pheno ) const
-{  
+{
   for ( int i=0; i<this->ParenchymaPhenotypeNames.size(); i++ )
     {
       if ( !this->ParenchymaPhenotypeNames[i].compare( pheno ) )
@@ -971,14 +1045,14 @@ bool cip::ChestConventions::IsPhenotypeName( std::string pheno ) const
 	  return true;
 	}
     }
-  
+
   return false;
 }
 
 /** Returns true if the passed string name is among the enumerated chest
  *  types and returns false otherwise */
 bool cip::ChestConventions::IsChestType( std::string chestType ) const
-{  
+{
   for ( int i=0; i<this->ChestTypeNames.size(); i++ )
     {
       if ( !this->ChestTypeNames[i].compare( chestType ) )
@@ -986,14 +1060,14 @@ bool cip::ChestConventions::IsChestType( std::string chestType ) const
 	  return true;
 	}
     }
-  
+
   return false;
 }
 
 /** Returns true if the passed string name is among the enumerated chest
  *  regions and returns false otherwise */
 bool cip::ChestConventions::IsChestRegion( std::string chestRegion ) const
-{  
+{
   for ( int i=0; i<this->ChestRegionNames.size(); i++ )
     {
       if ( !this->ChestRegionNames[i].compare( chestRegion ) )
@@ -1001,6 +1075,6 @@ bool cip::ChestConventions::IsChestRegion( std::string chestRegion ) const
 	  return true;
 	}
     }
-  
+
   return false;
 }

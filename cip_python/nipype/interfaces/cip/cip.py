@@ -7,11 +7,11 @@ import os
 
 
 class RegisterCTInputSpec(CommandLineInputSpec):
-    fixedImageFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedImageFileName %s")
-    movingImageFileName = File(desc="moving Image FileName", exists=True, argstr="--movingImageFileName %s")
-    outputTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="Output transform file name", argstr="--outputTransform %s")
-    outputImage = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--outputImage %s")
-    movingLabelmapFileName = File(desc="moving LabelMap FileName", exists=True, argstr="--movingLabelmapFileName %s")
+    fct = File(desc="fixed Image File Name", exists=True, argstr="--fct %s")
+    mct = File(desc="moving Image FileName", exists=True, argstr="--mct %s")
+    otx = traits.Either(traits.Bool, File(), hash_files=False, desc="Output transform file name", argstr="--otx %s")
+    oct = traits.Either(traits.Bool, File(), hash_files=False, desc="output Resampled CT FileName", argstr="--oct %s")
+    mlm = File(desc="moving LabelMap FileName", exists=True, argstr="--mlm %s")
     movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--movingImageID %s")
     fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--fixedImageID %s")
     registrationID = traits.Str(desc="unique Id for the registration process.", argstr="--registrationID %s")
@@ -20,17 +20,16 @@ class RegisterCTInputSpec(CommandLineInputSpec):
     min = traits.Float(desc="minStepLength", argstr="--min %f")
     numberOfIterations = traits.Int(desc="Number of iterations. ", argstr="--numberOfIterations %d")
     translationScale = traits.Float(desc="translationScale", argstr="--translationScale %f")
-    regionVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionVec %s")
+    ciprVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--ciprVec %s")
     typeVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--typeVec %s")
     typePairVec = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag", sep=",", argstr="--typePairVec %s")
     regionPairVec = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionPairVec %s")
-    isIntensity = traits.Bool(desc="Uses intensity based registration if true", argstr="--isIntensity ")
-    dimension = traits.Int(desc="Dimension of the image being resampled. Default: 3.", argstr="--dimension %d")
+    dim = traits.Int(desc="Dimension of the image being resampled. Default: 3.", argstr="--dim %d")
 
 
 class RegisterCTOutputSpec(TraitedSpec):
-    outputTransform = File(desc="Output transform file name", exists=True)
-    outputImage = File(desc="Output image file name", exists=True)
+    otx = File(desc="Output transform file name", exists=True)
+    oct = File(desc="output Resampled CT FileName", exists=True)
 
 
 class RegisterCT(SEMLikeCommandLine):
@@ -48,15 +47,15 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-   
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
     input_spec = RegisterCTInputSpec
     output_spec = RegisterCTOutputSpec
     _cmd = " RegisterCT "
-    _outputs_filenames = {'outputImage':'outputImage.nii','outputTransform':'outputTransform.mat'}
+    _outputs_filenames = {'otx':'otx.mat','oct':'oct.nii'}
 
 
 class ExtractParticlesFromChestRegionChestTypeInputSpec(CommandLineInputSpec):
@@ -96,47 +95,44 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class GenerateStenciledLabelMapFromParticlesInputSpec(CommandLineInputSpec):
-    inLabelMap = File(desc="Input label map file name. Used to retrieve spacing, origin, and dimensions for creating output label map", exists=True, argstr="--inLabelMap %s")
-    outLabelMap = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map file name", argstr="--outLabelMap %s")
-    particles = File(desc="Input particles file name", exists=True, argstr="--particles %s")
-    ctSigma = traits.Float(desc="The CT scanner point spread function sigma. 0.0 by default.", argstr="--ctSigma %f")
-    radius = traits.Float(desc="Stencil radius in mm.", argstr="--radius %f")
-    height = traits.Float(desc="Cylinder stencil height in mm. Default is 1mm. This should typically be set to the inter-particle distance.", argstr="--height %f")
-    vessel = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to vessels. Default: False.", argstr="--vessel ")
-    airway = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to airways. Default: False.", argstr="--airway ")
-    fissure = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to fissures. Default: False.", argstr="--fissure ")
-    sphere = traits.Bool(desc="Set this flag to indicate that the sphere stencil should be used. Default: False.", argstr="--sphere ")
-    cylinder = traits.Bool(desc="Set this flag to indicate that the cylinder stencil should be used. Default: False.", argstr="--cylinder ")
-    scale = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag). Default: False.", argstr="--scale ")
+class GenerateStatisticsForAirwayGenerationLabelingInputSpec(CommandLineInputSpec):
+    input = InputMultiPath(traits.Str, desc="Input particles file names.", sep=",", argstr="--input %s")
+    ref = File(desc="Specify a (labeled) reference particle dataset to compute statistics for emission probabilities. For each particle in this dataset, every other particle in the files specified with the -i flag will be considered. If the two particles have the same generation label and are within the distance specified by the --ed flag, then the scale difference, angle, and distance between the particles will be computed and used to compute the class conditional probabilities for that generation. This is an optional argument. Note that if it is specified, the same file should not also appear as an input specified with the -i flag.", exists=True, argstr="--ref %s")
+    emissionProbsFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the computed emission probability statistics.", argstr="--emissionProbsFileName %s")
+    ntp = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the computed transition probability scale and angle statics.", argstr="--ntp %s")
+    tp = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the transition probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' generation and the columns represent the 'to' generation. The probabilities are computed simply by counting the number of times a given transition occurs and then normalizing.", argstr="--tp %s")
+    distThresh = traits.Float(desc="Particle distance threshold for constructing minimum spanning tree. Particles further apart than this distance will not have an edge placed between them in the weighted graph passed to the min spanning tree algorithm", argstr="--distThresh %f")
+    ed = traits.Float(desc="The radius of the epsilon ball used when considering if a particle should be considered for computing the class-conditional emission probabilities. Only necessary if a reference particle dataset is specified with the --ed flag.", argstr="--ed %f")
 
 
-class GenerateStenciledLabelMapFromParticlesOutputSpec(TraitedSpec):
-    outLabelMap = File(desc="Output label map file name", exists=True)
+class GenerateStatisticsForAirwayGenerationLabelingOutputSpec(TraitedSpec):
+    emissionProbsFileName = File(desc="csv file in which to write the computed emission probability statistics.", exists=True)
+    ntp = File(desc="csv file in which to write the computed transition probability scale and angle statics.", exists=True)
+    tp = File(desc="csv file in which to write the transition probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' generation and the columns represent the 'to' generation. The probabilities are computed simply by counting the number of times a given transition occurs and then normalizing.", exists=True)
 
 
-class GenerateStenciledLabelMapFromParticles(SEMLikeCommandLine):
-    """title: GenerateStenciledLabelMapFromParticles
+class GenerateStatisticsForAirwayGenerationLabeling(SEMLikeCommandLine):
+    """title: GenerateStatisticsForAirwayGenerationLabeling
 
-category: Chest Imaging Platform.Toolkit.Quantification
+category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program reads a particles dataset and creates a stenciled label map corresponding to them. An input label map is used simply to get spacing, origin, and dimensions of the output label map. Particles can correspond to vessels, airways, or fissures. Currently, sphere and cylinder stencils are supported. The user has the option of scaling the stencil pattern using the particle scale. Scaling in this case means scaling the radius for both the sphere and cylinder stencils. The height of the cylinder stencil remains fixed.
+description: This program computes statistics needed as inputs to the LabelAirwayParticlesByGeneration program. It computes these statistics over (possibly) multiple, labeled input airway particles datasets. The user must specify information needed to construct the minimum spanning tree (which encodes topology over the particles). This information should be the same that is used for the LabelAirwayParticlesByGeneration program.
 
 version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = GenerateStenciledLabelMapFromParticlesInputSpec
-    output_spec = GenerateStenciledLabelMapFromParticlesOutputSpec
-    _cmd = " GenerateStenciledLabelMapFromParticles "
-    _outputs_filenames = {'outLabelMap':'outLabelMap.nii'}
+    input_spec = GenerateStatisticsForAirwayGenerationLabelingInputSpec
+    output_spec = GenerateStatisticsForAirwayGenerationLabelingOutputSpec
+    _cmd = " GenerateStatisticsForAirwayGenerationLabeling "
+    _outputs_filenames = {'ntp':'ntp.csv','emissionProbsFileName':'emissionProbsFileName.csv','tp':'tp.csv'}
 
 
 class ReadNRRDsWriteVTKInputSpec(CommandLineInputSpec):
@@ -311,7 +307,7 @@ class ComputeFeatureStrengthOutputSpec(TraitedSpec):
 class ComputeFeatureStrength(SEMLikeCommandLine):
     """title: ComputeFeatureStrength
 
-category: Chest Imaging Platform.Toolkit
+category: Chest Imaging Platform.Toolkit.Processing
 
 description: Compute the feature strength for an image.\n        A feature can be a ridge line (vessel), valley line (airway), \n       a ridge surface (fissure) or a valley surface
 
@@ -332,67 +328,25 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'outFileName':'outFileName.nii','outScaleFileName':'outScaleFileName.nii'}
 
 
-class ResampleCT2DInputSpec(CommandLineInputSpec):
-    labelMapFile = File(desc="Label map file name to resample", exists=True, argstr="--labelMapFile %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    resampledFile = File(desc="Resampled label map (output) file name", exists=True, argstr="--resampledFile %s")
-    destinationFile = File(desc="Label map file name to resampDestinatin file name. This should be a header file that contains the necessary information (image spacing, origin, and size) for the resampling process.", exists=True, argstr="--destinationFile %s")
-    invertTransformation = traits.Bool(desc="Uses the inverse transformation if set to True. Default: False.", argstr="--invertTransformation ")
-
-
-class ResampleCT2DOutputSpec(TraitedSpec):
-    pass
-
-
-class ResampleCT2D(SEMLikeCommandLine):
-    """title: ResampleCT2D
-
-category: Chest Imaging Platform.Toolkit.Processing
-
-description: This program resamples a label map using an affine transform (read from file)
-
-version: 0.0.1
-
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
-
-"""
-
-    input_spec = ResampleCT2DInputSpec
-    output_spec = ResampleCT2DOutputSpec
-    _cmd = " ResampleCT2D "
-    _outputs_filenames = {}
-
-
 class RegisterLabelMapsInputSpec(CommandLineInputSpec):
-    fixedImageFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedImageFileName %s")
-    movingImageFileName = File(desc="moving Image FileName", exists=True, argstr="--movingImageFileName %s")
-    outputImage = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--outputImage %s")
-    outputTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="Output transform file name", argstr="--outputTransform %s")
+    flm = File(desc="fixed Labelmap File Name", exists=True, argstr="--flm %s")
+    mlm = File(desc="moving Labelmap FileName", exists=True, argstr="--mlm %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Resampled label map file name", argstr="--olm %s")
+    otx = traits.Either(traits.Bool, File(), hash_files=False, desc="Output transform file name", argstr="--otx %s")
     movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--movingImageID %s")
     fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--fixedImageID %s")
     registrationID = traits.Str(desc="unique Id for the registration process.", argstr="--registrationID %s")
-    downsampleFactor = traits.Float(desc="downsampleFactor", argstr="--downsampleFactor %f")
+    down = traits.Float(desc="downsampleFactor", argstr="--down %f")
     max = traits.Float(desc="maxStepLength", argstr="--max %f")
     min = traits.Float(desc="minStepLength", argstr="--min %f")
     numberOfIterations = traits.Int(desc="Number of iterations. ", argstr="--numberOfIterations %d")
     translationScale = traits.Float(desc="translationScale", argstr="--translationScale %f")
-    regionVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionVec %s")
-    typeVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--typeVec %s")
-    typePairVec = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag", sep=",", argstr="--typePairVec %s")
-    regionPairVec = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionPairVec %s")
-    dimension = traits.Int(desc="Dimension of the image being resampled. Default: 3.", argstr="--dimension %d")
+    dim = traits.Int(desc="Dimension of the image being resampled. Default: 3.", argstr="--dim %d")
 
 
 class RegisterLabelMapsOutputSpec(TraitedSpec):
-    outputImage = File(desc="Output image file name", exists=True)
-    outputTransform = File(desc="Output transform file name", exists=True)
+    olm = File(desc="Output Resampled label map file name", exists=True)
+    otx = File(desc="Output transform file name", exists=True)
 
 
 class RegisterLabelMaps(SEMLikeCommandLine):
@@ -410,15 +364,15 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-   
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
     input_spec = RegisterLabelMapsInputSpec
     output_spec = RegisterLabelMapsOutputSpec
     _cmd = " RegisterLabelMaps "
-    _outputs_filenames = {'outputImage':'outputImage.nii','outputTransform':'outputTransform.mat'}
+    _outputs_filenames = {'otx':'otx.mat','olm':'olm.nii'}
 
 
 class QualityControlInputSpec(CommandLineInputSpec):
@@ -461,45 +415,42 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'lungProj':'lungProj.nii','airwayProj':'airwayProj.nii'}
 
 
-class GetTransformationSimilarityMetric2DInputSpec(CommandLineInputSpec):
-    fixedCTFileName = File(desc="fixed CT File Name", exists=True, argstr="--fixedCTFileName %s")
-    movingCTFileName = File(desc="moving CT FileName", exists=True, argstr="--movingCTFileName %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    fixedLabelMapFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedLabelMapFileName %s")
-    movingLabelMapFileName = File(desc="moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.", exists=True, argstr="--movingLabelMapFileName %s")
-    outputXMLFile = traits.Either(traits.Bool, File(), hash_files=False, desc="The name of the output xml file. If not specified, no xml file will be output. ", argstr="--outputXMLFile %s")
-    SimilarityMetric = traits.Str(desc="Similarity metric to be used. Choice between: MI (for mutual \n          information), NMI (for normalized mutual information), and mean squares (msqr), \n      NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI", argstr="--SimilarityMetric %s")
-    movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be null.", argstr="--movingImageID %s")
-    fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be null.", argstr="--fixedImageID %s")
-    invertTransformations = InputMultiPath(traits.Int, desc="Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).", sep=",", argstr="--invertTransformations %s")
+class RescaleLabelMapInputSpec(CommandLineInputSpec):
+    opt_in = File(desc="Label map file name to resample", exists=True, argstr="--in %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Rescaled label map (output) file name", argstr="--out %s")
+    up = traits.Int(desc="Up-scale factor", argstr="--up %d")
+    down = traits.Int(desc="Down-scale factor", argstr="--down %d")
+    dim = traits.Int(desc="Dimension of the image being rescaled. Default: 3.", argstr="--dim %d")
 
 
-class GetTransformationSimilarityMetric2DOutputSpec(TraitedSpec):
-    outputXMLFile = File(desc="The name of the output xml file. If not specified, no xml file will be output. ", exists=True)
+class RescaleLabelMapOutputSpec(TraitedSpec):
+    out = File(desc="Rescaled label map (output) file name", exists=True)
 
 
-class GetTransformationSimilarityMetric2D(SEMLikeCommandLine):
-    """title: GetTransformationSimilarityMetric2D
+class RescaleLabelMap(SEMLikeCommandLine):
+    """title: ResampleLabelMap
 
-category: Chest Imaging Platform.Toolkit.Quantification
+category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program calculates a similarity measure between 2 CT images in \n  a region specified by a label map. It takes as input the 2 CT images and their corresponding \n  label maps, and a transformation file, and appends the values of the similarity metric to an \n  existing xml file if one is provided.
+description: This program rescales (either upsamples or downsamples) a label map by a specified amount
 
 version: 0.0.1
+
+documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
 
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n  and does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = GetTransformationSimilarityMetric2DInputSpec
-    output_spec = GetTransformationSimilarityMetric2DOutputSpec
-    _cmd = " GetTransformationSimilarityMetric2D "
-    _outputs_filenames = {'outputXMLFile':'outputXMLFile.xml'}
+    input_spec = RescaleLabelMapInputSpec
+    output_spec = RescaleLabelMapOutputSpec
+    _cmd = " RescaleLabelMap "
+    _outputs_filenames = {'out':'out.nii'}
 
 
 class FilterFissureParticleDataInputSpec(CommandLineInputSpec):
@@ -540,16 +491,15 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GenerateModelInputSpec(CommandLineInputSpec):
-    opt_in = traits.Str(desc="Input mask file name", argstr="--in %s")
-    out = traits.Str(desc="Output model file name", argstr="--out %s")
+    opt_in = File(desc="Input mask file name", exists=True, argstr="--in %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output model file name", argstr="--out %s")
     smooth = traits.Int(desc="Number of smoothing iterations.", argstr="--smooth %d")
     label = traits.Int(desc="Foreground label in the label map to be used for generating the model.", argstr="--label %d")
-    origSp = traits.Bool(desc="Set to 1 to used standard origin and spacing. Set to 0 by default.", argstr="--origSp ")
     reduc = traits.Float(desc="Target reduction fraction for decimation", argstr="--reduc %f")
 
 
 class GenerateModelOutputSpec(TraitedSpec):
-    pass
+    out = File(desc="Output model file name", exists=True)
 
 
 class GenerateModel(SEMLikeCommandLine):
@@ -565,7 +515,7 @@ documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -575,32 +525,68 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GenerateModelInputSpec
     output_spec = GenerateModelOutputSpec
     _cmd = " GenerateModel "
-    _outputs_filenames = {}
+    _outputs_filenames = {'out':'out.vtk'}
 
 
-class GenerateLesionSegmentationInputSpec(CommandLineInputSpec):
-    opt_in = File(desc="Input CT image", exists=True, argstr="--in %s")
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output level set of the segmented nodule. The nodule boundary is set at the -0.5 level", argstr="--out %s")
-    seeds = InputMultiPath(traits.List(traits.Float(), minlen=3, maxlen=3), desc="Seed points on module (LPS coordinates)", argstr="--seeds %s...")
-    maximumRadius = traits.Float(desc="Maximum radius of the lesion in mm. This can be used as an alternate way of specifiying the bounds.", argstr="--maximumRadius %f")
-    ROI = InputMultiPath(traits.Float, desc="Bounds of the ROI if any: 6 parameters in LPS coordinates", sep=",", argstr="--ROI %s")
-    outputROI = traits.Bool(argstr="--outputROI ")
-    roiImage = traits.Either(traits.Bool, File(), hash_files=False, argstr="--roiImage %s")
-    sigma = InputMultiPath(traits.Float, desc="Manually specify sigma. This is an array with 3 values in physical units. This defaults to the maximumsspacing in the dataset, if unspecified", sep=",", argstr="--sigma %s")
-    partSolid = traits.Bool(desc="Specify whether the lesion is part-solid. Default solid lesion.", argstr="--partSolid ")
+class ExtractChestLabelMapInputSpec(CommandLineInputSpec):
+    inFileName = File(desc="Input label map file name", exists=True, argstr="--inFileName %s")
+    outFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map file name", argstr="--outFileName %s")
+    regions = InputMultiPath(traits.Str, desc="Specify a chest region/regions name you want to extract (ex: LeftUpperLobe)", sep=",", argstr="--regions %s")
+    types = InputMultiPath(traits.Str, desc="Specify a chest type/types name you want to extract (ex: Airway)", sep=",", argstr="--types %s")
+    regionPair = InputMultiPath(traits.Str, desc="Specify a region name in a region-type pair you want to extract", sep=",", argstr="--regionPair %s")
+    typePair = InputMultiPath(traits.Str, desc="Specify a type name in a region-type pair you want to extract", sep=",", argstr="--typePair %s")
 
 
-class GenerateLesionSegmentationOutputSpec(TraitedSpec):
-    out = File(desc="Output level set of the segmented nodule. The nodule boundary is set at the -0.5 level", exists=True)
-    roiImage = File(exists=True)
+class ExtractChestLabelMapOutputSpec(TraitedSpec):
+    outFileName = File(desc="Output label map file name", exists=True)
 
 
-class GenerateLesionSegmentation(SEMLikeCommandLine):
-    """title: Lesion Segmentation
+class ExtractChestLabelMap(SEMLikeCommandLine):
+    """title: ExtractChestLabelMap
 
-category: Chest Imaging Platform.Toolkit.Segmentation
+category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program segmenta a nodular lesion for quantiative assesment
+description: This program takes in a lung label map and producs a lung \n  label map; it assumes the labeling conventions coded in cipConventions.h. \n  The user specifies the regions and types he/she is \n  interested in.  All other regions/types are set to UNDEFINEDTYPE \n  and UNDEFINEDREGION.  Given that regions are hierarchical, a region \n  that is higher in the hierarchy will be preferred to one that is \n  lower.  E.g., if the user specifies both WHOLELUNG and \n  LEFTSUPERIORLOBE, the region in the LEFTSUPERIORLOBE will be defined as \n  such, and WHOLELUNG will be used elsewhere. Precedence will be as \n  follows: types, regions, region-type pairs. In \n  other words, if the user requests both LEFTLUNG and AIRWAY (not as a \n  pair), then an AIRWAY voxel in the LEFTLUNG will be mapped to LEFTLUNG \n  in the output. If the user additionally requests the AIRWAY, LEFTLUNG \n  pair, then the entire voxel will be preserved.
+
+version: 0.0.1
+
+license: Slicer
+
+contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+
+"""
+
+    input_spec = ExtractChestLabelMapInputSpec
+    output_spec = ExtractChestLabelMapOutputSpec
+    _cmd = " ExtractChestLabelMap "
+    _outputs_filenames = {'outFileName':'outFileName.nii'}
+
+
+class FilterAirwayParticleDataInputSpec(CommandLineInputSpec):
+    opt_in = File(desc="Input particles file name", exists=True, argstr="--in %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--out %s")
+    spacing = traits.Float(desc="This value indicates the inter-particle spacing of the input data set ", argstr="--spacing %f")
+    distance = traits.Float(desc="Maximum inter-particle distance. Two particles must be at least this close \n                together to be considered for connectivity. ", argstr="--distance %f")
+    angle = traits.Float(desc="Particle angle threshold used to test the connectivity between two particles (in degrees). \n                The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \n                eigenvector pointing in the direction of the airway axis is then considered. For both particles, this angle must be below \n                the specified threshold for the particles to be connected.", argstr="--angle %f")
+    scaleRatio = traits.Float(desc="Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \n                two particles can differ in scale and still be considered for connectivity. The higher the value, the more permisse the filter is \n                with respect to scale differences.", argstr="--scaleRatio %f")
+    maxSize = traits.Int(desc="Maximum component size. No component will be larger than the specified size ", argstr="--maxSize %d")
+    size = traits.Int(desc="Component size cardinality threshold. Only components with this many particles or more \n                will be retained in the output. ", argstr="--size %d")
+    maxScale = traits.Float(desc="Max allowable scale. No connection will be made between two particles if either of them \n            have a scale that exceeds this amount.", argstr="--maxScale %f")
+    minScale = traits.Float(desc="Min  allowable scale. No connection will be made between two particles if either of them \n            have a scale that exceeds this amount.", argstr="--minScale %f")
+
+
+class FilterAirwayParticleDataOutputSpec(TraitedSpec):
+    out = File(desc="Output particles file name", exists=True)
+
+
+class FilterAirwayParticleData(SEMLikeCommandLine):
+    """title: FilterAirwayParticleData
+
+category: Chest Imaging Platform.Toolkit.Particles
+
+description: This program reads airway particles and filters them \n        based on connected components analysis. Particles are placed in \n        the same component provided they are sufficiently close to one \n        another, have scale that is sufficiently similar, and sufficiently \n        define a local cylinder (i.e. they are sufficiently parallel with the \n        vector connecting the two paticle spatial locations). Only \n        components that have cardinality greater than or equal to that \n        specified by the user will be retained in the output. Furthermore, \n        the output particles will have a defined 'unmergedComponents' \n        array that indicates the component label assigned to each particle.
 
 version: 0.0.1
 
@@ -608,15 +594,15 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
-  
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+    
 
 """
 
-    input_spec = GenerateLesionSegmentationInputSpec
-    output_spec = GenerateLesionSegmentationOutputSpec
-    _cmd = " GenerateLesionSegmentation "
-    _outputs_filenames = {'roiImage':'roiImage.nii','out':'out.nii'}
+    input_spec = FilterAirwayParticleDataInputSpec
+    output_spec = FilterAirwayParticleDataOutputSpec
+    _cmd = " FilterAirwayParticleData "
+    _outputs_filenames = {'out':'out.vtk'}
 
 
 class EvaluateLungLobeSegmentationResultsInputSpec(CommandLineInputSpec):
@@ -702,13 +688,12 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GetTransformationKappaInputSpec(CommandLineInputSpec):
-    fixedCTFileName = File(desc="fixed CT File Name", exists=True, argstr="--fixedCTFileName %s")
-    movingCTFileName = File(desc="moving CT FileName", exists=True, argstr="--movingCTFileName %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    fixedLabelMapFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedLabelMapFileName %s")
-    movingLabelMapFileName = File(desc="moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.", exists=True, argstr="--movingLabelMapFileName %s")
-    outputXMLFile = traits.Either(traits.Bool, File(), hash_files=False, desc="The name of the output xml file. If not specified, no xml file will be output. ", argstr="--outputXMLFile %s")
-    SimilarityMetric = traits.Str(desc="Similarity metric to be used. Choice between: MI (for mutual \n          information), NMI (for normalized mutual information), and mean squares (msqr), \n      NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI", argstr="--SimilarityMetric %s")
+    fct = File(desc="fixed CT File Name", exists=True, argstr="--fct %s")
+    mct = File(desc="moving CT FileName", exists=True, argstr="--mct %s")
+    itx = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--itx %s")
+    flm = File(desc="fixed Image File Name", exists=True, argstr="--flm %s")
+    mlm = File(desc="moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.", exists=True, argstr="--mlm %s")
+    oxml = traits.Either(traits.Bool, File(), hash_files=False, desc="The name of the output xml file. If not specified, no xml file will be output. ", argstr="--oxml %s")
     movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be null.", argstr="--movingImageID %s")
     fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be null.", argstr="--fixedImageID %s")
     invertTransformations = InputMultiPath(traits.Int, desc="Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).", sep=",", argstr="--invertTransformations %s")
@@ -716,7 +701,7 @@ class GetTransformationKappaInputSpec(CommandLineInputSpec):
 
 
 class GetTransformationKappaOutputSpec(TraitedSpec):
-    outputXMLFile = File(desc="The name of the output xml file. If not specified, no xml file will be output. ", exists=True)
+    oxml = File(desc="The name of the output xml file. If not specified, no xml file will be output. ", exists=True)
 
 
 class GetTransformationKappa(SEMLikeCommandLine):
@@ -740,56 +725,55 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GetTransformationKappaInputSpec
     output_spec = GetTransformationKappaOutputSpec
     _cmd = " GetTransformationKappa "
-    _outputs_filenames = {'outputXMLFile':'outputXMLFile.xml'}
+    _outputs_filenames = {'oxml':'oxml.xml'}
 
 
-class ResampleCT3DInputSpec(CommandLineInputSpec):
-    labelMapFile = File(desc="Label map file name to resample", exists=True, argstr="--labelMapFile %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    resampledFile = File(desc="Resampled label map (output) file name", exists=True, argstr="--resampledFile %s")
-    destinationFile = File(desc="Label map file name to resampDestinatin file name. This should be a header file that contains the necessary information (image spacing, origin, and size) for the resampling process.", exists=True, argstr="--destinationFile %s")
-    invertTransformation = traits.Bool(desc="Uses the inverse transformation if set to True. Default: False.", argstr="--invertTransformation ")
+class SplitLeftLungRightLungInputSpec(CommandLineInputSpec):
+    ct = File(desc="\'Input CT file name", exists=True, argstr="--ct %s")
+    lm = File(desc="\'Input label map file name", exists=True, argstr="--lm %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="\'Output label map file name", argstr="--out %s")
+    timeConst = traits.Float(desc="Exponential time constant ", argstr="--timeConst %f")
+    coefficient = traits.Float(desc="Exponential coefficient.", argstr="--coefficient %f")
+    rad = traits.Int(desc="The radius to use when splitting. The larger the radius, the larger the \n	cleaved split through the label map.", argstr="--rad %d")
 
 
-class ResampleCT3DOutputSpec(TraitedSpec):
-    pass
+class SplitLeftLungRightLungOutputSpec(TraitedSpec):
+    out = File(desc="\'Output label map file name", exists=True)
 
 
-class ResampleCT3D(SEMLikeCommandLine):
-    """title: ResampleCT3D
+class SplitLeftLungRightLung(SEMLikeCommandLine):
+    """title: GenerateStatisticsForAirwayGenerationLabeling
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Segmentation
 
-description: This program resamples a label map using an affine transform (read from file)
+description: This program reads a label map and splits the left and\n        right lungs so that they are uniquely labeled. If the input is\n        already split, the output will be identical to the input.
 
 version: 0.0.1
-
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleCT3D
 
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
+  
 
 """
 
-    input_spec = ResampleCT3DInputSpec
-    output_spec = ResampleCT3DOutputSpec
-    _cmd = " ResampleCT3D "
-    _outputs_filenames = {}
+    input_spec = SplitLeftLungRightLungInputSpec
+    output_spec = SplitLeftLungRightLungOutputSpec
+    _cmd = " SplitLeftLungRightLung "
+    _outputs_filenames = {'out':'out.nii'}
 
 
 class ComputeDistanceMapInputSpec(CommandLineInputSpec):
-    labelMap = traits.Str(desc="Input label map file name", argstr="--labelMap %s")
-    distanceMap = traits.Str(desc="Output distance map file name", argstr="--distanceMap %s")
-    downsample = traits.Float(desc="Downsample factor. The input label map will be \n                downsampled by the specified amount before the distance map is computed. The resulting \n                distance map will then be scaled up by the same amount before writing.", argstr="--downsample %f")
-    positive = traits.Bool(desc="Set this flag to indicate that the interior \n                of the structure of interest should be assigned positive distance values.", argstr="--positive ")
+    labelMap = File(desc="Input label map file name", exists=True, argstr="--labelMap %s")
+    distanceMap = traits.Either(traits.Bool, File(), hash_files=False, desc="Output distance map file name", argstr="--distanceMap %s")
+    downsample = traits.Float(desc="Downsample factor. The input label map will be \ndownsampled by the specified amount before the distance map is computed. The resulting \ndistance map will then be scaled up by the same amount before writing.", argstr="--downsample %f")
+    positive = traits.Bool(desc="Set this flag to indicate that the interior \nof the structure of interest should be assigned positive distance values.", argstr="--positive ")
 
 
 class ComputeDistanceMapOutputSpec(TraitedSpec):
-    pass
+    distanceMap = File(desc="Output distance map file name", exists=True)
 
 
 class ComputeDistanceMap(SEMLikeCommandLine):
@@ -797,7 +781,7 @@ class ComputeDistanceMap(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program computes a distance map from an \n        input binary map. A donwsampling can be applied prior to the distance map computation \n        to improve performance. The resulting \n        distance map will by upsampled by the same amount before writing.
+description: This program computes a distance map from an \ninput binary map. A donwsampling can be applied prior to the distance map computation \nto improve performance. The resulting \ndistance map will by upsampled by the same amount before writing.
 
 version: 0.0.1
 
@@ -805,7 +789,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
     
 
 """
@@ -813,7 +797,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = ComputeDistanceMapInputSpec
     output_spec = ComputeDistanceMapOutputSpec
     _cmd = " ComputeDistanceMap "
-    _outputs_filenames = {}
+    _outputs_filenames = {'distanceMap':'distanceMap.nii'}
 
 
 class ReadVidaWriteCIPInputSpec(CommandLineInputSpec):
@@ -831,15 +815,15 @@ class ReadVidaWriteCIPOutputSpec(TraitedSpec):
 class ReadVidaWriteCIP(SEMLikeCommandLine):
     """title: ReadVidaWriteCIP
 
-category: Chest Imaging Platform.Toolkit.Quantification
+category: Chest Imaging Platform.Toolkit.Utils
 
-description: This program calculates a similarity measure between 2 CT images in \n  a region specified by a label map. It takes as input the 2 CT images and their corresponding \n  label maps, and a transformation file, and appends the values of the similarity metric to an \n  existing xml file if one is provided.
+description: This program converts VIDA labelmap information to CIP labelmap following the CIP chest conventions.
 
 version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -979,7 +963,7 @@ class EnhanceFissuresInImageOutputSpec(TraitedSpec):
 class EnhanceFissuresInImage(SEMLikeCommandLine):
     """title: EnhanceFissuresInImage
 
-category: Chest Imaging Platform.Toolkit.Segmentation
+category: Chest Imaging Platform.Toolkit.Processing
 
 description: This program enhances fissure image features using logistic regression \n  classifiers.
 
@@ -987,7 +971,7 @@ version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1003,10 +987,10 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 class TransferFieldDataToFromPointDataInputSpec(CommandLineInputSpec):
     input = File(desc="Input VTK polydata file name].", exists=True, argstr="--input %s")
     output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output VTK polydata file name].", argstr="--output %s")
-    mf = traits.Bool(desc="Setting this to true will maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data.", argstr="--mf ")
-    mp = traits.Bool(desc="Setting this to true will maintain the point data. Setting it to false will eliminate the point data from the output. Only relevant if requesting to transfer point data to field data.", argstr="--mp ")
-    fp = traits.Bool(desc="Set to true to transfer field data to point data.", argstr="--fp ")
-    pf = traits.Bool(desc="Set to true to transfer point data to field data.", argstr="--pf ")
+    mf = traits.Bool(desc="Use this flag to maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data.", argstr="--mf ")
+    mp = traits.Bool(desc="Use this flag to maintain the point data. Only relevant if requesting to transfer point data to field data.", argstr="--mp ")
+    fp = traits.Bool(desc="Use this flag to transfer field data to point data.", argstr="--fp ")
+    pf = traits.Bool(desc="Use this flag to transfer point data to field data.", argstr="--pf ")
     binary = traits.Bool(desc="Set to true to save data to binary.", argstr="--binary ")
 
 
@@ -1017,7 +1001,7 @@ class TransferFieldDataToFromPointDataOutputSpec(TraitedSpec):
 class TransferFieldDataToFromPointData(SEMLikeCommandLine):
     """title: TransferFieldDataToFromPointData
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Particles
 
 description: This program can be used to transfer the contents of a VTK polydata's field data to point data and vice-versa. Generally, field data applies to a dataset as a whole and need not have a one-to-one correspondence with the points. However, this may be the case in some instances (esp. with the particles datasets). In those cases it may be helpful to have the data contained in field data arrays also stored in point data arrays (e.g. for rendering purposes). Field data will only be transferred provided that the number of tuples in the field data array is the same as the number of points.
 
@@ -1025,7 +1009,7 @@ version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1161,7 +1145,7 @@ class ReadWriteRegionAndTypePointsOutputSpec(TraitedSpec):
 class ReadWriteRegionAndTypePoints(SEMLikeCommandLine):
     """title: ReadWriteRegionAndTypePoints
 
-category: Chest Imaging Platform.Toolkit.Particles
+category: Chest Imaging Platform.Toolkit.Utils
 
 description: This program converts region and type points between csv and vtk file formats.
 
@@ -1169,7 +1153,7 @@ version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -1186,13 +1170,13 @@ class FilterVesselParticleDataInputSpec(CommandLineInputSpec):
     opt_in = File(desc="Input particles file name", exists=True, argstr="--in %s")
     out = File(desc="Output particles file name", exists=True, argstr="--out %s")
     spacing = traits.Float(desc="This value indicates the inter-particle spacing of the input data set", argstr="--spacing %f")
-    distance = traits.Float(desc="Maximum inter-particle distance. Two particles must be at least this close \n      together to be considered for connectivity ", argstr="--distance %f")
-    angle = traits.Float(desc="Particle angle threshold used to test the connectivity between two particles (in degrees). \n      The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \n      eigenvector pointing in the direction of the vessel axis is then considered. For both particles, this angle must be below \n      the specified threshold for the particles to be connected", argstr="--angle %f")
-    ratio = traits.Float(desc="Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \n      two particles can differ in scale and still be considered for connectivity. The higher the value, \n      the more permisse the filter is with respect to scale differences", argstr="--ratio %f")
-    size = traits.Int(desc="Component size cardinality threshold. Only components with this many particles or more \n      will be retained in the output", argstr="--size %d")
+    distance = traits.Float(desc="Maximum inter-particle distance. Two particles must be at least this close \ntogether to be considered for connectivity ", argstr="--distance %f")
+    angle = traits.Float(desc="Particle angle threshold used to test the connectivity between two particles (in degrees). \nThe vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \neigenvector pointing in the direction of the vessel axis is then considered. For both particles, this angle must be below \nthe specified threshold for the particles to be connected", argstr="--angle %f")
+    ratio = traits.Float(desc="Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \ntwo particles can differ in scale and still be considered for connectivity. The higher the value, \nthe more permisse the filter is with respect to scale differences", argstr="--ratio %f")
+    size = traits.Int(desc="Component size cardinality threshold. Only components with this many particles or more \nwill be retained in the output", argstr="--size %d")
     maxSize = traits.Int(desc="Maximum component size. No component will be larger than the specified size", argstr="--maxSize %d")
-    maxScale = traits.Float(desc="Max allowable scale. No connection will be made between two particles if either of them \n      have a scale that exceeds this amount.", argstr="--maxScale %f")
-    minScale = traits.Float(desc="Min  allowable scale. No connection will be made between two particles if either of them \n        have a scale that exceeds this amount.", argstr="--minScale %f")
+    maxScale = traits.Float(desc="Max allowable scale. No connection will be made between two particles if either of them \nhave a scale that exceeds this amount.", argstr="--maxScale %f")
+    minScale = traits.Float(desc="Min  allowable scale. No connection will be made between two particles if either of them \nhave a scale that exceeds this amount.", argstr="--minScale %f")
 
 
 class FilterVesselParticleDataOutputSpec(TraitedSpec):
@@ -1204,7 +1188,7 @@ class FilterVesselParticleData(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program reads vessels particles and filters them \n  based on connected components analysis. Particles are placed in \n  the same component provided they are sufficiently close to one \n  another, have scale that is sufficiently similar, and sufficiently \n  define a local cylinder (i.e. they are sufficiently parallel with the \n  vector connecting the two paticle spatial locations). Only \n  components that have cardinality greater than or equal to that \n  specified by the user will be retained in the output. Furthermore, \n  the output particles will have a defined 'unmergedComponents' \n  array that indicates the component label assigned to each particle.
+description: This program reads vessels particles and filters them \nbased on connected components analysis. Particles are placed in \nthe same component provided they are sufficiently close to one \nanother, have scale that is sufficiently similar, and sufficiently \ndefine a local cylinder (i.e. they are sufficiently parallel with the \nvector connecting the two paticle spatial locations). Only \ncomponents that have cardinality greater than or equal to that \nspecified by the user will be retained in the output. Furthermore, \nthe output particles will have a defined 'unmergedComponents' \narray that indicates the component label assigned to each particle.
 
 version: 0.0.1
 
@@ -1212,7 +1196,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -1303,7 +1287,7 @@ class ConvertDicomOutputSpec(TraitedSpec):
 class ConvertDicom(SEMLikeCommandLine):
     """title: CovertDicom
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Utils
 
 description: This simple program takes as an argument a directory \n        containing DICOM images, and produces a single file as \n        output. Single files are preferred for our operations as \n        they compactly contain the CT data.
 
@@ -1313,7 +1297,7 @@ documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
    
@@ -1378,125 +1362,51 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class FilterAirwayParticleDataInputSpec(CommandLineInputSpec):
-    opt_in = File(desc="Input particles file name", exists=True, argstr="--in %s")
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--out %s")
-    spacing = traits.Float(desc="This value indicates the inter-particle spacing of the input data set ", argstr="--spacing %f")
-    distance = traits.Float(desc="Maximum inter-particle distance. Two particles must be at least this close \n                together to be considered for connectivity. ", argstr="--distance %f")
-    angle = traits.Float(desc="Particle angle threshold used to test the connectivity between two particles (in degrees). \n                The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \n                eigenvector pointing in the direction of the airway axis is then considered. For both particles, this angle must be below \n                the specified threshold for the particles to be connected.", argstr="--angle %f")
-    scaleRatio = traits.Float(desc="Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \n                two particles can differ in scale and still be considered for connectivity. The higher the value, the more permisse the filter is \n                with respect to scale differences.", argstr="--scaleRatio %f")
-    maxSize = traits.Int(desc="Maximum component size. No component will be larger than the specified size ", argstr="--maxSize %d")
-    size = traits.Int(desc="Component size cardinality threshold. Only components with this many particles or more \n                will be retained in the output. ", argstr="--size %d")
-    maxScale = traits.Float(desc="Max allowable scale. No connection will be made between two particles if either of them \n            have a scale that exceeds this amount.", argstr="--maxScale %f")
-    minScale = traits.Float(desc="Min  allowable scale. No connection will be made between two particles if either of them \n            have a scale that exceeds this amount.", argstr="--minScale %f")
+class ComputeAirwayWallFromParticlesInputSpec(CommandLineInputSpec):
+    ip = File(desc="Input particles file name", exists=True, argstr="--ip %s")
+    ict = File(desc="Input CT image", exists=True, argstr="--ict %s")
+    op = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--op %s")
+    method = traits.Enum("FWHM", "ZC", "PC", desc="Method used for the wall computation. \n             FWHM   - Full Width at a Half Maximum \n             ZC - Zero Crossing of the second order derivative \n             PC - Phase Congruency Phase congruency is the recommended one.", argstr="--method %s")
+    numberOfRays = traits.Int(desc="Number of rays to cast from the airway lumen center to compute the airway wall", argstr="--numberOfRays %d")
+    wth = traits.Int(desc="Wall constrast threshold at the candidate edge point to qualify (positive value).", argstr="--wth %d")
+    gth = traits.Float(desc="Gradient threshold at the candidate edge point to qualify.", argstr="--gth %f")
+    pcth = traits.Float(desc="Phase congruency value threshold at the candidate edge point to qualify.", argstr="--pcth %f")
+    inPlane = traits.Bool(desc="Compute airway wall in-plane ignoring airway longitudinal axis.", argstr="--inPlane ")
+    largeAirways = traits.Bool(desc="Adjust parameters to measure large airways (main bronchi and trachea).", argstr="--largeAirways ")
+    save = traits.Bool(desc="Save airway images (one per particle) for quality control purposes.", argstr="--save ")
+    saveDir = traits.Either(traits.Bool, Directory(), hash_files=False, desc="Directory to save airway images", argstr="--saveDir %s")
+    airwayPrefix = traits.Str(desc="Prefix for airway image file.", argstr="--airwayPrefix %s")
 
 
-class FilterAirwayParticleDataOutputSpec(TraitedSpec):
-    out = File(desc="Output particles file name", exists=True)
+class ComputeAirwayWallFromParticlesOutputSpec(TraitedSpec):
+    op = File(desc="Output particles file name", exists=True)
+    saveDir = Directory(desc="Directory to save airway images", exists=True)
 
 
-class FilterAirwayParticleData(SEMLikeCommandLine):
-    """title: FilterAirwayParticleData
+class ComputeAirwayWallFromParticles(SEMLikeCommandLine):
+    """title: GenerateModel
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program reads airway particles and filters them \n        based on connected components analysis. Particles are placed in \n        the same component provided they are sufficiently close to one \n        another, have scale that is sufficiently similar, and sufficiently \n        define a local cylinder (i.e. they are sufficiently parallel with the \n        vector connecting the two paticle spatial locations). Only \n        components that have cardinality greater than or equal to that \n        specified by the user will be retained in the output. Furthermore, \n        the output particles will have a defined 'unmergedComponents' \n        array that indicates the component label assigned to each particle.
+description: This program extract the airway wall and computes multiple airway wall metrics from a particle's VTK files using multiple approaches. The output is another particle's' VTK file.
 
 version: 0.0.1
+
+documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateModel
 
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
-
-"""
-
-    input_spec = FilterAirwayParticleDataInputSpec
-    output_spec = FilterAirwayParticleDataOutputSpec
-    _cmd = " FilterAirwayParticleData "
-    _outputs_filenames = {'out':'out.vtk'}
-
-
-class SplitLeftLungRightLungInputSpec(CommandLineInputSpec):
-    ct = File(desc="\'Input CT file name", exists=True, argstr="--ct %s")
-    lm = File(desc="\'Input label map file name", exists=True, argstr="--lm %s")
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="\'Output label map file name", argstr="--out %s")
-    timeConst = traits.Float(desc="Exponential time constant ", argstr="--timeConst %f")
-    coefficient = traits.Float(desc="Exponential coefficient.", argstr="--coefficient %f")
-    rad = traits.Int(desc="The radius to use when splitting. The larger the radius, the larger the \n	cleaved split through the label map.", argstr="--rad %d")
-
-
-class SplitLeftLungRightLungOutputSpec(TraitedSpec):
-    out = File(desc="\'Output label map file name", exists=True)
-
-
-class SplitLeftLungRightLung(SEMLikeCommandLine):
-    """title: GenerateStatisticsForAirwayGenerationLabeling
-
-category: Chest Imaging Platform.Toolkit.Segmentation
-
-description: This program reads a label map and splits the left and\n        right lungs so that they are uniquely labeled. If the input is\n        already split, the output will be identical to the input.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = SplitLeftLungRightLungInputSpec
-    output_spec = SplitLeftLungRightLungOutputSpec
-    _cmd = " SplitLeftLungRightLung "
-    _outputs_filenames = {'out':'out.nii'}
-
-
-class CropLungInputSpec(CommandLineInputSpec):
-    inFileName = File(desc="Input CT file", exists=True, argstr="--inFileName %s")
-    plf = File(desc="Label map file name", exists=True, argstr="--plf %s")
-    outFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Cropped CT volume", argstr="--outFileName %s")
-    opl = traits.Either(traits.Bool, File(), hash_files=False, desc="Ouput label map volume", argstr="--opl %s")
-    region = InputMultiPath(traits.Str, desc="Specify a region you want to crop (ex: WholeLung)", sep=",", argstr="--region %s")
-    type = InputMultiPath(traits.Str, desc="Specify a type you want to crop (ex:Airway)", sep=",", argstr="--type %s")
-    regionPair = InputMultiPath(traits.Str, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the typePair flag", sep=",", argstr="--regionPair %s")
-    typePair = InputMultiPath(traits.Str, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the regionPair flag", sep=",", argstr="--typePair %s")
-    padding = InputMultiPath(traits.Int, desc="Specify padding along region/type x,y,z bounding box", sep=",", argstr="--padding %s")
-    maskFlag = traits.Int(desc="Set to 0 if you don't want the voxels outside the defined region-type to be set to a fixed value. Set to 1 otherwise (default=1)", argstr="--maskFlag %d")
-    value = traits.Int(desc="Value to set voxels outside the region that is cropped. (default=0)", argstr="--value %d")
-
-
-class CropLungOutputSpec(TraitedSpec):
-    outFileName = File(desc="Output Cropped CT volume", exists=True)
-    opl = File(desc="Ouput label map volume", exists=True)
-
-
-class CropLung(SEMLikeCommandLine):
-    """title: CropLung
-
-category: Chest Imaging Platform.Toolkit.Processing
-
-description: Crop a CT lung volume for a specified region.\n        This tools provides the cropped CT volume and optionally \n        the cropped lung masked.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
-
-"""
-
-    input_spec = CropLungInputSpec
-    output_spec = CropLungOutputSpec
-    _cmd = " CropLung "
-    _outputs_filenames = {'outFileName':'outFileName.nii','opl':'opl.nii'}
+    input_spec = ComputeAirwayWallFromParticlesInputSpec
+    output_spec = ComputeAirwayWallFromParticlesOutputSpec
+    _cmd = " ComputeAirwayWallFromParticles "
+    _outputs_filenames = {'saveDir':'saveDir','op':'op.vtk'}
 
 
 class ComputeIntensityStatisticsInputSpec(CommandLineInputSpec):
@@ -1576,56 +1486,42 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'op':'op','oh':'oh'}
 
 
-class RegisterCT2DInputSpec(CommandLineInputSpec):
-    fixedImageFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedImageFileName %s")
-    movingImageFileName = File(desc="moving Image FileName", exists=True, argstr="--movingImageFileName %s")
-    outputTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="Output transform file name", argstr="--outputTransform %s")
-    outputImage = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--outputImage %s")
-    movingLabelmapFileName = File(desc="moving LabelMap FileName", exists=True, argstr="--movingLabelmapFileName %s")
-    movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--movingImageID %s")
-    fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--fixedImageID %s")
-    registrationID = traits.Str(desc="unique Id for the registration process.", argstr="--registrationID %s")
-    degrees = traits.Float(desc="downsampleFactor", argstr="--degrees %f")
-    max = traits.Float(desc="maxStepLength", argstr="--max %f")
-    min = traits.Float(desc="minStepLength", argstr="--min %f")
-    numberOfIterations = traits.Int(desc="Number of iterations. ", argstr="--numberOfIterations %d")
-    translationScale = traits.Float(desc="translationScale", argstr="--translationScale %f")
-    regionVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionVec %s")
-    typeVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--typeVec %s")
-    typePairVec = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag", sep=",", argstr="--typePairVec %s")
-    regionPairVec = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionPairVec %s")
-    isIntensity = traits.Bool(desc="Uses intensity based registration if true", argstr="--isIntensity ")
+class GenerateDistanceMapFromLabelMapInputSpec(CommandLineInputSpec):
+    labelMap = traits.Str(desc="Input label map file name", argstr="--labelMap %s")
+    distanceMap = traits.Str(desc="Output distance map file name", argstr="--distanceMap %s")
+    downsample = traits.Float(desc="Downsample factor. The input label map will be \n            downsampled by the specified amount before the distance map is computed. The resulting \n            distance map will then be scaled up by the same amount before writing.", argstr="--downsample %f")
+    region = traits.Int(desc="Specify the chest region of the object the distance \n              map is to be computed with respect to. UNDEFINEDREGION by default", argstr="--region %d")
+    type = traits.Int(desc="Specify the chest type of the object the distance \n              map is to be computed with respect to. UNDEFINEDTYPE by default", argstr="--type %d")
+    interiorPositive = traits.Bool(desc="Set this flag to indicate that the interior \n              of the structure of interest should be assigned positive distance values", argstr="--interiorPositive ")
 
 
-class RegisterCT2DOutputSpec(TraitedSpec):
-    outputTransform = File(desc="Output transform file name", exists=True)
-    outputImage = File(desc="Output image file name", exists=True)
+class GenerateDistanceMapFromLabelMapOutputSpec(TraitedSpec):
+    pass
 
 
-class RegisterCT2D(SEMLikeCommandLine):
-    """title: RegisterCT2D
+class GenerateDistanceMapFromLabelMap(SEMLikeCommandLine):
+    """title: GenerateDistanceMapFromLabelMap
 
-category: Chest Imaging Platform.Toolkit.Registration
+category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.
+description: This program can be used to compute a distance map from an \ninput label map (that adheres to the CIP label map conventions \nlaid out in cipConventions.h). The user must specify which \nstructure of interest the distance map should be computed with \nrespect to by indicating the chest region and/or chest type. If \nthe chest type is not specified, any voxel meeting the indicated \nchest type will be set to foreground and vice versa. The user also \nhas the option of downsampling the label map prior to distance map \ncomputation, which should speed computation time. The resulting \ndistance map will by upsampled by the same amount before writing.
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
+documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateDistanceMapFromLabelMap
 
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-   
 
 """
 
-    input_spec = RegisterCT2DInputSpec
-    output_spec = RegisterCT2DOutputSpec
-    _cmd = " RegisterCT2D "
-    _outputs_filenames = {'outputImage':'outputImage.nii','outputTransform':'outputTransform.mat'}
+    input_spec = GenerateDistanceMapFromLabelMapInputSpec
+    output_spec = GenerateDistanceMapFromLabelMapOutputSpec
+    _cmd = " GenerateDistanceMapFromLabelMap "
+    _outputs_filenames = {}
 
 
 class GetTransformationKappa2DInputSpec(CommandLineInputSpec):
@@ -1667,6 +1563,43 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = GetTransformationKappa2DOutputSpec
     _cmd = " GetTransformationKappa2D "
     _outputs_filenames = {'outputXMLFile':'outputXMLFile.xml'}
+
+
+class RemapLabelMapInputSpec(CommandLineInputSpec):
+    ilm = File(desc="Input label map", exists=True, argstr="--ilm %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map", argstr="--olm %s")
+    il = InputMultiPath(traits.Int, desc="Comma separated list of input labels to map. The elements \nin this list will have a one-to-one correspondence with the elements of the output labels", sep=",", argstr="--il %s")
+    ol = InputMultiPath(traits.Int, desc="Comma separated list of output labels to map. The elements \nin this list will have a one-to-one correspondence with the elements of the input labels", sep=",", argstr="--ol %s")
+
+
+class RemapLabelMapOutputSpec(TraitedSpec):
+    olm = File(desc="Output label map", exists=True)
+
+
+class RemapLabelMap(SEMLikeCommandLine):
+    """title: RemapLabelMap
+
+category: Chest Imaging Platform.Toolkit.Processing
+
+description: This program is used to map label map values \nin an input image to designated values in the output image.
+
+version: 0.0.1
+
+documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom
+
+license: Slicer
+
+contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
+
+"""
+
+    input_spec = RemapLabelMapInputSpec
+    output_spec = RemapLabelMapOutputSpec
+    _cmd = " RemapLabelMap "
+    _outputs_filenames = {'olm':'olm.nii'}
 
 
 class MergeChestLabelMapsInputSpec(CommandLineInputSpec):
@@ -1711,7 +1644,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class ClassifyFissureParticlesInputSpec(CommandLineInputSpec):
-    particles = File(desc="Particles file name", exists=True, argstr="--particles %s")
+    ip = File(desc="Particles file name", exists=True, argstr="--ip %s")
     lm = traits.Str(desc="Left lung shape model file name", argstr="--lm %s")
     rm = traits.Str(desc="Right lung shape model file name", argstr="--rm %s")
     loClassified = traits.Either(traits.Bool, File(), hash_files=False, desc="Left oblique classified particles file name", argstr="--loClassified %s")
@@ -1733,7 +1666,7 @@ class ClassifyFissureParticles(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program is used to classify fissure particles using Fischer's Linear \n    Discriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \n    for the left or right lung. For each particle, its distance and angle with respect to the lobe boundaries \n    are computed. The weighted sum of these quantities is then computed and compared to a threshold value, \n    and a classification decision is made (either fissure or noise). If particles in the right lung are \n    being considered, a particle is classified according to which entity it is most like (noise, right \n    horizontal or right oblique). The classified particles are then written to file.
+description: This program is used to classify fissure particles using Fischer's Linear \nDiscriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \nfor the left or right lung. For each particle, its distance and angle with respect to the lobe boundaries \nare computed. The weighted sum of these quantities is then computed and compared to a threshold value, \nand a classification decision is made (either fissure or noise). If particles in the right lung are \nbeing considered, a particle is classified according to which entity it is most like (noise, right \nhorizontal or right oblique). The classified particles are then written to file.
 
 version: 0.0.1
 
@@ -1741,7 +1674,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -1826,50 +1759,9 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class GetTransformationSimilarityMetric3DInputSpec(CommandLineInputSpec):
-    fixedCTFileName = File(desc="fixed CT File Name", exists=True, argstr="--fixedCTFileName %s")
-    movingCTFileName = File(desc="moving CT FileName", exists=True, argstr="--movingCTFileName %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    fixedLabelMapFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedLabelMapFileName %s")
-    movingLabelMapFileName = File(desc="moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.", exists=True, argstr="--movingLabelMapFileName %s")
-    outputXMLFile = traits.Either(traits.Bool, File(), hash_files=False, desc="The name of the output xml file. If not specified, no xml file will be output. ", argstr="--outputXMLFile %s")
-    SimilarityMetric = traits.Str(desc="Similarity metric to be used. Choice between: MI (for mutual \n          information), NMI (for normalized mutual information), and mean squares (msqr), \n      NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI", argstr="--SimilarityMetric %s")
-    movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be null.", argstr="--movingImageID %s")
-    fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be null.", argstr="--fixedImageID %s")
-    invertTransformations = InputMultiPath(traits.Int, desc="Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).", sep=",", argstr="--invertTransformations %s")
-
-
-class GetTransformationSimilarityMetric3DOutputSpec(TraitedSpec):
-    outputXMLFile = File(desc="The name of the output xml file. If not specified, no xml file will be output. ", exists=True)
-
-
-class GetTransformationSimilarityMetric3D(SEMLikeCommandLine):
-    """title: GetTransformationSimilarityMetric3D
-
-category: Chest Imaging Platform.Toolkit.Quantification
-
-description: This program calculates a similarity measure between 2 CT images in \n  a region specified by a label map. It takes as input the 2 CT images and their corresponding \n  label maps, and a transformation file, and appends the values of the similarity metric to an \n  existing xml file if one is provided.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-  
-
-"""
-
-    input_spec = GetTransformationSimilarityMetric3DInputSpec
-    output_spec = GetTransformationSimilarityMetric3DOutputSpec
-    _cmd = " GetTransformationSimilarityMetric3D "
-    _outputs_filenames = {'outputXMLFile':'outputXMLFile.xml'}
-
-
 class ConvertChestRegionChestTypeToLabelMapValueInputSpec(CommandLineInputSpec):
-    region = traits.Int(desc="The unsigned char region value", argstr="--region %d")
-    type = traits.Int(desc="The unsigned char type value", argstr="--type %d")
+    region = traits.Str(desc="Region name", argstr="--region %s")
+    type = traits.Str(desc="Type name", argstr="--type %s")
 
 
 class ConvertChestRegionChestTypeToLabelMapValueOutputSpec(TraitedSpec):
@@ -1881,7 +1773,7 @@ class ConvertChestRegionChestTypeToLabelMapValue(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Utils
 
-description: This simple program takes an region-type unsigned char value \n        that conforms to the labeling conventions laid out in \n        cipConventhions.h and writes to the command line the corresponding unsigned short encoding the chest \n        region and chest type value.
+description: This simple program takes chest-region and chest-type string specifications \n(conforming to CIP standards laid out in cipChestConventions.h) and writes to the command line the \ncorresponding unsigned short encoding the chest region and chest type value.
 
 version: 0.0.1
 
@@ -1889,7 +1781,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
     
 
 """
@@ -1937,21 +1829,21 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GetTransformationSimilarityMetricInputSpec(CommandLineInputSpec):
-    fixedCTFileName = File(desc="fixed CT File Name", exists=True, argstr="--fixedCTFileName %s")
-    movingCTFileName = File(desc="moving CT FileName", exists=True, argstr="--movingCTFileName %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    fixedLabelMapFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedLabelMapFileName %s")
+    fct = File(desc="fixed CT File Name", exists=True, argstr="--fct %s")
+    mct = File(desc="moving CT FileName", exists=True, argstr="--mct %s")
+    itx = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--itx %s")
+    flm = File(desc="fixed labelmap File Name, will be used as mask", exists=True, argstr="--flm %s")
     movingLabelMapFileName = File(desc="moving LabelMap FileName. The similarity measure will only be computed inside the labelmap region.", exists=True, argstr="--movingLabelMapFileName %s")
-    outputXMLFile = traits.Either(traits.Bool, File(), hash_files=False, desc="The name of the output xml file. If not specified, no xml file will be output. ", argstr="--outputXMLFile %s")
+    oxml = traits.Either(traits.Bool, File(), hash_files=False, desc="The name of the output xml file. If not specified, no xml file will be output. ", argstr="--oxml %s")
     SimilarityMetric = traits.Str(desc="Similarity metric to be used. Choice between: MI (for mutual \n          information), NMI (for normalized mutual information), and mean squares (msqr), \n      NormalizedCorrelationImageToImageMetric (nc), gradient difference  (gd). Default: MI", argstr="--SimilarityMetric %s")
     movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be null.", argstr="--movingImageID %s")
     fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be null.", argstr="--fixedImageID %s")
-    invertTransformations = InputMultiPath(traits.Int, desc="Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).", sep=",", argstr="--invertTransformations %s")
-    dimension = traits.Int(desc="Dimension of the image being resampled. Default: 3.", argstr="--dimension %d")
+    inverttx = InputMultiPath(traits.Int, desc="Uses the inverse transformation for each transformation index specified (comma separated). Default: null (all transformations non-inverted).", sep=",", argstr="--inverttx %s")
+    dim = traits.Int(desc="Dimension of the image being resampled. Default: 3.", argstr="--dim %d")
 
 
 class GetTransformationSimilarityMetricOutputSpec(TraitedSpec):
-    outputXMLFile = File(desc="The name of the output xml file. If not specified, no xml file will be output. ", exists=True)
+    oxml = File(desc="The name of the output xml file. If not specified, no xml file will be output. ", exists=True)
 
 
 class GetTransformationSimilarityMetric(SEMLikeCommandLine):
@@ -1975,21 +1867,20 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GetTransformationSimilarityMetricInputSpec
     output_spec = GetTransformationSimilarityMetricOutputSpec
     _cmd = " GetTransformationSimilarityMetric "
-    _outputs_filenames = {'outputXMLFile':'outputXMLFile.xml'}
+    _outputs_filenames = {'oxml':'oxml.xml'}
 
 
 class GenerateOtsuLungCastInputSpec(CommandLineInputSpec):
-    ct = File(desc="Input CT image file name", exists=True, argstr="--ct %s")
-    dir = traits.Str(desc="Directory containing DICOM images to segment.", argstr="--dir %s")
-    mask = traits.Either(traits.Bool, File(), hash_files=False, desc="Output lung mask file name", argstr="--mask %s")
-    lowerClip = traits.Int(desc="Lower clip value applied to input image before segmentation. Any value below the value specified with this flag will\n                be replaced with the value specified by -r flag.", argstr="--lowerClip %d")
+    ict = File(desc="Input CT image file name", exists=True, argstr="--ict %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output lung mask file name", argstr="--olm %s")
+    lowerClip = traits.Int(desc="Lower clip value applied to input image before segmentation. Any value below the value specified with this flag will\nbe replaced with the value specified by -r flag.", argstr="--lowerClip %d")
     lowerReplace = traits.Int(desc="Lower replacement value applied to input image before segmentation.", argstr="--lowerReplace %d")
-    upperClip = traits.Int(desc="Upper clip value applied to input image before segmentation.Any value above the value specified with this flag will be\n                replaced with the value specified by the -R flag. If the -R flag is not used, a default value of 1024 will be used as the replacement value.", argstr="--upperClip %d")
-    upperReplace = traits.Int(desc="Upper replacement value applied to input image before segmentation. Any value above the value specified with this flag will\n                replace the value specified using the -u flag. If no value is specified with the -u flag, the default of 1024 will be used.", argstr="--upperReplace %d")
+    upperClip = traits.Int(desc="Upper clip value applied to input image before segmentation.Any value above the value specified with this flag will be\nreplaced with the value specified by the -R flag. If the -R flag is not used, a default value of 1024 will be used as the replacement value.", argstr="--upperClip %d")
+    upperReplace = traits.Int(desc="Upper replacement value applied to input image before segmentation. Any value above the value specified with this flag will\nreplace the value specified using the -u flag. If no value is specified with the -u flag, the default of 1024 will be used.", argstr="--upperReplace %d")
 
 
 class GenerateOtsuLungCastOutputSpec(TraitedSpec):
-    mask = File(desc="Output lung mask file name", exists=True)
+    olm = File(desc="Output lung mask file name", exists=True)
 
 
 class GenerateOtsuLungCast(SEMLikeCommandLine):
@@ -1997,7 +1888,7 @@ class GenerateOtsuLungCast(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Segmentation
 
-description: This program produces an Otsu lung cast. (Cast is meant\n        to refer to it being a preliminary mask from which other\n        masks are derived / molded). The program simply interfaces\n        with the itkCIPOtsuLungCastImageFilter. Before invoking the\n        filter, however, the user has the option to clip the intensity\n        values of the input image. It's generally recommend to clip\n        anything below -1024 or above 1024 to 1024.
+description: This program produces an Otsu lung cast. (Cast is meant\nto refer to it being a preliminary mask from which other\nmasks are derived / molded). The program simply interfaces\nwith the itkCIPOtsuLungCastImageFilter. Before invoking the\nfilter, however, the user has the option to clip the intensity\nvalues of the input image. It's generally recommend to clip\nanything below -1024 or above 1024 to 1024.
 
 version: 0.0.1
 
@@ -2005,102 +1896,58 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
     input_spec = GenerateOtsuLungCastInputSpec
     output_spec = GenerateOtsuLungCastOutputSpec
     _cmd = " GenerateOtsuLungCast "
-    _outputs_filenames = {'mask':'mask.nii'}
+    _outputs_filenames = {'olm':'olm.nii'}
 
 
-class RegisterLabelMaps3DInputSpec(CommandLineInputSpec):
-    fixedImageFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedImageFileName %s")
-    movingImageFileName = File(desc="moving Image FileName", exists=True, argstr="--movingImageFileName %s")
-    outputImage = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--outputImage %s")
-    outputTransform = traits.Str(desc="Output transform file name", argstr="--outputTransform %s")
-    movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--movingImageID %s")
-    fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--fixedImageID %s")
-    registrationID = traits.Str(desc="unique Id for the registration process.", argstr="--registrationID %s")
-    downsampleFactor = traits.Float(desc="downsampleFactor", argstr="--downsampleFactor %f")
-    max = traits.Float(desc="maxStepLength", argstr="--max %f")
-    min = traits.Float(desc="minStepLength", argstr="--min %f")
-    numberOfIterations = traits.Int(desc="Number of iterations. ", argstr="--numberOfIterations %d")
-    translationScale = traits.Float(desc="translationScale", argstr="--translationScale %f")
-    regionVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionVec %s")
-    typeVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--typeVec %s")
-    typePairVec = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag", sep=",", argstr="--typePairVec %s")
-    regionPairVec = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionPairVec %s")
+class CropLungInputSpec(CommandLineInputSpec):
+    ict = File(desc="Input CT file", exists=True, argstr="--ict %s")
+    ilm = File(desc="Label map file name", exists=True, argstr="--ilm %s")
+    oct = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Cropped CT volume", argstr="--oct %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Ouput label map volume", argstr="--olm %s")
+    cipr = InputMultiPath(traits.Str, desc="Specify a region you want to crop (ex: WholeLung)", sep=",", argstr="--cipr %s")
+    cipt = InputMultiPath(traits.Str, desc="Specify a type you want to crop (ex:Airway)", sep=",", argstr="--cipt %s")
+    rpair = InputMultiPath(traits.Str, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the typePair flag", sep=",", argstr="--rpair %s")
+    tpair = InputMultiPath(traits.Str, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the regionPair flag", sep=",", argstr="--tpair %s")
+    padding = InputMultiPath(traits.Int, desc="Specify padding along region/type x,y,z bounding box", sep=",", argstr="--padding %s")
+    maskFlag = traits.Int(desc="Set to 0 if you don't want the voxels outside the defined region-type to be set to a fixed value. Set to 1 otherwise (default=1)", argstr="--maskFlag %d")
+    value = traits.Int(desc="Value to set voxels outside the region that is cropped. (default=0)", argstr="--value %d")
 
 
-class RegisterLabelMaps3DOutputSpec(TraitedSpec):
-    outputImage = File(desc="Output image file name", exists=True)
+class CropLungOutputSpec(TraitedSpec):
+    oct = File(desc="Output Cropped CT volume", exists=True)
+    olm = File(desc="Ouput label map volume", exists=True)
 
 
-class RegisterLabelMaps3D(SEMLikeCommandLine):
-    """title: RegisterLabelMaps3D
-
-category: Chest Imaging Platform.Toolkit.Registration
-
-description: This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.
-
-version: 0.0.1
-
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-   
-
-"""
-
-    input_spec = RegisterLabelMaps3DInputSpec
-    output_spec = RegisterLabelMaps3DOutputSpec
-    _cmd = " RegisterLabelMaps3D "
-    _outputs_filenames = {'outputImage':'outputImage.nii'}
-
-
-class ResampleLabelMap2DInputSpec(CommandLineInputSpec):
-    labelMapFile = File(desc="Label map file name to resample", exists=True, argstr="--labelMapFile %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    resampledFile = traits.Either(traits.Bool, File(), hash_files=False, desc="Resampled label map (output) file name", argstr="--resampledFile %s")
-    destinationFile = File(desc="Label map file name to resampDestinatin file name. This should be a header file that contains the necessary information (image spacing, origin, and size) for the resampling process.", exists=True, argstr="--destinationFile %s")
-    invertTransformation = traits.Bool(desc="Uses the inverse transformation if set to True. Default: False.", argstr="--invertTransformation ")
-
-
-class ResampleLabelMap2DOutputSpec(TraitedSpec):
-    resampledFile = File(desc="Resampled label map (output) file name", exists=True)
-
-
-class ResampleLabelMap2D(SEMLikeCommandLine):
-    """title: ResampleLabelMap2D
+class CropLung(SEMLikeCommandLine):
+    """title: CropLung
 
 category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program resamples a label map using an affine transform (read from file)
+description: Crop a CT lung volume for a specified region.\n  This tools provides the cropped CT volume and optionally \n  the cropped lung masked.
 
 version: 0.0.1
-
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
 
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
-    input_spec = ResampleLabelMap2DInputSpec
-    output_spec = ResampleLabelMap2DOutputSpec
-    _cmd = " ResampleLabelMap2D "
-    _outputs_filenames = {'resampledFile':'resampledFile.nii'}
+    input_spec = CropLungInputSpec
+    output_spec = CropLungOutputSpec
+    _cmd = " CropLung "
+    _outputs_filenames = {'oct':'oct.nii','olm':'olm.nii'}
 
 
 class RemoveChestTypeFromLabelMapUsingParticlesInputSpec(CommandLineInputSpec):
@@ -2138,75 +1985,85 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class MergeParticleDataSetsInputSpec(CommandLineInputSpec):
-    opt_in = InputMultiPath(File(exists=True), desc="Input particles file names", argstr="--in %s...")
-    o = File(desc="Output particles file name", exists=True, argstr="--o %s")
+class GenerateNLMFilteredImageInputSpec(CommandLineInputSpec):
+    inputFile = File(desc="Input CT file name", exists=True, argstr="--inputFile %s")
+    outputFile = traits.Either(traits.Bool, File(), hash_files=False, desc="Output CT file name", argstr="--outputFile %s")
+    CTDirectory = Directory(desc="Directory image series", exists=True, argstr="--CTDirectory %s")
+    sigma = traits.Float(desc="Noise power. If it is underestimated, the algorithm fails to remove the noise. If it is overestimated, over-blurring is likely to occur.", argstr="--sigma %f")
+    rs = InputMultiPath(traits.Int, desc="The algorithm search for similar voxels in a neighborhood of this radius (radii larger than 5,5,5 are very slow, and the results can be only marginally better. Small radii may fail to effectively remove the noise).", sep=",", argstr="--rs %s")
+    rc = InputMultiPath(traits.Int, desc="Similarity between blocks is computed as the difference between mean values and gradients. These parameters are computed fitting a hyperplane with LS inside a neighborhood of this size", sep=",", argstr="--rc %s")
+    hp = traits.Float(desc="This parameter is related to noise; the larger the parameter, the more aggressive the filtering. Should be near 1, and only values between 0.8 and 1.2 are allowed", argstr="--hp %f")
+    ps = traits.Float(desc="To accelerate computations, preselection is used: if the normalized difference is above this threshold, the voxel will be discarded (non used for average)", argstr="--ps %f")
 
 
-class MergeParticleDataSetsOutputSpec(TraitedSpec):
-    pass
+class GenerateNLMFilteredImageOutputSpec(TraitedSpec):
+    outputFile = File(desc="Output CT file name", exists=True)
 
 
-class MergeParticleDataSets(SEMLikeCommandLine):
-    """title: MergeParticleDataSets
+class GenerateNLMFilteredImage(SEMLikeCommandLine):
+    """title: GenerateNLMFilteredImage
+
+category: Chest Imaging Platform.Toolkit.Processing
+
+description:  This module implements a fast version of the popular Non-Local Means filter for image denoising. The whole description of this version may be found in the following paper (please, cite it if you are willing to use this software):
+ A. Tristan-Vega, V. Garcia Perez, S. Aja-Fenandez, and C.-F. Westin, "Efficient and Robust Nonlocal Means Denoising of MR Data Based on Salient Features Matching", Computer Methods and Programs in Biomedicine. 2011.
+
+version: 0.0.1
+
+documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage
+
+license: Slicer
+
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
+
+"""
+
+    input_spec = GenerateNLMFilteredImageInputSpec
+    output_spec = GenerateNLMFilteredImageOutputSpec
+    _cmd = " GenerateNLMFilteredImage "
+    _outputs_filenames = {'outputFile':'outputFile.nii'}
+
+
+class LabelAirwayParticlesByGenerationInputSpec(CommandLineInputSpec):
+    inPart = File(desc="Input particles file name", exists=True, argstr="--inPart %s")
+    outPart = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--outPart %s")
+    atlas = InputMultiPath(traits.Str, desc="Airway generation labeled atlas file name. \n      An airway generation labeled atlas is a particles data set that has point data array point named \n      'ChestType' that, for each particle, has a correctly labeled airway generation label. \n      Labeling must conform to the standards set forth in 'cipConventions.h'. \n      The atlas must be in the same coordinate frame as the input dataset that \n      is to be labeled. Multiple atlases may be specified. These atlases are \n      used to compute the emission probabilities (see descriptions of the HMM \n      algorithm) using kernel density estimation.", sep=",", argstr="--atlas %s")
+    distThresh = traits.Float(desc="Particle distance threshold. If two particles are \n      farther apart than this threshold, they will not considered connected. Otherwise, a graph edge \n      will be formed between the particles where the edge weight is a function of the distance \n      between the particles. The weighted graph is then fed to a minimum spanning tree algorithm, the \n      output of which is used to establish directionality throught the particles for HMM analysis.", argstr="--distThresh %f")
+    kdeROI = traits.Float(desc="The spherical radius region of interest \n      over which contributions to the kernel density estimation are made. Only atlas particles that \n      are within this physical distance will contribute to the estimate. By default, all atlas \n      particles will contribute to the estimate.", argstr="--kdeROI %f")
+    root = traits.Int(desc="The particle ID of the airway tree root if known.", argstr="--root %d")
+    results = traits.Bool(desc="Print results. Setting this flag assumes that the input particles \n      have been labeled. This option can be used for debugging and for quality assessment.", argstr="--results ")
+    kdeMode = traits.Bool(desc="Set to 1 to use KDE-based classification for airway label assignment. \n      This is equivalent to only using the emission probabilities from the overall HMTM model.", argstr="--kdeMode ")
+
+
+class LabelAirwayParticlesByGenerationOutputSpec(TraitedSpec):
+    outPart = File(desc="Output particles file name", exists=True)
+
+
+class LabelAirwayParticlesByGeneration(SEMLikeCommandLine):
+    """title: LabelAirwayParticlesByGeneration
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program accepts as input multiple particle data sets and merges them \n  into one data set for output. If any of the inputs do not have ChestType and ChestRegion fields defined \n  this program will create them and initialize entries to UNDEFINEDTYPE and UNDEFINEDREGION.
+description: This program takes an input airway particles dataset \n  and assigns airway generation labels to each particle. The assigned labels are \n  coded in the ChestType point data arrays in the output particles data set. \n  The algorithm uses a Hidden Markov Model framework work to perform the generation \n  labeling.
 
 version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = MergeParticleDataSetsInputSpec
-    output_spec = MergeParticleDataSetsOutputSpec
-    _cmd = " MergeParticleDataSets "
-    _outputs_filenames = {}
-
-
-class GenerateDistanceMapFromLabelMapInputSpec(CommandLineInputSpec):
-    labelMap = traits.Str(desc="Input label map file name", argstr="--labelMap %s")
-    distanceMap = traits.Str(desc="Output distance map file name", argstr="--distanceMap %s")
-    downsample = traits.Float(desc="Downsample factor. The input label map will be \n            downsampled by the specified amount before the distance map is computed. The resulting \n            distance map will then be scaled up by the same amount before writing.", argstr="--downsample %f")
-    region = traits.Int(desc="Specify the chest region of the object the distance \n              map is to be computed with respect to. UNDEFINEDREGION by default", argstr="--region %d")
-    type = traits.Int(desc="Specify the chest type of the object the distance \n              map is to be computed with respect to. UNDEFINEDTYPE by default", argstr="--type %d")
-    interiorPositive = traits.Bool(desc="Set this flag to indicate that the interior \n              of the structure of interest should be assigned positive distance values", argstr="--interiorPositive ")
-
-
-class GenerateDistanceMapFromLabelMapOutputSpec(TraitedSpec):
-    pass
-
-
-class GenerateDistanceMapFromLabelMap(SEMLikeCommandLine):
-    """title: GenerateDistanceMapFromLabelMap
-
-category: Chest Imaging Platform.Toolkit.Processing
-
-description: This program can be used to compute a distance map from an \ninput label map (that adheres to the CIP label map conventions \nlaid out in cipConventions.h). The user must specify which \nstructure of interest the distance map should be computed with \nrespect to by indicating the chest region and/or chest type. If \nthe chest type is not specified, any voxel meeting the indicated \nchest type will be set to foreground and vice versa. The user also \nhas the option of downsampling the label map prior to distance map \ncomputation, which should speed computation time. The resulting \ndistance map will by upsampled by the same amount before writing.
-
-version: 0.0.1
-
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateDistanceMapFromLabelMap
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-
-"""
-
-    input_spec = GenerateDistanceMapFromLabelMapInputSpec
-    output_spec = GenerateDistanceMapFromLabelMapOutputSpec
-    _cmd = " GenerateDistanceMapFromLabelMap "
-    _outputs_filenames = {}
+    input_spec = LabelAirwayParticlesByGenerationInputSpec
+    output_spec = LabelAirwayParticlesByGenerationOutputSpec
+    _cmd = " LabelAirwayParticlesByGeneration "
+    _outputs_filenames = {'outPart':'outPart.vtk'}
 
 
 class ResampleLabelMapInputSpec(CommandLineInputSpec):
@@ -2248,42 +2105,47 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'resampledFile':'resampledFile.nii'}
 
 
-class ResampleLabelMap3DInputSpec(CommandLineInputSpec):
-    labelMapFile = File(desc="Label map file name to resample", exists=True, argstr="--labelMapFile %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    resampledFile = traits.Either(traits.Bool, File(), hash_files=False, desc="Resampled label map (output) file name", argstr="--resampledFile %s")
-    destinationFile = File(desc="Label map file name to resampDestinatin file name. This should be a header file that contains the necessary information (image spacing, origin, and size) for the resampling process.", exists=True, argstr="--destinationFile %s")
-    invertTransformation = traits.Bool(desc="Uses the inverse transformation if set to True. Default: False.", argstr="--invertTransformation ")
+class GenerateStenciledLabelMapFromParticlesInputSpec(CommandLineInputSpec):
+    inLabelMap = File(desc="Input label map file name. Used to retrieve spacing, origin, and dimensions for creating output label map", exists=True, argstr="--inLabelMap %s")
+    outLabelMap = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map file name", argstr="--outLabelMap %s")
+    particles = File(desc="Input particles file name", exists=True, argstr="--particles %s")
+    ctSigma = traits.Float(desc="The CT scanner point spread function sigma. 0.0 by default.", argstr="--ctSigma %f")
+    radius = traits.Float(desc="Stencil radius in mm.", argstr="--radius %f")
+    height = traits.Float(desc="Cylinder stencil height in mm. Default is 1mm. This should typically be set to the inter-particle distance.", argstr="--height %f")
+    vessel = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to vessels.", argstr="--vessel ")
+    airway = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to airways.", argstr="--airway ")
+    fissure = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to fissures.", argstr="--fissure ")
+    sphere = traits.Bool(desc="Set this flag to indicate that the sphere stencil should be used.", argstr="--sphere ")
+    cylinder = traits.Bool(desc="Set this flag to indicate that the cylinder stencil should be used.", argstr="--cylinder ")
+    scale = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).", argstr="--scale ")
 
 
-class ResampleLabelMap3DOutputSpec(TraitedSpec):
-    resampledFile = File(desc="Resampled label map (output) file name", exists=True)
+class GenerateStenciledLabelMapFromParticlesOutputSpec(TraitedSpec):
+    outLabelMap = File(desc="Output label map file name", exists=True)
 
 
-class ResampleLabelMap3D(SEMLikeCommandLine):
-    """title: ResampleLabelMap3D
+class GenerateStenciledLabelMapFromParticles(SEMLikeCommandLine):
+    """title: GenerateStenciledLabelMapFromParticles
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program resamples a label map using an affine transform (read from file)
+description: This program reads a particles dataset and creates a stenciled label map corresponding to them. An input label map is used simply to get spacing, origin, and dimensions of the output label map. Particles can correspond to vessels, airways, or fissures. Currently, sphere and cylinder stencils are supported. The user has the option of scaling the stencil pattern using the particle scale. Scaling in this case means scaling the radius for both the sphere and cylinder stencils. The height of the cylinder stencil remains fixed.
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
-
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
-    input_spec = ResampleLabelMap3DInputSpec
-    output_spec = ResampleLabelMap3DOutputSpec
-    _cmd = " ResampleLabelMap3D "
-    _outputs_filenames = {'resampledFile':'resampledFile.nii'}
+    input_spec = GenerateStenciledLabelMapFromParticlesInputSpec
+    output_spec = GenerateStenciledLabelMapFromParticlesOutputSpec
+    _cmd = " GenerateStenciledLabelMapFromParticles "
+    _outputs_filenames = {'outLabelMap':'outLabelMap.nii'}
 
 
 class ReadDicomWriteTagsInputSpec(CommandLineInputSpec):
@@ -2339,7 +2201,7 @@ class ComputeFissureFeatureVectorsOutputSpec(TraitedSpec):
 class ComputeFissureFeatureVectors(SEMLikeCommandLine):
     """title: ComputeFissureFeatureVectors
 
-category: Chest Imaging Platform.Toolkit.Segmentation
+category: Chest Imaging Platform.Toolkit.Processing
 
 description: This program generates a collection of feature vectors at point locations \n  indicated by an input polydata file.
 
@@ -2347,7 +2209,7 @@ version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2360,56 +2222,45 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class RegisterLabelMaps2DInputSpec(CommandLineInputSpec):
-    fixedImageFileName = File(desc="fixed Image File Name", exists=True, argstr="--fixedImageFileName %s")
-    movingImageFileName = File(desc="moving Image FileName", exists=True, argstr="--movingImageFileName %s")
-    outputTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="Output transform file name", argstr="--outputTransform %s")
-    outputImage = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--outputImage %s")
-    fixedLabelmapFileName = File(desc="fixed LabelMap FileName", exists=True, argstr="--fixedLabelmapFileName %s")
-    movingImageID = traits.Str(desc="Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--movingImageID %s")
-    fixedImageID = traits.Str(desc="Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path", argstr="--fixedImageID %s")
-    registrationID = traits.Str(desc="unique Id for the registration process.", argstr="--registrationID %s")
-    degrees = traits.Float(desc="downsampleFactor", argstr="--degrees %f")
-    max = traits.Float(desc="maxStepLength", argstr="--max %f")
-    min = traits.Float(desc="minStepLength", argstr="--min %f")
-    numberOfIterations = traits.Int(desc="Number of iterations. ", argstr="--numberOfIterations %d")
-    translationScale = traits.Float(desc="translationScale", argstr="--translationScale %f")
-    regionVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionVec %s")
-    typeVec = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--typeVec %s")
-    typePairVec = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag", sep=",", argstr="--typePairVec %s")
-    regionPairVec = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag", sep=",", argstr="--regionPairVec %s")
-    isIntensity = traits.Bool(desc="Uses intensity based registration if true", argstr="--isIntensity ")
+class GenerateLesionSegmentationInputSpec(CommandLineInputSpec):
+    opt_in = File(desc="Input CT image", exists=True, argstr="--in %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output level set of the segmented nodule. The nodule boundary is set at the -0.5 level", argstr="--out %s")
+    seeds = InputMultiPath(traits.List(traits.Float(), minlen=3, maxlen=3), desc="Seed points on module (LPS coordinates)", argstr="--seeds %s...")
+    maximumRadius = traits.Float(desc="Maximum radius of the lesion in mm. This can be used as an alternate way of specifiying the bounds.", argstr="--maximumRadius %f")
+    ROI = InputMultiPath(traits.Float, desc="Bounds of the ROI if any: 6 parameters in LPS coordinates", sep=",", argstr="--ROI %s")
+    outputROI = traits.Bool(argstr="--outputROI ")
+    roiImage = traits.Either(traits.Bool, File(), hash_files=False, argstr="--roiImage %s")
+    sigma = InputMultiPath(traits.Float, desc="Manually specify sigma. This is an array with 3 values in physical units. This defaults to the maximumsspacing in the dataset, if unspecified", sep=",", argstr="--sigma %s")
+    partSolid = traits.Bool(desc="Specify whether the lesion is part-solid. Default solid lesion.", argstr="--partSolid ")
 
 
-class RegisterLabelMaps2DOutputSpec(TraitedSpec):
-    outputTransform = File(desc="Output transform file name", exists=True)
-    outputImage = File(desc="Output image file name", exists=True)
+class GenerateLesionSegmentationOutputSpec(TraitedSpec):
+    out = File(desc="Output level set of the segmented nodule. The nodule boundary is set at the -0.5 level", exists=True)
+    roiImage = File(exists=True)
 
 
-class RegisterLabelMaps2D(SEMLikeCommandLine):
-    """title: RegisterLabelMaps2D
+class GenerateLesionSegmentation(SEMLikeCommandLine):
+    """title: Lesion Segmentation
 
-category: Chest Imaging Platform.Toolkit.Registration
+category: Chest Imaging Platform.Toolkit.Segmentation
 
-description: This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.
+description: This program segmenta a nodular lesion for quantiative assesment
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
-
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-   
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
-    input_spec = RegisterLabelMaps2DInputSpec
-    output_spec = RegisterLabelMaps2DOutputSpec
-    _cmd = " RegisterLabelMaps2D "
-    _outputs_filenames = {'outputImage':'outputImage.nii','outputTransform':'outputTransform.mat'}
+    input_spec = GenerateLesionSegmentationInputSpec
+    output_spec = GenerateLesionSegmentationOutputSpec
+    _cmd = " GenerateLesionSegmentation "
+    _outputs_filenames = {'roiImage':'roiImage.nii','out':'out.nii'}
 
 
 class GenerateImageSubVolumesInputSpec(CommandLineInputSpec):
@@ -2534,6 +2385,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 class GenerateSimpleLungMaskInputSpec(CommandLineInputSpec):
     input = File(desc="Input Chest CT volume", exists=True, argstr="--input %s")
     output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Lung Mask", argstr="--output %s")
+    lowDose = traits.Bool(desc=" Enable if this is a low dose-noisy scan", argstr="--lowDose ")
 
 
 class GenerateSimpleLungMaskOutputSpec(TraitedSpec):
@@ -2564,14 +2416,14 @@ acknowledgements:
 
 
 class GenerateMedianFilteredImageInputSpec(CommandLineInputSpec):
-    Radius = traits.Float(desc="Median filter radius", argstr="--Radius %f")
-    inputFile = File(desc="Input CT file name", exists=True, argstr="--inputFile %s")
-    outputFile = traits.Either(traits.Bool, File(), hash_files=False, desc="Output CT file name", argstr="--outputFile %s")
+    radius = traits.Float(desc="Median filter radius", argstr="--radius %f")
+    ict = File(desc="Input CT file name", exists=True, argstr="--ict %s")
+    oct = traits.Either(traits.Bool, File(), hash_files=False, desc="Output CT file name", argstr="--oct %s")
     CTDirectory = Directory(desc="Directory image series", exists=True, argstr="--CTDirectory %s")
 
 
 class GenerateMedianFilteredImageOutputSpec(TraitedSpec):
-    outputFile = File(desc="Output CT file name", exists=True)
+    oct = File(desc="Output CT file name", exists=True)
 
 
 class GenerateMedianFilteredImage(SEMLikeCommandLine):
@@ -2597,7 +2449,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GenerateMedianFilteredImageInputSpec
     output_spec = GenerateMedianFilteredImageOutputSpec
     _cmd = " GenerateMedianFilteredImage "
-    _outputs_filenames = {'outputFile':'outputFile.nii'}
+    _outputs_filenames = {'oct':'oct.nii'}
 
 
 class ScourParticleDataInputSpec(CommandLineInputSpec):
@@ -2679,25 +2531,21 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class ExtractChestLabelMapInputSpec(CommandLineInputSpec):
-    inFileName = File(desc="Input label map file name", exists=True, argstr="--inFileName %s")
-    outFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map file name", argstr="--outFileName %s")
-    regions = InputMultiPath(traits.Str, desc="Specify a chest region/regions name you want to extract (ex: LeftUpperLobe)", sep=",", argstr="--regions %s")
-    types = InputMultiPath(traits.Str, desc="Specify a chest type/types name you want to extract (ex: Airway)", sep=",", argstr="--types %s")
-    regionPair = InputMultiPath(traits.Str, desc="Specify a region name in a region-type pair you want to extract", sep=",", argstr="--regionPair %s")
-    typePair = InputMultiPath(traits.Str, desc="Specify a type name in a region-type pair you want to extract", sep=",", argstr="--typePair %s")
+class MergeParticleDataSetsInputSpec(CommandLineInputSpec):
+    opt_in = InputMultiPath(File(exists=True), desc="Input particles file names", argstr="--in %s...")
+    o = File(desc="Output particles file name", exists=True, argstr="--o %s")
 
 
-class ExtractChestLabelMapOutputSpec(TraitedSpec):
-    outFileName = File(desc="Output label map file name", exists=True)
+class MergeParticleDataSetsOutputSpec(TraitedSpec):
+    pass
 
 
-class ExtractChestLabelMap(SEMLikeCommandLine):
-    """title: ExtractChestLabelMap
+class MergeParticleDataSets(SEMLikeCommandLine):
+    """title: MergeParticleDataSets
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program takes in a lung label map and producs a lung \n  label map; it assumes the labeling conventions coded in cipConventions.h. \n  The user specifies the regions and types he/she is \n  interested in.  All other regions/types are set to UNDEFINEDTYPE \n  and UNDEFINEDREGION.  Given that regions are hierarchical, a region \n  that is higher in the hierarchy will be preferred to one that is \n  lower.  E.g., if the user specifies both WHOLELUNG and \n  LEFTSUPERIORLOBE, the region in the LEFTSUPERIORLOBE will be defined as \n  such, and WHOLELUNG will be used elsewhere. Precedence will be as \n  follows: types, regions, region-type pairs. In \n  other words, if the user requests both LEFTLUNG and AIRWAY (not as a \n  pair), then an AIRWAY voxel in the LEFTLUNG will be mapped to LEFTLUNG \n  in the output. If the user additionally requests the AIRWAY, LEFTLUNG \n  pair, then the entire voxel will be preserved.
+description: This program accepts as input multiple particle data sets and merges them \n  into one data set for output. If any of the inputs do not have ChestType and ChestRegion fields defined \n  this program will create them and initialize entries to UNDEFINEDTYPE and UNDEFINEDREGION.
 
 version: 0.0.1
 
@@ -2705,23 +2553,24 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
-    input_spec = ExtractChestLabelMapInputSpec
-    output_spec = ExtractChestLabelMapOutputSpec
-    _cmd = " ExtractChestLabelMap "
-    _outputs_filenames = {'outFileName':'outFileName.nii'}
+    input_spec = MergeParticleDataSetsInputSpec
+    output_spec = MergeParticleDataSetsOutputSpec
+    _cmd = " MergeParticleDataSets "
+    _outputs_filenames = {}
 
 
 class ResampleCTInputSpec(CommandLineInputSpec):
-    labelMapFile = File(desc="Label map file name to resample", exists=True, argstr="--labelMapFile %s")
-    inputTransform = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--inputTransform %s")
-    resampledFile = File(desc="Resampled label map (output) file name", exists=True, argstr="--resampledFile %s")
-    destinationFile = File(desc="Label map file name to resampDestinatin file name. This should be a header file that contains the necessary information (image spacing, origin, and size) for the resampling process.", exists=True, argstr="--destinationFile %s")
+    ict = File(desc="CT file name to resample", exists=True, argstr="--ict %s")
+    itx = InputMultiPath(traits.Str, desc="Input transform file name(s). The last transform entered will be applied first", sep=",", argstr="--itx %s")
+    oct = File(desc="Resampled label map (output) file name", exists=True, argstr="--oct %s")
+    destct = File(desc="Label map file name to resampDestinatin file name. This should be a header file that contains the necessary information (image spacing, origin, and size) for the resampling process.", exists=True, argstr="--destct %s")
     invertTransformation = traits.Bool(desc="Uses the inverse transformation if set to True. Default: False.", argstr="--invertTransformation ")
-    dimension = traits.Int(desc="Dimension of the image being resampled. Default: 3.", argstr="--dimension %d")
+    dim = traits.Int(desc="Dimension of the image being resampled.", argstr="--dim %d")
 
 
 class ResampleCTOutputSpec(TraitedSpec):
@@ -2755,14 +2604,14 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GeneratePartialLungLabelMapInputSpec(CommandLineInputSpec):
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output segmentation file name", argstr="--out %s")
-    ct = File(desc="CT image file name", exists=True, argstr="--ct %s")
-    hm = File(desc="Help mask file name. The helper mask is a crude lung segmentation that \n      can be supplied to assist the segmentation for difficult cases.", exists=True, argstr="--hm %s")
+    ict = File(desc="CT image file name", exists=True, argstr="--ict %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output segmentation file name", argstr="--olm %s")
+    hm = File(desc="Help mask file name. The helper mask is a crude lung segmentation that \ncan be supplied to assist the segmentation for difficult cases.", exists=True, argstr="--hm %s")
     dir = traits.Str(desc="Directory containing DICOM images to segment.", argstr="--dir %s")
-    lcv = traits.Int(desc="Lower clip value applied to input image before segmentation. \n      Everything below the clip value will be assigned the replacement value.", argstr="--lcv %d")
-    lrv = traits.Int(desc="Lower replacement value applied to input image before segmentation. \n      Everything below the clip value will be assigned the replacement value.", argstr="--lrv %d")
-    ucv = traits.Int(desc="Upper clip value applied to input image before segmentation. \n      Everything above the clip value will be assigned the replacement value.", argstr="--ucv %d")
-    urv = traits.Int(desc="Upper replacement value applied to input image before segmentation. \n      Everything above the clip value will be assigned the replacement value.", argstr="--urv %d")
+    lcv = traits.Int(desc="Lower clip value applied to input image before segmentation. \nEverything below the clip value will be assigned the replacement value.", argstr="--lcv %d")
+    lrv = traits.Int(desc="Lower replacement value applied to input image before segmentation. \nEverything below the clip value will be assigned the replacement value.", argstr="--lrv %d")
+    ucv = traits.Int(desc="Upper clip value applied to input image before segmentation. \nEverything above the clip value will be assigned the replacement value.", argstr="--ucv %d")
+    urv = traits.Int(desc="Upper replacement value applied to input image before segmentation. \nEverything above the clip value will be assigned the replacement value.", argstr="--urv %d")
     lsr = traits.Int(desc="Radius used to split the left and right lungs.", argstr="--lsr %d")
     al = traits.Int(desc="Lower intensity thresold for airways", argstr="--al %d")
     au = traits.Int(desc="Upper intensity thresold for airways", argstr="--au %d")
@@ -2771,7 +2620,7 @@ class GeneratePartialLungLabelMapInputSpec(CommandLineInputSpec):
 
 
 class GeneratePartialLungLabelMapOutputSpec(TraitedSpec):
-    out = File(desc="Output segmentation file name", exists=True)
+    olm = File(desc="Output segmentation file name", exists=True)
 
 
 class GeneratePartialLungLabelMap(SEMLikeCommandLine):
@@ -2787,7 +2636,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -2795,4 +2644,4 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GeneratePartialLungLabelMapInputSpec
     output_spec = GeneratePartialLungLabelMapOutputSpec
     _cmd = " GeneratePartialLungLabelMap "
-    _outputs_filenames = {'out':'out.nii'}
+    _outputs_filenames = {'olm':'olm.nii'}

@@ -17,7 +17,6 @@ set(MODULE_TARGET_LIBRARIES
   ${LIBXML2_LIBRARIES}
   )
 
-
 cipMacroBuildCLI(
     NAME ${MODULE_NAME}
     ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
@@ -27,15 +26,14 @@ cipMacroBuildCLI(
 
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
+    --compareLabelMap 
+      ${INPUT_DATA_DIR}/ct-64.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-    --compare 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+    --compareIntensityTolerance 4	
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/dummy_ct.nrrd
-      -l ${INPUT_DATA_DIR}/dummy_lm.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-      --opl ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_lm.nrrd
+      --fct ${INPUT_DATA_DIR}/ct-64.nrrd
+      --mct ${INPUT_DATA_DIR}/ct-64-transformed.nrrd
+      --otx ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_tx.tfm
+      --dim 3		
+      --oct ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
 )

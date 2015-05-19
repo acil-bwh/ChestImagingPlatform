@@ -19,7 +19,7 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/ct-64.nrrd
+      --ict ${INPUT_DATA_DIR}/ct-64.nrrd
       -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
       -l -1200
       -u 100
@@ -27,16 +27,3 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       -R 100
 )
 
-SET (TEST_NAME ${MODULE_NAME}_Test2)
-CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compareLabelMap
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_ct-64Dicom.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64Dicom.nrrd
-    ModuleEntryPoint
-      --dir ${INPUT_DATA_DIR}/ct-64Dicom/
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64Dicom.nrrd
-      -l -1200
-      -u 100
-      -r -1200
-      -R 100
-)

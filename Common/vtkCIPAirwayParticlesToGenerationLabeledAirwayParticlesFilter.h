@@ -21,9 +21,10 @@
 #include "vtkMutableUndirectedGraph.h" 
 #include <map>
 #include <vector>
+#include "vtkCIPCommonConfigure.h"
 
  
-class vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter : public vtkPolyDataAlgorithm 
+class VTK_CIP_COMMON_EXPORT vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter : public vtkPolyDataAlgorithm 
 {
 public:
   vtkTypeMacro(vtkCIPAirwayParticlesToGenerationLabeledAirwayParticlesFilter,vtkPolyDataAlgorithm);

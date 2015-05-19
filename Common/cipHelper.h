@@ -21,6 +21,8 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "cipThinPlateSplineSurface.h"
+#include "itkImageSeriesReader.h"
+
 
 namespace cip {
   /**
@@ -35,7 +37,16 @@ namespace cip {
   typedef itk::ImageFileReader< CTType >        CTReaderType;
   typedef itk::ImageFileWriter< CTType >        CTWriterType;
 
-  /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and 
+  typedef itk::ImageSeriesReader< CTType >      CTSeriesReaderType;
+
+  
+  /** Function to read CT from Directory */
+  cip::CTType::Pointer ReadCTFromDirectory( std::string ctDir );
+  
+  /** Function to read CT from file */
+  cip::CTType::Pointer ReadCTFromFile( std::string fileName );
+
+  /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and
    * a pointer to a LabelMapType, and returns a pointer to a downsampled LabelMapType. */
   cip::LabelMapType::Pointer DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
 

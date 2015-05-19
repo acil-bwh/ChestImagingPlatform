@@ -2,7 +2,7 @@
 set(proj ITKv4)
 
 # Set dependency list
-set(${proj}_DEPENDENCIES "zlib")
+set(${proj}_DEPENDENCIES "zlib" ${VTK_EXTERNAL_NAME})
 if(Slicer_BUILD_DICOM_SUPPORT)
   list(APPEND ${proj}_DEPENDENCIES DCMTK)
 endif()
@@ -29,6 +29,18 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(ITKv4_REPOSITORY ${git_protocol}://github.com/Slicer/ITK.git)
   set(ITKv4_GIT_TAG 46d9ef52d2de80a291965eb875f12b3a3ca642dd) # v4.6.0rc01 with Slicer patches
 
+  set(CIP_ITKV3_COMPATIBILITY OFF) # to match the default setting of Slicer
+  
+  set(EXTERNAL_PROJECT_OPTIONAL_CMAKE_CACHE_ARGS)
+
+  if(NOT CIP_ITKV3_COMPATIBILITY AND CMAKE_CL_64) # follow the same logic as in Slicer
+    # enables using long long type for indexes and size on platforms
+    # where long is only 32-bits (msvc)
+    set(EXTERNAL_PROJECT_OPTIONAL_CMAKE_CACHE_ARGS
+      -DITK_USE_64BITS_IDS:BOOL=ON
+      )
+  endif()
+
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY ${ITKv4_REPOSITORY}
@@ -45,13 +57,15 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DBUILD_TESTING:BOOL=OFF
       -DBUILD_EXAMPLES:BOOL=OFF
       -DITK_LEGACY_REMOVE:BOOL=OFF
-      -DITKV3_COMPATIBILITY:BOOL=ON
+      -DITKV3_COMPATIBILITY:BOOL=${CIP_ITKV3_COMPATIBILITY}
       -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DModule_ITKReview:BOOL=ON
       -DBUILD_SHARED_LIBS:BOOL=ON
       -DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DITK_WRAPPING:BOOL=OFF #${BUILD_SHARED_LIBS} ## HACK:  QUICK CHANGE
+      -DVTK_DIR:PATH=${VTK_DIR}
+      -DModule_ITKVtkGlue:BOOL=ON
       # DCMTK
       -DITK_USE_SYSTEM_DCMTK:BOOL=ON
       -DDCMTK_DIR:PATH=${DCMTK_DIR}
@@ -61,6 +75,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DZLIB_ROOT:PATH=${ZLIB_ROOT}
       -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
+      ${EXTERNAL_PROJECT_OPTIONAL_CMAKE_CACHE_ARGS}
     INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}

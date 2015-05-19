@@ -22,14 +22,14 @@ CIP_ADD_TEST(NAME ${RIGHTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_
       ${BASELINE_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_lm.nrrd
       ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_lm.nrrd    
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/simple_ct.nrrd
-      -l ${INPUT_DATA_DIR}/simple_lm.nrrd
-      -r RIGHTLung 
-      -p 2,2,2 
+      --ict ${INPUT_DATA_DIR}/simple_ct.nrrd
+      --ilm ${INPUT_DATA_DIR}/simple_lm.nrrd
+      --cipr RightLung 
+      --padding 2,2,2 
       -m 0 
       -v 1000 
-      -o ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_ct.nrrd
-      --opl ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_lm.nrrd       
+      --oct ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_ct.nrrd
+      --olm ${OUTPUT_DATA_DIR}/${RIGHTLUNG_TEST_NAME}_lm.nrrd       
     )
 
 
@@ -42,14 +42,14 @@ CIP_ADD_TEST_MIDAS( NAME ${LEFTLUNG_TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<T
          MIDAS{${LEFTLUNG_TEST_NAME}_lm.nrrd.md5}
          ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd
        ModuleEntryPoint
-        -i ${INPUT_DATA_DIR}/simple_ct.nrrd
-        -l ${INPUT_DATA_DIR}/simple_lm.nrrd
-        -r LeftLung 
-        -p 2,2,2 
+        --ict ${INPUT_DATA_DIR}/simple_ct.nrrd
+        --ilm ${INPUT_DATA_DIR}/simple_lm.nrrd
+        --cipr LeftLung 
+        --cipp 2,2,2 
         -m 0 
         -v 1000 
-        -o ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_ct.nrrd
-        --opl ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd      
+        --oct ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_ct.nrrd
+        --olm ${OUTPUT_DATA_DIR}/${LEFTLUNG_TEST_NAME}_lm.nrrd      
 )
 
 

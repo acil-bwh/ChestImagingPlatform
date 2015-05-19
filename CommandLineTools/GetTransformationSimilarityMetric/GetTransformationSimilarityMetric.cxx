@@ -396,25 +396,7 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
     return cip::RESAMPLEFAILURE;
     }
 
-  typename ShortWriterType::Pointer writer = ShortWriterType::New();
-  /*  writer->SetFileName("/Users/rolaharmouche/Documents/Data/test_resampled.nrrd");
-    writer->UseCompressionOn();
-    writer->SetInput( resampler->GetOutput() );
-  try
-    {
-    writer->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught writing label map:";
-    std::cerr << excp << std::endl;
-    
-    return cip::LABELMAPWRITEFAILURE;
-    }
 
-std::cout<<"wrote"<<std::endl;
-//initialize metric 
-*/ 
  if (similarityMetric =="nc")
       {
          typename ncMetricType::Pointer metric = ncMetricType::New();

@@ -1,20 +1,3 @@
-//GetTransformationSimilarityMetric
-
-/** \file
- *  \ingroup commandLineTools 
- *  \details This program registers 2 label maps, source and target, and 
- * a transformation file as well as the transformed image 
- *
- *  USAGE: 
-
- *
- *  $Date: $
- *  $Revision: $
- *  $Author:  $
- *
- */
-
-
 //Image
 #include "itkImage.h"
 #include "itkImageFileReader.h"

@@ -15,8 +15,8 @@ class BodyCompositionPhenotypes(Phenotypes):
     over all structures in the specified labelmap. The following phenotypes are
     computed using the 'execute' method:
     'AxialCSA': Axial cross-sectional area
-    'CoronalCSA': Coronoal cross-sectional area
-    'SagittalCSA': Sagitall cross-sectional area
+    'CoronalCSA': Coronal cross-sectional area
+    'SagittalCSA': Sagittal cross-sectional area
     'HUMean': Mean value of the structure's HU values
     'HUStd': Standard deviation of the structure's HU values
     'HUKurtosis': Kurtosis of the structure's HU values. Fisher's definition is

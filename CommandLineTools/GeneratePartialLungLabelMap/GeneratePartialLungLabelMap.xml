@@ -8,40 +8,38 @@
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-    and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
+    <image>
+      <name>ctFileName</name>
+      <label>CT file name</label>
+      <channel>input</channel>
+      <longflag>ict</longflag>
+      <description><![CDATA[CT image file name]]></description>
+      <default>NA</default>
+    </image>
     <image type="label">
       <name>outputLungMaskFileName</name>
       <label>Output segmentation file name</label>
       <channel>output</channel>
       <flag>o</flag>
-      <longflag>out</longflag>
+      <longflag>olm</longflag>
       <description><![CDATA[Output segmentation file name]]></description>
       <default>NA</default>
     </image>  
 
-    <image>
-      <name>ctFileName</name>
-      <label>CT file name</label>
-      <channel>input</channel>
-      <flag>c</flag>
-      <longflag>--ct</longflag>
-      <description><![CDATA[CT image file name]]></description>
-      <default>NA</default>
-    </image>  
-
-    <image>
+    <image type="label">
       <name>helperMaskFileName</name>
       <label>Helper mask file name</label>
       <channel>input</channel>
       <longflag>hm</longflag>
       <description><![CDATA[Help mask file name. The helper mask is a crude lung segmentation that \
-      can be supplied to assist the segmentation for difficult cases.]]></description>
+can be supplied to assist the segmentation for difficult cases.]]></description>
       <default>NA</default>
     </image>  
 
@@ -55,12 +53,14 @@
     </string>  
   </parameters>
 
-  <parameters>
+  <parameters advanced="true">
+  <label>Parameters</label>
+  <description>Parameters</description>
     <integer>
       <name>lowerClipValue</name>
       <longflag>lcv</longflag>
       <description>Lower clip value applied to input image before segmentation. \
-      Everything below the clip value will be assigned the replacement value.</description>
+Everything below the clip value will be assigned the replacement value.</description>
       <label>Lower clip value</label>
       <default>-1024</default>
     </integer>
@@ -69,7 +69,7 @@
       <name>lowerReplacementValue</name>
       <longflag>lrv</longflag>
       <description>Lower replacement value applied to input image before segmentation. \
-      Everything below the clip value will be assigned the replacement value.</description>
+Everything below the clip value will be assigned the replacement value.</description>
       <label>Lower replacement value</label>
       <default>-1024</default>
     </integer>
@@ -78,7 +78,7 @@
       <name>upperClipValue</name>
       <longflag>ucv</longflag>
       <description>Upper clip value applied to input image before segmentation. \
-      Everything above the clip value will be assigned the replacement value.</description>
+Everything above the clip value will be assigned the replacement value.</description>
       <label>Upper clip value</label>
       <default>1024</default>
     </integer>
@@ -87,7 +87,7 @@
       <name>upperReplacementValue</name>
       <longflag>urv</longflag>
       <description>Upper replacement value applied to input image before segmentation. \
-      Everything above the clip value will be assigned the replacement value.</description>
+Everything above the clip value will be assigned the replacement value.</description>
       <label>Upper replacement value</label>
       <default>1024</default>
     </integer>

@@ -6,6 +6,7 @@ set(MODULE_NAME GenerateModel)
 
 set(MODULE_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
+  ${ITK_LIBRARIES}
   )
 
 set(MODULE_SRCS )
@@ -24,5 +25,5 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_wholelung-64.vtk
     ModuleEntryPoint
       -i ${INPUT_DATA_DIR}/wholelung-64.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_Test_wholelung-64.vtk
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_wholelung-64.vtk
 )

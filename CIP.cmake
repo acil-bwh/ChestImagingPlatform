@@ -18,9 +18,9 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # the RPATH to be used when installing, but only if it's not a system directory
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
+if("${isSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-ENDIF("${isSystemDir}" STREQUAL "-1")
+endif("${isSystemDir}" STREQUAL "-1")
 ############## RPATH Stuff end #########################
 
 #-----------------------------------------------------------------------------
@@ -36,21 +36,21 @@ set(CIP_CMAKE_DIR ${CIP_SOURCE_DIR}/CMake)
 # Find ITK.
 
 FIND_PACKAGE ( ITK )
-IF ( ITK_FOUND )
+if ( ITK_FOUND )
   INCLUDE(${ITK_USE_FILE})
-ELSE ( ITK_FOUND )
+else ( ITK_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without ITK" )
-ENDIF ( ITK_FOUND )
+endif ( ITK_FOUND )
 
 #---------------------------------------------------------------------
 # Find VTK.
 
 FIND_PACKAGE ( VTK REQUIRED NO_MODULE)
-IF ( VTK_FOUND )
+if ( VTK_FOUND )
   INCLUDE(${VTK_USE_FILE})
-ELSE ( VTK_FOUND )
+else ( VTK_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without VTK" )
-ENDIF ( VTK_FOUND )
+endif ( VTK_FOUND )
 
 #Check Boost status
 if(TARGET vtkInfovisBoostGraphAlgorithms)
@@ -64,11 +64,16 @@ endif()
 # Find Teem
 
 FIND_PACKAGE ( Teem )
-IF ( Teem_FOUND )
+if ( Teem_FOUND )
   INCLUDE(${Teem_USE_FILE})
-ELSE ( Teem_FOUND )
+else ( Teem_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
-ENDIF ( Teem_FOUND )
+endif( Teem_FOUND )
+
+#---------------------------------------------------------------------
+# Find OpenCV
+
+FIND_PACKAGE ( OpenCV )
 
 #---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
@@ -194,38 +199,38 @@ set( CIP_BUILD_CLI_EXECUTABLEONLY ON CACHE BOOL "Build CLIs only with executable
 # Compilation options
 
 SET(BUILD_UTILITIES ON CACHE BOOL "BUILD_UTILITIES")
-IF(BUILD_UTILITIES)
+if(BUILD_UTILITIES)
   SUBDIRS (Utilities)
-ENDIF(BUILD_UTILITIES)
+endif(BUILD_UTILITIES)
 
 SET(BUILD_COMMON ON CACHE BOOL "BUILD_COMMON")
-IF(BUILD_COMMON)
+if(BUILD_COMMON)
   SUBDIRS (Common)
-ENDIF(BUILD_COMMON)
+endif(BUILD_COMMON)
 
 SET(BUILD_IO ON CACHE BOOL "BUILD_IO")
-IF(BUILD_IO)
+if(BUILD_IO)
   SUBDIRS (IO)
-ENDIF(BUILD_IO)
+endif(BUILD_IO)
 
 SET(BUILD_COMMANDLINETOOLS ON CACHE BOOL "BUILD_COMMANDLINETOOLS")
-IF(BUILD_COMMANDLINETOOLS)
+if(BUILD_COMMANDLINETOOLS)
   SUBDIRS (CommandLineTools)
-ENDIF(BUILD_COMMANDLINETOOLS)
+endif(BUILD_COMMANDLINETOOLS)
 
 SET(BUILD_INTERACTIVETOOLS OFF CACHE BOOL "BUILD_INTERACTIVETOOLS")
-IF(BUILD_INTERACTIVETOOLS)
+if(BUILD_INTERACTIVETOOLS)
   SUBDIRS (InteractiveTools)
-ENDIF(BUILD_INTERACTIVETOOLS)
+endif(BUILD_INTERACTIVETOOLS)
 
 SET(BUILD_SANDBOX OFF CACHE BOOL "BUILD_SANDBOX")
-IF(BUILD_SANDBOX)
+if(BUILD_SANDBOX)
   SUBDIRS (Sandbox)
-ENDIF(BUILD_SANDBOX)
+endif(BUILD_SANDBOX)
 
-IF ( CIP_BUILD_TESTING_PYTHON )
+if ( CIP_BUILD_TESTING_PYTHON )
  SUBDIRS ( cip_python )
-ENDIF( CIP_BUILD_TESTING_PYTHON ) 
+endif( CIP_BUILD_TESTING_PYTHON ) 
 
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
@@ -245,6 +250,13 @@ include(cipMacroBuildCLI)
 # Usually this is achieved by export command (below) but it sometime fails
 # to create package registry (under .cmake directory) for some reason...
 SET( CIP_DIR ${CIP_BINARY_DIR} )
+
+
+# Option to disable ChestConventions wrapping when cip python is not going to be needed.
+SET(CIP_WRAPCHESTCONVENTIONS ON CACHE BOOL "Wrap ChestConventions, needed for python modules")
+mark_as_advanced(FORCE CIP_WRAPCHESTCONVENTIONS)
+message("ChestConv: ${CIP_WRAPCHESTCONVENTIONS}")
+
 
 # The "use" file.
 SET( CIP_USE_FILE ${CIP_CMAKE_DIR}/UseFile.cmake )
