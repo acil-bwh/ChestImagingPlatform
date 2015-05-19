@@ -7,10 +7,9 @@ import xml.dom.minidom
 import subprocess
 import os
 from shutil import rmtree
-
+import pdb
 import keyword
 python_keywords = keyword.kwlist  # If c++ SEM module uses one of these key words as a command line parameter, we need to modify variable
-
 
 def force_to_valid_python_variable_name(old_name):
     """  Valid c++ names are not always valid in python, so
@@ -347,8 +346,7 @@ if __name__ == "__main__":
     ## NOTE:  For now either the launcher needs to be found on the default path, or
     ##        every tool in the modules list must be found on the default path
     ##        AND calling the module with --xml must be supported and compliant.
-  
-    
+      
     #Get list of modules from directory name in CommandLineTools
     dir='../../../../CommandLineTools/'
     modules_list = [str.split(x[0],'/')[5] for x in os.walk(dir)]
@@ -358,12 +356,12 @@ if __name__ == "__main__":
     #Remove empty entries
     modules_list.remove('')
     modules_list.remove('Testing')
-  
+        
     print 'Number of modules founds ' + str(len(modules_list))
-
 
     ## SlicerExecutionModel compliant tools that are usually statically built, and don't need the Slicer3 --launcher
     generate_all_classes(modules_list=modules_list,launcher=[],module_name='cip')
+
     ## Tools compliant with SlicerExecutionModel called from the Slicer environment (for shared lib compatibility)
     #launcher = ['/home/raid3/gorgolewski/software/slicer/Slicer', '--launch']
     #generate_all_classes(modules_list=modules_list, launcher=launcher)
