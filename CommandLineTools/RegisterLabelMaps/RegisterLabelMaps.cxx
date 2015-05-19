@@ -2,9 +2,6 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkResampleImageFilter.h"
-#include "itkImageSeriesReader.h"
-#include "itkGDCMImageIO.h"
-#include "itkGDCMSeriesFileNames.h"
 #include <fstream>
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageRegionIterator.h"
@@ -165,8 +162,6 @@ namespace
     typedef itk::RegionOfInterestImageFilter< LabelMapType, LabelMapType >                 RegionOfInterestType;
     typedef itk::ResampleImageFilter<LabelMapType,LabelMapType >                           ResampleType;
     typedef itk::IdentityTransform< double, TDimension >                                   IdentityType;
-    typedef itk::GDCMImageIO                                                               ImageIOType;
-    typedef itk::GDCMSeriesFileNames                                                       NamesGeneratorType;
     typedef itk::ImageRegionIteratorWithIndex< LabelMapType >                              LabelMapIteratorType;
     typedef itk::AffineTransform<double, TDimension >                                      TransformType;
     typedef itk::CenteredTransformInitializer< TransformType, LabelMapType, LabelMapType > InitializerType;
