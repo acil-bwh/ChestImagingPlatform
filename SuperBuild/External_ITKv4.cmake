@@ -2,7 +2,7 @@
 set(proj ITKv4)
 
 # Set dependency list
-set(${proj}_DEPENDENCIES "zlib")
+set(${proj}_DEPENDENCIES "zlib" ${VTK_EXTERNAL_NAME})
 if(Slicer_BUILD_DICOM_SUPPORT)
   list(APPEND ${proj}_DEPENDENCIES DCMTK)
 endif()
@@ -64,7 +64,8 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DITK_WRAPPING:BOOL=OFF #${BUILD_SHARED_LIBS} ## HACK:  QUICK CHANGE
-      -DModule_ITKVtkGlue:BOOL=OFF
+      -DVTK_DIR:PATH=${VTK_DIR}
+      -DModule_ITKVtkGlue:BOOL=ON
       # DCMTK
       -DITK_USE_SYSTEM_DCMTK:BOOL=ON
       -DDCMTK_DIR:PATH=${DCMTK_DIR}

@@ -238,8 +238,8 @@ endif()
 set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   CIPPython
   SlicerExecutionModel
-  ${ITK_EXTERNAL_NAME}
   ${VTK_EXTERNAL_NAME}
+  ${ITK_EXTERNAL_NAME}
   Boost
   teem
   OpenCV

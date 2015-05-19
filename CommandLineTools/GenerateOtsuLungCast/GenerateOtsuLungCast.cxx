@@ -7,53 +7,6 @@
  *  however, the user has the option to clip the intensity values of
  *  the input image. It's generally recommend to clip anything below
  *  -1024 or above 1024 to 1024.
- * 
- * USAGE: 
- *
- *   ./GenerateOtsuLungCast  [-R \<short\>] [-u \<short\>] [-r \<short\>] [-l
- *                           \<short\>] -i \<string\> -o \<string\> [--]
- *                           [--version] [-h]
- *
- * Where: 
- *
- *   -R \<short\>,  --upperReplace \<short\>
- *     Upper replacement value applied to input image before segmentation.
- *     Any value above the value specified with this flag will replace the
- *     value specified using the -u flag. If no value is specified with the
- *     -u flag, the default of 1024 will be used.
- *
- *   -u \<short\>,  --upperClip \<short\>
- *     Upper clip value applied to input image before segmentation.Any value
- *     above the value specified with this flag will be replaced with the
- *     value specified by the -R flag. If the -R flag is not used, a default
- *     value of 1024 will be used as the replacement value.
- *
- *   -r \<short\>,  --lowerReplace \<short\>
- *     Lower replacement value applied to input image before segmentation.
- *     The value specified with this flag will replace any value below the
- *     value specified using the -l flag. If no value is specified with the
- *     -l flag, the default of -1024 will be used.
- *
- *   -l \<short\>,  --lowerClip \<short\>
- *     Lower clip value applied to input image before segmentation. Any value
- *     below the value specified with this flag will be replaced with the
- *     value specified by the -r flag. If the -r flag is not used, a default
- *     value of -1024 will be used as the replacement  value.
- *
- *   -i \<string\>,  --ct \<string\>
- *     (required)  Input CT image file name
- *
- *   -o \<string\>,  --mask \<string\>
- *     (required)  Output lung mask file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
  */
 
 #include "itkImage.h"
@@ -74,18 +27,13 @@ typedef itk::ImageFileReader< ShortImageType >                    ShortReaderTyp
 typedef itk::ImageFileWriter< UShortImageType >                   UShortWriterType;
 typedef itk::ImageRegionIteratorWithIndex< ShortImageType >       ShortIteratorType;
 typedef itk::CIPOtsuLungCastImageFilter< ShortImageType >         CIPOtsuCastType;
-typedef itk::GDCMImageIO                                          ImageIOType;
-typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
-typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
 
 ShortImageType::Pointer ReadCTFromFile( std::string );
-ShortImageType::Pointer ReadCTFromDirectory( std::string );
 void LowerClipImage( ShortImageType::Pointer, short, short );
 void UpperClipImage( ShortImageType::Pointer, short, short  );
 
 int main( int argc, char *argv[] )
 {
-
   // Parse the input arguments
   PARSE_ARGS;
 
@@ -97,12 +45,7 @@ int main( int argc, char *argv[] )
   // Read the CT image
   cip::CTType::Pointer ctImage = cip::CTType::New();
 
-  if ( ctDir.compare("NA") != 0 )
-    {
-    std::cout << "Reading CT from directory..." << std::endl;
-      ctImage = cip::ReadCTFromDirectory( ctDir );
-    }
-  else if ( ctFileName.compare("NA") != 0 )
+  if ( ctFileName.compare("NA") != 0 )
     {
     std::cout << "Reading CT from file..." << std::endl;
       ctImage = cip::ReadCTFromFile( ctFileName );

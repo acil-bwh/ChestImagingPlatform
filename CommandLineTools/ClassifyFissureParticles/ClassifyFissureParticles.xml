@@ -3,19 +3,19 @@
   <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>ClassifyFissureParticles</title>
   <description><![CDATA[This program is used to classify fissure particles using Fischer's Linear \
-    Discriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \
-    for the left or right lung. For each particle, its distance and angle with respect to the lobe boundaries \
-    are computed. The weighted sum of these quantities is then computed and compared to a threshold value, \
-    and a classification decision is made (either fissure or noise). If particles in the right lung are \
-    being considered, a particle is classified according to which entity it is most like (noise, right \
-    horizontal or right oblique). The classified particles are then written to file.]]>
+Discriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \
+for the left or right lung. For each particle, its distance and angle with respect to the lobe boundaries \
+are computed. The weighted sum of these quantities is then computed and compared to a threshold value, \
+and a classification decision is made (either fissure or noise). If particles in the right lung are \
+being considered, a particle is classified according to which entity it is most like (noise, right \
+horizontal or right oblique). The classified particles are then written to file.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-    and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
@@ -25,8 +25,7 @@
       <name>particlesFileName</name>
       <label>Particles file name</label>
       <channel>input</channel>
-      <flag>p</flag>
-      <longflag>particles</longflag>
+      <longflag>ip</longflag>
       <description><![CDATA[Particles file name]]></description>
     </geometry>
 

@@ -47,8 +47,8 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-   
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
@@ -364,7 +364,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n  and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -491,15 +491,15 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GenerateModelInputSpec(CommandLineInputSpec):
-    opt_in = traits.Str(desc="Input mask file name", argstr="--in %s")
-    out = traits.Str(desc="Output model file name", argstr="--out %s")
+    opt_in = File(desc="Input mask file name", exists=True, argstr="--in %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output model file name", argstr="--out %s")
     smooth = traits.Int(desc="Number of smoothing iterations.", argstr="--smooth %d")
     label = traits.Int(desc="Foreground label in the label map to be used for generating the model.", argstr="--label %d")
     reduc = traits.Float(desc="Target reduction fraction for decimation", argstr="--reduc %f")
 
 
 class GenerateModelOutputSpec(TraitedSpec):
-    pass
+    out = File(desc="Output model file name", exists=True)
 
 
 class GenerateModel(SEMLikeCommandLine):
@@ -515,7 +515,7 @@ documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -525,7 +525,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GenerateModelInputSpec
     output_spec = GenerateModelOutputSpec
     _cmd = " GenerateModel "
-    _outputs_filenames = {}
+    _outputs_filenames = {'out':'out.vtk'}
 
 
 class ExtractChestLabelMapInputSpec(CommandLineInputSpec):
@@ -726,6 +726,43 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = GetTransformationKappaOutputSpec
     _cmd = " GetTransformationKappa "
     _outputs_filenames = {'oxml':'oxml.xml'}
+
+
+class SplitLeftLungRightLungInputSpec(CommandLineInputSpec):
+    ct = File(desc="\'Input CT file name", exists=True, argstr="--ct %s")
+    lm = File(desc="\'Input label map file name", exists=True, argstr="--lm %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="\'Output label map file name", argstr="--out %s")
+    timeConst = traits.Float(desc="Exponential time constant ", argstr="--timeConst %f")
+    coefficient = traits.Float(desc="Exponential coefficient.", argstr="--coefficient %f")
+    rad = traits.Int(desc="The radius to use when splitting. The larger the radius, the larger the \n	cleaved split through the label map.", argstr="--rad %d")
+
+
+class SplitLeftLungRightLungOutputSpec(TraitedSpec):
+    out = File(desc="\'Output label map file name", exists=True)
+
+
+class SplitLeftLungRightLung(SEMLikeCommandLine):
+    """title: GenerateStatisticsForAirwayGenerationLabeling
+
+category: Chest Imaging Platform.Toolkit.Segmentation
+
+description: This program reads a label map and splits the left and\n        right lungs so that they are uniquely labeled. If the input is\n        already split, the output will be identical to the input.
+
+version: 0.0.1
+
+license: Slicer
+
+contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+  
+
+"""
+
+    input_spec = SplitLeftLungRightLungInputSpec
+    output_spec = SplitLeftLungRightLungOutputSpec
+    _cmd = " SplitLeftLungRightLung "
+    _outputs_filenames = {'out':'out.nii'}
 
 
 class ComputeDistanceMapInputSpec(CommandLineInputSpec):
@@ -1325,41 +1362,51 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class SplitLeftLungRightLungInputSpec(CommandLineInputSpec):
-    ct = File(desc="\'Input CT file name", exists=True, argstr="--ct %s")
-    lm = File(desc="\'Input label map file name", exists=True, argstr="--lm %s")
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="\'Output label map file name", argstr="--out %s")
-    timeConst = traits.Float(desc="Exponential time constant ", argstr="--timeConst %f")
-    coefficient = traits.Float(desc="Exponential coefficient.", argstr="--coefficient %f")
-    rad = traits.Int(desc="The radius to use when splitting. The larger the radius, the larger the \n	cleaved split through the label map.", argstr="--rad %d")
+class ComputeAirwayWallFromParticlesInputSpec(CommandLineInputSpec):
+    ip = File(desc="Input particles file name", exists=True, argstr="--ip %s")
+    ict = File(desc="Input CT image", exists=True, argstr="--ict %s")
+    op = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--op %s")
+    method = traits.Enum("FWHM", "ZC", "PC", desc="Method used for the wall computation. \n             FWHM   - Full Width at a Half Maximum \n             ZC - Zero Crossing of the second order derivative \n             PC - Phase Congruency Phase congruency is the recommended one.", argstr="--method %s")
+    numberOfRays = traits.Int(desc="Number of rays to cast from the airway lumen center to compute the airway wall", argstr="--numberOfRays %d")
+    wth = traits.Int(desc="Wall constrast threshold at the candidate edge point to qualify (positive value).", argstr="--wth %d")
+    gth = traits.Float(desc="Gradient threshold at the candidate edge point to qualify.", argstr="--gth %f")
+    pcth = traits.Float(desc="Phase congruency value threshold at the candidate edge point to qualify.", argstr="--pcth %f")
+    inPlane = traits.Bool(desc="Compute airway wall in-plane ignoring airway longitudinal axis.", argstr="--inPlane ")
+    largeAirways = traits.Bool(desc="Adjust parameters to measure large airways (main bronchi and trachea).", argstr="--largeAirways ")
+    save = traits.Bool(desc="Save airway images (one per particle) for quality control purposes.", argstr="--save ")
+    saveDir = traits.Either(traits.Bool, Directory(), hash_files=False, desc="Directory to save airway images", argstr="--saveDir %s")
+    airwayPrefix = traits.Str(desc="Prefix for airway image file.", argstr="--airwayPrefix %s")
 
 
-class SplitLeftLungRightLungOutputSpec(TraitedSpec):
-    out = File(desc="\'Output label map file name", exists=True)
+class ComputeAirwayWallFromParticlesOutputSpec(TraitedSpec):
+    op = File(desc="Output particles file name", exists=True)
+    saveDir = Directory(desc="Directory to save airway images", exists=True)
 
 
-class SplitLeftLungRightLung(SEMLikeCommandLine):
-    """title: GenerateStatisticsForAirwayGenerationLabeling
+class ComputeAirwayWallFromParticles(SEMLikeCommandLine):
+    """title: GenerateModel
 
-category: Chest Imaging Platform.Toolkit.Segmentation
+category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program reads a label map and splits the left and\n        right lungs so that they are uniquely labeled. If the input is\n        already split, the output will be identical to the input.
+description: This program extract the airway wall and computes multiple airway wall metrics from a particle's VTK files using multiple approaches. The output is another particle's' VTK file.
 
 version: 0.0.1
 
+documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateModel
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = SplitLeftLungRightLungInputSpec
-    output_spec = SplitLeftLungRightLungOutputSpec
-    _cmd = " SplitLeftLungRightLung "
-    _outputs_filenames = {'out':'out.nii'}
+    input_spec = ComputeAirwayWallFromParticlesInputSpec
+    output_spec = ComputeAirwayWallFromParticlesOutputSpec
+    _cmd = " ComputeAirwayWallFromParticles "
+    _outputs_filenames = {'saveDir':'saveDir','op':'op.vtk'}
 
 
 class ComputeIntensityStatisticsInputSpec(CommandLineInputSpec):
@@ -1519,14 +1566,14 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class RemapLabelMapInputSpec(CommandLineInputSpec):
-    opt_in = File(desc="Input label map", exists=True, argstr="--in %s")
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map", argstr="--out %s")
+    ilm = File(desc="Input label map", exists=True, argstr="--ilm %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map", argstr="--olm %s")
     il = InputMultiPath(traits.Int, desc="Comma separated list of input labels to map. The elements \nin this list will have a one-to-one correspondence with the elements of the output labels", sep=",", argstr="--il %s")
     ol = InputMultiPath(traits.Int, desc="Comma separated list of output labels to map. The elements \nin this list will have a one-to-one correspondence with the elements of the input labels", sep=",", argstr="--ol %s")
 
 
 class RemapLabelMapOutputSpec(TraitedSpec):
-    out = File(desc="Output label map", exists=True)
+    olm = File(desc="Output label map", exists=True)
 
 
 class RemapLabelMap(SEMLikeCommandLine):
@@ -1544,7 +1591,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -1552,7 +1599,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = RemapLabelMapInputSpec
     output_spec = RemapLabelMapOutputSpec
     _cmd = " RemapLabelMap "
-    _outputs_filenames = {'out':'out.nii'}
+    _outputs_filenames = {'olm':'olm.nii'}
 
 
 class MergeChestLabelMapsInputSpec(CommandLineInputSpec):
@@ -1597,7 +1644,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class ClassifyFissureParticlesInputSpec(CommandLineInputSpec):
-    particles = File(desc="Particles file name", exists=True, argstr="--particles %s")
+    ip = File(desc="Particles file name", exists=True, argstr="--ip %s")
     lm = traits.Str(desc="Left lung shape model file name", argstr="--lm %s")
     rm = traits.Str(desc="Right lung shape model file name", argstr="--rm %s")
     loClassified = traits.Either(traits.Bool, File(), hash_files=False, desc="Left oblique classified particles file name", argstr="--loClassified %s")
@@ -1619,7 +1666,7 @@ class ClassifyFissureParticles(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program is used to classify fissure particles using Fischer's Linear \n    Discriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \n    for the left or right lung. For each particle, its distance and angle with respect to the lobe boundaries \n    are computed. The weighted sum of these quantities is then computed and compared to a threshold value, \n    and a classification decision is made (either fissure or noise). If particles in the right lung are \n    being considered, a particle is classified according to which entity it is most like (noise, right \n    horizontal or right oblique). The classified particles are then written to file.
+description: This program is used to classify fissure particles using Fischer's Linear \nDiscriminant. Left or right lung fissure particles are read in along with lobe boundary shape models \nfor the left or right lung. For each particle, its distance and angle with respect to the lobe boundaries \nare computed. The weighted sum of these quantities is then computed and compared to a threshold value, \nand a classification decision is made (either fissure or noise). If particles in the right lung are \nbeing considered, a particle is classified according to which entity it is most like (noise, right \nhorizontal or right oblique). The classified particles are then written to file.
 
 version: 0.0.1
 
@@ -1627,7 +1674,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -1824,17 +1871,16 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GenerateOtsuLungCastInputSpec(CommandLineInputSpec):
-    ct = File(desc="Input CT image file name", exists=True, argstr="--ct %s")
-    dir = traits.Str(desc="Directory containing DICOM images to segment.", argstr="--dir %s")
-    mask = traits.Either(traits.Bool, File(), hash_files=False, desc="Output lung mask file name", argstr="--mask %s")
-    lowerClip = traits.Int(desc="Lower clip value applied to input image before segmentation. Any value below the value specified with this flag will\n                be replaced with the value specified by -r flag.", argstr="--lowerClip %d")
+    ict = File(desc="Input CT image file name", exists=True, argstr="--ict %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output lung mask file name", argstr="--olm %s")
+    lowerClip = traits.Int(desc="Lower clip value applied to input image before segmentation. Any value below the value specified with this flag will\nbe replaced with the value specified by -r flag.", argstr="--lowerClip %d")
     lowerReplace = traits.Int(desc="Lower replacement value applied to input image before segmentation.", argstr="--lowerReplace %d")
-    upperClip = traits.Int(desc="Upper clip value applied to input image before segmentation.Any value above the value specified with this flag will be\n                replaced with the value specified by the -R flag. If the -R flag is not used, a default value of 1024 will be used as the replacement value.", argstr="--upperClip %d")
-    upperReplace = traits.Int(desc="Upper replacement value applied to input image before segmentation. Any value above the value specified with this flag will\n                replace the value specified using the -u flag. If no value is specified with the -u flag, the default of 1024 will be used.", argstr="--upperReplace %d")
+    upperClip = traits.Int(desc="Upper clip value applied to input image before segmentation.Any value above the value specified with this flag will be\nreplaced with the value specified by the -R flag. If the -R flag is not used, a default value of 1024 will be used as the replacement value.", argstr="--upperClip %d")
+    upperReplace = traits.Int(desc="Upper replacement value applied to input image before segmentation. Any value above the value specified with this flag will\nreplace the value specified using the -u flag. If no value is specified with the -u flag, the default of 1024 will be used.", argstr="--upperReplace %d")
 
 
 class GenerateOtsuLungCastOutputSpec(TraitedSpec):
-    mask = File(desc="Output lung mask file name", exists=True)
+    olm = File(desc="Output lung mask file name", exists=True)
 
 
 class GenerateOtsuLungCast(SEMLikeCommandLine):
@@ -1842,7 +1888,7 @@ class GenerateOtsuLungCast(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Segmentation
 
-description: This program produces an Otsu lung cast. (Cast is meant\n        to refer to it being a preliminary mask from which other\n        masks are derived / molded). The program simply interfaces\n        with the itkCIPOtsuLungCastImageFilter. Before invoking the\n        filter, however, the user has the option to clip the intensity\n        values of the input image. It's generally recommend to clip\n        anything below -1024 or above 1024 to 1024.
+description: This program produces an Otsu lung cast. (Cast is meant\nto refer to it being a preliminary mask from which other\nmasks are derived / molded). The program simply interfaces\nwith the itkCIPOtsuLungCastImageFilter. Before invoking the\nfilter, however, the user has the option to clip the intensity\nvalues of the input image. It's generally recommend to clip\nanything below -1024 or above 1024 to 1024.
 
 version: 0.0.1
 
@@ -1850,34 +1896,34 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
     input_spec = GenerateOtsuLungCastInputSpec
     output_spec = GenerateOtsuLungCastOutputSpec
     _cmd = " GenerateOtsuLungCast "
-    _outputs_filenames = {'mask':'mask.nii'}
+    _outputs_filenames = {'olm':'olm.nii'}
 
 
 class CropLungInputSpec(CommandLineInputSpec):
-    inFileName = File(desc="Input CT file", exists=True, argstr="--inFileName %s")
-    plf = File(desc="Label map file name", exists=True, argstr="--plf %s")
-    outFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Cropped CT volume", argstr="--outFileName %s")
-    opl = traits.Either(traits.Bool, File(), hash_files=False, desc="Ouput label map volume", argstr="--opl %s")
-    region = InputMultiPath(traits.Str, desc="Specify a region you want to crop (ex: WholeLung)", sep=",", argstr="--region %s")
-    type = InputMultiPath(traits.Str, desc="Specify a type you want to crop (ex:Airway)", sep=",", argstr="--type %s")
-    regionPair = InputMultiPath(traits.Str, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the typePair flag", sep=",", argstr="--regionPair %s")
-    typePair = InputMultiPath(traits.Str, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the regionPair flag", sep=",", argstr="--typePair %s")
+    ict = File(desc="Input CT file", exists=True, argstr="--ict %s")
+    ilm = File(desc="Label map file name", exists=True, argstr="--ilm %s")
+    oct = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Cropped CT volume", argstr="--oct %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Ouput label map volume", argstr="--olm %s")
+    cipr = InputMultiPath(traits.Str, desc="Specify a region you want to crop (ex: WholeLung)", sep=",", argstr="--cipr %s")
+    cipt = InputMultiPath(traits.Str, desc="Specify a type you want to crop (ex:Airway)", sep=",", argstr="--cipt %s")
+    rpair = InputMultiPath(traits.Str, desc="Specify a region in a region type pair you want to crop. This flag should be used together with the typePair flag", sep=",", argstr="--rpair %s")
+    tpair = InputMultiPath(traits.Str, desc="Specify a type in a region type pair you want to crop. This flag should be used together with the regionPair flag", sep=",", argstr="--tpair %s")
     padding = InputMultiPath(traits.Int, desc="Specify padding along region/type x,y,z bounding box", sep=",", argstr="--padding %s")
     maskFlag = traits.Int(desc="Set to 0 if you don't want the voxels outside the defined region-type to be set to a fixed value. Set to 1 otherwise (default=1)", argstr="--maskFlag %d")
     value = traits.Int(desc="Value to set voxels outside the region that is cropped. (default=0)", argstr="--value %d")
 
 
 class CropLungOutputSpec(TraitedSpec):
-    outFileName = File(desc="Output Cropped CT volume", exists=True)
-    opl = File(desc="Ouput label map volume", exists=True)
+    oct = File(desc="Output Cropped CT volume", exists=True)
+    olm = File(desc="Ouput label map volume", exists=True)
 
 
 class CropLung(SEMLikeCommandLine):
@@ -1885,7 +1931,7 @@ class CropLung(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Processing
 
-description: Crop a CT lung volume for a specified region.\n        This tools provides the cropped CT volume and optionally \n        the cropped lung masked.
+description: Crop a CT lung volume for a specified region.\n  This tools provides the cropped CT volume and optionally \n  the cropped lung masked.
 
 version: 0.0.1
 
@@ -1893,15 +1939,15 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
-    
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
 
 """
 
     input_spec = CropLungInputSpec
     output_spec = CropLungOutputSpec
     _cmd = " CropLung "
-    _outputs_filenames = {'outFileName':'outFileName.nii','opl':'opl.nii'}
+    _outputs_filenames = {'oct':'oct.nii','olm':'olm.nii'}
 
 
 class RemoveChestTypeFromLabelMapUsingParticlesInputSpec(CommandLineInputSpec):
@@ -2066,12 +2112,12 @@ class GenerateStenciledLabelMapFromParticlesInputSpec(CommandLineInputSpec):
     ctSigma = traits.Float(desc="The CT scanner point spread function sigma. 0.0 by default.", argstr="--ctSigma %f")
     radius = traits.Float(desc="Stencil radius in mm.", argstr="--radius %f")
     height = traits.Float(desc="Cylinder stencil height in mm. Default is 1mm. This should typically be set to the inter-particle distance.", argstr="--height %f")
-    vessel = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to vessels. Default: False.", argstr="--vessel ")
-    airway = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to airways. Default: False.", argstr="--airway ")
-    fissure = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to fissures. Default: False.", argstr="--fissure ")
-    sphere = traits.Bool(desc="Set this flag to indicate that the sphere stencil should be used. Default: False.", argstr="--sphere ")
-    cylinder = traits.Bool(desc="Set this flag to indicate that the cylinder stencil should be used. Default: False.", argstr="--cylinder ")
-    scale = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag). Default: False.", argstr="--scale ")
+    vessel = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to vessels.", argstr="--vessel ")
+    airway = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to airways.", argstr="--airway ")
+    fissure = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to fissures.", argstr="--fissure ")
+    sphere = traits.Bool(desc="Set this flag to indicate that the sphere stencil should be used.", argstr="--sphere ")
+    cylinder = traits.Bool(desc="Set this flag to indicate that the cylinder stencil should be used.", argstr="--cylinder ")
+    scale = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).", argstr="--scale ")
 
 
 class GenerateStenciledLabelMapFromParticlesOutputSpec(TraitedSpec):
@@ -2339,6 +2385,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 class GenerateSimpleLungMaskInputSpec(CommandLineInputSpec):
     input = File(desc="Input Chest CT volume", exists=True, argstr="--input %s")
     output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Lung Mask", argstr="--output %s")
+    lowDose = traits.Bool(desc=" Enable if this is a low dose-noisy scan", argstr="--lowDose ")
 
 
 class GenerateSimpleLungMaskOutputSpec(TraitedSpec):
@@ -2557,14 +2604,14 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GeneratePartialLungLabelMapInputSpec(CommandLineInputSpec):
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output segmentation file name", argstr="--out %s")
-    ct = File(desc="CT image file name", exists=True, argstr="--ct %s")
-    hm = File(desc="Help mask file name. The helper mask is a crude lung segmentation that \n      can be supplied to assist the segmentation for difficult cases.", exists=True, argstr="--hm %s")
+    ict = File(desc="CT image file name", exists=True, argstr="--ict %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output segmentation file name", argstr="--olm %s")
+    hm = File(desc="Help mask file name. The helper mask is a crude lung segmentation that \ncan be supplied to assist the segmentation for difficult cases.", exists=True, argstr="--hm %s")
     dir = traits.Str(desc="Directory containing DICOM images to segment.", argstr="--dir %s")
-    lcv = traits.Int(desc="Lower clip value applied to input image before segmentation. \n      Everything below the clip value will be assigned the replacement value.", argstr="--lcv %d")
-    lrv = traits.Int(desc="Lower replacement value applied to input image before segmentation. \n      Everything below the clip value will be assigned the replacement value.", argstr="--lrv %d")
-    ucv = traits.Int(desc="Upper clip value applied to input image before segmentation. \n      Everything above the clip value will be assigned the replacement value.", argstr="--ucv %d")
-    urv = traits.Int(desc="Upper replacement value applied to input image before segmentation. \n      Everything above the clip value will be assigned the replacement value.", argstr="--urv %d")
+    lcv = traits.Int(desc="Lower clip value applied to input image before segmentation. \nEverything below the clip value will be assigned the replacement value.", argstr="--lcv %d")
+    lrv = traits.Int(desc="Lower replacement value applied to input image before segmentation. \nEverything below the clip value will be assigned the replacement value.", argstr="--lrv %d")
+    ucv = traits.Int(desc="Upper clip value applied to input image before segmentation. \nEverything above the clip value will be assigned the replacement value.", argstr="--ucv %d")
+    urv = traits.Int(desc="Upper replacement value applied to input image before segmentation. \nEverything above the clip value will be assigned the replacement value.", argstr="--urv %d")
     lsr = traits.Int(desc="Radius used to split the left and right lungs.", argstr="--lsr %d")
     al = traits.Int(desc="Lower intensity thresold for airways", argstr="--al %d")
     au = traits.Int(desc="Upper intensity thresold for airways", argstr="--au %d")
@@ -2573,7 +2620,7 @@ class GeneratePartialLungLabelMapInputSpec(CommandLineInputSpec):
 
 
 class GeneratePartialLungLabelMapOutputSpec(TraitedSpec):
-    out = File(desc="Output segmentation file name", exists=True)
+    olm = File(desc="Output segmentation file name", exists=True)
 
 
 class GeneratePartialLungLabelMap(SEMLikeCommandLine):
@@ -2589,7 +2636,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -2597,4 +2644,4 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GeneratePartialLungLabelMapInputSpec
     output_spec = GeneratePartialLungLabelMapOutputSpec
     _cmd = " GeneratePartialLungLabelMap "
-    _outputs_filenames = {'out':'out.nii'}
+    _outputs_filenames = {'olm':'olm.nii'}
