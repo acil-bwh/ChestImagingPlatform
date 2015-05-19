@@ -143,6 +143,7 @@ and does not necessarily represent the official views of the National Institutes
     <name>outputDirectory</name>
     <channel>output</channel>
     <label>Output directory</label>
+    <channel>input</channel>
     <longflag>saveDir</longflag>
     <description>Directory to save airway images</description>
   </directory>
