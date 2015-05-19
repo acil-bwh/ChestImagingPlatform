@@ -19,13 +19,9 @@ typedef itk::ImageFileWriter< UShortImageType >                   UShortWriterTy
 typedef itk::ImageRegionIteratorWithIndex< ShortImageType >       ShortIteratorType;
 typedef itk::ImageRegionIteratorWithIndex< UShortImageType >      UShortIteratorType;
 typedef itk::CIPPartialLungLabelMapImageFilter< ShortImageType >  PartialLungType;
-typedef itk::GDCMImageIO                                          ImageIOType;
-typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
-typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
 
 void LowerClipImage( ShortImageType::Pointer, short, short );
 void UpperClipImage( ShortImageType::Pointer, short, short );
-ShortImageType::Pointer ReadCTFromDirectory( std::string );
 ShortImageType::Pointer ReadCTFromFile( std::string );
 
 int main( int argc, char *argv[] )
@@ -35,12 +31,7 @@ int main( int argc, char *argv[] )
   // Read the CT image
   ShortImageType::Pointer ctImage = ShortImageType::New();
 
-  if ( ctDir.compare("NA") != 0 )
-    {
-    std::cout << "Reading CT from directory..." << std::endl;
-    ctImage = ReadCTFromDirectory( ctDir );
-    }
-  else if ( ctFileName.compare("NA") != 0 )
+  if ( ctFileName.compare("NA") != 0 )
     {
     std::cout << "Reading CT from file..." << std::endl;
     ctImage = ReadCTFromFile( ctFileName );
@@ -153,7 +144,6 @@ void LowerClipImage( ShortImageType::Pointer image, short clipValue, short repla
     }
 }
 
-
 void UpperClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
 {
   ShortIteratorType iIt( image, image->GetBufferedRegion() );
@@ -169,35 +159,6 @@ void UpperClipImage( ShortImageType::Pointer image, short clipValue, short repla
     ++iIt;
     }
 }
-
-
-ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
-{
-  ImageIOType::Pointer gdcmIO = ImageIOType::New();
-
-  std::cout << "---Getting file names..." << std::endl;
-  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
-    namesGenerator->SetInputDirectory( ctDir );
-
-  const SeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
-
-  std::cout << "---Reading DICOM image..." << std::endl;
-  SeriesReaderType::Pointer dicomReader = SeriesReaderType::New();
-    dicomReader->SetImageIO( gdcmIO );
-    dicomReader->SetFileNames( filenames );
-  try
-    {
-    dicomReader->Update();
-    }
-  catch (itk::ExceptionObject &excp)
-    {
-    std::cerr << "Exception caught while reading dicom:";
-    std::cerr << excp << std::endl;
-    }  
-
-  return dicomReader->GetOutput();
-}
-
 
 ShortImageType::Pointer ReadCTFromFile( std::string fileName )
 {

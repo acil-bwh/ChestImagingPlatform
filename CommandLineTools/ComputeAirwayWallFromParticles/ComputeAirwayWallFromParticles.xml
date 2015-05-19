@@ -8,9 +8,9 @@
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
-    </acknowledgements>
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
 
   <parameters>
   <label>IO</label>
@@ -20,8 +20,7 @@
       <name>inAirwayParticles</name>
       <label>Input airway particles file name</label>
       <channel>input</channel>
-      <flag>i</flag>
-      <longflag>in</longflag>
+      <longflag>ip</longflag>
       <description><![CDATA[Input particles file name]]></description>
       <default>NA</default>
     </geometry>
@@ -29,18 +28,16 @@
       <name>inCT</name>
       <label>Input CT</label>
       <channel>input</channel>
-      <flag>c</flag>
-      <longflag>ct</longflag>
+      <longflag>ict</longflag>
       <description><![CDATA[Input CT image]]></description>
     </image>
-
 
     <geometry type="model">
       <name>outAirwayParticles</name>
       <label>Output airway particles file name</label>
       <channel>output</channel>
       <flag>o</flag>
-      <longflag>out</longflag>
+      <longflag>op</longflag>
       <description><![CDATA[Output particles file name]]></description>
       <default>NA</default>
     </geometry>
@@ -144,6 +141,7 @@
     
   <directory>
     <name>outputDirectory</name>
+    <channel>output</channel>
     <label>Output directory</label>
     <longflag>saveDir</longflag>
     <description>Directory to save airway images</description>
