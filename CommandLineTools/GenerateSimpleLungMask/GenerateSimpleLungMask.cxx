@@ -69,10 +69,11 @@ int main( int argc, char * argv[] ){
   connector->GetOutput()->GetSpacing(sp);
   connector->GetOutput()->GetExtent(ext);
   int applyResampling=0;
-  double downFactor=1;
+  double downFactor=0.5;
+  int fastMode=0;
   vtkImageData *vol;
   vtkImageResample *resampling = vtkImageResample::New();
-  if (sp[2]<2) 
+  if (fastMode == 1 && sp[2]<2)
     {
       // Downsample in X-Y to speed things up a bit
       applyResampling=1;
@@ -81,7 +82,7 @@ int main( int argc, char * argv[] ){
       resampling->SetDimensionality(3);
       resampling->SetAxisMagnificationFactor(0,downFactor);
       resampling->SetAxisMagnificationFactor(1,downFactor);
-      resampling->SetAxisMagnificationFactor(2, 1);
+      resampling->SetAxisMagnificationFactor(2, downFactor);
       resampling->SetInterpolationModeToLinear();
       std::cout<<"Downsampling volume..."<<std::endl;
       resampling->Update();
@@ -89,6 +90,8 @@ int main( int argc, char * argv[] ){
       
       rasTovtk->SetElement(0, 0, rasTovtk->GetElement(0,0)*downFactor);
       rasTovtk->SetElement(1, 1, rasTovtk->GetElement(1,1)*downFactor);
+      rasTovtk->SetElement(2, 1, rasTovtk->GetElement(2,2)*downFactor);
+
     } 
   else 
     {
@@ -102,16 +105,22 @@ int main( int argc, char * argv[] ){
   //laplacian->Update();
 
   // Median Filtering to help lung extraction
-  std::cout << "Median filtering..." << std::endl;
   vtkImageMedian3D *filter = vtkImageMedian3D::New();
-    filter->SetInputData(vol);
-    filter->SetKernelSize(3,3,1);
-    filter->Update();
+  vtkImageData *filtered;
+  if ( lowDose == true) {
+    std::cout << "Median filtering..." << std::endl;
+      filter->SetInputData(vol);
+      filter->SetKernelSize(3,3,1);
+      filter->Update();
+      filtered = filter->GetOutput();
+  } else {
+    filtered = vol;
+  }
 
   // combine labels
   std::cout<<"Lung mask extraction..."<<std::endl;
   vtkSimpleLungMask *lungMask = vtkSimpleLungMask::New();
-    lungMask->SetInputData( filter->GetOutput() );
+    lungMask->SetInputData( vol );
     lungMask->SetTracheaLabel(1);
     lungMask->SetRasToVtk(rasTovtk);
     lungMask->Update();
@@ -124,11 +133,13 @@ int main( int argc, char * argv[] ){
     {
       resampling->SetInputConnection(lungMask->GetOutputPort());
       resampling->SetDimensionality(3);
-      for (int ii=0; ii<2;ii++) 
-	{
-	  resampling->SetAxisMagnificationFactor(ii,1/downFactor);
-	}
-      resampling->SetAxisMagnificationFactor(2,1);
+      for (int ii=0; ii<2;ii++)
+      {
+        resampling->SetAxisMagnificationFactor(ii,1/downFactor);
+        //resampling->SetAxisMagnificationFactor(ii,1);
+
+      }
+      resampling->SetAxisMagnificationFactor(2,1/downFactor);
       resampling->SetInterpolationModeToNearestNeighbor();
       std::cout<<"Upsampling..."<<std::endl;
       resampling->Update();

@@ -33,4 +33,20 @@
       <description>Output Lung Mask</description>
     </image>
   </parameters>
+  
+  <parameters>
+    <label>Parameters </label>
+    <description>Parameters</description>
+  
+    <boolean>
+      <name>lowDose</name>
+      <label>Low Dose (noisy)</label>
+      <description> Enable if this is a low dose-noisy scan</description>
+      <flag>l</flag>
+      <longflag>lowDose</longflag>
+      <default>true</default>
+    </boolean>
+    
+  </parameters>
+    
 </executable>
