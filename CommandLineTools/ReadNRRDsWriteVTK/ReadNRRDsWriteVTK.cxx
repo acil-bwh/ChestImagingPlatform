@@ -20,8 +20,8 @@
 
 namespace
 {
-typedef itk::Image< double, 2 >                NRRDImageType;
-typedef itk::ImageFileReader< NRRDImageType >  ReaderType;
+  typedef itk::Image< double, 2 >                NRRDImageType;
+  typedef itk::ImageFileReader< NRRDImageType >  ReaderType;
 }
 
 int main( int argc, char *argv[] )
