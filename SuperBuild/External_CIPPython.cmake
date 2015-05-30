@@ -84,6 +84,11 @@ ExternalProject_Add_Step(${proj} installsphinx
 	DEPENDEES install
 )
 
+ExternalProject_Add_Step(${proj} installsimpleitk
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c SimpleITK SimpleITK 
+	DEPENDEES install
+)
+
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
 	DEPENDEES installnose
