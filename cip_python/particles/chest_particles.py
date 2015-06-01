@@ -10,6 +10,7 @@ import subprocess
 import os
 from subprocess import PIPE
 from cip_python.utils.read_nrrds_write_vtk import ReadNRRDsWriteVTK
+from cip_python.io.image_reader_writer import ImageReaderWriter
 
 class ChestParticles:
     """Base class for airway, vessel, and fissure particles classes.
@@ -161,7 +162,7 @@ class ChestParticles:
         # Probing quantities
         #--------------------------
         # Dictionary with a list containing the vtk array name and a flag indicating if the
-        # the quantity is going to used derivative normalize.
+        # the quantity is going to used normalized derivatives.
         self._probing_quantities = dict()
         self._probing_quantities["val"]=["val",0]
         self._probing_quantities["heval0"]=["h0",1]
@@ -175,11 +176,14 @@ class ChestParticles:
       
         self._advanced_probing = False
         if self._advanced_probing == True:
-            self._probing_quantities["gvec"]=["gvec",0]
+            self._probing_quantities["gvec"]=["gvec",1]
             self._probing_quantities["gmag"]=["gmag",1]
+            self._probing_quantities["nproj"]=["nproj",1]
+            self._probing_quantities["nperp"]=["nperp",1]
             self._probing_quantities["lapl"]=["lapl",1]
             self._probing_quantities["hf"]=["hf",0]
             self._probing_quantities["2dd"]=["2dd",1]
+            self._probing_quantities["geoten"]=["geoten",1]
             self._probing_quantities["kappa1"]=["kappa1",1]
             self._probing_quantities["kappa2"]=["kappa2",1]
             self._probing_quantities["totalcurv"]=["totalcurv",1]
@@ -191,6 +195,9 @@ class ChestParticles:
             self._probing_quantities["curvdir2"]=["curvdir2",1]
             self._probing_quantities["flowlinecurv"]=["flowlinecurv",1]
             self._probing_quantities["median"]=["median",1]
+            self._probing_quantities["hvalley"]=["hvalley",1]
+            self._probing_quantities["hridge"]=["hridge",1]
+            self._probing_quantities["hdpeak"]=["hdpeak",1]
 
     def set_vol_params(self):
         if self._single_scale == 0:
@@ -550,6 +557,19 @@ class ChestParticles:
             file = os.path.join(self._tmp_dir,"%s.nrrd" % quant)
             vtk_tag=self._probing_quantities[quant][0]
             reader_writer.add_file_name_array_name_pair(file,vtk_tag)
+        
+        #Recover spacing info from input volume
+        image_io = ImageReaderWriter()
+        im=image_io.read(self._sp_in_file_name)
+        self._spacing = im.GetSpacing()
+        del im
+        
+        #Include metadata information
+        reader_writer.add_metadata_name_value_pair("irad",self._irad)
+        reader_writer.add_metadata_name_value_pair("srad",self._srad)
+        reader_writer.add_metadata_name_value_pair("liveth",self._live_thresh)
+        reader_writer.add_metadata_name_value_pair("seedth",self._seed_thresh)
+        reader_writer.add_metadata_name_value_pair("spacing",self._spacing)
 
         reader_writer.execute()
 
