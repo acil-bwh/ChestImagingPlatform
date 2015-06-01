@@ -68,7 +68,7 @@ typedef int ( *MainFuncPointer )(int, char *[]);
 std::map<std::string, MainFuncPointer> StringToTestFunctionMap;
 
 #define REGISTER_TEST(test)       \
-  extern int test(int, char *[]); \
+  extern int test(int, char *[]);		\
   StringToTestFunctionMap[#test] = test
 
 int RegressionTestImage(const char *testImageFilename,
@@ -96,19 +96,19 @@ int RegressionTestLabelMap( const char *testImageFilename,
 			    unsigned int radiusTolerance);
 
 int RegressionTestVTKPolyData(const char *testVtkFilename,
-          const char *baselineVtkFilename,
-          double pointTolerance);
+			      const char *baselineVtkFilename,
+			      double pointTolerance);
 
 /*
-int RegressionTestLabelMapDice( const char *testImageFilename,
-                                   const char *baselineImageFilename,
-                                   int reportErrors,
-                                   ::itk::SizeValueType numberOfPixelsTolerance,
-                                   unsigned int radiusTolerance)( const char *testImageFilename,
-                               const char *baselineImageFilename,
-                               int reportErrors,
-                               ::itk::SizeValueType numberOfPixelsTolerance,
-                               unsigned int radiusTolerance);
+  int RegressionTestLabelMapDice( const char *testImageFilename,
+  const char *baselineImageFilename,
+  int reportErrors,
+  ::itk::SizeValueType numberOfPixelsTolerance,
+  unsigned int radiusTolerance)( const char *testImageFilename,
+  const char *baselineImageFilename,
+  int reportErrors,
+  ::itk::SizeValueType numberOfPixelsTolerance,
+  unsigned int radiusTolerance);
 */
 int CompareFieldData(vtkFieldData* fd1, vtkFieldData* fd2, double pointTolerance);
 
@@ -124,21 +124,21 @@ void PrintAvailableTests()
   int                                              i = 0;
   while( j != StringToTestFunctionMap.end() )
     {
-    std::cout << i << ". " << j->first << "\n";
-    ++i;
-    ++j;
+      std::cout << i << ". " << j->first << "\n";
+      ++i;
+      ++j;
     }
 }
 
 int main(int ac, char *av[])
 {
   itk::FloatingPointExceptions::Enable();
-
+  
   double       intensityTolerance  = 2.0;
   unsigned int numberOfPixelsTolerance = 0;
   unsigned int radiusTolerance = 0;
   double       pointTolerance = 0.001;
-    double       diceTolerance = 1.0;
+  double       diceTolerance = 1.0;
   //typedef std::pair<char *, char *> ComparePairType;
   //std::vector<ComparePairType> compareList;
   //std::vector<ComparePairType> compareCTList;
@@ -147,13 +147,13 @@ int main(int ac, char *av[])
   
   typedef std::pair<char *, char *> ComparePairType;
   typedef std::pair<const char *, ComparePairType> CompareTupleType;
-
+  
   std::vector<CompareTupleType> compareList;
-
+  
   itk::itkFactoryRegistration();
-
+  
   RegisterTests();
-
+  
   std::string testToRun;
   if( ac < 2 )
     {
@@ -211,12 +211,12 @@ int main(int ac, char *av[])
 	      av += 3;
 	      ac -= 3;
 	    }
-      else if( ac > 3 && strcmp(av[1], "--compareLabelMapDice") == 0 )
-      {
+	  else if( ac > 3 && strcmp(av[1], "--compareLabelMapDice") == 0 )
+	    {
 	      compareList.push_back( CompareTupleType("compareLabelMapDice",ComparePairType(av[2], av[3])) );
 	      av += 3;
 	      ac -= 3;
-      }
+	    }
 	  else if( ac > 3 && strcmp(av[1], "--compareCSV") == 0 )
 	    {
 	      compareList.push_back( CompareTupleType("compareCSV",ComparePairType(av[2], av[3])) );
@@ -253,31 +253,31 @@ int main(int ac, char *av[])
 	      av +=2;
 	      ac -= 2;
 	    }
-      else if( ac > 2 && strcmp(av[1], "--diceTolerance") == 0 )
-      {
+	  else if( ac > 2 && strcmp(av[1], "--diceTolerance") == 0 )
+	    {
 	      diceTolerance = atof(av[2]);
 	      av += 2;
 	      ac -= 2;
-      }
+	    }
 	  else
 	    {
 	      testToRun = av[1];
 	    }
 	}
     }
-
+  
   std::map<std::string, MainFuncPointer>::iterator j = StringToTestFunctionMap.find(testToRun);
-
+  
   if( j != StringToTestFunctionMap.end() )
     {
       MainFuncPointer f = j->second;
-
+      
       int             result;
       try
 	{
 	  // Invoke the test's "main" function.
 	  result = ( *f )( ac - 1, av + 1 );
-
+	  
 	  // Chest Through the different Lists
 	  
 	  // Make a list of possible baselines
@@ -293,7 +293,7 @@ int main(int ac, char *av[])
 	      std::map<std::string, int>::iterator baseline = baselines.begin();
 	      std::string                          bestBaseline;
 	      int                                  bestBaselineStatus = itk::NumericTraits<int>::max();
-
+	      
 	      while( baseline != baselines.end() )
 		{
 		  if (strcmp(compareType,"compareImage") == 0)
@@ -339,7 +339,7 @@ int main(int ac, char *av[])
 		    {
 		      //Report that type is not available
 		    }
-
+		  
 		  if( baseline->second < bestBaselineStatus )
 		    {
 		      bestBaseline = baseline->first;
@@ -351,7 +351,7 @@ int main(int ac, char *av[])
 		    }
 		  ++baseline;
 		}
-
+	      
 	      // if the best we can do still has errors, generate the error images
 	      if (strcmp(compareType,"compareImage") == 0)
 		{
@@ -364,7 +364,7 @@ int main(int ac, char *av[])
 					  numberOfPixelsTolerance,
 					  radiusTolerance);
 		    }
-
+		  
 		  // output the matching baseline
 		  std::cout << "<DartMeasurement name=\"BaselineImageName\" type=\"text/string\">";
 		  std::cout << itksys::SystemTools::GetFilenameName(bestBaseline);
@@ -391,7 +391,7 @@ int main(int ac, char *av[])
 	  std::cerr << "ITK test driver caught an unknown exception!!!\n";
 	  result = -1;
 	}
-
+      
       return result;
     }
   PrintAvailableTests();
@@ -474,7 +474,7 @@ int CompareFieldData(vtkFieldData *test,vtkFieldData *baseline,double tolerance)
 	return 1;
       }
     }
-
+  
   return 0;  
 }
 
@@ -483,13 +483,13 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
 			       const char *baselineVtkFilename,double tolerance)
 {
   vtkSmartPointer<vtkPolyDataReader> testReader = vtkSmartPointer<vtkPolyDataReader>::New();
-    testReader->SetFileName(testVtkFilename);
-    testReader->Update();
-
+  testReader->SetFileName(testVtkFilename);
+  testReader->Update();
+  
   vtkSmartPointer<vtkPolyDataReader> baselineReader = vtkSmartPointer<vtkPolyDataReader>::New();
-    baselineReader->SetFileName(baselineVtkFilename);
-    baselineReader->Update();
-
+  baselineReader->SetFileName(baselineVtkFilename);
+  baselineReader->Update();
+  
   vtkPolyData * test = testReader->GetOutput();
   vtkPolyData *baseline = baselineReader->GetOutput();
   
@@ -503,7 +503,7 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
       std::cerr << "Test and baseline have different number of points" << std::endl;
       return 1;
     }
-
+  
   res=testing->CompareAverageOfL2Norm(test,baseline,tolerance);
   
   if (res == vtkTesting::PASSED)
@@ -515,11 +515,11 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
       std::cerr << "Test and baseline have different point values" <<std::endl;
       return 1;
     }
-
+  
   //Check Point Data (the prior function also test point data but we keep this for redundancy so far)
   res= CompareFieldData((vtkFieldData *)baseline->GetPointData(),
 			(vtkFieldData *)test->GetPointData(), tolerance);
-
+  
   if (res == 1)
     {
       return res;
@@ -536,7 +536,7 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
   
   // Check CellData
   res= CompareFieldData((vtkFieldData *)baseline->GetCellData(),(vtkFieldData *)test->GetCellData(), tolerance);
-
+  
   if (res == 1)
     {
       return res;
@@ -544,12 +544,12 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
   
   //3. Check FieldData
   res=CompareFieldData((vtkFieldData *)baseline->GetFieldData(),(vtkFieldData *)test->GetFieldData(), tolerance);
-
+  
   if (res == 1)
     {
       return res;
     }
-
+  
   return 0;
   
 }
@@ -850,7 +850,7 @@ int RegressionTestLabelMap( const char *testImageFilename,
 			    unsigned int radiusTolerance)
 {
   typedef itk::Testing::ComparisonImageFilter< cip::LabelMapType, cip::LabelMapType > DiffType;
-    
+  
   // Read the baseline file
   cip::LabelMapReaderType::Pointer baselineReader = cip::LabelMapReaderType::New();
   baselineReader->SetFileName(baselineImageFilename);
@@ -904,123 +904,118 @@ int RegressionTestLabelMap( const char *testImageFilename,
   
   itk::SizeValueType status = itk::NumericTraits<itk::SizeValueType>::Zero;
   status = diff->GetNumberOfPixelsWithDifferences();
-  
-    
-    
-    
-  return ( status > numberOfPixelsTolerance ) ? 1 : 0;
-
+       
+  return ( status > numberOfPixelsTolerance ) ? 1 : 0;  
 }
 
 
 // try with Dice
 int RegressionTestLabelMapDice( const char *testImageFilename,
-                           const char *baselineImageFilename,
-                           int reportErrors,
-                           double diceTolerance )
+				const char *baselineImageFilename,
+				int reportErrors,
+				double diceTolerance )
 {
-    typedef itk::Testing::ComparisonImageFilter< cip::LabelMapType, cip::LabelMapType > DiffType;
-    typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;
-    typedef itk::KappaStatisticImageToImageMetric<cip::LabelMapType, cip::LabelMapType >  metricType;
-    typedef itk::AffineTransform<double, 3 >      TransformType;
-    
-    // Read the baseline file
-    cip::LabelMapReaderType::Pointer baselineReader = cip::LabelMapReaderType::New();
-    baselineReader->SetFileName(baselineImageFilename);
-    try
+  typedef itk::Testing::ComparisonImageFilter< cip::LabelMapType, cip::LabelMapType > DiffType;
+  typedef itk::ImageRegionIterator< cip::LabelMapType > IteratorType;
+  typedef itk::KappaStatisticImageToImageMetric<cip::LabelMapType, cip::LabelMapType >  metricType;
+  typedef itk::AffineTransform<double, 3 >      TransformType;
+  
+  // Read the baseline file
+  cip::LabelMapReaderType::Pointer baselineReader = cip::LabelMapReaderType::New();
+  baselineReader->SetFileName(baselineImageFilename);
+  try
     {
-        baselineReader->UpdateLargestPossibleRegion();
+      baselineReader->UpdateLargestPossibleRegion();
     }
-    catch( itk::ExceptionObject & e )
+  catch( itk::ExceptionObject & e )
     {
-        std::cerr << "Exception detected while reading " << baselineImageFilename << " : "  << e.GetDescription();
-        return 1000;
+      std::cerr << "Exception detected while reading " << baselineImageFilename << " : "  << e.GetDescription();
+      return 1000;
     }
-    
-    // Read the file generated by the test
-    cip::LabelMapReaderType::Pointer testReader = cip::LabelMapReaderType::New();
-    testReader->SetFileName(testImageFilename);
-    try
+  
+  // Read the file generated by the test
+  cip::LabelMapReaderType::Pointer testReader = cip::LabelMapReaderType::New();
+  testReader->SetFileName(testImageFilename);
+  try
     {
-        testReader->UpdateLargestPossibleRegion();
+      testReader->UpdateLargestPossibleRegion();
     }
-    catch( itk::ExceptionObject & e )
+  catch( itk::ExceptionObject & e )
     {
-        std::cerr << "Exception detected while reading " << testImageFilename << " : "  << e.GetDescription() << std::endl;
-        return 1000;
+      std::cerr << "Exception detected while reading " << testImageFilename << " : "  << e.GetDescription() << std::endl;
+      return 1000;
     }
-    
-    // The sizes of the baseline and test image must match
-    cip::LabelMapType::SizeType baselineSize;
-    baselineSize = baselineReader->GetOutput()->GetLargestPossibleRegion().GetSize();
-    
-    cip::LabelMapType::SizeType testSize;
-    testSize = testReader->GetOutput()->GetLargestPossibleRegion().GetSize();
-    
-    if( baselineSize != testSize )
+  
+  // The sizes of the baseline and test image must match
+  cip::LabelMapType::SizeType baselineSize;
+  baselineSize = baselineReader->GetOutput()->GetLargestPossibleRegion().GetSize();
+  
+  cip::LabelMapType::SizeType testSize;
+  testSize = testReader->GetOutput()->GetLargestPossibleRegion().GetSize();
+  
+  if( baselineSize != testSize )
     {
-        std::cerr << "The size of the Baseline image and Test image do not match!" << std::endl;
-        std::cerr << "Baseline image: " << baselineImageFilename
+      std::cerr << "The size of the Baseline image and Test image do not match!" << std::endl;
+      std::cerr << "Baseline image: " << baselineImageFilename
 		<< " has size " << baselineSize << std::endl;
-        std::cerr << "Test image:     " << testImageFilename
+      std::cerr << "Test image:     " << testImageFilename
 		<< " has size " << testSize << std::endl;
-        return 1;
+      return 1;
     }
-    
-    // threshold the images
-    IteratorType   baselineIt ( baselineReader->GetOutput(), baselineReader->GetOutput()->GetBufferedRegion() );
-    IteratorType   testIt ( testReader->GetOutput(), testReader->GetOutput()->GetBufferedRegion() );
-    baselineIt.GoToBegin();
-    testIt.GoToBegin();
-    while ( !baselineIt.IsAtEnd() )
+  
+  // threshold the images
+  IteratorType   baselineIt ( baselineReader->GetOutput(), baselineReader->GetOutput()->GetBufferedRegion() );
+  IteratorType   testIt ( testReader->GetOutput(), testReader->GetOutput()->GetBufferedRegion() );
+  baselineIt.GoToBegin();
+  testIt.GoToBegin();
+  while ( !baselineIt.IsAtEnd() )
     {
-        short original_value = baselineIt.Get();
-        if(original_value > 1)
+      short original_value = baselineIt.Get();
+      if(original_value > 1)
         {
-            original_value = 1;
+	  original_value = 1;
         }
-        ++baselineIt;
+      ++baselineIt;
     }
-    while ( !testIt.IsAtEnd() )
+  while ( !testIt.IsAtEnd() )
     {
-        short original_value = testIt.Get();
-        if(original_value > 1)
+      short original_value = testIt.Get();
+      if(original_value > 1)
         {
-            original_value = 1;
+	  original_value = 1;
         }
-        ++testIt;
+      ++testIt;
     }
-    
-    // Now compare the two images
-    /*DiffType::Pointer diff = DiffType::New();
+  
+  // Now compare the two images
+  /*DiffType::Pointer diff = DiffType::New();
     diff->SetValidInput( baselineReader->GetOutput() );
     diff->SetTestInput( testReader->GetOutput() );
     diff->SetToleranceRadius(radiusTolerance);
     diff->UpdateLargestPossibleRegion();
     itk::SizeValueType status = itk::NumericTraits<itk::SizeValueType>::Zero;
     status = diff->GetNumberOfPixelsWithDifferences();
-    */
-    
-    // Dice test
-    TransformType::Pointer id_transform = TransformType::New();
-    id_transform->SetIdentity();
-    metricType::Pointer metric = metricType::New();
-    metric->SetForegroundValue( 1 );
-    //metric->SetInterpolator( interpolator );
-    metric->SetTransform(id_transform);
-    metric->SetFixedImage( baselineReader->GetOutput() );
-    metric->SetMovingImage( testReader->GetOutput());
-    
-    cip::LabelMapType::RegionType fixedRegion = baselineReader->GetOutput()->GetBufferedRegion();
-    metric->SetFixedImageRegion(fixedRegion);
-    metric->Initialize();
-    double status = metric->GetValue(id_transform->GetParameters() );
-
-    std::cout<<status<<std::endl;
-    return ( status <= diceTolerance ) ? 1 : 0;
-    
+  */
+  
+  // Dice test
+  TransformType::Pointer id_transform = TransformType::New();
+  id_transform->SetIdentity();
+  metricType::Pointer metric = metricType::New();
+  metric->SetForegroundValue( 1 );
+  //metric->SetInterpolator( interpolator );
+  metric->SetTransform(id_transform);
+  metric->SetFixedImage( baselineReader->GetOutput() );
+  metric->SetMovingImage( testReader->GetOutput());
+  
+  cip::LabelMapType::RegionType fixedRegion = baselineReader->GetOutput()->GetBufferedRegion();
+  metric->SetFixedImageRegion(fixedRegion);
+  metric->Initialize();
+  double status = metric->GetValue(id_transform->GetParameters() );
+  
+  std::cout<<status<<std::endl;
+  return ( status <= diceTolerance ) ? 1 : 0;
+  
 }
-
 
 
 //

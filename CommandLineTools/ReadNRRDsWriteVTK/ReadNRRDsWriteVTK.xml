@@ -2,8 +2,8 @@
 <executable>
     <category>Chest Imaging Platform.Toolkit.Utils</category>
     <title>ReadNRRDsWriteVTK</title>
-    <description><![CDATA[CThis program reads a number of NRRD files and collects the data in those files into \
-        a single VTK polydata file for writing. The input data files typically contain particles information.]]>
+    <description><![CDATA[This program reads a number of NRRD files and collects the data in those files into \
+a single VTK polydata file for writing. The input data files typically contain particles information.]]>
     </description>
     <version>0.0.1</version>
     <license>Slicer</license>
@@ -41,8 +41,8 @@
             <flag>a</flag>
             <longflag>arrayName</longflag>
             <description><![CDATA[Array names corresponding to files immediately preceding invocation of this flag (specified \
-                with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
-                data arrays]]></description>
+with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
+data arrays]]></description>
             <default>NA</default>
         </string>
         
