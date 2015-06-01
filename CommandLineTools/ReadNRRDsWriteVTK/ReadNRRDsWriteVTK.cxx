@@ -57,7 +57,6 @@
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
 #include "vtkFloatArray.h"
-#include "vtkDoubleArray.h"
 #include "vtkPointData.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -316,7 +315,63 @@ int main( int argc, char *argv[] )
       polyData->GetPointData()->AddArray( array );
       }
     }
-
+  
+  // Store metadata information in a field array
+  if (irad !=0 )
+    {
+      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+      array->SetNumberOfComponents( 1 );
+      array->SetNumberOfTuples(1);
+      array->SetName("irad");
+      array->SetValue(0,irad);
+      
+      polyData->GetFieldData()->AddArray(array);
+    }
+  
+  if (srad != 0 )
+  {
+      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+      array->SetNumberOfComponents( 1 );
+      array->SetNumberOfTuples(1);
+      array->SetName("srad");
+      array->SetValue(0,srad);
+      polyData->GetFieldData()->AddArray(array);
+  }
+  
+  if ((spacing[0] > 0 ||  spacing[1] >0 || spacing[2] >0)  && spacing.size() == 3 )
+  {
+    
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+    array->SetNumberOfComponents( 3 );
+    array->SetNumberOfTuples(1);
+    array->SetName("spacing");
+    array->SetComponent(0,0,spacing[0]);
+    array->SetComponent(0,1,spacing[1]);
+    array->SetComponent(0,2,spacing[2]);
+    polyData->GetFieldData()->AddArray(array);
+  }
+  
+  if (liveThreshold != 0 )
+  {
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+    array->SetNumberOfComponents( 1 );
+    array->SetNumberOfTuples(1);
+    array->SetName("liveth");
+    array->SetValue(0,liveThreshold);
+    polyData->GetFieldData()->AddArray(array);
+  }
+  
+  if (seedThreshold != 0 )
+  {
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+    array->SetNumberOfComponents( 1 );
+    array->SetNumberOfTuples(1);
+    array->SetName("seedth");
+    array->SetValue(0,seedThreshold);
+    polyData->GetFieldData()->AddArray(array);
+  }
+  
+  
   polyData->SetPoints( points );
 
   std::cout << "Writing poly data..." << std::endl;
