@@ -2,7 +2,7 @@ import SimpleITK as sitk
 
 class ImageReaderWriter:
     """
-    Interface to the ReaderWriterNRRD program
+    Interface to the ImageReaderWriter program
     
     Parameters
     ----------
