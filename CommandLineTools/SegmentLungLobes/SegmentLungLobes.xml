@@ -17,7 +17,7 @@
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.
@@ -45,7 +45,11 @@
       <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
       <default>NA</default>
     </image>
-
+  </parameters>
+  
+  <parameters>
+    <label>Shape models</label>
+    <description>Lobe shape models input files</description>
     <string>
       <name>leftShapeModelFileName</name>
       <label>Left lung lobes shape model file name</label>
@@ -91,6 +95,22 @@
       <description><![CDATA[Fiducials along left oblique fissure]]></description>
       <default>0,0,0</default>
     </point>
+    
+    <string-enumeration>
+      <name>coordinateSystem</name>
+      <flag>c</flag>
+      <longflag>coordSytem</longflag>
+      <element>RAS</element>
+      <element>LPS</element>
+      <element>Index</element>
+      <default>RAS</default>
+      <description><![CDATA[Point coordinate system.     \
+        RAS   - Right-Anterior-Superior \
+        LPS   - Left-Posterior-Superior \
+        Index - Image index coordinates.
+      ]]></description>
+    </string-enumeration>
+
   </parameters>
 
   <parameters>

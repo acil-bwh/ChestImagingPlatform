@@ -107,20 +107,47 @@ int main( int argc, char *argv[] )
       cip::LabelMapType::IndexType index;
       
       for( ::size_t i = 0; i < rightHorizontalFiducials.size(); ++i )
-	{
-	  // seeds come in ras, convert to lps
-	  lpsPoint[0] = -rightHorizontalFiducials[i][0];
-	  lpsPoint[1] = -rightHorizontalFiducials[i][1];
-	  lpsPoint[2] = rightHorizontalFiducials[i][2];
-	  
-	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  cip::PointType location(3);
-  	    location[0] = index[0];
-	    location[1] = index[1];
-	    location[2] = index[2];
+      {
+        
+      if (coordinateSystem == "RAS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = -rightHorizontalFiducials[i][0];
+        lpsPoint[1] = -rightHorizontalFiducials[i][1];
+        lpsPoint[2] = rightHorizontalFiducials[i][2];
+        }
+      else if (coordinateSystem == "Index")
+        {
+        // seeds come in index, convert to lps
+        index[0] = rightHorizontalFiducials[i][0];
+        index[1] = rightHorizontalFiducials[i][1];
+        index[2] = rightHorizontalFiducials[i][2];
+        leftLungRightLungReader->GetOutput()->TransformIndexToPhysicalPoint(index,lpsPoint);
+        }
+      else if (coordinateSystem == "LPS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = rightHorizontalFiducials[i][0];
+        lpsPoint[1] = rightHorizontalFiducials[i][1];
+        lpsPoint[2] = rightHorizontalFiducials[i][2];
+        
+        }
+      else
+        {
+        //Not supported coordinate system
+        std::cerr<<"Points come in a a non-supported coordinate system"<<std::endl;
+        return cip::EXITFAILURE;
+        }
+        
+      cip::PointType location(3);
+      for (unsigned int ii=0; ii<3; ii++)
+        {
+        location[ii] = lpsPoint[ii];
+        }
 
-	  rhPoints.push_back(location);
-	}
+      rhPoints.push_back(location);
+
+      }
     }
   
   if( rightObliqueFiducials.size() > 0 )
@@ -129,21 +156,46 @@ int main( int argc, char *argv[] )
       cip::LabelMapType::IndexType index;
       
       for( ::size_t i = 0; i < rightObliqueFiducials.size(); ++i )
-	{
-	  // seeds come in ras, convert to lps
-	  lpsPoint[0] = -rightObliqueFiducials[i][0];
-	  lpsPoint[1] = -rightObliqueFiducials[i][1];
-	  lpsPoint[2] = rightObliqueFiducials[i][2];
-	  
-	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  cip::PointType location(3);
-       	    location[0] = index[0];
-	    location[1] = index[1];
-	    location[2] = index[2];
+      {
+      if (coordinateSystem == "RAS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = -rightObliqueFiducials[i][0];
+        lpsPoint[1] = -rightObliqueFiducials[i][1];
+        lpsPoint[2] = rightObliqueFiducials[i][2];
+        }
+      else if (coordinateSystem == "Index")
+        {
+        // seeds come in index, convert to lps
+        index[0] = rightObliqueFiducials[i][0];
+        index[1] = rightObliqueFiducials[i][1];
+        index[2] = rightObliqueFiducials[i][2];
+        leftLungRightLungReader->GetOutput()->TransformIndexToPhysicalPoint(index,lpsPoint);
+        }
+      else if (coordinateSystem == "LPS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = rightObliqueFiducials[i][0];
+        lpsPoint[1] = rightObliqueFiducials[i][1];
+        lpsPoint[2] = rightObliqueFiducials[i][2];
+        }
+      else
+        {
+        //Not supported coordinate system
+        std::cerr<<"Points come in a a non-supported coordinate system"<<std::endl;
+        return cip::EXITFAILURE;
+        }
+        
+      cip::PointType location(3);
+      for (unsigned int ii=0; ii<3; ii++)
+      {
+        location[ii] = lpsPoint[ii];
+      }
 
 	  roPoints.push_back(location);
-	}
+
     }
+  }
   
   if( leftObliqueFiducials.size() > 0 )
     {
@@ -151,21 +203,44 @@ int main( int argc, char *argv[] )
       cip::LabelMapType::IndexType index;
       
       for( ::size_t i = 0; i < leftObliqueFiducials.size(); ++i )
-	{
-	  // seeds come in ras, convert to lps
-	  lpsPoint[0] = -leftObliqueFiducials[i][0];
-	  lpsPoint[1] = -leftObliqueFiducials[i][1];
-	  lpsPoint[2] = leftObliqueFiducials[i][2];
-	  
-	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  
-	  cip::PointType location(3);
-	    location[0] = index[0];
-	    location[1] = index[1];
-	    location[2] = index[2];
+      {
+        if (coordinateSystem == "RAS")
+        {
+          // seeds come in ras, convert to lps
+          lpsPoint[0] = -leftObliqueFiducials[i][0];
+          lpsPoint[1] = -leftObliqueFiducials[i][1];
+          lpsPoint[2] = leftObliqueFiducials[i][2];
+        }
+        else if (coordinateSystem == "Index")
+        {
+          // seeds come in index, convert to lps
+          index[0] = leftObliqueFiducials[i][0];
+          index[1] = leftObliqueFiducials[i][1];
+          index[2] = leftObliqueFiducials[i][2];
+          leftLungRightLungReader->GetOutput()->TransformIndexToPhysicalPoint(index,lpsPoint);
+        }
+        else if (coordinateSystem == "LPS")
+        {
+          // seeds come in ras, convert to lps
+          lpsPoint[0] = leftObliqueFiducials[i][0];
+          lpsPoint[1] = leftObliqueFiducials[i][1];
+          lpsPoint[2] = leftObliqueFiducials[i][2];
+        }
+        else
+        {
+          //Not supported coordinate system
+          std::cerr<<"Points come in a a non-supported coordinate system"<<std::endl;
+          return cip::EXITFAILURE;
+        }
+	  	  
+        cip::PointType location(3);
+        for (unsigned int ii=0; ii<3; ii++)
+        {
+          location[ii] = lpsPoint[ii];
+        }
+        loPoints.push_back(location);
 
-	  loPoints.push_back(location);
-	}
+      }
     }
 
   if ( rhParticlesFileName.compare( "NA" ) != 0 )
