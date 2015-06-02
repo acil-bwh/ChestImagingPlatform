@@ -32,11 +32,16 @@ namespace cip {
   typedef itk::Image< unsigned short, 2 >       LabelMapSliceType;
   typedef itk::Image< short, 3 >                CTType;
   typedef itk::Image< short, 2 >                CTSliceType;
+  typedef itk::Image< float, 3 >                DistanceMapType;
+  typedef itk::Image< float, 2 >                DistanceMapSliceType;
+
   typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
   typedef itk::ImageFileWriter< LabelMapType >  LabelMapWriterType;
   typedef itk::ImageFileReader< CTType >        CTReaderType;
   typedef itk::ImageFileWriter< CTType >        CTWriterType;
-
+  typedef itk::ImageFileReader< DistanceMapType >    DistanceMapReaderType;
+  typedef itk::ImageFileWriter< DistanceMapType >    DistanceMapWriterType;
+  
   typedef itk::ImageSeriesReader< CTType >      CTSeriesReaderType;
 
   
@@ -48,28 +53,38 @@ namespace cip {
 
   /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and
    * a pointer to a LabelMapType, and returns a pointer to a downsampled LabelMapType. */
-  cip::LabelMapType::Pointer DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
+  cip::LabelMapType::Pointer DownsampleLabelMap(unsigned short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
 
   /** Function that upsamples a label map. Takes in as input a value for the upsampling
    *amount and a pointer to a LabelMapType, and returns a pointer to a upsampled LabelMapType. */
-  cip::LabelMapType::Pointer UpsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
+  cip::LabelMapType::Pointer UpsampleLabelMap(unsigned short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
 
   /** Function that downsamples a label map slice. Takes in as input a value for the downsampling amount and 
    * a pointer to a LabelMapSliceType, and returns a pointer to a downsampled LabelMapSliceType. */
-  cip::LabelMapSliceType::Pointer DownsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+  cip::LabelMapSliceType::Pointer DownsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
 
   /** Function that upsamples a label map slice. Takes in as input a value for the upsampling
    *  amount and a pointer to a LabelMapSliceType, and returns a pointer to a upsampled LabelMapSliceType. */
-  cip::LabelMapSliceType::Pointer UpsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+  cip::LabelMapSliceType::Pointer UpsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+
+  /** Templated fucntion to downsample an itkImage data type */
+  template<typename ImageType, typename InterpolatorType, unsigned int D> typename ImageType::Pointer DownsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
 
   /** Function that downsamples a CT. Takes in as input a value for the downsampling amount and 
    * a pointer to a CTType, and returns a pointer to a downsampled CTType. */
-  cip::CTType::Pointer DownsampleCT(short samplingAmount, cip::CTType::Pointer inputCT);
+  cip::CTType::Pointer DownsampleCT(unsigned short samplingAmount, cip::CTType::Pointer inputCT);
+
+  /** Templated fucntion to upsample an itkImage data type */
+  template<typename ImageType,typename InterpolatorType,unsigned int D> typename ImageType::Pointer UpsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
 
   /** Function that upsamples a label CT. Takes in as input a value for the upsampling
    * amount and a pointer to a CTType, and returns a pointer to a upsampled CTType. */
-  cip::CTType::Pointer UpsampleCT(short samplingAmount, cip::CTType::Pointer inputCT);
+  cip::CTType::Pointer UpsampleCT(unsigned short samplingAmount, cip::CTType::Pointer inputCT);
 
+  /** Function that upsamples a distance map. Takes in as input a value for the upsampling
+   * amount and a pointer to a CTType, and returns a pointer to a upsampled CTType. */
+  cip::DistanceMapType::Pointer UpsampleDistanceMap(unsigned short samplingAmount, cip::DistanceMapType::Pointer inputDM);
+  
   /** Get the magnitude of the indicated vector */
   double GetVectorMagnitude(const cip::VectorType& vector);
 
