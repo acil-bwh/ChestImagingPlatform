@@ -9,11 +9,10 @@
 
 namespace
 {
-  typedef itk::Image< short, 3 >                                                            DistanceMapType;
-  typedef itk::ImageFileWriter< DistanceMapType >                                           WriterType;
-  typedef itk::SignedMaurerDistanceMapImageFilter< cip::LabelMapType, DistanceMapType >     SignedMaurerType;
-  typedef itk::SignedDanielssonDistanceMapImageFilter< cip::LabelMapType, DistanceMapType > SignedDanielssonType;
-     
+
+  typedef itk::SignedMaurerDistanceMapImageFilter< cip::LabelMapType, cip::DistanceMapType >     SignedMaurerType;
+  typedef itk::SignedDanielssonDistanceMapImageFilter< cip::LabelMapType, cip::DistanceMapType > SignedDanielssonType;
+  typedef itk::ImageToImageFilter<cip::LabelMapType, cip::DistanceMapType > FilterType;
 } // end of anonymous namespace
 
 
@@ -41,22 +40,48 @@ int main( int argc, char *argv[] )
     }
 
   cip::LabelMapType::Pointer subSampledLabelMap;
-  std::cout << "Downsampling label map..." << std::endl;  
-  if (downsampleFactor >= 1)
+  if (downsampleFactor <= 1)
     {
+      std::cout << "Skipping downsampling..." << std::endl;
       subSampledLabelMap = reader->GetOutput();
     } 
   else
     {
+      std::cout << "Downsampling label map..." << std::endl;
       subSampledLabelMap = cip::DownsampleLabelMap( downsampleFactor, reader->GetOutput() );
     }
   
-  std::cout << "Generating distance map..." << std::endl;
-  SignedMaurerType::Pointer distanceMap = SignedMaurerType::New();
-    distanceMap->SetInput( subSampledLabelMap );
-    distanceMap->SetSquaredDistance( false );
-    distanceMap->SetUseImageSpacing( true );
-    distanceMap->SetInsideIsPositive( interiorIsPositive );
+  FilterType::Pointer distanceMap;
+  if (method == "Maurer")
+  {
+    SignedMaurerType::Pointer distanceMap_M = SignedMaurerType::New();
+    distanceMap_M->SetInput( subSampledLabelMap );
+    distanceMap_M->SetSquaredDistance( outputSquaredDistance );
+    distanceMap_M->SetUseImageSpacing( true );
+    distanceMap_M->SetInsideIsPositive( interiorIsPositive );
+    //distanceMap_M->SetBackgroundValue(0);
+    distanceMap = distanceMap_M;
+  }
+  else if (method == "Danielsson")
+  {
+    SignedDanielssonType::Pointer distanceMap_D = SignedDanielssonType::New();
+    distanceMap_D->SetInput( subSampledLabelMap );
+    distanceMap_D->SetUseImageSpacing( true );
+    distanceMap_D->SetInsideIsPositive( interiorIsPositive );
+    distanceMap_D->SetSquaredDistance( outputSquaredDistance );
+    distanceMap = distanceMap_D;
+    }
+  else
+    {
+      std::cerr << "Not supported distance transform method"<<std::endl;
+      
+      return cip::EXITFAILURE;
+      
+    }
+    
+  
+  std::cout << "Computing distance map..." << std::endl;
+
   try
     {
     distanceMap->Update();
@@ -68,19 +93,19 @@ int main( int argc, char *argv[] )
     return cip::GENERATEDISTANCEMAPFAILURE;
     }
 
-  DistanceMapType::Pointer upSampledDistanceMap;
-  std::cout << "Upsampling distance map..." << std::endl;
-  if (downsampleFactor >= 1 )
+  cip::DistanceMapType::Pointer upSampledDistanceMap;
+  if (downsampleFactor <= 1 )
     {
       upSampledDistanceMap = distanceMap->GetOutput();
     } 
   else
     {
-      upSampledDistanceMap = cip::UpsampleCT( downsampleFactor, distanceMap->GetOutput() );
+      std::cout << "Upsampling distance map..." << std::endl;
+      upSampledDistanceMap = cip::UpsampleDistanceMap( downsampleFactor, distanceMap->GetOutput() );
     }
 
   std::cout << "Writing to file..." << std::endl;
-  WriterType::Pointer writer = WriterType::New();
+  cip::DistanceMapWriterType::Pointer writer = cip::DistanceMapWriterType::New();
     writer->SetInput( upSampledDistanceMap );
     writer->SetFileName( distanceMapFileName );
     writer->UseCompressionOn();

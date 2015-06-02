@@ -36,7 +36,26 @@ and does not necessarily represent the official views of the National Institutes
             <default>NA</default>
             <description><![CDATA[Output distance map file name]]></description>
         </image>
-        <double>
+     </parameters>
+    
+     <parameters>
+       <label>Parameters</label>
+       <description>Optional parameters</description>
+      
+      <string-enumeration>
+        <name>method</name>
+        <flag>m</flag>
+        <longflag>method</longflag>
+        <element>Maurer</element>
+        <element>Danielsson</element>
+        <default>Maurer</default>
+        <description><![CDATA[Feature strength method.     \
+          Maurer           - Maurer method \
+          Danielsson       - Danielsson method
+          ]]></description>
+      </string-enumeration>
+
+        <integer>
             <name>downsampleFactor</name>
             <flag>s</flag>
             <longflag>downsample</longflag>
@@ -44,15 +63,28 @@ and does not necessarily represent the official views of the National Institutes
 downsampled by the specified amount before the distance map is computed. The resulting \
 distance map will then be scaled up by the same amount before writing.</description>
             <label>Downsample Factor</label>
-            <default>1.0</default>
-        </double>
+            <default>1</default>
+        </integer>
+        
         <boolean>
             <name>interiorIsPositive</name>
+            <label>Interior is positive</label>
             <flag>p</flag>
             <longflag>positive</longflag>
             <description>Set this flag to indicate that the interior \
 of the structure of interest should be assigned positive distance values.</description>
-            <label>Interior Is Positive</label>
-        </boolean>                
+            <default>false</default>
+        </boolean>
+        
+        <boolean>
+          <name>outputSquaredDistance</name>
+          <label>Squared distance</label>
+          <longflag>squaredDistance</longflag>
+          <description>Set this flag to output the squared distance.</description>
+          <default>false</default>
+        </boolean>
+        
     </parameters>
+     
+     
 </executable>
