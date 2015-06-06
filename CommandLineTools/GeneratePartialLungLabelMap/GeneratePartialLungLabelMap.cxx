@@ -65,7 +65,6 @@ int main( int argc, char *argv[] )
     partialLungFilter->SetInput( ctImage );
     partialLungFilter->SetAirwayMinIntensityThreshold( airwayMinThreshold );
     partialLungFilter->SetAirwayMaxIntensityThreshold( airwayMaxThreshold );
-    partialLungFilter->SetLeftRightLungSplitRadius( leftRightLungSplitRadius );
   if ( feetFirst == true )
     {
     partialLungFilter->SetHeadFirst( false );

@@ -95,7 +95,9 @@ Everything above the clip value will be assigned the replacement value.</descrip
     <integer>
       <name>lungSplitRadius</name>
       <longflag>lsr</longflag>
-      <description>Radius used to split the left and right lungs.</description>
+      <description>Radius used to split the left and right lungs. Large values lead \
+to more aggressive splitting, and may slightly degrade the segmentation quality around \
+the splitting region.</description>
       <label>Lung split radius</label>
       <default>1</default>
     </integer>
@@ -116,15 +118,6 @@ Everything above the clip value will be assigned the replacement value.</descrip
       <default>-800</default>
     </integer>
     
-    <integer>
-      <name>leftRightLungSplitRadius</name>
-      <longflag>radius</longflag>
-      <description>Radius used for left-right lung splitting. Larger values lead to more aggressive \
-      splitting, but may slightly degrade the quality of the seqmentation in the splitting region</description>
-      <label>Left-right lung split radius</label>
-      <default>1</default>
-    </integer>
-
     <boolean>
       <name>feetFirst</name>
       <longflag>ff</longflag>
