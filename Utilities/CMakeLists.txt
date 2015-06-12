@@ -49,8 +49,8 @@ endif()
 # --------------------------------------------------------------------------
 # Sources
 # --------------------------------------------------------------------------
-SET (CIP_UTILITIES_VTK ${CMAKE_SOURCE_DIR}/Utilities/VTK)
-SET (CIP_UTILITIES_ITK ${CMAKE_SOURCE_DIR}/Utilities/ITK)
+SET (CIP_UTILITIES_VTK ${CMAKE_CURRENT_SOURCE_DIR}/VTK)
+SET (CIP_UTILITIES_ITK ${CMAKE_CURRENT_SOURCE_DIR}/ITK)
 
 SET ( CIPUtilities_SRCS
   ${CIP_UTILITIES_VTK}/vtkSuperquadricTensorGlyphFilter.cxx

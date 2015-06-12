@@ -97,11 +97,20 @@ endif()
 #---------------------------------------------------------------------
 # Output directories.
 
-set( LIBRARY_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
-  CACHE INTERNAL "Single output directory for building all libraries." )
+if( CIP_INTEGRATE_WITH_SLICER ) # may be set with remote module options
 
-set( EXECUTABLE_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
-  CACHE INTERNAL "Single output directory for building all executables." )
+  set( LIBRARY_OUTPUT_PATH ${CIP_CLI_LIBRARY_OUTPUT_DIRECTORY} )
+  set( EXECUTABLE_OUTPUT_PATH ${CIP_CLI_RUNTIME_OUTPUT_DIRECTORY} )
+
+else()
+  
+  set( LIBRARY_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
+    CACHE INTERNAL "Single output directory for building all libraries." )
+
+  set( EXECUTABLE_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
+    CACHE INTERNAL "Single output directory for building all executables." )
+
+endif()
 
 mark_as_advanced( LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH )
 
@@ -168,11 +177,11 @@ set( CIP_INCLUDE_DIRECTORIES
   "${CIP_SOURCE_DIR}/Utilities/VTK"
   "${CIP_SOURCE_DIR}/Utilities/LesionSizingToolkit"
   "${CIP_SOURCE_DIR}/IO"
-  "${CMAKE_BINARY_DIR}/Common"
-  "${CMAKE_BINARY_DIR}/Utilities/VTK"
-  "${CMAKE_BINARY_DIR}/Utilities/ITK"
-  "${CMAKE_BINARY_DIR}/Utilities/LesionSizingToolkit"
-  "${CMAKE_BINARY_DIR}/IO"
+  "${CIP_BINARY_DIR}/Common"
+  "${CIP_BINARY_DIR}/Utilities/VTK"
+  "${CIP_BINARY_DIR}/Utilities/ITK"
+  "${CIP_BINARY_DIR}/Utilities/LesionSizingToolkit"
+  "${CIP_BINARY_DIR}/IO"
 )
 
 include_directories( ${CIP_INCLUDE_DIRECTORIES} )
