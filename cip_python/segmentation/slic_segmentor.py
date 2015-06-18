@@ -1,7 +1,7 @@
 import numpy as np
 from skimage.segmentation import slic
 from optparse import OptionParser
-from cip_python.io.image_reader_writer import ImageReaderWriter
+#from cip_python.io.image_reader_writer import ImageReaderWriter
      
 class SlicSegmentor:
     """General purpose class interfacing to the SLIC segmentor. 
@@ -63,17 +63,18 @@ class SlicSegmentor:
         
     """
         
-    def __init__(self, n_segments=None, compactness=None, max_iter=None,
-             sigma=None, spacing=None, enforce_connectivity=False, 
-             min_size_factor=None, max_size_factor=None, slic_zero=False):        
+    def __init__(self, n_segments=100, compactness=10., max_iter=10, sigma=0,
+         spacing=None, enforce_connectivity=False, min_size_factor=0.5, 
+         max_size_factor=3, slic_zero=False):        
         self.n_segments =  n_segments    
         self.compactness = compactness
         self.max_iter = max_iter
         self.sigma = sigma
         self.enforce_connectivity = enforce_connectivity
-        self.min_size_factor
+        self.min_size_factor = min_size_factor
         self.max_size_factor = max_size_factor
         self.slic_zero = slic_zero
+        self.spacing=spacing
         
         
     def execute(self, ct):
@@ -83,6 +84,7 @@ class SlicSegmentor:
             enforce_connectivity=self.enforce_connectivity, \
             min_size_factor=self.min_size_factor, \
             max_size_factor=self.max_size_factor, slic_zero=self.slic_zero)
+        
         return segmentation
         
 
@@ -146,8 +148,9 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
     
-    image_io = ImageReaderWriter()
-    ct,ct_header=image_io.read_in_numpy(options.in_ct)
+    #image_io = ImageReaderWriter()
+    import nrrd
+    ct,ct_header=  nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
 
     spacing = np.zeros(3)
     spacing[0] = ct_header['space directions'][0][0]
@@ -163,6 +166,6 @@ if __name__ == "__main__":
                  
     slic_ct_segmentation = slic_segmentor.execute(ct)
 
-    image_io.write_from_numpy(slic_ct_segmentation,ct_header,options.out_lm)
+    #image_io.write_from_numpy(slic_ct_segmentation,ct_header,options.out_lm)
         
         
