@@ -1,0 +1,128 @@
+import numpy as np
+from skimage.segmentation import slic
+from optparse import OptionParser
+#from cip_python.io.image_reader_writer import ImageReaderWriter
+     
+class GridSegmentor:
+    """Segments a volume into a grid of volume patches. 
+
+    The user inputs a CT image to be segmented or the shape of the volume for
+    which to provide a grid segmentation. The output is is a 3D numpy 
+    array where for each voxel, a label is assigned designating the patch index
+    that the voxel belongs to. The way that it is presently done is that there
+    is a z_offset, and a 30 by 30 patch is extracted at each z location 
+    0:z_offset:max.
+    
+
+    
+    Parameters 
+    ----------
+
+    input_size : int array, shape 3x1, optional 
+        x,y,z size of the volume for which to form a patch grid
+        either this or ct need to be set
+
+    ct: 3D numpy array, shape (L, M, N)
+        Input CT image to be segmentaed
+                
+    xy_patch_size : int, optional
+        The x-y dimension of each patch. Default: 30
+        
+    z_patch_offset : the z offset between consecutive patches. Default : 10      
+               
+    Returns
+    --------
+    segmentation: 3D numpy array, shape (L, M, N)
+        Contains a label assignment for each CT voxel
+        
+    """
+        
+    def __init__(self, input_dimensions=None, ct=None, x_size=30, y_size=30,
+        z_offset=10):        
+        self.input_dimensions =  input_dimensions    
+        self.ct = ct
+        self.x_size = x_size
+        self.y_size = y_size
+        self.z_offset = z_offset
+        
+    def execute(self):
+        assert (self.input_dimensions is not None) or  (self.ct is not None), \
+            "Either CT or input shape need to be set"  
+
+        assert (self.input_dimensions is None) or  (self.ct is None), \
+            "CT and input shape cannot both be set" 
+        
+        if (self.ct is not None):
+            # get array size
+            ct_shape = np.shape(self.ct) \
+            #[0, np.shape(self.ct)[0], 0, np.shape(self.ct)[1],\
+               #0, np.shape(self.ct)[2]] 
+        else:
+            ct_shape = self.input_extent
+                                                                                                                            
+        
+        segmentation = np.zeros((ct_shape[0], ct_shape[1],ct_shape[2]), \
+            dtype=np.int)
+            
+        [gridX,gridY, gridZ] = np.meshgrid(np.linspace(0, ct_shape[0], \
+            self.x_size), np.linspace(0, ct_shape[1], self.y_size), \
+            np.linspace(0, ct_shape[2], self.z_offset));
+        
+        # go through all elements in gridX and segment 
+        #([gridX-15,gridX+15],[gridY-15,gridY+15])
+        patch_id = 0    
+        
+        for k in np.arange(0, np.shape(gridX)[2]-1):
+            for j in np.arange(0, np.shape(gridX)[1]-1):
+                for i in np.arange(0, np.shape(gridX)[0]-1): #x,y,z
+                    segmentation[np.floor(gridX[i,j,k]):np.floor( \
+                        gridX[i+1,j+1,k+1]),np.floor(gridY[i,j,k]):np.floor(\
+                        gridY[i+1,j+1,k+1]),np.floor(gridZ[i,j,k]):np.floor(\
+                        gridZ[i+1,j+1,k+1])]= patch_id
+                    patch_id = patch_id+1
+    
+        return segmentation
+        
+if __name__ == "__main__":
+    desc = """Generates parenchyma phenotypes given input CT and segmentation \
+    data"""
+    
+    parser = OptionParser(description=desc)
+    parser.add_option('--in_ct',
+                      help='Input CT file.', dest='in_ct', 
+                      metavar='<string>', default=None)
+    parser.add_option('--out_lm',
+                      help='Output grid segmentation', dest='out_lm', 
+                      metavar='<string>', default=None)
+    parser.add_option('--xsize',
+                      help='x dimensions of each patch (optional)', \
+                      dest='x_size', metavar='<string>', default=30)
+    parser.add_option('--ysize',
+                      help='y dimensions of each patch (optional)', \
+                      dest='y_size', metavar='<string>', default=30)                                     
+    parser.add_option('--zoffset',
+                      help='offset between consecutive slices of patches. This \
+                      is essentially the z dimension of the patch (optional)', 
+                      dest='z_offset', metavar='<string>', default=10)                  
+    #parser.add_option('--dim',
+    #                  help='Dimensions of the desired grid volume (optional). \
+    #                  This can be input instead of the ct image. ',  
+    #                  dest='dim', metavar='<string>', default=None)                      
+
+
+    (options, args) = parser.parse_args()
+    
+    ct = None
+    
+    if (options.in_ct is not None):
+        image_io = ImageReaderWriter()
+        ct,ct_header=image_io.read_in_numpy(options.in_ct)
+       
+    grid_segmentor = GridSegmentor(input_dimensions=None, ct=ct, \
+        x_size=options.x_size, y_size=options.y_size, z_offset=options.z_offset)
+                    
+    grid_ct_segmentation = grid_segmentor.execute(ct)
+
+    image_io.write_from_numpy(grid_ct_segmentation,ct_header,options.out_lm)
+        
+        
