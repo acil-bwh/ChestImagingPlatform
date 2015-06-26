@@ -1,6 +1,8 @@
 import numpy as np
 from skimage.segmentation import slic
 from optparse import OptionParser
+import nrrd
+import pdb
 #from cip_python.io.image_reader_writer import ImageReaderWriter
      
 class GridSegmentor:
@@ -44,8 +46,8 @@ class GridSegmentor:
         self.x_size = x_size
         self.y_size = y_size
         self.z_offset = z_offset
-        
-    def execute(self):
+
+    def execute(self):        
         assert (self.input_dimensions is not None) or  (self.ct is not None), \
             "Either CT or input shape need to be set"  
 
@@ -54,23 +56,24 @@ class GridSegmentor:
         
         if (self.ct is not None):
             # get array size
-            ct_shape = np.shape(self.ct) \
-            #[0, np.shape(self.ct)[0], 0, np.shape(self.ct)[1],\
-               #0, np.shape(self.ct)[2]] 
+            ct_shape = np.shape(self.ct) 
         else:
-            ct_shape = self.input_extent
-                                                                                                                            
+            ct_shape = self.input_dimensions
+                                                                                                                                                                                                                                   
+        assert(ct_shape[0]>= self.x_size) and (ct_shape[1]>= self.y_size) and \
+            (ct_shape[2]>= self.z_offset), "image dimensions must be larger than  \
+            grid size"
         
         segmentation = np.zeros((ct_shape[0], ct_shape[1],ct_shape[2]), \
             dtype=np.int)
-            
-        [gridX,gridY, gridZ] = np.meshgrid(np.linspace(0, ct_shape[0], \
-            self.x_size), np.linspace(0, ct_shape[1], self.y_size), \
-            np.linspace(0, ct_shape[2], self.z_offset));
-        
+        [gridX,gridY, gridZ] = np.meshgrid(np.unique(np.append(
+            np.arange(0, ct_shape[0], self.x_size), ct_shape[0])), \
+            np.unique(np.append(np.arange(0, ct_shape[1], self.y_size), \
+            ct_shape[1])), np.unique(np.append(np.arange(0, ct_shape[2], \
+            self.z_offset), ct_shape[2])));
         # go through all elements in gridX and segment 
         #([gridX-15,gridX+15],[gridY-15,gridY+15])
-        patch_id = 0    
+        patch_id = 1    
         
         for k in np.arange(0, np.shape(gridX)[2]-1):
             for j in np.arange(0, np.shape(gridX)[1]-1):
@@ -115,14 +118,16 @@ if __name__ == "__main__":
     ct = None
     
     if (options.in_ct is not None):
-        image_io = ImageReaderWriter()
-        ct,ct_header=image_io.read_in_numpy(options.in_ct)
+        #image_io = ImageReaderWriter()
+        #ct,ct_header=image_io.read_in_numpy(options.in_ct)
+        ct,ct_header=nrrd.read(options.in_ct)
        
     grid_segmentor = GridSegmentor(input_dimensions=None, ct=ct, \
-        x_size=options.x_size, y_size=options.y_size, z_offset=options.z_offset)
+        x_size=int(options.x_size), y_size=int(options.y_size), \
+        z_offset=int(options.z_offset))
                     
-    grid_ct_segmentation = grid_segmentor.execute(ct)
+    grid_ct_segmentation = grid_segmentor.execute()
 
-    image_io.write_from_numpy(grid_ct_segmentation,ct_header,options.out_lm)
-        
+    #image_io.write_from_numpy(grid_ct_segmentation,ct_header,options.out_lm)
+    nrrd.write(options.out_lm, grid_ct_segmentation, ct_header)    
         
