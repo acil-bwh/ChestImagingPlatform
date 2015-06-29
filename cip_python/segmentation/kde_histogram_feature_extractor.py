@@ -40,18 +40,17 @@ class kdeHistExtractor:
         from 'lower_limit' to 'upper_limit'. These columns record the number of 
         counts for each Hounsfield unit (hu) estimated by the KDE.        
     """
-    def __init__(self, lower_limit=-1050, upper_limit=3050, num_bins= 4096):        
+    def __init__(self, lower_limit=-1050, upper_limit=3050):        
         # Initialize the dataframe       
         # first get the list of all histogaram bin values
         cols = ['patch_label']
         
         # np.unique(np.append(np.arange(lower_limit0, ct_shape[1], self.y_size), \
         #    ct_shape[1]))
-        self.bin_values = np.linspace(lower_limit, upper_limit, num_bins)
+        self.bin_values = np.arange(lower_limit, upper_limit+1)
         
         for i in self.bin_values:
-            cols.append('hu' + str(i))
-            
+            cols.append('hu' + str(int(round(i))))
         self.df_ = pd.DataFrame(columns=cols)
     
     def _perform_kde_botev(self, input_data):
@@ -72,16 +71,15 @@ class kdeHistExtractor:
 
         kde_bandwidth_estimator = botev_bandwidth()
         the_bandwidth = kde_bandwidth_estimator.run(input_data)
-        #print(the_bandwidth)
         the_bandwidth = max(the_bandwidth,10)
         kde = KernelDensity(bandwidth=the_bandwidth)
         kde.fit(input_data[:, np.newaxis])
         
-        # Get histogram and normalize
+        # Get histogram 
         X_plot = self.bin_values[:, np.newaxis]
         log_dens = kde.score_samples(X_plot)
         the_hist = np.exp(log_dens)
-        the_hist = the_hist/np.sum(the_hist)
+        #the_hist = the_hist/np.sum(the_hist)
         
         return the_hist
         
@@ -139,10 +137,7 @@ if __name__ == "__main__":
                       metavar='<string>',default=None)
     parser.add_option('--out_csv',
                       help='Output csv file with the features', dest='out_csv', 
-                      metavar='<string>', default=None)          
-    parser.add_option('--num_bins',
-                      help='Number of histogram bins.  (optional)',  dest='num_bins', 
-                      metavar='<string>', default=4096)    
+                      metavar='<string>', default=None)            
     parser.add_option('--lower_limit',
                       help='lower histogram limit.  (optional)',  dest='lower_limit', 
                       metavar='<string>', default=-1050)                        
@@ -160,7 +155,7 @@ if __name__ == "__main__":
     in_patches,in_patches_header = nrrd.read(options.in_patches) 
     
     kde_hist_extractor = kdeHistExtractor(lower_limit=options.lower_limit, \
-        upper_limit=options.upper_limit, num_bins=options.num_bins)                 
+        upper_limit=options.upper_limit)                 
     kde_hist_extractor.fit(ct, lm, in_patches)
 
     if options.out_csv is not None:

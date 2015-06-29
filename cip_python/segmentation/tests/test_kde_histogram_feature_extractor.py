@@ -25,7 +25,7 @@ def test_execute():
     
     my_hist_extractor = kdeHistExtractor()#lower_limit=-1050, upper_limit=50, num_bins= 1100)
     my_hist_extractor.fit( ct_array, lm_array, grid_array)
-    
+       
     # load test dataframe   
     reference_df = pd.read_csv(ref_csv)
     assert_frame_equal(my_hist_extractor.df_, reference_df)
