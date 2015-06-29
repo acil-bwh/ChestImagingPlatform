@@ -16,9 +16,11 @@ def test_execute():
     ct_array, ct_header = nrrd.read(ct_name)
     grid_array, grid_header = nrrd.read(grid_name)
 
+
     grid_segmentor = GridSegmentor(input_dimensions=None, ct=ct_array, \
         x_size=3, y_size=5, z_offset=2)
     grid_segmentation = grid_segmentor.execute()
+    
     assert np.sum(np.abs(grid_segmentation-grid_array))==0, 'grid not as \
         expected'
 
