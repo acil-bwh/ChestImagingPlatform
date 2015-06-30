@@ -21,17 +21,14 @@ def test_execute():
     grid_array[:,:,0]=0
     grid_array[:,:,1]=1
     grid_array[:,:,2]=2
-    lm_array = np.ones(np.shape(ct_array)).astype(int)
-    
+    lm_array = np.zeros(np.shape(ct_array)).astype(int)
+    lm_array[:,:,1]=1
     my_hist_extractor = kdeHistExtractor()#lower_limit=-1050, upper_limit=50, num_bins= 1100)
     my_hist_extractor.fit( ct_array, lm_array, grid_array)
-       
     # load test dataframe   
     reference_df = pd.read_csv(ref_csv)
+       
     assert_frame_equal(my_hist_extractor.df_, reference_df)
-
-    #assert ((my_hist_extractor.df_-reference_df)>1e-10).any().any(), \
-    #    'histogram not as expected'
 
 
 

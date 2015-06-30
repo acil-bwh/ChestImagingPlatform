@@ -1,15 +1,13 @@
 import scipy.io as sio
 import numpy as np
 from optparse import OptionParser
-from sklearn.neighbors import KernelDensity
-from sklearn.grid_search import GridSearchCV
 import matplotlib.pyplot as plt
-from sklearn.neighbors import NearestNeighbors
-from sklearn.neighbors import KNeighborsClassifier
-import nrrd
 import pdb
-from kde_bandwidth import botev_bandwidth
 import pandas as pd
+import warnings
+from sklearn.neighbors import KernelDensity
+import nrrd
+from kde_bandwidth import botev_bandwidth
 #from cip_python.io.image_reader_writer import ImageReaderWriter
      
 class kdeHistExtractor:
@@ -71,7 +69,10 @@ class kdeHistExtractor:
 
         kde_bandwidth_estimator = botev_bandwidth()
         the_bandwidth = kde_bandwidth_estimator.run(input_data)
-        the_bandwidth = max(the_bandwidth,10)
+        
+        if (the_bandwidth < 0.1):
+            warnings.warn("Bandwidth less than 0.1: "+str(the_bandwidth))
+
         kde = KernelDensity(bandwidth=the_bandwidth)
         kde.fit(input_data[:, np.newaxis])
         
@@ -112,7 +113,6 @@ class kdeHistExtractor:
                 tmp = dict()
                 tmp['patch_label'] = p_label
                 for i in range(0,np.shape(self.bin_values)[0]):
-                    #print('hu' + str(self.bin_values[i]))
                     tmp['hu' + str(self.bin_values[i])]= histogram[i]
                 # save in data frame 
                 self.df_ = self.df_.append(tmp, ignore_index=True)
