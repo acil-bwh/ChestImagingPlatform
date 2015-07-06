@@ -3,8 +3,8 @@ from skimage.segmentation import slic
 from optparse import OptionParser
 #from cip_python.io.image_reader_writer import ImageReaderWriter
      
-class SlicSegmentor:
-    """General purpose class interfacing to the SLIC segmentor. 
+class SlicSegmenter:
+    """General purpose class interfacing to the SLIC segmenter. 
 
     The user inputs a CT image to be segmented. The output is is a 3D numpy 
     array where for each voxel, a label is assigned designating the patch index
@@ -157,14 +157,14 @@ if __name__ == "__main__":
     spacing[1] = ct_header['space directions'][1][1]
     spacing[2] = ct_header['space directions'][2][2]
     
-    slic_segmentor = SlicSegmentor(n_segments=options.n_segments, \
+    slic_segmenter = SlicSegmenter(n_segments=options.n_segments, \
         compactness=options.compactness, max_iter=options.max_iter, \
         sigma=options.sigma, spacing=options.spacing, \
         enforce_connectivity=options.enforce_connectivity, \
         min_size_factor=options.min_size_factor, \
         max_size_factor=options.max_size_factor, slic_zero=options.slic_zero)
                  
-    slic_ct_segmentation = slic_segmentor.execute(ct)
+    slic_ct_segmentation = slic_segmenter.execute(ct)
 
     #image_io.write_from_numpy(slic_ct_segmentation,ct_header,options.out_lm)
         
