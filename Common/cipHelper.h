@@ -23,27 +23,23 @@
 #include "cipThinPlateSplineSurface.h"
 #include "itkImageSeriesReader.h"
 
-
 namespace cip {
   /**
    *  Define typedefs used throughout the cip
    */
-  typedef itk::Image< unsigned short, 3 >       LabelMapType;
-  typedef itk::Image< unsigned short, 2 >       LabelMapSliceType;
-  typedef itk::Image< short, 3 >                CTType;
-  typedef itk::Image< short, 2 >                CTSliceType;
-  typedef itk::Image< float, 3 >                DistanceMapType;
-  typedef itk::Image< float, 2 >                DistanceMapSliceType;
-
-  typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
-  typedef itk::ImageFileWriter< LabelMapType >  LabelMapWriterType;
-  typedef itk::ImageFileReader< CTType >        CTReaderType;
-  typedef itk::ImageFileWriter< CTType >        CTWriterType;
-  typedef itk::ImageFileReader< DistanceMapType >    DistanceMapReaderType;
-  typedef itk::ImageFileWriter< DistanceMapType >    DistanceMapWriterType;
-  
-  typedef itk::ImageSeriesReader< CTType >      CTSeriesReaderType;
-
+  typedef itk::Image< unsigned short, 3 >          LabelMapType;
+  typedef itk::Image< unsigned short, 2 >          LabelMapSliceType;
+  typedef itk::Image< short, 3 >                   CTType;
+  typedef itk::Image< short, 2 >                   CTSliceType;
+  typedef itk::Image< float, 3 >                   DistanceMapType;
+  typedef itk::Image< float, 2 >                   DistanceMapSliceType;
+  typedef itk::ImageFileReader< LabelMapType >     LabelMapReaderType;
+  typedef itk::ImageFileWriter< LabelMapType >     LabelMapWriterType;
+  typedef itk::ImageFileReader< CTType >           CTReaderType;
+  typedef itk::ImageFileWriter< CTType >           CTWriterType;
+  typedef itk::ImageFileReader< DistanceMapType >  DistanceMapReaderType;
+  typedef itk::ImageFileWriter< DistanceMapType >  DistanceMapWriterType;
+  typedef itk::ImageSeriesReader< CTType >         CTSeriesReaderType;
   
   /** Function to read CT from Directory */
   cip::CTType::Pointer ReadCTFromDirectory( std::string ctDir );
@@ -61,21 +57,25 @@ namespace cip {
 
   /** Function that downsamples a label map slice. Takes in as input a value for the downsampling amount and 
    * a pointer to a LabelMapSliceType, and returns a pointer to a downsampled LabelMapSliceType. */
-  cip::LabelMapSliceType::Pointer DownsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+  cip::LabelMapSliceType::Pointer 
+    DownsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
 
   /** Function that upsamples a label map slice. Takes in as input a value for the upsampling
    *  amount and a pointer to a LabelMapSliceType, and returns a pointer to a upsampled LabelMapSliceType. */
-  cip::LabelMapSliceType::Pointer UpsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+  cip::LabelMapSliceType::Pointer 
+    UpsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
 
   /** Templated fucntion to downsample an itkImage data type */
-  template<typename ImageType, typename InterpolatorType, unsigned int D> typename ImageType::Pointer DownsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
+  template<typename ImageType, typename InterpolatorType, unsigned int D> typename ImageType::Pointer 
+    DownsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
 
   /** Function that downsamples a CT. Takes in as input a value for the downsampling amount and 
    * a pointer to a CTType, and returns a pointer to a downsampled CTType. */
   cip::CTType::Pointer DownsampleCT(unsigned short samplingAmount, cip::CTType::Pointer inputCT);
 
   /** Templated fucntion to upsample an itkImage data type */
-  template<typename ImageType,typename InterpolatorType,unsigned int D> typename ImageType::Pointer UpsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
+  template<typename ImageType,typename InterpolatorType,unsigned int D> typename ImageType::Pointer 
+    UpsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
 
   /** Function that upsamples a label CT. Takes in as input a value for the upsampling
    * amount and a pointer to a CTType, and returns a pointer to a upsampled CTType. */
@@ -83,7 +83,8 @@ namespace cip {
 
   /** Function that upsamples a distance map. Takes in as input a value for the upsampling
    * amount and a pointer to a CTType, and returns a pointer to a upsampled CTType. */
-  cip::DistanceMapType::Pointer UpsampleDistanceMap(unsigned short samplingAmount, cip::DistanceMapType::Pointer inputDM);
+  cip::DistanceMapType::Pointer 
+    UpsampleDistanceMap(unsigned short samplingAmount, cip::DistanceMapType::Pointer inputDM);
   
   /** Get the magnitude of the indicated vector */
   double GetVectorMagnitude(const cip::VectorType& vector);
@@ -125,16 +126,18 @@ namespace cip {
   
   /** Get the bounding with respect to a specified chest region - chest type combination. The bounding
    * box is returned as an ITK image region. */
-  cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
-										 unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
-										 unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE));
+  cip::LabelMapType::RegionType 
+    GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+						     unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
+						     unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE));
 
   /** Similar to GetLabelMapChestRegionChestTypeBoundingBoxRegion, but this function will return an ITK bounding box region
    * padded according to the specified x, y, and z radii. The region is determined with respect to the specifed chest-region
    * chest-type combination. */
-  cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
-										       unsigned char region, unsigned char type,
-										       unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ);
+  cip::LabelMapType::RegionType 
+    GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+							   unsigned char region, unsigned char type,
+							   unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ);
   /** This function is used to verify that the specified particles have 'ChestRegion' and 'ChestType' arrays. 
       If the particles don't have these arrays, they are assigned with default entries UNDEFINEDREGION and 
       UNDEFINEDTYPE */
