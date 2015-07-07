@@ -118,6 +118,14 @@ the splitting region.</description>
       <default>-800</default>
     </integer>
     
+    <float>
+      <name>maxAirwayVolume</name>
+      <longflag>av</longflag>
+      <description>The maximum total volume of the airway tree segmentation in mm^3</description>
+      <label>Maximum airway volume</label>
+      <default>30000</default>
+    </float>
+
     <boolean>
       <name>feetFirst</name>
       <longflag>ff</longflag>

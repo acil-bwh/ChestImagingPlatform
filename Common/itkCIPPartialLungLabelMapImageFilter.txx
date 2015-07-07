@@ -26,6 +26,12 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
   this->m_AirwayMaxIntensityThresholdSet = false;
 
   this->m_AirwayLabelMap = LabelMapType::New();
+
+  // We manually segmented the airway trees from twenty five 
+  // inspiratory CT scans acquired from healthy individuals. 
+  // 30,000 mm^3 is approximately the smallest of the airway
+  // volumes we computed
+  this->m_MaxAirwayVolume = 30000;
 }
 
 
@@ -95,6 +101,8 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
     // Now segment the airway tree
     typename AirwaySegmentationType::Pointer airwaySegmenter = AirwaySegmentationType::New();
       airwaySegmenter->SetInput( this->GetInput() );
+      std::cout << this->m_MaxAirwayVolume << std::endl;
+      airwaySegmenter->SetMaxAirwayVolume( this->m_MaxAirwayVolume );
       airwaySegmenter->SetMinIntensityThreshold( this->m_AirwayMinIntensityThreshold );
       airwaySegmenter->SetMaxIntensityThreshold( this->m_AirwayMaxIntensityThreshold );
     for ( unsigned int i=0; i<airwaySeedVec.size(); i++ )
