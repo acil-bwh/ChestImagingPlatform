@@ -95,10 +95,11 @@ class kdeHistExtractor:
     
         lm: 3D numpy array, shape (L, M, N)
             Input mask where histograms will be computed.    
-        """        
-        unique_patch_labels = np.unique(patch_labels)
+        """                
+        ids = (patch_labels > 0) & (lm > 0)
+        unique_patch_labels = np.unique(patch_labels[ids])
         # loop through each patch 
-        for p_label in unique_patch_labels:               
+        for p_label in unique_patch_labels:
             # extract the lung area from the CT for the patch
             patch_intensities = ct[np.logical_and(patch_labels==p_label, lm >0)] 
         
