@@ -26,7 +26,7 @@ class DistanceFeatureExtractor:
         
     chest_region : string
         Chest region over which the distance was computed. This will be 
-        added to the daraframe as a column.
+        added to the dataframe as a column.
         
     chest_type : string
         Chest type over which the distance was computed.
@@ -62,6 +62,7 @@ class DistanceFeatureExtractor:
             r = c.GetChestRegionName(c.GetChestRegionValueFromName(pair[0]))
             t = c.GetChestTypeName(c.GetChestTypeValueFromName(pair[1]))
             distance_region_type = r+t
+        #pdb.set_trace()    
         assert  distance_region_type is not None, "region type not specified" 
            
         self.distance_feature_name = distance_region_type+"Distance"                                           
@@ -69,7 +70,7 @@ class DistanceFeatureExtractor:
         if  input_dataframe is None:
             cols = ['patch_label', self.distance_feature_name]
             self.df_ = pd.DataFrame(columns=cols)
-            print(cols)
+            #print(cols)
         else:         
             self.df_ = input_dataframe.append(pd.DataFrame(columns=[self.distance_feature_name]))    
                
@@ -95,7 +96,6 @@ class DistanceFeatureExtractor:
             # extract the lung area from the CT for the patch
             patch_distances = \
                 distance_image[np.logical_and(patch_labels==p_label, lm >0)] 
-        
             # linearize features
             distance_vector = np.array(patch_distances.ravel()).T
             if (np.shape(distance_vector)[0] > 1):
@@ -104,7 +104,6 @@ class DistanceFeatureExtractor:
                 tmp = dict()
                 tmp['patch_label'] = p_label
                 tmp[self.distance_feature_name] = mean_dist
-
                 # save in data frame 
                 self.df_ = self.df_.append(tmp, ignore_index=True)
         
