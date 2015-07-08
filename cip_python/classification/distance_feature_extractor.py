@@ -62,7 +62,7 @@ class DistanceFeatureExtractor:
             r = c.GetChestRegionName(c.GetChestRegionValueFromName(pair[0]))
             t = c.GetChestTypeName(c.GetChestTypeValueFromName(pair[1]))
             distance_region_type = r+t
-        #pdb.set_trace()    
+
         assert  distance_region_type is not None, "region type not specified" 
            
         self.distance_feature_name = distance_region_type+"Distance"                                           
@@ -72,7 +72,8 @@ class DistanceFeatureExtractor:
             self.df_ = pd.DataFrame(columns=cols)
             #print(cols)
         else:         
-            self.df_ = input_dataframe.append(pd.DataFrame(columns=[self.distance_feature_name]))    
+            self.df_ = input_dataframe.append(\
+                pd.DataFrame(columns=[self.distance_feature_name]))
                
         
     def fit(self, distance_image, lm, patch_labels):
@@ -90,12 +91,12 @@ class DistanceFeatureExtractor:
         lm: 3D numpy array, shape (L, M, N)
             Input mask where distance features wil be extracted.    
         """        
-        unique_patch_labels = np.unique(patch_labels)
+        patch_labels[lm == 0] = 0
+        unique_patch_labels = np.unique(patch_labels[:])
         # loop through each patch 
-        for p_label in unique_patch_labels:               
+        for p_label in unique_patch_labels:
             # extract the lung area from the CT for the patch
-            patch_distances = \
-                distance_image[np.logical_and(patch_labels==p_label, lm >0)] 
+            patch_distances = distance_image[patch_labels==p_label] 
             # linearize features
             distance_vector = np.array(patch_distances.ravel()).T
             if (np.shape(distance_vector)[0] > 1):
@@ -112,8 +113,8 @@ if __name__ == "__main__":
     data"""
     
     parser = OptionParser(description=desc)
-    parser.add_option('--in_distance',
-                      help='Input distance map file', dest='in_distance', \
+    parser.add_option('--in_dist',
+                      help='Input distance map file', dest='in_dist', \
                       metavar='<string>', default=None)
     parser.add_option('--in_lm',
                       help='Input mask file. The histogram will only be \
@@ -126,57 +127,75 @@ if __name__ == "__main__":
                       computed for each patch label', dest='in_patches', 
                       metavar='<string>',default=None)
     parser.add_option('-r',
-                      help='Chest regions. Should be specified as a \
-                      common-separated list of string values indicating the \
-                      desired regions over which distance was computed. \
-                      E.g. LeftLung,RightLung would be a valid input.',
+                      help='Chest region indicating what structure the \
+                      distance map corresponds to. Note that either a \
+                      region, or a type, or a region-type pair must be \
+                      specified.',
                       dest='chest_region', metavar='<string>', default=None)
     parser.add_option('-t',
-                      help='Chest types. Should be specified as a \
-                      common-separated list of string values indicating the \
-                      desired types over which distance was computed. \
-                      E.g.: Vessel,NormalParenchyma would be a valid input.',
+                      help='Chest type indicating what structure the distance \
+                      map corresponds to. Note that either a region, or a \
+                      type, or a region-type pair must be specified.',
                       dest='chest_type', metavar='<string>', default=None)
     parser.add_option('-p',
-                      help='Chest region-type pairs. Should be \
-                      specified as a common-separated list of string values \
-                      indicating what region-type pairs over which distance was \
-                      computed. For a given pair, the first entry is \
-                      interpreted as the chest region, and the second entry \
-                      is interpreted as the chest type. E.g. LeftLung,Vessel \
-                      would be a valid entry.',
+                      help='Chest region-type pair (comma-separated tuple) \
+                      indicating what structure the distance map corresponds \
+                      to. Note that either a region, or a type, or a \
+                      region-type pair must be specified.',
                       dest='pair', metavar='<string>', default=None)
     parser.add_option('--out_csv',
                       help='Output csv file with the features', dest='out_csv', 
                       metavar='<string>', default=None)            
     parser.add_option('--in_csv',
-                      help='Input csv file with the existing features', 
+                      help='Input csv file with the existing features. The \
+                      distance features will be appended to this.', 
                       dest='in_csv', metavar='<string>', default=None)  
     (options, args) = parser.parse_args()
     
     #image_io = ImageReaderWriter()
-    distance_map, dm_header = nrrd.read(options.in_distance) 
+    if options.in_dist is None:
+        raise ValueError("Must specify as distance map")
+
+    if options.in_patches is None:
+        raise ValueError("Must specify a patches segmentation file")
+    
+    print "Reading distance map..."
+    distance_map, dm_header = nrrd.read(options.in_dist) 
+
+    print "Reading patches segmentation..."
+    in_patches, in_patches_header = nrrd.read(options.in_patches) 
+    
     if (options.in_lm is not None):
+        print "Reading mask..."
         lm,lm_header = nrrd.read(options.in_lm) 
     else:
          lm = np.ones(np.shape(distance_map))   
-    in_patches,in_patches_header = nrrd.read(options.in_patches) 
     
     if (options.in_csv is not None):
-        # read dataframe from csv
+        print "Reading previously computed features..."
         init_df = pd.read_csv(options.in_csv)
     else:    
         init_df = None
 
+    if options.chest_region is None and options.chest_type is None and \
+      options.pair is None:
+      raise ValueError("Must specify a chest region, or chest type, or \
+                        region-type pair that the distance map corresponds to")
+
+    pair = None
     if options.pair is not None:
         tmp = options.pair.split(',')
         assert len(tmp) == 2, 'Specified pairs not understood'
         pair = [options.pair.split(',')[0],options.pair.split(',')[1] ]
-                
+
+    print "Computing distance features..."
     dist_extractor = DistanceFeatureExtractor(options.chest_region, \
         options.chest_type, pair, init_df)                 
     dist_extractor.fit(distance_map, lm, in_patches)
 
     if options.out_csv is not None:
+        print "Writing..."
         dist_extractor.df_.to_csv(options.out_csv, index=False)
+
+    print "DONE."
         

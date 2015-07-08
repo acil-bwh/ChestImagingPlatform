@@ -96,12 +96,12 @@ class kdeHistExtractor:
         lm: 3D numpy array, shape (L, M, N)
             Input mask where histograms will be computed.    
         """                
-        ids = (patch_labels > 0) & (lm > 0)
-        unique_patch_labels = np.unique(patch_labels[ids])
+        patch_labels[lm == 0] = 0
+        unique_patch_labels = np.unique(patch_labels[:])        
         # loop through each patch 
         for p_label in unique_patch_labels:
             # extract the lung area from the CT for the patch
-            patch_intensities = ct[np.logical_and(patch_labels==p_label, lm >0)] 
+            patch_intensities = ct[np.logical_and(patch_labels==p_label)] 
         
             # linearize features
             intensity_vector = np.array(patch_intensities.ravel()).T
@@ -145,17 +145,24 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     #image_io = ImageReaderWriter()
-    ct,ct_header = nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
+    print "Reading CT..."
+    ct, ct_header = nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
+    
     if (options.in_lm is not None):
-        lm,lm_header = nrrd.read(options.in_lm) 
+        print "Reading mask..." 
+        lm, lm_header = nrrd.read(options.in_lm) 
     else:
          lm = np.ones(np.shape(ct))   
-    in_patches,in_patches_header = nrrd.read(options.in_patches) 
-    
+
+    print "Reading patches segmentation..."
+    in_patches, in_patches_header = nrrd.read(options.in_patches) 
+
+    print "Compute histogram features..."
     kde_hist_extractor = kdeHistExtractor(lower_limit=np.int16(options.lower_limit), \
         upper_limit=np.int16(options.upper_limit))
     kde_hist_extractor.fit(ct, lm, in_patches)
 
     if options.out_csv is not None:
+        print "Writing..."
         kde_hist_extractor.df_.to_csv(options.out_csv, index=False)
         
