@@ -49,10 +49,7 @@ and does not necessarily represent the official views of the National Institutes
         <element>Maurer</element>
         <element>Danielsson</element>
         <default>Maurer</default>
-        <description><![CDATA[Feature strength method.     \
-          Maurer           - Maurer method \
-          Danielsson       - Danielsson method
-          ]]></description>
+        <description><![CDATA[Method. Either Maurer or Danielsson]]></description>
       </string-enumeration>
 
         <integer>

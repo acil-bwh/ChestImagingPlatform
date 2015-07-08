@@ -1,7 +1,7 @@
 import os.path
 import pandas as pd
 import nrrd
-from cip_python.segmentation.kde_histogram_feature_extractor import kdeHistExtractor
+from cip_python.classification.kde_histogram_feature_extractor import kdeHistExtractor
 import numpy as np
 import pdb
 from pandas.util.testing import assert_frame_equal

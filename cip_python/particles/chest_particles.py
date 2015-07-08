@@ -10,7 +10,7 @@ import subprocess
 import os
 from subprocess import PIPE
 from cip_python.utils.read_nrrds_write_vtk import ReadNRRDsWriteVTK
-from cip_python.io.image_reader_writer import ImageReaderWriter
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
 class ChestParticles:
     """Base class for airway, vessel, and fissure particles classes.

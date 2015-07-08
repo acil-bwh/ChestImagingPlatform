@@ -1,10 +1,13 @@
 import numpy as np
 from skimage.segmentation import slic
 from optparse import OptionParser
+import nrrd
+
+import pdb
 #from cip_python.io.image_reader_writer import ImageReaderWriter
      
-class SlicSegmentor:
-    """General purpose class interfacing to the SLIC segmentor. 
+class SlicSegmenter:
+    """General purpose class interfacing to the SLIC segmenter. 
 
     The user inputs a CT image to be segmented. The output is is a 3D numpy 
     array where for each voxel, a label is assigned designating the patch index
@@ -61,11 +64,10 @@ class SlicSegmentor:
     segmentation: 3D numpy array, shape (L, M, N)
         Contains a label assignment for each CT voxel
         
-    """
-        
+    """        
     def __init__(self, n_segments=100, compactness=10., max_iter=10, sigma=0,
-         spacing=None, enforce_connectivity=False, min_size_factor=0.5, 
-         max_size_factor=3, slic_zero=False):        
+                 spacing=None, enforce_connectivity=False, min_size_factor=0.5, 
+                 max_size_factor=3, slic_zero=False):        
         self.n_segments =  n_segments    
         self.compactness = compactness
         self.max_iter = max_iter
@@ -75,8 +77,7 @@ class SlicSegmentor:
         self.max_size_factor = max_size_factor
         self.slic_zero = slic_zero
         self.spacing=spacing
-        
-        
+                
     def execute(self, ct):
         segmentation = slic(ct, multichannel=False, n_segments=self.n_segments, \
             compactness=self.compactness, max_iter=self.max_iter, \
@@ -85,8 +86,7 @@ class SlicSegmentor:
             min_size_factor=self.min_size_factor, \
             max_size_factor=self.max_size_factor, slic_zero=self.slic_zero)
         
-        return segmentation
-        
+        return segmentation        
 
 if __name__ == "__main__":
     desc = """Generates parenchyma phenotypes given input CT and segmentation \
@@ -149,22 +149,21 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     #image_io = ImageReaderWriter()
-    import nrrd
-    ct,ct_header=  nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
-
+    ct, ct_header = nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
+    pdb.set_trace()
     spacing = np.zeros(3)
     spacing[0] = ct_header['space directions'][0][0]
     spacing[1] = ct_header['space directions'][1][1]
     spacing[2] = ct_header['space directions'][2][2]
     
-    slic_segmentor = SlicSegmentor(n_segments=options.n_segments, \
+    slic_segmenter = SlicSegmenter(n_segments=options.n_segments, \
         compactness=options.compactness, max_iter=options.max_iter, \
         sigma=options.sigma, spacing=options.spacing, \
         enforce_connectivity=options.enforce_connectivity, \
         min_size_factor=options.min_size_factor, \
         max_size_factor=options.max_size_factor, slic_zero=options.slic_zero)
                  
-    slic_ct_segmentation = slic_segmentor.execute(ct)
+    slic_ct_segmentation = slic_segmenter.execute(ct)
 
     #image_io.write_from_numpy(slic_ct_segmentation,ct_header,options.out_lm)
         

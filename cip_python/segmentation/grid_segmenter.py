@@ -5,7 +5,7 @@ import nrrd
 import pdb
 #from cip_python.io.image_reader_writer import ImageReaderWriter
      
-class GridSegmentor:
+class GridSegmenter:
     """Segments a volume into a grid of volume patches. 
 
     The user inputs a CT image to be segmented or the shape of the volume for
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         #ct,ct_header=image_io.read_in_numpy(options.in_ct)
         ct,ct_header=nrrd.read(options.in_ct)
        
-    grid_segmentor = GridSegmentor(input_dimensions=None, ct=ct, \
+    grid_segmentor = GridSegmenter(input_dimensions=None, ct=ct, \
         x_size=int(options.x_size), y_size=int(options.y_size), \
         z_offset=int(options.z_offset))
                     
