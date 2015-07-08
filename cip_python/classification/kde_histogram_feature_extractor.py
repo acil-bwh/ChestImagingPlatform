@@ -154,8 +154,8 @@ if __name__ == "__main__":
          lm = np.ones(np.shape(ct))   
     in_patches,in_patches_header = nrrd.read(options.in_patches) 
     
-    kde_hist_extractor = kdeHistExtractor(lower_limit=options.lower_limit, \
-        upper_limit=options.upper_limit)                 
+    kde_hist_extractor = kdeHistExtractor(lower_limit=np.int16(options.lower_limit), \
+        upper_limit=np.int16(options.upper_limit))
     kde_hist_extractor.fit(ct, lm, in_patches)
 
     if options.out_csv is not None:

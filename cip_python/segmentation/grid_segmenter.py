@@ -94,8 +94,8 @@ if __name__ == "__main__":
     parser.add_option('--in_ct',
                       help='Input CT file.', dest='in_ct', 
                       metavar='<string>', default=None)
-    parser.add_option('--out_lm',
-                      help='Output grid segmentation', dest='out_lm', 
+    parser.add_option('--out_seg',
+                      help='Output grid segmentation', dest='out_seg', 
                       metavar='<string>', default=None)
     parser.add_option('--xsize',
                       help='x dimensions of each patch (optional)', \
@@ -129,5 +129,5 @@ if __name__ == "__main__":
     grid_ct_segmentation = grid_segmentor.execute()
 
     #image_io.write_from_numpy(grid_ct_segmentation,ct_header,options.out_lm)
-    nrrd.write(options.out_lm, grid_ct_segmentation, ct_header)    
+    nrrd.write(options.out_seg, grid_ct_segmentation, ct_header)    
         
