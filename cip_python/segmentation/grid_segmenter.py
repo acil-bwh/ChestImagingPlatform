@@ -39,7 +39,7 @@ class GridSegmenter:
         
     """
         
-    def __init__(self, input_dimensions=None, ct=None, x_size=30, y_size=30,
+    def __init__(self, input_dimensions=None, ct=None, x_size=31, y_size=31,
         z_offset=10):        
         self.input_dimensions =  input_dimensions    
         self.ct = ct

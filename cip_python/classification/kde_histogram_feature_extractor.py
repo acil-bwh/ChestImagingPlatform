@@ -19,10 +19,7 @@ class kdeHistExtractor:
     1 entry for each histogram bin
        
     Parameters 
-    ----------
-    num_bins: int
-        Number of bins to be produced
-    
+    ----------    
     lower_limit:int
         Lower limit of histogram
         
