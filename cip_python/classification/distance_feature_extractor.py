@@ -20,7 +20,7 @@ class DistanceFeatureExtractor:
        
     Parameters 
     ----------
-    input_datafrane: Pandas dataframe
+    in_df: Pandas dataframe
         Contains feature information previously computed over the patches
         for which we seak the distance information    
         
@@ -47,7 +47,7 @@ class DistanceFeatureExtractor:
         from the center of the patch to the chest wall.        
     """
     def __init__(self, chest_region=None, chest_type=None, pair=None, \
-        input_dataframe=None):
+        in_df=None):
         # get the region / type over which distance is computed
         c = ChestConventions()
                 
@@ -67,12 +67,12 @@ class DistanceFeatureExtractor:
            
         self.distance_feature_name = distance_region_type+"Distance"                                           
         # Initialize the dataframe
-        if  input_dataframe is None:
+        if in_df is None:
             cols = ['patch_label', self.distance_feature_name]
             self.df_ = pd.DataFrame(columns=cols)
             #print(cols)
         else:         
-            self.df_ = input_dataframe.append(\
+            self.df_ = in_df.append(\
                 pd.DataFrame(columns=[self.distance_feature_name]))
                
         
@@ -95,18 +95,19 @@ class DistanceFeatureExtractor:
         unique_patch_labels = np.unique(patch_labels[:])
         # loop through each patch 
         for p_label in unique_patch_labels:
-            # extract the lung area from the CT for the patch
-            patch_distances = distance_image[patch_labels==p_label] 
-            # linearize features
-            distance_vector = np.array(patch_distances.ravel()).T
-            if (np.shape(distance_vector)[0] > 1):
-                # compute the average distance
-                mean_dist = np.mean(distance_vector) 
-                tmp = dict()
-                tmp['patch_label'] = p_label
-                tmp[self.distance_feature_name] = mean_dist
-                # save in data frame 
-                self.df_ = self.df_.append(tmp, ignore_index=True)
+            if p_label > 0:
+                # extract the lung area from the CT for the patch
+                patch_distances = distance_image[patch_labels==p_label] 
+                # linearize features
+                distance_vector = np.array(patch_distances.ravel()).T
+                if (np.shape(distance_vector)[0] > 1):
+                    # compute the average distance
+                    mean_dist = np.mean(distance_vector) 
+                    tmp = dict()
+                    tmp['patch_label'] = p_label
+                    tmp[self.distance_feature_name] = mean_dist
+                    # save in data frame 
+                    self.df_ = self.df_.append(tmp, ignore_index=True)
         
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \

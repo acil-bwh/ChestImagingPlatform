@@ -100,20 +100,21 @@ class kdeHistExtractor:
         unique_patch_labels = np.unique(patch_labels[:])        
         # loop through each patch 
         for p_label in unique_patch_labels:
-            # extract the lung area from the CT for the patch
-            patch_intensities = ct[np.logical_and(patch_labels==p_label)] 
-        
-            # linearize features
-            intensity_vector = np.array(patch_intensities.ravel()).T
-            if (np.shape(intensity_vector)[0] > 1):
-                # obtain kde histogram from features
-                histogram = self._perform_kde_botev(intensity_vector)
-                tmp = dict()
-                tmp['patch_label'] = p_label
-                for i in range(0,np.shape(self.bin_values)[0]):
-                    tmp['hu' + str(self.bin_values[i])]= histogram[i]
-                # save in data frame 
-                self.df_ = self.df_.append(tmp, ignore_index=True)
+            if p_label > 0:
+                # extract the lung area from the CT for the patch
+                patch_intensities = ct[patch_labels==p_label] 
+            
+                # linearize features
+                intensity_vector = np.array(patch_intensities.ravel()).T
+                if (np.shape(intensity_vector)[0] > 1):
+                    # obtain kde histogram from features
+                    histogram = self._perform_kde_botev(intensity_vector)
+                    tmp = dict()
+                    tmp['patch_label'] = p_label
+                    for i in range(0,np.shape(self.bin_values)[0]):
+                        tmp['hu' + str(self.bin_values[i])]= histogram[i]
+                    # save in data frame 
+                    self.df_ = self.df_.append(tmp, ignore_index=True)
         
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
