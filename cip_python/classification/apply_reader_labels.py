@@ -1,5 +1,6 @@
 import pandas as pd
 from optparse import OptionParser
+import numpy as np
 import nrrd
 
 import pdb
@@ -59,9 +60,9 @@ def apply_reader_labels(seg, seg_header, features_df, plocs_df=None,
         for i in xrange(0, plocs_df.shape[0]):
             cip_region = plocs_df.ix[i, 'Region']
             cip_type = plocs_df.ix[i, ' Type']
-            x_index = np.int((plocs_df.ix[i, 'X point'] - or_x)/sp_x)
-            y_index = np.int((plocs_df.ix[i, 'Y point'] - or_y)/sp_y)
-            z_index = np.int((plocs_df.ix[i, 'Z point'] - or_z)/sp_z)
+            x_index = np.int((plocs_df.ix[i, ' X point'] - or_x)/sp_x)
+            y_index = np.int((plocs_df.ix[i, ' Y point'] - or_y)/sp_y)
+            z_index = np.int((plocs_df.ix[i, ' Z point'] - or_z)/sp_z)
             ilocs_df.loc[i] = [cip_region, cip_type, x_index, y_index, z_index] 
 
     for n in xrange(0, ilocs_df.shape[0]):
