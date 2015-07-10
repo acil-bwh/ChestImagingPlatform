@@ -48,12 +48,9 @@ int main( int argc, char *argv[] )
   cip::LabelMapType::Pointer roiVolume = cip::LabelMapType::New();
     roiVolume->SetRegions( size );
     roiVolume->Allocate();
+    roiVolume->FillBuffer( 0 );
     roiVolume->SetOrigin( origin );
     roiVolume->SetSpacing( spacing );
-
-  // cip::CTType::IndexType ctIndex;
-  // cip::CTType::PointType ctPoint;
-  // unsigned char cipRegion, cipType;
 
   bool isPointsFile;
   std::cout << "Reading locations file..." << std::endl;
@@ -87,7 +84,7 @@ int main( int argc, char *argv[] )
     {
       unsigned char cipRegion = locationsIO.GetOutput()->GetChestRegionValue( i );
       unsigned char cipType   = locationsIO.GetOutput()->GetChestTypeValue( i );
-      
+ 
       if ( seg )
 	{
 	  roiVal = inc;

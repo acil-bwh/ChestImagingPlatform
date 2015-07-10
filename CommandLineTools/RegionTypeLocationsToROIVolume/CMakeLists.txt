@@ -13,12 +13,17 @@ cipMacroBuildCLI(
     )
 
 
-#SET (TEST_NAME ${MODULE_NAME}_Test_csv)
-#CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-#    --compareCSV
-#      ${BASELINE_DATA_DIR}/${TEST_NAME}.csv
-#      ${OUTPUT_DATA_DIR}/${TEST_NAME}.csv
-#    ModuleEntryPoint
-#      -i ${INPUT_DATA_DIR}/case_airwayRegionAndTypesPoints.vtk
-#      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}.csv
-#)
+SET (TEST_NAME ${MODULE_NAME}_Test)
+CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+    --compare
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_baseline.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_test.nrrd
+    ModuleEntryPoint
+      --xr 1
+      --yr 1
+      --zr 0
+      --ict ${INPUT_DATA_DIR}/simple_ct.nrrd
+      --ip  ${INPUT_DATA_DIR}/simple_regionAndTypePoints.csv
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_test.nrrd
+      --seg
+)
