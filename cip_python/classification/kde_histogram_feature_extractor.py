@@ -26,6 +26,10 @@ class kdeHistExtractor:
     upper_limit:int
         Upper limit of histogram
 
+    in_df: Pandas dataframe
+        Contains feature information previously computed over the patches
+        for which we seak the distance information    
+        
     Attribues
     ---------
     df_ : Pandas dataframe
@@ -35,19 +39,27 @@ class kdeHistExtractor:
         from 'lower_limit' to 'upper_limit'. These columns record the number of 
         counts for each Hounsfield unit (hu) estimated by the KDE.        
     """
-    def __init__(self, lower_limit=-1050, upper_limit=3050):        
+    def __init__(self, lower_limit=-1050, upper_limit=3050, in_df=None):
         # Initialize the dataframe       
         # first get the list of all histogaram bin values
-        cols = ['patch_label']
-        
-        # np.unique(np.append(np.arange(lower_limit0, ct_shape[1], self.y_size), \
-        #    ct_shape[1]))
         self.bin_values = np.arange(lower_limit, upper_limit+1)
-        
+
+        cols = []
         for i in self.bin_values:
             cols.append('hu' + str(int(round(i))))
-        self.df_ = pd.DataFrame(columns=cols)
-    
+        
+        if in_df is None:
+            cols.append('patch_label')
+            cols.append('ChestRegion')
+            cols.append('ChestType')
+                
+            self.df_ = pd.DataFrame(columns=cols)
+        else:         
+            self.df_ = in_df
+            for c in cols:
+                if c not in self.df_.columns:
+                    self.df_[c] = np.nan
+        
     def _perform_kde_botev(self, input_data):
         """Perform kernel density estimation  (using botev estimator for best 
         bandwidth) 
@@ -109,12 +121,20 @@ class kdeHistExtractor:
                 if (np.shape(intensity_vector)[0] > 1):
                     # obtain kde histogram from features
                     histogram = self._perform_kde_botev(intensity_vector)
-                    tmp = dict()
-                    tmp['patch_label'] = p_label
-                    for i in range(0,np.shape(self.bin_values)[0]):
-                        tmp['hu' + str(self.bin_values[i])]= histogram[i]
-                    # save in data frame 
-                    self.df_ = self.df_.append(tmp, ignore_index=True)
+                    index = self.df_['patch_label'] == p_label
+                    if np.sum(index) > 0:
+                        for i in range(0, np.shape(self.bin_values)[0]):
+                            self.df_.ix[index, 'hu' + str(self.bin_values[i])] \
+                              = histogram[i]
+                    else:                    
+                        tmp = dict()
+                        tmp['ChestRegion'] = 'UndefinedRegion'
+                        tmp['ChestType'] = 'UndefinedType'
+                        tmp['patch_label'] = p_label
+                        for i in range(0, np.shape(self.bin_values)[0]):
+                            tmp['hu' + str(self.bin_values[i])] = histogram[i]
+
+                        self.df_ = self.df_.append(tmp, ignore_index=True)
         
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
@@ -134,6 +154,10 @@ if __name__ == "__main__":
                       each corresponding CT voxel. A histogram will be \
                       computed for each patch label', dest='in_patches', 
                       metavar='<string>',default=None)
+    parser.add_option('--in_csv',
+                      help='Input csv file with the existing features. The \
+                      histogram features will be appended to this.', 
+                      dest='in_csv', metavar='<string>', default=None)                        
     parser.add_option('--out_csv',
                       help='Output csv file with the features', dest='out_csv', 
                       metavar='<string>', default=None)            

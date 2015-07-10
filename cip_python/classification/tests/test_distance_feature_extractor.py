@@ -1,0 +1,40 @@
+import os.path
+import pandas as pd
+import nrrd
+from cip_python.classification.distance_feature_extractor \
+  import DistanceFeatureExtractor
+import numpy as np
+import pdb
+from pandas.util.testing import assert_frame_equal
+
+#from cip_python.input_output.image_reader_writer import ImageReaderWriter
+
+np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
+                    linewidth=200) 
+
+def test_execute():
+    lm = np.ones([2, 2, 1])
+    patches = np.ones([2, 2, 1])
+    
+    dist_map = np.zeros([2, 2, 1])
+    dist_map[0, 0, 0] = 1
+    dist_map[0, 1, 0] = 2
+    dist_map[1, 0, 0] = 3
+    dist_map[1, 1, 0] = 4            
+    
+    dist_extractor = DistanceFeatureExtractor(chest_region="WholeLung")
+    dist_extractor.fit(dist_map, lm, patches)
+
+    assert dist_extractor.df_['patch_label'].values[0] == 1, \
+      "patch_label not as expected"
+
+    assert dist_extractor.df_['ChestRegion'].values[0] == 'UndefinedRegion', \
+      "ChestRegion not as expected"      
+
+    assert dist_extractor.df_['ChestType'].values[0] == 'UndefinedType', \
+      "ChestType not as expected"            
+
+    assert dist_extractor.df_['WholeLungDistance'].values[0] == 2.5, \
+      "WholeLungDistance not as expected"                  
+
+

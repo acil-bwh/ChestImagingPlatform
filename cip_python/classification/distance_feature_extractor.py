@@ -19,11 +19,7 @@ class DistanceFeatureExtractor:
     a associated distance entries
        
     Parameters 
-    ----------
-    in_df: Pandas dataframe
-        Contains feature information previously computed over the patches
-        for which we seak the distance information    
-        
+    ----------        
     chest_region : string
         Chest region over which the distance was computed. This will be 
         added to the dataframe as a column.
@@ -37,7 +33,11 @@ class DistanceFeatureExtractor:
         and second entry indicates the chest type of the pair. If more than 1 of
         chest_region, chest_type, pairs is specified Region will superceed type,
         and type will superceed pairs.
-    
+
+    in_df: Pandas dataframe
+        Contains feature information previously computed over the patches
+        for which we seak the distance information    
+        
     Attribues
     ---------
     df_ : Pandas dataframe
@@ -68,13 +68,14 @@ class DistanceFeatureExtractor:
         self.distance_feature_name = distance_region_type+"Distance"                                           
         # Initialize the dataframe
         if in_df is None:
-            cols = ['patch_label', self.distance_feature_name]
+            cols = ['patch_label', 'ChestRegion', 'ChestType', 
+                    self.distance_feature_name]
             self.df_ = pd.DataFrame(columns=cols)
             #print(cols)
         else:         
-            self.df_ = in_df.append(\
-                pd.DataFrame(columns=[self.distance_feature_name]))
-               
+            self.df_ = in_df
+            if self.distance_feature_name not in self.df_.columns:
+                self.df_[self.distance_feature_name] = np.nan
         
     def fit(self, distance_image, lm, patch_labels):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
@@ -103,11 +104,18 @@ class DistanceFeatureExtractor:
                 if (np.shape(distance_vector)[0] > 1):
                     # compute the average distance
                     mean_dist = np.mean(distance_vector) 
-                    tmp = dict()
-                    tmp['patch_label'] = p_label
-                    tmp[self.distance_feature_name] = mean_dist
-                    # save in data frame 
-                    self.df_ = self.df_.append(tmp, ignore_index=True)
+                    index = self.df_['patch_label'] == p_label
+                    if np.sum(index) > 0:
+                        self.df_.ix[index, self.distance_feature_name] = \
+                          mean_dist
+                    else:
+                        tmp = dict()
+                        tmp['ChestRegion'] = 'UndefinedRegion'
+                        tmp['ChestType'] = 'UndefinedType'
+                        tmp['patch_label'] = p_label                                        
+                        tmp[self.distance_feature_name] = mean_dist
+
+                        self.df_ = self.df_.append(tmp, ignore_index=True)
         
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
