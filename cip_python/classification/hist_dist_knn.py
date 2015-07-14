@@ -59,35 +59,60 @@ class HistDistKNN():
 
         Parameters
         ----------
-        hist : array, shape ( B )
-            Histogram of the test sample
+        hist : array, shape ( B ) or shape ( M, B )
+            Histogram of the test sample or histograms of 'M' test samples.
 
-        dist : float
-            Physical distance of test sample to structure of interest.
+        dist : float or array, shape ( M ) 
+            Physical distance of test sample to structure of interest or 
+            vector of 'M' distances for 'M' test samples.
         
         Returns
         -------
-        class_label : integer
-            The class label of the most common of the 'K' nearest neighbors
+        class_label : integer or vector array, shape ( M )
+            The class label of the most common of the 'K' nearest neighbors or
+            a vector containing class labels for the 'M' test samples (if 
+            multiple test samples are specified).
         """
-        # Compute the histogram component (hist_comp) of the overall metric
-        # value
-        hist_comp = None
-        if self.hist_comparison_ == 'l1_minkowski':
-            hist_comp = sum(abs(hist - self.hists_), 1)
+        if len(hist.shape) == 1:
+            mult_samples = False
+            n_samples = 1
         else:
-            raise ValueError('Unsupported histogram comparison method')
+            mult_samples = True
+            n_samples = hist.shape[0]
 
-        # Compute the distance component (dist_comp) of the overall metric
-        # value
-        dist_comp = abs(dist - self.dists_)
+        if mult_samples:
+            assert hist.shape[0] == dist.shape[0], \
+              "Mismatch between histogram and distance data dimension"
+            class_label = np.zeros(n_samples)
+              
+        for i in xrange(0, n_samples):
+            # Compute the histogram component (hist_comp) of the overall metric
+            # value
+            hist_comp = None
+            if self.hist_comparison_ == 'l1_minkowski':
+                if mult_samples:
+                    hist_comp = sum(abs(hist[i, :] - self.hists_), 1)
+                else:
+                    hist_comp = sum(abs(hist - self.hists_), 1)                    
+            else:
+                raise ValueError('Unsupported histogram comparison method')
+    
+            # Compute the distance component (dist_comp) of the overall metric
+            # value
+            if mult_samples:
+                dist_comp = abs(dist[i] - self.dists_)
+            else:
+                dist_comp = abs(dist - self.dists_)
+    
+            # Now compute the complete metric values, and identify the nearest
+            # neighbors
+            metric_vals = hist_comp + self.beta_*dist_comp
+            nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
+            ids = metric_vals <= nth_metric_val
 
-        # Now compute the complete metric values, and identify the nearest
-        # neighbors
-        metric_vals = hist_comp + self.beta_*dist_comp
-        nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
-        ids = metric_vals <= nth_metric_val
-
-        class_label = Counter(self.y_[ids]).most_common(1)[0][0]
-
+            if mult_samples:
+                class_label[i] = Counter(self.y_[ids]).most_common(1)[0][0]
+            else:
+                class_label = Counter(self.y_[ids]).most_common(1)[0][0]
+            
         return class_label
