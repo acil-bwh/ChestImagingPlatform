@@ -120,7 +120,7 @@ if __name__ == "__main__":
     if (options.in_ct is not None):
         #image_io = ImageReaderWriter()
         #ct,ct_header=image_io.read_in_numpy(options.in_ct)
-        ct,ct_header=nrrd.read(options.in_ct)
+        ct, ct_header=nrrd.read(options.in_ct)
        
     grid_segmentor = GridSegmenter(input_dimensions=None, ct=ct, \
         x_size=int(options.x_size), y_size=int(options.y_size), \

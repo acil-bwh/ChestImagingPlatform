@@ -85,7 +85,7 @@ class SlicSegmenter:
             enforce_connectivity=self.enforce_connectivity, \
             min_size_factor=self.min_size_factor, \
             max_size_factor=self.max_size_factor, slic_zero=self.slic_zero)
-        
+
         return segmentation        
 
 if __name__ == "__main__":
@@ -102,23 +102,23 @@ if __name__ == "__main__":
     parser.add_option('--n_segments',
                       help='SLIC param. The (approximate) number of labels in \
                       the segmented output image. (optional)', dest='n_segments', 
-                      metavar='<string>', default=None)
+                      metavar='<string>', default=100)
     parser.add_option('--compactness',
                       help='SLIC param. Balances color-space proximity and \
                       image-space proximity. Higher values give more weight to \
                       image-space. As compactness tends to infinity, \
                       superpixel shapes become square/cubic.  (optional)', 
-                      dest='compactness', metavar='<string>', default=None)
+                      dest='compactness', metavar='<string>', default=10.)
     parser.add_option('--max_iter',
                       help='SLIC param. Maximum number of iterations of \
                       k-means.  (optional)',  dest='max_iter', 
-                      metavar='<string>', default=None)
+                      metavar='<string>', default=10)
     parser.add_option('--sigma',
                       help='SLIC param. Width of Gaussian smoothing kernel for \
                       pre-processing for each dimension of the image. The same \
                       sigma is applied to each dimension in case of a scalar \
                       value.  (optional)',  dest='sigma', \
-                      metavar='<string>', default=None)
+                      metavar='<string>', default=0.)
     parser.add_option('--spacing',
                       help='SLIC param.  The voxel spacing along each image \
                       dimension. By default, slic assumes uniform spacing \
@@ -134,12 +134,12 @@ if __name__ == "__main__":
                       help='SLIC param.  Proportion of the minimum segment \
                       size to be removed with respect to the supposed segment \
                       size `depth*width*height/n_segments`(optional).', 
-                      dest='min_size_factor', metavar='<string>', default=None)    
+                      dest='min_size_factor', metavar='<string>', default=0.5)    
     parser.add_option('--max_size_factor',
                       help='SLIC param.  Proportion of the maximum connected \
                       segment size. A value of 3 works in most of the cases.\
                       (optional).', dest='max_size_factor', \
-                      metavar='<string>', default=None)  
+                      metavar='<string>', default=3.)  
     parser.add_option('--slic_zero',
                       help='Run SLIC-zero, the zero-parameter mode of SLIC. \
                       http://ivrgwww.epfl.ch/supplementary_material/RK_SLICSuperpixels/',  
@@ -150,21 +150,41 @@ if __name__ == "__main__":
     
     #image_io = ImageReaderWriter()
     ct, ct_header = nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
-    pdb.set_trace()
+
+    # Preprocess the CT to enhance contrast within the lung
+    ct[ct > -600] = 0    
+    m = 256/(700.)
+    b = 1000.*m
+    ct = (m*ct + b).clip(0, 255)
+    
     spacing = np.zeros(3)
     spacing[0] = ct_header['space directions'][0][0]
     spacing[1] = ct_header['space directions'][1][1]
     spacing[2] = ct_header['space directions'][2][2]
-    
-    slic_segmenter = SlicSegmenter(n_segments=options.n_segments, \
-        compactness=options.compactness, max_iter=options.max_iter, \
+
+    slic_segmenter = SlicSegmenter(n_segments=int(options.n_segments), \
+        compactness=float(options.compactness), max_iter=options.max_iter, \
         sigma=options.sigma, spacing=options.spacing, \
         enforce_connectivity=options.enforce_connectivity, \
         min_size_factor=options.min_size_factor, \
         max_size_factor=options.max_size_factor, slic_zero=options.slic_zero)
-                 
-    slic_ct_segmentation = slic_segmenter.execute(ct)
 
+    slic_segmentation = slic_segmenter.execute(ct)
+
+    #slic_header = {}
+    #slic_header['dimension'] = 3
+    #slic_header['kinds'] = ['domain', 'domain', 'domain']
+    #slic_header['sizes'] = [512, 512, 502]
+    #slic_header['space'] = 'left-posterior-superior'
+    #slic_header['space directions'] = np.array([[0.664062, 0.0, 0.0],
+    #                                            [0.0, 0.664062, 0.0],
+    #                                            [0.0, 0.0, 0.625]])
+    #slic_header['space origin'] = np.array([-169.7, -164.2, -319.875])
+
+    
+    nrrd.write(options.out_lm, slic_segmentation)
     #image_io.write_from_numpy(slic_ct_segmentation,ct_header,options.out_lm)
         
-        
+
+    #    imshow(rotate(mark_boundaries(ct[:,:,256], slic_segmentation[:,:,256]), -90) , cmap = cm.Greys_r  )
+    #imshow(rotate((ct[:,:,256]*m + b).clip(0, 255), -90), cmap = cm.Greys_r)
