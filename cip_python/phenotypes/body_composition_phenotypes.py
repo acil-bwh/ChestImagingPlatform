@@ -74,16 +74,10 @@ class BodyCompositionPhenotypes(Phenotypes):
             if len(np.shape(chest_regions)) != 1:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
-            print(chest_regions)
-            print(type(chest_regions))
-            print(np.max(chest_regions))
-            print(np.min(chest_regions))
             if np.max(chest_regions) > 255 or np.min(chest_regions) < 0:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
         if chest_types is not None:
-            print(chest_types)
-            print(type(chest_types))
             if len(np.shape(chest_types)) != 1:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
@@ -223,8 +217,6 @@ class BodyCompositionPhenotypes(Phenotypes):
             Dataframe containing info about machine, run time, and chest region
             chest type phenotype quantities.         
         """
-
-        print("Executing new\n");
         assert len(ct.shape) == len(lm.shape), \
             "CT and label map are not the same dimension"    
 
