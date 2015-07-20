@@ -592,7 +592,10 @@ void cip::CloseLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char regio
   lIt.GoToBegin();
   while (!lIt.IsAtEnd())
     {
-    lIt.Set(eIt.Get());
+      if ( eIt.Get() > 0 )
+	{
+	  lIt.Set(eIt.Get());
+	}
 
     ++eIt;
     ++lIt;
