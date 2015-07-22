@@ -621,7 +621,7 @@ cip::ChestConventions::ChestConventions()
   double* t069 = new double[3]; t069[0] = 0.00; t069[1] = 0.69; t069[2] = 0.69; ChestTypeColors.push_back( t069 ); //CENTRILOBULAREMPHYSEMA
   double* t070 = new double[3]; t070[0] = 0.00; t070[1] = 0.00; t070[2] = 0.70; ChestTypeColors.push_back( t070 ); //PANLOBULAREMPHYSEMA
 
-  double* t071 = new double[3]; t071[0] = 0.00; t071[1] = 0.01; t071[2] = 0.99; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
+  double* t071 = new double[3]; t071[0] = 0.99; t071[1] = 0.01; t071[2] = 0.99; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
   double* t072 = new double[3]; t072[0] = 0.58; t072[1] = 0.65; t072[2] = 0.20; ChestTypeColors.push_back( t072 ); //VISCERALFAT
 
   double* t073 = new double[3]; t073[0] = 0.85; t073[1] = 0.75; t073[2] = 0.85; ChestTypeColors.push_back( t073 ); //INTERMEDIATEBRONCHUS
