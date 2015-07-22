@@ -599,8 +599,8 @@ cip::ChestConventions::ChestConventions()
   double* t050 = new double[3]; t050[0] = 0.51; t050[1] = 0.51; t050[2] = 0.51; ChestTypeColors.push_back( t050 ); //CALCIFICATION
   double* t051 = new double[3]; t051[0] = 0.00; t051[1] = 0.00; t051[2] = 0.99; ChestTypeColors.push_back( t051 ); //ARTERY
   double* t052 = new double[3]; t052[0] = 0.99; t052[1] = 0.00; t052[2] = 0.00; ChestTypeColors.push_back( t052 ); //VEIN
-  double* t053 = new double[3]; t053[0] = 0.48; t053[1] = 0.48; t053[2] = 0.48; ChestTypeColors.push_back( t053 ); //PECTORALISMINOR
-  double* t054 = new double[3]; t054[0] = 0.47; t054[1] = 0.47; t054[2] = 0.47; ChestTypeColors.push_back( t054 ); //PECTORALISMAJOR
+  double* t053 = new double[3]; t053[0] = 0.00; t053[1] = 0.99; t053[2] = 0.00; ChestTypeColors.push_back( t053 ); //PECTORALISMINOR
+  double* t054 = new double[3]; t054[0] = 0.99; t054[1] = 0.01; t054[2] = 0.00; ChestTypeColors.push_back( t054 ); //PECTORALISMAJOR
   double* t055 = new double[3]; t055[0] = 0.46; t055[1] = 0.46; t055[2] = 0.46; ChestTypeColors.push_back( t055 ); //ANTERIORSCALENE
   double* t056 = new double[3]; t056[0] = 0.93; t056[1] = 0.01; t056[2] = 0.10; ChestTypeColors.push_back( t056 ); //FISSURE
   // The vessel generation colors are identical to the airway generation colors except that the red chanel
@@ -621,7 +621,7 @@ cip::ChestConventions::ChestConventions()
   double* t069 = new double[3]; t069[0] = 0.00; t069[1] = 0.69; t069[2] = 0.69; ChestTypeColors.push_back( t069 ); //CENTRILOBULAREMPHYSEMA
   double* t070 = new double[3]; t070[0] = 0.00; t070[1] = 0.00; t070[2] = 0.70; ChestTypeColors.push_back( t070 ); //PANLOBULAREMPHYSEMA
 
-  double* t071 = new double[3]; t071[0] = 0.59; t071[1] = 0.65; t071[2] = 0.20; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
+  double* t071 = new double[3]; t071[0] = 0.00; t071[1] = 0.01; t071[2] = 0.99; ChestTypeColors.push_back( t071 ); //SUBCUTANEOUSFAT
   double* t072 = new double[3]; t072[0] = 0.58; t072[1] = 0.65; t072[2] = 0.20; ChestTypeColors.push_back( t072 ); //VISCERALFAT
 
   double* t073 = new double[3]; t073[0] = 0.85; t073[1] = 0.75; t073[2] = 0.85; ChestTypeColors.push_back( t073 ); //INTERMEDIATEBRONCHUS
@@ -666,8 +666,8 @@ cip::ChestConventions::ChestConventions()
   double* r021 = new double[3]; r021[0] = 0.00; r021[1] = 0.00; r021[2] = 0.02; ChestRegionColors.push_back( r021 ); //UPPERTHIRD
   double* r022 = new double[3]; r022[0] = 0.00; r022[1] = 0.00; r022[2] = 0.03; ChestRegionColors.push_back( r022 ); //MIDDLETHIRD
   double* r023 = new double[3]; r023[0] = 0.00; r023[1] = 0.00; r023[2] = 0.04; ChestRegionColors.push_back( r023 ); //LOWERTHIRD
-  double* r024 = new double[3]; r024[0] = 0.34; r024[1] = 0.33; r024[2] = 0.80; ChestRegionColors.push_back( r024 ); //LEFT
-  double* r025 = new double[3]; r025[0] = 0.74; r025[1] = 0.34; r025[2] = 0.14; ChestRegionColors.push_back( r025 ); //RIGHT
+  double* r024 = new double[3]; r024[0] = 0.99; r024[1] = 0.00; r024[2] = 0.00; ChestRegionColors.push_back( r024 ); //LEFT
+  double* r025 = new double[3]; r025[0] = 0.00; r025[1] = 0.99; r025[2] = 0.00; ChestRegionColors.push_back( r025 ); //RIGHT
   double* r026 = new double[3]; r026[0] = 0.66; r026[1] = 0.36; r026[2] = 0.40; ChestRegionColors.push_back( r026 ); //LIVER
   double* r027 = new double[3]; r027[0] = 1.00; r027[1] = 1.00; r027[2] = 0.01; ChestRegionColors.push_back( r027 ); //SPLEEN
   double* r028 = new double[3]; r028[0] = 1.00; r028[1] = 0.50; r028[2] = 0.01; ChestRegionColors.push_back( r028 ); //ABDOMEN
