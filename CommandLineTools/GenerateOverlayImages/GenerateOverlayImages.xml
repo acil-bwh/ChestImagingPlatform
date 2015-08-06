@@ -3,16 +3,16 @@
   <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>GenerateOverlayImages</title>
   <description><![CDATA[This program produces RGB overlay images corresponding to the input CT image and \
-  its label map. The overlay images will be spaced evenly across the bounding box in the direction orthogonal \
-  to the plane of interest (axial, coronal, or sagittal). The user has control over the window-level settings \
-  as well as the opacity of the overlay. The colors used in the overlay are established in the CIP conventions.]]>
+its label map. The overlay images will be spaced evenly across the bounding box in the direction orthogonal \
+to the plane of interest (axial, coronal, or sagittal). The user has control over the window-level settings \
+as well as the opacity of the overlay. The colors used in the overlay are established in the CIP conventions.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-    and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
@@ -44,7 +44,7 @@
       <flag>o</flag>
       <longflag>overlays</longflag>
       <description><![CDATA[Names of the overlay images to produce. The images will be spaced \
-      evenly across the bounding box in the direction orthogonal to the plane of interest]]></description>
+evenly across the bounding box in the direction orthogonal to the plane of interest]]></description>
     </string-vector>  
 
     <string>
@@ -53,9 +53,9 @@
       <channel>input</channel>
       <longflag>prefix</longflag>
       <description><![CDATA[The prefix is only relevant for use with --all. Use this flag to indicate \
-      the file name prefix to be used for the output overlays. Appended to the prefix will be an integer \
-      value indicating the overlay number. E.g. a prefex of 'foo' will produce result in the first overlay \
-      file name 'foo0000.png' (four digits are used to represent the file number).]]></description>
+the file name prefix to be used for the output overlays. Appended to the prefix will be an integer \
+value indicating the overlay number. E.g. a prefex of 'foo' will produce result in the first overlay \
+file name 'foo0000.png' (four digits are used to represent the file number).]]></description>
       <default>NA</default>
     </string>  
 
@@ -98,7 +98,7 @@
       <flag>b</flag>
       <default>0</default>
       <description><![CDATA[Set to 1 in order to make overlays relative to the bounding box endpoints instead of \
-      the bounding box interior.]]></description>
+the bounding box interior.]]></description>
     </boolean>  
 
     <boolean>
@@ -107,7 +107,7 @@
       <channel>input</channel>
       <longflag>all</longflag>
       <description><![CDATA[Use of this flag will produce an overlay image for every slice that has foreground\
-      region. If using this flag, you should also use --prefix in order to specify the output overlays.]]></description>
+region. If using this flag, you should also use --prefix in order to specify the output overlays.]]></description>
     </boolean>  
 
     <integer>
@@ -143,9 +143,9 @@
       <channel>input</channel>
       <longflag>region</longflag>
       <description><![CDATA[The chest region over which to compute the bounding box which in turn defines \
-      where to take the slice planes from for the overlays. By default this value is set to UNDEFINEDREGION. If both \
-      the chest region and chest type are left undefined, the entire foreground region will we considered when \
-      computing the bounding box.]]></description>
+where to take the slice planes from for the overlays. By default this value is set to UNDEFINEDREGION. If both \
+the chest region and chest type are left undefined, the entire foreground region will we considered when \
+computing the bounding box.]]></description>
       <default>UNDEFINEDREGION</default>
     </string>  
 
@@ -155,9 +155,9 @@
       <channel>input</channel>
       <longflag>type</longflag>
       <description><![CDATA[The chest type over which to compute the bounding box which in turn defines \
-      where to take the slice planes from for the overlays. By default this value is set to UNDEFINEDTYPE. If both \
-      the chest region and chest type are left undefined, the entire foreground region will we considered when \
-      computing the bounding box.]]></description>
+where to take the slice planes from for the overlays. By default this value is set to UNDEFINEDTYPE. If both \
+the chest region and chest type are left undefined, the entire foreground region will we considered when \
+computing the bounding box.]]></description>
       <default>UNDEFINEDTYPE</default>
     </string>  
   </parameters>
