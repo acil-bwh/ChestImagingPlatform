@@ -538,6 +538,17 @@ cip::ChestConventions::ChestConventions()
   ParenchymaPhenotypeNames.push_back( "ModerateCentrilobularEmphysema" );
   ParenchymaPhenotypeNames.push_back( "SevereCentrilobularEmphysema" );
   ParenchymaPhenotypeNames.push_back( "MildParaseptalEmphysema" );
+  
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV5" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV5_10" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV10_15" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV15_20" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV20_25" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV25_30" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV30_35" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV35_40" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "BV40_45" );
+  PulmonaryVasculaturePhenotypeNames.push_back( "TBV" );
 
   //
   // Each type is associated with a color. This is generally
@@ -1018,6 +1029,37 @@ bool cip::ChestConventions::IsParenchymaPhenotypeName( std::string pheno ) const
   return false;
 }
 
+/** Returns true if the passed string name is among the allowed histogram
+ *  phenotype names and returns false otherwise */
+bool cip::ChestConventions::IsHistogramPhenotypeName( std::string pheno ) const
+{
+  for ( int i=0; i<this->HistogramPhenotypeNames.size(); i++ )
+  {
+    if ( !this->HistogramPhenotypeNames[i].compare( pheno ) )
+    {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/** Returns true if the passed string name is among the allowed pulmonary vasculature
+ *  phenotype names and returns false otherwise */
+bool cip::ChestConventions::IsPulmonaryVasculaturePhenotypeName( std::string pheno ) const
+{
+  for ( int i=0; i<this->PulmonaryVasculaturePhenotypeNames.size(); i++ )
+  {
+    if ( !this->PulmonaryVasculaturePhenotypeNames[i].compare( pheno ) )
+    {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+
 /** Returns true if the passed string name is among the allowed
  *  phenotype names and returns false otherwise */
 bool cip::ChestConventions::IsPhenotypeName( std::string pheno ) const
@@ -1025,27 +1067,35 @@ bool cip::ChestConventions::IsPhenotypeName( std::string pheno ) const
   for ( int i=0; i<this->ParenchymaPhenotypeNames.size(); i++ )
     {
       if ( !this->ParenchymaPhenotypeNames[i].compare( pheno ) )
-	{
+      {
 	  return true;
-	}
+      }
     }
 
   for ( int i=0; i<this->BodyCompositionPhenotypeNames.size(); i++ )
     {
       if ( !this->BodyCompositionPhenotypeNames[i].compare( pheno ) )
-	{
+      {
 	  return true;
-	}
+      }
     }
 
   for ( int i=0; i<this->HistogramPhenotypeNames.size(); i++ )
     {
       if ( !this->HistogramPhenotypeNames[i].compare( pheno ) )
-	{
+      {
 	  return true;
-	}
+      }
     }
-
+  
+  for ( int i=0; i<this->PulmonaryVasculaturePhenotypeNames.size(); i++ )
+  {
+    if ( !this->HistogramPhenotypeNames[i].compare( pheno ) )
+    {
+      return true;
+    }
+  }
+  
   return false;
 }
 
