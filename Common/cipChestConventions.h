@@ -186,7 +186,7 @@ enum ChestType {
   VESSELGENERATION9,              //65
   VESSELGENERATION10,             //66
   PARASEPTALEMPHYSEMA,            //67
-  CENTRILOBULAREMPHYSEMA,         //68
+  CENTRILOBULAREMPHYSEMA,         //68 
   PANLOBULAREMPHYSEMA,            //69
   SUBCUTANEOUSFAT,                //70
   VISCERALFAT,                    //71
