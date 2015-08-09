@@ -202,25 +202,7 @@ enum ChestType {
   HERNIA,                         //81
   BONEMARROW,                     //82
   BONE,                           //83
-  BV5,                            //84           
-  BV5_10,                         //85
-  BV10_15,                        //86
-  BV15_20,                        //87
-  BV20_25,                        //88
-  BV25_30,                        //89
-  BV30_35,                        //90
-  BV35_40,                        //91
-  BV40_45,                        //92
-  TBV,                            //93
-  // Added for ILD (TODO: complete ChestConventions.cxx)
-  ILD,                            //94
-  ARTIFACT,                       //95
-  SUBPLEURALLINE,                 //96
-  RETICULARNODULAR,               //97
-  CONSOLIDATION,                  //98
-  PSEGROUNDGLASS,                 //99
-  CLEGROUNDGLASS,                 //100
-  LINEAR,                         //101
+  INTERSTITIALLUNGDISEASE,        //84
 };
 
 enum ReturnCode {
@@ -359,11 +341,13 @@ public:
    *  regions and returns false otherwise */
   bool IsChestRegion( std::string ) const;
 
-  // TODO: comment properly
+  /** Returns true if the passed string name is among the allowed histogram
+   *  phenotype names and returns false otherwise */
   bool IsHistogramPhenotypeName( std::string ) const;
+
+  /** Returns true if the passed string name is among the allowed pulmonary vasculature
+   *  phenotype names and returns false otherwise */
   bool IsPulmonaryVasculaturePhenotypeName( std::string ) const;
-
-
 
 public:
   std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;

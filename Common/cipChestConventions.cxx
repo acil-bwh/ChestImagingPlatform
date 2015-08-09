@@ -4,7 +4,7 @@
 cip::ChestConventions::ChestConventions()
 {
   m_NumberOfEnumeratedChestRegions = 69;
-  m_NumberOfEnumeratedChestTypes   = 84;
+  m_NumberOfEnumeratedChestTypes   = 85;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -240,7 +240,6 @@ cip::ChestConventions::ChestConventions()
   ChestRegions.push_back( (unsigned char)( PECTORALIS ) );
   ChestRegions.push_back( (unsigned char)( SPINALCORD ) );
 
-
   ChestTypes.push_back( (unsigned char)( UNDEFINEDTYPE ) );
   ChestTypes.push_back( (unsigned char)( NORMALPARENCHYMA ) );
   ChestTypes.push_back( (unsigned char)( AIRWAY ) );
@@ -325,6 +324,7 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( HERNIA ) );
   ChestTypes.push_back( (unsigned char)( BONEMARROW ) );
   ChestTypes.push_back( (unsigned char)( BONE ) );
+  ChestTypes.push_back( (unsigned char)( INTERSTITIALLUNGDISEASE ) );
 
   ChestRegionNames.push_back( "UndefinedRegion" );
   ChestRegionNames.push_back( "WholeLung" );
@@ -480,6 +480,7 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "Hernia" );
   ChestTypeNames.push_back( "BoneMarrow" );
   ChestTypeNames.push_back( "Bone" );
+  ChestTypeNames.push_back( "InterstitialLungDisease" );
 
   BodyCompositionPhenotypeNames.push_back( "AxialCSA" );
   BodyCompositionPhenotypeNames.push_back( "CoronalCSA" );
@@ -648,6 +649,7 @@ cip::ChestConventions::ChestConventions()
   double* t082 = new double[3]; t082[0] = 0.91; t082[1] = 0.00; t082[2] = 0.00; ChestTypeColors.push_back( t082 ); //HERNIA
   double* t083 = new double[3]; t083[0] = 0.92; t083[1] = 0.00; t083[2] = 0.00; ChestTypeColors.push_back( t083 ); //BONEMARROW
   double* t084 = new double[3]; t084[0] = 0.93; t084[1] = 0.00; t084[2] = 0.00; ChestTypeColors.push_back( t084 ); //BONE
+  double* t085 = new double[3]; t085[0] = 0.94; t085[1] = 0.00; t085[2] = 0.00; ChestTypeColors.push_back( t085 ); //INTERSTITIALLUNGDISEASE
 
   //
   // Each region is associated with a color. This is generally
