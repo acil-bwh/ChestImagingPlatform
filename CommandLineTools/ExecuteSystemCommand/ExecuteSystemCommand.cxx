@@ -1,6 +1,7 @@
 #include <stdio.h>      
 #include <stdlib.h>
-//#include <iostream>
+#include <fstream>
+
 #include "cipChestConventions.h"
 
 #include "ExecuteSystemCommandCLP.h"
@@ -17,11 +18,12 @@ int main( int argc, char *argv[] )
   std::cout << "Result of the command: " << result << std::endl;
   std::cout << "** END **" << std::endl;
 
- 
-  // std::ofstream writeFile;
-  // writeFile.open( returnParameterFile.c_str() );
-  // writeFile << "output = " << result << std::endl;
-  // writeFile.close();
+  std::ofstream writeFile (returnParameterFile.c_str());
+
+  writeFile << "output = " << result << std::endl;
+  writeFile.close();
+
+  std::cout << "Results saved in the file " << returnParameterFile.c_str() << std::endl;
 
   if (result == 0)
   	// OK case
