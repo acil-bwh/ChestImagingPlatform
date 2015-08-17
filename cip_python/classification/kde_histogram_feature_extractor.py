@@ -81,7 +81,11 @@ class kdeHistExtractor:
         
         if (the_bandwidth < 0.1):
             warnings.warn("Bandwidth less than 0.1: "+str(the_bandwidth))
-
+        if (the_bandwidth <= 0):
+            warnings.warn("Bandwidth negative: "+str(the_bandwidth)+\
+                " Set to 0.02")
+            the_bandwidth = 0.02
+            
         kde = KernelDensity(bandwidth=the_bandwidth)
         kde.fit(input_data[:, np.newaxis])
         
@@ -115,10 +119,11 @@ class kdeHistExtractor:
         inc = 0
         for p_label in unique_patch_labels:
             if p_label > 0:
-                print float(inc)/float(len(unique_patch_labels))
+                print("computinh histogram for patch "+str(p_label))
+                #print float(inc)/float(len(unique_patch_labels))
                 inc += 1
                 # extract the lung area from the CT for the patch
-                patch_intensities = ct[patch_labels==p_label]
+                patch_intensities = ct[np.logical_and(patch_labels==p_label, lm >0)] 
                 
                 # linearize features
                 intensity_vector = np.array(patch_intensities.ravel()).T
