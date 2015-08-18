@@ -327,7 +327,15 @@ public:
   /** Returns true if the passed string name is among the allowed parenchyma
    *  phenotype names and returns false otherwise */
   bool IsParenchymaPhenotypeName( std::string ) const;
+  
+  /** Returns true if the passed string name is among the allowed histogram
+   *  phenotype names and returns false otherwise */
+  bool IsHistogramPhenotypeName( std::string ) const;
 
+  /** Returns true if the passed string name is among the allowed pulmonary vasculature
+   *  phenotype names and returns false otherwise */
+  bool IsPulmonaryVasculaturePhenotypeName( std::string ) const;
+  
   /** Returns true if the passed string name is among the allowed
    *  phenotype names and returns false otherwise */
   bool IsPhenotypeName( std::string ) const;
@@ -352,6 +360,7 @@ public:
   std::vector< std::string >  BodyCompositionPhenotypeNames;
   std::vector< std::string >  ParenchymaPhenotypeNames;
   std::vector< std::string >  HistogramPhenotypeNames;
+  std::vector< std::string >  PulmonaryVasculaturePhenotypeNames;
 
 private:
   unsigned char m_NumberOfEnumeratedChestRegions;
