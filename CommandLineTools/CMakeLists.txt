@@ -381,3 +381,9 @@ IF(BUILD_REGIONTYPELOCATIONSTOROIVOLUME)
   SUBDIRS(RegionTypeLocationsToROIVolume)
 ENDIF(BUILD_REGIONTYPELOCATIONSTOROIVOLUME)
 
+SET(BUILD_ExtractFissureBoundaryFromLobeMap ON CACHE BOOL "BUILD_ExtractFissureBoundaryFromLobeMap")
+IF(BUILD_ExtractFissureBoundaryFromLobeMap)
+  SUBDIRS(ExtractFissureBoundaryFromLobeMap)
+ENDIF(BUILD_ExtractFissureBoundaryFromLobeMap)
+
+
