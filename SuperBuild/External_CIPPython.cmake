@@ -86,18 +86,31 @@ ExternalProject_Add_Step(${proj} installsphinx
 
 ExternalProject_Add_Step(${proj} installsimpleitk
 	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c SimpleITK SimpleITK 
-	DEPENDEES installnose
+	DEPENDEES installsphinx
+)
+
+# Downgrade of libpng for compatibility problems with SimpleITK (see http://public.kitware.com/pipermail/community/2015-May/009124.html)
+ExternalProject_Add_Step(${proj} installlibpng
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet libpng=1.5.13  
+	DEPENDEES installsimpleitk
+)
+
+ExternalProject_Add_Step(${proj} installlxml
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet lxml  
+	DEPENDEES installlibpng
 )
 
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
-	DEPENDEES installsimpleitk
+	DEPENDEES installlxml
 )
 
 ExternalProject_Add_Step(${proj} installpydicom
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pydicom  
 	DEPENDEES installpynrrd
 )
+
+
 
 if (UNIX)      
   #Set Python variables that can be referenced by other modules
