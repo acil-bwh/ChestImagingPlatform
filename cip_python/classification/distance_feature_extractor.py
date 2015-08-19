@@ -92,14 +92,15 @@ class DistanceFeatureExtractor:
         lm: 3D numpy array, shape (L, M, N)
             Input mask where distance features wil be extracted.    
         """        
-        patch_labels[lm == 0] = 0
-        unique_patch_labels = np.unique(patch_labels[:])
+        patch_labels_copy = np.copy(patch_labels)
+        patch_labels_copy[lm == 0] = 0
+        unique_patch_labels = np.unique(patch_labels_copy[:])
         # loop through each patch 
         for p_label in unique_patch_labels:
             if p_label > 0:
                 # extract the lung area from the CT for the patch
                 #patch_distances = distance_image[patch_labels==p_label] 
-                patch_distances = distance_image[np.logical_and(patch_labels==p_label, lm >0)] 
+                patch_distances = distance_image[np.logical_and(patch_labels_copy==p_label, lm >0)] 
 
                 # linearize features
                 distance_vector = np.array(patch_distances.ravel()).T
