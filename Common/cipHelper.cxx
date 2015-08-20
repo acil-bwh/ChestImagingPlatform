@@ -92,6 +92,24 @@ cip::CTType::Pointer cip::ReadCTFromFile( std::string fileName )
   return reader->GetOutput();
 }
 
+cip::LabelMapType::Pointer cip::ReadLabelMapFromFile( std::string fileName )
+{
+  cip::LabelMapReaderType::Pointer reader = cip::LabelMapReaderType::New();
+  reader->SetFileName( fileName );
+  try
+  {
+    reader->Update();
+  }
+  catch ( itk::ExceptionObject &excp )
+  {
+    std::cerr << "Exception caught reading Label Map image:";
+    std::cerr << excp << std::endl;
+    return NULL;
+  }
+  
+  return reader->GetOutput();
+}
+
 // Code modified from //http://www.itk.org/Wiki/ITK/Examples/ImageProcessing/Upsampling
 template<typename ImageType, typename InterpolatorType, unsigned int D> typename ImageType::Pointer cip::UpsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage)
   {
