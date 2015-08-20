@@ -325,6 +325,19 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( BONEMARROW ) );
   ChestTypes.push_back( (unsigned char)( BONE ) );
   ChestTypes.push_back( (unsigned char)( INTERSTITIALLUNGDISEASE ) );
+  
+  ImageTypes.push_back( (unsigned char) ( CTUNDEFINED ));
+  ImageTypes.push_back( (unsigned char) ( MRIUNDEFINED ));
+  ImageTypes.push_back( (unsigned char) ( USUNDEFINED ));
+  ImageTypes.push_back( (unsigned char) ( CTARTIFACT ));
+  ImageTypes.push_back( (unsigned char) ( MRIARTIFACT ));
+  ImageTypes.push_back( (unsigned char) ( USARTIFACT ));
+  ImageTypes.push_back( (unsigned char) ( CTBEAMHARDENING ));
+  ImageTypes.push_back( (unsigned char) ( CTSTREAKARTIFACT ));
+  ImageTypes.push_back( (unsigned char) ( CTMOTION ));
+  ImageTypes.push_back( (unsigned char) ( CTCARDIACMOTION ));
+  ImageTypes.push_back( (unsigned char) ( CTBREATHINGMOTION ));
+  
 
   ChestRegionNames.push_back( "UndefinedRegion" );
   ChestRegionNames.push_back( "WholeLung" );
@@ -481,6 +494,20 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "BoneMarrow" );
   ChestTypeNames.push_back( "Bone" );
   ChestTypeNames.push_back( "InterstitialLungDisease" );
+  
+  
+  ImageTypeNames.push_back( "CTUndefined" );
+  ImageTypeNames.push_back( "MRIUndefined" );
+  ImageTypeNames.push_back( "USUndefined" );
+  ImageTypeNames.push_back( "CTArtifact" );
+  ImageTypeNames.push_back( "MRIArtifact" );
+  ImageTypeNames.push_back( "USArtifact" );
+  ImageTypeNames.push_back( "CTBeamHardening" );
+  ImageTypeNames.push_back( "CTStreakArtifact" );
+  ImageTypeNames.push_back( "CTMotion" );
+  ImageTypeNames.push_back( "CTCardiacMotion" );
+  ImageTypeNames.push_back( "CTBreathingMotion" );
+
 
   BodyCompositionPhenotypeNames.push_back( "AxialCSA" );
   BodyCompositionPhenotypeNames.push_back( "CoronalCSA" );
@@ -750,6 +777,11 @@ unsigned char cip::ChestConventions::GetNumberOfEnumeratedChestTypes() const
   return m_NumberOfEnumeratedChestTypes;
 }
 
+unsigned char cip::ChestConventions::GetNumberOfEnumeratedImageTypes() const
+{
+  return m_NumberOfEnumeratedImageTypes;
+}
+
 /** This method checks if the chest region 'subordinate' is within
  *  the chest region 'superior'. */
 bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship( unsigned char subordinate, unsigned char superior )
@@ -999,6 +1031,25 @@ unsigned char cip::ChestConventions::GetChestRegion( unsigned int i ) const
 unsigned char cip::ChestConventions::GetChestType( unsigned int i ) const
 {
   return (unsigned char)( ChestTypes[i] );
+}
+
+
+/** Get the ith image type */
+unsigned char cip::ChestConventions::GetImageType( unsigned int i ) const
+{
+  return (unsigned char)( ImageTypes[i] );
+}
+
+/** Given an unsigned char value corresponding to a chest type, this
+ *  method will return the string name equivalent. */
+std::string cip::ChestConventions::GetImageTypeName( unsigned char whichType ) const
+{
+  if ( int( whichType ) > m_NumberOfEnumeratedImageTypes-1 )
+  {
+    return "UNDEFINEDTYPE";
+  }
+  
+  return ImageTypeNames[int( whichType )];
 }
 
 /** Returns true if the passed string name is among the allowed body composition
