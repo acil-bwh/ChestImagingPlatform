@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Segmentation</category>
-  <title>SegmentLungLobes</title>
+  <title>Segment Lung Lobes</title>
   <description><![CDATA[This program reads a label map image (where the labels\
   correspond to the conventions laid out cipChestConventions.h) as\
   well as particles defining the lobe boundaries and produces a\
@@ -26,30 +26,27 @@
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
+    
     <image type="label">
       <name>inLabelMapFileName</name>
       <label>Input label map file name</label>
       <channel>input</channel>
       <flag>i</flag>
       <longflag>in</longflag>
-      <description><![CDATA[Input lung label map file name. Left and right lungs must be uniquely labeled.]]></description>
       <default>NA</default>
-    </image>  
+      <description><![CDATA[Input lung label map file name. Left and right lungs must be uniquely labeled.]]></description>
+    </image>
 
     <image type="label">
       <name>outLabelMapFileName</name>
       <label>Output label map file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <flag>o</flag>
       <longflag>out</longflag>
-      <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
       <default>NA</default>
+      <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
     </image>
-  </parameters>
-  
-  <parameters>
-    <label>Shape models</label>
-    <description>Lobe shape models input files</description>
+
     <string>
       <name>leftShapeModelFileName</name>
       <label>Left lung lobes shape model file name</label>
@@ -68,12 +65,14 @@
       <description><![CDATA[File name of shape model describing the boundaries between the lobes \
       in the right lung.]]></description>
       <default>NA</default>
-    </string>  
+    </string>
+    
   </parameters>
   
   <parameters>
     <label>Fiducial Points</label>
     <description><![CDATA[Fiducials points along the fissures]]></description>
+    
     <point multiple="true" coordinateSystem="ras">
       <name>rightHorizontalFiducials</name>
       <label>Horizontal Right Fiducials</label>

@@ -24,6 +24,7 @@ void AppendFissurePoints( std::vector< cip::PointType >*, vtkSmartPointer< vtkPo
 
 int main( int argc, char *argv[] )
 {
+
   PARSE_ARGS;
 
   // Instatiate ChestConventions for general convenience later
