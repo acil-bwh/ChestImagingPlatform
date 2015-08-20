@@ -3,8 +3,9 @@
 
 cip::ChestConventions::ChestConventions()
 {
-  m_NumberOfEnumeratedChestRegions = 69;
-  m_NumberOfEnumeratedChestTypes   = 85;
+  m_NumberOfEnumeratedChestRegions  = 69;
+  m_NumberOfEnumeratedChestTypes    = 85;
+  m_NumberOfEnumeratedImageFeatures = 7;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
 
@@ -326,18 +327,13 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( BONE ) );
   ChestTypes.push_back( (unsigned char)( INTERSTITIALLUNGDISEASE ) );
   
-  ImageTypes.push_back( (unsigned char) ( CTUNDEFINED ));
-  ImageTypes.push_back( (unsigned char) ( MRIUNDEFINED ));
-  ImageTypes.push_back( (unsigned char) ( USUNDEFINED ));
-  ImageTypes.push_back( (unsigned char) ( CTARTIFACT ));
-  ImageTypes.push_back( (unsigned char) ( MRIARTIFACT ));
-  ImageTypes.push_back( (unsigned char) ( USARTIFACT ));
-  ImageTypes.push_back( (unsigned char) ( CTBEAMHARDENING ));
-  ImageTypes.push_back( (unsigned char) ( CTSTREAKARTIFACT ));
-  ImageTypes.push_back( (unsigned char) ( CTMOTION ));
-  ImageTypes.push_back( (unsigned char) ( CTCARDIACMOTION ));
-  ImageTypes.push_back( (unsigned char) ( CTBREATHINGMOTION ));
-  
+  ImageFeatures.push_back( (unsigned char) ( UNDEFINEDFEATURE ));
+  ImageFeatures.push_back( (unsigned char) ( CTARTIFACT ));
+  ImageFeatures.push_back( (unsigned char) ( CTBEAMHARDENING ));
+  ImageFeatures.push_back( (unsigned char) ( CTSTREAKARTIFACT ));
+  ImageFeatures.push_back( (unsigned char) ( CTMOTION ));
+  ImageFeatures.push_back( (unsigned char) ( CTCARDIACMOTION ));
+  ImageFeatures.push_back( (unsigned char) ( CTBREATHINGMOTION ));  
 
   ChestRegionNames.push_back( "UndefinedRegion" );
   ChestRegionNames.push_back( "WholeLung" );
@@ -494,20 +490,14 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "BoneMarrow" );
   ChestTypeNames.push_back( "Bone" );
   ChestTypeNames.push_back( "InterstitialLungDisease" );
-  
-  
-  ImageTypeNames.push_back( "CTUndefined" );
-  ImageTypeNames.push_back( "MRIUndefined" );
-  ImageTypeNames.push_back( "USUndefined" );
-  ImageTypeNames.push_back( "CTArtifact" );
-  ImageTypeNames.push_back( "MRIArtifact" );
-  ImageTypeNames.push_back( "USArtifact" );
-  ImageTypeNames.push_back( "CTBeamHardening" );
-  ImageTypeNames.push_back( "CTStreakArtifact" );
-  ImageTypeNames.push_back( "CTMotion" );
-  ImageTypeNames.push_back( "CTCardiacMotion" );
-  ImageTypeNames.push_back( "CTBreathingMotion" );
-
+    
+  ImageFeatureNames.push_back( "UndefinedFeature" );
+  ImageFeatureNames.push_back( "CTArtifact" );
+  ImageFeatureNames.push_back( "CTBeamHardening" );
+  ImageFeatureNames.push_back( "CTStreakArtifact" );
+  ImageFeatureNames.push_back( "CTMotion" );
+  ImageFeatureNames.push_back( "CTCardiacMotion" );
+  ImageFeatureNames.push_back( "CTBreathingMotion" );
 
   BodyCompositionPhenotypeNames.push_back( "AxialCSA" );
   BodyCompositionPhenotypeNames.push_back( "CoronalCSA" );
@@ -777,9 +767,9 @@ unsigned char cip::ChestConventions::GetNumberOfEnumeratedChestTypes() const
   return m_NumberOfEnumeratedChestTypes;
 }
 
-unsigned char cip::ChestConventions::GetNumberOfEnumeratedImageTypes() const
+unsigned char cip::ChestConventions::GetNumberOfEnumeratedImageFeatures() const
 {
-  return m_NumberOfEnumeratedImageTypes;
+  return m_NumberOfEnumeratedImageFeatures;
 }
 
 /** This method checks if the chest region 'subordinate' is within
@@ -1035,21 +1025,21 @@ unsigned char cip::ChestConventions::GetChestType( unsigned int i ) const
 
 
 /** Get the ith image type */
-unsigned char cip::ChestConventions::GetImageType( unsigned int i ) const
+unsigned char cip::ChestConventions::GetImageFeature( unsigned int i ) const
 {
-  return (unsigned char)( ImageTypes[i] );
+  return (unsigned char)( ImageFeatures[i] );
 }
 
 /** Given an unsigned char value corresponding to a chest type, this
  *  method will return the string name equivalent. */
-std::string cip::ChestConventions::GetImageTypeName( unsigned char whichType ) const
+std::string cip::ChestConventions::GetImageFeatureName( unsigned char whichFeature ) const
 {
-  if ( int( whichType ) > m_NumberOfEnumeratedImageTypes-1 )
+  if ( int( whichFeature ) > m_NumberOfEnumeratedImageFeatures-1 )
   {
-    return "UNDEFINEDTYPE";
+    return "UNDEFINEDFEATURE";
   }
   
-  return ImageTypeNames[int( whichType )];
+  return ImageFeatureNames[int( whichFeature )];
 }
 
 /** Returns true if the passed string name is among the allowed body composition

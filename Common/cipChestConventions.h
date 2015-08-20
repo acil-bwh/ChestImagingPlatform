@@ -205,18 +205,14 @@ enum ChestType {
   INTERSTITIALLUNGDISEASE         //84
 };
 
-enum ImageType {
-  CTUNDEFINED,         //0
-  MRIUNDEFINED,        //1
-  USUNDEFINED,         //2
-  CTARTIFACT,          //3
-  MRIARTIFACT,         //4
-  USARTIFACT,          //5
-  CTBEAMHARDENING,     //6
-  CTSTREAKARTIFACT,    //7
-  CTMOTION,            //8
-  CTCARDIACMOTION,     //9
-  CTBREATHINGMOTION   //10
+enum ImageFeature {
+  UNDEFINEDFEATURE,    //0
+  CTARTIFACT,          //1
+  CTBEAMHARDENING,     //2
+  CTSTREAKARTIFACT,    //3
+  CTMOTION,            //4
+  CTCARDIACMOTION,     //5
+  CTBREATHINGMOTION    //6
 };
 
 enum ReturnCode {
@@ -253,8 +249,7 @@ public:
 
   unsigned char GetNumberOfEnumeratedChestRegions() const;
   unsigned char GetNumberOfEnumeratedChestTypes() const;
-  unsigned char GetNumberOfEnumeratedImageTypes() const;
-
+  unsigned char GetNumberOfEnumeratedImageFeatures() const;
 
   /** This method checks if the chest region 'subordinate' is within
    *  the chest region 'superior'. It assumes that all chest regions are
@@ -338,11 +333,11 @@ public:
   unsigned char GetChestType( unsigned int i ) const;
   
   /** Get the ith chest type */
-  unsigned char GetImageType( unsigned int i ) const;
+  unsigned char GetImageFeature( unsigned int i ) const;
   
   /** Given an unsigned char value corresponding to a image type, this
    *  method will return the string name equivalent. */
-  std::string GetImageTypeName( unsigned char whichType ) const;
+  std::string GetImageFeatureName( unsigned char whichFeature ) const;
 
   /** Returns true if the passed string name is among the allowed body composition
    *  phenotype names and returns false otherwise */
@@ -376,10 +371,10 @@ public:
   std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;
   std::vector< unsigned char >              ChestRegions;
   std::vector< unsigned char >              ChestTypes;
-  std::vector< unsigned char >              ImageTypes;
+  std::vector< unsigned char >              ImageFeatures;
   std::vector< std::string >                ChestRegionNames;
   std::vector< std::string >                ChestTypeNames;
-  std::vector< std::string >                ImageTypeNames;
+  std::vector< std::string >                ImageFeatureNames;
   std::vector< double* >                    ChestRegionColors;
   std::vector< double* >                    ChestTypeColors;
 
@@ -391,7 +386,7 @@ public:
 private:
   unsigned char m_NumberOfEnumeratedChestRegions;
   unsigned char m_NumberOfEnumeratedChestTypes;
-  unsigned char m_NumberOfEnumeratedImageTypes;
+  unsigned char m_NumberOfEnumeratedImageFeatures;
 };
 
 } // namespace cip
