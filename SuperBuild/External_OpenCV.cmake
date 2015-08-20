@@ -30,7 +30,7 @@ if(NOT DEFINED OpenCV_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY "${git_protocol}://github.com/Itseez/opencv.git"
-    GIT_TAG "ae4cb571ab4fdca3c7be57f0de19743f823daf3f" # 3.0.0 beta tag
+    GIT_TAG "c12243cf4fccf5df7b0270a32883986b373dca7b" # 3.0.0 tag
     SOURCE_DIR ${EP_SOURCE_DIR}
     BINARY_DIR ${EP_BINARY_DIR}
     INSTALL_DIR ${EP_INSTALL_DIR}
