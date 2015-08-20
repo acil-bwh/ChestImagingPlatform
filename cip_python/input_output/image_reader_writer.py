@@ -66,7 +66,7 @@ class ImageReaderWriter:
         
         """
 
-        sitk.WriteImage(sitk_image,file_name,useCompression=True)
+        sitk.WriteImage(sitk_image,file_name,True)
 
     def write_from_numpy(self,npy_array,metainfo,file_name):
         """Write an image numpy array.
