@@ -98,7 +98,9 @@ class DistanceFeatureExtractor:
         for p_label in unique_patch_labels:
             if p_label > 0:
                 # extract the lung area from the CT for the patch
-                patch_distances = distance_image[patch_labels==p_label] 
+                #patch_distances = distance_image[patch_labels==p_label] 
+                patch_distances = distance_image[np.logical_and(patch_labels==p_label, lm >0)] 
+
                 # linearize features
                 distance_vector = np.array(patch_distances.ravel()).T
                 if (np.shape(distance_vector)[0] > 1):

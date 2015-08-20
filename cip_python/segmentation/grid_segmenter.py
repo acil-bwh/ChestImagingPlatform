@@ -73,7 +73,7 @@ class GridSegmenter:
             self.z_offset), ct_shape[2])));
         # go through all elements in gridX and segment 
         #([gridX-15,gridX+15],[gridY-15,gridY+15])
-        patch_id = 0    
+        patch_id = 1    
         
         for k in np.arange(0, np.shape(gridX)[2]-1):
             for j in np.arange(0, np.shape(gridX)[1]-1):
