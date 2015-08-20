@@ -17,6 +17,7 @@ class kde_lattice_classifier:
     predefined classes. The output is a dataframe with a class label for patch 
     ID.
        
+    Example scikit learn code with a graph: label_propagation.py   
     Parameters 
     ----------    
     kde_lower_limit:int
@@ -31,8 +32,14 @@ class kde_lattice_classifier:
         Contains the class labels corresponding to the input patch ids
     """
     
-    def __init__(self, kde_lower_limit, kde_upper_limit):
+    def __init__(self, num_knn_neighbours):
         pass
         
     def fit(self, input_kde, input_distance, input_neighbours):
         pass
+    
+    def predict():
+                
+    def get_patch_unaries():
+        pass
+        

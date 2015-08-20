@@ -107,12 +107,11 @@ class HistDistKNN():
             # Now compute the complete metric values, and identify the nearest
             # neighbors
             metric_vals = hist_comp + self.beta_*dist_comp
+            #if(np.shape(metric_vals))
             nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
             ids = metric_vals <= nth_metric_val
-
             if mult_samples:
                 class_label[i] = Counter(self.y_[ids]).most_common(1)[0][0]
             else:
                 class_label = Counter(self.y_[ids]).most_common(1)[0][0]
-            
         return class_label
