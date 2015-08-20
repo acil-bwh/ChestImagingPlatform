@@ -47,6 +47,9 @@ namespace cip {
   /** Function to read CT from file */
   cip::CTType::Pointer ReadCTFromFile( std::string fileName );
 
+  /** Function to read CT from file */
+  cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string fileName );
+  
   /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and
    * a pointer to a LabelMapType, and returns a pointer to a downsampled LabelMapType. */
   cip::LabelMapType::Pointer DownsampleLabelMap(unsigned short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
