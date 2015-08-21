@@ -5,3 +5,5 @@ ADD_TEST( NAME test_remap_lm COMMAND nosetests ${CMAKE_SOURCE_DIR}/cip_python/ut
 ADD_TEST( NAME test_anonymize_dicom COMMAND nosetests ${CMAKE_SOURCE_DIR}/cip_python/utils/tests/test_anonymize_dicom.py ) 
 
 ADD_TEST( NAME test_compute_dice_coefficient COMMAND nosetests ${CMAKE_SOURCE_DIR}/cip_python/utils/tests/test_compute_dice_coefficient.py ) 
+
+ADD_TEST( NAME test_geometry_topology_data COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_geometry_topology_data.py )

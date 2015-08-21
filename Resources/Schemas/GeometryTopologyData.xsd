@@ -3,11 +3,29 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element type="xs:byte" name="NumDimensions"/>
+        <xs:element name="CoordinateSystem" minOccurs="0" maxOccurs="1">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="Unknown"/>
+              <xs:enumeration value="IJK"/>
+              <xs:enumeration value="RAS"/>
+              <xs:enumeration value="LPS"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="LPStoIJKTransformationMatrix" minOccurs="0" maxOccurs="1">
+            <xs:complexType>
+              <xs:choice minOccurs="4" maxOccurs="unbounded">
+                <xs:element type="xs:float" name="value"/>
+              </xs:choice>
+            </xs:complexType>
+          </xs:element>
         <xs:element name="Point" minOccurs="0" maxOccurs="unbounded">
           <xs:complexType>
             <xs:sequence>
               <xs:element type="xs:byte" name="ChestRegion"/>
               <xs:element type="xs:byte" name="ChestType"/>
+              <xs:element type="xs:byte" name="ImageFeature"/>
               <xs:element type="xs:string" name="Description" minOccurs="0" maxOccurs="1"/>
               <xs:element name="Coordinate">
                 <xs:complexType>
@@ -15,7 +33,7 @@
                     <xs:element type="xs:float" name="value"/>
                   </xs:choice>
                 </xs:complexType>
-              </xs:element>              
+              </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -24,6 +42,7 @@
             <xs:sequence>
               <xs:element type="xs:byte" name="ChestRegion"/>
               <xs:element type="xs:byte" name="ChestType"/>
+              <xs:element type="xs:byte" name="ImageFeature"/>
               <xs:element type="xs:string" name="Description" minOccurs="0" maxOccurs="1"/>
               <xs:element name="Start">
                 <xs:complexType>

@@ -31,9 +31,15 @@ else()
 	MESSAGE("ChestConventions will not be wrapped. Enable CIP_WRAPCHESTCONVENTIONS to wrap it")	
 endif()
 
+# Copy all python files
 FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR} 
 	DESTINATION ${CMAKE_BINARY_DIR}
 	FILES_MATCHING PATTERN "*.py")
+
+# Copy special needed files
+FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR}
+	DESTINATION ${CMAKE_BINARY_DIR}
+	FILES_MATCHING PATTERN "GeometryTopologyData.xsd")
 
 # Include current tests in order that can be identified by ctest
 IF ( CIP_BUILD_TESTING )
