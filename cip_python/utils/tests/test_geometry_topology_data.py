@@ -4,7 +4,7 @@ from CIP.logic.geometry_topology_data import *
 
 
 this_dir = os.path.dirname(os.path.realpath(__file__))     # Directory where this file is contained
-xml_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Testing", "Data", "Input", "geometryTopologyData-sample.xml"))
+xml_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Testing", "Data", "Input", "geometryTopologyData.xml"))
 xsd_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Resources", "Schemas", "GeometryTopologyData.xsd"))
 
 def test_geometry_topology_data_schema():
