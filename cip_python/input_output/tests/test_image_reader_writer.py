@@ -1,6 +1,6 @@
 import os.path
 import numpy as np
-from cip_python.io.image_reader_writer import ImageReaderWriter
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import SimpleITK as sitk
 import tempfile,shutil
 
