@@ -1,10 +1,12 @@
+
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkEventObject.h"
 #include "itkOrientImageFilter.h"
 #include "itkFixedArray.h"
-#include "itkLandmarkSpatialObject.h"
+#include "itkPasteImageFilter.h"
+#include "itkResampleImageFilter.h"
 
 // This needs to come after the other includes to prevent the global definitions
 // of PixelType to be shadowed by other declarations.
@@ -26,6 +28,11 @@ typedef InputImageType::IndexType IndexType;
 typedef itk::ImageFileReader< InputImageType > InputReaderType;
 typedef itk::ImageFileWriter< RealImageType > OutputWriterType;
 typedef itk::LesionSegmentationImageFilter8< InputImageType, RealImageType > SegmentationFilterType;
+
+// For resampling the output
+typedef itk::PasteImageFilter<RealImageType,RealImageType> PasteImageFilterType;
+typedef itk::ResampleImageFilter<RealImageType,RealImageType> ResampleImageFilterType;
+typedef itk::IdentityTransform<double, ImageDimension> TransformType;
 
 PointListType GetSeeds(std::vector<std::vector<float> > seeds,InputImageType *image)
 {
@@ -104,7 +111,7 @@ int main( int argc, char * argv[] )
     std::cerr <<"ROI should have six elements"<<std::endl;
     return EXIT_FAILURE;
   }
-  
+
   if (roi[0] == 0 && roi[1] == 0 && roi[2]==0 &&
       roi[3] == 0 && roi[4] ==0 && roi[5]==0){
     //Compute ROI from seed and maximum Radius
@@ -137,6 +144,8 @@ int main( int argc, char * argv[] )
     startIndex[i] = (pi1[i]<pi2[i])?pi1[i]:pi2[i];
     }
   InputImageType::RegionType roiRegion( startIndex, roiSize );
+
+
   std::cout << "ROI region is " << roiRegion << std::endl;
   if (!roiRegion.Crop(image->GetBufferedRegion()))
     {
@@ -215,7 +224,41 @@ int main( int argc, char * argv[] )
       << std::endl;
     OutputWriterType::Pointer writer = OutputWriterType::New();
     writer->SetFileName(outputLevelSet);
-    writer->SetInput(seg->GetOutput());
+
+    // use full image size for output, if requested
+    if (fullSizeOutput) {
+      RealImageType::Pointer fullOutputImage = RealImageType::New();
+      fullOutputImage->SetRegions(image->GetLargestPossibleRegion());
+      fullOutputImage->Allocate();
+      fullOutputImage->FillBuffer(-4.0f);
+      fullOutputImage->CopyInformation(image);
+
+      // Resample ROI to original size
+      ResampleImageFilterType::Pointer resample = ResampleImageFilterType::New();
+      resample->SetInput(seg->GetOutput());
+      resample->SetSize(roiSize);
+      resample->SetOutputSpacing(image->GetSpacing());
+      resample->SetOutputOrigin(seg->GetOutput()->GetOrigin());
+      resample->SetTransform(TransformType::New());
+      resample->UpdateLargestPossibleRegion();
+      resample->Update();
+     
+      // Paste the image back into the full image
+      PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
+      pasteFilter->SetSourceImage ( resample->GetOutput() );
+      pasteFilter->SetSourceRegion ( resample->GetOutput()->GetLargestPossibleRegion() );
+      pasteFilter->SetDestinationImage ( fullOutputImage );
+      pasteFilter->SetDestinationIndex ( startIndex );
+
+      pasteFilter->Update();
+
+      // Make sure our sizes / bounds are set correctly
+      pasteFilter->GetOutput()->CopyInformation ( image );
+      
+      writer->SetInput(pasteFilter->GetOutput());
+    } else {    
+      writer->SetInput(seg->GetOutput());
+    }
     writer->Update();
     }
 
