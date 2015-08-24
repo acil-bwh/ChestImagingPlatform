@@ -34,6 +34,17 @@
       <description><![CDATA[Output level set of the segmented nodule. The nodule boundary is set at the -0.5 level]]></description>
       <default>NA</default>
     </image>
+
+    <boolean>
+      <name>fullSizeOutput</name>
+      <label>Full size output</label>
+      <default>false</default>
+      <flag>f</flag>
+      <longflag>fulloutput</longflag>
+      <description>Resample the output levelset to match the input image.</description>
+    </boolean>
+
+    
     </parameters>
   
     <parameters>
