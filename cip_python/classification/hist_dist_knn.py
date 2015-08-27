@@ -110,6 +110,7 @@ class HistDistKNN():
             #if(np.shape(metric_vals))
             nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
             ids = metric_vals <= nth_metric_val
+
             if mult_samples:
                 class_label[i] = Counter(self.y_[ids]).most_common(1)[0][0]
             else:

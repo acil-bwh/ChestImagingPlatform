@@ -61,8 +61,8 @@ class GridSegmenter:
             ct_shape = self.input_dimensions
                                                                                                                                                                                                                                    
         assert(ct_shape[0]>= self.x_size) and (ct_shape[1]>= self.y_size) and \
-            (ct_shape[2]>= self.z_offset), "image dimensions must be larger than  \
-            grid size"
+            (ct_shape[2]>= self.z_offset), "image dimensions "+str(ct_shape)+"must be larger than  \
+            grid size: "+str(self.x_size)+" "+str(self.y_size)+" "+str(self.z_offset)
         
         segmentation = np.zeros((ct_shape[0], ct_shape[1],ct_shape[2]), \
             dtype=np.int)

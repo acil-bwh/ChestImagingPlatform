@@ -29,8 +29,8 @@ def test_execute():
 
     test_hists = 100 + np.ones([2, bins])
     test_dists = np.array([100., 100.])
-
+    pdb.set_trace()
     class_labels = clf.predict(test_hists, test_dists)
     assert class_labels[0] == 2 and class_labels[1] == 2, \
       "Class labels not as expected"
-
+    

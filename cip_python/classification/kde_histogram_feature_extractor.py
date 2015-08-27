@@ -6,6 +6,7 @@ import pdb
 import pandas as pd
 import warnings
 from sklearn.neighbors import KernelDensity
+from scipy import ndimage
 import nrrd
 from kde_bandwidth import botev_bandwidth
 #from cip_python.io.image_reader_writer import ImageReaderWriter
@@ -16,7 +17,12 @@ class kdeHistExtractor:
 
     The user inputs CT numpy array, a mask, and a patch segmentation. The
     output is a pandas dataframe with patch #=number and
-    1 entry for each histogram bin
+    1 entry for each histogram bin. For each patch, the kde will be computed 
+    using intensities from a region centered at the patch center. The region
+    extent is:
+    [(x_center - floor(x_extent/2):(x_center + floor(x_extent/2), \
+        y_center - floor(y_extent/2):y_center + floor(y_extent/2) , \
+       ( z_center - floor(z_extent/2)): z_center + floor(z_extent/2)]
        
     Parameters 
     ----------    
@@ -30,6 +36,19 @@ class kdeHistExtractor:
         Contains feature information previously computed over the patches
         for which we seak the distance information    
         
+    x_extent: int
+        region size in the x direction over which the kde will
+        be estimated. The region will be centered at the patch center.
+            
+    y_extent: int
+        region size in the y direction over which the kde will
+        be estimated. The region will be centered at the patch center.
+        
+    z_extent: int
+        region size in the z direction over which the kde will
+        be estimated. The region will be centered at the patch center.
+ 
+                             
     Attribues
     ---------
     df_ : Pandas dataframe
@@ -39,11 +58,15 @@ class kdeHistExtractor:
         from 'lower_limit' to 'upper_limit'. These columns record the number of 
         counts for each Hounsfield unit (hu) estimated by the KDE.        
     """
-    def __init__(self, lower_limit=-1050, upper_limit=3050, in_df=None):
+    def __init__(self, lower_limit=-1050, upper_limit=3050, x_extent = 31, \
+        y_extent=31, z_extent=1, in_df=None):
         # Initialize the dataframe       
         # first get the list of all histogaram bin values
         self.bin_values = np.arange(lower_limit, upper_limit+1)
-
+        self.x_half_length = np.floor(x_extent/2)
+        self.y_half_length = np.floor(y_extent/2)
+        self.z_half_length = np.floor(z_extent/2)
+        
         cols = []
         for i in self.bin_values:
             cols.append('hu' + str(int(round(i))))
@@ -112,23 +135,48 @@ class kdeHistExtractor:
         lm: 3D numpy array, shape (L, M, N)
             Input mask where histograms will be computed.    
         """                
-        patch_labels_copy = np.copy(patch_labels)
-        patch_labels_copy[lm == 0] = 0
-        unique_patch_labels = np.unique(patch_labels_copy[:])
+        #patch_labels_copy = np.copy(patch_labels)
+        #patch_labels_copy[lm == 0] = 0
+        unique_patch_labels = np.unique(patch_labels[:])
+
+        assert ((self.x_half_length*2 <= np.shape(ct)[0]) and \
+            (self.y_half_length*2 <= np.shape(ct)[1]) and \
+            (self.z_half_length*2 <= np.shape(ct)[2])), "kde region extent must \
+            be less that image dimensions."
         
         # loop through each patch 
         inc = 0
+        
+
         for p_label in unique_patch_labels:
             if p_label > 0:
-                print("computing histogram for patch "+str(p_label))
-                #print float(inc)/float(len(unique_patch_labels))
-                inc += 1
+                if np.mod(p_label,100) ==0:
+                    print("computing histogram for patch "+str(p_label))
+                
+                patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
+                    patch_labels.astype(np.int32), p_label)
+                   
+                patch_center = map(int, patch_center_temp)
+                intensities_temp = ct[max(patch_center[0]-self.x_half_length,0):\
+                    min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0]),\
+                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(ct)[1]),\
+                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(ct)[2])]
+                lm_temp = lm[max(patch_center[0]-self.x_half_length,0):\
+                    min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0]),\
+                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(ct)[1]),\
+                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(ct)[2])] 
+                                    
+                
                 # extract the lung area from the CT for the patch
-                patch_intensities = ct[np.logical_and(patch_labels_copy==\
-                    p_label, lm >0)] 
+                patch_intensities = intensities_temp[(lm_temp >0)] 
                 # linearize features
                 intensity_vector = np.array(patch_intensities.ravel()).T
                 if (np.shape(intensity_vector)[0] > 1):
+                    inc = inc+1
                     # obtain kde histogram from features
                     histogram = self._perform_kde_botev(intensity_vector)
                     index = self.df_['patch_label'] == p_label
@@ -145,7 +193,11 @@ class kdeHistExtractor:
                             tmp['hu' + str(self.bin_values[i])] = histogram[i]
 
                         self.df_ = self.df_.append(tmp, ignore_index=True)
-        
+                
+                    #if (np.shape(self.df_)[0] > 99):
+                    #    pdb.set_trace()
+        #pdb.set_trace()    
+                
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
     data"""

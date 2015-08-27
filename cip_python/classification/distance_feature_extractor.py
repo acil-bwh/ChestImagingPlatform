@@ -7,6 +7,7 @@ import pandas as pd
 import warnings
 from sklearn.neighbors import KernelDensity
 import nrrd
+from scipy import ndimage
 from kde_bandwidth import botev_bandwidth
 from cip_python.ChestConventions import ChestConventions
 #from cip_python.io.image_reader_writer import ImageReaderWriter
@@ -37,7 +38,20 @@ class DistanceFeatureExtractor:
     in_df: Pandas dataframe
         Contains feature information previously computed over the patches
         for which we seak the distance information    
+
+    x_extent: int
+        region size in the x direction over which the feature will
+        be estimated. The region will be centered at the patch center.
+            
+    y_extent: int
+        region size in the y direction over which the feature will
+        be estimated. The region will be centered at the patch center.
         
+    z_extent: int
+        region size in the z direction over which the feature will
+        be estimated. The region will be centered at the patch center.
+ 
+                
     Attribues
     ---------
     df_ : Pandas dataframe
@@ -46,9 +60,14 @@ class DistanceFeatureExtractor:
         computed. The 'chestwall_distance' column contains the physical distance 
         from the center of the patch to the chest wall.        
     """
-    def __init__(self, chest_region=None, chest_type=None, pair=None, \
-        in_df=None):
+    def __init__(self, x_extent = 31, y_extent=31, z_extent=1, \
+        chest_region=None, chest_type=None, pair=None, in_df=None):
         # get the region / type over which distance is computed
+
+        self.x_half_length = np.floor(x_extent/2)
+        self.y_half_length = np.floor(y_extent/2)
+        self.z_half_length = np.floor(z_extent/2)
+                
         c = ChestConventions()
                 
         if chest_region is not None:
@@ -92,19 +111,47 @@ class DistanceFeatureExtractor:
         lm: 3D numpy array, shape (L, M, N)
             Input mask where distance features wil be extracted.    
         """        
-        patch_labels_copy = np.copy(patch_labels)
-        patch_labels_copy[lm == 0] = 0
-        unique_patch_labels = np.unique(patch_labels_copy[:])
+        #patch_labels_copy = np.copy(patch_labels)
+        #patch_labels_copy[lm == 0] = 0
+        unique_patch_labels = np.unique(patch_labels[:])
+
+        assert ((self.x_half_length*2 <= np.shape(distance_image)[0]) and \
+            (self.y_half_length*2 <= np.shape(distance_image)[1]) and \
+            (self.z_half_length*2 <= np.shape(distance_image)[2])), \
+            "distance region extent must be less that image dimensions."
+                    
         # loop through each patch 
+        inc = 0
+          
         for p_label in unique_patch_labels:
             if p_label > 0:
                 # extract the lung area from the CT for the patch
                 #patch_distances = distance_image[patch_labels==p_label] 
-                patch_distances = distance_image[np.logical_and(patch_labels_copy==p_label, lm >0)] 
+
+                patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
+                    patch_labels.astype(np.int32), p_label)
+                   
+                patch_center = map(int, patch_center_temp)
+                distances_temp = distance_image[max(patch_center[0]-self.x_half_length,0):\
+                    min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0]),\
+                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(distance_image)[1]),\
+                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(distance_image)[2])]
+                lm_temp = lm[max(patch_center[0]-self.x_half_length,0):\
+                    min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0]),\
+                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(distance_image)[1]),\
+                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(distance_image)[2])]   
+                # extract the lung area from the CT for the patch
+                                                 
+                patch_distances = distances_temp[(lm_temp >0)] 
 
                 # linearize features
                 distance_vector = np.array(patch_distances.ravel()).T
                 if (np.shape(distance_vector)[0] > 1):
+                    inc = inc+1
                     # compute the average distance
                     mean_dist = np.mean(distance_vector) 
                     index = self.df_['patch_label'] == p_label
@@ -119,7 +166,8 @@ class DistanceFeatureExtractor:
                         tmp[self.distance_feature_name] = mean_dist
 
                         self.df_ = self.df_.append(tmp, ignore_index=True)
-        
+                #pdb.set_trace()
+                    
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
     data"""
