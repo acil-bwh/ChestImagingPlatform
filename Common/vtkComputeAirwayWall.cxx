@@ -58,7 +58,7 @@ this->UseWeights = 0;
 // Params for Ray configuration
 this->RMin = 0;
 this->RMax = 12.7;
-this->Delta = 0.5;
+this->Delta = 0.1;
 this->Scale = 3;
 
 this->NumberOfThetaSamples = 128;
@@ -73,14 +73,12 @@ this->ActivateSector = 0;
 this->Alpha = 3;
 this->T = 7.5;
 
-
 this->StatsMean = vtkDoubleArray::New();
 this->StatsMinMax = vtkDoubleArray::New();
 this->InnerContour = vtkPolyData::New();
 this->OuterContour = vtkPolyData::New();
 
 this->NumberOfQuantities = 21;
-
 }
 
 //----------------------------------------------------------------------------
@@ -108,15 +106,15 @@ int vtkComputeAirwayWall::RequestInformation (
 
   // Make sure the number of rays is even to have antipodal rays
   if (this->NumberOfThetaSamples % 2 != 0)
-    this->NumberOfThetaSamples++; 
-  
+    this->NumberOfThetaSamples++;
+
   return 1;
 }
-  
+
 //----------------------------------------------------------------------------
 // VTK6 migration note:
 // - introduced to replace ExecuteData()
-void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out, 
+void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
   vtkInformation* outInfo)
 {
   vtkImageData* input = vtkImageData::SafeDownCast(this->GetInput());
@@ -127,7 +125,7 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
     vtkErrorMacro(<< "ExecuteData: Input is not set.");
     return;
     }
-    
+
   // Too many filters have floating point exceptions to execute
   // with empty input/ no request.
   if (this->UpdateExtentIsEmpty(outInfo, out))
@@ -135,14 +133,13 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
     return;
     }
 
-
  // Check number of image components: each component is one kernel
  int numKernels = input->GetNumberOfScalarComponents();
 
  if (this->Method == 3 && numKernels<=1) {
    vtkErrorMacro(<< "Phase congruency with multiple kernels requires a multicomponent input (one component per kernel");
    return;
-  } 
+  }
 
  // Loop reformating rays
  // Go into method to extract maximum PC point.
@@ -170,7 +167,7 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
  /*
  double scale =1;
  //Define scale based on method
- 
+
  switch(this->Method) {
   case 0:
     scale = 3;
@@ -184,9 +181,9 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
   case 3:
     scale = 1;
     break;
- } 
+ }
  */
- 
+
  vtkImageReformatAlongRay *ray;
  vtkImageExtractComponents *extract;
 
@@ -210,7 +207,6 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
    }
 
  //ray->SetInput(this->GetInput());
-
 
  // Objects to store points and cell data
  vtkPoints *ip = vtkPoints::New();
@@ -266,7 +262,7 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
  int Isamples=0;
  int Wsamples=0;
 
- // Min - Max 
+ // Min - Max
  double minRi = this->StatsMinMax->GetDataTypeMax();
  double maxRi = this->StatsMinMax->GetDataTypeMin();
  double minRo =this->StatsMinMax->GetDataTypeMax();
@@ -400,13 +396,12 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
 
  double tmpWIMaxS = -5000;
  double tmpPeakMaxS = -5000;
- double tmpInnerMaxS = -5000; 
+ double tmpInnerMaxS = -5000;
  double tmpOuterMaxS = -5000;
  double tmpWIMinS = 5000;
  double tmpPeakMinS = 5000;
- double tmpInnerMinS = 5000; 
+ double tmpInnerMinS = 5000;
  double tmpOuterMinS = 5000;
-
 
  // boolean variables
  int wrapping,condition;
@@ -432,7 +427,7 @@ int idx=0;
       ray->GetOutput()->GetSpacing(sp);
       signalCollection->AddItem(signal);
     }
-    
+
     switch(this->Method) {
        case 0:
           this->FWHM(signal,samples);
@@ -449,7 +444,7 @@ int idx=0;
     }
     loc1 = samples->GetValue(0);
     loc2 = samples->GetValue(1);
-   
+
     if (loc1>loc2 && loc2!= -1) {
       cout<<"WARNING: Inner radius (loc1="<<loc1<<") is greater than outer radius (loc2="<<loc2<<")."<<endl;
       loc1=-1;
@@ -459,9 +454,9 @@ int idx=0;
     //  {
     //  loc1 = radiusInner->GetValue(idx-1)/delta;
 
-    //if (th ==0) 
+    //if (th ==0)
     //  cout<<"Loc1: "<<loc1<<" "<<"Loc2: "<<loc2<<endl;
-   
+
     //Take only into account good rays
     if (loc1 >0 && loc2 >0 ) {
         tmp = loc1*sp[0];
@@ -529,19 +524,18 @@ int idx=0;
         if (tmp > tmpOuterMax)
           tmpOuterMax = tmp;
         if (tmp < tmpOuterMin)
-          tmpOuterMin = tmp; 
+          tmpOuterMin = tmp;
 
         maxInnerI = tmpInnerMax;
         minInnerI = tmpInnerMin;
         maxOuterI = tmpOuterMax;
         minOuterI = tmpOuterMin;
 
-
         Ai += pow(loc1*sp[0],2)*sin(dth)*0.5;
         Ae += pow(loc2*sp[0],2)*sin(dth)*0.5;
         Pi += sin(dth)*loc1*sp[0];
 
-        if (th == 0 || (th > vtkMath::Pi()-dth/2 && th< vtkMath::Pi()+dth/2)) 
+        if (th == 0 || (th > vtkMath::Pi()-dth/2 && th< vtkMath::Pi()+dth/2))
           {
           meanRLInnerDiam = loc1*sp[0] + meanRLInnerDiam;
           meanRLOuterDiam = loc2*sp[0] + meanRLOuterDiam;
@@ -594,22 +588,28 @@ int idx=0;
         double Tpa = (loc1 + this->Alpha * (loc2-loc1));
         tmpPA = 0;
         int tmpSamples = 0;
-        if ((int)Tpa > signal->GetNumberOfTuples())
-          Tpa = signal->GetNumberOfTuples();
-        if (zeroLoc > loc2) {
-          for (int k = (int) zeroLoc ; k<(int) (Tpa); k++) {
+        if ((int)Tpa >= signal->GetNumberOfTuples())
+          {
+          Tpa = signal->GetNumberOfTuples()-1;
+          }
+        if (zeroLoc > loc2)
+          {
+          for (int k = (int) zeroLoc ; k<(int) (Tpa); k++)
+            {
             tmpPA += signal->GetComponent(k,0);
             tmpSamples++;
-          }
+            }
           if (tmpSamples == 0)
-           {
+            {
            tmpPA = signal->GetComponent((int) (Tpa),0);
            tmpSamples++;
-           }
-        } else {
+            }
+          }
+        else
+          {
           tmpPA = signal->GetComponent((int) (Tpa),0);
           tmpSamples++;
-        }
+          }
         tmpPA=tmpPA/tmpSamples;
         meanPA += tmpPA;
         stdPA += tmpPA*tmpPA;
@@ -642,9 +642,9 @@ int idx=0;
 
         //Check sector statistics
         if (this->ActivateSector) {
-          condition = ((wrapping && (th>= this->ThetaMin || th<= ( this->ThetaMax - 2*vtkMath::Pi() ) )) || 
+          condition = ((wrapping && (th>= this->ThetaMin || th<= ( this->ThetaMax - 2*vtkMath::Pi() ) )) ||
                        ((!wrapping) && (th>= this->ThetaMin && th<= this->ThetaMax)) );
- 
+
         if (condition) {
           tmp = loc1*sp[0];
           meanRiS +=tmp;
@@ -693,7 +693,7 @@ int idx=0;
           if (tmpMin < tmpWIMinS)
             tmpWIMinS = tmpMin;
           // Peak Intensity
-          if (tmpMax> tmpPeakMaxS) 
+          if (tmpMax> tmpPeakMaxS)
             tmpPeakMaxS = tmpMax;
           if (tmpMax< tmpPeakMinS)
             tmpPeakMinS = tmpMax;
@@ -713,7 +713,6 @@ int idx=0;
             tmpOuterMaxS = tmp;
           if (tmp < tmpOuterMinS)
             tmpOuterMinS = tmp;
-
 
         AiS += pow(loc1*sp[0],2)*sin(dth)*0.5;
         AeS += pow(loc2*sp[0],2)*sin(dth)*0.5;
@@ -748,7 +747,6 @@ int idx=0;
 
         WsamplesS++;
         }
-
         }
      }
     else {
@@ -774,7 +772,7 @@ int idx=0;
        angleOuter->InsertNextValue(th);
      }
  }
- 
+
  //Remove outlier
  this->RemoveOutliers(radiusInner);
  this->RemoveOutliers(radiusOuter);
@@ -784,7 +782,7 @@ int idx=0;
 vtkCardinalSpline *is = vtkCardinalSpline::New();
 vtkCardinalSpline *os = vtkCardinalSpline::New();
 idx = 0;
-for (double th =-dth ; th <= 2*vtkMath::Pi(); th +=dth) { 
+for (double th =-dth ; th <= 2*vtkMath::Pi(); th +=dth) {
  //Add an extra point at each end to deal with wrapping
   if (th==-dth)
      {
@@ -800,7 +798,7 @@ for (double th =-dth ; th <= 2*vtkMath::Pi(); th +=dth) {
      if (radiusOuter->GetValue(0) > 0)
        os->AddPoint(th,radiusOuter->GetValue(0));
     }
-  else 
+  else
     {
     if (radiusInner->GetValue(idx) > 0)
       is->AddPoint(th,radiusInner->GetValue(idx));
@@ -872,7 +870,7 @@ int cellcount = 0;
 int pointIdx=0;
 for (int i=0; i<radiusInner->GetNumberOfTuples();i++)
   {
-  if (radiusInner->GetValue(i)>0) {  
+  if (radiusInner->GetValue(i)>0) {
     ip->InsertNextPoint(center[0]+radiusInner->GetValue(i)*cos(angleInner->GetValue(i)),center[1]+radiusInner->GetValue(i)*sin(angleInner->GetValue(i)),0);
     if (newcell) {
       ic->InsertNextCell(radiusInner->GetNumberOfTuples());
@@ -888,18 +886,18 @@ for (int i=0; i<radiusInner->GetNumberOfTuples();i++)
       ic->UpdateCellCount(cellcount);
       newcell = 1;
      }
-  }  
   }
- //Finish the last cell  
+  }
+ //Finish the last cell
 if (newcell == 0)
-  ic->UpdateCellCount(cellcount); 
+  ic->UpdateCellCount(cellcount);
 
 pointIdx = 0;
 cellcount = 0;
 newcell = 1;
-for (int i=0; i<radiusOuter->GetNumberOfTuples();i++) 
+for (int i=0; i<radiusOuter->GetNumberOfTuples();i++)
   {
-  if (radiusOuter->GetValue(i) > 0) {  
+  if (radiusOuter->GetValue(i) > 0) {
     op->InsertNextPoint(center[0]+radiusOuter->GetValue(i)*cos(angleOuter->GetValue(i)),center[1]+radiusOuter->GetValue(i)*sin(angleOuter->GetValue(i)),0);
     if (newcell) {
       oc->InsertNextCell(radiusOuter->GetNumberOfTuples());
@@ -914,8 +912,8 @@ for (int i=0; i<radiusOuter->GetNumberOfTuples();i++)
      if (newcell == 0) {
       oc->UpdateCellCount(cellcount);
       newcell = 1;
-     }  
-  }    
+     }
+  }
   }
 //Finish the last cell
 if (newcell == 0)
@@ -931,7 +929,7 @@ angleOuter->Delete();
 sFilter->Delete();
 
 /*
-if (ip->GetNumberOfPoints()>0) 
+if (ip->GetNumberOfPoints()>0)
  ip->InsertNextPoint(ip->GetPoint(0));
 if (op->GetNumberOfPoints()>0)
  op->InsertNextPoint(op->GetPoint(0));
@@ -952,7 +950,7 @@ if (op->GetNumberOfPoints()>0)
  ic->InsertCellPoint(0);
  oc->InsertCellPoint(0);
  */
- 
+
  // Set output polydata
  this->InnerContour->SetPoints(ip);
  this->InnerContour->SetLines(ic);
@@ -960,7 +958,7 @@ if (op->GetNumberOfPoints()>0)
  ic->Delete();
 
  /*
- vtkSmoothLines *sf; 
+ vtkSmoothLines *sf;
  sf = vtkSmoothLines::New();
  sf->SetInput(this->InnerContour);
  sf->SetNumberOfIterations(10);
@@ -968,12 +966,12 @@ if (op->GetNumberOfPoints()>0)
  this->InnerContour->DeepCopy(sf->GetOutput());
  sf->Delete();
 */
- 
+
  this->OuterContour->SetPoints(op);
  this->OuterContour->SetLines(oc);
  op->Delete();
  oc->Delete();
- 
+
  /*
  vtkPolyDataWriter * ww=vtkPolyDataWriter::New();
  ww->SetInput(this->InnerContour);
@@ -995,7 +993,7 @@ ww2->Delete();
  this->OuterContour->DeepCopy(sf->GetOutput());
  sf->Delete();
 */
- 
+
  meanRi = meanRi/Wsamples;
  meanRo = meanRo/Wsamples;
  meanWth = meanWth/Wsamples;
@@ -1056,7 +1054,7 @@ double lumenA1,lumenA2,lumenMin;
 int lumenSamples=0;
 meanLA = 0;
 stdLA = 0;
-  
+
 for (int k=0; k< lumenA->GetNumberOfTuples()/2;k++)
   {
   lumenA1 = lumenA->GetValue(k);
@@ -1169,9 +1167,6 @@ stdPower = sqrt(stdPower/Wsamples - meanPower*meanPower);
    // Power
    meanPowerS = meanPowerS/WsamplesS;
    stdPowerS = sqrt(stdPowerS/WsamplesS - meanPowerS*meanPowerS);
-
-
-
 }
 
  StatsMean->Initialize();
@@ -1220,7 +1215,7 @@ stdPower = sqrt(stdPower/Wsamples - meanPower*meanPower);
  StatsMean->SetComponent(40,0,meanPower);
  StatsMean->SetComponent(41,0,stdPower);
 
- StatsMean->SetComponent(0,1,meanRiS); 
+ StatsMean->SetComponent(0,1,meanRiS);
  StatsMean->SetComponent(1,1,stdRiS);
  StatsMean->SetComponent(2,1,meanRoS);
  StatsMean->SetComponent(3,1,stdRoS);
@@ -1317,7 +1312,7 @@ stdPower = sqrt(stdPower/Wsamples - meanPower*meanPower);
      StatsMinMax->SetComponent(k,1,0.0);
      }
    }
- else 
+ else
    {
  StatsMinMax->SetComponent(0,1,minRiS);
  StatsMinMax->SetComponent(1,1,maxRiS);
@@ -1377,9 +1372,7 @@ extractCollection->Delete();
 lumenA->Delete();
 }
 
-
 void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
-  
   double mean=0;
   double std=0;
   double e2=0;
@@ -1389,12 +1382,12 @@ void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
       mean += r->GetValue(k);
       e2 += r->GetValue(k) * r->GetValue(k);
       tt++;
-    }  
+    }
   }
   mean = mean/tt;
   e2 = e2/tt;
   std = sqrt(e2-mean*mean);
-  
+
   //Compute a mean and std that is robust to outlier
   // We use (r-mean)+- 2sigma
   double meanr = 0;
@@ -1410,24 +1403,22 @@ void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
       }
     }
   }
-  
+
   meanr = meanr/tt;
   e2r = e2r/tt;
-  
+
   stdr = sqrt(e2r-meanr*meanr);
   //cout<<"Robust mean = "<<meanr<<" Robust std = "<<stdr<<endl;
- 
+
   //Set points to -1 that fall beyond the criteria
   for (int k=0; k<r->GetNumberOfTuples(); k++) {
     if (fabs(r->GetValue(k)-meanr) >= 2*stdr) {
       r->SetValue(k,-1);
     }
   }
-  
-}  
+}
 
 void vtkComputeAirwayWall::FWHM(vtkDoubleArray *ray,vtkDoubleArray *values) {
-
 double rmin,rmax;
 vtkDoubleArray *c = vtkDoubleArray::New();
 vtkDoubleArray *cp = vtkDoubleArray::New();
@@ -1455,13 +1446,9 @@ values->SetValue(1,rmax);
 c->Delete();
 cp->Delete();
 cpp->Delete();
-
-
 }
 
 void vtkComputeAirwayWall::FWHM(vtkDoubleArray *c,vtkDoubleArray *cp, vtkDoubleArray *cpp, double &rmin, double &rmax) {
-
-
 vtkDoubleArray *gzeros = vtkDoubleArray::New();
 //vtkDoubleArray *hzeros = vtkDoubleArray::New();
 
@@ -1482,7 +1469,6 @@ if (nzeros<1)
   rmax=-1;
   return;
   }
-
 
 //Auto adjust wall threhold if the current one is lower that a mean of the estimated luminal samples
 int wallTh;
@@ -1512,7 +1498,6 @@ else
   wallTh = this->WallThreshold;
   }
 
-
 int tmp;
 for (int k=0; k<nzeros; k++) {
   loc=gzeros->GetValue(k);
@@ -1530,12 +1515,12 @@ for (int k=0; k<nzeros; k++) {
 	  continue;
 	}
 	// Get valley locations at both size of the wall maxima.
-	if (k==0) 
+	if (k==0)
   {
 	  loc1=1;
   }
 	else
-    { 
+    {
     loc1 = gzeros->GetValue(k-1);
     }
   if (k>=nzeros-1)
@@ -1551,7 +1536,7 @@ for (int k=0; k<nzeros; k++) {
   if (int(loc1) >=ntuples || int(loc1) <0) {
 	  //Loc1 is out of range
 	  break;
-	} else {  
+	} else {
     val1 = c->GetValue((int) loc1);
     rmin=this->FindValue(c,(int) loc1,(val+val1)/2);
     valg = cp->GetValue((int) rmin);
@@ -1567,7 +1552,7 @@ for (int k=0; k<nzeros; k++) {
   if (int(loc2) >=ntuples || int(loc2) <0) {
 	  // Loc2 is out of range but loc1 was assigned, set rmax to -1 and let it finish.
     rmax = -1;
-	} else {  
+	} else {
             val2 = c->GetValue((int) loc2);
             rmax=this->FindValue(c,(int) loc,(val+val2)/2);
             //cout<<"Find rmax: "<<rmax<<endl;
@@ -1586,7 +1571,6 @@ gzeros->Delete();
 }
 
 void vtkComputeAirwayWall::ZeroCrossing(vtkDoubleArray *ray,vtkDoubleArray *values) {
-
 double rmin,rmax;
 vtkDoubleArray *c = vtkDoubleArray::New();
 vtkDoubleArray *cp = vtkDoubleArray::New();
@@ -1614,13 +1598,9 @@ values->SetValue(1,rmax);
 c->Delete();
 cp->Delete();
 cpp->Delete();
-
-
 }
 
 void vtkComputeAirwayWall::ZeroCrossing(vtkDoubleArray *c,vtkDoubleArray *cp, vtkDoubleArray *cpp, double &rmin, double &rmax) {
-
-
 vtkDoubleArray *gzeros = vtkDoubleArray::New();
 vtkDoubleArray *hzeros = vtkDoubleArray::New();
 
@@ -1647,12 +1627,11 @@ else
   wallTh = this->WallThreshold;
 
 for (int k=0; k<ngzeros; k++) {
-
   loc=gzeros->GetValue(k);
   //Check loc is in the allowed range
   if ((int)(loc) >= nc-1 || (int)(loc) < 0)
     continue;
-  
+
    //Wall center point (loc) has to be a maxima (cpp <= 0). We let inflection points pass.
    if (cpp->GetValue((int) loc) > 0) {
      continue;
@@ -1678,16 +1657,13 @@ for (int k=0; k<ngzeros; k++) {
             hzeros->Delete();
             return;
         }
-
     }
   }
 }
 
 gzeros->Delete();
 hzeros->Delete();
-
 }
-
 
 //----------------------------------------------------------------------------
 // VTK6 migration note:
@@ -1697,7 +1673,6 @@ hzeros->Delete();
 //   reference: http://www.vtk.org/Wiki/VTK/VTK_6_Migration/Removal_of_Update
 
 void vtkComputeAirwayWall::PhaseCongruency(vtkDoubleArray *ray,vtkDoubleArray *values) {
-
 // Derivatives of phase congruency
 vtkDoubleArray *pc1 = vtkDoubleArray::New();
 vtkDoubleArray *pc2 = vtkDoubleArray::New();
@@ -1725,7 +1700,6 @@ inputSignal->SetSpacing(1,1,1);
 //inputSignal->SetScalarTypeToDouble();
 inputSignal->GetPointData()->SetScalars(c);
 //inputSignal->UpdateInformation();
-
 
 vtkGeneralizedPhaseCongruency *pcFilter = vtkGeneralizedPhaseCongruency::New();
 pcFilter->SetInputData(inputSignal);
@@ -1756,7 +1730,6 @@ pc2->Delete();
 }
 
 void vtkComputeAirwayWall::PhaseCongruency(vtkDoubleArray *c, vtkDoubleArray *cp,vtkDoubleArray *pcV, vtkDoubleArray *values) {
-
 vtkDoubleArray *pc1 = vtkDoubleArray::New();
 vtkDoubleArray *pc2 = vtkDoubleArray::New();
 
@@ -1773,13 +1746,10 @@ this->PhaseCongruency(c,cp,pc1,pc2,values);
 
 pc1->Delete();
 pc2->Delete();
-
 }
-
 
 void vtkComputeAirwayWall::PhaseCongruency(vtkDoubleArray *c, vtkDoubleArray *cp, vtkDoubleArray *pc1, vtkDoubleArray *pc2, vtkDoubleArray *values)
 {
-
 double rmin,rmax;
 
 int ntuples = pc1->GetNumberOfTuples();
@@ -1809,7 +1779,6 @@ dpc1->SetValue(0,dpc1->GetValue(1));
 dpc2->SetValue(0,dpc2->GetValue(1));
 dpc1->SetValue(ntuples-1,dpc1->GetValue(ntuples-2));
 dpc2->SetValue(ntuples-1,dpc2->GetValue(ntuples-2));
-
 
 vtkDoubleArray *pczeros = vtkDoubleArray::New();
 int npczeros;
@@ -1875,7 +1844,6 @@ if (wallTh < 0 )
 //Gradient threshold
 double wallGradTh = this->GradientThreshold;
 
-
 // Find Inner Wall
 for (int k=0; k<npczeros; k++) {
   loc=pczeros->GetValue(k);
@@ -1888,9 +1856,9 @@ for (int k=0; k<npczeros; k++) {
   val = c->GetValue((int) loc);
   valg = cp->GetValue((int) loc);
   pcval = pc1->GetValue((int) loc);
-  //We check if the relative wall intensity is greater than -10% * pcval (so 
+  //We check if the relative wall intensity is greater than -10% * pcval (so
   // the threshold is modulated by pcval such as if pcval=1 we allow a 10% negative variability in the
-  // intensity threshold) and that pcval is greater than the threshold  
+  // intensity threshold) and that pcval is greater than the threshold
   if ((val - wallTh)/(wallTh+dc_offset) > -0.10*pcval && (fabs(valg) - wallGradTh)/wallGradTh > -0.10*pcval && pcval > this->PCThreshold) {
     rmin = loc;
     break;
@@ -1924,7 +1892,6 @@ values->SetValue(1,rmax);
 pczeros->Delete();
 dpc1->Delete();
 dpc2->Delete();
-
 }
 
 void vtkComputeAirwayWall::PhaseCongruencyMultipleKernels(vtkDataArrayCollection *signalCollection,vtkDoubleArray *values,double sp) {
@@ -1985,7 +1952,7 @@ for (int i=0; i<numKernels-1; i++) {
        } else {
          zc[0] = (-B + sqrt(res))/(2*A);
          zc[1] = (-B - sqrt(res))/(2*A);
-       } 
+       }
        //cout<<"zc[0]: "<<zc[0]<<" zc[1]: "<<zc[1]<<endl;
 
        for (int sol=0 ; sol<2; sol++) {
@@ -2017,7 +1984,7 @@ if (upcrossing->GetNumberOfTuples() > 0)
 for (int i=1;i<upcrossing->GetNumberOfTuples();i++) {
   tmp = (rmin + upcrossing->GetValue(i)/i)*i/(i+1);
   if (fabs(tmp - upcrossing->GetValue(i))<10)
-    rmin = tmp; 
+    rmin = tmp;
 }
 /*
 if (upcrossing->GetNumberOfTuples() > 0)
@@ -2049,7 +2016,6 @@ for (int i=1;i<downcrossing->GetNumberOfTuples();i++) {
   }
 }
 
-
 values->Initialize();
 //values->SetNumberOfComponents(1);
 values->SetNumberOfValues(2);
@@ -2059,7 +2025,6 @@ values->SetValue(1,rmax);
 upcrossing->Delete();
 downcrossing->Delete();
 }
-
 
 double vtkComputeAirwayWall::FindValue(vtkDoubleArray *c, int loc, double target) {
 int ntuples = c->GetNumberOfTuples();
@@ -2083,11 +2048,9 @@ for (int k=loc; k< ntuples; k++) {
 return -1;
 }
 
-
 //Find the zeros of a signal. The signal is given in a vtkDoubleArray and the zeros are return as 0-based coordinates.
 // If derivaties of the signal are available, these are passed in cp and cpp.
 void vtkComputeAirwayWall::FindZeros(vtkDoubleArray *c, vtkDoubleArray *cp, vtkDoubleArray *cpp,vtkDoubleArray *zeros) {
-
 if (zeros == NULL)
     return;
 zeros->Initialize();
@@ -2105,15 +2068,15 @@ double val0,val1,zero;
 int k=0;
 while (initIdx < np-1) {
    val0 = c->GetValue(initIdx);
-   
+
    //Check if we are in a zero
-   if (val0 ==0) 
+   if (val0 ==0)
      {
      zeros->InsertNextValue(initIdx);
      initIdx++;
      continue;
      }
-   
+
    for (k =initIdx+1; k<np; k++) {
       val1 = c->GetValue(k);
       //cout<<"k: "<<k<<" Val1: "<<val1<<endl;
@@ -2142,12 +2105,10 @@ while (initIdx < np-1) {
          initIdx= k;
          break;
       }
-
     }
    if (k>=np)
     break;
 }
-
 }
 
 // Finds the coordinate of the zero crossing based on the bracket points around the zero.
@@ -2156,7 +2117,6 @@ while (initIdx < np-1) {
 // f1 = f(x_1): point rigth to the zero
 // Function return zero is problem has been found finding zero location.
 int  vtkComputeAirwayWall::FindZeroLocation(double fm1, double fm1p, double fm1pp, double f1, double f1p, double f1pp, double delta, double & zero) {
-
 double a = 0.5*fm1pp - 0.5*f1pp;
 double b = fm1p - f1p + delta * f1pp;
 double c = fm1 - f1 + delta*f1p - delta*delta*0.5*f1pp;
@@ -2184,7 +2144,6 @@ return 1;
 // f1 = f(x_1): point rigth to the zero
 // Function return zero is problem has been found finding zero location.
 int  vtkComputeAirwayWall::FindZeroLocation(double fm1, double fm1p, double f1, double f1p, double delta, double & zero) {
-
 //zero = (f1 - delta*f1p - fm1)/(fm1p - f1p);
 
 if (fm1p < 1e-15 && f1p > 1e-15)
@@ -2206,18 +2165,16 @@ else
   }
 if (zero < 0)
   return 0;
-else 
+else
   return 1;
 }
 
 int  vtkComputeAirwayWall::FindZeroLocation(double fm1, double f1, double delta, double & zero) {
-
 //zero = delta*fabs(fm1)/(fabs(fm1)+fabs(f1));
 //Same results but without fabs
 zero = -delta * fm1/(f1-fm1);
 return 1;
 }
-
 
 void vtkComputeAirwayWall::PrintSelf(ostream& os, vtkIndent indent)
 {
