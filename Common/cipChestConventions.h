@@ -202,7 +202,11 @@ enum ChestType {
   HERNIA,                         //81
   BONEMARROW,                     //82
   BONE,                           //83
-  INTERSTITIALLUNGDISEASE         //84
+  INTERSTITIALLUNGDISEASE,        //84
+  SUBPLEURALLINE,                 //85             
+  NODULE,                         //86
+  BENIGNNODULE,                   //87
+  MALIGNANTNODULE,                //88
 };
 
 enum ImageFeature {
