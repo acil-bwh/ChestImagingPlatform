@@ -10,6 +10,7 @@ from scipy import ndimage
 import nrrd
 from kde_bandwidth import botev_bandwidth
 #from cip_python.io.image_reader_writer import ImageReaderWriter
+import time
      
 class kdeHistExtractor:
     """General purpose class implementing a kernel density estimation histogram
@@ -138,6 +139,7 @@ class kdeHistExtractor:
         #patch_labels_copy = np.copy(patch_labels)
         #patch_labels_copy[lm == 0] = 0
         unique_patch_labels = np.unique(patch_labels[:])
+        unique_patch_labels = unique_patch_labels[unique_patch_labels !=0]
 
         assert ((self.x_half_length*2 <= np.shape(ct)[0]) and \
             (self.y_half_length*2 <= np.shape(ct)[1]) and \
@@ -147,16 +149,17 @@ class kdeHistExtractor:
         # loop through each patch 
         inc = 0
         
-
+        patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
+                    patch_labels.astype(np.int32), unique_patch_labels)
         for p_label in unique_patch_labels:
-            if p_label > 0:
                 if np.mod(p_label,100) ==0:
                     print("computing histogram for patch "+str(p_label))
+                     
+                patch_center = map(int, patch_center_temp[inc])
+                inc = inc+1
+
                 
-                patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
-                    patch_labels.astype(np.int32), p_label)
-                   
-                patch_center = map(int, patch_center_temp)
+                #print("center of mass time: "+str(toc-tic))
                 intensities_temp = ct[max(patch_center[0]-self.x_half_length,0):\
                     min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0]),\
                     max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
@@ -170,13 +173,12 @@ class kdeHistExtractor:
                     patch_center[2]-self.z_half_length:min(patch_center[2]+\
                     self.z_half_length+1,np.shape(ct)[2])] 
                                     
-                
+                #print("lm extraction time: "+str(toc2-toc))
                 # extract the lung area from the CT for the patch
                 patch_intensities = intensities_temp[(lm_temp >0)] 
                 # linearize features
                 intensity_vector = np.array(patch_intensities.ravel()).T
                 if (np.shape(intensity_vector)[0] > 1):
-                    inc = inc+1
                     # obtain kde histogram from features
                     histogram = self._perform_kde_botev(intensity_vector)
                     index = self.df_['patch_label'] == p_label

@@ -11,6 +11,7 @@ from scipy import ndimage
 from kde_bandwidth import botev_bandwidth
 from cip_python.ChestConventions import ChestConventions
 #from cip_python.io.image_reader_writer import ImageReaderWriter
+import time
      
 class DistanceFeatureExtractor:
     """General purpose class implementing a distance feature extractor. 
@@ -111,10 +112,11 @@ class DistanceFeatureExtractor:
         lm: 3D numpy array, shape (L, M, N)
             Input mask where distance features wil be extracted.    
         """        
+        
         #patch_labels_copy = np.copy(patch_labels)
         #patch_labels_copy[lm == 0] = 0
         unique_patch_labels = np.unique(patch_labels[:])
-
+        unique_patch_labels = unique_patch_labels[unique_patch_labels !=0]
         assert ((self.x_half_length*2 <= np.shape(distance_image)[0]) and \
             (self.y_half_length*2 <= np.shape(distance_image)[1]) and \
             (self.z_half_length*2 <= np.shape(distance_image)[2])), \
@@ -122,16 +124,18 @@ class DistanceFeatureExtractor:
                     
         # loop through each patch 
         inc = 0
-          
+        patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
+                    patch_labels.astype(np.int32), unique_patch_labels)  
+        
+        print(np.shape(patch_center_temp))
+        print(np.shape(unique_patch_labels))
         for p_label in unique_patch_labels:
-            if p_label > 0:
                 # extract the lung area from the CT for the patch
                 #patch_distances = distance_image[patch_labels==p_label] 
-
-                patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
-                    patch_labels.astype(np.int32), p_label)
                    
-                patch_center = map(int, patch_center_temp)
+                patch_center = map(int, patch_center_temp[inc])
+                inc = inc+1
+                
                 distances_temp = distance_image[max(patch_center[0]-self.x_half_length,0):\
                     min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0]),\
                     max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
@@ -151,7 +155,7 @@ class DistanceFeatureExtractor:
                 # linearize features
                 distance_vector = np.array(patch_distances.ravel()).T
                 if (np.shape(distance_vector)[0] > 1):
-                    inc = inc+1
+                    #inc = inc+1
                     # compute the average distance
                     mean_dist = np.mean(distance_vector) 
                     index = self.df_['patch_label'] == p_label
@@ -166,6 +170,7 @@ class DistanceFeatureExtractor:
                         tmp[self.distance_feature_name] = mean_dist
 
                         self.df_ = self.df_.append(tmp, ignore_index=True)
+
                 #pdb.set_trace()
                     
 if __name__ == "__main__":
