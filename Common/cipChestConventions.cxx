@@ -4,7 +4,7 @@
 cip::ChestConventions::ChestConventions()
 {
   m_NumberOfEnumeratedChestRegions  = 69;
-  m_NumberOfEnumeratedChestTypes    = 85;
+  m_NumberOfEnumeratedChestTypes    = 89;
   m_NumberOfEnumeratedImageFeatures = 7;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
@@ -490,7 +490,11 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "BoneMarrow" );
   ChestTypeNames.push_back( "Bone" );
   ChestTypeNames.push_back( "InterstitialLungDisease" );
-    
+  ChestTypeNames.push_back( "SubpleuralLine" );  
+  ChestTypeNames.push_back( "Nodule" );  
+  ChestTypeNames.push_back( "BenignNodule" );  
+  ChestTypeNames.push_back( "MalignantNodule" );  
+
   ImageFeatureNames.push_back( "UndefinedFeature" );
   ImageFeatureNames.push_back( "CTArtifact" );
   ImageFeatureNames.push_back( "CTBeamHardening" );
@@ -667,6 +671,11 @@ cip::ChestConventions::ChestConventions()
   double* t083 = new double[3]; t083[0] = 0.92; t083[1] = 0.00; t083[2] = 0.00; ChestTypeColors.push_back( t083 ); //BONEMARROW
   double* t084 = new double[3]; t084[0] = 0.93; t084[1] = 0.00; t084[2] = 0.00; ChestTypeColors.push_back( t084 ); //BONE
   double* t085 = new double[3]; t085[0] = 0.94; t085[1] = 0.00; t085[2] = 0.00; ChestTypeColors.push_back( t085 ); //INTERSTITIALLUNGDISEASE
+
+  double* t086 = new double[3]; t086[0] = 0.01; t086[1] = 0.02; t086[2] = 0.01; ChestTypeColors.push_back( t086 ); //SUBPLEURALLINE
+  double* t087 = new double[3]; t087[0] = 0.01; t087[1] = 0.02; t087[2] = 0.02; ChestTypeColors.push_back( t087 ); //NODULE
+  double* t088 = new double[3]; t088[0] = 0.01; t088[1] = 0.02; t088[2] = 0.03; ChestTypeColors.push_back( t088 ); //BENIGNNODULE
+  double* t089 = new double[3]; t089[0] = 0.01; t089[1] = 0.02; t089[2] = 0.04; ChestTypeColors.push_back( t089 ); //MALIGNANTNODULE
 
   //
   // Each region is associated with a color. This is generally
