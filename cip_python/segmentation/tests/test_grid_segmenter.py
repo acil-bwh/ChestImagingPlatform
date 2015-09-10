@@ -20,7 +20,6 @@ def test_execute():
     grid_segmenter = GridSegmenter(input_dimensions=None, ct=ct_array, \
         x_size=3, y_size=5, z_offset=2)
     grid_segmentation = grid_segmenter.execute()
-    #nrrd.write(grid_name, grid_segmentation, ct_header) 
     assert np.sum(np.abs(grid_segmentation-grid_array))==0, 'grid not as \
         expected'
 

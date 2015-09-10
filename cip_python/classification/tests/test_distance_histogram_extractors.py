@@ -30,18 +30,22 @@ def test_execute():
     dist_map[1, 0, 0] = 3
     dist_map[1, 1, 0] = 4            
     
-    dist_extractor = DistanceFeatureExtractor(chest_region="WholeLung")
+    dist_extractor = DistanceFeatureExtractor(chest_region="WholeLung",\
+                                        x_extent=2, y_extent = 2, z_extent = 1)
     dist_extractor.fit(dist_map, lm, patches)
 
-    hist_extractor = kdeHistExtractor(lower_limit=5, upper_limit=8)
+    hist_extractor = kdeHistExtractor(lower_limit=5, upper_limit=8,\
+        x_extent=2, y_extent = 2, z_extent = 1)
     hist_extractor.fit(ct, lm, patches)
 
     hist_extractor2 = kdeHistExtractor(lower_limit=5, upper_limit=8, 
-                                       in_df=dist_extractor.df_)
+                                       in_df=dist_extractor.df_,\
+                                        x_extent=2, y_extent = 2, z_extent = 1)
     hist_extractor2.fit(ct, lm, patches)
 
     dist_extractor2 = DistanceFeatureExtractor(chest_region="WholeLung",
-                                               in_df=hist_extractor.df_)
+                                               in_df=hist_extractor.df_,\
+                                        x_extent=2, y_extent = 2, z_extent = 1)
     dist_extractor2.fit(dist_map, lm, patches)    
 
     assert dist_extractor2.df_.ix[0, 'patch_label'] == 1, \

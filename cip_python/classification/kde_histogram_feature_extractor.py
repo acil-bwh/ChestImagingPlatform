@@ -97,20 +97,21 @@ class kdeHistExtractor:
         --------
         hist : array, shape (n_bins)
             The computed histogram
-        """        
+        """  
+              
         input_data = np.squeeze(input_data)
 
         kde_bandwidth_estimator = botev_bandwidth()
         the_bandwidth = kde_bandwidth_estimator.run(input_data)
         
-        if (the_bandwidth < 0.1):
-            warnings.warn("Bandwidth less than 0.1: "+str(the_bandwidth))
+        #if (the_bandwidth < 0.1):
+        #    warnings.warn("Bandwidth less than 0.1: "+str(the_bandwidth))
         if (the_bandwidth <= 0):
             warnings.warn("Bandwidth negative: "+str(the_bandwidth)+\
                 " Set to 0.02")
             the_bandwidth = 0.02
             
-        kde = KernelDensity(bandwidth=the_bandwidth)
+        kde = KernelDensity(bandwidth=the_bandwidth, rtol=1e-6)
         kde.fit(input_data[:, np.newaxis])
         
         # Get histogram 
@@ -118,6 +119,8 @@ class kdeHistExtractor:
         log_dens = kde.score_samples(X_plot)
         the_hist = np.exp(log_dens)
         #the_hist = the_hist/np.sum(the_hist)
+        
+
         
         return the_hist
         
@@ -138,6 +141,9 @@ class kdeHistExtractor:
         """                
         #patch_labels_copy = np.copy(patch_labels)
         #patch_labels_copy[lm == 0] = 0
+        
+        
+        
         unique_patch_labels = np.unique(patch_labels[:])
         unique_patch_labels = unique_patch_labels[unique_patch_labels !=0]
 
@@ -154,51 +160,62 @@ class kdeHistExtractor:
         for p_label in unique_patch_labels:
                 if np.mod(p_label,100) ==0:
                     print("computing histogram for patch "+str(p_label))
-                     
                 patch_center = map(int, patch_center_temp[inc])
                 inc = inc+1
 
+                xmin = max(patch_center[0]-self.x_half_length,0)
+                xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0])
+                ymin = max(patch_center[1]-self.y_half_length,0)
+                ymax = min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(ct)[1])
+                zmin = max(patch_center[2]-self.z_half_length,0)
+                zmax = min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(ct)[2])
                 
                 #print("center of mass time: "+str(toc-tic))
-                intensities_temp = ct[max(patch_center[0]-self.x_half_length,0):\
-                    min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0]),\
-                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
-                    self.y_half_length+1,np.shape(ct)[1]),\
-                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
-                    self.z_half_length+1,np.shape(ct)[2])]
-                lm_temp = lm[max(patch_center[0]-self.x_half_length,0):\
-                    min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0]),\
-                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
-                    self.y_half_length+1,np.shape(ct)[1]),\
-                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
-                    self.z_half_length+1,np.shape(ct)[2])] 
-                                    
+                intensities_temp = ct[xmin:xmax, ymin:ymax, zmin:zmax]                    
+                lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]
+                                   
                 #print("lm extraction time: "+str(toc2-toc))
                 # extract the lung area from the CT for the patch
                 patch_intensities = intensities_temp[(lm_temp >0)] 
                 # linearize features
                 intensity_vector = np.array(patch_intensities.ravel()).T
+                
                 if (np.shape(intensity_vector)[0] > 1):
                     # obtain kde histogram from features
+                    tic = time.clock()     
                     histogram = self._perform_kde_botev(intensity_vector)
+                    
                     index = self.df_['patch_label'] == p_label
+                    
                     if np.sum(index) > 0:
+                        toc1 = time.clock() 
                         for i in range(0, np.shape(self.bin_values)[0]):
                             self.df_.ix[index, 'hu' + str(self.bin_values[i])] \
                               = histogram[i]
-                    else:                    
+                        toc2 = time.clock() 
+                        print("execution time of post hist extractor 1= "+str(toc2 - toc1))   
+                    else:      
+                        toc1 = time.clock()               
                         tmp = dict()
                         tmp['ChestRegion'] = 'UndefinedRegion'
                         tmp['ChestType'] = 'UndefinedType'
                         tmp['patch_label'] = p_label
+                        toc2 = time.clock() 
                         for i in range(0, np.shape(self.bin_values)[0]):
                             tmp['hu' + str(self.bin_values[i])] = histogram[i]
-
+                        toc3 = time.clock() 
                         self.df_ = self.df_.append(tmp, ignore_index=True)
-                
-                    #if (np.shape(self.df_)[0] > 99):
-                    #    pdb.set_trace()
-        #pdb.set_trace()    
+                        toc4 = time.clock() 
+                        #import timeit
+                        #timeit self.df_.append(tmp, ignore_index=True)
+                        #pdb.set_trace()
+                    
+                        #print("execution time of post hist extractor 2 new 1= "+str(toc2 - toc1))   
+                        #print("execution time of post hist extractor 2 new 2= "+str(toc3 - toc2))   
+                        #print("execution time of post hist extractor 2 new 3= "+str(toc4 - toc3))   
+          
                 
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
@@ -249,8 +266,12 @@ if __name__ == "__main__":
     print "Compute histogram features..."
     kde_hist_extractor = kdeHistExtractor(lower_limit=np.int16(options.lower_limit), \
         upper_limit=np.int16(options.upper_limit))
-    kde_hist_extractor.fit(ct, lm, in_patches)
-
+    
+    import timeit
+    print(timeit.timeit("kde_hist_extractor.fit(ct, lm, in_patches)", setup="from kdeHistExtractor import fit"))
+    #kde_hist_extractor.fit(ct, lm, in_patches)
+    
+    
     if options.out_csv is not None:
         print "Writing..."
         kde_hist_extractor.df_.to_csv(options.out_csv, index=False)

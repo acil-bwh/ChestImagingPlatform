@@ -68,7 +68,6 @@ class DistanceFeatureExtractor:
         self.x_half_length = np.floor(x_extent/2)
         self.y_half_length = np.floor(y_extent/2)
         self.z_half_length = np.floor(z_extent/2)
-                
         c = ChestConventions()
                 
         if chest_region is not None:
@@ -136,22 +135,20 @@ class DistanceFeatureExtractor:
                 patch_center = map(int, patch_center_temp[inc])
                 inc = inc+1
                 
-                distances_temp = distance_image[max(patch_center[0]-self.x_half_length,0):\
-                    min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0]),\
-                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
-                    self.y_half_length+1,np.shape(distance_image)[1]),\
-                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
-                    self.z_half_length+1,np.shape(distance_image)[2])]
-                lm_temp = lm[max(patch_center[0]-self.x_half_length,0):\
-                    min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0]),\
-                    max(patch_center[1]-self.y_half_length,0):min(patch_center[1]+\
-                    self.y_half_length+1,np.shape(distance_image)[1]),\
-                    patch_center[2]-self.z_half_length:min(patch_center[2]+\
-                    self.z_half_length+1,np.shape(distance_image)[2])]   
+                xmin = max(patch_center[0]-self.x_half_length,0)
+                xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0])
+                ymin = max(patch_center[1]-self.y_half_length,0)
+                ymax = min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(distance_image)[1])
+                zmin = max(patch_center[2]-self.z_half_length,0)
+                zmax = min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(distance_image)[2])
+                
+                distances_temp = distance_image[xmin:xmax, ymin:ymax, zmin:zmax]
+                lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]   
                 # extract the lung area from the CT for the patch
                                                  
                 patch_distances = distances_temp[(lm_temp >0)] 
-
                 # linearize features
                 distance_vector = np.array(patch_distances.ravel()).T
                 if (np.shape(distance_vector)[0] > 1):
@@ -170,8 +167,6 @@ class DistanceFeatureExtractor:
                         tmp[self.distance_feature_name] = mean_dist
 
                         self.df_ = self.df_.append(tmp, ignore_index=True)
-
-                #pdb.set_trace()
                     
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \

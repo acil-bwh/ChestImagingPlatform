@@ -58,7 +58,7 @@ def test_execute():
         x_extent=2, y_extent = 2, z_extent = 2)
     dist_extractor.fit(dist_map, lm, patches)
 
-    pdb.set_trace()
+    #pdb.set_trace()
     
     assert dist_extractor.df_['patch_label'].values[0] == 1, \
       "patch_label not as expected"
