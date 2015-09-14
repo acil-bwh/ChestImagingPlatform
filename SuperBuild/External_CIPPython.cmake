@@ -100,9 +100,14 @@ ExternalProject_Add_Step(${proj} installlxml
 	DEPENDEES installlibpng
 )
 
+ExternalProject_Add_Step(${proj} installscikit-learn
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scikit-learn  
+	DEPENDEES installlxml
+)
+
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
-	DEPENDEES installlxml
+	DEPENDEES installscikit-learn
 )
 
 ExternalProject_Add_Step(${proj} installpydicom
