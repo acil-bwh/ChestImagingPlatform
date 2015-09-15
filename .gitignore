@@ -1,3 +1,7 @@
+# Ignore hidden files and folders
+.*
+!/.gitignore
+
 CMakeCache.txt
 CMakeFiles
 MakeFile
@@ -27,6 +31,3 @@ Testing/Data/Input/CropLung_RightLung_Test_ct.nrrd
 
 Testing/Data/Input/CropLung_RightLung_Test_lm.nrrd
 
-.cproject
-
-.project

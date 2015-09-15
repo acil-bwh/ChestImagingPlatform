@@ -140,9 +140,6 @@ else( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "Build Python tests")
 endif( CIP_BUILD_TESTING )
 
-# Copy Resources folder
-
-
 #---------------------------------------------------------------------
 # MIDAS configuration (used in LARGE Testing to store data files)
 if ( CIP_BUILD_TESTING_LARGE )    
