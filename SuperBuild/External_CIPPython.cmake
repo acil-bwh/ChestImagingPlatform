@@ -89,11 +89,6 @@ ExternalProject_Add_Step(${proj} installsimpleitk
 	DEPENDEES installsphinx
 )
 
-# Downgrade of libpng for compatibility problems with SimpleITK (see http://public.kitware.com/pipermail/community/2015-May/009124.html)
-ExternalProject_Add_Step(${proj} installlibpng
-	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet libpng=1.5.13  
-	DEPENDEES installsimpleitk
-)
 
 ExternalProject_Add_Step(${proj} installlxml
 	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet lxml  
@@ -105,9 +100,20 @@ ExternalProject_Add_Step(${proj} installscikit-learn
 	DEPENDEES installlxml
 )
 
+ExternalProject_Add_Step(${proj} installscikit-image
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scikit-image 
+	DEPENDEES installscikit-learn
+)
+
+# Downgrade of libpng for compatibility problems with SimpleITK (see http://public.kitware.com/pipermail/community/2015-May/009124.html)
+ExternalProject_Add_Step(${proj} installlibpng
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet libpng=1.5.13  
+	DEPENDEES installscikit-image
+)
+
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
-	DEPENDEES installscikit-learn
+	DEPENDEES installlibpng
 )
 
 ExternalProject_Add_Step(${proj} installpydicom
