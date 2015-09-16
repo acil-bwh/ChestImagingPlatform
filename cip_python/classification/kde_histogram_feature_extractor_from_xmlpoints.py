@@ -6,8 +6,6 @@ import pandas as pd
 import warnings
 import sys
 sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-from cip_python.classification.distance_feature_extractor \
-  import DistanceFeatureExtractor 
 from cip_python.classification.hist_dist_knn import HistDistKNN
 from cip_python.ChestConventions import ChestConventions
 from cip_python.classification.kde_histogram_feature_extractor \

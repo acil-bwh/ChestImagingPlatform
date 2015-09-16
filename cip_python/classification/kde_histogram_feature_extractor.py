@@ -1,7 +1,6 @@
 import scipy.io as sio
 import numpy as np
 from optparse import OptionParser
-import matplotlib.pyplot as plt
 import pdb
 import pandas as pd
 import warnings
