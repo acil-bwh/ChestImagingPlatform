@@ -89,10 +89,9 @@ ExternalProject_Add_Step(${proj} installsimpleitk
 	DEPENDEES installsphinx
 )
 
-
 ExternalProject_Add_Step(${proj} installlxml
 	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet lxml  
-	DEPENDEES installlibpng
+	DEPENDEES installsimpleitk
 )
 
 ExternalProject_Add_Step(${proj} installscikit-learn
