@@ -1,6 +1,6 @@
 import os, sys
 from lxml import etree
-from CIP.logic.geometry_topology_data import *
+from cip_python.utils.geometry_topology_data import *
 
 
 this_dir = os.path.dirname(os.path.realpath(__file__))     # Directory where this file is contained
