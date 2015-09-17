@@ -326,7 +326,9 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( BONEMARROW ) );
   ChestTypes.push_back( (unsigned char)( BONE ) );
   ChestTypes.push_back( (unsigned char)( INTERSTITIALLUNGDISEASE ) );
-  
+  ChestTypes.push_back( (unsigned char)( SUBPLEURALLINE ) );
+    
+    
   ImageFeatures.push_back( (unsigned char) ( UNDEFINEDFEATURE ));
   ImageFeatures.push_back( (unsigned char) ( CTARTIFACT ));
   ImageFeatures.push_back( (unsigned char) ( CTBEAMHARDENING ));
