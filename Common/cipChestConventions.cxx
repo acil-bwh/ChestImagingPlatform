@@ -327,7 +327,9 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( BONE ) );
   ChestTypes.push_back( (unsigned char)( INTERSTITIALLUNGDISEASE ) );
   ChestTypes.push_back( (unsigned char)( SUBPLEURALLINE ) );
-    
+  ChestTypes.push_back( (unsigned char)( NODULE ) );
+  ChestTypes.push_back( (unsigned char)( BENIGNNODULE ) );
+  ChestTypes.push_back( (unsigned char)( MALIGNANTNODULE ) );    
     
   ImageFeatures.push_back( (unsigned char) ( UNDEFINEDFEATURE ));
   ImageFeatures.push_back( (unsigned char) ( CTARTIFACT ));
