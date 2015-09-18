@@ -38,5 +38,6 @@ def test_execute():
 
 
     reference_df = pd.read_csv(ref_csv)
+
     assert_frame_equal(hist_extractor.df_, reference_df)
 

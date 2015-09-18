@@ -112,7 +112,6 @@ class kdeHistExtractorFromXML:
         # loop through each point and create a patch around it
         inc = 1
         the_patch = np.zeros_like(lm)
-        
         for the_point in my_geometry_data.points : 
             coordinates = the_point.coordinate
             # feature_type = the_point.feature_type
@@ -126,7 +125,6 @@ class kdeHistExtractorFromXML:
             the_patch[int(ijk_val[0])-2:int(ijk_val[0])+3, int(ijk_val[1])- \
                 2:int(ijk_val[1])+3,int(ijk_val[2])] = inc
             inc = inc+1
-    
         
         self.hist_extractor.fit( ct, lm, the_patch) # df will have region / type entries
         self.df_ = pd.DataFrame(columns=self.hist_extractor.df_.columns)

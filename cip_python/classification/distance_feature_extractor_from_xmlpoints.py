@@ -10,14 +10,19 @@ from scipy import ndimage
 from kde_bandwidth import botev_bandwidth
 from cip_python.ChestConventions import ChestConventions
 #from cip_python.io.image_reader_writer import ImageReaderWriter
-import time
+from cip_python.classification.distance_feature_extractor \
+    import DistanceFeatureExtractor
+from cip_python.utils.geometry_topology_data import  *
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
+import vtk
      
-class DistanceFeatureExtractor:
-    """General purpose class implementing a distance feature extractor. 
+class DistanceFeatureExtractorFromXML:
+    """General purpose class implementing a distance feature extractor from
+    an xml file. 
 
-    The user inputs distance numpy array, a mask, and a patch segmentation. The
-    output is a pandas dataframe with patch #=number and
-    a associated distance entries
+    The class extracts each point from the xml object and transforms them from
+    lps to ijk space. Then, a patch of the CT image around the ijk point is defined
+    and features are extracted from that patch
        
     Parameters 
     ----------        
@@ -64,109 +69,72 @@ class DistanceFeatureExtractor:
         chest_region=None, chest_type=None, pair=None, in_df=None):
         # get the region / type over which distance is computed
 
-        self.x_half_length = np.floor(x_extent/2)
-        self.y_half_length = np.floor(y_extent/2)
-        self.z_half_length = np.floor(z_extent/2)
-        c = ChestConventions()
-                
-        if chest_region is not None:
-             distance_region_type = c.GetChestRegionName(\
-                c.GetChestRegionValueFromName(chest_region))
-        elif chest_type is not None:
-             distance_region_type = c.GetChestTypeName(\
-                c.GetChestTypeValueFromName(chest_type))
-        elif pair is not None:
-            assert len(pair)%2 == 0, "Specified region-type pair not understood"   
-            r = c.GetChestRegionName(c.GetChestRegionValueFromName(pair[0]))
-            t = c.GetChestTypeName(c.GetChestTypeValueFromName(pair[1]))
-            distance_region_type = r+t
-
-        assert  distance_region_type is not None, "region type not specified" 
-           
-        self.distance_feature_name = distance_region_type+"Distance"                                           
-        # Initialize the dataframe
-        if in_df is None:
-            cols = ['patch_label', 'ChestRegion', 'ChestType', 
-                    self.distance_feature_name]
-            self.df_ = pd.DataFrame(columns=cols)
-            #print(cols)
-        else:         
-            self.df_ = in_df
-            if self.distance_feature_name not in self.df_.columns:
-                self.df_[self.distance_feature_name] = np.nan
+        self.dist_extractor = DistanceFeatureExtractor(chest_region="WholeLung", 
+                                          in_df=in_df,\
+            x_extent = x_extent, y_extent=y_extent, \
+            z_extent=z_extent) 
+        self.df_ = None
         
-    def fit(self, distance_image, lm, patch_labels):
+    def fit(self, distance_image, distance_header, lm, xml_object):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
         non-zero voxels in 'lm' using the CT data in 'ct'.
         
         Parameters
         ----------
-        patch_labels: 3D numpy array, shape (L, M, N)
-            Input patch segmentation
+        xmlobject: xml object containing geometrytopology data
         
         distance_image: 3D numpy array, shape (L, M, N)
             Input distance image 
     
+        ct_header: header information for the distance image. Should be a 
+            dictionary with the following entries: origin, direction, spacing.
+               
         lm: 3D numpy array, shape (L, M, N)
             Input mask where distance features wil be extracted.    
         """        
+        #build transformation matrix
+        the_origin = np.array(distance_header['origin'])
+        the_direction = np.reshape(np.array(distance_header['direction']), [3,3])
+        the_spacing = np.array(distance_header['spacing'])
+
+        matrix = np.zeros([4,4])
+        matrix[0:3,3] = the_origin
+        for i in range(0,3):
+            matrix[i,0:3] = the_direction[i,0:3]*the_spacing[i]
+        matrix[3,3] = 1
+        transformationMatrix=vtk.vtkMatrix4x4()
+        transformationMatrix.Identity()
+        for i in range(0,4):
+            for j in range(0,4):
+                transformationMatrix.SetElement(i, j, matrix[i,j])
+    
+        transformationMatrix.Invert()
+        # extract points
+        my_geometry_data = GeometryTopologyData.from_xml(xml_object) 
         
-        #patch_labels_copy = np.copy(patch_labels)
-        #patch_labels_copy[lm == 0] = 0
-        unique_patch_labels = np.unique(patch_labels[:])
-        unique_patch_labels = unique_patch_labels[unique_patch_labels !=0]
-        assert ((self.x_half_length*2 <= np.shape(distance_image)[0]) and \
-            (self.y_half_length*2 <= np.shape(distance_image)[1]) and \
-            (self.z_half_length*2 <= np.shape(distance_image)[2])), \
-            "distance region extent must be less that image dimensions."
+        # loop through each point and create a patch around it
+        inc = 1
+        the_patch = np.zeros_like(lm)
+        
+        for the_point in my_geometry_data.points : 
+            coordinates = the_point.coordinate
+            # feature_type = the_point.feature_type
+    
+            #print ("point "+str(chest_region)+" "+str(chest_type)+" "+str(the_point.coordinate)+" "+str(feature_type))
+            
+            ijk_val = transformationMatrix.MultiplyPoint([coordinates[0],\
+                coordinates[1],coordinates[2],1]) # need to append a 1 at th eend of point
+
+            # from here we can build the patches ...       
+            the_patch[int(ijk_val[0])-2:int(ijk_val[0])+3, int(ijk_val[1])- \
+                2:int(ijk_val[1])+3,int(ijk_val[2])] = inc
+            inc = inc+1
+    
+        self.dist_extractor.fit( distance_image, lm, the_patch) # df will have region / type entries
+        self.df_ = pd.DataFrame(columns=self.dist_extractor.df_.columns)
+        self.df_ = self.dist_extractor.df_
+
                     
-        # loop through each patch 
-        inc = 0
-        patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
-                    patch_labels.astype(np.int32), unique_patch_labels)  
-        
-        print(np.shape(patch_center_temp))
-        print(np.shape(unique_patch_labels))
-        for p_label in unique_patch_labels:
-                # extract the lung area from the CT for the patch
-                #patch_distances = distance_image[patch_labels==p_label] 
-                   
-                patch_center = map(int, patch_center_temp[inc])
-                inc = inc+1
-                
-                xmin = max(patch_center[0]-self.x_half_length,0)
-                xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0])
-                ymin = max(patch_center[1]-self.y_half_length,0)
-                ymax = min(patch_center[1]+\
-                    self.y_half_length+1,np.shape(distance_image)[1])
-                zmin = max(patch_center[2]-self.z_half_length,0)
-                zmax = min(patch_center[2]+\
-                    self.z_half_length+1,np.shape(distance_image)[2])
-                
-                distances_temp = distance_image[xmin:xmax, ymin:ymax, zmin:zmax]
-                lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]   
-                # extract the lung area from the CT for the patch
-                                                 
-                patch_distances = distances_temp[(lm_temp >0)] 
-                # linearize features
-                distance_vector = np.array(patch_distances.ravel()).T
-                if (np.shape(distance_vector)[0] > 1):
-                    #inc = inc+1
-                    # compute the average distance
-                    mean_dist = np.mean(distance_vector) 
-                    index = self.df_['patch_label'] == p_label
-                    if np.sum(index) > 0:
-                        self.df_.ix[index, self.distance_feature_name] = \
-                          mean_dist
-                    else:
-                        tmp = dict()
-                        tmp['ChestRegion'] = 'UndefinedRegion'
-                        tmp['ChestType'] = 'UndefinedType'
-                        tmp['patch_label'] = p_label                                        
-                        tmp[self.distance_feature_name] = mean_dist
-
-                        self.df_ = self.df_.append(tmp, ignore_index=True)
-
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
     data"""
@@ -219,10 +187,10 @@ if __name__ == "__main__":
         raise ValueError("Must specify a patches segmentation file")
     
     print "Reading distance map..."
-    distance_map, dm_header = nrrd.read(options.in_dist) 
+    distance_map, dm_header = image_io.read_in_numpy(options.in_dist) 
 
-    print "Reading patches segmentation..."
-    in_patches, in_patches_header = nrrd.read(options.in_patches) 
+    with open(options.in_xml, 'r+b') as f:
+        xml_data = f.read()
     
     if (options.in_lm is not None):
         print "Reading mask..."
@@ -248,13 +216,12 @@ if __name__ == "__main__":
         pair = [options.pair.split(',')[0],options.pair.split(',')[1] ]
 
     print "Computing distance features..."
-    dist_extractor = DistanceFeatureExtractor(options.chest_region, \
+    dist_extractor = DistanceFeatureExtractorFromXML(options.chest_region, \
         options.chest_type, pair, init_df)                 
-    dist_extractor.fit(distance_map, lm, in_patches)
+    dist_extractor.fit(distance_map, dm_header, lm, xml_data)
 
     if options.out_csv is not None:
         print "Writing..."
         dist_extractor.df_.to_csv(options.out_csv, index=False)
 
     print "DONE."
-        

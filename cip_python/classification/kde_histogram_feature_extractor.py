@@ -268,7 +268,7 @@ if __name__ == "__main__":
     
     import timeit
     print(timeit.timeit("kde_hist_extractor.fit(ct, lm, in_patches)", setup="from kdeHistExtractor import fit"))
-    #kde_hist_extractor.fit(ct, lm, in_patches)
+    kde_hist_extractor.fit(ct, lm, in_patches)
     
     
     if options.out_csv is not None:
