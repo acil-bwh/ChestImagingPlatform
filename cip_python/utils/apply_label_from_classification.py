@@ -8,7 +8,7 @@ import pandas as pd
 
 
           
-def apply_label_from_classification(self, segmentation, lm, classified_features_df):
+def apply_label_from_classification(segmentation, lm, classified_features_df):
         """
         given a patch segmentation file, a labelmap file, and a classification csv file,
         apply the classification labels to each of the patches in areas where 
@@ -18,6 +18,8 @@ def apply_label_from_classification(self, segmentation, lm, classified_features_
         mychestConvenstion =ChestConventions()
         classification_lm = np.zeros(np.shape(segmentation), dtype = 'int') 
     
+        #classified_features_df['ChestRegion'].values
+    
         patch_labels = np.array(classified_features_df.filter(regex='patch_label'))[:]
         class_types_list = classified_features_df.filter(regex='ChestType').values
         class_regions_list = classified_features_df.filter(regex='ChestRegion').values
@@ -25,7 +27,7 @@ def apply_label_from_classification(self, segmentation, lm, classified_features_
         num_patches = len(classified_features_df)
         for row in range(0, num_patches):
             class_type= mychestConvenstion.GetChestTypeValueFromName(class_types_list[row][0]) 
-            class_region= mychestConvenstion.GetChestTypeValueFromName(class_regions_list[row][0])             
+            class_region= mychestConvenstion.GetChestRegionValueFromName(class_regions_list[row][0])             
                 
             classification_lm[np.logical_and(segmentation == int(patch_labels[row]), lm >0)]  = mychestConvenstion.GetValueFromChestRegionAndType( class_region, class_type) 
         
