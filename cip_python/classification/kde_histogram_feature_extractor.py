@@ -59,7 +59,7 @@ class kdeHistExtractor:
         counts for each Hounsfield unit (hu) estimated by the KDE.        
     """
     def __init__(self, lower_limit=-1050, upper_limit=3050, x_extent = 31, \
-        y_extent=31, z_extent=1, in_df=None):
+        y_extent=31, z_extent=1, in_df=None, in_patch_labels=None, lm=None):
         # Initialize the dataframe       
         # first get the list of all histogaram bin values
         self.bin_values = np.arange(lower_limit, upper_limit+1)
@@ -70,13 +70,67 @@ class kdeHistExtractor:
         cols = []
         for i in self.bin_values:
             cols.append('hu' + str(int(round(i))))
-        
+
+        in_patch_labels_copy = np.copy(in_patch_labels)
+        if (np.shape(in_patch_labels_copy)>0):
+            in_patch_labels_copy = in_patch_labels_copy[in_patch_labels>0]
+        toc1 = time.clock() 
         if in_df is None:
             cols.append('patch_label')
             cols.append('ChestRegion')
             cols.append('ChestType')
+            if in_patch_labels is None:    
+                self.df_ = pd.DataFrame(columns=cols)
+            else:
+                if lm is not None:
+                    unique_patch_labels = np.unique(in_patch_labels)
+                    unique_patch_labels_positive = unique_patch_labels[unique_patch_labels>0]
+                    patch_center_temp = ndimage.measurements.center_of_mass(in_patch_labels, \
+                    in_patch_labels.astype(np.int32), unique_patch_labels_positive)
+                    inc=0
+                    inc2=0
+                    p_labels_for_df = np.zeros(np.shape(unique_patch_labels_positive))
+                    for p_label in unique_patch_labels_positive:
+
+                        patch_center = map(int, patch_center_temp[inc2])
+                        inc2 = inc2+1
+                        xmin = max(patch_center[0]-self.x_half_length,0)
+                        xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(lm)[0])
+                        ymin = max(patch_center[1]-self.y_half_length,0)
+                        ymax = min(patch_center[1]+\
+                            self.y_half_length+1,np.shape(lm)[1])
+                        zmin = max(patch_center[2]-self.z_half_length,0)
+                        zmax = min(patch_center[2]+\
+                            self.z_half_length+1,np.shape(lm)[2])
+                                   
+                        lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]
+                        if (np.sum(lm_temp>0) > 1):
+                            p_labels_for_df[inc] = p_label
+                            inc = inc+1
+                        #lm_copy = np.copy(lm)
+                        #if (np.shape(lm_copy)>0):
+                        #    lm_copy = lm_copy[in_patch_labels>0]
+                        #the_index =  np.unique(in_patch_labels_copy[np.logical_and(\
+                        #        lm_copy, in_patch_labels_copy)])
+                    p_labels_for_df = np.unique(p_labels_for_df)
+                    p_labels_for_df = p_labels_for_df[p_labels_for_df>0]
+                    #self.df_ = pd.DataFrame(columns=cols)
+                    self.df_ = pd.DataFrame(columns=cols, \
+                            index = np.arange(0,inc))
+                    self.df_['patch_label']=p_labels_for_df 
+                else:
+                    the_index = np.unique(in_patch_labels_copy)
+                    self.df_ = pd.DataFrame(columns=cols, \
+                        index = the_index-1)
+                    self.df_['patch_label']=the_index     
+                self.df_ = self.df_.astype(np.float64)
+                self.df_['ChestRegion'] = 'UndefinedRegion'
+                self.df_['ChestType'] = 'UndefinedType'
                 
-            self.df_ = pd.DataFrame(columns=cols)
+                toc2 = time.clock() 
+                print("init time is "+str(toc2-toc1))
+                             
+                                 
         else:         
             self.df_ = in_df
             for c in cols:
@@ -118,11 +172,10 @@ class kdeHistExtractor:
         log_dens = kde.score_samples(X_plot)
         the_hist = np.exp(log_dens)
         #the_hist = the_hist/np.sum(the_hist)
-        
-
-        
+         
         return the_hist
-        
+
+                
     def fit(self, ct, lm, patch_labels):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
         non-zero voxels in 'lm' using the CT data in 'ct'.
@@ -140,9 +193,7 @@ class kdeHistExtractor:
         """                
         #patch_labels_copy = np.copy(patch_labels)
         #patch_labels_copy[lm == 0] = 0
-        
-        
-        
+                
         unique_patch_labels = np.unique(patch_labels[:])
         unique_patch_labels = unique_patch_labels[unique_patch_labels !=0]
 
@@ -153,11 +204,17 @@ class kdeHistExtractor:
         
         # loop through each patch 
         inc = 0
-        
+        inc2=0
+
         patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
                     patch_labels.astype(np.int32), unique_patch_labels)
+                    
+        # prepare an array of histograms and a corresponding array of patch labels
+        histograms = np.zeros([np.shape(self.df_['patch_label'])[0], np.shape(self.bin_values)[0]])
+        histogram_patch_labels = np.zeros( np.shape(self.df_['patch_label'])[0], dtype = int)
+                                
         for p_label in unique_patch_labels:
-                if np.mod(p_label,100) ==0:
+                if np.mod(inc,100) ==0:
                     print("computing histogram for patch "+str(p_label))
                 patch_center = map(int, patch_center_temp[inc])
                 inc = inc+1
@@ -180,23 +237,27 @@ class kdeHistExtractor:
                 patch_intensities = intensities_temp[(lm_temp >0)] 
                 # linearize features
                 intensity_vector = np.array(patch_intensities.ravel()).T
-                
+
                 if (np.shape(intensity_vector)[0] > 1):
+                    
                     # obtain kde histogram from features
                     tic = time.clock()     
                     histogram = self._perform_kde_botev(intensity_vector)
-                    
                     index = self.df_['patch_label'] == p_label
-                    
+
                     if np.sum(index) > 0:
-                        toc1 = time.clock() 
-                        for i in range(0, np.shape(self.bin_values)[0]):
-                            self.df_.ix[index, 'hu' + str(self.bin_values[i])] \
-                              = histogram[i]
-                        toc2 = time.clock() 
-                        print("execution time of post hist extractor 1= "+str(toc2 - toc1))   
+                        #toc1 = time.clock() 
+                        #for i in range(0, np.shape(self.bin_values)[0]):
+                        #    self.df_.ix[index, 'hu' + str(self.bin_values[i])] \
+                        #      = histogram[i]
+                        histograms[inc2, 0:np.shape(self.bin_values)[0]] =  histogram[0:np.shape(self.bin_values)[0]]
+                        histogram_patch_labels[inc2]=p_label
+                        #self.df_.ix[index, 'hu' + str(self.bin_values[0]): 'hu' + str(self.bin_values[np.shape(self.bin_values)[0]-1])] =\
+                        #    histogram[0:np.shape(self.bin_values)[0]]
+                        #toc2 = time.clock() 
+                        #print("execution time of post hist extractor 1= "+str(toc2 - toc1))   
                     else:      
-                        toc1 = time.clock()               
+                        index =self.df_['patch_label'].isnull()
                         tmp = dict()
                         tmp['ChestRegion'] = 'UndefinedRegion'
                         tmp['ChestType'] = 'UndefinedType'
@@ -204,18 +265,18 @@ class kdeHistExtractor:
                         toc2 = time.clock() 
                         for i in range(0, np.shape(self.bin_values)[0]):
                             tmp['hu' + str(self.bin_values[i])] = histogram[i]
-                        toc3 = time.clock() 
                         self.df_ = self.df_.append(tmp, ignore_index=True)
-                        toc4 = time.clock() 
-                        #import timeit
-                        #timeit self.df_.append(tmp, ignore_index=True)
-                        #pdb.set_trace()
-                    
-                        #print("execution time of post hist extractor 2 new 1= "+str(toc2 - toc1))   
-                        #print("execution time of post hist extractor 2 new 2= "+str(toc3 - toc2))   
-                        #print("execution time of post hist extractor 2 new 3= "+str(toc4 - toc3))   
-          
-                
+
+                        #print("execution time of post hist extractor 2 new 3= "+str(toc4 - toc1))   
+                    inc2 = inc2+1  
+        print("storing data in dataframe")           
+        toc1 = time.clock() 
+        self.df_.ix[self.df_['patch_label'] == histogram_patch_labels
+            , 'hu' + str(self.bin_values[0]): 'hu' + str(self.bin_values[np.shape(self.bin_values)[0]-1])] =\
+                            histograms[:,0:np.shape(self.bin_values)[0]]         
+        toc2 = time.clock()      
+        print("execution time of populating dataframe = "+str(toc2 - toc1))       
+
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
     data"""
