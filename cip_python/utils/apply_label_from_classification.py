@@ -5,28 +5,31 @@ import nrrd
 import pdb
 import pandas as pd
 #from cip_python.io.image_reader_writer import ImageReaderWriter
-     
-def apply_label_from_classification(segmentation, lm, classified_features_df):
-    """
-    given a patch segmentation file, a labelmap file, and a classification csv file,
-    apply the classification labels to each of the patches in areas where 
-    labelmap > 0. The labels follow cip conventions.
-    """
+
+
+          
+def apply_label_from_classification(self, segmentation, lm, classified_features_df):
+        """
+        given a patch segmentation file, a labelmap file, and a classification csv file,
+        apply the classification labels to each of the patches in areas where 
+        labelmap > 0. The labels follow cip conventions.
+        """
     
-    mychestConvenstion =ChestConventions()
-    classification_lm = np.zeros(np.shape(segmentation), dtype = 'int')
-    for row in range(0, len(classified_features_df)):
-        patch_label = int(classified_features_df[\
-            row:(row+1)]['patch_label'].values[0])
-        class_type= mychestConvenstion.GetChestTypeValueFromName(\
-            classified_features_df[row:(row+1)]['ChestType'].values[0]) 
-        class_region= mychestConvenstion.GetChestTypeValueFromName(\
-            classified_features_df[row:(row+1)]['ChestRegion'].values[0])        
-        classification_lm[np.logical_and(segmentation == patch_label, lm >0)] \
-            = mychestConvenstion.GetValueFromChestRegionAndType(\
-                class_region, class_type) #== patch_label
+        mychestConvenstion =ChestConventions()
+        classification_lm = np.zeros(np.shape(segmentation), dtype = 'int') 
     
-    return classification_lm
+        patch_labels = np.array(classified_features_df.filter(regex='patch_label'))[:]
+        class_types_list = classified_features_df.filter(regex='ChestType').values
+        class_regions_list = classified_features_df.filter(regex='ChestRegion').values
+ 
+        num_patches = len(classified_features_df)
+        for row in range(0, num_patches):
+            class_type= mychestConvenstion.GetChestTypeValueFromName(class_types_list[row][0]) 
+            class_region= mychestConvenstion.GetChestTypeValueFromName(class_regions_list[row][0])             
+                
+            classification_lm[np.logical_and(segmentation == int(patch_labels[row]), lm >0)]  = mychestConvenstion.GetValueFromChestRegionAndType( class_region, class_type) 
+        
+        return classification_lm
 
 if __name__ == "__main__":
     desc = """Classifies CT images into emphysema subtyoes"""

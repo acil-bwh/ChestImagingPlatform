@@ -176,7 +176,7 @@ class DistanceFeatureExtractor:
                     inc2 = inc2+1 
                     toc = time.clock() 
                     if np.mod(inc,100) ==0:
-                        print("distance time = "+str(toc-tic))
+                        print("distance "+str(inc)+ " time = "+str(toc-tic))
         
         self.df_.ix[self.df_['patch_label'] == distance_patch_labels, \
             self.distance_feature_name] = distances          
