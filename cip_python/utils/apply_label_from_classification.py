@@ -5,33 +5,55 @@ import nrrd
 import pdb
 import pandas as pd
 #from cip_python.io.image_reader_writer import ImageReaderWriter
-
-
           
 def apply_label_from_classification(segmentation, lm, classified_features_df):
-        """
-        given a patch segmentation file, a labelmap file, and a classification csv file,
-        apply the classification labels to each of the patches in areas where 
-        labelmap > 0. The labels follow cip conventions.
-        """
-    
-        mychestConvenstion =ChestConventions()
-        classification_lm = np.zeros(np.shape(segmentation), dtype = 'int') 
+        """Given a patch segmentation file, a label map file, and a 
+        classification csv file, apply the classification labels to each of 
+        the patches in areas where labelmap > 0. The labels follow cip 
+        conventions.
+
+        Parameters
+        ----------
+        segmentation :
+
+        lm :
+
+        classified_features_df :
+
+        Returns
+        -------
+        classified_lm : 
+                
+        """    
+        conventions = ChestConventions()
+        classified_lm = np.zeros(np.shape(segmentation), dtype = 'int') 
     
         #classified_features_df['ChestRegion'].values
-    
-        patch_labels = np.array(classified_features_df.filter(regex='patch_label'))[:]
-        class_types_list = classified_features_df.filter(regex='ChestType').values
-        class_regions_list = classified_features_df.filter(regex='ChestRegion').values
- 
-        num_patches = len(classified_features_df)
-        for row in range(0, num_patches):
-            class_type= mychestConvenstion.GetChestTypeValueFromName(class_types_list[row][0]) 
-            class_region= mychestConvenstion.GetChestRegionValueFromName(class_regions_list[row][0])             
-                
-            classification_lm[np.logical_and(segmentation == int(patch_labels[row]), lm >0)]  = mychestConvenstion.GetValueFromChestRegionAndType( class_region, class_type) 
         
-        return classification_lm
+        patch_labels = classified_features_df['patch_label'].values
+        class_types_list = classified_features_df['ChestType'].values
+        class_regions_list = classified_features_df['ChestRegion'].values
+
+        chest_types_to_values_map = {}
+        chest_regions_to_values_map = {}
+        for e in set(class_types_list):
+            chest_types_to_values_map[e] = \
+              conventions.GetChestTypeValueFromName(e) 
+
+        for e in set(class_regions_list):
+            chest_regions_to_values_map[e] = \
+              conventions.GetChestRegionValueFromName(e)               
+        
+        num_feature_vecs = len(classified_features_df)
+        for row in range(0, num_feature_vecs):
+            type_val = chest_types_to_values_map[class_types_list[row]]
+            region_val = chest_regions_to_values_map[class_regions_list[row]]
+                
+            classified_lm[np.logical_and(segmentation == \
+                                         int(patch_labels[row]), lm >0)] = \
+                conventions.GetValueFromChestRegionAndType(region_val, type_val) 
+        
+        return classified_lm
 
 if __name__ == "__main__":
     desc = """Classifies CT images into emphysema subtyoes"""
@@ -70,6 +92,6 @@ if __name__ == "__main__":
     assert(options.out_label is not None), \
         " outputs missing"   
         
-    print "Writing output labels "
-    nrrd.write(options.out_label, labels_array, lm_header , True, True)
+    #print "Writing output labels "
+    #nrrd.write(options.out_label, labels_array, lm_header , True, True)
                                
