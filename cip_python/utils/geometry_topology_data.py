@@ -242,7 +242,11 @@ class Point:
             coordinates.append(float(coord.text))
         chest_region = int(xml_point_node.find("ChestRegion").text)
         chest_type = int(xml_point_node.find("ChestType").text)
-        feature_type = int(xml_point_node.find("ImageFeature").text)
+        featureNode = xml_point_node.find("ImageFeature")
+        if featureNode is None:
+            feature_type = 0
+        else:
+            feature_type = int(featureNode.text)
 
         # Description
         desc = xml_point_node.find("Description")
@@ -299,8 +303,11 @@ class BoundingBox:
             coordinates_size.append(float(coord.text))
         chest_region = int(xml_bounding_box_node.find("ChestRegion").text)
         chest_type = int(xml_bounding_box_node.find("ChestType").text)
-        feature_type = int(xml_bounding_box_node.find("ImageFeature").text)
-
+        featureNode = xml_bounding_box_node.find("ImageFeature")
+        if featureNode is None:
+            feature_type = 0
+        else:
+            feature_type = int(featureNode.text)
         # Description
         desc = xml_bounding_box_node.find("Description")
         if desc is not None:
