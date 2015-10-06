@@ -84,17 +84,48 @@ class DistanceFeatureExtractor:
         assert  distance_region_type is not None, "region type not specified" 
            
         self.distance_feature_name = distance_region_type+"Distance"                                           
-        # Initialize the dataframe
-        if in_df is None:
-            cols = ['patch_label', 'ChestRegion', 'ChestType', 
-                    self.distance_feature_name]
-            self.df_ = pd.DataFrame(columns=cols)
-            #print(cols)
-        else:         
-            self.df_ = in_df
-            if self.distance_feature_name not in self.df_.columns:
-                self.df_[self.distance_feature_name] = np.nan
+        self.df_ = in_df
         
+    
+    def _create_dataframe(self, patch_labels_for_df=None, in_data = None):
+        """Create a pandas dataframe for the computed per patch features, where \
+        each patch corresponds to an xml point. 
+        
+        Parameters
+        ----------
+        patch_labels_for_df: numpy array, shape (L*M*N)
+            Input unique patch segmentation values . Required
+        
+        in_data:  numpy array, shape (L*M*N)
+            Input distance features, wach corresponding to a unique patch value.
+            Required     
+        """   
+         # Initialize the dataframe
+        if self.df_ is None:
+            cols = ['patch_label', 'ChestRegion', 'ChestType', \
+                    self.distance_feature_name]
+        else:         
+            cols = [self.distance_feature_name]     
+          
+        num_patches = np.shape(patch_labels_for_df)[0]    
+        the_index = np.arange(0,num_patches)
+        
+        new_df = pd.DataFrame(columns=cols, index = the_index)  
+        
+        new_df['patch_label'] = patch_labels_for_df  
+        new_df = new_df.astype(np.float64)                                      
+
+        new_df.ix[new_df['patch_label'] == patch_labels_for_df, \
+            self.distance_feature_name] = in_data                                
+       
+        if self.df_ is not None:        
+            self.df_ = pd.merge(new_df, self.df_, on='patch_label')
+        else:
+            new_df['ChestRegion'] = 'UndefinedRegion'
+            new_df['ChestType'] = 'UndefinedType' 
+            self.df_ = new_df
+    
+                                                                                                                                                                                                                                                                                    
     def fit(self, distance_image, lm, patch_labels):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
         non-zero voxels in 'lm' using the CT data in 'ct'.
@@ -111,31 +142,56 @@ class DistanceFeatureExtractor:
             Input mask where distance features wil be extracted.    
         """        
         
-        #patch_labels_copy = np.copy(patch_labels)
-        #patch_labels_copy[lm == 0] = 0
-        unique_patch_labels = np.unique(patch_labels[:])
-        unique_patch_labels = unique_patch_labels[unique_patch_labels !=0]
         assert ((self.x_half_length*2 <= np.shape(distance_image)[0]) and \
             (self.y_half_length*2 <= np.shape(distance_image)[1]) and \
             (self.z_half_length*2 <= np.shape(distance_image)[2])), \
-            "distance region extent must be less that image dimensions."
+            "distanct region extent must  be less that image dimensions."
+                                           
+        unique_patch_labels = np.unique(patch_labels[:])
+        unique_patch_labels_positive = unique_patch_labels[unique_patch_labels>0]
+
+        patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
+            patch_labels.astype(np.int32), unique_patch_labels_positive)
+            
+        # Figure out the number of rows required
+        if lm is not None:           
+            inc=0
+            inc2=0
+            p_labels_for_df = np.zeros(np.shape(unique_patch_labels_positive))
+            for p_label in unique_patch_labels_positive:
+                patch_center = map(int, patch_center_temp[inc2])
+                inc2 = inc2+1
+                xmin = max(patch_center[0]-self.x_half_length,0)
+                xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(lm)[0])
+                ymin = max(patch_center[1]-self.y_half_length,0)
+                ymax = min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(lm)[1])
+                zmin = max(patch_center[2]-self.z_half_length,0)
+                zmax = min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(lm)[2])
+                               
+                lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]
+                if (np.sum(lm_temp>0) > 1):
+                    p_labels_for_df[inc] = p_label
+                    inc = inc+1
+            p_labels_for_df = p_labels_for_df[p_labels_for_df>0]
+        else:
+            p_labels_for_df = unique_patch_labels[unique_patch_labels>0]
+
                     
         # loop through each patch 
         inc = 0
         inc2=0
-        patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
-                    patch_labels.astype(np.int32), unique_patch_labels)  
         
+        distances = np.zeros(np.shape(p_labels_for_df)[0])
+        distance_patch_labels = np.zeros( np.shape(p_labels_for_df)[0], dtype = int)
         
-        distances = np.zeros(np.shape(self.df_['patch_label'])[0])
-        distance_patch_labels = np.zeros( np.shape(self.df_['patch_label'])[0], dtype = int)
-        
-        for p_label in unique_patch_labels:
+        for p_label in unique_patch_labels_positive:
+                tic = time.clock() 
                 # extract the lung area from the CT for the patch
                 #patch_distances = distance_image[patch_labels==p_label] 
                    
                 patch_center = map(int, patch_center_temp[inc])
-                inc = inc+1
                 
                 xmin = max(patch_center[0]-self.x_half_length,0)
                 xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(distance_image)[0])
@@ -151,35 +207,26 @@ class DistanceFeatureExtractor:
                 # extract the lung area from the CT for the patch
                                                  
                 patch_distances = distances_temp[(lm_temp >0)] 
-                # linearize features
-                distance_vector = np.array(patch_distances.ravel()).T
-                if (np.shape(distance_vector)[0] > 1):
+                
+                if (np.shape(patch_distances)[0] > 1):
+                    # linearize features
+                    distance_vector = np.array(patch_distances.ravel()).T
                     tic = time.clock() 
                     #inc = inc+1
                     # compute the average distance
                     mean_dist = np.mean(distance_vector) 
-                    index = self.df_['patch_label'] == p_label
-                    
-                    if np.sum(index) > 0:
-                        #self.df_.ix[index, self.distance_feature_name] = \
-                        #  mean_dist
-                        distances[inc2] = mean_dist
-                        distance_patch_labels[inc2]= p_label
-                    else:
-                        tmp = dict()
-                        tmp['ChestRegion'] = 'UndefinedRegion'
-                        tmp['ChestType'] = 'UndefinedType'
-                        tmp['patch_label'] = p_label                                        
-                        tmp[self.distance_feature_name] = mean_dist
 
-                        self.df_ = self.df_.append(tmp, ignore_index=True)
-                    inc2 = inc2+1 
-                    toc = time.clock() 
-                    if np.mod(inc,100) ==0:
-                        print("distance "+str(inc)+ " time = "+str(toc-tic))
-        
-        self.df_.ix[self.df_['patch_label'] == distance_patch_labels, \
-            self.distance_feature_name] = distances          
+                    distances[inc2] = mean_dist
+                    distance_patch_labels[inc2]= p_label
+                    inc2 = inc2+1  
+
+                inc = inc+1 
+                toc = time.clock() 
+ 
+                if np.mod(inc,100) ==0:
+                    print("distance "+str(inc)+ " time = "+str(toc-tic))      
+        print("creating dataframe")    
+        self._create_dataframe(patch_labels_for_df=distance_patch_labels, in_data = distances)      
 
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \

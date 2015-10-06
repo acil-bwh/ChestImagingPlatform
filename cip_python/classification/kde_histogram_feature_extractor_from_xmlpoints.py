@@ -42,33 +42,35 @@ class kdeHistExtractorFromXML:
         
     x_extent: int
         region size in the x direction over which the kde will
-        be estimated. The region will be centered at the patch center.
+        be estimated. The region will be centered at the xml point.
             
     y_extent: int
         region size in the y direction over which the kde will
-        be estimated. The region will be centered at the patch center.
+        be estimated. The region will be centered at the xml point.
         
     z_extent: int
         region size in the z direction over which the kde will
-        be estimated. The region will be centered at the patch center.
+        be estimated. The region will be centered at the xml point.
  
                              
     Attribues
     ---------
     df_ : Pandas dataframe
         Contains the computed histogram information. The 'patch_label' column
-        corresponds to the segmented patch over which the histogram is 
-        computed. The remaining columns are named 'huNum', where 'Num' ranges 
+        corresponds to the xml point index. A patch is generated from 
+        using the point as center and using the x,y, and z extents. 
+        The remaining columns are named 'huNum', where 'Num' ranges 
         from 'lower_limit' to 'upper_limit'. These columns record the number of 
         counts for each Hounsfield unit (hu) estimated by the KDE.        
     """
     def __init__(self, lower_limit=-1050, upper_limit=3050, x_extent = 31, \
-        y_extent=31, z_extent=1):
+        y_extent=31, z_extent=1,  lm=None):
+        self.lower_limit = lower_limit
+        self.upper_limit = upper_limit
+        self.x_extent = x_extent
+        self.y_extent = y_extent
+        self.z_extent = z_extent
         
-        self.hist_extractor = kdeHistExtractor(lower_limit=lower_limit, \
-            upper_limit=upper_limit, \
-            x_extent = x_extent, y_extent=y_extent, \
-            z_extent=z_extent)
         self.df_ = None
 
     
@@ -114,10 +116,7 @@ class kdeHistExtractorFromXML:
         the_patch = np.zeros_like(lm)
         for the_point in my_geometry_data.points : 
             coordinates = the_point.coordinate
-            # feature_type = the_point.feature_type
-    
-            #print ("point "+str(chest_region)+" "+str(chest_type)+" "+str(the_point.coordinate)+" "+str(feature_type))
-            
+              
             ijk_val = transformationMatrix.MultiplyPoint([coordinates[0],\
                 coordinates[1],coordinates[2],1]) # need to append a 1 at th eend of point
 
@@ -126,6 +125,10 @@ class kdeHistExtractorFromXML:
                 2:int(ijk_val[1])+3,int(ijk_val[2])] = inc
             inc = inc+1
         
+        self.hist_extractor = kdeHistExtractor(lower_limit=self.lower_limit, \
+            upper_limit=self.upper_limit, \
+            x_extent = self.x_extent, y_extent=self.y_extent, \
+            z_extent=self.z_extent)
         self.hist_extractor.fit( ct, lm, the_patch) # df will have region / type entries
         self.df_ = pd.DataFrame(columns=self.hist_extractor.df_.columns)
         self.df_ = self.hist_extractor.df_
@@ -134,8 +137,10 @@ class kdeHistExtractorFromXML:
         mychestConvenstion =ChestConventions()
         for the_point in my_geometry_data.points : 
             index = self.df_['patch_label'] == inc          
-            self.df_.ix[index, 'ChestRegion'] = mychestConvenstion.GetChestRegionName(the_point.chest_region)
-            self.df_.ix[index, 'ChestType'] = mychestConvenstion.GetChestTypeName(the_point.chest_type)
+            self.df_.ix[index, 'ChestRegion'] = \
+                mychestConvenstion.GetChestRegionName(the_point.chest_region)
+            self.df_.ix[index, 'ChestType'] = \
+                mychestConvenstion.GetChestTypeName(the_point.chest_type)
             inc = inc+1
 
                 
@@ -165,9 +170,20 @@ if __name__ == "__main__":
     parser.add_option('--upper_limit',
                       help='upper histogram limit.  (optional)',  dest='upper_limit', 
                       metavar='<string>', default=3050)  
+    parser.add_option('--x_extent',
+                      help='x extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='x_extent', 
+                      metavar='<string>', default=31)                        
+    parser.add_option('--y_extent',
+                      help='y extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='y_extent', 
+                      metavar='<string>', default=31)   
+    parser.add_option('--z_extent',
+                      help='z extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='z_extent', 
+                      metavar='<string>', default=1)                         
     (options, args) = parser.parse_args()
     
-    #image_io = ImageReaderWriter()
     print "Reading CT..."
     #ct, ct_header = nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
     image_io = ImageReaderWriter()
@@ -182,8 +198,9 @@ if __name__ == "__main__":
         xml_data = f.read()
     print "Compute histogram features..."
     kde_feature_extractor = kdeHistExtractorFromXML(kde_lower_limit=np.int16(options.lower_limit), \
-        kde_upper_limit=np.int16(options.upper_limit), x_extent = 31, \
-        y_extent=31, z_extent=1)
+        kde_upper_limit=np.int16(options.upper_limit), x_extent = np.int16(options.x_extent), \
+        y_extent=np.int16(options.y_extent), z_extent=np.int16(options.z_extent))
+
     kde_feature_extractor.fit(ct, ct_header, lm, xml_data)    
     if options.out_csv is not None:
         print "Writing..."

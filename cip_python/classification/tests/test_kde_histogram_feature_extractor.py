@@ -31,11 +31,9 @@ def test_execute():
     lm_array[:, :, 1] = 1
     
     hist_extractor = kdeHistExtractor(lower_limit=-1000, upper_limit=-30, \
-        x_extent=5, y_extent = 11, z_extent = 1, in_patch_labels = grid_array,\
-            lm= lm_array)
+        x_extent=5, y_extent = 11, z_extent = 1)
     hist_extractor.fit(ct_array, lm_array, grid_array)
 
     reference_df = pd.read_csv(ref_csv)
     assert_frame_equal(hist_extractor.df_, reference_df)
-
 

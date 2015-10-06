@@ -1,6 +1,10 @@
 import os.path
 import pandas as pd
 import nrrd
+import sys
+
+sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
+
 from cip_python.classification.distance_feature_extractor_from_xmlpoints \
   import DistanceFeatureExtractorFromXML
 import numpy as np
@@ -66,6 +70,7 @@ def test_execute():
 #    assert dist_extractor.df_['ChestType'].values[0] == 'UndefinedType', \
 #      "ChestType not as expected"            
 
+    print(dist_extractor.df_)
     assert dist_extractor.df_['WholeLungDistance'].values[0] == 6, \
       "WholeLungDistance 1 not as expected"                  
 
