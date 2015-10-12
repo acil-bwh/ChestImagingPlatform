@@ -30,29 +30,53 @@ def apply_label_from_classification(segmentation, lm, classified_features_df):
     
         #classified_features_df['ChestRegion'].values
         
-        patch_labels = classified_features_df['patch_label'].values
+        patch_labels = (classified_features_df['patch_label'].values).astype(int)
         class_types_list = classified_features_df['ChestType'].values
         class_regions_list = classified_features_df['ChestRegion'].values
 
         chest_types_to_values_map = {}
         chest_regions_to_values_map = {}
+        values_from_region_type_map = dict()
+        
         for e in set(class_types_list):
             chest_types_to_values_map[e] = \
               conventions.GetChestTypeValueFromName(e) 
 
         for e in set(class_regions_list):
             chest_regions_to_values_map[e] = \
-              conventions.GetChestRegionValueFromName(e)               
+              conventions.GetChestRegionValueFromName(e)   
         
+        
+        for e in set(class_types_list):
+            for f in set(class_regions_list):    
+                type_val = chest_types_to_values_map[e]
+                region_val = chest_regions_to_values_map[f]
+                      
+                values_from_region_type_map[region_val,type_val]= \
+                    conventions.GetValueFromChestRegionAndType(\
+                    region_val, type_val)               
+
+        #segmentation_positive_lm = segmentation
+        #segmentation_positive_lm[lm <0] = 0
+        segmentation[lm == 0] = 0                                 
         num_feature_vecs = len(classified_features_df)
+
         for row in range(0, num_feature_vecs):
+            if np.mod(row,100) ==0:
+                print("computing  label for patch "+str(row))
             type_val = chest_types_to_values_map[class_types_list[row]]
             region_val = chest_regions_to_values_map[class_regions_list[row]]
-                
-            classified_lm[np.logical_and(segmentation == \
-                                         int(patch_labels[row]), lm >0)] = \
-                conventions.GetValueFromChestRegionAndType(region_val, type_val) 
-        
+            mask = segmentation == int(patch_labels[row])    
+            #classified_lm[segmentation_positive_lm == int(patch_labels[row])] = \
+            #                values_from_region_type_map[region_val, type_val] 
+            classified_lm[mask] = \
+                            values_from_region_type_map[region_val, type_val] 
+            #classified_lm[np.logical_and(segmentation == \
+            #                             int(patch_labels[row]), lm >0)] = \
+            #                values_from_region_type_map[region_val, type_val]                             
+            #classified_lm[np.logical_and(segmentation == \
+            #                             int(patch_labels[row]), lm >0)] = \
+            #    conventions.GetValueFromChestRegionAndType(region_val, type_val)         
         return classified_lm
 
 if __name__ == "__main__":
