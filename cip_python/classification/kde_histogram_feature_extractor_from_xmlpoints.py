@@ -80,9 +80,7 @@ class kdeHistExtractorFromXML:
         non-zero voxels in 'lm' using the CT data in 'ct'.
         
         Parameters
-        ----------
-        xmlobject: xml object containing geometrytopology data
-        
+        ----------        
         ct: 3D numpy array, shape (L, M, N)
             Input CT image from which histogram information will be derived
     
@@ -90,6 +88,9 @@ class kdeHistExtractorFromXML:
             the following entries: origin, direction, spacing.
         lm: 3D numpy array, shape (L, M, N)
             Input mask where histograms will be computed.    
+            
+        xml_object: String
+            XML string representation of a  GeometryTopologyData object
         """                
         #build transformation matrix
         the_origin = np.array(ct_header['origin'])
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     print "Reading CT..."
-    #ct, ct_header = nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
+
     image_io = ImageReaderWriter()
     ct, ct_header=image_io.read_in_numpy(options.in_ct)
     if (options.in_lm is not None):

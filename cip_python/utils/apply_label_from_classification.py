@@ -14,15 +14,20 @@ def apply_label_from_classification(segmentation, lm, classified_features_df):
 
         Parameters
         ----------
-        segmentation :
+        segmentation : 3D numpy array, shape (L, M, N)
+            Input segmentation. 
 
-        lm :
+        lm : 3D numpy array, shape (L, M, N)
+            Input Mask. Labels will only be applied to voxels where lm >0 
 
-        classified_features_df :
+        classified_features_df : Pandas dataframe
+            Contains region and type classification for each value in the 
+            segmentation.
 
         Returns
         -------
-        classified_lm : 
+        classified_lm :  3D numpy array, shape (L, M, N)
+            Classified labelmap according to the chest conventions.
                 
         """    
         conventions = ChestConventions()
@@ -116,6 +121,6 @@ if __name__ == "__main__":
     assert(options.out_label is not None), \
         " outputs missing"   
         
-    #print "Writing output labels "
-    #nrrd.write(options.out_label, labels_array, lm_header , True, True)
+    print "Writing output labels "
+    nrrd.write(options.out_label, labels_array, lm_header , True, True)
                                
