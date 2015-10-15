@@ -160,7 +160,7 @@ class LocalHistogram():
 
     def process_slice(self,k):
 		'''
-		Return a labeled image representig the processed slice
+		Return a labeled image representing the processed slice
 		'''
         print 'Processing slice '+str(k+1)+'/'+str(self.frames.shape[2])
         image_patches=self.sliding_window(self.frames[:,:,k],self.ws,self.ss)
