@@ -280,11 +280,11 @@ class BoundingBox:
         :param format_: Default format to print the xml output coordinate values (also acceptable: %i for integers or customized)
         :return:
         """
-        self.start = start
-        self.size = size
         self.chest_region = chest_region
         self.chest_type = chest_type
         self.feature_type = feature_type
+        self.start = start
+        self.size = size
         self.description = description
         self.format = format_       # Default format to print the xml output coordinate values (also acceptable: %i or customized)
 
@@ -325,5 +325,6 @@ class BoundingBox:
         description_str = ''
         if self.description is not None:
             description_str = '<Description>%s</Description>' % self.description
-        return '<BoundingBox><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % \
+        return '<BoundingBox><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType>' \
+               '<ImageFeature>%i</ImageFeature>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % \
             (self.chest_region, self.chest_type, self.feature_type, description_str, start_str, size_str)
