@@ -46,7 +46,7 @@ def get_bounds_from_center(image,patch_center,extent):
     zmax = min(patch_center[2]+\
                     z_half_length+1,np.shape(image)[2])
              
-    bounds = [xmin,xmax,ymin,ymax,zmin,zmax] 
+    bounds = [int(xmin),int(xmax),int(ymin),int(ymax),int(zmin),int(zmax)] 
     
     #if (ymax<ymin):#( ((xmax-xmin)>31) or ((ymax-ymin)>31)  or ((zmax-zmin)>31) ):
     #    pdb.set_trace()
@@ -61,8 +61,8 @@ def get_patch_given_bounds(image,bounds):
     image: 3D numpy array, shape (L, M, N)
         Input CT or labelmap from which we want to extract a patch
         
-    bounds: list, shape (3,1)
-        x,y,z coordinates of the center of the patch
+    bounds: list, shape (6,1)
+        x,y,z coordinates bounds of the patch
     
         
     Returns
@@ -74,9 +74,12 @@ def get_patch_given_bounds(image,bounds):
     image_patch = None
 
     # check that the bounds are between 0 and the image extent
-    if ((bounds[0]>=0) and (bounds[1] <= np.shape(image)[0]) and (bounds[2]>=0) \
-            and (bounds[3] <= np.shape(image)[1]) and (bounds[4]>=0) and \
-            (bounds[5] <= np.shape(image)[2])  )  : 
+    if ((bounds[0]>=0) and (bounds[0] <= np.shape(image)[0]) and \
+        (bounds[1] >0) and (bounds[1] <= np.shape(image)[0]) and \
+        (bounds[2]>=0) and (bounds[2] <= np.shape(image)[1]) and \
+        (bounds[3]>=0) and (bounds[3] <= np.shape(image)[1]) and \
+        (bounds[4]>=0) and (bounds[4] <= np.shape(image)[2]) and\
+        (bounds[5]>=0) and (bounds[5] <= np.shape(image)[2])  )  : 
 
         image_patch = np.squeeze(image[bounds[0]:bounds[1], bounds[2]:bounds[3],\
             bounds[4]:bounds[5]] )   
