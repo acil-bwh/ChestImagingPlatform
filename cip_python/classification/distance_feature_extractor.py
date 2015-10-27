@@ -117,7 +117,7 @@ class DistanceFeatureExtractor:
 
         new_df.ix[new_df['patch_label'] == patch_labels_for_df, \
             self.distance_feature_name] = in_data                                
-       
+        
         if self.df_ is not None:        
             self.df_ = pd.merge(new_df, self.df_, on='patch_label')
         else:

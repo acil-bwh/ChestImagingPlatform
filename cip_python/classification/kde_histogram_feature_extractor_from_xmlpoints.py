@@ -204,6 +204,6 @@ if __name__ == "__main__":
 
     kde_feature_extractor.fit(ct, ct_header, lm, xml_data)    
     if options.out_csv is not None:
-        print "Writing..."
+        print "Writing..."+options.out_csv
         kde_feature_extractor.df_.to_csv(options.out_csv, index=False)
         
