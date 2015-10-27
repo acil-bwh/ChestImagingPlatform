@@ -59,10 +59,10 @@ class GeometryTopologyData:
         if self.num_dimensions != 0:
             output += ('<NumDimensions>%i</NumDimensions>' % self.num_dimensions)
 
-        output += ('<CoordinateSystem>%s</CoordinateSystem>' % self.coordinate_system_to_str(self.coordinate_system))
+        output += ('<CoordinateSystem>%s</CoordinateSystem>' % self.__coordinate_system_to_str__(self.coordinate_system))
 
         if self.lps_to_ijk_transformation_matrix is not None:
-            output += self.write_transformation_matrix(self.lps_to_ijk_transformation_matrix)
+            output += self.__write_transformation_matrix__(self.lps_to_ijk_transformation_matrix)
 
         # Concatenate points
         points = "".join(map(lambda i:i.to_xml(), self.points))
@@ -70,6 +70,20 @@ class GeometryTopologyData:
         bounding_boxes = "".join(map(lambda i:i.to_xml(), self.bounding_boxes))
 
         return output + points + bounding_boxes + "</GeometryTopologyData>"
+
+    def to_xml_file(self, xml_file_path):
+        """ Save this object to an xml file
+        :param: xml_file_path: file path
+        """
+        s = self.to_xml()
+        with open(xml_file_path, "w+b") as f:
+            f.write(s)
+
+    @staticmethod
+    def from_xml_file(xml_file):
+        with open(xml_file, 'r+b') as f:
+            xml = f.read()
+            return GeometryTopologyData.from_xml(xml)
 
     @staticmethod
     def from_xml(xml):
@@ -90,9 +104,9 @@ class GeometryTopologyData:
         # Coordinate System
         s = root.find("CoordinateSystem")
         if s is not None:
-            geometry_topology.coordinate_system = geometry_topology.coordinate_system_from_str(s.text)
+            geometry_topology.coordinate_system = geometry_topology.__coordinate_system_from_str__(s.text)
 
-        geometry_topology.lps_to_ijk_transformation_matrix = geometry_topology.read_transformation_matrix(root)
+        geometry_topology.lps_to_ijk_transformation_matrix = geometry_topology.__read_transformation_matrix__(root)
 
         # Points
         for point in root.findall("Point"):
@@ -133,7 +147,7 @@ class GeometryTopologyData:
         return geometry_topology
 
     @staticmethod
-    def to_xml_vector(array, format_="%f"):
+    def __to_xml_vector__(array, format_="%f"):
         """ Get the xml representation of a vector of coordinates (<value>elem1</value>, <value>elem2</value>...)
         :param array: vector of values
         :return: xml representation of the vector (<value>elem1</value>, <value>elem2</value>...)
@@ -144,7 +158,7 @@ class GeometryTopologyData:
         return output
 
     @staticmethod
-    def coordinate_system_from_str(value_str):
+    def __coordinate_system_from_str__(value_str):
         """ Get one of the possible coordinate systems allowed from its string representation
         :param value_str: "IJK", "RAS", "LPS"...
         :return: one the allowed coordinates systems
@@ -158,7 +172,7 @@ class GeometryTopologyData:
             return GeometryTopologyData.UNKNOWN
 
     @staticmethod
-    def coordinate_system_to_str(value_int):
+    def __coordinate_system_to_str__(value_int):
         """ Get the string representation of one of the coordinates systems
         :param value_int: GeometryTopologyData.IJK, GeometryTopologyData.RAS, GeometryTopologyData.LPS...
         :return: string representing the coordinate system ("IJK", "RAS", "LPS"...)
@@ -168,7 +182,7 @@ class GeometryTopologyData:
         elif value_int == GeometryTopologyData.LPS: return "LPS"
         return "UNKNOWN"
 
-    def read_transformation_matrix(self, root_xml):
+    def __read_transformation_matrix__(self, root_xml):
         """ Read a 16 elems vector in the xml and return a 4x4 list (or None if node not found)
         :param root_xml: xml root node
         :return: 4x4 list or None
@@ -187,7 +201,7 @@ class GeometryTopologyData:
             m.append([temp[i*4], temp[i*4+1], temp[i*4+2], temp[i*4+3]])
         return m
 
-    def write_transformation_matrix(self, matrix):
+    def __write_transformation_matrix__(self, matrix):
         """ Generate an xml text for a 4x4 transformation matrix
         :param matrix: 4x4 list
         :return: xml string (LPStoIJKTransformationMatrix complete node)
@@ -223,13 +237,16 @@ class Point:
         :param xml_point_node: xml Point element coming from a "find" instruction
         :return: new instance of Point
         """
-        print("Point: ", xml_point_node)
         coordinates = []
         for coord in xml_point_node.findall("Coordinate/value"):
             coordinates.append(float(coord.text))
         chest_region = int(xml_point_node.find("ChestRegion").text)
         chest_type = int(xml_point_node.find("ChestType").text)
-        feature_type = int(xml_point_node.find("ImageFeature").text)
+        featureNode = xml_point_node.find("ImageFeature")
+        if featureNode is None:
+            feature_type = 0
+        else:
+            feature_type = int(featureNode.text)
 
         # Description
         desc = xml_point_node.find("Description")
@@ -242,7 +259,7 @@ class Point:
         """ Get the xml string representation of the point
         :return: xml string representation of the point
         """
-        coords = GeometryTopologyData.to_xml_vector(self.coordinate, self.format)
+        coords = GeometryTopologyData.__to_xml_vector__(self.coordinate, self.format)
         description_str = ''
         if self.description is not None:
             description_str = '<Description>%s</Description>' % self.description
@@ -263,11 +280,11 @@ class BoundingBox:
         :param format_: Default format to print the xml output coordinate values (also acceptable: %i for integers or customized)
         :return:
         """
-        self.start = start
-        self.size = size
         self.chest_region = chest_region
         self.chest_type = chest_type
         self.feature_type = feature_type
+        self.start = start
+        self.size = size
         self.description = description
         self.format = format_       # Default format to print the xml output coordinate values (also acceptable: %i or customized)
 
@@ -286,8 +303,11 @@ class BoundingBox:
             coordinates_size.append(float(coord.text))
         chest_region = int(xml_bounding_box_node.find("ChestRegion").text)
         chest_type = int(xml_bounding_box_node.find("ChestType").text)
-        feature_type = int(xml_bounding_box_node.find("ImageFeature").text)
-
+        featureNode = xml_bounding_box_node.find("ImageFeature")
+        if featureNode is None:
+            feature_type = 0
+        else:
+            feature_type = int(featureNode.text)
         # Description
         desc = xml_bounding_box_node.find("Description")
         if desc is not None:
@@ -300,14 +320,11 @@ class BoundingBox:
         """ Get the xml string representation of the bounding box
         :return: xml string representation of the bounding box
         """
-        start_str = GeometryTopologyData.to_xml_vector(self.start, self.format)
-        size_str = GeometryTopologyData.to_xml_vector(self.size, self.format)
+        start_str = GeometryTopologyData.__to_xml_vector__(self.start, self.format)
+        size_str = GeometryTopologyData.__to_xml_vector__(self.size, self.format)
         description_str = ''
         if self.description is not None:
             description_str = '<Description>%s</Description>' % self.description
-        return '<BoundingBox><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % \
+        return '<BoundingBox><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType>' \
+               '<ImageFeature>%i</ImageFeature>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % \
             (self.chest_region, self.chest_type, self.feature_type, description_str, start_str, size_str)
-            
-
-
-

@@ -59,84 +59,65 @@ class kdeHistExtractor:
         counts for each Hounsfield unit (hu) estimated by the KDE.        
     """
     def __init__(self, lower_limit=-1050, upper_limit=3050, x_extent = 31, \
-        y_extent=31, z_extent=1, in_df=None, in_patch_labels=None, lm=None):
+        y_extent=31, z_extent=1, in_df=None):
         # Initialize the dataframe       
         # first get the list of all histogaram bin values
         self.bin_values = np.arange(lower_limit, upper_limit+1)
         self.x_half_length = np.floor(x_extent/2)
         self.y_half_length = np.floor(y_extent/2)
         self.z_half_length = np.floor(z_extent/2)
+ 
+        self.df_ = in_df
+  
+    
+    def _create_dataframe(self, patch_labels_for_df=None, in_data = None):
+        """Create a pandas dataframe for the computed per patch features, where \
+        each patch corresponds to an xml point. 
         
+        Parameters
+        ----------
+        patch_labels_for_df: numpy array, shape (L*M*N)
+            Input unique patch segmentation values . Required
+        
+        in_data:  numpy array, shape (L*M*N)
+            Input distance features, wach corresponding to a unique patch value.
+            Required     
+        """  
+            
         cols = []
         for i in self.bin_values:
             cols.append('hu' + str(int(round(i))))
 
-        in_patch_labels_copy = np.copy(in_patch_labels)
-        if (np.shape(in_patch_labels_copy)>0):
-            in_patch_labels_copy = in_patch_labels_copy[in_patch_labels>0]
-        toc1 = time.clock() 
-        if in_df is None:
+        if self.df_ is None:
             cols.append('patch_label')
             cols.append('ChestRegion')
-            cols.append('ChestType')
-            if in_patch_labels is None:    
-                self.df_ = pd.DataFrame(columns=cols)
-            else:
-                if lm is not None:
-                    unique_patch_labels = np.unique(in_patch_labels)
-                    unique_patch_labels_positive = unique_patch_labels[unique_patch_labels>0]
-                    patch_center_temp = ndimage.measurements.center_of_mass(in_patch_labels, \
-                    in_patch_labels.astype(np.int32), unique_patch_labels_positive)
-                    inc=0
-                    inc2=0
-                    p_labels_for_df = np.zeros(np.shape(unique_patch_labels_positive))
-                    for p_label in unique_patch_labels_positive:
-
-                        patch_center = map(int, patch_center_temp[inc2])
-                        inc2 = inc2+1
-                        xmin = max(patch_center[0]-self.x_half_length,0)
-                        xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(lm)[0])
-                        ymin = max(patch_center[1]-self.y_half_length,0)
-                        ymax = min(patch_center[1]+\
-                            self.y_half_length+1,np.shape(lm)[1])
-                        zmin = max(patch_center[2]-self.z_half_length,0)
-                        zmax = min(patch_center[2]+\
-                            self.z_half_length+1,np.shape(lm)[2])
-                                   
-                        lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]
-                        if (np.sum(lm_temp>0) > 1):
-                            p_labels_for_df[inc] = p_label
-                            inc = inc+1
-                        #lm_copy = np.copy(lm)
-                        #if (np.shape(lm_copy)>0):
-                        #    lm_copy = lm_copy[in_patch_labels>0]
-                        #the_index =  np.unique(in_patch_labels_copy[np.logical_and(\
-                        #        lm_copy, in_patch_labels_copy)])
-                    p_labels_for_df = np.unique(p_labels_for_df)
-                    p_labels_for_df = p_labels_for_df[p_labels_for_df>0]
-                    #self.df_ = pd.DataFrame(columns=cols)
-                    self.df_ = pd.DataFrame(columns=cols, \
-                            index = np.arange(0,inc))
-                    self.df_['patch_label']=p_labels_for_df 
-                else:
-                    the_index = np.unique(in_patch_labels_copy)
-                    self.df_ = pd.DataFrame(columns=cols, \
-                        index = the_index-1)
-                    self.df_['patch_label']=the_index     
-                self.df_ = self.df_.astype(np.float64)
-                self.df_['ChestRegion'] = 'UndefinedRegion'
-                self.df_['ChestType'] = 'UndefinedType'
-                
-                toc2 = time.clock() 
-                print("init time is "+str(toc2-toc1))
-                             
-                                 
-        else:         
-            self.df_ = in_df
-            for c in cols:
-                if c not in self.df_.columns:
-                    self.df_[c] = np.nan
+            cols.append('ChestType')                                 
+        #else:         
+        #    self.df_ = in_df
+        #    for c in cols:
+        #        if c not in self.df_.columns:
+        #            self.df_[c] = np.nan
+        num_patches = np.shape(patch_labels_for_df)[0]    
+        the_index = np.arange(0,num_patches)
         
+        new_df = pd.DataFrame(columns=cols, index = the_index)    
+
+        new_df['patch_label']=patch_labels_for_df 
+        new_df = new_df.astype(np.float64)
+        new_df.ix[new_df['patch_label'] == patch_labels_for_df, \
+            'hu' + str(self.bin_values[0]): 'hu' + str(self.bin_values[np.shape(self.bin_values)[0]-1])] = \
+                in_data[:,0:np.shape(self.bin_values)[0]]        
+
+        # if in_df is not None, then merge
+        if self.df_ is not None:        
+            self.df_ = pd.merge(new_df, self.df_, on='patch_label')
+        else:
+            new_df['ChestRegion'] = 'UndefinedRegion'
+            new_df['ChestType'] = 'UndefinedType' 
+            self.df_ = new_df
+            
+       
+                                                            
     def _perform_kde_botev(self, input_data):
         """Perform kernel density estimation  (using botev estimator for best 
         bandwidth) 
@@ -157,8 +138,6 @@ class kdeHistExtractor:
         kde_bandwidth_estimator = botev_bandwidth()
         the_bandwidth = kde_bandwidth_estimator.run(input_data)
         
-        #if (the_bandwidth < 0.1):
-        #    warnings.warn("Bandwidth less than 0.1: "+str(the_bandwidth))
         if (the_bandwidth <= 0):
             warnings.warn("Bandwidth negative: "+str(the_bandwidth)+\
                 " Set to 0.02")
@@ -193,89 +172,93 @@ class kdeHistExtractor:
         """                
         #patch_labels_copy = np.copy(patch_labels)
         #patch_labels_copy[lm == 0] = 0
-                
-        unique_patch_labels = np.unique(patch_labels[:])
-        unique_patch_labels = unique_patch_labels[unique_patch_labels !=0]
 
         assert ((self.x_half_length*2 <= np.shape(ct)[0]) and \
             (self.y_half_length*2 <= np.shape(ct)[1]) and \
             (self.z_half_length*2 <= np.shape(ct)[2])), "kde region extent must \
             be less that image dimensions."
-        
-        # loop through each patch 
-        inc = 0
-        inc2=0
+                                           
+        unique_patch_labels = np.unique(patch_labels[:])
+        unique_patch_labels_positive = unique_patch_labels[unique_patch_labels>0]
 
         patch_center_temp = ndimage.measurements.center_of_mass(patch_labels, \
-                    patch_labels.astype(np.int32), unique_patch_labels)
-                    
-        # prepare an array of histograms and a corresponding array of patch labels
-        histograms = np.zeros([np.shape(self.df_['patch_label'])[0], np.shape(self.bin_values)[0]])
-        histogram_patch_labels = np.zeros( np.shape(self.df_['patch_label'])[0], dtype = int)
-                                
-        for p_label in unique_patch_labels:
-                if np.mod(inc,100) ==0:
-                    print("computing histogram for patch "+str(p_label))
-                patch_center = map(int, patch_center_temp[inc])
-                inc = inc+1
-
+            patch_labels.astype(np.int32), unique_patch_labels_positive)
+            
+        # Figure out the number of rows required
+        if lm is not None:           
+            inc=0
+            inc2=0
+            p_labels_for_df_temp = np.zeros(np.shape(unique_patch_labels_positive))
+            for p_label in unique_patch_labels_positive:
+                patch_center = map(int, patch_center_temp[inc2])
+                inc2 = inc2+1
                 xmin = max(patch_center[0]-self.x_half_length,0)
-                xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0])
+                xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(lm)[0])
                 ymin = max(patch_center[1]-self.y_half_length,0)
                 ymax = min(patch_center[1]+\
-                    self.y_half_length+1,np.shape(ct)[1])
+                    self.y_half_length+1,np.shape(lm)[1])
                 zmin = max(patch_center[2]-self.z_half_length,0)
                 zmax = min(patch_center[2]+\
-                    self.z_half_length+1,np.shape(ct)[2])
-                
-                #print("center of mass time: "+str(toc-tic))
-                intensities_temp = ct[xmin:xmax, ymin:ymax, zmin:zmax]                    
+                    self.z_half_length+1,np.shape(lm)[2])
+                               
                 lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]
-                                   
-                #print("lm extraction time: "+str(toc2-toc))
-                # extract the lung area from the CT for the patch
-                patch_intensities = intensities_temp[(lm_temp >0)] 
-                # linearize features
-                intensity_vector = np.array(patch_intensities.ravel()).T
 
-                if (np.shape(intensity_vector)[0] > 1):
+                if (np.sum(lm_temp>0) > 1):
+                    p_labels_for_df_temp[inc] = p_label
+                    inc = inc+1
+            p_labels_for_df = np.unique(p_labels_for_df_temp[p_labels_for_df_temp>0])
+        else:
+            p_labels_for_df = unique_patch_labels[unique_patch_labels>0]
+
+        
                     
-                    # obtain kde histogram from features
-                    tic = time.clock()     
-                    histogram = self._perform_kde_botev(intensity_vector)
-                    index = self.df_['patch_label'] == p_label
+        # prepare an array of histograms and a corresponding array of patch labels
+        histograms = np.zeros([np.shape(p_labels_for_df)[0], \
+            np.shape(self.bin_values)[0]])
+        histogram_patch_labels = np.zeros(\
+            np.shape(p_labels_for_df), dtype = int)
 
-                    if np.sum(index) > 0:
-                        #toc1 = time.clock() 
-                        #for i in range(0, np.shape(self.bin_values)[0]):
-                        #    self.df_.ix[index, 'hu' + str(self.bin_values[i])] \
-                        #      = histogram[i]
-                        histograms[inc2, 0:np.shape(self.bin_values)[0]] =  histogram[0:np.shape(self.bin_values)[0]]
-                        histogram_patch_labels[inc2]=p_label
-                        #self.df_.ix[index, 'hu' + str(self.bin_values[0]): 'hu' + str(self.bin_values[np.shape(self.bin_values)[0]-1])] =\
-                        #    histogram[0:np.shape(self.bin_values)[0]]
-                        #toc2 = time.clock() 
-                        #print("execution time of post hist extractor 1= "+str(toc2 - toc1))   
-                    else:      
-                        index =self.df_['patch_label'].isnull()
-                        tmp = dict()
-                        tmp['ChestRegion'] = 'UndefinedRegion'
-                        tmp['ChestType'] = 'UndefinedType'
-                        tmp['patch_label'] = p_label
-                        toc2 = time.clock() 
-                        for i in range(0, np.shape(self.bin_values)[0]):
-                            tmp['hu' + str(self.bin_values[i])] = histogram[i]
-                        self.df_ = self.df_.append(tmp, ignore_index=True)
+        # loop through each patch that has intensities
+        inc = 0
+        inc2=0
+        
+        for p_label in unique_patch_labels_positive:
+            if np.mod(inc,100) ==0:
+                print("computing histogram for patch "+str(p_label))
+            patch_center = map(int, patch_center_temp[inc])
 
-                        #print("execution time of post hist extractor 2 new 3= "+str(toc4 - toc1))   
-                    inc2 = inc2+1  
-        print("storing data in dataframe")           
-        toc1 = time.clock() 
-        self.df_.ix[self.df_['patch_label'] == histogram_patch_labels
-            , 'hu' + str(self.bin_values[0]): 'hu' + str(self.bin_values[np.shape(self.bin_values)[0]-1])] =\
-                            histograms[:,0:np.shape(self.bin_values)[0]]         
-        toc2 = time.clock()      
-        print("execution time of populating dataframe = "+str(toc2 - toc1))       
+            xmin = max(patch_center[0]-self.x_half_length,0)
+            xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0])
+            ymin = max(patch_center[1]-self.y_half_length,0)
+            ymax = min(patch_center[1]+\
+                self.y_half_length+1,np.shape(ct)[1])
+            zmin = max(patch_center[2]-self.z_half_length,0)
+            zmax = min(patch_center[2]+\
+                self.z_half_length+1,np.shape(ct)[2])
+                
+            #print("center of mass time: "+str(toc-tic))
+            intensities_temp = ct[xmin:xmax, ymin:ymax, zmin:zmax]                    
+            lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]
+                                   
+            #print("lm extraction time: "+str(toc2-toc))
+            # extract the lung area from the CT for the patch
+            patch_intensities = intensities_temp[(lm_temp >0)] 
+            # linearize features
+            if (np.shape(patch_intensities)[0] > 1):
+                intensity_vector = np.array(patch_intensities.ravel()).T
+                    
+                # obtain kde histogram from features
+                histogram = self._perform_kde_botev(intensity_vector)
+                histograms[inc2, 0:np.shape(self.bin_values)[0]] = histogram[0:np.shape(self.bin_values)[0]]
+                histogram_patch_labels[inc2]=p_label  
+                inc2 = inc2+1  
+            inc = inc+1  
+            
+        print("creating dataframe")           
+        self._create_dataframe(patch_labels_for_df=histogram_patch_labels, in_data = histograms)
+        
+       
+
 
 if __name__ == "__main__":
     desc = """Generates histogram features given input CT and segmentation \
@@ -308,6 +291,18 @@ if __name__ == "__main__":
     parser.add_option('--upper_limit',
                       help='upper histogram limit.  (optional)',  dest='upper_limit', 
                       metavar='<string>', default=3050)  
+    parser.add_option('--x_extent',
+                      help='x extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='x_extent', 
+                      metavar='<string>', default=31)                        
+    parser.add_option('--y_extent',
+                      help='y extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='y_extent', 
+                      metavar='<string>', default=31)   
+    parser.add_option('--z_extent',
+                      help='z extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='z_extent', 
+                      metavar='<string>', default=1)   
     (options, args) = parser.parse_args()
     
     #image_io = ImageReaderWriter()
@@ -323,12 +318,18 @@ if __name__ == "__main__":
     print "Reading patches segmentation..."
     in_patches, in_patches_header = nrrd.read(options.in_patches) 
 
+    if (options.in_csv is not None):
+        print "Reading previously computed features..."
+        init_df = pd.read_csv(options.in_csv)
+    else:    
+        init_df = None
+        
     print "Compute histogram features..."
     kde_hist_extractor = kdeHistExtractor(lower_limit=np.int16(options.lower_limit), \
-        upper_limit=np.int16(options.upper_limit))
+        upper_limit=np.int16(options.upper_limit), x_extent = np.int16(options.x_extent), \
+        y_extent=np.int16(options.y_extent), z_extent=np.int16(options.z_extent),
+        in_df = init_df)
     
-    import timeit
-    print(timeit.timeit("kde_hist_extractor.fit(ct, lm, in_patches)", setup="from kdeHistExtractor import fit"))
     kde_hist_extractor.fit(ct, lm, in_patches)
     
     

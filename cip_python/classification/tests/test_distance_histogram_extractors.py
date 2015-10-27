@@ -15,7 +15,7 @@ from pandas.util.testing import assert_frame_equal
 #                    linewidth=200) 
 
 def test_execute():
-    lm = np.ones([2, 2, 1])
+    lm           = np.ones([2, 2, 1])
     patches = np.ones([2, 2, 1])
 
     ct = np.ones([2, 2, 1])
@@ -47,7 +47,7 @@ def test_execute():
                                                in_df=hist_extractor.df_,\
                                         x_extent=2, y_extent = 2, z_extent = 1)
     dist_extractor2.fit(dist_map, lm, patches)    
-
+    
     assert dist_extractor2.df_.ix[0, 'patch_label'] == 1, \
       "patch_label not as expected"
     assert dist_extractor2.df_.ix[0, 'ChestRegion'] == 'UndefinedRegion', \
@@ -81,3 +81,4 @@ def test_execute():
       "hu7 not as expected"
     assert hist_extractor2.df_.ix[0, 'hu8'] == 0.23255479542667767, \
       "hu8 not as expected"      
+

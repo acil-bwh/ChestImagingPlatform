@@ -10,12 +10,14 @@ from scipy import ndimage
 from kde_bandwidth import botev_bandwidth
 from cip_python.ChestConventions import ChestConventions
 #from cip_python.io.image_reader_writer import ImageReaderWriter
-from cip_python.classification.distance_feature_extractor_from_xmlpoints \
-  import DistanceFeatureExtractorFromXML
+#from cip_python.classification.distance_feature_extractor_from_xmlpoints \
+#  import DistanceFeatureExtractorFromXML
 from cip_python.utils.geometry_topology_data import  *
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import vtk
-     
+from cip_python.classification.distance_feature_extractor \
+  import DistanceFeatureExtractor
+       
 class DistanceFeatureExtractorFromXML:
     """General purpose class implementing a distance feature extractor from
     an xml file. 
@@ -69,11 +71,10 @@ class DistanceFeatureExtractorFromXML:
         chest_region=None, chest_type=None, pair=None, in_df=None):
         # get the region / type over which distance is computed
 
-        self.dist_extractor = DistanceFeatureExtractor(chest_region="WholeLung", 
-                                          in_df=in_df,\
-            x_extent = x_extent, y_extent=y_extent, \
-            z_extent=z_extent) 
-        self.df_ = None
+        self.df_ = in_df
+        self.x_extent=x_extent
+        self.y_extent=y_extent
+        self.z_extent=z_extent
         
     def fit(self, distance_image, distance_header, lm, xml_object):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
@@ -129,7 +130,9 @@ class DistanceFeatureExtractorFromXML:
             the_patch[int(ijk_val[0])-2:int(ijk_val[0])+3, int(ijk_val[1])- \
                 2:int(ijk_val[1])+3,int(ijk_val[2])] = inc
             inc = inc+1
-    
+        self.dist_extractor = DistanceFeatureExtractor(chest_region="WholeLung", 
+                                    in_df=self.df_,x_extent = self.x_extent, \
+                                    y_extent=self.y_extent, z_extent=self.z_extent) 
         self.dist_extractor.fit( distance_image, lm, the_patch) # df will have region / type entries
         self.df_ = pd.DataFrame(columns=self.dist_extractor.df_.columns)
         self.df_ = self.dist_extractor.df_

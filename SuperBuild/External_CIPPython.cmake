@@ -104,15 +104,15 @@ ExternalProject_Add_Step(${proj} installscikit-image
 	DEPENDEES installscikit-learn
 )
 
-# Downgrade of libpng for compatibility problems with SimpleITK (see http://public.kitware.com/pipermail/community/2015-May/009124.html)
-ExternalProject_Add_Step(${proj} installlibpng
-	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet libpng=1.5.13  
+ExternalProject_Add_Step(${proj} matplotlib
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet matplotlib 
 	DEPENDEES installscikit-image
 )
 
+
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
-	DEPENDEES installlibpng
+	DEPENDEES matplotlib
 )
 
 ExternalProject_Add_Step(${proj} installpydicom
