@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.General</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>ExecuteSystemCommand</title>
     <description><![CDATA[This program just executes a system command. The purpose is to run backgraound operations from Python modules or another sources]]></description>
   <version>0.0.1</version>
