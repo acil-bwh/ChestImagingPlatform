@@ -2,7 +2,7 @@
 ##!/usr/bin/python
 from __future__ import division
 
-import sys
+import sys,os
 import scipy.io
 import numpy as np
 from scipy.stats import norm
@@ -41,7 +41,7 @@ copy_reg.pickle(types.MethodType, _pickle_method)
 
 class LocalHistogram():
   
-    def __init__(self,frames,mask,ws=(31,31),ss=(5,5),off=5,num_threads=1,database='../../Resources/EmphysemaPatches.mat'):
+    def __init__(self,frames,mask,ws=(31,31),ss=(5,5),off=5,num_threads=1,database=None):
       #Image and mask files 
       self.frames=frames
       self.mask = mask
@@ -182,8 +182,8 @@ class LocalHistogram():
                 image_patch=image_patches[i,:,:].ravel()[:, np.newaxis]
                 bw,mesh,dens=self.bb.kde_b(image_patch)
                 dens1=dens[0:600] # Retain only the first 600 samples
-                if sum(dens1)==0: # This means error (label=10)
-                    Z=10 #10
+                if sum(dens1)==0: # This means error (label=-1)
+                    Z=-1 #10
                     labels.append(Z)
                     removed.append(i)   
                     continue
@@ -195,8 +195,8 @@ class LocalHistogram():
                 if ((Z != 1) and (dens2>0.2843)): # Hierarchical classifier. Second step
                   Z = 2
                 labels.append(Z)
-            else: #This means error (label=10)
-                Z=10
+            else: #This means error (label=-1)
+                Z=-1
                 labels.append(Z)
                 removed.append(i)
 
@@ -210,8 +210,11 @@ class LocalHistogram():
                 image[x-(self.off/2):x+(self.off/2+1),y-(self.off/2):y+(self.off/2+1)]=labels[i]
         
         #Convert the output labels to cipChestConventions
-        palette = [0,1,2,3,4,5,6] #orginal labels
-        key=np.array([0,1,67,69,16,17,18]) #cipChestConventions labels
+        #palette = [0,1,2,3,4,5,6] #orginal labels
+        palette = [0,1,2,3,4,5,6,7]
+        #key=np.array([0,1,67,69,16,17,18]) #cipChestConventions labels
+        key=np.array([0,1,67,69,16,17,18,10]) #cipChestConventions labels
+
         index=np.digitize(image.ravel(), palette, right=True)
         image=key[index].reshape(image.shape)
         return np.rot90(np.fliplr(image))
@@ -220,7 +223,6 @@ class LocalHistogram():
       self.database
       ##Creating training set for the KNN Classifier##
       print '...Creating training set for the KNN Classifier...'
-      #mat = scipy.io.loadmat('/home/dbermejo/Documents/subtipado/EmphysemaPatches.mat') #type: dict
       mat = scipy.io.loadmat(self.database)
       mat2=mat['EmphyPatch'] #type: numpy.ndarray              mat2.shape --> (1, 6)
       X=[] #histograms
@@ -285,6 +287,16 @@ if __name__ == "__main__":
                       dest='num_threads',default=1)
     (options,args) =  parser.parse_args()
 
+    DB=os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../Resources/EmphysemaPatches.mat')
+    
+    ##Check DB exists
+    if os.path.isfile(DB) == False:
+      raise ValueError('Database file '+DB+' does not exist')
+    
+    ##
+    if options.image_file is None or options.mask_file is None:
+      raise ValueError('Input image file or mask file have not been set')
+    
     ##Processing image##
     print '...Processing Image: '+options.image_file+'...'
     removed=[]
@@ -299,7 +311,7 @@ if __name__ == "__main__":
     print '## Patch Size: '+str(options.patch_size)
     print '## Number of threads in multiprocessing: '+str(num_threads)
 
-    lh = LocalHistogram(frames,mask,ws,ss,options.offset,num_threads)
+    lh = LocalHistogram(frames,mask,ws,ss,options.offset,num_threads,database=DB)
 
     lh_image = lh.execute()
     
@@ -308,17 +320,19 @@ if __name__ == "__main__":
     nrrd.write(options.output_image_file,lh_image,options=frames_header)
 
     ##PCA##
-    print '...Calculating Relative Class Area...'
-    I=np.reshape(lh_image,(1,self.frames.shape[0]*self.frames.shape[1]*frames.shape[2]))
-    H, O=np.histogram(I, bins=[1,2,3,4,5,6,7])
-    sumH=H.sum()
-    sumHH=1./sumH
-    classPercentages=H*sumHH
-    import csv
-    print '...Writing .csv file with RCA...'
-    with open(options.output_csv_file, 'wb') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        for i in range(classPercentages.shape[0]):
-            spamwriter.writerow([classPercentages[i]])
+    if options.output_csv_file is not None:
+      print '...Calculating Relative Class Area...'
+      I=np.reshape(lh_image,(1,frames.shape[0]*frames.shape[1]*frames.shape[2]))
+      H, O=np.histogram(I, bins=[1,2,3,4,5,6,7])
+      sumH=H.sum()
+      sumHH=1./sumH
+      classPercentages=H*sumHH
+      import csv
+      print '...Writing .csv file with RCA...'
+      with open(options.output_csv_file, 'wb') as csvfile:
+          spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+          for i in range(classPercentages.shape[0]):
+              spamwriter.writerow([classPercentages[i]])
+  
     print ''
     print 'DONE'
