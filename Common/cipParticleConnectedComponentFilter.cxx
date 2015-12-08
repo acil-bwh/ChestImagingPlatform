@@ -558,4 +558,9 @@ void cipParticleConnectedComponentFilter::Update()
     this->OutputPolyData->GetPointData()->AddArray( arrayVec[j] );    
     }
   this->OutputPolyData->GetPointData()->AddArray( unmergedComponentsArray );
+
+  for ( unsigned int j=0; j<this->InputPolyData->GetFieldData()->GetNumberOfArrays(); j++ )
+    {
+    this->OutputPolyData->GetFieldData()->AddArray( this->InternalInputPolyData->GetPointData()->GetArray(j) );    
+    }
 }
