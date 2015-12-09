@@ -488,7 +488,7 @@ class ParenchymaPhenotypes(Phenotypes):
             if hus.shape[0] > 0:
                 pheno_val = np.max(hus)
         elif pheno_name == 'Volume':
-            pheno_val = np.prod(self._spacing)*float(mask_sum)
+            pheno_val = np.prod(self._spacing)*float(mask_sum)/1e6
         elif pheno_name == 'Mass' and mask_sum > 0:
             # This quantity is computed in a piecewise linear form according
             # to the prescription presented in ref. [1]. Mass is computed in
