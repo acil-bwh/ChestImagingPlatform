@@ -1,43 +1,3 @@
-/** \file
- *  \ingroup commandLineTools 
- *  \details This simple program reads and writes images, either 
- *  label maps or CT images. It is useful for renaming (obviating 
- *  the need to need to manually modify headers)
- *
- *  USAGE: 
- *
- *  ReadWriteImageData  [--oct <string>] [--ict <string>] [--ol <string>]
- *                      [--il <string>] [--] [--version] [-h]
- *
- *  Where: 
- *
- *   --oct <string>
- *     Output CT file name
- *
- *   --ict <string>
- *     Input CT file name
- *
- *   --ol <string>
- *     Output label map file name
- *
- *   --il <string>
- *     Input label map file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
- *  $Date$
- *  $Revision$
- *  $Author$
- *
- */
-
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "ReadWriteImageDataCLP.h"
@@ -46,10 +6,9 @@
 
 int main( int argc, char *argv[] )
 {
-  PARSE_ARGS;
-    
+  PARSE_ARGS;    
 
-  if (inLabelMapFileName.compare("q") != 0)
+  if (inLabelMapFileName.compare("NA") != 0)
     {
     std::cout << "Reading label map..." << std::endl;
     cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
@@ -64,12 +23,12 @@ int main( int argc, char *argv[] )
       std::cerr << excp << std::endl;
       }
 
-    if (outLabelMapFileName.compare("q") != 0)
+    if (outLabelMapFileName.compare("NA") != 0)
       {
       std::cout << "Writing label map..." << std::endl;
       cip::LabelMapWriterType::Pointer labelMapWriter = cip::LabelMapWriterType::New();
-        labelMapWriter->SetFileName(outLabelMapFileName);
 	labelMapWriter->SetInput(labelMapReader->GetOutput());
+	labelMapWriter->SetFileName(outLabelMapFileName);
 	labelMapWriter->UseCompressionOn();
       try
 	{
@@ -83,7 +42,7 @@ int main( int argc, char *argv[] )
       }
     }
   
-  if (inCTFileName.compare("q") != 0)
+  if (inCTFileName.compare("NA") != 0)
     {
     std::cout << "Reading CT..." << std::endl;
     cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
@@ -98,7 +57,7 @@ int main( int argc, char *argv[] )
       std::cerr << excp << std::endl;
       }
 
-    if (outCTFileName.compare("q") != 0)
+    if (outCTFileName.compare("NA") != 0)
       {
       std::cout << "Writing CT..." << std::endl;
       cip::CTWriterType::Pointer ctWriter = cip::CTWriterType::New();
