@@ -559,6 +559,7 @@ cip::ChestConventions::ChestConventions()
   ParenchymaPhenotypeNames.push_back( "HUMax500" );
   ParenchymaPhenotypeNames.push_back( "Volume" );
   ParenchymaPhenotypeNames.push_back( "Mass" );
+  ParenchymaPhenotypeNames.push_back( "TypePerc" );
   ParenchymaPhenotypeNames.push_back( "NormalParenchyma" );
   ParenchymaPhenotypeNames.push_back( "PanlobularEmphysema" );
   ParenchymaPhenotypeNames.push_back( "ParaseptalEmphysema" );
@@ -1149,7 +1150,7 @@ bool cip::ChestConventions::IsPhenotypeName( std::string pheno ) const
   
   for ( int i=0; i<this->PulmonaryVasculaturePhenotypeNames.size(); i++ )
   {
-    if ( !this->HistogramPhenotypeNames[i].compare( pheno ) )
+    if ( !this->PulmonaryVasculaturePhenotypeNames[i].compare( pheno ) )
     {
       return true;
     }

@@ -3,6 +3,8 @@ from optparse import OptionParser
 import nrrd
 from cip_python.ChestConventions import ChestConventions
 from cip_python.utils.region_type_parser import RegionTypeParser
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
+
 
 import pdb
 
@@ -193,13 +195,18 @@ if __name__ == "__main__":
             inc = inc+1
             pair = [tmp_from, tmp_to]            
             pair_maps.append(pair)
-            
-    lm_in, header = nrrd.read(options.in_lm)
+
+    lm_io = ImageReaderWriter()
+    lm_in, header = lm_io.read_in_numpy(options.in_lm)
+    #lm_in, header = nrrd.read(options.in_lm)
 
     remapped_lm = remap_lm(lm_in, region_maps=region_maps,
                            type_maps=type_maps, pair_maps=pair_maps)
 
     if options.out_lm is not None:
-        del header['data file']
-        nrrd.write(options.out_lm, remapped_lm, options=header)
+      lm_io.write_from_numpy(remapped_lm,header,options.out_lm)
+  
+#    if options.out_lm is not None:
+#        del header['data file']
+#        nrrd.write(options.out_lm, remapped_lm, options=header)
 

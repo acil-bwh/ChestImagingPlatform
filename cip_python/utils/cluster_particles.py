@@ -104,10 +104,14 @@ class ClusterParticles:
     for pd,out_pd in zip([self._in_vtk.GetPointData(),self._in_vtk.GetFieldData()],[data.GetPointData(),data.GetFieldData()]):
       for k in xrange(pd.GetNumberOfArrays()):
         arr=vtk_to_numpy(pd.GetArray(pd.GetArrayName(k)))
-        if len(arr.shape) == 1:
-          s_vtk_arr=numpy_to_vtk(arr[ids],1)
+        if arr.shape[0]< len(ids):
+          #Transfer directly without masking with sids
+          s_vtk_array = numpy_to_vtk(arr,1)
         else:
-          s_vtk_arr=numpy_to_vtk(arr[ids,:],1)
+          if len(arr.shape) == 1:
+            s_vtk_arr=numpy_to_vtk(arr[ids],1)
+          else:
+            s_vtk_arr=numpy_to_vtk(arr[ids,:],1)
         
         s_vtk_arr.SetName(pd.GetArrayName(k))
         out_pd.AddArray(s_vtk_arr)
@@ -164,6 +168,8 @@ class LobeParticleLabeling():
     
     cluster.execute()
     
+    print "Done right clustering"
+
     points = vtk_to_numpy(leftright_output['right'].GetPoints().GetData())
     
     p_centroids = np.zeros([3,3])
@@ -213,7 +219,8 @@ class LobeParticleLabeling():
     
 
     append=vtk.vtkAppendPolyData()
-    for k,tag,cr,ct in zip([0,1],self.cluster_tags,chest_region,chest_type):
+    for k,tag,cr,ct in zip(range(0,len(self.cluster_tags)),self.cluster_tags,chest_region,chest_type):
+      print k
       self._out_vtk[tag]=output_collection.GetItemAsObject(k)
       chest_region_arr = vtk.vtkUnsignedCharArray()
       chest_region_arr.SetName('ChestRegion')
@@ -240,7 +247,7 @@ class LobeParticleLabeling():
     #features =np.concatenate((points, vec[:,0:1]),axis=1)
     features = points
     #features=StandardScaler().fit_transform(features)
-    pca = PCA(n_components=4)
+    pca = PCA(n_components=3)
     pca.fit(features)
     features_t=pca.transform(features)
     return features_t[:,[0,1]]
@@ -252,7 +259,7 @@ class LobeParticleLabeling():
     features =np.concatenate((points, vec[:,[0,1,2]]),axis=1)
     #features = points
     #features=StandardScaler().fit_transform(features)
-    pca = PCA(n_components=4)
+    pca = PCA(n_components=3)
     pca.fit(features)
     features_t=pca.transform(features)
     return features_t
@@ -319,7 +326,7 @@ class LeftRightParticleLabeling():
     #features =np.concatenate((points, vec[:,0:1]),axis=1)
     features = points
     #features=StandardScaler().fit_transform(features)
-    pca = PCA(n_components=4)
+    pca = PCA(n_components=3)
     pca.fit(features)
     features_t=pca.transform(features)
     return features_t[:,[0,1]]

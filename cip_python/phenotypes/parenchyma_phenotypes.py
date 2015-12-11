@@ -138,7 +138,7 @@ class ParenchymaPhenotypes(Phenotypes):
                  'HUSkewness', 'HUMode', 'HUMedian', 'HUMin', 'HUMax',
                  'HUMean500', 'HUStd500', 'HUKurtosis500', 'HUSkewness500',
                  'HUMode500', 'HUMedian500', 'HUMin500', 'HUMax500', 'Volume',
-                 'Mass', 'NormalParenchyma', 'PanlobularEmphysema', 
+                 'Mass', 'TypePerc', 'NormalParenchyma', 'PanlobularEmphysema',
                  'ParaseptalEmphysema', 'MildCentrilobularEmphysema', 
                  'ModerateCentrilobularEmphysema', 
                  'SevereCentrilobularEmphysema', 'MildParaseptalEmphysema']
@@ -200,7 +200,8 @@ class ParenchymaPhenotypes(Phenotypes):
         'HUMax500': Max HU value for the structure, but only considering CT
         values that are <= -500 HU
         'Volume': Volume of the structure, measured in liters
-        'Mass': Mass of the structure measure in grams    
+        'Mass': Mass of the structure measure in grams
+        'TypePerc': Percentage for a given type over the total region.
         'NormalParenchyma': A "chest-type-based" phenotype. It is the 
         percentage of a given region occupied by the 'NormalParenchyma' 
         chest-type
@@ -310,17 +311,24 @@ class ParenchymaPhenotypes(Phenotypes):
             ps = self.pairs_
 
         parser = RegionTypeParser(lm)
+        
         if rs == None and ts == None and ps == None:
             rs = parser.get_all_chest_regions()
             ts = parser.get_chest_types()
             ps = parser.get_all_pairs()
 
+#        if rs == None:
+#            rs = parser.get_all_chest_regions()
+#        if ts == None:
+#            ts = parser.get_chest_types()
+#        if ps == None:
+#            ps = parser.get_all_pairs()
         # Now compute the phenotypes and populate the data frame
         c = ChestConventions()
         if rs is not None:
             for r in rs:
                 if r != 0:
-                    mask = parser.get_mask(chest_region=r)
+                    mask_region = parser.get_mask(chest_region=r)
                     for n in phenos_to_compute:
                         # First check to see if 'pheno_name' is a valid chest
                         # type. If it is, then it as a "chest-type-based"
@@ -329,24 +337,24 @@ class ParenchymaPhenotypes(Phenotypes):
                         if c.IsChestType(n):
                             chest_type_val = \
                               c.GetChestTypeValueFromName(n)
-                            tmp_mask = \
+                            mask_type = \
                               parser.get_mask(chest_type=chest_type_val)
                             pheno_val = \
-                              np.sum(np.logical_and(tmp_mask, mask))/\
-                              float(np.sum(mask))
+                              np.sum(np.logical_and(mask_type, mask_region))/\
+                              float(np.sum(mask_region))
                             self.add_pheno([c.GetChestRegionName(r), 
                                             c.GetChestWildCardName()], 
                                             n, pheno_val)
                         else:
-                            self.add_pheno_group(ct, mask, 
+                            self.add_pheno_group(ct, mask_region, mask_region,None,
                                                     c.GetChestRegionName(r),
                                                     c.GetChestWildCardName(), n)
         if ts is not None:
             for t in ts:
                 if t != 0:
-                    mask = parser.get_mask(chest_type=t)
+                    mask_type = parser.get_mask(chest_type=t)
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask, 
+                        self.add_pheno_group(ct, mask_type, None, mask_type,
                                                 c.GetChestWildCardName(),
                                                 c.GetChestTypeName(t), n)
         if ps is not None:
@@ -354,14 +362,17 @@ class ParenchymaPhenotypes(Phenotypes):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
+                    mask_region = parser.get_mask(chest_region=int(ps[i, 0]))
+                    mask_type = parser.get_mask(chest_type=int(ps[i, 1]))
+                    
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask,
+                        self.add_pheno_group(ct, mask, mask_region, mask_type,
                             c.GetChestRegionName(int(ps[i, 0])),
                             c.GetChestTypeName(int(ps[i, 1])), n)
 
         return self._df
 
-    def add_pheno_group(self, ct, mask, chest_region, chest_type, pheno_name):
+    def add_pheno_group(self, ct, mask, mask_region, mask_type, chest_region, chest_type, pheno_name):
         """For a given mask, this function computes all non chest-type-based 
         phenotypes corresponding to the masked structure and adds them to the 
         dataframe with the 'add_pheno' method. (Chest-type-based phenotypes are
@@ -376,6 +387,12 @@ class ParenchymaPhenotypes(Phenotypes):
         mask : boolean array, shape ( X, Y, Z )
             Boolean mask where True values indicate presence of the structure
             of interest
+            
+        mask_region: boolean array, shape ( X, Y, Z )
+            Boolean mask for the corresponding region
+            
+        mask_type: boolean array, shape ( X, Y, Z )
+            Boolean mask for the corresponding type
 
         chest_region : string
             Name of the chest region in the (region, type) key used to populate
@@ -398,8 +415,8 @@ class ParenchymaPhenotypes(Phenotypes):
         #print "Region: %s, Type: %s, Pheno: %s" % \
         #    (chest_region, chest_type, pheno_name)
         pheno_val = None
-        mask_sum = np.sum(mask)
         
+        mask_sum = np.sum(mask)
         if pheno_name == 'LAA950' and mask_sum > 0:
             pheno_val = float(np.sum(ct[mask] <= -950.))/mask_sum
         elif pheno_name == 'LAA910' and mask_sum > 0:
@@ -508,7 +525,12 @@ class ParenchymaPhenotypes(Phenotypes):
                 if HU_tmp.shape[0] > 0:
                     pheno_val += np.sum((1.017 + 0.592*HU_tmp/1000.0)*\
                         np.prod(self._spacing)*0.001)
-
+    
+#        elif pheno_name == 'TypePerc'and mask_region is not None and mask_type is not None:
+#            denom = np.sum(mask_region)
+#            if denom > 0:
+#                pheno_val = np.sum(mask_type)/denom
+#
         if pheno_val is not None:
             self.add_pheno([chest_region, chest_type], pheno_name, pheno_val)
 

@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import scipy as sci
 import scipy.optimize
 import scipy.fftpack
+from scipy import interpolate
 
 import kde_
 
@@ -41,7 +42,7 @@ copy_reg.pickle(types.MethodType, _pickle_method)
 
 class LocalHistogram():
   
-    def __init__(self,frames,mask,ws=(31,31),ss=(5,5),off=5,num_threads=1,database=None):
+    def __init__(self,frames,mask,ws=(31,31),ss=(5,5),off=5,num_threads=1,z=2,database=None):
       #Image and mask files 
       self.frames=frames
       self.mask = mask
@@ -49,7 +50,7 @@ class LocalHistogram():
       self.ws = ws
       #Window offset
       self.ss = ss
-      #Offset along z-direction
+      #Offset between patches
       self.off = int(off)
       #Database for training the KKN classifier
       self.database =database
@@ -59,9 +60,10 @@ class LocalHistogram():
 
       #Classifier: might be interested to test different kNN weight schemes: uniform vs distance
       self.clf = neighbors.KNeighborsClassifier(5, metric='l1',weights='distance')
-
       #Number of threads in multiprocessing
       self.num_threads = num_threads
+      #Offset along z direction
+      self.z=int(z)
 
 
     ##Defining necessary functions to create the patches##
@@ -183,7 +185,7 @@ class LocalHistogram():
                 bw,mesh,dens=self.bb.kde_b(image_patch)
                 dens1=dens[0:600] # Retain only the first 600 samples
                 if sum(dens1)==0: # This means error (label=-1)
-                    Z=-1 #10
+                    Z=-1
                     labels.append(Z)
                     removed.append(i)   
                     continue
@@ -211,7 +213,7 @@ class LocalHistogram():
         
         #Convert the output labels to cipChestConventions
         #palette = [0,1,2,3,4,5,6] #orginal labels
-        palette = [0,1,2,3,4,5,6,7]
+        palette = [0,1,2,3,4,5,6,7] #orginal labels
         #key=np.array([0,1,67,69,16,17,18]) #cipChestConventions labels
         key=np.array([0,1,67,69,16,17,18,10]) #cipChestConventions labels
 
@@ -224,27 +226,22 @@ class LocalHistogram():
       ##Creating training set for the KNN Classifier##
       print '...Creating training set for the KNN Classifier...'
       mat = scipy.io.loadmat(self.database)
-      mat2=mat['EmphyPatch'] #type: numpy.ndarray              mat2.shape --> (1, 6)
+      mat2=mat['EmphyPatch'] #type: numpy.ndarray
       X=[] #histograms
       y=[] #corresponding class
       for i in range(6):
+        if i!=1: #We train the classifier with 5 classes (all except PS class)
           print 'Running class '+str(i+1)
           patches_size=mat2[0][i].shape
           for j in range(patches_size[2]):
               patch=(mat2[0][i])[:,:,j]
               patch=patch.ravel()[:, np.newaxis]
               bw_train,mesh_train,dens_train=self.bb.kde_b(patch)
-              #kde = KernelDensity(kernel='gaussian', bandwidth=0.75).fit(patch)
-              #log_dens = kde.score_samples(self.X_plot)
-              #dens=np.exp(log_dens)
-              #fill(self.X_plot[:, 0], dens, fc='#AAAAFF') #datos: exp(log_dens)
-              #plt.fill(self.X_plot[0:600, 0], dens[0:600])  #-> 600 muestras 1as
               dens1=dens_train[0:600]
               dens1=dens1/sum(dens1)
               sizeDens=dens_train.shape
-              dens2=sum(dens_train[600:sizeDens[0]])/sum(dens_train) #porcentaje de voxeles de alta densidad que hay en la muestra. Esta característica se usa para definir el subtipo paraseptal de enfisema
+              dens2=sum(dens_train[600:sizeDens[0]])/sum(dens_train)
               Dens1=dens1.tolist()
-              #Dens1.append(dens2)
               X.append(Dens1)
               y.append(i+1)
 
@@ -255,13 +252,16 @@ class LocalHistogram():
         lh.train()
         output_image=np.zeros((self.frames.shape[0],self.frames.shape[1],frames.shape[2]),dtype='short')
         p = Pool(int(self.num_threads))
-        pp=(p.map(self.process_slice, range(0,frames.shape[2],2)))
-        for i in range(len(pp)):
-          slice_processed=pp[i]
-          output_image[:,:,i*2]=slice_processed
-          output_image[:,:,((i+1)*2)-1]=slice_processed
-
-
+        pp=(p.map(self.process_slice, range(0,frames.shape[2],self.z)))
+        pp = np.asarray(pp)
+        pp=pp.transpose([1,2,0])
+        ff=interpolate.interp1d(range(0,frames.shape[2],self.z),pp,kind='nearest',fill_value=0,axis=2)
+        ppn=ff(range(0,frames.shape[2]-self.z))
+        #Adding last slices to match the size
+        last_slice=ppn[:,:,-1]
+        last_slices=np.repeat(last_slice[:, :, np.newaxis], frames.shape[2]-(ppn.shape[2]), axis=2)
+        output_image=np.append(ppn,last_slices,axis=2)
+        
         return output_image
 
 
@@ -285,6 +285,8 @@ if __name__ == "__main__":
                       dest='output_csv_file',metavar='<string>',default=None)
     parser.add_option('-t', help='Number of threads in multiprocessing. Default=1',
                       dest='num_threads',default=1)
+    parser.add_option('-z', help='Offset along z direction. Default=2',
+                      dest='z',default=2)
     (options,args) =  parser.parse_args()
 
     DB=os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../Resources/EmphysemaPatches.mat')
@@ -307,11 +309,13 @@ if __name__ == "__main__":
     ws=(options.patch_size,options.patch_size)
     ss=(options.offset,options.offset)
     num_threads=options.num_threads
+    z=options.z
     print '## Offset: '+str(options.offset)
     print '## Patch Size: '+str(options.patch_size)
+    print '## Offset along Z axis: '+str(z)
     print '## Number of threads in multiprocessing: '+str(num_threads)
 
-    lh = LocalHistogram(frames,mask,ws,ss,options.offset,num_threads,database=DB)
+    lh = LocalHistogram(frames,mask,ws,ss,options.offset,num_threads,z,database=DB)
 
     lh_image = lh.execute()
     
@@ -319,7 +323,7 @@ if __name__ == "__main__":
     print '...Writing labeled image...'
     nrrd.write(options.output_image_file,lh_image,options=frames_header)
 
-    ##PCA##
+    ##RCA##
     if options.output_csv_file is not None:
       print '...Calculating Relative Class Area...'
       I=np.reshape(lh_image,(1,frames.shape[0]*frames.shape[1]*frames.shape[2]))

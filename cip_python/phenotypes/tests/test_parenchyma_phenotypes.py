@@ -112,7 +112,7 @@ def test_execute():
         if (r == 'WholeLung' and t == wc):
             assert df['HUMax500'].iloc[i] == -800, 'Phenotype not as expected'
         if (r == 'WholeLung' and t == wc):
-            assert df['Volume'].iloc[i] == 18, 'Phenotype not as expected'
+            assert df['Volume'].iloc[i] == 1.8e-05, 'Phenotype not as expected'
         if (r == 'RightLung' and t == wc):
             assert np.isclose(df['Mass'].iloc[i], 0.00247609596), \
                 'Phenotype not as expected'
