@@ -195,6 +195,12 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
     {
     outParticles->GetPointData()->AddArray( arrayVec[j] );
     }
+
+  // Transfer the field array data 
+  for ( unsigned int j=0; j<inParticles->GetFieldData()->GetNumberOfArrays(); j++ )
+    {
+      outParticles->GetFieldData()->AddArray( inParticles->GetFieldData()->GetArray(j) );    
+    }    
 }
 
 void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string > cipRegions, std::vector< std::string > cipTypes,
@@ -260,6 +266,12 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
     {
     outParticles->GetPointData()->AddArray( pointArrayVec[j] );
     }
+
+  // Transfer the field array data 
+  for ( unsigned int j=0; j<inParticles->GetFieldData()->GetNumberOfArrays(); j++ )
+    {
+      outParticles->GetFieldData()->AddArray( inParticles->GetPointData()->GetArray(j) );    
+    }    
 }
 
 #endif
