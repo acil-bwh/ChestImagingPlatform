@@ -48,14 +48,6 @@ and does not necessarily represent the official views of the National Institutes
   <parameters>
     <label>Parameters</label>
     <double>
-      <name>interParticleSpacing</name>
-      <longflag>spacing</longflag>
-      <description>This value indicates the inter-particle spacing of the input data set</description>
-      <label>Inter particle spacing</label>
-      <default>1.5</default>
-    </double>
-
-    <double>
       <name>maxAllowableDistance</name>
       <flag>d</flag>
       <longflag>distance</longflag>
