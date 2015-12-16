@@ -97,10 +97,7 @@ int main( int argc, char *argv[] )
   std::cout << "Asserting chest-region chest-type existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( reader->GetOutput() );
 
-  reader->GetOutput()->Print( std::cout );
-
   double irad = reader->GetOutput()->GetFieldData()->GetArray( "irad" )->GetTuple( 0 )[0];
-  std::cout << irad << std::endl;
 
   std::cout << "Filtering particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
