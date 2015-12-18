@@ -577,7 +577,7 @@ void SessionFile_CB( Fl_Widget*, void* ) {
           std::string inLabelMapExtension = inLabelMapEntry.substr( extensionStart, extensionStop - extensionStart);
 
           std::stringstream stream4;
-          stream4 << caseName << inLabelMapExtension << ".nhdr";
+          stream4 << caseName << inLabelMapExtension << ".nrrd";
           inLabelMapFileNameHeader = stream4.str();
 
           std::stringstream stream6;
@@ -597,7 +597,7 @@ void SessionFile_CB( Fl_Widget*, void* ) {
           std::string outLabelMapExtension = outLabelMapEntry.substr( extensionStart, extensionStop - extensionStart);
 
           std::stringstream stream4;
-          stream4 << caseName << outLabelMapExtension << ".nhdr";
+          stream4 << caseName << outLabelMapExtension << ".nrrd";
           outLabelMapFileNameHeader = stream4.str();
 
           std::stringstream stream6;
@@ -1178,12 +1178,12 @@ void CopySessionDataFromMAD( SESSIONDATA data )
   // Now copy over the CT data
   std::stringstream permissionHeaderStream;
   permissionHeaderStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
-    data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr'";
+    data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nrrd'";
   std::string permissionCTheader = permissionHeaderStream.str();
   system( permissionCTheader.c_str() );
 
   std::stringstream headerStream;
-  headerStream << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr " << data.caseTmpDir;
+  headerStream << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nrrd " << data.caseTmpDir;
   std::string cpCTheader = headerStream.str();
   system( cpCTheader.c_str() );
 
