@@ -189,11 +189,10 @@ set( CIP_INCLUDE_DIRECTORIES
 )
 
 include_directories( ${CIP_INCLUDE_DIRECTORIES} )
-
 #---------------------------------------------------------------------
 # Copy external files
 ADD_CUSTOM_TARGET(copy-external-files ALL
-    COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_CURRENT_BINARY_DIR}/Resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_CURRENT_BINARY_DIR}/Resources
   )
 
 
