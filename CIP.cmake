@@ -133,7 +133,7 @@ if ( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_PYTHON ON CACHE BOOL "Build Python tests") 
   # Copy the Input data for testing to the build directory (same folder structure, so tests will work both in source and build)
   ADD_CUSTOM_TARGET(copy-input-files ALL
-    COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/Testing/Data/Input ${CMAKE_CURRENT_BINARY_DIR}/Testing/Data/Input
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Testing/Data/Input ${CMAKE_CURRENT_BINARY_DIR}/Testing/Data/Input
   )
 else( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "Build large tests that require MIDAS server")
@@ -189,11 +189,10 @@ set( CIP_INCLUDE_DIRECTORIES
 )
 
 include_directories( ${CIP_INCLUDE_DIRECTORIES} )
-
 #---------------------------------------------------------------------
 # Copy external files
 ADD_CUSTOM_TARGET(copy-external-files ALL
-    COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_CURRENT_BINARY_DIR}/Resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_CURRENT_BINARY_DIR}/Resources
   )
 
 
