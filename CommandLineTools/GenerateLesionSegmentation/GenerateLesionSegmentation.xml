@@ -76,11 +76,13 @@
     <boolean>
       <name>outputROI</name>
       <label>Output ROI</label>
+      <longflag>outputROI</longflag>
       <default>false</default>
     </boolean>
     <image>
       <name>roiImage</name>
       <label>ROI Image</label>
+      <longflag>roiImage</longflag>
       <channel>output</channel>
     </image>
         
