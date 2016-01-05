@@ -1,13 +1,3 @@
-/**
- *
- *  $Date$
- *  $Revision: 188 $
- *  $Author: jross $
- *
- *  TODO:
- *
- */
-
 #include "cipChestDataViewer.h"
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkTransform.h"
@@ -408,6 +398,11 @@ vtkSmartPointer< vtkActor > cipChestDataViewer::SetVesselParticlesAsDiscs( vtkPo
   return this->SetParticlesAsDiscs( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::VESSEL ), true );
 }
 
+vtkSmartPointer< vtkActor > cipChestDataViewer::SetFissureParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName )
+{
+  return this->SetParticlesAsDiscs( polyData, scaleFactor, actorName, static_cast< unsigned char >( cip::FISSURE ), true );
+}
+
 vtkSmartPointer< vtkActor > cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData* polyData, double scaleFactor, std::string actorName,
 								     unsigned char particlesType, bool scaleGlyphsByParticlesScale )
 {
@@ -420,6 +415,10 @@ vtkSmartPointer< vtkActor > cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData
   if ( particlesType == (unsigned char)( cip::VESSEL ) )
     {
     polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec0" ) );
+    }
+  if ( particlesType == (unsigned char)( cip::FISSURE ) )
+    {
+    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec1" ) );
     }
 
   vtkCylinderSource* cylinderSource = vtkCylinderSource::New();
@@ -463,6 +462,10 @@ vtkSmartPointer< vtkActor > cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData
   else if ( particlesType == static_cast< unsigned char >( cip::VESSEL ) )
     {
     this->VesselParticlesActorMap[actorName] = actor;
+    }
+  else if ( particlesType == static_cast< unsigned char >( cip::FISSURE ) )
+    {
+    this->FissureParticlesActorMap[actorName] = actor;
     }
   this->ActorMap[actorName] = actor;
   this->Renderer->AddActor( this->ActorMap[actorName] );
@@ -630,6 +633,7 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
   vtkPolyData* sculptedTensorsPolyData = vtkPolyData::New();
     sculptedTensorsPolyData->SetPoints( polyData->GetPoints() );
     sculptedTensorsPolyData->GetPointData()->SetTensors( dbar );
+  sculptedTensorsPolyData->Print( std::cout );
 
   vtkSuperquadricTensorGlyphFilter* epp = vtkSuperquadricTensorGlyphFilter::New();
     epp->SetInputData( sculptedTensorsPolyData );
