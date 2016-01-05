@@ -24,7 +24,6 @@ void AppendFissurePoints( std::vector< cip::PointType >*, vtkSmartPointer< vtkPo
 
 int main( int argc, char *argv[] )
 {
-
   PARSE_ARGS;
 
   // Instatiate ChestConventions for general convenience later
@@ -365,23 +364,26 @@ int main( int argc, char *argv[] )
   lobeSegmenter->SetThinPlateSplineSurfaceFromPointsLambda( lambda );
   lobeSegmenter->Update();
   
-  std::cout << "Writing lung lobe label map..." << std::endl;
-  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-    writer->SetInput( lobeSegmenter->GetOutput() );
-    writer->UseCompressionOn();
-    writer->SetFileName( outLabelMapFileName );
-  try
+  if ( outLabelMapFileName.compare( "NA" ) != 0 )
     {
-    writer->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught writing label map:";
-    std::cerr << excp << std::endl;
+      std::cout << "Writing lung lobe label map..." << std::endl;
+      cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+        writer->SetInput( lobeSegmenter->GetOutput() );
+	writer->UseCompressionOn();
+	writer->SetFileName( outLabelMapFileName );
+      try
+	{
+	writer->Update();
+	}
+      catch ( itk::ExceptionObject &excp )
+	{
+	std::cerr << "Exception caught writing label map:";
+	std::cerr << excp << std::endl;
       
-    return cip::LABELMAPWRITEFAILURE;
+	return cip::LABELMAPWRITEFAILURE;
+	}
     }
-    
+
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
