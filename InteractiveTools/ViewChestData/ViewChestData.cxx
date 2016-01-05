@@ -786,13 +786,10 @@ void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<st
       reader->SetFileName(fileNames[i].c_str());
       reader->Update(); 
 
-      vtkSmartPointer< vtkPolyData > particles = vtkSmartPointer< vtkPolyData >::New();
-      cip::TransferFieldDataToFromPointData( reader->GetOutput(), particles, true, false, true, false );
-
       std::list<unsigned char> cipTypeList;
-      for (unsigned int j=0; j<particles->GetNumberOfPoints(); j++)
+      for (unsigned int j=0; j<reader->GetOutput()->GetNumberOfPoints(); j++)
 	{
-	  cipTypeList.push_back(static_cast<unsigned char>(particles->GetPointData()->GetArray("ChestType")->GetTuple(j)[0]));
+	  cipTypeList.push_back(static_cast<unsigned char>(reader->GetOutput()->GetPointData()->GetArray("ChestType")->GetTuple(j)[0]));
 	}
       cipTypeList.unique();
       cipTypeList.sort();
@@ -810,7 +807,7 @@ void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<st
 	    name.append(conventions.GetChestTypeName(*listIt));
 
 	  vtkSmartPointer<vtkPolyData> tmpParticles = 
-	    GetChestTypeParticlesPolyData(particles, *listIt);   
+	    GetChestTypeParticlesPolyData(reader->GetOutput(), *listIt);   
 	  
 	  double* color = new double[3];
 	  conventions.GetChestTypeColor(*listIt, color);
@@ -894,10 +891,7 @@ void AddModelsToViewer(cipChestDataViewer* viewer,std::vector<std::string> fileN
       reader->SetFileName(fileNames[i].c_str());
       reader->Update(); 
 
-    vtkSmartPointer< vtkPolyData > particles = vtkSmartPointer< vtkPolyData >::New();
-    cip::TransferFieldDataToFromPointData( reader->GetOutput(), particles, true, false, true, false );
-
-    viewer->SetPolyData(particles, name);
+    viewer->SetPolyData(reader->GetOutput(), name);
     viewer->SetActorColor(name, red[i], green[i], blue[i]);
     viewer->SetActorOpacity(name, opacity[i]);
     }
@@ -920,45 +914,43 @@ void AddParticlesToViewer(cipChestDataViewer* viewer, std::vector<std::string> f
       reader->SetFileName(fileNames[i].c_str());
       reader->Update(); 
 
-    vtkSmartPointer< vtkPolyData > particles = vtkSmartPointer< vtkPolyData >::New();
-    cip::TransferFieldDataToFromPointData( reader->GetOutput(), particles, true, false, true, false );
-
     if (particlesType.compare("fissureParticles") == 0)
       {
-	viewer->SetFissureParticles(particles, scale[i], name);
+	std::cout << "Setting fissure particles..." << std::endl;
+	viewer->SetFissureParticlesAsDiscs(reader->GetOutput(), scale[i], name);
       }
     if (particlesType.compare("airwayCylinders") == 0)
       {
-	viewer->SetAirwayParticlesAsCylinders(particles, scale[i], name);
+	viewer->SetAirwayParticlesAsCylinders(reader->GetOutput(), scale[i], name);
       }
     if (particlesType.compare("airwayParticles") == 0)
       {
 	if (glyphType.compare("cylinder") == 0)
 	  {
-	    viewer->SetAirwayParticlesAsCylinders(particles, scale[i], name);
+	    viewer->SetAirwayParticlesAsCylinders(reader->GetOutput(), scale[i], name);
 	  }
 	else if (glyphType.compare("scaledDiscs") == 0)
 	  {
-	    viewer->SetAirwayParticlesAsDiscs(particles, scale[i], name);
+	    viewer->SetAirwayParticlesAsDiscs(reader->GetOutput(), scale[i], name);
 	  }
 	else
 	  {
-	    viewer->SetAirwayParticles(particles, scale[i], name);
+	    viewer->SetAirwayParticles(reader->GetOutput(), scale[i], name);
 	  }
       }
     if (particlesType.compare("vesselParticles") == 0)
       {
 	if (glyphType.compare("cylinder") == 0)
 	  {
-	    viewer->SetVesselParticlesAsCylinders(particles, scale[i], name);
+	    viewer->SetVesselParticlesAsCylinders(reader->GetOutput(), scale[i], name);
 	  }
 	else if (glyphType.compare("scaledDiscs") == 0)
 	  {
-	    viewer->SetVesselParticlesAsDiscs(particles, scale[i], name);
+	    viewer->SetVesselParticlesAsDiscs(reader->GetOutput(), scale[i], name);
 	  }
 	else
 	  {
-	    viewer->SetVesselParticles(particles, scale[i], name);
+	    viewer->SetVesselParticles(reader->GetOutput(), scale[i], name);
 	  }
       }
 
