@@ -73,7 +73,7 @@ endif( Teem_FOUND )
 #---------------------------------------------------------------------
 # Find OpenCV
 
-FIND_PACKAGE ( OpenCV )
+#FIND_PACKAGE ( OpenCV )
 
 #---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
