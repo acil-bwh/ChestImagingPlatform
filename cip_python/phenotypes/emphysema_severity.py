@@ -507,7 +507,11 @@ if __name__ == "__main__":
                       help='interpolation method using for the patient-specific path.  (optional). Only spline defined so far', \
                         dest='interp_method', metavar='<string>', default="spline")                        
     parser.add_option("--single_path",action="store_true",dest="single_path", \
-                      default=False,help="set to True for using 1 severity path instead of multiple (4) paths")                  
+                      default=False,help="set to True for using 1 severity path instead of multiple (4) paths")
+    parser.add_option('--col_min_idx', metavar='<integer>', default=1, dest='cmin', \
+                      help='min column index (0-based) with the LH quantities')
+    parser.add_option('--col_max_idx', metavar='<integer>', default=6, dest='cmax', \
+                      help='max column index (0-based) with the LH quantities')
                       
     (options, args) = parser.parse_args()
     
@@ -536,7 +540,8 @@ if __name__ == "__main__":
           
     in_df_testing = in_df 
     in_training_features = np.array(in_df_training)[:,1:7]    
-    in_testing_features = np.array(in_df_testing)[:,1:7]
+    in_testing_features = np.array(in_df_testing)[:,int(options.cmin):int(options.cmax)+1]
+    print in_testing_features.shape
     
     """ fit and predict """
     my_severity_index = EmphysemaSeverityIndex(interp_method=options.interp_method, single_path=options.single_path)
