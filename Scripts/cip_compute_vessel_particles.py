@@ -52,8 +52,8 @@ class VesselParticlesPipeline:
         
         header=nrrd.read_header(open(self._ct_file_name))
         
-        max_z=header['sizes'][2]
-        spacing=[header['space directions'][kk][kk] for kk in xrange(3)]
+        max_z=int(header['sizes'][2])
+        spacing=[float(header['space directions'][kk][kk]) for kk in xrange(3)]
         
         if len(crop) < 2:
             crop_flag = False
