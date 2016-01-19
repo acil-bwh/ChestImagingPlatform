@@ -27,12 +27,25 @@ set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
 
 #-----------------------------------------------------------------------------
 # Set a default build type if none was specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+if(NOT CMAKE_BUILD_TYPE)
+  if (CMAKE_CONFIGURATION_TYPES)
+    list(GET CMAKE_CONFIGURATION_TYPES 0 BT_TMP) 
+  message("Setting build type to the first active configuration type because it was not specified: ${BT_TMP}" )
+  else()
+    set(BT_TMP "Release")
+  message(STATUS "Setting build type to 'Release' as none was specified and there are not CMAKE_CONFIGURATION_TYPES")
+  endif()  
+  set(CMAKE_BUILD_TYPE ${BT_TMP} CACHE STRING "Choose the type of build." FORCE)  
 endif()
+#if(NOT CMAKE_CONFIGURATION_TYPES)
+  # Set the possible values of build type for cmake-gui
+#  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "MinSizeRel" "RelWithDebInfo")
+#else()
+#  MESSAGE("CONFIG TYPES: ${CMAKE_CONFIGURATION_TYPES}")
+#  list(REMOVE_ITEM CMAKE_CONFIGURATION_TYPES "Release") 
+#  list(INSERT CMAKE_CONFIGURATION_TYPES 0 "Release")
+#  MESSAGE("CONFIG TYPES after: ${CMAKE_CONFIGURATION_TYPES}")
+#endif()
 
 #-----------------------------------------------------------------------------
 # Update CMake module path
@@ -242,7 +255,7 @@ set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   ${ITK_EXTERNAL_NAME}
   Boost
   teem
-  OpenCV
+  #OpenCV
   ${LIBXML2_EXTERNAL_NAME}  
   )
 
@@ -462,7 +475,7 @@ ExternalProject_Add(${proj}
   BINARY_DIR ${PRIMARY_PROJECT_NAME}-build
   CMAKE_GENERATOR ${gen}
   #-DVTK_SOURCE_DIR:PATH=${VTK_SOURCE_DIR}
-  #-DVTK_LIBRARY_DIR:PATH=${VTK_LIBRARY_DIR}	
+  #-DVTK_LIBRARY_DIR:PATH=${VTK_LIBRARY_DIR}
   CMAKE_ARGS
     --no-warn-unused-cli    # HACK Only expected variables should be passed down.
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}

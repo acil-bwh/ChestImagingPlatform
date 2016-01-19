@@ -515,7 +515,7 @@ if __name__ == "__main__":
                       
     (options, args) = parser.parse_args()
     
-    in_df_training = pd.read_csv('../../Resources/Emphysema_severity/Training_emphysemaClassificationPhenotypes.csv')
+    in_df_training = pd.read_csv('../../Resources/EmphysemaSeverity/Training_emphysemaClassificationPhenotypes.csv')
 
     try:
         print "Reading testing features file..."
