@@ -94,6 +94,11 @@ class HistDistKNN():
                     hist_comp = sum(abs(hist[i, :] - self.hists_), 1)
                 else:
                     hist_comp = sum(abs(hist - self.hists_), 1)                    
+            elif self.hist_comparison_ == 'euclidean':
+                if mult_samples:
+                    hist_comp = np.sqrt(sum(np.square(hist[i, :] - self.hists_), 1))
+                else:
+                    hist_comp = np.sqrt(sum(np.square(hist - self.hists_), 1))             
             else:
                 raise ValueError('Unsupported histogram comparison method')
     
