@@ -1,6 +1,6 @@
 import os.path
 import pandas as pd
-import nrrd
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 from cip_python.classification.apply_reader_labels \
   import apply_reader_labels
 import numpy as np
@@ -17,7 +17,9 @@ seg_file = this_dir + '/../../../Testing/Data/Input/simple_roiSegmentation.nrrd'
 plocs_file = this_dir + '/../../../Testing/Data/Input/simple_regionAndTypePoints.csv'
 
 def test_execute():
-    seg, seg_header = nrrd.read(seg_file) 
+    image_io = ImageReaderWriter()
+    seg, seg_header = image_io.read_in_numpy(seg_file)
+
     plocs_df = pd.read_csv(plocs_file)    
 
     features_df = \
