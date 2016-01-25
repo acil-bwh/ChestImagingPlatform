@@ -1,63 +1,3 @@
-/** \file
- *  \ingroup commandLineTools
- *  \details This program is used to filter fissure particles. In particular
- *  it is used as step in the overall lung lobe segmentation framework.
- *  Default values for the input parameters are chosen for that purpose.
- *  The program provides an interface to the
- *  'cipFissureParticleConnectedComponentFilter': connected components
- *  concepts are used to eliminate small particle groups and to retain
- *  those that form larger, sheet-like structures.
- *
- *  USAGE:
- *
- *  FilterFissureParticleData  [-s \<unsigned int\>] [-a \<double\>]
- *                             [-p \<double\>] [-d \<double\>] -o \<string\>
- *                             -i \<string\> [--] [--version] [-h]
- *
- *  Where:
- *
- *   -s \<unsigned int\>,  --size \<unsigned int\>
- *     The minimum cardinality of a set of component particles needed for
- *     that set to be passed through the filter
- *
- *   -a \<double\>,  --angleThresh \<double\>
- *     Particle angle threshold (degrees). The vector connecting two
- *     particles is compared to their respective orientation vectors
- *     (indicating the approximate normal vector to the local sheet they
- *     potentially lie on). If the angle between either of these vectors and
- *     the connecting vector is less than this threshold, the particles are
- *     considered to be disconnected
- *
- *   -p \<double\>,  --spacing \<double\>
- *     The inter-particle spacing that was used to generate the input
- *     particles
- *
- *   -d \<double\>,  --distanceThresh \<double\>
- *     Particle distance threshold (mm). A pair of particles must be at least
- *     this close together to be considered for connectivity.
- *
- *   -o \<string\>,  --out \<string\>
- *     (required)  Output particles file name
- *
- *   -i \<string\>,  --in \<string\>
- *     (required)  Input particles file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
- *
- *  $Date: 2012-08-28 18:56:56 -0400 (Tue, 28 Aug 2012) $
- *  $Revision: 218 $
- *  $Author: jross $
- *
- */
-
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "cipChestConventions.h"
@@ -77,6 +17,9 @@ int main( int argc, char *argv[] )
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
     reader->SetFileName( inParticlesFileName.c_str() );
     reader->Update();
+
+  float interParticleSpacing = 
+    reader->GetOutput()->GetFieldData()->GetArray( "irad" )->GetTuple( 0 )[0];
 
   std::cout << "Filtering particles using connectedness..."  << std::endl;
   cipFissureParticleConnectedComponentFilter particleFilter;

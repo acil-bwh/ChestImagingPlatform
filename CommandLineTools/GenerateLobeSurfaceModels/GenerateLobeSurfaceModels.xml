@@ -3,74 +3,74 @@
   <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>GenerateLobeSurfaceModels</title>
   <description><![CDATA[This program is used to generate fissure shape models based \
-  on a training set. The basic approach is as follows: a reference image \
-  is read and then registered to the label map for which the user \
-  wants to produce fissure models. Additionally, a set of training \
-  data is read in. These data sets consist of fissure indices and a \
-  transform file that indicates the mapping between the training data \
-  label map and the reference label map. Once the reference image is \
-  registered to the input image, the resulting transform in \
-  conjunction with the training data transform is used to map the \
-  training fissure points to the input image's coordinate frame. This \
-  is done repeatedly for all the training data sets. Once all the \
-  fissure points are in the coordinate frame of the input image, PCA \
-  is performed to get the mean and modes of the fissure points. This \
-  data is then printed to file. \
-  \
-  The output file format is as follows: the first line contains the \
-  origin of the input image. The second line contains the spacing of \
-  the input image. The third line indicates the number of modes, \
-  N. The fourth line is the mean vector. The entries are for the \
-  continuous index z-values of the control points. The next N lines \
-  contain the mode variances and a weight value. Upon generation of \
-  the shape model file, the weight value will be 0. Later in the lobe \
-  segmentation process, this value can be overwritten with a weight \
-  has been found by fitting to particles data. The next N lines are \
-  the modes themselves -- again, the modes represent the variation of \
-  the control points in the z-direction (the range of our TPS \
-  function). The length of each mode (and mean) vector is m, where m \
-  indicates the number of control points. Finally, the next m lines \
-  indicate the control point indices (the domain locations). Note \
-  that the z-value for these entries is 0. This is to emphasize that \
-  they are in the domain -- the x-y plane. Two shape model files can \
-  be saved: one for the left lung and one for the right lung. In the \
-  right lung PCA is performed over the right oblique and right horizontal \
-  surfaces taken together. In the corresponding saved file, the first \
-  half of the points represent the right oblique surface, and the \
-  second half of the points represent the right horizontal surface. \
-  Note that the right oblique and right horizontal surfaces share the \
-  same points in the domain.]]>
+on a training set. The basic approach is as follows: a reference image \
+is read and then registered to the label map for which the user \
+wants to produce fissure models. Additionally, a set of training \
+data is read in. These data sets consist of fissure indices and a \
+transform file that indicates the mapping between the training data \
+label map and the reference label map. Once the reference image is \
+registered to the input image, the resulting transform in \
+conjunction with the training data transform is used to map the \
+training fissure points to the input image's coordinate frame. This \
+is done repeatedly for all the training data sets. Once all the \
+fissure points are in the coordinate frame of the input image, PCA \
+is performed to get the mean and modes of the fissure points. This \
+data is then printed to file. \
+\
+The output file format is as follows: the first line contains the \
+origin of the input image. The second line contains the spacing of \
+the input image. The third line indicates the number of modes, \
+N. The fourth line is the mean vector. The entries are for the \
+continuous index z-values of the control points. The next N lines \
+contain the mode variances and a weight value. Upon generation of \
+the shape model file, the weight value will be 0. Later in the lobe \
+segmentation process, this value can be overwritten with a weight \
+has been found by fitting to particles data. The next N lines are \
+the modes themselves -- again, the modes represent the variation of \
+the control points in the z-direction (the range of our TPS \
+function). The length of each mode (and mean) vector is m, where m \
+indicates the number of control points. Finally, the next m lines \
+indicate the control point indices (the domain locations). Note \
+that the z-value for these entries is 0. This is to emphasize that \
+they are in the domain -- the x-y plane. Two shape model files can \
+be saved: one for the left lung and one for the right lung. In the \
+right lung PCA is performed over the right oblique and right horizontal \
+surfaces taken together. In the corresponding saved file, the first \
+half of the points represent the right oblique surface, and the \
+second half of the points represent the right horizontal surface. \
+Note that the right oblique and right horizontal surfaces share the \
+same points in the domain.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-    and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
+
     <image>
       <name>inputFileName</name>
       <label>Input label map</label>
       <channel>input</channel>
-      <flag>i</flag>
-      <longflag>inFileName</longflag>
+      <longflag>ilm</longflag>
       <description><![CDATA[Input label map to serve as starting point for lung lobe \
-      segmentation .The level of lung segmentation 'grunularity' should be at the left lung right lung split \
-      level. In other words, a mask divided into thirds (left and right) will work fine, as will one for which \
-      only the left and right lung are labeled]]></description>
+segmentation .The level of lung segmentation 'grunularity' should be at the left lung right lung split \
+level. In other words, a mask divided into thirds (left and right) will work fine, as will one for which \
+only the left and right lung are labeled]]></description>
     </image>  
 
     <image>
       <name>refImageFileName</name>
       <label>Reference label map</label>
       <channel>input</channel>
-      <longflag>refim</longflag>
+      <longflag>irlm</longflag>
       <description><![CDATA[Reference image label map corresponding to the reference points. \
-      This is the image to which all other image data in the training set is registered to.]]></description>
+This is the image to which all other image data in the training set is registered to.]]></description>
       <default>NA</default>
     </image>  
 
@@ -78,46 +78,49 @@
       <name>resourcesDir</name>
       <label>Resources Directory</label>
       <channel>input</channel>
-      <flag>r</flag>
-      <longflag>resourcesDir</longflag>
+      <longflag>dir</longflag>
       <description><![CDATA[Directory containing resources needed to build the shape model. \
-      This directory is expected to contain a collection of file pairs: a transform file and a \
-      region and type points file. Each pair corresponds to a single case. The transform file \
-      indicates how to transform the case so that it aligns with a reference case and is expected \
-      to have the extension '_TO_10002K_INSP_STD_BWH_COPD_transform.txt'. The region and type \
-      points file contains physical coordinates along the right horizontal, right oblique, and left oblique \
-      lobe boundaries. It is expected to have the extension '_regionAndTypePoints.csv'. For a given pair \
-      the prefix is expected to be the same.]]></description>
+This directory is expected to contain a collection of file pairs: a transform file and a \
+region and type points file. Each pair corresponds to a single case. The transform file \
+indicates how to transform the case so that it aligns with a reference case and is expected \
+to have the extension '_TO_10002K_INSP_STD_BWH_COPD_transform.txt'. The region and type \
+points file contains physical coordinates along the right horizontal, right oblique, and left oblique \
+lobe boundaries. It is expected to have the extension '_regionAndTypePoints.csv'. For a given pair \
+the prefix is expected to be the same.]]>
+      </description>
       <default>NA</default>
     </string>  
 
-    <string>
+    <file fileExtensions=".csv">
       <name>rightShapeModelFileName</name>
       <label>Right oblique and right horizontal shape model file name</label>
-      <channel>input</channel>
-      <longflag>or</longflag>
+      <channel>output</channel>
+      <longflag>orsm</longflag>
       <description><![CDATA[Output right oblique and right horizontal shape model file name. The first \
-      half of the entries in the saved fill will correspond to the right oblique boundary surface. \
-      The second half of the entries will correspond to the right horizontal boundary surface.]]></description>
+half of the entries in the saved fill will correspond to the right oblique boundary surface. \
+The second half of the entries will correspond to the right horizontal boundary surface.]]>
+      </description>
       <default>NA</default>
-    </string>  
+    </file>  
 
-    <string>
+    <file fileExtensions=".csv">
       <name>leftShapeModelFileName</name>
       <label>Left shape model file name</label>
-      <channel>input</channel>
-      <longflag>ol</longflag>
+      <channel>output</channel>
+      <longflag>olsm</longflag>
       <description><![CDATA[Output left lung shape model file name. This file will contain the shape model \
-      describing the boundary between the left upper and left lower lobes.]]></description>
+describing the boundary between the left upper and left lower lobes.]]>
+      </description>
       <default>NA</default>
-    </string>  
+    </file>  
 
     <string>
       <name>outRefToInputTransformFileName</name>
       <label>Output Transform File Name</label>
       <channel>input</channel>
       <longflag>ot</longflag>
-      <description><![CDATA[Output reference image to input label map transform file name.]]></description>
+      <description><![CDATA[Output reference image to input label map transform file name.]]>
+      </description>
       <default>NA</default>
     </string>  
   </parameters>
@@ -152,7 +155,8 @@
       <name>downsampleFactor</name>
       <flag>d</flag>
       <longflag>down</longflag>
-      <description>Downsample factor to apply before registration</description>
+      <description>Downsample factor to apply before registration
+      </description>
       <label>Downsample Factor</label>
       <default>4.0</default>
     </double>

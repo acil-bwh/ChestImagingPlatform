@@ -55,13 +55,13 @@ int main( int argc, char *argv[] )
         leftFissureParticlesReader->SetFileName( leftFissureParticlesFileName.c_str() );
 	leftFissureParticlesReader->Update();    
 
-      vtkSmartPointer< vtkPolyData > leftFissureParticles = vtkSmartPointer< vtkPolyData >::New();
-      cip::TransferFieldDataToFromPointData( leftFissureParticlesReader->GetOutput(), leftFissureParticles, true, false, true, true );
+      // vtkSmartPointer< vtkPolyData > leftFissureParticles = vtkSmartPointer< vtkPolyData >::New();
+      // cip::TransferFieldDataToFromPointData( leftFissureParticlesReader->GetOutput(), leftFissureParticles, true, false, true, true );
 
       std::cout << "Asserting chest-region chest-type existence..." << std::endl;
-      cip::AssertChestRegionChestTypeArrayExistence( leftFissureParticles );
+      cip::AssertChestRegionChestTypeArrayExistence( leftFissureParticlesReader->GetOutput() );
 
-      leftMetric->SetFissureParticles( leftFissureParticles );
+      leftMetric->SetFissureParticles( leftFissureParticlesReader->GetOutput() );
     }
   if ( leftVesselParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -108,13 +108,13 @@ int main( int argc, char *argv[] )
         rightFissureParticlesReader->SetFileName( rightFissureParticlesFileName.c_str() );
 	rightFissureParticlesReader->Update();    
 
-      vtkSmartPointer< vtkPolyData > rightFissureParticles = vtkSmartPointer< vtkPolyData >::New();
-      cip::TransferFieldDataToFromPointData( rightFissureParticlesReader->GetOutput(), rightFissureParticles, true, false, true, true );
+      // vtkSmartPointer< vtkPolyData > rightFissureParticles = vtkSmartPointer< vtkPolyData >::New();
+      // cip::TransferFieldDataToFromPointData( rightFissureParticlesReader->GetOutput(), rightFissureParticles, true, false, true, true );
 
       std::cout << "Asserting chest-region chest-type existence..." << std::endl;
-      cip::AssertChestRegionChestTypeArrayExistence( rightFissureParticles );
+      cip::AssertChestRegionChestTypeArrayExistence( rightFissureParticlesReader->GetOutput() );
 
-      rightMetric->SetFissureParticles( rightFissureParticles );
+      rightMetric->SetFissureParticles( rightFissureParticlesReader->GetOutput() );
     }
   if ( rightVesselParticlesFileName.compare( "NA" ) != 0 )
     {

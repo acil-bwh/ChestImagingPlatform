@@ -258,13 +258,16 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
 
     if ( projection.size() == 1 )
       {
+	std::cout << projection[0] << std::endl;
       if ( projection[0] > threshold )
         {
 	  (*it).second.cipType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
+	  std::cout << "lo" << std::endl;
         }
       else
         {
 	  (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
+	  std::cout << "left undefined" << std::endl;
         }
       }
     else
