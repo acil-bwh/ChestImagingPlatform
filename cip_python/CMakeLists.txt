@@ -31,14 +31,19 @@ else()
 	MESSAGE("ChestConventions will not be wrapped. Enable CIP_WRAPCHESTCONVENTIONS to wrap it")	
 endif()
 
+if (NOT CIP_PYTHON_INSTALL_FOLDER)
+	SET (CIP_PYTHON_INSTALL_FOLDER  ${CMAKE_BINARY_DIR})
+endif()
+message("Installing cip_python tools in ${CIP_PYTHON_INSTALL_FOLDER}")
+
 # Copy all python files
 FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR} 
-	DESTINATION ${CMAKE_BINARY_DIR}
+	DESTINATION ${CIP_PYTHON_INSTALL_FOLDER}
 	FILES_MATCHING PATTERN "*.py")
 
 # Copy special needed files
 FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR}
-	DESTINATION ${CMAKE_BINARY_DIR}
+	DESTINATION ${CIP_PYTHON_INSTALL_FOLDER}
 	FILES_MATCHING PATTERN "GeometryTopologyData.xsd")
 
 # Include current tests in order that can be identified by ctest
