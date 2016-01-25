@@ -1,13 +1,11 @@
 import os.path
 import pandas as pd
-import nrrd
-
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import numpy as np
 import pdb
 from pandas.util.testing import assert_frame_equal
 import sys
 
-#from cip_python.input_output.image_reader_writer import ImageReaderWriter
 sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
 from cip_python.classification.kde_histogram_feature_extractor \
   import kdeHistExtractor
@@ -20,7 +18,7 @@ ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
 ref_csv = this_dir + '/../../../Testing/Data/Input/simple_ct_histogramFeatures.csv'
 
 def test_execute():
-    ct_array, ct_header = nrrd.read(ct_name)
+    ct_array, ct_header = image_io.read_in_numpy(ct_name)
 
     grid_array = np.zeros(np.shape(ct_array)).astype(int)
     grid_array[:, :, 0] = 0

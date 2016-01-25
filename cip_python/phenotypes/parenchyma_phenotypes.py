@@ -580,8 +580,8 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
 
-    lm, lm_header = nrrd.read(options.in_lm)
-    ct, ct_header = nrrd.read(options.in_ct)
+    lm, lm_header = image_io.read_in_numpy(options.in_lm)
+    ct, ct_header = image_io.read_in_numpy(options.in_ct)    
 
     spacing = np.zeros(3)
     spacing[0] = ct_header['space directions'][0][0]

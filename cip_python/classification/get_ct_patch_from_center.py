@@ -35,7 +35,11 @@ def get_bounds_from_center(image,patch_center,extent):
     assert ((x_half_length*2 <= np.shape(image)[0]) and \
             (y_half_length*2 <= np.shape(image)[1]) and \
             (z_half_length*2 <= np.shape(image)[2])), "region extent must \
-            be less that image dimensions."
+            be less that image dimensions. extent="+str(np.shape(image)[1])+" "+str(y_half_length*2)
+            
+            #+x_half_length*2+","+\
+            #y_half_length*2+","+z_half_length*2+" image shape="+np.shape(image)[0]+\
+            #","+ np.shape(image)[1]+","+ np.shape(image)[2]
             
     xmin = max(patch_center[0]-x_half_length,0)
     xmax =  min(patch_center[0]+x_half_length+1,np.shape(image)[0])

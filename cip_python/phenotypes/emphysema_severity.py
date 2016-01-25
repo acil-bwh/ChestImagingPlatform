@@ -1,5 +1,4 @@
 import numpy as np
-from optparse import OptionParser
 import pdb
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -34,8 +33,17 @@ class EmphysemaSeverityIndex:
         self.interp_method = interp_method
         self.single_path = single_path
         self.final_model = dict()
+    
+        #Internal variables
+        self.nClusters = 4
+        self.dimSubspace = 3
+        #Centers to initialize KNN: numClusters x numFeatures
+        self.initial_centers = np.array([[0.7, 0, 0, 0.1, 0, 0],\
+                                [0.5, 0.1, 0, 0.2, 0, 0],\
+                                [0.2, 0.1, 0, 0.3, 0.2, 0],\
+                                [0, 0.1, 0, 0.1, 0.4, 0.1]])
   
-           
+  
     def compute_emphysema_severity_index(self, the_features, the_model):
         """ Compute severity on testing data given a model. 
         
@@ -106,40 +114,47 @@ class EmphysemaSeverityIndex:
         """    
              
         model = dict()
-        mykmeans = KMeans(n_clusters=nClusters, init = ctrsinit)
 
-        print("performing kmeans to training data")
-        mykmeans_fit =  mykmeans.fit(training)
-        result = mykmeans.predict(training)
-        
-        model['ctrs']=mykmeans_fit.cluster_centers_ #original k means centers, non-reduced space
-        
-        """ Create clusters in the dimensional reduced space (PCA) """
-        pca = PCA(n_components=dimSubspace)
-        pca.fit(training)
-
-        tcc = pca.transform(training)
-        model['tctrs'] = pca.transform(model['ctrs']) 
-
-        mykmeans_pca = KMeans(n_clusters=nClusters, init = model['tctrs'])
-        mykmeans_pca_fit = mykmeans_pca.fit(tcc)
-        model['ctrspca']=mykmeans_pca_fit.cluster_centers_ # this is almost identical to matlab results
-
-        
-        """ Compute LDA using clusters as groups """
-        cidxpca = mykmeans_pca_fit.predict(tcc)
         # [ldacc,ldaBasis]=lda(cc,cidxpca,nClusters-1);
+        """ Compute LDA using clusters as groups """
         lda = LDA(n_components=2)
         if model_ref is None:
+            mykmeans = KMeans(n_clusters=nClusters, init = ctrsinit)
+        
+            print("performing kmeans to training data")
+            mykmeans_fit =  mykmeans.fit(training)
+            result = mykmeans.predict(training)
+            
+            model['ctrs']=mykmeans_fit.cluster_centers_ #original k means centers, non-reduced space
+            
+            """ Create clusters in the dimensional reduced space (PCA) """
+            pca = PCA(n_components=dimSubspace)
+            pca.fit(training)
+            
+            tcc = pca.transform(training)
+            model['tctrs'] = pca.transform(model['ctrs'])
+            
+            mykmeans_pca = KMeans(n_clusters=nClusters, init = model['tctrs'])
+            mykmeans_pca_fit = mykmeans_pca.fit(tcc)
+            model['ctrspca']=mykmeans_pca_fit.cluster_centers_ # this is almost identical to matlab results
+            
+            cidxpca = mykmeans_pca_fit.predict(tcc)
             lda.fit(training, cidxpca)
         else:
             lda = model_ref['ldaBasis']
+
         ldacc = lda.transform(training)#, cidxpca) #close
         
         " Check if we have to flip axis. We assume that cluster 1 has less severity and final cluster is more severity """
-        if np.mean(ldacc[cidxpca==0,0]) > np.mean(ldacc[cidxpca==nClusters,0]):
-            pdb.set_trace()
-            ldacc[:,0]=-ldacc[:,0]
+        if model_ref is None:
+            if np.mean(ldacc[cidxpca==0,0]) > np.mean(ldacc[cidxpca==nClusters,0]):
+                pdb.set_trace()
+                ldacc[:,0]=-ldacc[:,0]
+                model['flip']=-1
+            else:
+                model['flip']=1
+        else:
+            ldacc[:,0]=model_ref['flip']*ldacc[:,0]
 
         model['ldaBasis'] = lda
         
@@ -424,7 +439,7 @@ class EmphysemaSeverityIndex:
 
         return interp_model
                                                                                                                                                                                                                                                                 
-    def fit(self, training_features, initial_centers):
+    def fit(self, training_features):
         """Obtain the models given the training data
         
         Parameters
@@ -432,9 +447,6 @@ class EmphysemaSeverityIndex:
         training_features_df: pandas dataframe
             case_id followed by 6 local histogram features proportions 
             used to compute the severity
-        
-        initial_centers:  numpy array, shape 
-            Centers to initialze the KNN
     
         """              
         
@@ -446,7 +458,7 @@ class EmphysemaSeverityIndex:
             model = [None]*31 # the last 4 are the ones we need
             ST = [None]*31
                         
-        model0 = self.emphysemaSeverityIndexTrajectories(training_features,4,3,initial_centers)
+        model0 = self.emphysemaSeverityIndexTrajectories(training_features,self.nClusters,self.dimSubspace,self.initial_centers)
         ST[0]  = self.compute_emphysema_severity_index(training_features, model0)
         """ if multipath compute S values and split, twice. """            
         if (self.single_path):
@@ -478,7 +490,7 @@ class EmphysemaSeverityIndex:
                     ttfinal = st_inclusion>0 
                     
                     model[current_node_number] = self.emphysemaSeverityIndexTrajectories(training_features[ttfinal,:],\
-                        4,3,initial_centers,model0)
+                                                         self.nClusters,self.dimSubspace,self.initial_centers,model0)
 
                     ST[current_node_number]=self.compute_emphysema_severity_index(training_features,model[current_node_number]);
             final_models = [model[1+14],model[6+14],model[10+14],model[15+14]]
@@ -491,27 +503,43 @@ class EmphysemaSeverityIndex:
  
 
 if __name__ == "__main__":
+  
+    from argparse import ArgumentParser
+    import os
     desc = """ implementing the emphysema severity index. Training data with features consisting on 6 emphysema subtype
     (N,	LH_PS, LH_PL, LH_CL1, LH_CL2, LH_CL3) are used in order to define either 1 or multiple paths (4 to be specific)."""
     
-    parser = OptionParser(description=desc)
-    parser.add_option('--in_csv',
+    test_dataset=os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../Resources/EmphysemaSeverity/Testing_emphysemaClassificationPhenotypes.csv')
+    training_dataset=os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../Resources/EmphysemaSeverity/Training_emphysemaClassificationPhenotypes.csv')
+    
+    
+    parser = ArgumentParser(description=desc)
+    parser.add_argument('-i',
                       help='Input features file with the existing features consisting on 6 emphysema\
                       subtypes (N, LH_PS, LH_PL, LH_CL1, LH_CL2, LH_CL3) .', 
-                      dest='in_csv', metavar='<string>', default= \
-                      '../../Resources/Emphysema_severity/Testing_emphysemaClassificationPhenotypes.csv')                        
-    parser.add_option('--out_csv',
-                      help='Output csv file with the severity values', dest='out_csv', 
-                      metavar='<string>', default=None)            
-    parser.add_option('--interp_method',
+                      dest='in_csv', metavar='<csv file>', type= str, default= \
+                      test_dataset)
+    parser.add_argument('-o',
+                      help='Output csv file with the severity values', type=str, dest='out_csv',
+                      metavar='<csv file>', default=None)
+    parser.add_argument('--interp_method',
                       help='interpolation method using for the patient-specific path.  (optional). Only spline defined so far', \
-                        dest='interp_method', metavar='<string>', default="spline")                        
-    parser.add_option("--single_path",action="store_true",dest="single_path", \
-                      default=False,help="set to True for using 1 severity path instead of multiple (4) paths")                  
+                        dest='interp_method', metavar='<string>', type=str,default="spline", choices=['linear', 'spline', 'nearest'])
+    parser.add_argument('--single_path',action='store_true',dest='single_path', \
+                       default=False,help='set to True for using 1 severity path instead of multiple (4) paths')
+    parser.add_argument('--col_idx', metavar='min<int>,max<int>',type=lambda s: [int(item) for item in s.split(',')], default='1,6',dest='col_idx',\
+                        help='column indexes (0-based and comman separated) for the LH quantities')
+    parser.add_argument('--training',
+                        help='Training features file with the existing features consisting on 6 emphysema\
+                        subtypes (N, LH_PS, LH_PL, LH_CL1, LH_CL2, LH_CL3) .',
+                        dest='training_csv', metavar='<csv file>', default= \
+                        training_dataset)
+    parser.add_argument('--training_col_idx', metavar='min<int>,max<int>',type=lambda s: [int(item) for item in s.split(',')], default='1,6',dest='training_col_idx',\
+                        help='column indexes (0-based and comman separated) for the LH quantities in the training dataset')
                       
-    (options, args) = parser.parse_args()
-    
-    in_df_training = pd.read_csv('../../Resources/EmphysemaSeverity/Training_emphysemaClassificationPhenotypes.csv')
+    options = parser.parse_args()
+
+    in_df_training = pd.read_csv(options.training_csv)
 
     try:
         print "Reading testing features file..."
@@ -528,20 +556,17 @@ if __name__ == "__main__":
     """ mask bad values """
     in_df_training=in_df_training[~pd.isnull(in_df_training).any(axis=1)]
     in_df=in_df[~pd.isnull(in_df).any(axis=1)]
-        
-    initial_centers = np.array([[0.7, 0, 0, 0.1, 0, 0],\
-          [0.5, 0.1, 0, 0.2, 0, 0],\
-          [0.2, 0.1, 0, 0.3, 0.2, 0],\
-          [0, 0.1, 0, 0.1, 0.4, 0.1]])
-          
+    
     in_df_testing = in_df 
-    in_training_features = np.array(in_df_training)[:,1:7]    
-    in_testing_features = np.array(in_df_testing)[:,1:7]
+    
+    in_training_features = np.array(in_df_training)[:,int(options.training_col_idx[0]):int(options.training_col_idx[1])+1]
+    in_testing_features = np.array(in_df_testing)[:,int(options.col_idx[0]):int(options.col_idx[1])+1]
+    print in_testing_features.shape
     
     """ fit and predict """
     my_severity_index = EmphysemaSeverityIndex(interp_method=options.interp_method, single_path=options.single_path)
     
-    my_severity_index.fit(in_training_features, initial_centers)
+    my_severity_index.fit(in_training_features)
     
     severity_values = my_severity_index.predict(in_testing_features)
 

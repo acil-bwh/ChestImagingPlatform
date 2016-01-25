@@ -141,22 +141,22 @@ public:
       RealType tm2 = NumericTraits<RealType>::Zero;
       for ( unsigned int i = 0; i < Dimension; ++i )
       {
-        tm1 += vcl_pow( eigenValues[ i ] - mLamda, Dimension );
+        tm1 += std::pow( eigenValues[ i ] - mLamda, static_cast<int>(Dimension) );
         tm2 += vnl_math_sqr( eigenValues[ i ] - mLamda );
       }
       tm1 /= Dimension;
-      tm2 = vcl_pow( tm2 / 3.0, 1.5 );
+      tm2 = std::pow( tm2 / 3.0, 1.5 );
       const RealType mode = vcl_sqrt( 2.0 ) * tm1 / tm2;
 
       // Combine FA and mode to generate the pow(V(x),k), see Eq.(30)
       if ( FA > NumericTraits<RealType>::One )
       {
-        SEV = vcl_pow( ( mode + 1.0 ) / 2.0, this->m_Kappa );
+        SEV = std::pow( ( mode + 1.0 ) / 2.0, this->m_Kappa );
       }
       else
       {
         RealType p1 = 0.5 * this->m_Kappa;
-        SEV = vcl_pow( FA, p1 );
+        SEV = std::pow( FA, p1 );
       }
 
       // Relative Hessian strength function, see Eq.(27)

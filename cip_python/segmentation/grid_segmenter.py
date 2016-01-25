@@ -1,9 +1,9 @@
 import numpy as np
 from skimage.segmentation import slic
 from optparse import OptionParser
-import nrrd
+#import nrrd
 import pdb
-#from cip_python.io.image_reader_writer import ImageReaderWriter
+from cip_python.io.image_reader_writer import ImageReaderWriter
      
 class GridSegmenter:
     """Segments a volume into a grid of volume patches. 
@@ -118,9 +118,9 @@ if __name__ == "__main__":
     ct = None
     
     if (options.in_ct is not None):
-        #image_io = ImageReaderWriter()
-        #ct,ct_header=image_io.read_in_numpy(options.in_ct)
-        ct, ct_header=nrrd.read(options.in_ct)
+        image_io = ImageReaderWriter()
+        ct,ct_header=image_io.read_in_numpy(options.in_ct)
+        #ct, ct_header=nrrd.read(options.in_ct)
        
     grid_segmentor = GridSegmenter(input_dimensions=None, ct=ct, \
         x_size=int(options.x_size), y_size=int(options.y_size), \
@@ -128,6 +128,6 @@ if __name__ == "__main__":
                     
     grid_ct_segmentation = grid_segmentor.execute()
 
-    #image_io.write_from_numpy(grid_ct_segmentation,ct_header,options.out_lm)
-    nrrd.write(options.out_seg, grid_ct_segmentation, ct_header)    
+    image_io.write_from_numpy(grid_ct_segmentation,ct_header,options.out_lm)
+    #nrrd.write(options.out_seg, grid_ct_segmentation, ct_header)
         

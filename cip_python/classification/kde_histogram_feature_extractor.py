@@ -6,7 +6,7 @@ import pandas as pd
 import warnings
 from sklearn.neighbors import KernelDensity
 from scipy import ndimage
-import nrrd
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 from kde_bandwidth import botev_bandwidth
 #from cip_python.io.image_reader_writer import ImageReaderWriter
 import time
@@ -307,16 +307,16 @@ if __name__ == "__main__":
     
     #image_io = ImageReaderWriter()
     print "Reading CT..."
-    ct, ct_header = nrrd.read(options.in_ct) #image_io.read_in_numpy(options.in_ct)
+    ct, ct_header = image_io.read_in_numpy(options.in_ct) #image_io.read_in_numpy(options.in_ct)
     
     if (options.in_lm is not None):
         print "Reading mask..." 
-        lm, lm_header = nrrd.read(options.in_lm) 
+        lm, lm_header = image_io.read_in_numpy(options.in_lm) 
     else:
          lm = np.ones(np.shape(ct))   
 
     print "Reading patches segmentation..."
-    in_patches, in_patches_header = nrrd.read(options.in_patches) 
+    in_patches, in_patches_header = image_io.read_in_numpy(options.in_patches) 
 
     if (options.in_csv is not None):
         print "Reading previously computed features..."

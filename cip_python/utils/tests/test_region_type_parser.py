@@ -1,6 +1,6 @@
 import os.path
 from cip_python.utils.region_type_parser import *
-import nrrd
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import pdb
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
@@ -8,7 +8,7 @@ np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 file_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
-im, header = nrrd.read(file_name) 
+im, header = image_io.read_in_numpy(file_name) 
 parser = RegionTypeParser(im)
 
 gt_labels = np.array([0, 2, 3, 512, 514, 515, 770, 771])

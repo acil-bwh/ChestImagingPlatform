@@ -1,7 +1,7 @@
 import pandas as pd
 from optparse import OptionParser
 import numpy as np
-import nrrd
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
 import pdb
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         raise ValueError("Must specify a chest-region chest-type file")    
     
     print "Reading segmentation..." 
-    seg, seg_header = nrrd.read(options.in_seg) 
+    seg, seg_header = image_io.read_in_numpy(options.in_seg) 
 
     print "Reading features file..."
     features_df = pd.read_csv(options.features)

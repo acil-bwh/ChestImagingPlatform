@@ -1,7 +1,7 @@
 import os.path
 import numpy as np
 from cip_python.utils.remap_lm import *
-import nrrd
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import pdb
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
@@ -9,7 +9,7 @@ np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 file_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
-lm, header = nrrd.read(file_name) 
+lm, header = image_io.read_in_numpy(file_name)
 
 def test_map_regions():
     remapped_lm = remap_lm(lm, region_maps=[['LeftLung', 'WholeLung']])
