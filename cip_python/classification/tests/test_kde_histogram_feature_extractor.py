@@ -18,6 +18,7 @@ ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
 ref_csv = this_dir + '/../../../Testing/Data/Input/simple_ct_histogramFeatures.csv'
 
 def test_execute():
+    image_io = ImageReaderWriter()
     ct_array, ct_header = image_io.read_in_numpy(ct_name)
 
     grid_array = np.zeros(np.shape(ct_array)).astype(int)

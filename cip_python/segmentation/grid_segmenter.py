@@ -1,7 +1,6 @@
 import numpy as np
 from skimage.segmentation import slic
 from optparse import OptionParser
-#import nrrd
 import pdb
 from cip_python.io.image_reader_writer import ImageReaderWriter
      

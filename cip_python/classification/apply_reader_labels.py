@@ -46,13 +46,13 @@ def apply_reader_labels(seg, seg_header, features_df, plocs_df=None,
 
     # If a plocs_df is specified, create an ilocs_df from it
     if plocs_df is not None:
-        sp_x = seg_header['space directions'][0][0]
-        sp_y = seg_header['space directions'][1][1]
-        sp_z = seg_header['space directions'][2][2]
+        sp_x = seg_header['directions'][0][0]
+        sp_y = seg_header['directions'][1][1]
+        sp_z = seg_header['directions'][2][2]
 
-        or_x = seg_header['space origin'][0]
-        or_y = seg_header['space origin'][1]
-        or_z = seg_header['space origin'][2]
+        or_x = seg_header['origin'][0]
+        or_y = seg_header['origin'][1]
+        or_z = seg_header['origin'][2]
         
         ilocs_df = \
           pd.DataFrame(columns=['Region', ' Type', \
@@ -122,7 +122,8 @@ if __name__ == "__main__":
     if options.ilocs is None and options.plocs is None:
         raise ValueError("Must specify a chest-region chest-type file")    
     
-    print "Reading segmentation..." 
+    print "Reading segmentation..."
+    image_io = ImageReaderWriter()
     seg, seg_header = image_io.read_in_numpy(options.in_seg) 
 
     print "Reading features file..."
