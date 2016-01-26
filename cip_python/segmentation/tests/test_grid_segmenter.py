@@ -14,7 +14,7 @@ ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
 grid_name = this_dir + '/../../../Testing/Data/Input/simple_grid.nrrd'
 
 def test_execute():
-    
+    image_io = ImageReaderWriter()
     ct_array,ct_header=image_io.read_in_numpy(ct_name)
     grid_array, grid_header = image_io.read_in_numpy(grid_name)
     

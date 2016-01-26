@@ -8,6 +8,7 @@ np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 file_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
+image_io = ImageReaderWriter()
 im, header = image_io.read_in_numpy(file_name) 
 parser = RegionTypeParser(im)
 

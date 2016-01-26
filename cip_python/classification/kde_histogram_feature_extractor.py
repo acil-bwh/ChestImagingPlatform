@@ -305,9 +305,9 @@ if __name__ == "__main__":
                       metavar='<string>', default=1)   
     (options, args) = parser.parse_args()
     
-    #image_io = ImageReaderWriter()
+    image_io = ImageReaderWriter()
     print "Reading CT..."
-    ct, ct_header = image_io.read_in_numpy(options.in_ct) #image_io.read_in_numpy(options.in_ct)
+    ct, ct_header = image_io.read_in_numpy(options.in_ct) 
     
     if (options.in_lm is not None):
         print "Reading mask..." 

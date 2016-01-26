@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import mode, kurtosis, skew
 from optparse import OptionParser
-import nrrd
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 from cip_python.phenotypes.phenotypes import Phenotypes
 from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.ChestConventions import ChestConventions
@@ -396,9 +396,10 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
 
-    
-    lm, lm_header = nrrd.read(options.in_lm)
-    ct, ct_header = nrrd.read(options.in_ct)
+    image_io = ImageReaderWriter()
+
+    lm, lm_header = image_io.read_in_numpy(options.in_lm)
+    ct, ct_header = image_io.read_in_numpy(options.in_ct)
 
     spacing = np.zeros(3)
     spacing[0] = ct_header['space directions'][0][0]

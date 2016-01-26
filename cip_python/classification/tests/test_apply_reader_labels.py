@@ -7,7 +7,6 @@ import numpy as np
 import pdb
 from pandas.util.testing import assert_frame_equal
 
-#from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
