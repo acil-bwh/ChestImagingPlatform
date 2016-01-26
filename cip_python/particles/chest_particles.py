@@ -85,7 +85,8 @@ class ChestParticles:
         # -------------------
         # Volume name that is going to be used for scale-space particles.
         # This volume is the result of any pre-processing
-        self._sp_in_file_name = self._in_file_name
+        self._sp_in_file_name = \
+          os.path.join(self._tmp_dir, os.path.split(self._in_file_name)[1])        
         self._sp_mask_file_name = self._mask_file_name
         # Nrrd file to contain particle data.
         self._sp_particles_file_name  = "nrrdParticlesFileName.nrrd"
@@ -342,9 +343,10 @@ class ChestParticles:
             verbose = self._verbose -1
         self._miscParams="-nave true -v "+str(verbose)+" -pbm 0"
 
-        #Set boundary behaviour for scale-space blurring to bleed (gprobe uses that)
-        #This allows us to reuse the blurStack when probing
-        self._miscParams = self._miscParams + " -bsp bleed"
+        if self._scale_samples > 1:
+            #Set boundary behaviour for scale-space blurring to bleed (gprobe 
+            # uses that). This allows us to reuse the blurStack when probing
+            self._miscParams = self._miscParams + " -bsp bleed"
 
     def reset_params(self):
         self._info_params = ""
@@ -383,7 +385,7 @@ class ChestParticles:
 
     def execute_pass(self, output):
         #Check inputs files are in place
-        if os.path.exists(self._sp_in_file_name) == False:
+        if os.path.exists(self._in_file_name) == False:
             return False
 
         if self._use_mask==True and self._sp_mask_file_name is not None:
@@ -391,14 +393,15 @@ class ChestParticles:
                 return False
 
         if self._single_scale == 1:
-            tmp_command = "unu resample -i " + self._sp_in_file_name + \
+            tmp_command = "unu resample -i " + self._in_file_name + \
                 " -s x1 x1 x1 -k dgauss:" + str(self._max_scale) + \
                 ",3 -t float -o " + self._sp_in_file_name
 
             if self._debug == True:
                 print tmp_command
-            subprocess.call(tmp_command, shell=True)
 
+            subprocess.call(tmp_command, shell=True)
+            
         tmp_command = "puller -sscp " + self._tmp_dir + \
             " -cbst true " + self._volParams + " " + self._miscParams + " " + \
             self._info_params + " " +  self._energyParams + " " + \
