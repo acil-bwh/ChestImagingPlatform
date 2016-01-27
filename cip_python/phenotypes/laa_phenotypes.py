@@ -35,28 +35,8 @@ class LAAPhenotypes(Phenotypes):
 
     def __init__(self, threshs=None, chest_regions=None, chest_types=None,
                  pairs=None):
-        if chest_regions is not None:
-            if len(chest_regions.shape) != 1:
-                raise ValueError(\
-                'chest_regions must be a 1D array with elements in [0, 255]')
-            if np.max(chest_regions) > 255 or np.min(chest_regions) < 0:
-                raise ValueError(\
-                'chest_regions must be a 1D array with elements in [0, 255]')
-        if chest_types is not None:
-            if len(chest_types.shape) != 1:
-                raise ValueError(\
-                'chest_types must be a 1D array with elements in [0, 255]')
-            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
-                raise ValueError(\
-                'chest_types must be a 1D array with elements in [0, 255]')
-        if pairs is not None:
-            if len(pairs.shape) != 2:
-                raise ValueError(\
-                'cpairs must be a 1D array with elements in [0, 255]')
-            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
-                raise ValueError(\
-                'chest_types must be a 1D array with elements in [0, 255]')
-                
+        
+        self._chest_region_type_assert(chest_regions,chest_types,pairs)
         self.chest_regions_ = chest_regions
         self.chest_types_ = chest_types
         self.pairs_ = pairs
