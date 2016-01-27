@@ -46,9 +46,9 @@ def apply_reader_labels(seg, seg_header, features_df, plocs_df=None,
 
     # If a plocs_df is specified, create an ilocs_df from it
     if plocs_df is not None:
-        sp_x = seg_header['directions'][0][0]
-        sp_y = seg_header['directions'][1][1]
-        sp_z = seg_header['directions'][2][2]
+        sp_x = seg_header['spacing'][0]
+        sp_y = seg_header['spacing'][1]
+        sp_z = seg_header['spacing'][2]
 
         or_x = seg_header['origin'][0]
         or_y = seg_header['origin'][1]
