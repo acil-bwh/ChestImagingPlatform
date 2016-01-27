@@ -82,7 +82,16 @@ class Bronchiectasis:
                 v_r=self.vessel_radius_from_sigma(v_s)
 
                 distance = LA.norm(np.array(v_p)-np.array(a_p))
-                angle1 = math.acos(abs(sum(np.array(v_v)*np.array(a_v))))
+                #print v_v
+                #print a_v
+                tmp_val=abs(sum(np.array(v_v)*np.array(a_v)))
+                #Check to prevent domain error ir acos
+                #Vector should be normalized but due to numeric errors tmp_val can be slightly > 1
+                #It is not worth renormalizing v_v and a_v
+                if tmp_val > 1:
+                  tmp_val = 1
+                
+                angle1 = math.acos(tmp_val)
                 vv = LA.norm(np.array(v_v)+np.array(a_v))
                 foo = abs(1/(vv*distance) * sum ( (np.array(v_v)+np.array(a_v)) * (np.array(v_p)-np.array(a_p))))
                 angle2 = math.acos( foo  )
@@ -128,6 +137,7 @@ class Bronchiectasis:
             fig=plt.figure()
             ax1=fig.add_subplot(211)
             ax1.plot(rad,bron)
+            ax1.set_ylim([0,2])
             ax1.grid(True)
             plt.ylabel('Airway Radius / Vessel Radius')
             ax2=fig.add_subplot(212,sharex=ax1)
