@@ -2,7 +2,7 @@ import numpy as np
 from skimage.segmentation import slic
 from optparse import OptionParser
 import pdb
-from cip_python.io.image_reader_writer import ImageReaderWriter
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
      
 class GridSegmenter:
     """Segments a volume into a grid of volume patches. 
@@ -63,8 +63,8 @@ class GridSegmenter:
             (ct_shape[2]>= self.z_offset), "image dimensions "+str(ct_shape)+"must be larger than  \
             grid size: "+str(self.x_size)+" "+str(self.y_size)+" "+str(self.z_offset)
         
-        segmentation = np.zeros((ct_shape[0], ct_shape[1],ct_shape[2]), \
-            dtype=np.int)
+        segmentation = np.zeros((ct_shape[0], ct_shape[1],ct_shape[2]))
+                                #, dtype=np.int)
         [gridX,gridY, gridZ] = np.meshgrid(np.unique(np.append(
             np.arange(0, ct_shape[0], self.x_size), ct_shape[0])), \
             np.unique(np.append(np.arange(0, ct_shape[1], self.y_size), \
