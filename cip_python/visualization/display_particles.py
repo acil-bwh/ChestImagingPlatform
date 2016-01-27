@@ -7,21 +7,25 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 
 class DisplayParticles:
-    def __init__(self, file_list,spacing_list,feature_type,irad = 1.2, h_th=-200,
+    def __init__(self, file_list,spacing_list,feature_type_list,irad = 1.2, h_th_list=[],
                  glyph_type='sphere', glyph_scale_factor=1,use_field_data=True, opacity_list=[],
                  color_list=[], lung=[]):
       
-        assert feature_type == "ridge_line" or feature_type == "valley_line" \
-        or feature_type == "ridge_surface" or feature_type == "valley_surface" \
-        or feature_type == "vessel" or feature_type == "airway" \
-        or feature_type == "fissure", "Invalid feature type"
+        for feature_type in feature_type_list:
+          print feature_type
+          assert feature_type == "ridge_line" or feature_type == "valley_line" \
+          or feature_type == "ridge_surface" or feature_type == "valley_surface" \
+          or feature_type == "vessel" or feature_type == "airway" \
+          or feature_type == "fissure", "Invalid feature type"
       
-        if feature_type == "airway":
-          feature_type = "valley_line"
-        elif feature_type == "vessel":
-          feature_type = "ridge_line"
-        elif feature_type == "fissure":
-          feature_type = "ridge_surface"
+        for kk,feature_type in enumerate(feature_type_list):
+        
+          if feature_type == "airway":
+            feature_type_list[kk] = "valley_line"
+          elif feature_type == "vessel":
+            feature_type_list[kk] = "ridge_line"
+          elif feature_type == "fissure":
+            feature_type_list[kk] = "ridge_surface"
       
         self.mapper_list = list()
         self.actor_list = list()
@@ -31,11 +35,11 @@ class DisplayParticles:
         self.spacing_list = spacing_list
         self.opacity_list = opacity_list
         self.irad = irad
-        self.h_th = h_th
+        self.h_th_list = h_th_list
         self.color_list = color_list
         self.lung = lung
         self.use_field_data = use_field_data
-        self.feature_type = feature_type
+        self.feature_type_list = feature_type_list
         self.normal_map=dict()
         self.normal_map['ridge_line'] = "hevec0"
         self.normal_map['valley_line'] = "hevec2"
@@ -46,6 +50,10 @@ class DisplayParticles:
         self.strength_map['valley_line'] = "h1"
         self.strength_map['ridge_surface'] = "h2"
         self.strength_map['valley_surface'] = "h0"
+        
+        self.coordinate_system = "LPS"
+        
+        self.lung_opacity = 0.6
   
         if feature_type == 'ridge_line' or feature_type == 'valley_line':
             self.height = irad
@@ -69,14 +77,14 @@ class DisplayParticles:
         self.image_count = 1
 
 
-    def compute_radius (self,poly,spacing):
+    def compute_radius (self,poly,spacing,feature_type,h_th):
         if self.use_field_data == False:
             scale = poly.GetPointData().GetArray("scale")
-            strength = poly.GetPointData().GetArray(self.strength_map[self.feature_type])
+            strength = poly.GetPointData().GetArray(self.strength_map[feature_type])
             val = poly.GetPointData().GetArray('val')
         else:
             scale=poly.GetFieldData().GetArray("scale")
-            strength = poly.GetFieldData().GetArray(self.strength_map[self.feature_type])
+            strength = poly.GetFieldData().GetArray(self.strength_map[feature_type])
             val = poly.GetFieldData().GetArray('val')
 
         np = poly.GetNumberOfPoints()
@@ -92,14 +100,17 @@ class DisplayParticles:
           
             #rad=math.sqrt(2.0) * ( math.sqrt(spacing**2.0 (ss**2.0 + si**2.0)) - 1.0*spacing*s0 )
             rad=math.sqrt(2)*spacing*ss
-            if self.feature_type == 'ridge_line':
-              test= arr[kk] > self.h_th
-            elif self.feature_type == 'valley_line':
-              test= arr[kk] < self.h_th
-            elif self.feature_type == 'ridge_surface':
-              test= arr[kk] > self.h_th
-            elif self.feature_type == 'valley_surface':
-              test= arr[kk] < self.h_th
+            if h_th != None:
+              if feature_type == 'ridge_line':
+                test= arr[kk] > h_th
+              elif feature_type == 'valley_line':
+                test= arr[kk] < h_th
+              elif feature_type == 'ridge_surface':
+                test= arr[kk] > h_th
+              elif feature_type == 'valley_surface':
+                test= arr[kk] < h_th
+            else:
+              test = False
 
             if test==True:
                 rad=0
@@ -127,13 +138,13 @@ class DisplayParticles:
         tt = vtk.vtkTransform()
         tt.RotateZ(90)
         tf = vtk.vtkTransformPolyDataFilter()
-        tf.SetInput(glyph.GetOutput())
+        tf.SetInputConnection(glyph.GetOutputPort())
         tf.SetTransform(tt)
         tf.Update()
 
         glypher = vtk.vtkGlyph3D()
-        glypher.SetInput(poly)
-        glypher.SetSource(tf.GetOutput())
+        glypher.SetInputData(poly)
+        glypher.SetSourceConnection(tf.GetOutputPort())
         glypher.SetVectorModeToUseNormal()
         glypher.SetScaleModeToScaleByScalar()
         glypher.SetScaleFactor(self.glyph_scale_factor)
@@ -143,7 +154,7 @@ class DisplayParticles:
 
     def create_actor (self, glyph , opacity=1,color=[0.1,0.1,0.1]):
         mapper=vtk.vtkPolyDataMapper()
-        mapper.SetInput(glyph.GetOutput())
+        mapper.SetInputConnection(glyph.GetOutputPort())
         mapper.SetColorModeToMapScalars()
         mapper.SetScalarRange(self.min_rad,self.max_rad)
         if len(color) > 0:
@@ -199,15 +210,20 @@ class DisplayParticles:
             reader.SetFileName(file_name)
             reader.Update()
             
-            poly = self.compute_radius(reader.GetOutput(),spacing_list[kk])
+            if len(self.h_th_list)==0:
+              h_th = None
+            else:
+              h_th = self.h_th_list[kk]
+            
+            poly = self.compute_radius(reader.GetOutput(),self.spacing_list[kk],self.feature_type_list[kk],h_th)
             if self.use_field_data == False:
                 poly.GetPointData().\
                     SetNormals(poly.GetPointData().\
-                               GetArray(self.normal_map[self.feature_type]))
+                               GetArray(self.normal_map[self.feature_type_list[kk]]))
             else:
                 poly.GetPointData().\
                     SetNormals(poly.GetFieldData().\
-                               GetArray(self.normal_map[self.feature_type]))
+                               GetArray(self.normal_map[self.feature_type_list[kk]]))
         
             glypher=self.create_glyphs(poly)
             if len(self.color_list) <= kk:
@@ -226,13 +242,17 @@ class DisplayParticles:
             reader.Update()
             tt=vtk.vtkTransform()
             tt.Identity()
-            tt.GetMatrix().SetElement(0,0,-1)
-            tt.GetMatrix().SetElement(1,1,-1)
+            if self.coordinate_system == "RAS":
+              tt.GetMatrix().SetElement(0,0,-1)
+              tt.GetMatrix().SetElement(1,1,-1)
+            
             tf=vtk.vtkTransformPolyDataFilter()
             tf.SetTransform(tt)
-            tf.SetInput(reader.GetOutput())
+            tf.SetInputConnection(reader.GetOutputPort())
             tf.SetTransform(tt)
-            self.create_actor(tf,0.1,color=[0.8,0.4,0.01])
+            color =[0.6,0.6,0.05]
+            #color=[0.8,0.4,0.01]
+            self.create_actor(tf,self.lung_opacity,color)
 
         self.add_color_bar()
         self.render()
@@ -248,7 +268,7 @@ class DisplayParticles:
         
         ff.SetInput(self.renWin)
         ff.SetMagnification(4)
-        sf.SetInput(ff.GetOutput())
+        sf.SetInputData(ff.GetOutput())
         sf.SetFileName(self.capture_prefix+ "%03d.png" % self.capture_count )
         self.renWin.Render()
         ff.Modified()
@@ -264,7 +284,7 @@ if __name__ == "__main__":
                       default="vessel")
     parser.add_option("--irad", help='interparticle distance', dest="irad", \
                       default=1.2)
-    parser.add_option("--hth", help='TODO', dest="hth", default=0)
+    parser.add_option("--hth", help='TODO', dest="hth", default="")
     parser.add_option("--color", help='TODO', dest="color_list", default="")
     parser.add_option("--opacity", help='TODO', dest="opacity_list", \
                       default="")
@@ -291,6 +311,9 @@ if __name__ == "__main__":
     spacing_list = [float(i) for i in str.split(options.spacing,',')]
     lung_filename = options.lung_filename
 
+    feature_type_list = [i for i in str.split(options.feature_type,',')]
+
+
     if options.opacity_list == "":
         opacity_list=[]
     else:
@@ -301,11 +324,14 @@ if __name__ == "__main__":
     else:
         color_list = [translate_color[val] for val in str.split(options.color_list,',')]
 
-    print color_list
+    if options.hth == "" :
+        hth_list = []
+    else:
+        hth_list = [float(i) for i in str.split(options.hth,',')]
 
     print use_field_data
 
-    dv = DisplayParticles(file_list, spacing_list,options.feature_type,float(options.irad),float(options.hth), \
+    dv = DisplayParticles(file_list, spacing_list,feature_type_list,float(options.irad),hth_list, \
         'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lung_filename)
     dv.capture_prefix = options.capture_prefix
     dv.execute()
