@@ -51,7 +51,7 @@ and does not necessarily represent the official views of the National Institutes
       <flag>d</flag>
       <longflag>dist</longflag>
       <description>Maximum inter-particle distance. Two particles must be at least this close \
-      together to be considered for connectivity </description>
+together to be considered for connectivity </description>
       <label>Max allowable distance</label>
       <default>3.0</default>
     </double>
@@ -73,7 +73,7 @@ the connecting vector is less than this threshold, the particles are considered 
       <flag>s</flag>
       <longflag>size</longflag>
       <description>Component size cardinality threshold. Only components with this many particles or more \
-      will be retained in the output</description>
+will be retained in the output</description>
       <label>Component size threshold</label>
       <default>110</default>
     </integer>
