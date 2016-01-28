@@ -119,7 +119,7 @@ class FissureParticles(ChestParticles):
 
             self._beta  = 0 # Irrelevant for pass 1
             self._alpha = 0.5
-            self._irad = 4
+            self._irad = 1.7 
             self._srad = 1.2
             
             #Build parameters and run
