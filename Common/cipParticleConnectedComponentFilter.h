@@ -139,6 +139,7 @@ protected:
 
   unsigned int MaximumComponentSize;
   unsigned int NumberOfPointDataArrays;
+  unsigned int NumberOfFieldDataArrays;
   unsigned int ComponentSizeThreshold;
   unsigned int NumberInputParticles;
   unsigned int NumberOutputParticles;
