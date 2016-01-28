@@ -492,7 +492,6 @@ bool cipParticleConnectedComponentFilter::EvaluateParticleConnectedness( unsigne
 void cipParticleConnectedComponentFilter::Update()
 {
   unsigned int componentLabel = 1;
-  std::cout << "1" << std::endl;
   IteratorType it( this->DataStructureImage, this->DataStructureImage->GetBufferedRegion() );
 
   it.GoToBegin();
@@ -553,7 +552,7 @@ void cipParticleConnectedComponentFilter::Update()
     }
 
   this->NumberOutputParticles = inc;
-  std::cout << "5" << std::endl;
+
   this->OutputPolyData->SetPoints( outputPoints );
   for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
     {
