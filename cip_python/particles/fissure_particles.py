@@ -1,9 +1,3 @@
-# TODO: Investigate live_thresh and seed_thresh (ranges specified below)
-# TODO: Consider using mask throughout all passes if you're passing an
-#       airway mask in (tried this -- does not seem to have an effect. Bug?)
-# TODO: Investigate alpha and beta settings -- esp. for pass three. In some
-#       passes they are irrelevant.
-
 from argparse import ArgumentParser
 import tempfile, shutil
 import sys
@@ -38,10 +32,8 @@ class FissureParticles(ChestParticles):
         2. The scale of the output particles is handled properly.    
 
     live_thresh : float (optional)
-        Default is -30. Possible interval to explore: [-50, -150]
 
     seed_thresh : float (optional)
-        Default is -30. Possible interval to explore: [-30, -200]
 
     scale_samples : int (optional)
         The number of pre-blurrings performed on the input image. These
@@ -56,17 +48,27 @@ class FissureParticles(ChestParticles):
         The amount by which the input image will be downsampled prior to
         running particles. Default is 1 (no downsampling).
 
+    min_intensity : int (optional)
+        Histogram equilization will be applied to enhance the fissure features
+        within the range [min_intensity, max_intensity].
+
+    max_intensity : int (optional)
+        Histogram equilization will be applied to enhance the fissure features
+        within the range [min_intensity, max_intensity].        
+
+    iterations : int (optional)
+        The number of iterations for which to run the algorithm.
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, max_scale=1.2, live_thresh=-30.6,
                  seed_thresh=-30.6, scale_samples=1, down_sample_rate=1,
-                 min_intensity=-1000, max_intensity=-500):
+                 min_intensity=-1000, max_intensity=-500, iterations=200):
         ChestParticles.__init__(self, feature_type="ridge_surface",
-                            in_file_name=in_file_name,
-                            out_particles_file_name=out_particles_file_name,
-                            tmp_dir=tmp_dir, mask_file_name=mask_file_name,
-                            max_scale=max_scale, scale_samples=scale_samples,
-                            down_sample_rate=down_sample_rate)
+            in_file_name=in_file_name, 
+            out_particles_file_name=out_particles_file_name,
+            tmp_dir=tmp_dir, mask_file_name=mask_file_name,
+            max_scale=max_scale, scale_samples=scale_samples,
+            down_sample_rate=down_sample_rate)
 
         self._max_intensity = max_intensity
         self._min_intensity = min_intensity
@@ -75,7 +77,7 @@ class FissureParticles(ChestParticles):
         self._max_scale = max_scale
         self._scale_samples = scale_samples
         self._down_sample_rate = down_sample_rate
-        self._iterations = 50            
+        self._iterations = iterations
         
         self._mode_thresh = -0.5
         self._population_control_period = 10
@@ -232,6 +234,9 @@ if __name__ == "__main__":
     parser.add_argument("--maxI", 
                         help='max intensity for feature (default -500)',
                         dest="max_intensity", default=-500)
+    parser.add_argument("--iters", 
+                        help='Number of algorithm iterations (default 200)',
+                        dest="iters", default=200)    
     
     op = parser.parse_args()
     
@@ -246,12 +251,10 @@ if __name__ == "__main__":
     else:        
         tmp_dir = tempfile.mkdtemp()
 
-
     dp = FissureParticles(op.input_ct, op.output_particles, tmp_dir, 
-                          op.input_mask, max_scale, float(op.live_th),
-                          float(op.seed_th), int(op.scale_samples),
-                          float(op.down_sample_rate),
-                          float(op.min_intensity), float(op.max_intensity))
+        op.input_mask, max_scale, float(op.live_th), float(op.seed_th), 
+        int(op.scale_samples), float(op.down_sample_rate), 
+        float(op.min_intensity), float(op.max_intensity), int(op.iters))
     dp.execute()
     
     if op.tmp_dir is None:
