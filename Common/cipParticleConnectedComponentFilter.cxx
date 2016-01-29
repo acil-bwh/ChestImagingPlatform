@@ -123,14 +123,23 @@ void cipParticleConnectedComponentFilter::SetInput( vtkPolyData* polyData )
     this->ParticleToComponentMap[i] = 0;
     }
 
-  for ( unsigned int i=0; i<this->NumberOfFieldDataArrays; i++ )
+  for ( unsigned int a=0; a<this->NumberOfFieldDataArrays; a++ )
     {
-    vtkFloatArray* array = vtkFloatArray::New();
-      array->SetNumberOfComponents( this->InputPolyData->GetFieldData()->GetArray(i)->GetNumberOfComponents() );
-      array->SetName( this->InputPolyData->GetFieldData()->GetArray(i)->GetName() );
-      array->InsertTuple( i, this->InputPolyData->GetFieldData()->GetArray(i)->GetTuple(0) );
+      unsigned int numComponents = this->InputPolyData->GetFieldData()->GetArray(a)->GetNumberOfComponents();
+      unsigned int numTuples = this->InputPolyData->GetFieldData()->GetArray(a)->GetNumberOfTuples();
+      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+        array->SetNumberOfComponents( numComponents );
+	array->SetNumberOfTuples( numTuples );
+	array->SetName( this->InputPolyData->GetFieldData()->GetArray(a)->GetName() );
+	for ( unsigned int t=0; t<numTuples; t++ )
+	  {
+	    for ( unsigned int c=0; c<numComponents; c++ )
+	      {
+		array->SetComponent( t, c, this->InputPolyData->GetFieldData()->GetArray(a)->GetTuple(t)[c] );
+	      }
+	  }
 
-    this->OutputPolyData->GetFieldData()->AddArray( array ); 
+      this->OutputPolyData->GetFieldData()->AddArray( array ); 
     }
 }
 
