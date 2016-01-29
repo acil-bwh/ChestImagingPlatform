@@ -262,12 +262,10 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
       if ( projection[0] > threshold )
         {
 	  (*it).second.cipType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
-	  std::cout << "lo" << std::endl;
         }
       else
         {
 	  (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
-	  std::cout << "left undefined" << std::endl;
         }
       }
     else
@@ -341,6 +339,9 @@ void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< u
     {
     outputParticles->GetPointData()->AddArray( arrayVec[j] );
     }
+
+  // Transfer the input field data to the output
+  cip::TransferFieldData( particles, outputParticles );
 
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetInputData( outputParticles );

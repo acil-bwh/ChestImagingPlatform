@@ -5,7 +5,7 @@
 #include <cfloat>
 #include "itkImageFileWriter.h"
 #include "vnl/algo/vnl_symmetric_eigensystem.h"
-
+#include "cipHelper.h"
 
 cipParticleConnectedComponentFilter::cipParticleConnectedComponentFilter()
 {
@@ -111,7 +111,6 @@ void cipParticleConnectedComponentFilter::SetInput( vtkPolyData* polyData )
   this->InputPolyData           = polyData;
   this->NumberInputParticles    = this->InputPolyData->GetNumberOfPoints();
   this->NumberOfPointDataArrays = this->InputPolyData->GetPointData()->GetNumberOfArrays();
-  this->NumberOfFieldDataArrays = this->InputPolyData->GetFieldData()->GetNumberOfArrays();
 
   if ( this->InterParticleSpacing != 0 )
     {
@@ -123,24 +122,8 @@ void cipParticleConnectedComponentFilter::SetInput( vtkPolyData* polyData )
     this->ParticleToComponentMap[i] = 0;
     }
 
-  for ( unsigned int a=0; a<this->NumberOfFieldDataArrays; a++ )
-    {
-      unsigned int numComponents = this->InputPolyData->GetFieldData()->GetArray(a)->GetNumberOfComponents();
-      unsigned int numTuples = this->InputPolyData->GetFieldData()->GetArray(a)->GetNumberOfTuples();
-      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-        array->SetNumberOfComponents( numComponents );
-	array->SetNumberOfTuples( numTuples );
-	array->SetName( this->InputPolyData->GetFieldData()->GetArray(a)->GetName() );
-	for ( unsigned int t=0; t<numTuples; t++ )
-	  {
-	    for ( unsigned int c=0; c<numComponents; c++ )
-	      {
-		array->SetComponent( t, c, this->InputPolyData->GetFieldData()->GetArray(a)->GetTuple(t)[c] );
-	      }
-	  }
-
-      this->OutputPolyData->GetFieldData()->AddArray( array ); 
-    }
+  // Transfer field data from input to output
+  cip::TransferFieldData( this->InputPolyData, this->OutputPolyData );
 }
 
 
