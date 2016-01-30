@@ -141,12 +141,6 @@ int main( int argc, char *argv[] )
 void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichParticle, const cipThinPlateSplineSurface& tps,
                                   double* distance, double* angle ) 
 {
-  cipParticleToThinPlateSplineSurfaceMetric particleToTPSMetric;
-    particleToTPSMetric.SetThinPlateSplineSurface( tps );
-
-  cipNewtonOptimizer< 2 >* newtonOptimizer = new cipNewtonOptimizer< 2 >();
-    newtonOptimizer->SetMetric( particleToTPSMetric );
-
   cip::PointType position(3);
   cip::VectorType normal(3);
   cip::VectorType orientation(3);
@@ -162,14 +156,18 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
   orientation[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[1];
   orientation[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[2];
 
-  particleToTPSMetric.SetParticle( position );
+  cipParticleToThinPlateSplineSurfaceMetric particleToTPSMetric;
+    particleToTPSMetric.SetThinPlateSplineSurface( tps );
+    particleToTPSMetric.SetParticle( position );
 
   (*domainParams)[0] = position[0];
   (*domainParams)[1] = position[1];
 
-  newtonOptimizer->SetInitialParameters( domainParams );
-  newtonOptimizer->Update();
-  newtonOptimizer->GetOptimalParameters( optimalParams );
+  cipNewtonOptimizer< 2 >* newtonOptimizer = new cipNewtonOptimizer< 2 >();
+    newtonOptimizer->SetMetric( particleToTPSMetric );
+    newtonOptimizer->SetInitialParameters( domainParams );
+    newtonOptimizer->Update();
+    newtonOptimizer->GetOptimalParameters( optimalParams );
 
   *distance = vcl_sqrt( newtonOptimizer->GetOptimalValue() );
 
@@ -258,7 +256,6 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
 
     if ( projection.size() == 1 )
       {
-	std::cout << projection[0] << std::endl;
       if ( projection[0] > threshold )
         {
 	  (*it).second.cipType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
