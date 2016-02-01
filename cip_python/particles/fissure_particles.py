@@ -130,42 +130,42 @@ class FissureParticles(ChestParticles):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-i", help='Input CT scan', dest="input_ct")
-    parser.add_argument("-m", help='Input mask for seeding', dest="input_mask")
-    parser.add_argument("-o", help='Output particles (vtk format)', \
-      dest="output_particles")
-    parser.add_argument("-t", help='Temp directory in which to store \
-      intermediate files', dest="tmp_dir", default=None)
-    parser.add_argument("-s", help='The scale of the fissure to consider in \
-      scale space.', dest="scale", default=0.9)
-    parser.add_argument("-r", help='Down sampling rate. Must be greater than \
-      or equal to 1.0 (default 1.0)', dest="down_sample_rate", default=1.0)
+    parser.add_argument("--ict", help='Input CT scan', dest="ict")
+    parser.add_argument("--ilm", help='Input mask for seeding', 
+      dest="ilm")
+    parser.add_argument("--op", help='Output particles (vtk format)', \
+      dest="op")
+    parser.add_argument("--tmp", help='Temp directory in which to store \
+      intermediate files', dest="tmp", default=None)
+    parser.add_argument("--scale", help='The scale of the fissure to consider \
+      in scale space.', dest="scale", default=0.9)
+    parser.add_argument("--rate", help='Down sampling rate. Must be greater than \
+      or equal to 1.0 (default 1.0)', dest="rate", default=1.0)
     parser.add_argument("--lth", help='Threshold to use when pruning particles \
       during population control. Must be less than zero', 
-      dest="live_th", default=-15)
+      dest="lth", default=-15)
     parser.add_argument("--sth", help='Threshold to use when initializing \
-      particles. Must be less than zero', dest="seed_th", default=-45)
-    parser.add_argument("--minI", help='Histogram equilization will be applied \
-      to enhance the fissure features within the range [minI, maxI]', 
-      dest="min_intensity", default=-920)
-    parser.add_argument("--maxI", help='Histogram equilization will be applied \
-      to enhance the fissure features within the range [minI, maxI]', 
-      dest="max_intensity", default=-400)
+      particles. Must be less than zero', dest="sth", default=-45)
+    parser.add_argument("--min_int", help='Histogram equilization will be applied \
+      to enhance the fissure features within the range [min_int, max_int]', 
+      dest="min_int", default=-920)
+    parser.add_argument("--max_int", help='Histogram equilization will be applied \
+      to enhance the fissure features within the range [min_int, max_int]', 
+      dest="max_int", default=-400)
     parser.add_argument("--iters", help='Number of algorithm iterations \
       (default 200)', dest="iters", default=200)    
     
     op = parser.parse_args()
     
-    if op.tmp_dir is not None:
-        tmp_dir = op.tmp_dir
+    if op.tmp is not None:
+        tmp = op.tmp
     else:        
-        tmp_dir = tempfile.mkdtemp()
+        tmp = tempfile.mkdtemp()
 
-    dp = FissureParticles(op.input_ct, op.output_particles, tmp_dir, 
-        op.input_mask, float(op.scale), float(op.live_th), float(op.seed_th), 
-        float(op.down_sample_rate), float(op.min_intensity), 
-        float(op.max_intensity), int(op.iters))
+    dp = FissureParticles(op.ict, op.op, tmp, op.ilm, float(op.scale), 
+        float(op.lth), float(op.sth), float(op.rate), float(op.min_int), 
+        float(op.max_int), int(op.iters))
     dp.execute()
     
-    if op.tmp_dir is None:
-        shutil.rmtree(tmp_dir)
+    if op.tmp is None:
+        shutil.rmtree(tmp)
