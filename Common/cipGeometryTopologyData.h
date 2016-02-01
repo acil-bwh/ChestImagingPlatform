@@ -37,7 +37,7 @@ namespace cip {
      *  in the x, y, and z direction, respectively (in physical units). 'cipRegion' and
      *  'cipType' are UNDEFINEDREGION and UNDEFINEDTYPE by default. */
     void InsertBoundingBox( StartType start, SizeType size, unsigned char cipRegion, 
-			    unsigned char cipType, std::string );
+			    unsigned char cipType, unsigned char cipImageFeature, std::string );
 
     unsigned int GetNumberOfBoundingBoxes() const
     {
@@ -48,9 +48,13 @@ namespace cip {
      *  in the vector of bounding boxes. */
     unsigned char GetBoundingBoxChestRegion( unsigned int ) const;
 
-    /** Returns the chest-region of the bounding box given the specified index
+    /** Returns the chest-type of the bounding box given the specified index
      *  in the vector of bounding boxes. */
     unsigned char GetBoundingBoxChestType( unsigned int ) const;
+
+    /** Returns the image feature of the bounding box given the specified index
+     *  in the vector of bounding boxes. */
+    unsigned char GetBoundingBoxImageFeature( unsigned int ) const;
 
     /** Returns bounding box start location given the specified index
      *  in the vector of bounding boxes. */
@@ -67,15 +71,19 @@ namespace cip {
     /** Insert a new point. 'coordinate' is the 3d physical coordinate of the point. 
      *  'cipRegion' and 'cipType' are UNDEFINEDREGION and UNDEFINEDTYPE by default. */
     void InsertPoint( CoordinateType coordinate, unsigned char cipRegion, 
-		      unsigned char cipType, std::string );
+		      unsigned char cipType, unsigned char cipImageFeature, std::string );
     
     /** Returns the chest-region of the point given the specified index
      *  in the vector of point. */
     unsigned char GetPointChestRegion( unsigned int ) const;
 
-    /** Returns the chest-region of the point given the specified index
+    /** Returns the chest-type of the point given the specified index
      *  in the vector of point. */
     unsigned char GetPointChestType( unsigned int ) const;
+
+    /** Returns the image feature of the point given the specified index
+         *  in the vector of point. */
+        unsigned char GetPointImageFeature( unsigned int ) const;
 
     /** Returns the point description given the specified index in the vector of 
      *	points. */
@@ -96,6 +104,7 @@ namespace cip {
       SizeType size;
       unsigned char cipRegion;
       unsigned char cipType;
+      unsigned char cipImageFeature;
       std::string description;
     };
 
@@ -104,6 +113,7 @@ namespace cip {
       CoordinateType coordinate;
       unsigned char cipRegion;
       unsigned char cipType;
+      unsigned char cipImageFeature;
       std::string description;
     };
     

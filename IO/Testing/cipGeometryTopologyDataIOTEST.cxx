@@ -34,13 +34,13 @@ int main( int argc, char* argv[] )
 
   cip::GeometryTopologyData geomTop;
     geomTop.InsertPoint( coordinate3D, (unsigned char)(cip::WHOLELUNG), 
-			 (unsigned char)(cip::AIRWAY), "" );
+			 (unsigned char)(cip::AIRWAY), (unsigned char)(cip::UNDEFINEDFEATURE), "" );
     geomTop.InsertBoundingBox( start3D, size3D, (unsigned char)(cip::LEFTLUNG), 
-			       (unsigned char)(cip::VESSEL), "LeftLung-Vessel" );
+			       (unsigned char)(cip::VESSEL), (unsigned char)(cip::UNDEFINEDFEATURE), "LeftLung-Vessel" );
     geomTop.InsertPoint( coordinate2D, (unsigned char)(cip::RIGHTLUNG), 
-			 (unsigned char)(cip::NORMALPARENCHYMA), "RightLung-NormalParenchyma" );
+			 (unsigned char)(cip::NORMALPARENCHYMA), (unsigned char)(cip::UNDEFINEDFEATURE), "RightLung-NormalParenchyma" );
     geomTop.InsertBoundingBox( start2D, size2D, (unsigned char)(cip::RIGHTSUPERIORLOBE), 
-			       (unsigned char)(cip::UNDEFINEDTYPE), "RightSuperiorLobe-UndefinedType" );
+			       (unsigned char)(cip::UNDEFINEDTYPE), (unsigned char)(cip::UNDEFINEDFEATURE), "RightSuperiorLobe-UndefinedType" );
   
   cip::GeometryTopologyDataIO geomTopWriter;
     geomTopWriter.SetInput( geomTop );

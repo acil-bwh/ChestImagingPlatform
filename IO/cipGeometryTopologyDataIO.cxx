@@ -47,6 +47,11 @@ void GeometryTopologyDataIO::Write() const
       std::string chestTypeString = chestTypeStream.str();
       xmlNewChild( point_node, NULL, BAD_CAST "ChestType", BAD_CAST chestTypeString.c_str() );
 
+      std::stringstream imageFeatureStream;
+      imageFeatureStream << int(this->m_GeometryTopologyData->GetPointImageFeature(i));
+	  std::string imageFeatureString = imageFeatureStream.str();
+	  xmlNewChild( point_node, NULL, BAD_CAST "ImageFeature", BAD_CAST imageFeatureString.c_str() );
+
       xmlNewChild( point_node, NULL, BAD_CAST "Description", 
 		   BAD_CAST this->m_GeometryTopologyData->GetPointDescription(i).c_str() );
 
@@ -77,6 +82,11 @@ void GeometryTopologyDataIO::Write() const
       chestTypeStream << int(this->m_GeometryTopologyData->GetBoundingBoxChestType(i));
       std::string chestTypeString = chestTypeStream.str();
       xmlNewChild( bb_node, NULL, BAD_CAST "ChestType", BAD_CAST chestTypeString.c_str() );
+
+      std::stringstream imageFeatureStream;
+      imageFeatureStream << int(this->m_GeometryTopologyData->GetBoundingBoxChestType(i));
+      std::string imageFeatureString = imageFeatureStream.str();
+      xmlNewChild( bb_node, NULL, BAD_CAST "ImageFeature", BAD_CAST imageFeatureString.c_str() );
 
       xmlNewChild( bb_node, NULL, BAD_CAST "Description", 
 		   BAD_CAST this->m_GeometryTopologyData->GetBoundingBoxDescription(i).c_str() );
@@ -174,6 +184,7 @@ void GeometryTopologyDataIO::ParsePoint( xmlNodePtr ptNode )
 {
   unsigned char cipRegion;
   unsigned char cipType;
+  unsigned char cipImageFeature;
   cip::GeometryTopologyData::CoordinateType coordinate;
   std::string description;
 
@@ -188,6 +199,10 @@ void GeometryTopologyDataIO::ParsePoint( xmlNodePtr ptNode )
   	{
   	  cipType = (unsigned char)std::atoi((const char*)xmlNodeGetContent(cur));
   	}
+	  else if ( !xmlStrcmp(cur->name, (const xmlChar *)"ImageFeature") )
+	{
+	  cipImageFeature = (unsigned char)std::atoi((const char*)xmlNodeGetContent(cur));
+	}
       else if ( !xmlStrcmp(cur->name, (const xmlChar *)"Coordinate") )
   	{
   	  xmlNodePtr co = cur->xmlChildrenNode;
@@ -208,13 +223,14 @@ void GeometryTopologyDataIO::ParsePoint( xmlNodePtr ptNode )
       cur = cur->next;
     }
 
-  this->m_GeometryTopologyData->InsertPoint( coordinate, cipRegion, cipType, description );
+  this->m_GeometryTopologyData->InsertPoint( coordinate, cipRegion, cipType, cipImageFeature, description );
 }
 
 void GeometryTopologyDataIO::ParseBoundingBox( xmlNodePtr bbNode )
 {
   unsigned char cipRegion;
   unsigned char cipType;
+  unsigned char cipImageFeature;
   cip::GeometryTopologyData::StartType start;
   cip::GeometryTopologyData::StartType size;
   std::string description;
@@ -230,6 +246,10 @@ void GeometryTopologyDataIO::ParseBoundingBox( xmlNodePtr bbNode )
   	{
 	  cipType = (unsigned char)std::atoi((const char*)xmlNodeGetContent(cur));
   	}
+      else if ( !xmlStrcmp(cur->name, (const xmlChar *)"ImageFeature") )
+	{
+      cipImageFeature = (unsigned char)std::atoi((const char*)xmlNodeGetContent(cur));
+	}
       else if ( !xmlStrcmp(cur->name, (const xmlChar *)"Start") )
   	{
 	  xmlNodePtr st = cur->xmlChildrenNode;
@@ -263,7 +283,7 @@ void GeometryTopologyDataIO::ParseBoundingBox( xmlNodePtr bbNode )
       cur = cur->next;
     }
 
-  this->m_GeometryTopologyData->InsertBoundingBox( start, size, cipRegion, cipType, description );
+  this->m_GeometryTopologyData->InsertBoundingBox( start, size, cipRegion, cipType, cipImageFeature, description );
 }
 
 cip::GeometryTopologyData* GeometryTopologyDataIO::GetOutput()
