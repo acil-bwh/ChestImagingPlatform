@@ -7,42 +7,6 @@
  *   the edges between particle points found by the min spanning tree
  *   algorithm. The connected dataset is rendered and then optionally written
  *   to file
- *
- *  USAGE: 
- *
- *   ReadParticlesWriteConnectedParticles  [-d <double>] [-o <string>] [-a
- *                                        <string>] [-v <string>] [--]
- *                                        [--version] [-h]
- *
- *  Where: 
- *
- *   -d <double>,  --distThresh <double>
- *     Particle distance threshold. If two particles are farther apart than
- *     this threshold, they will not considered connected. Otherwise, a graph
- *     edge will be formed between the particles where the edge weight is a
- *     function of the distance between the particles. The weighted graph is
- *     then fed to a minimum spanning tree algorithm, the output of which is
- *     used to establish directionality throught the particles for HMM
- *     analysis.
- *
- *   -o <string>,  --outPart <string>
- *     Output particles file name
- *
- *   -a <string>,  --airway <string>
- *     Input airway particles file name
- *
- *   -v <string>,  --vessel <string>
- *     Input vessel particles file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -112,7 +76,8 @@ int main( int argc, char *argv[] )
       graphToPolyData->SetInputData(minimumSpanningTree);
       graphToPolyData->Update();
 
-    cip::GraftPointDataArrays( particlesReader->GetOutput(), graphToPolyData->GetOutput() );
+    cip::GraftPointDataArrays( particlesReader->GetOutput(), graphToPolyData->GetOutput() );    
+    cip::TransferFieldData( particlesReader->GetOutput(), graphToPolyData->GetOutput() );
 
     std::cout << "Writing connected particles..." << std::endl;
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
