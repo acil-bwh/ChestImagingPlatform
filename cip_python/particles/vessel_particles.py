@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # TODO: Investigate live_thresh and seed_thresh (ranges specified below)
 # TODO: Consider using mask throughout all passes if you're passing an
 #       airway mask in (tried this -- does not seem to have an effect. Bug?)
@@ -8,6 +6,7 @@
 
 import os
 import pdb
+import tempfile, shutil
 from cip_python.particles.chest_particles import ChestParticles
 
 class VesselParticles(ChestParticles):
@@ -197,29 +196,37 @@ if __name__ == "__main__":
   parser = ArgumentParser(description='Vessel particles generation tool.')
 
   parser.add_argument("-i", help='input CT scan', dest="input_ct")
-  parser.add_argument("-m", help='input mask for seeding', dest="input_mask", default=None)
-  parser.add_argument("-p", help='input particle points to initialize (if not specified a per-voxel approach is used)', dest="input_particles", default=None)
+  parser.add_argument("-m", help='input mask for seeding', dest="input_mask", 
+    default=None)
+  parser.add_argument("-p", help='input particle points to initialize (if not \
+    specified a per-voxel approach is used)', dest="input_particles", 
+    default=None)
   parser.add_argument("-o", help='output particles (vtk format)',
-                    dest="output_particles")
-  parser.add_argument("-t", help='tmp directory', dest="tmp_dir")
+    dest="output_particles")
+  parser.add_argument("-t", help='tmp directory', dest="tmp_dir", default=None)
   parser.add_argument("-s", help='max scale [default: %(default)s)]',
-                      dest="max_scale", default=6.0, type=float)
-  parser.add_argument("-r", help='down sampling rate (>=1) [default: %(default)s]',
-                    dest="down_sample_rate", default=1.0, type=float)
-  parser.add_argument("-n", help='number of scale volumes [default: %(default)s]',
-                    dest="scale_samples", default=10, type=int)
-  parser.add_argument("--lth", help='live threshold (<0) [default: %(default)s]', dest="live_th",
-                    default=-95.0, type=float)
-  parser.add_argument("--sth", help='seed threshold (<0) [default: %(default)s]', dest="seed_th",
-                    default=-70.0, type=float)
-  parser.add_argument("--minI", help='min intensity for feature [default: %(default)s]',
-                    dest="min_intensity", default=-800, type=float)
-  parser.add_argument("--maxI", help='max intensity for feature [default: %(default)s]',
-                    dest="max_intensity", default=400, type=float)
+    dest="max_scale", default=6.0, type=float)
+  parser.add_argument("-r", help='down sampling rate (>=1) \
+    [default: %(default)s]', dest="down_sample_rate", default=1.0, type=float)
+  parser.add_argument("-n", help='number of scale volumes \
+    [default: %(default)s]', dest="scale_samples", default=10, type=int)
+  parser.add_argument("--lth", help='live threshold (<0) [default: \
+    %(default)s]', dest="live_th", default=-95.0, type=float)
+  parser.add_argument("--sth", help='seed threshold (<0) [default: \
+    %(default)s]', dest="seed_th", default=-70.0, type=float)
+  parser.add_argument("--minI", help='min intensity for feature [default: \
+    %(default)s]', dest="min_intensity", default=-800, type=float)
+  parser.add_argument("--maxI", help='max intensity for feature [default: \
+    %(default)s]', dest="max_intensity", default=400, type=float)
   
   op = parser.parse_args()
+
+  if op.tmp_dir is not None:
+      tmp_dir = op.tmp_dir
+  else:        
+      tmp_dir = tempfile.mkdtemp()
   
-  vp = VesselParticles(op.input_ct, op.output_particles, op.tmp_dir, 
+  vp = VesselParticles(op.input_ct, op.output_particles, tmp_dir, 
                        op.input_mask, float(op.max_scale),
                        float(op.live_th), float(op.seed_th), 
                        int(op.scale_samples), float(op.down_sample_rate),
@@ -232,4 +239,6 @@ if __name__ == "__main__":
   
   vp.execute()
 
+  if op.tmp_dir is None:
+      shutil.rmtree(tmp_dir)
 
