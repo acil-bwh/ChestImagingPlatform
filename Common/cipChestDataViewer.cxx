@@ -410,7 +410,7 @@ vtkSmartPointer< vtkActor > cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData
 
   if ( particlesType == (unsigned char)( cip::AIRWAY ) )
     {
-    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec2" ) );
+    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec0" ) );
     }
   if ( particlesType == (unsigned char)( cip::VESSEL ) )
     {
@@ -418,7 +418,7 @@ vtkSmartPointer< vtkActor > cipChestDataViewer::SetParticlesAsDiscs( vtkPolyData
     }
   if ( particlesType == (unsigned char)( cip::FISSURE ) )
     {
-    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec1" ) );
+    polyData->GetPointData()->SetNormals( polyData->GetPointData()->GetArray( "hevec2" ) );
     }
 
   vtkCylinderSource* cylinderSource = vtkCylinderSource::New();
