@@ -1,16 +1,3 @@
-/** \file
- *  \ingroup interactiveTools 
- *  \details This ...
- *  
- *  $Date: 2013-04-02 12:04:01 -0400 (Tue, 02 Apr 2013) $
- *  $Revision: 399 $
- *  $Author: jross $
- *
- *  TODO:
- *  
- *
- */
-
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <tclap/CmdLine.h>
