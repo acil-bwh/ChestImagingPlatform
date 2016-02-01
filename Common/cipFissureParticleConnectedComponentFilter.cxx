@@ -1,12 +1,3 @@
-/**
- *
- *  $Date$
- *  $Revision$
- *  $Author$
- *
- */
-
-
 #include "itkImageFileWriter.h"
 #include "cipFissureParticleConnectedComponentFilter.h"
 #include "vtkPointData.h"
