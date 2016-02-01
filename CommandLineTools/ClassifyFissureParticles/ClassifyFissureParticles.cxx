@@ -120,17 +120,17 @@ int main( int argc, char *argv[] )
   if ( loClassifiedFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing left oblique particles to file..." << std::endl;
-    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, loClassifiedFileName, static_cast< unsigned char >( cip::OBLIQUEFISSURE ) );
+    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, loClassifiedFileName, (unsigned char)( cip::OBLIQUEFISSURE ) );
     }
   if ( roClassifiedFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing right oblique particles to file..." << std::endl;
-    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, roClassifiedFileName, static_cast< unsigned char >( cip::OBLIQUEFISSURE ) );
+    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, roClassifiedFileName, (unsigned char)( cip::OBLIQUEFISSURE ) );
     }
   if ( rhClassifiedFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing right horizontal particles to file..." << std::endl;
-    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, rhClassifiedFileName, static_cast< unsigned char >( cip::HORIZONTALFISSURE ) );
+    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, rhClassifiedFileName, (unsigned char)( cip::HORIZONTALFISSURE ) );
     }
 
   std::cout << "DONE." << std::endl;
@@ -258,11 +258,11 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
       {
       if ( projection[0] > threshold )
         {
-	  (*it).second.cipType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
+	  (*it).second.cipType = (unsigned char)( cip::OBLIQUEFISSURE );
         }
       else
         {
-	  (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
+	  (*it).second.cipType = (unsigned char)( cip::UNDEFINEDTYPE );
         }
       }
     else
@@ -272,22 +272,22 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
         {
         if ( projection[0] > threshold )
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
+	    (*it).second.cipType = (unsigned char)( cip::OBLIQUEFISSURE );
           }
         else
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
+	    (*it).second.cipType = (unsigned char)( cip::UNDEFINEDTYPE );
           }
         }
       else
         {
         if ( projection[1] > threshold )
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::HORIZONTALFISSURE );
+	    (*it).second.cipType = (unsigned char)( cip::HORIZONTALFISSURE );
           }
         else
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
+	    (*it).second.cipType = (unsigned char)( cip::UNDEFINEDTYPE );
           }
         }
       }
