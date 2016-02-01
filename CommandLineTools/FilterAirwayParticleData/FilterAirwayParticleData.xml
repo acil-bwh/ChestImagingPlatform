@@ -3,22 +3,22 @@
     <category>Chest Imaging Platform.Toolkit.Particles</category>
     <title>FilterAirwayParticleData</title>
     <description><![CDATA[This program reads airway particles and filters them \
-        based on connected components analysis. Particles are placed in \
-        the same component provided they are sufficiently close to one \
-        another, have scale that is sufficiently similar, and sufficiently \
-        define a local cylinder (i.e. they are sufficiently parallel with the \
-        vector connecting the two paticle spatial locations). Only \
-        components that have cardinality greater than or equal to that \
-        specified by the user will be retained in the output. Furthermore, \
-        the output particles will have a defined 'unmergedComponents' \
-        array that indicates the component label assigned to each particle.]]>
+based on connected components analysis. Particles are placed in \
+the same component provided they are sufficiently close to one \
+another, have scale that is sufficiently similar, and sufficiently \
+define a local cylinder (i.e. they are sufficiently parallel with the \
+vector connecting the two paticle spatial locations). Only \
+components that have cardinality greater than or equal to that \
+specified by the user will be retained in the output. Furthermore, \
+the output particles will have a defined 'unmergedComponents' \
+array that indicates the component label assigned to each particle.]]>
     </description>
     <version>0.0.1</version>
     <license>Slicer</license>
     <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
     
     <parameters>
@@ -29,9 +29,9 @@
             <label>Input Particles FileName</label>
             <channel>input</channel>
             <flag>i</flag>
-            <longflag>in</longflag>
+            <longflag>ifp</longflag>
             <description><![CDATA[Input particles file name]]></description>
-            <default>q</default>
+            <default>NA</default>
         </geometry>
       
         <geometry type="model">
@@ -39,31 +39,23 @@
           <label>Output Particles File Name</label>
           <channel>output</channel>
           <flag>o</flag>
-          <longflag>out</longflag>
+          <longflag>ofp</longflag>
           <description><![CDATA[Output particles file name]]></description>
-          <default>q</default>
+          <default>NA</default>
         </geometry>
       </parameters>
   
     <parameters>
-      <label>Parameters</label>
-        <double>
-            <name>interParticleSpacing</name>
-            <label>Inter Particle Spacing</label>
-            <longflag>spacing</longflag>
-            <channel>input</channel>
-            <description>This value indicates the inter-particle spacing of the input data set </description>
-            <default>1.5</default>
-        </double>
-      
+      <label>Parameters</label>      
         <double>
             <name>maxAllowableDistance</name>
             <label>Maximum Allowable Distance</label>
             <flag>d</flag>
-            <longflag>distance</longflag>
+            <longflag>dist</longflag>
             <channel>input</channel>
             <description>Maximum inter-particle distance. Two particles must be at least this close \
-                together to be considered for connectivity. </description>
+together to be considered for connectivity. 
+	    </description>
             <default>3.0</default>
         </double>
 
@@ -74,9 +66,9 @@
             <longflag>angle</longflag>
             <channel>input</channel>
             <description>Particle angle threshold used to test the connectivity between two particles (in degrees). \
-                The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \
-                eigenvector pointing in the direction of the airway axis is then considered. For both particles, this angle must be below \
-                the specified threshold for the particles to be connected.</description>
+The vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \
+eigenvector pointing in the direction of the airway axis is then considered. For both particles, this angle must be below \
+the specified threshold for the particles to be connected.</description>
             <default>20.0</default>
         </double>
         
@@ -84,11 +76,11 @@
             <name>scaleRatioThreshold</name>
             <label>Scale Ratio Threshold</label>
             <flag>r</flag>
-            <longflag>scaleRatio</longflag>
+            <longflag>ratio</longflag>
             <channel>input</channel>
             <description>Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \
-                two particles can differ in scale and still be considered for connectivity. The higher the value, the more permisse the filter is \
-                with respect to scale differences.</description>
+two particles can differ in scale and still be considered for connectivity. The higher the value, the more permisse the filter is \
+with respect to scale differences.</description>
             <default>1.0</default>
         </double>
         
@@ -99,7 +91,7 @@
             <flag>m</flag>
             <channel>input</channel>
             <description>Maximum component size. No component will be larger than the specified size </description>
-            <default>USHRT_MAX</default>
+            <default>10000</default>
         </integer>
         
         <integer>
@@ -109,24 +101,24 @@
             <flag>s</flag>
             <channel>input</channel>
             <description>Component size cardinality threshold. Only components with this many particles or more \
-                will be retained in the output. </description>
-            <default>0</default>
+will be retained in the output. </description>
+            <default>10000</default>
         </integer>
       
         <double>
           <name>maxAllowableScale</name>
           <longflag>maxScale</longflag>
           <description>Max allowable scale. No connection will be made between two particles if either of them \
-            have a scale that exceeds this amount.</description>
+have a scale that exceeds this amount.</description>
           <label>Maximum allowable scale</label>
-          <default>1.79769e+308</default>
+          <default>100</default>
         </double>
         
         <double>
           <name>minAllowableScale</name>
           <longflag>minScale</longflag>
-          <description>Min  allowable scale. No connection will be made between two particles if either of them \
-            have a scale that exceeds this amount.</description>
+          <description>Min allowable scale. No connection will be made between two particles if either of them \
+have a scale that exceeds this amount.</description>
           <label>Minimum allowable scale</label>
           <default>0</default>
         </double>
