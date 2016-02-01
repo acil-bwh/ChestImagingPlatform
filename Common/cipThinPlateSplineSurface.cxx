@@ -116,7 +116,6 @@ void cipThinPlateSplineSurface::ComputeThinPlateSplineVectors()
         }
       }
     }
-
   double alpha = rTotal/static_cast< double >( numPoints*numPoints );
 
   // Now include the smoothing. Refer to http://elonen.iki.fi/code/tpsdemo/
@@ -213,7 +212,6 @@ void cipThinPlateSplineSurface::ComputeThinPlateSplineVectors()
   // is just the combination of w and a, and we'll set them explicity
   // below after we get b.  First invert L.
   vnl_matrix< double > invL = vnl_matrix_inverse< double >(L).inverse();
-
   vnl_vector< double > x = invL*b;
 
   // Now that we have x, set the w and a vectors
