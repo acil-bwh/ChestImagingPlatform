@@ -27,6 +27,7 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
       BOUNDINGBOX bb;
       bb.cipRegion = geometryTopology.GetBoundingBoxChestRegion(i);
       bb.cipType = geometryTopology.GetBoundingBoxChestType(i);
+      bb.cipImageFeature = geometryTopology.GetBoundingBoxImageFeature(i);
       bb.description = geometryTopology.GetBoundingBoxDescription(i);
 
       for ( unsigned int j=0; j<geometryTopology.GetBoundingBoxStart(i).size(); j++ )
@@ -45,6 +46,7 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
       POINT p;
       p.cipRegion = geometryTopology.GetPointChestRegion(i);
       p.cipType = geometryTopology.GetPointChestType(i);
+      p.cipImageFeature = geometryTopology.GetPointImageFeature(i);
       p.description = geometryTopology.GetPointDescription(i);
 
       for ( unsigned int j=0; j<geometryTopology.GetPointCoordinate(i).size(); j++ )
@@ -62,11 +64,13 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
 void cip::GeometryTopologyData::InsertBoundingBox( StartType start, SizeType size, 
 						   unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
 						   unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
+						   unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
 						   std::string description = "NA" )
 {
   BOUNDINGBOX bb;
   bb.cipRegion = cipRegion;
   bb.cipType = cipType;
+  bb.cipImageFeature = cipImageFeature;
 
   if ( start.size() != size.size() )
     {
@@ -103,11 +107,13 @@ void cip::GeometryTopologyData::InsertBoundingBox( StartType start, SizeType siz
 void cip::GeometryTopologyData::InsertPoint( CoordinateType coordinate,
 					     unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
 					     unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
+					     unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
 					     std::string description = "NA" )
 {
   POINT p;
   p.cipRegion = cipRegion;
   p.cipType = cipType;
+  p.cipImageFeature = cipImageFeature;
 
   if ( coordinate.size() != 2 && coordinate.size() != 3 )
     {
@@ -150,6 +156,18 @@ unsigned char cip::GeometryTopologyData::GetBoundingBoxChestType( unsigned int i
   return this->m_BoundingBoxes[index].cipType;
 }
 
+unsigned char cip::GeometryTopologyData::GetBoundingBoxImageFeature( unsigned int index ) const
+{
+  if ( index > this->m_BoundingBoxes.size() )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__,
+				  "cip::GeometryTopologyData::GetBoundingBoxChestType",
+				  "Index of range for m_BoundingBoxes" );
+    }
+
+  return this->m_BoundingBoxes[index].cipImageFeature;
+}
+
 unsigned char cip::GeometryTopologyData::GetPointChestRegion( unsigned int index ) const
 {
   if ( index > this->m_Points.size() )
@@ -172,6 +190,18 @@ unsigned char cip::GeometryTopologyData::GetPointChestType( unsigned int index )
     }
 
   return this->m_Points[index].cipType;
+}
+
+unsigned char cip::GeometryTopologyData::GetPointImageFeature( unsigned int index ) const
+{
+  if ( index > this->m_Points.size() )
+    {
+      throw cip::ExceptionObject( __FILE__, __LINE__,
+				  "cip::GeometryTopologyData::GetPointChestType",
+				  "Index of range for m_Points" );
+    }
+
+  return this->m_Points[index].cipImageFeature;
 }
 
 std::string cip::GeometryTopologyData::GetBoundingBoxDescription( unsigned int index ) const
