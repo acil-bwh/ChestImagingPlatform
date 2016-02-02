@@ -7,7 +7,6 @@ from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype.pipeline.engine import Workflow
 import tempfile, shutil
-import pydot
 import sys
 import os 
 import pdb
