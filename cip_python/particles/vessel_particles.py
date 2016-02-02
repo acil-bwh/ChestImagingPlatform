@@ -231,10 +231,10 @@ if __name__ == "__main__":
                        int(op.scale_samples), float(op.down_sample_rate),
                        float(op.min_intensity), float(op.max_intensity))
   if op.input_particles == None:
-    pass
+      pass
   else:
-    vp._init_mode="Particles"
-    vp._in_particles_file_name = op.input_particles
+      vp._init_mode="Particles"
+      vp._in_particles_file_name = op.input_particles
   
   vp.execute()
 
