@@ -29,7 +29,7 @@ and does not necessarily represent the official views of the National Institutes
             <label>Input Particles FileName</label>
             <channel>input</channel>
             <flag>i</flag>
-            <longflag>ifp</longflag>
+            <longflag>iap</longflag>
             <description><![CDATA[Input particles file name]]></description>
             <default>NA</default>
         </geometry>
@@ -39,7 +39,7 @@ and does not necessarily represent the official views of the National Institutes
           <label>Output Particles File Name</label>
           <channel>output</channel>
           <flag>o</flag>
-          <longflag>ofp</longflag>
+          <longflag>oap</longflag>
           <description><![CDATA[Output particles file name]]></description>
           <default>NA</default>
         </geometry>
@@ -102,7 +102,7 @@ with respect to scale differences.</description>
             <channel>input</channel>
             <description>Component size cardinality threshold. Only components with this many particles or more \
 will be retained in the output. </description>
-            <default>10000</default>
+            <default>0</default>
         </integer>
       
         <double>
