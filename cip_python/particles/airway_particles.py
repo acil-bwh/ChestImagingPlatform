@@ -8,6 +8,7 @@
 
 import os
 import pdb
+import tempfile, shutil
 from cip_python.particles.chest_particles import ChestParticles
 
 class AirwayParticles(ChestParticles):
@@ -195,41 +196,49 @@ if __name__ == "__main__":
   
   parser.add_argument("-i", help='input CT scan', dest="input_ct")
   parser.add_argument("-m", help='input mask for seeding', dest="input_mask",
-                    default=None)
-  parser.add_argument("-p", help='input particle points to initialize (if not specified a per-voxel approach is used)', dest="input_particles", default=None)
+    default=None)
+  parser.add_argument("-p", help='input particle points to initialize (if not \
+    specified a per-voxel approach is used)', dest="input_particles", 
+    default=None)
   parser.add_argument("-o", help='output particles (vtk format)',
                     dest="output_particles")
   parser.add_argument("-t", help='tmp directory', dest="tmp_dir")
   parser.add_argument("-s", help='max scale [default: %(default)s)]',
                     dest="max_scale", default=6.0, type=float)
-  parser.add_argument("-r", help='down sampling rate (>=1) [default: %(default)s]',
-                    dest="down_sample_rate", default=1.0, type=float)
-  parser.add_argument("-n", help='number of scale volumes [default: %(default)s]',
-                    dest="scale_samples", default=5, type=int)
-  parser.add_argument("--lth", help='live threshold (>0) [default: %(default)s]',
-                    dest="live_th", default=40.0, type=float)
-  parser.add_argument("--sth", help='seed threshold (>0) [default: %(default)s]',
-                    dest="seed_th", default=30.0, type=float)
+  parser.add_argument("-r", help='down sampling rate (>=1) [default: \
+    %(default)s]', dest="down_sample_rate", default=1.0, type=float)
+  parser.add_argument("-n", help='number of scale volumes [default: \
+    %(default)s]', dest="scale_samples", default=5, type=int)
+  parser.add_argument("--lth", help='live threshold (>0) [default: \
+    %(default)s]', dest="live_th", default=40.0, type=float)
+  parser.add_argument("--sth", help='seed threshold (>0) [default: \
+    %(default)s]', dest="seed_th", default=30.0, type=float)
   parser.add_argument("--minI",
-                    help='min intensity for feature [default: %(default)s]',
-                    dest="min_intensity", default=-1100, type=float)
+    help='min intensity for feature [default: %(default)s]',
+    dest="min_intensity", default=-1100, type=float)
   parser.add_argument("--maxI",
-                    help='max intensity for feature [default: %(default)s]',
-                    dest="max_intensity", default=-400, type=float)
+    help='max intensity for feature [default: %(default)s]',
+    dest="max_intensity", default=-400, type=float)
 
   op = parser.parse_args()
+
+  if op.tmp_dir is not None:
+      tmp_dir = op.tmp_dir
+  else:        
+      tmp_dir = tempfile.mkdtemp()
   
-  ap = AirwayParticles(op.input_ct, op.output_particles, op.tmp_dir,
-                       op.input_mask, float(op.max_scale), float(op.live_th),
-                       float(op.seed_th), int(op.scale_samples),
-                       float(op.down_sample_rate), float(op.min_intensity),
-                       float(op.max_intensity))
+  ap = AirwayParticles(op.input_ct, op.output_particles, tmp_dir,
+    op.input_mask, float(op.max_scale), float(op.live_th), float(op.seed_th), 
+    int(op.scale_samples), float(op.down_sample_rate), float(op.min_intensity),
+    float(op.max_intensity))
 
   if op.input_particles == None:
-    pass
+      pass
   else:
-    ap._init_mode="Particles"
-    ap._in_particles_file_name = op.input_particles
+      ap._init_mode="Particles"
+      ap._in_particles_file_name = op.input_particles
   
   ap.execute()
 
+  if op.tmp_dir is None:
+      shutil.rmtree(tmp_dir)
