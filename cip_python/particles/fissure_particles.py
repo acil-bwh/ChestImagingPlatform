@@ -65,12 +65,11 @@ class FissureParticles(ChestParticles):
         self._max_scale = scale
         self._scale_samples = 1
         self._down_sample_rate = down_sample_rate
-        self._iterations = iterations
-        
+        self._iterations = iterations        
         self._mode_thresh = -0.5
         self._population_control_period = 10
         self._no_add = 0
-  
+        self._cip_type = 'Fissure'
         self._verbose = 1
  
     def execute(self):

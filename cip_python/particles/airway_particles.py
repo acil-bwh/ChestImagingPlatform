@@ -83,7 +83,9 @@ class AirwayParticles(ChestParticles):
         self._phase_alphas = [1.0, 0.35, 0.84]
         self._phase_betas = [0.77, 0.75, 0.57]
         self._phase_gammas = [0.37, 0.53, 0.57]
-          
+
+        self._cip_type = 'Airway'
+        
         #Default init
         self._init_mode = "PerVoxel"
         self._ppv = 2

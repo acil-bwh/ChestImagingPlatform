@@ -69,14 +69,11 @@ class VesselParticles(ChestParticles):
         self._min_intensity = min_intensity
         self._max_scale = max_scale
         self._scale_samples = scale_samples
-        self._down_sample_rate = down_sample_rate
-      
+        self._down_sample_rate = down_sample_rate      
         self._live_thresh= live_thresh
         self._seed_thresh= seed_thresh
-
         self._mode_thresh = -0.3
         self._population_control_period = 3
-  
         self._phase_iterations = [100, 10, 75]
       
         self._phase_irads = [1.5,1.15,0.8]
@@ -86,7 +83,9 @@ class VesselParticles(ChestParticles):
         self._phase_alphas = [1.0, 0.35, 0.84]
         self._phase_betas = [0.77, 0.75, 0.57]
         self._phase_gammas = [0.37, 0.53, 0.57]
-  
+
+        self._cip_type = 'Vessel'
+        
         #Default init mode
         self._init_mode = "PerVoxel"
         self._ppv = 2
