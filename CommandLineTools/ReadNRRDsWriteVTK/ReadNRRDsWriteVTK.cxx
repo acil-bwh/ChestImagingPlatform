@@ -16,6 +16,7 @@
 #include "itkImageFileReader.h"
 #include "cipChestConventions.h"
 #include "ReadNRRDsWriteVTKCLP.h"
+#include "cipHelper.h"
 
 namespace
 {
@@ -26,6 +27,22 @@ namespace
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
+
+  cip::ChestConventions conventions;
+
+  if ( !conventions.IsChestRegion( cipRegionArg ) )
+    {
+      std::cerr << "Chest region is not valid" << std::endl;
+      return cip::EXITFAILURE;
+    }
+  if ( !conventions.IsChestType( cipTypeArg ) )
+    {
+      std::cerr << "Chest type is not valid" << std::endl;
+      return cip::EXITFAILURE;
+    }
+
+  float cipRegion = float(conventions.GetChestRegionValueFromName( cipRegionArg ));
+  float cipType = float(conventions.GetChestTypeValueFromName( cipTypeArg ));
 
   std::vector<std::string> arrayNameVec;
   std::vector<std::string> inFileNameVec;
@@ -316,10 +333,18 @@ int main( int argc, char *argv[] )
     array->SetValue(0,seedThreshold);
     polyData->GetFieldData()->AddArray(array);
   }
-  
-  
+    
   polyData->SetPoints( points );
 
+  // Create the 'ChestRegion' and 'ChestType' arrays, and set the region and/or type if
+  // they have been specified by the user.
+  cip::AssertChestRegionChestTypeArrayExistence( polyData );
+  for ( unsigned int i=0; i<polyData->GetNumberOfPoints(); i++ )
+    {
+      polyData->GetPointData()->GetArray("ChestRegion")->SetTuple( i, &cipRegion );
+      polyData->GetPointData()->GetArray("ChestType")->SetTuple( i, &cipType );
+    }
+  
   std::cout << "Writing poly data..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );

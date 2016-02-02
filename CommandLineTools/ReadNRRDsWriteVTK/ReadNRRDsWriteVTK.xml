@@ -106,5 +106,23 @@ data arrays]]></description>
           <default>false</default>
         </boolean>
         
+        <string>
+          <name>cipRegionArg</name>
+          <label>Chest Region</label>
+          <channel>input</channel>
+          <longflag>cipr</longflag>
+          <description><![CDATA[Chest region for particles labeling. UndefinedRegion by default]]></description>
+          <default>UndefinedRegion</default>
+       </string>
+
+       <string>
+         <name>cipTypeArg</name>
+         <label>Chest Type</label>
+         <channel>input</channel>
+         <longflag>cipt</longflag>
+         <description><![CDATA[Chest type for particles labeling. UndefinedType by default]]></description>
+         <default>UndefinedType</default>
+      </string>
+
     </parameters>
 </executable>
