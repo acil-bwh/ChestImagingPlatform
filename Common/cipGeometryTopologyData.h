@@ -82,8 +82,8 @@ namespace cip {
     unsigned char GetPointChestType( unsigned int ) const;
 
     /** Returns the image feature of the point given the specified index
-         *  in the vector of point. */
-        unsigned char GetPointImageFeature( unsigned int ) const;
+     *  in the vector of point. */
+    unsigned char GetPointImageFeature( unsigned int ) const;
 
     /** Returns the point description given the specified index in the vector of 
      *	points. */
