@@ -38,6 +38,7 @@ namespace cip {
       SizeType size;
       unsigned char cipRegion;
       unsigned char cipType;
+      unsigned char cipImageFeature;
       std::string description;
     };
     
@@ -46,6 +47,7 @@ namespace cip {
       CoordinateType coordinate;
       unsigned char cipRegion;
       unsigned char cipType;
+      unsigned char cipImageFeature;
       std::string description;
     };
     
