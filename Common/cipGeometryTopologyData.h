@@ -28,9 +28,29 @@ namespace cip {
     bool operator!= (const GeometryTopologyData &geometryTopology) const;
     ~GeometryTopologyData();
     
-    typedef std::vector< float > CoordinateType;
-    typedef std::vector< float > StartType;
-    typedef std::vector< float > SizeType;
+    typedef std::vector< double > CoordinateType;
+    typedef std::vector< double > StartType;
+    typedef std::vector< double > SizeType;
+    
+    struct BOUNDINGBOX
+    {
+      StartType start;
+      SizeType size;
+      unsigned char cipRegion;
+      unsigned char cipType;
+      std::string description;
+    };
+    
+    struct POINT
+    {
+      CoordinateType coordinate;
+      unsigned char cipRegion;
+      unsigned char cipType;
+      std::string description;
+    };
+    
+    typedef std::vector< BOUNDINGBOX > BoundingBoxVectorType;
+    typedef std::vector< POINT > PointVectorType;
 
     /** Insert a new bounding box. 'start' is the 3d physical coordinate of the
      *  bounding box's start coordinate. 'size' indicates the extent of the bounding box
@@ -39,7 +59,7 @@ namespace cip {
     void InsertBoundingBox( StartType start, SizeType size, unsigned char cipRegion, 
 			    unsigned char cipType, std::string );
 
-    unsigned int GetNumberOfBoundingBoxes() const
+    BoundingBoxVectorType::size_type GetNumberOfBoundingBoxes() const
     {
       return m_BoundingBoxes.size();
     }
@@ -81,7 +101,7 @@ namespace cip {
      *	points. */
     std::string GetPointDescription( unsigned int ) const;
 
-    unsigned int GetNumberOfPoints() const
+    PointVectorType::size_type GetNumberOfPoints() const
     {
       return m_Points.size();
     }
@@ -90,25 +110,10 @@ namespace cip {
     CoordinateType GetPointCoordinate( unsigned int ) const;
 
   private:
-    struct BOUNDINGBOX
-    {
-      StartType start;
-      SizeType size;
-      unsigned char cipRegion;
-      unsigned char cipType;
-      std::string description;
-    };
 
-    struct POINT
-    {
-      CoordinateType coordinate;
-      unsigned char cipRegion;
-      unsigned char cipType;
-      std::string description;
-    };
     
-    std::vector< BOUNDINGBOX > m_BoundingBoxes;
-    std::vector< POINT > m_Points;
+    BoundingBoxVectorType m_BoundingBoxes;
+    PointVectorType m_Points;
   };
   
 } // namespace cip
