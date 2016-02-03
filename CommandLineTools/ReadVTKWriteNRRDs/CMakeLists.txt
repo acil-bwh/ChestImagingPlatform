@@ -50,6 +50,12 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
     --compare
       ${BASELINE_DATA_DIR}/${TEST_NAME}_val.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_val.nrrd
+   --compare
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_ChestRegion.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_ChestRegion.nrrd
+   --compare
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_ChestType.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_ChestType.nrrd
     ModuleEntryPoint
       -i ${INPUT_DATA_DIR}/vessel_particles.vtk
       --prefix ${OUTPUT_DATA_DIR}/${TEST_NAME}_

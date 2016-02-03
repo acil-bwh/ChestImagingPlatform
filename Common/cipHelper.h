@@ -167,6 +167,9 @@ namespace cip {
   /** Given a thin plate spline surface and some point in 3D space, this function will 
    *  compute the closest point on the surface and set it to tpsPoint. */
   void GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, cip::PointType tpsPoint );
+
+  /** Transfer the field data from one polydata to another  */
+  void TransferFieldData( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 }  
 
 #endif

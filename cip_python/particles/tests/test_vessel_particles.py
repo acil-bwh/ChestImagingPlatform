@@ -15,7 +15,7 @@ def test_vessel_particles():
         this_dir = os.path.dirname(os.path.realpath(__file__))
 
         # Set up the inputs to VesselParticles
-        input_ct = this_dir + '/../../../Testing/Data/Input/vesselgauss.nrrd'
+        input_ct = this_dir + '/../../../Testing/Data/Input/vessel.nrrd'
         input_mask = \
           this_dir + '/../../../Testing/Data/Input/vessel_vesselSeedsMask.nrrd'
 
@@ -24,8 +24,8 @@ def test_vessel_particles():
         output_particles = os.path.join(tmp_dir,'vessel_particles.vtk')
         print tmp_dir
         max_scale = 6.0
-        live_th = -100
-        seed_th = -80
+        live_th = -95
+        seed_th = -70
         scale_samples = 10
         down_sample_rate = 1.0
         min_intensity = -800

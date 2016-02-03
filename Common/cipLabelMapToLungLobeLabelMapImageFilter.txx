@@ -363,7 +363,6 @@ cipLabelMapToLungLobeLabelMapImageFilter
     {
     this->LeftObliqueFissurePoints.push_back( points[i] );
     }
-
   this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetSurfacePoints( this->LeftObliqueFissurePoints );
   this->LeftObliqueThinPlateSplineSurfaceFromPoints->SetLambda( this->m_ThinPlateSplineSurfaceFromPointsLambda );
 }

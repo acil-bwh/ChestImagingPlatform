@@ -29,7 +29,7 @@ and does not necessarily represent the official views of the National Institutes
       <label>Input particles file name</label>
       <channel>input</channel>
       <flag>i</flag>
-      <longflag>in</longflag>
+      <longflag>ivp</longflag>
       <description><![CDATA[Input particles file name]]></description>
       <default>NA</default>
     </geometry>
@@ -39,7 +39,7 @@ and does not necessarily represent the official views of the National Institutes
       <label>Output particles file name</label>
       <channel>input</channel>
       <flag>o</flag>
-      <longflag>--out</longflag>
+      <longflag>ovp</longflag>
       <description><![CDATA[Output particles file name]]></description>
       <default>NA</default>
     </geometry>
@@ -50,7 +50,7 @@ and does not necessarily represent the official views of the National Institutes
     <double>
       <name>maxAllowableDistance</name>
       <flag>d</flag>
-      <longflag>distance</longflag>
+      <longflag>dist</longflag>
       <description>Maximum inter-particle distance. Two particles must be at least this close \
 together to be considered for connectivity </description>
       <label>Max allowable distance</label>
@@ -96,7 +96,7 @@ will be retained in the output</description>
       <longflag>maxSize</longflag>
       <description>Maximum component size. No component will be larger than the specified size</description>
       <label>Maximum component size</label>
-      <default>USHRT_MAX</default>
+      <default>10000</default>
     </integer>
 
     <double>
@@ -105,7 +105,7 @@ will be retained in the output</description>
       <description>Max allowable scale. No connection will be made between two particles if either of them \
 have a scale that exceeds this amount.</description>
       <label>Maximum allowable scale</label>
-      <default>1.79769e+308</default>
+      <default>1000</default>
     </double>
     
     <double>

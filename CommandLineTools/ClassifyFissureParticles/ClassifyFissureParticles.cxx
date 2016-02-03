@@ -120,17 +120,17 @@ int main( int argc, char *argv[] )
   if ( loClassifiedFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing left oblique particles to file..." << std::endl;
-    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, loClassifiedFileName, static_cast< unsigned char >( cip::OBLIQUEFISSURE ) );
+    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, loClassifiedFileName, (unsigned char)( cip::OBLIQUEFISSURE ) );
     }
   if ( roClassifiedFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing right oblique particles to file..." << std::endl;
-    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, roClassifiedFileName, static_cast< unsigned char >( cip::OBLIQUEFISSURE ) );
+    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, roClassifiedFileName, (unsigned char)( cip::OBLIQUEFISSURE ) );
     }
   if ( rhClassifiedFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Writing right horizontal particles to file..." << std::endl;
-    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, rhClassifiedFileName, static_cast< unsigned char >( cip::HORIZONTALFISSURE ) );
+    WriteParticlesToFile( particlesReader->GetOutput(), particleToInfoMap, rhClassifiedFileName, (unsigned char)( cip::HORIZONTALFISSURE ) );
     }
 
   std::cout << "DONE." << std::endl;
@@ -141,12 +141,6 @@ int main( int argc, char *argv[] )
 void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichParticle, const cipThinPlateSplineSurface& tps,
                                   double* distance, double* angle ) 
 {
-  cipParticleToThinPlateSplineSurfaceMetric particleToTPSMetric;
-    particleToTPSMetric.SetThinPlateSplineSurface( tps );
-
-  cipNewtonOptimizer< 2 >* newtonOptimizer = new cipNewtonOptimizer< 2 >();
-    newtonOptimizer->SetMetric( particleToTPSMetric );
-
   cip::PointType position(3);
   cip::VectorType normal(3);
   cip::VectorType orientation(3);
@@ -162,14 +156,18 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
   orientation[1] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[1];
   orientation[2] = particles->GetPointData()->GetArray( "hevec2" )->GetTuple(whichParticle)[2];
 
-  particleToTPSMetric.SetParticle( position );
+  cipParticleToThinPlateSplineSurfaceMetric particleToTPSMetric;
+    particleToTPSMetric.SetThinPlateSplineSurface( tps );
+    particleToTPSMetric.SetParticle( position );
 
   (*domainParams)[0] = position[0];
   (*domainParams)[1] = position[1];
 
-  newtonOptimizer->SetInitialParameters( domainParams );
-  newtonOptimizer->Update();
-  newtonOptimizer->GetOptimalParameters( optimalParams );
+  cipNewtonOptimizer< 2 >* newtonOptimizer = new cipNewtonOptimizer< 2 >();
+    newtonOptimizer->SetMetric( particleToTPSMetric );
+    newtonOptimizer->SetInitialParameters( domainParams );
+    newtonOptimizer->Update();
+    newtonOptimizer->GetOptimalParameters( optimalParams );
 
   *distance = vcl_sqrt( newtonOptimizer->GetOptimalValue() );
 
@@ -258,16 +256,13 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
 
     if ( projection.size() == 1 )
       {
-	std::cout << projection[0] << std::endl;
       if ( projection[0] > threshold )
         {
-	  (*it).second.cipType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
-	  std::cout << "lo" << std::endl;
+	  (*it).second.cipType = (unsigned char)( cip::OBLIQUEFISSURE );
         }
       else
         {
-	  (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
-	  std::cout << "left undefined" << std::endl;
+	  (*it).second.cipType = (unsigned char)( cip::UNDEFINEDTYPE );
         }
       }
     else
@@ -277,22 +272,22 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
         {
         if ( projection[0] > threshold )
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::OBLIQUEFISSURE );
+	    (*it).second.cipType = (unsigned char)( cip::OBLIQUEFISSURE );
           }
         else
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
+	    (*it).second.cipType = (unsigned char)( cip::UNDEFINEDTYPE );
           }
         }
       else
         {
         if ( projection[1] > threshold )
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::HORIZONTALFISSURE );
+	    (*it).second.cipType = (unsigned char)( cip::HORIZONTALFISSURE );
           }
         else
           {
-	    (*it).second.cipType = static_cast< unsigned char >( cip::UNDEFINEDTYPE );
+	    (*it).second.cipType = (unsigned char)( cip::UNDEFINEDTYPE );
           }
         }
       }
@@ -341,6 +336,9 @@ void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< u
     {
     outputParticles->GetPointData()->AddArray( arrayVec[j] );
     }
+
+  // Transfer the input field data to the output
+  cip::TransferFieldData( particles, outputParticles );
 
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetInputData( outputParticles );

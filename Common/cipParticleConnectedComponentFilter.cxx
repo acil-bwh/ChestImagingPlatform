@@ -1,11 +1,3 @@
-/**
- *
- *  $Date: 2012-09-17 20:45:23 -0400 (Mon, 17 Sep 2012) $
- *  $Revision: 270 $
- *  $Author: jross $
- *
- */
-
 #include "cipParticleConnectedComponentFilter.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
@@ -13,7 +5,7 @@
 #include <cfloat>
 #include "itkImageFileWriter.h"
 #include "vnl/algo/vnl_symmetric_eigensystem.h"
-
+#include "cipHelper.h"
 
 cipParticleConnectedComponentFilter::cipParticleConnectedComponentFilter()
 {
@@ -129,6 +121,9 @@ void cipParticleConnectedComponentFilter::SetInput( vtkPolyData* polyData )
     {
     this->ParticleToComponentMap[i] = 0;
     }
+
+  // Transfer field data from input to output
+  cip::TransferFieldData( this->InputPolyData, this->OutputPolyData );
 }
 
 
@@ -380,15 +375,14 @@ void cipParticleConnectedComponentFilter::InitializeDataStructureImageAndInterna
   //
   vtkPoints* points  = vtkPoints::New();
 
-  std::vector< vtkFloatArray* > arrayVec;
-
+  std::vector< vtkFloatArray* > pointDataArrayVec;
   for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
       array->SetNumberOfComponents( this->InputPolyData->GetPointData()->GetArray(i)->GetNumberOfComponents() );
       array->SetName( this->InputPolyData->GetPointData()->GetArray(i)->GetName() );
 
-    arrayVec.push_back( array );
+    pointDataArrayVec.push_back( array );
     }
 
   IteratorType it( this->DataStructureImage, this->DataStructureImage->GetBufferedRegion() );
@@ -405,7 +399,7 @@ void cipParticleConnectedComponentFilter::InitializeDataStructureImageAndInterna
  
       for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
         {
-        arrayVec[j]->InsertTuple( inc, this->InputPolyData->GetPointData()->GetArray(j)->GetTuple(i) );
+        pointDataArrayVec[j]->InsertTuple( inc, this->InputPolyData->GetPointData()->GetArray(j)->GetTuple(i) );
         }
       inc++;    
       it.Set( inc ); // Ensures that image's voxel value points to new
@@ -420,7 +414,7 @@ void cipParticleConnectedComponentFilter::InitializeDataStructureImageAndInterna
   this->InternalInputPolyData->SetPoints( points );
   for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
     {
-    this->InternalInputPolyData->GetPointData()->AddArray( arrayVec[j] ); 
+    this->InternalInputPolyData->GetPointData()->AddArray( pointDataArrayVec[j] ); 
     }
 }
 
@@ -490,7 +484,6 @@ bool cipParticleConnectedComponentFilter::EvaluateParticleConnectedness( unsigne
 void cipParticleConnectedComponentFilter::Update()
 {
   unsigned int componentLabel = 1;
-
   IteratorType it( this->DataStructureImage, this->DataStructureImage->GetBufferedRegion() );
 
   it.GoToBegin();
@@ -513,15 +506,15 @@ void cipParticleConnectedComponentFilter::Update()
   // At this point, we have a set of connected components, and we are
   // ready to create the output particles data
   vtkPoints* outputPoints  = vtkPoints::New();  
-  std::vector< vtkSmartPointer< vtkFloatArray > > arrayVec;
 
+  std::vector< vtkSmartPointer< vtkFloatArray > > pointDataArrayVec;
   for ( unsigned int i=0; i<this->NumberOfPointDataArrays; i++ )
     {
     vtkFloatArray* array = vtkFloatArray::New();
       array->SetNumberOfComponents( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetNumberOfComponents() );
       array->SetName( this->InternalInputPolyData->GetPointData()->GetArray(i)->GetName() );
 
-    arrayVec.push_back( array );
+    pointDataArrayVec.push_back( array );
     }
 
   vtkFloatArray* unmergedComponentsArray = vtkFloatArray::New();
@@ -540,7 +533,7 @@ void cipParticleConnectedComponentFilter::Update()
 
       for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
         {
-        arrayVec[j]->InsertTuple( inc, this->InternalInputPolyData->GetPointData()->GetArray(j)->GetTuple(i) );
+        pointDataArrayVec[j]->InsertTuple( inc, this->InternalInputPolyData->GetPointData()->GetArray(j)->GetTuple(i) );
         }
 
       float temp = static_cast< float >( componentLabel );
@@ -555,12 +548,7 @@ void cipParticleConnectedComponentFilter::Update()
   this->OutputPolyData->SetPoints( outputPoints );
   for ( unsigned int j=0; j<this->NumberOfPointDataArrays; j++ )
     {
-    this->OutputPolyData->GetPointData()->AddArray( arrayVec[j] );    
+      this->OutputPolyData->GetPointData()->AddArray( pointDataArrayVec[j] );    
     }
   this->OutputPolyData->GetPointData()->AddArray( unmergedComponentsArray );
-
-  for ( unsigned int j=0; j<this->InputPolyData->GetFieldData()->GetNumberOfArrays(); j++ )
-    {
-    this->OutputPolyData->GetFieldData()->AddArray( this->InternalInputPolyData->GetFieldData()->GetArray(j) );    
-    }
 }

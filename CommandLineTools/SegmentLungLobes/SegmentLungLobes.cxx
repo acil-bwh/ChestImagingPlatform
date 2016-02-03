@@ -391,12 +391,16 @@ int main( int argc, char *argv[] )
 
 void AppendFissurePoints( std::vector< cip::PointType >* fissurePoints, vtkSmartPointer< vtkPolyData > particles )
 {  
-  unsigned int inc = 1; //static_cast< unsigned int >( vcl_ceil(
-                        //particles->GetNumberOfPoints()/750.0 ) );
+  // Using too many fissure points can choke the thin plate spline computation,
+  // so we limit the number of points that are added to a reasonable number
+  unsigned int maxNum = 1000;
+  unsigned int added = 0;
+
+  unsigned int inc = (unsigned int)( vcl_ceil(float(particles->GetNumberOfPoints())/float(maxNum) ) );
 
   bool addPoint;
 
-  for ( unsigned int i=0; i<particles->GetNumberOfPoints(); i += inc )
+  for ( unsigned int i=0; i<particles->GetNumberOfPoints() && added <= maxNum; i += inc )
     {
     addPoint = true;
 
@@ -415,6 +419,7 @@ void AppendFissurePoints( std::vector< cip::PointType >* fissurePoints, vtkSmart
     if ( addPoint )
       {
       fissurePoints->push_back( position );
+      added++;
       }
     }
 }

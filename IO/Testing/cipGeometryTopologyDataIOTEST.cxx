@@ -34,13 +34,13 @@ int main( int argc, char* argv[] )
 
   cip::GeometryTopologyData geomTop;
     geomTop.InsertPoint( coordinate3D, (unsigned char)(cip::WHOLELUNG), 
-			 (unsigned char)(cip::AIRWAY), "" );
+			 (unsigned char)(cip::AIRWAY), (unsigned char)(cip::UNDEFINEDFEATURE), "" );
     geomTop.InsertBoundingBox( start3D, size3D, (unsigned char)(cip::LEFTLUNG), 
-			       (unsigned char)(cip::VESSEL), "LeftLung-Vessel" );
+			       (unsigned char)(cip::VESSEL), (unsigned char)(cip::UNDEFINEDFEATURE), "LeftLung-Vessel" );
     geomTop.InsertPoint( coordinate2D, (unsigned char)(cip::RIGHTLUNG), 
-			 (unsigned char)(cip::NORMALPARENCHYMA), "RightLung-NormalParenchyma" );
+			 (unsigned char)(cip::NORMALPARENCHYMA), (unsigned char)(cip::UNDEFINEDFEATURE), "RightLung-NormalParenchyma" );
     geomTop.InsertBoundingBox( start2D, size2D, (unsigned char)(cip::RIGHTSUPERIORLOBE), 
-			       (unsigned char)(cip::UNDEFINEDTYPE), "RightSuperiorLobe-UndefinedType" );
+			       (unsigned char)(cip::UNDEFINEDTYPE), (unsigned char)(cip::UNDEFINEDFEATURE), "RightSuperiorLobe-UndefinedType" );
   
   cip::GeometryTopologyDataIO geomTopWriter;
     geomTopWriter.SetInput( geomTop );
@@ -64,3 +64,77 @@ int main( int argc, char* argv[] )
     std::cout << "PASSED" << std::endl;
     return 0;
 }
+
+// <?xml version="1.0" encoding="utf8"?><GeometryTopologyData>
+// <NumDimensions>3</NumDimensions>
+// <CoordinateSystem>RAS</CoordinateSystem>
+// <LPStoIJKTransformationMatrix>
+// <value>-1.900000</value>
+// <value>0.000000</value>
+// <value>0.000000</value>
+// <value>250.000000</value>
+// <value>0.000000</value>
+// <value>-1.900000</value>
+// <value>0.000000</value>
+// <value>510.000000</value>
+// <value>0.000000</value>
+// <value>0.000000</value>
+// <value>2.000000</value>
+// <value>724.000000</value>
+// <value>0.000000</value>
+// <value>0.000000</value>
+// <value>0.000000</value>
+// <value>1.000000</value>
+// </LPStoIJKTransformationMatrix>
+
+// <Point>
+// <ChestRegion>2</ChestRegion>
+// <ChestType>5</ChestType>
+// <ImageFeature>1</ImageFeature>
+// <Description>My desc</Description>
+// <Coordinate>
+// <value>2.000000</value>
+// <value>3.500000</value>
+// <value>3.000000</value>
+// </Coordinate>
+// </Point>
+
+// <Point>
+// <ChestRegion>2</ChestRegion>
+// <ChestType>5</ChestType>
+// <ImageFeature>1</ImageFeature>
+// <Coordinate><value>2</value>
+// <value>3</value>
+// <value>3</value>
+// </Coordinate>
+// </Point>
+
+// <BoundingBox>
+// <ChestRegion>2</ChestRegion>
+// <ChestType>5</ChestType>
+// <ImageFeature>1</ImageFeature>
+// <Start><value>2</value>
+// <value>3</value>
+// <value>3</value>
+// </Start>
+// <Size><value>1</value>
+// <value>1</value>
+// <value>4</value>
+// </Size>
+// </BoundingBox>
+
+// <BoundingBox>
+// <ChestRegion>2</ChestRegion>
+// <ChestType>5</ChestType>
+// <ImageFeature>1</ImageFeature>
+// <Start><value>2.000000</value>
+// <value>3.500000</value>
+// <value>3.000000</value>
+// </Start>
+// <Size><value>1.000000</value>
+// <value>1.000000</value>
+// <value>3.000000</value>
+// </Size>
+// </BoundingBox>
+
+// </GeometryTopologyData>

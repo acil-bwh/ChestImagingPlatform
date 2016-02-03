@@ -6,6 +6,7 @@
 #include "vtkFloatArray.h"
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
+#include "vtkSmartPointer.h"
 #include "cipFissureParticleConnectedComponentFilter.h"
 #include "FilterFissureParticleDataCLP.h"
 
@@ -14,7 +15,7 @@ int main( int argc, char *argv[] )
   PARSE_ARGS;
 
   std::cout << "Reading polydata..." << std::endl;
-  vtkPolyDataReader* reader = vtkPolyDataReader::New();
+  vtkSmartPointer< vtkPolyDataReader > reader = vtkSmartPointer< vtkPolyDataReader >::New();
     reader->SetFileName( inParticlesFileName.c_str() );
     reader->Update();
 
@@ -31,14 +32,11 @@ int main( int argc, char *argv[] )
     particleFilter.Update();
 
   std::cout << "Writing filtered particles ..." << std::endl;
-  vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
+  vtkSmartPointer< vtkPolyDataWriter > filteredWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
     filteredWriter->SetFileName( outParticlesFileName.c_str() );
     filteredWriter->SetInputData( particleFilter.GetOutput() );
     filteredWriter->SetFileTypeToBinary();
     filteredWriter->Write();  
-
-  reader->Delete();
-  filteredWriter->Delete();
    
   std::cout << "DONE." << std::endl;
 

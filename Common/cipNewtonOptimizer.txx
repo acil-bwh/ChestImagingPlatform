@@ -199,7 +199,7 @@ void cipNewtonOptimizer< Dimension >::Update()
     // final ("optimal") values
     //
     this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
-    
+
     (*this->OptimalParams) = (*params);
     
     gradMag = vcl_sqrt( dot_product(*g,*g) );

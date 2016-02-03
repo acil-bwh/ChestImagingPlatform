@@ -26,6 +26,16 @@ class ReadNRRDsWriteVTK:
         self._argumentList = self._argumentList + " --%(name)s %(value)s" % \
                             {'name':name,'value':value}
 
+    def set_cip_region( self, cip_region='UndefinedRegion'):
+        """Set the CIP chest region for the particles.
+        """
+        self._argumentList = self._argumentList + ' --cipr ' + cip_region
+
+    def set_cip_type( self, cip_type='UndefinedType'):
+        """Set the CIP chest region for the particles.
+        """
+        self._argumentList = self._argumentList + ' --cipt ' + cip_type
+        
     def execute( self ):
         print self._argumentList
         tmpCommand = "ReadNRRDsWriteVTK " + self._argumentList

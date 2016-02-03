@@ -22,6 +22,7 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_case_fissure_particles.vtk
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_fissure_particles.vtk
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/case_fissure_particles.vtk
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_fissure_particles.vtk
+      --ifp ${INPUT_DATA_DIR}/case_fissure_particles.vtk
+      --ofp ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_fissure_particles.vtk
+      -s 7500
 )

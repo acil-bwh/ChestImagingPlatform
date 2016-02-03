@@ -71,7 +71,9 @@ class ChestParticles:
         self._mask_file_name = mask_file_name
         self._in_particles_file_name = "NA"
         self._out_particles_file_name = out_particles_file_name
-
+        self._cip_region = 'UndefinedRegion'
+        self._cip_type = 'UndefinedType'
+        
         # The following takes on values 'DiscreteGaussian' or
         # 'ContinuousGaussian' and controls the way in which spatial smoothing
         # is done.
@@ -568,12 +570,13 @@ class ChestParticles:
         del im
         
         #Include metadata information
-        reader_writer.add_metadata_name_value_pair("irad",self._irad)
-        reader_writer.add_metadata_name_value_pair("srad",self._srad)
-        reader_writer.add_metadata_name_value_pair("liveth",self._live_thresh)
-        reader_writer.add_metadata_name_value_pair("seedth",self._seed_thresh)
-        reader_writer.add_metadata_name_value_pair("spacing",self._spacing)
-
+        reader_writer.add_metadata_name_value_pair("irad", self._irad)
+        reader_writer.add_metadata_name_value_pair("srad", self._srad)
+        reader_writer.add_metadata_name_value_pair("liveth", self._live_thresh)
+        reader_writer.add_metadata_name_value_pair("seedth", self._seed_thresh)
+        reader_writer.add_metadata_name_value_pair("spacing", self._spacing)
+        reader_writer.set_cip_region( self._cip_region )
+        reader_writer.set_cip_type( self._cip_type )
         reader_writer.execute()
 
     def clean_tmp_dir(self):

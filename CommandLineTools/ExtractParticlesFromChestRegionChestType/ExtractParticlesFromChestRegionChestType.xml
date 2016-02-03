@@ -3,19 +3,19 @@
   <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>ExtractParticlesFromChestRegionChestType</title>
   <description>
-    <![CDATA[This program allows you to extract particles from an input particles data set using either\
-	     an input label map or the particles themselves. Many particles datasets contain a 'ChestType' and 'ChestRegion' data field.\
-	     The values of these fields can be used to isolate particles of interest. Alternatively, a label map can be specified, and only\
-	     the particles falling in the specified region of interest will be written. Additionally, even if the input particles do not have\
-	     the ChestType' or 'ChestRegion' data arrays, the output particles data set will have these with region and type values specified\
-	     at the command line]]>
+    <![CDATA[This program allows you to extract particles from an input particles data set using either \
+an input label map or the particles themselves. Many particles datasets contain a 'ChestType' and 'ChestRegion' data field. \
+The values of these fields can be used to isolate particles of interest. Alternatively, a label map can be specified, and only \
+the particles falling in the specified region of interest will be written. Additionally, even if the input particles do not have \
+the ChestType' or 'ChestRegion' data arrays, the output particles data set will have these with region and type values specified \
+at the command line]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-    and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
@@ -25,34 +25,31 @@
       <name>labelMapFileName</name>
       <label>Label Map File Name</label>
       <channel>input</channel>
-      <flag>l</flag>
-      <longflag>--labelMap</longflag>
-      <description><![CDATA[Input label map file name. This is an optional input. If no label map is specified,\
-      the 'ChestRegion' and 'ChestType' arrays in the input will be used to extract the region or type specified\
-      with the '-r' and '-t' flags, respectively ]]>
+      <longflag>ilm</longflag>
+      <description><![CDATA[Input label map file name. This is an optional input. If no label map is specified, \
+the 'ChestRegion' and 'ChestType' arrays in the input will be used to extract the region or type specified \
+with the '-r' and '-t' flags, respectively ]]>
       </description>
       <default>NA</default>
     </image>  
  
-    <string>
+    <geometry type="model">
       <name>inParticlesFileName</name>
       <label>Input Particles File Name</label>
       <channel>input</channel>
-      <flag>i</flag>
-      <longflag>--inParticles</longflag>
+      <longflag>ip</longflag>
       <description><![CDATA[Input particles file name]]></description>
       <default>NA</default>
-    </string>  
+    </geometry>  
 
-    <string>
+    <geometry type="model">
       <name>outParticlesFileName</name>
       <label>Output Particles File Name</label>
       <channel>output</channel>
-      <flag>o</flag>
-      <longflag>--outParticles</longflag>
+      <longflag>op</longflag>
       <description><![CDATA[Output particles file name]]></description>
       <default>NA</default>
-    </string>
+    </geometry>
   </parameters>
 
   <parameters>
@@ -61,7 +58,7 @@
       <label>Chest Regions</label>
       <channel>input</channel>
       <flag>r</flag>
-      <longflag>--region</longflag>
+      <longflag>region</longflag>
       <description><![CDATA[Chest regions from which to extract particles]]></description>
     </string-vector>  
 
@@ -70,7 +67,7 @@
       <label>CIP Types</label>
       <channel>input</channel>
       <flag>t</flag>
-      <longflag>--type</longflag>
+      <longflag>type</longflag>
       <description><![CDATA[Chest types for which to extract particles. If specifying a label map this flag \
       is not relevent.]]> </description>
     </string-vector> 

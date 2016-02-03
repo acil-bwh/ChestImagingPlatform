@@ -1,63 +1,3 @@
-/** \file
- *  \ingroup commandLineTools
- *  \details This program allows you to extract particles from an
- *  input particles data set using either an input label map or the
- *  particles themselves. Many particles datasets contain a
- *  'ChestType' and 'ChestRegion' data field. The values of these
- *  fields can be used to isolate particles of
- *  interest. Alternatively, a label map can be specified, and only
- *  the particles falling in the specified region of interest will be
- *  written. Additionally, even if the input particles do not have the
- *  'ChestType' or 'ChestRegion' data arrays, the output particles
- *  data set will have these with region and type values specified at
- *  the command line.
- *
- *  $Date: 2013-03-25 13:23:52 -0400 (Mon, 25 Mar 2013) $
- *  $Revision: 383 $
- *  $Author: jross $
- *
- *  USAGE:
- *
- *  ExtractParticlesFromChestRegionChestType  [-t \<int\>] -r \<int\>
- *                                            -o \<string\> -i \<string\>
- *                                            [-l \<string\>]
- *                                            [--] [--version] [-h]
- *
- *  Where:
- *
- *   -t \<int\>,  --type \<int\>
- *     Chest type for which to extract particles. If specifying a label map
- *     this flag shouldbe used to indicate the type of particles in the input
- *     file for output array labeling purposes (if no value is
- *     specifiedUNDEFINEDTYPE will be set as the particle ChestType field
- *     value
- *
- *   -r \<int\>,  --region \<int\>
- *     (required)  Chest region from which to extract particles
- *
- *   -o \<string\>,  --outParticles \<string\>
- *     (required)  Output particles file name
- *
- *   -i \<string\>,  --inParticles \<string\>
- *     (required)  Input particles file name
- *
- *   -l \<string\>,  --labelMap \<string\>
- *     Input label map file name. This is an optional input. If no label map
- *     is specified,the 'ChestRegion' and 'ChestType' arrays in the input
- *     will be used to extract theregion or type specified with the '-r' and
- *     '-t' flags, respectively
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
- */
-
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include "vtkPolyData.h"
@@ -97,6 +37,9 @@ int main( int argc, char *argv[] )
     {
     GetOutputParticlesUsingChestRegionChestTypeArrays( cipRegions, cipTypes, particlesReader->GetOutput(), outParticles );
     }
+
+  // Transfer the field array data 
+  cip::TransferFieldData( particlesReader->GetOutput(), outParticles );
 
   std::cout << "Writing extracted particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
@@ -181,7 +124,6 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
 		  {
 		    arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
 		  }
-
 		inc++;
 
 		break;
@@ -195,12 +137,6 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
     {
     outParticles->GetPointData()->AddArray( arrayVec[j] );
     }
-
-  // Transfer the field array data 
-  for ( unsigned int j=0; j<inParticles->GetFieldData()->GetNumberOfArrays(); j++ )
-    {
-      outParticles->GetFieldData()->AddArray( inParticles->GetFieldData()->GetArray(j) );    
-    }    
 }
 
 void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string > cipRegions, std::vector< std::string > cipTypes,
@@ -266,12 +202,6 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
     {
     outParticles->GetPointData()->AddArray( pointArrayVec[j] );
     }
-
-  // Transfer the field array data 
-  for ( unsigned int j=0; j<inParticles->GetFieldData()->GetNumberOfArrays(); j++ )
-    {
-      outParticles->GetFieldData()->AddArray( inParticles->GetPointData()->GetArray(j) );    
-    }    
 }
 
 #endif
