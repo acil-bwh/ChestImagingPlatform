@@ -278,7 +278,7 @@ int main(int ac, char *av[])
 	  // Invoke the test's "main" function.
 	  result = ( *f )( ac - 1, av + 1 );
 	  
-	  // Chest Through the different Lists
+	  // Check through the different Lists
 	  
 	  // Make a list of possible baselines
 	  for( int i = 0; i < static_cast<int>( compareList.size() ); i++ )
@@ -353,7 +353,7 @@ int main(int ac, char *av[])
 		}
 	      
 	      // if the best we can do still has errors, generate the error images
-	      if (strcmp(compareType,"compareImage") == 0)
+	      if (strcmp(compareType, "compareImage") == 0)
 		{
 		  if( bestBaselineStatus )
 		    {
@@ -369,9 +369,8 @@ int main(int ac, char *av[])
 		  std::cout << "<DartMeasurement name=\"BaselineImageName\" type=\"text/string\">";
 		  std::cout << itksys::SystemTools::GetFilenameName(bestBaseline);
 		  std::cout << "</DartMeasurement>" << std::endl;
-		  result += bestBaselineStatus;
 		}
-	      
+	      result += bestBaselineStatus;
 	    }
 	}
       catch( const itk::ExceptionObject & e )
