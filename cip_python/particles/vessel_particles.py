@@ -201,7 +201,7 @@ if __name__ == "__main__":
     specified a per-voxel approach is used)', dest="input_particles", 
     default=None)
   parser.add_argument("-o", help='output particles (vtk format)',
-    dest="output_particles")
+    dest="output_particles", default=None)
   parser.add_argument("-t", help='tmp directory', dest="tmp_dir", default=None)
   parser.add_argument("-s", help='max scale [default: %(default)s)]',
     dest="max_scale", default=6.0, type=float)
@@ -220,6 +220,9 @@ if __name__ == "__main__":
   
   op = parser.parse_args()
 
+  if op.output_particles is None:
+      raise ValueError('No output particles file name specified.')
+  
   if op.tmp_dir is not None:
       tmp_dir = op.tmp_dir
   else:        
