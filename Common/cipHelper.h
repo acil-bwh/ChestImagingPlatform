@@ -4,10 +4,6 @@
 //  \brief This class is intended to contain a collection of functions that are routinely 
 //	used in other programs.
 //
-//  $Date$
-//  $Revision$
-//  $Author$
-//
 
 #ifndef __cipHelper_h
 #define __cipHelper_h
@@ -141,9 +137,10 @@ namespace cip {
     GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
 							   unsigned char region, unsigned char type,
 							   unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ);
-  /** This function is used to verify that the specified particles have 'ChestRegion' and 'ChestType' arrays. 
-      If the particles don't have these arrays, they are assigned with default entries UNDEFINEDREGION and 
-      UNDEFINEDTYPE */
+
+  /** This function is used to verify that the specified particles have the 'ChestRegionChestType' array. 
+      If the particles don't have this array, they are assigned with the default entry corresponding to UNDEFINEDREGION 
+      and UNDEFINEDTYPE */
   void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > );
 
   /** This function will transfer all the point data arrays from the first polydata to the second. In the case
@@ -170,6 +167,10 @@ namespace cip {
 
   /** Transfer the field data from one polydata to another  */
   void TransferFieldData( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
+
+  /** Check to see if two polydata data sets have the exact same field data. If the field
+   *  data differs in any way, return false. Otherwise, return true. */
+  bool HaveSameFieldData( vtkSmartPointer< vtkPolyData > polyData1, vtkSmartPointer< vtkPolyData > polyData2 );
 }  
 
 #endif

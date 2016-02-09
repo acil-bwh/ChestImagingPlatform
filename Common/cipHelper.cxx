@@ -701,58 +701,40 @@ void cip::OpenLabelMap(cip::LabelMapType::Pointer labelMap, unsigned char region
 
 void cip::AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > particles )
 {
+  ChestConventions conventions;
+
   unsigned int numberParticles         = particles->GetNumberOfPoints();
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
-  bool foundChestRegionArray = false;
-  bool foundChestTypeArray   = false;
-
+  bool foundArray = false;
   for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
-    std::string name( particles->GetPointData()->GetArray(i)->GetName() );
-
-    if ( name.compare( "ChestRegion" ) == 0 )
-      {
-      foundChestRegionArray = true;
-      }
-    if ( name.compare( "ChestType" ) == 0 )
-      {
-      foundChestTypeArray = true;
-      }
+      std::string name( particles->GetPointData()->GetArray(i)->GetName() );
+      
+      if ( name.compare( "ChestRegionChestType" ) == 0 )
+	{
+	  foundArray = true;
+	  break;
+	}
     }
 
-  if ( !foundChestRegionArray )
+  if ( !foundArray )
     {
-    vtkSmartPointer< vtkFloatArray > chestRegionArray = vtkSmartPointer< vtkFloatArray >::New();
-      chestRegionArray->SetNumberOfComponents( 1 );
-      chestRegionArray->SetName( "ChestRegion" );
-
-    particles->GetPointData()->AddArray( chestRegionArray );
-    }
-  if ( !foundChestTypeArray )
-    {
-    vtkSmartPointer< vtkFloatArray > chestTypeArray = vtkSmartPointer< vtkFloatArray >::New();
-      chestTypeArray->SetNumberOfComponents( 1 );
-      chestTypeArray->SetName( "ChestType" );
-
-    particles->GetPointData()->AddArray( chestTypeArray );
+      vtkSmartPointer< vtkFloatArray > chestRegionChestTypeArray = vtkSmartPointer< vtkFloatArray >::New();
+        chestRegionChestTypeArray->SetNumberOfComponents( 1 );
+	chestRegionChestTypeArray->SetName( "ChestRegionChestType" );
+      
+      particles->GetPointData()->AddArray( chestRegionChestTypeArray );
     }
 
-  float cipRegion = static_cast< float >( cip::UNDEFINEDREGION );
-  float cipType   = static_cast< float >( cip::UNDEFINEDTYPE );
-  if ( !foundChestRegionArray || !foundChestTypeArray )
+  float value = float(conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::UNDEFINEDREGION), 
+								  (unsigned char)(cip::UNDEFINEDTYPE) ));
+  if ( !foundArray )
     {
-    for ( unsigned int i=0; i<numberParticles; i++ )
-      {
-      if ( !foundChestRegionArray )
-        {
-        particles->GetPointData()->GetArray( "ChestRegion" )->InsertTuple( i, &cipRegion );
-        }
-      if ( !foundChestTypeArray )
-        {
-        particles->GetPointData()->GetArray( "ChestType" )->InsertTuple( i, &cipType );
-        }
-      }
+      for ( unsigned int i=0; i<numberParticles; i++ )
+	{
+	  particles->GetPointData()->GetArray( "ChestRegionChestType" )->InsertTuple( i, &value );
+	}
     }
 }
 
@@ -1133,4 +1115,56 @@ void cip::TransferFieldData( vtkSmartPointer< vtkPolyData > fromPolyData, vtkSma
 
       toPolyData->GetFieldData()->AddArray( array ); 
     }
+}
+
+/** Check to see if two polydata data sets have the exact same field data. If the field
+ *  data differs in any way, return false. Otherwise, return true. */
+bool cip::HaveSameFieldData( vtkSmartPointer< vtkPolyData > polyData1, vtkSmartPointer< vtkPolyData > polyData2 )
+{
+  unsigned int numArrays1 = polyData1->GetFieldData()->GetNumberOfArrays();
+  unsigned int numArrays2 = polyData2->GetFieldData()->GetNumberOfArrays();
+  if ( numArrays1 != numArrays2 )
+    {
+      return false;
+    }
+
+  for ( unsigned int i=0; i<numArrays1; i++ )
+    {
+      bool foundArray = false;
+      std::string name1( polyData1->GetFieldData()->GetArray(i)->GetName() );
+      unsigned int numComponents1 = polyData1->GetFieldData()->GetArray(i)->GetNumberOfComponents();
+      unsigned int numTuples1 = polyData1->GetFieldData()->GetArray(i)->GetNumberOfTuples();
+
+      for ( unsigned int j=0; j<numArrays2; j++ )
+	{
+	  std::string name2( polyData2->GetFieldData()->GetArray(j)->GetName() );
+	  unsigned int numComponents2 = polyData2->GetFieldData()->GetArray(j)->GetNumberOfComponents();
+	  unsigned int numTuples2 = polyData2->GetFieldData()->GetArray(j)->GetNumberOfTuples();
+
+	  if ( name1.compare( name2 ) == 0 )
+	    {
+	      foundArray = true;
+	      if ( numComponents1 != numComponents2 || numTuples1 != numTuples2 )
+		{
+		  return false;
+		}
+	      for ( unsigned int c=0; c<numComponents1; c++ )
+		{
+		  for ( unsigned int t=0; t<numTuples1; t++ )
+		    {
+		      if ( polyData1->GetFieldData()->GetArray(i)->GetTuple(t)[c] !=
+			   polyData2->GetFieldData()->GetArray(j)->GetTuple(t)[c] )
+			{
+			  return false;
+			}
+		    }
+		}
+	    }
+	}
+      if ( !foundArray )
+	{
+	  return false;
+	}
+    }
+  return true;
 }
