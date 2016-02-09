@@ -482,30 +482,31 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
 			       const char *baselineVtkFilename,double tolerance)
 {
   vtkSmartPointer<vtkPolyDataReader> testReader = vtkSmartPointer<vtkPolyDataReader>::New();
-  testReader->SetFileName(testVtkFilename);
-  testReader->Update();
+    testReader->SetFileName(testVtkFilename);
+    testReader->Update();
   
   vtkSmartPointer<vtkPolyDataReader> baselineReader = vtkSmartPointer<vtkPolyDataReader>::New();
-  baselineReader->SetFileName(baselineVtkFilename);
-  baselineReader->Update();
+    baselineReader->SetFileName(baselineVtkFilename);
+    baselineReader->Update();
   
-  vtkPolyData * test = testReader->GetOutput();
-  vtkPolyData *baseline = baselineReader->GetOutput();
+  vtkPolyData* test = testReader->GetOutput();
+  vtkPolyData* baseline = baselineReader->GetOutput();
   
+  unsigned int numBaselinePoints = baseline->GetNumberOfPoints();
+  unsigned int numTestPoints = test->GetNumberOfPoints();
+
   vtkSmartPointer<vtkTesting> testing = vtkSmartPointer<vtkTesting>::New();
-  
-  int res;
-  
+
+  int res;  
   //1.  Check Point
-  if (test->GetNumberOfPoints() != baseline->GetNumberOfPoints())
+  if ( numTestPoints != numBaselinePoints )
     {
       std::cerr << "Test and baseline have different number of points" << std::endl;
       return 1;
     }
   
-  res=testing->CompareAverageOfL2Norm(test,baseline,tolerance);
-  
-  if (res == vtkTesting::PASSED)
+  res = testing->CompareAverageOfL2Norm(test, baseline, tolerance);
+  if ( res == vtkTesting::PASSED || (numBaselinePoints == 0 && numTestPoints == 0) )
     {
       //Do nothing
     }
