@@ -25,7 +25,7 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/airway_particles.vtk
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
-      -m 2
+      --ip ${INPUT_DATA_DIR}/airway_particles.vtk
+      --op ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
+      -m 200
 )

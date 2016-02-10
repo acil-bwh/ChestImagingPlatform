@@ -2,14 +2,16 @@
 <executable>
     <category>Chest Imaging Platform.Toolkit.Particles</category>
     <title>PerturbParticles</title>
-    <description><![CDATA[This program can used to perturb a particles dataset. This kind of operation can be useful for experimentation purposes. Currently, the program simply translates the particles dataset by a random offset in the x, y, and z directions. The user can control the magnitude of the random offset that is used.]]>
+    <description><![CDATA[This program can used to perturb a particles dataset. This kind of operation can be useful \
+for experimentation purposes. Currently, the program simply translates the particles dataset by a random offset in \
+the x, y, and z directions. The user can control the magnitude of the random offset that is used.]]>
     </description>
     <version>0.0.1</version>
     <license>Slicer</license>
     <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
     
     <parameters>
@@ -20,18 +22,18 @@
             <label>Input Particles FileName</label>
             <channel>input</channel>
             <flag>i</flag>
-            <longflag>input</longflag>
+            <longflag>ip</longflag>
             <description><![CDATA[Input particles file name.]]></description>
-            <default>q</default>
+            <default>NA</default>
         </geometry>
         <geometry type="model">
             <name>outFileName</name>
             <label>Output Particles FileName</label>
             <channel>output</channel>
             <flag>o</flag>
-            <longflag>output</longflag>
+            <longflag>op</longflag>
             <description><![CDATA[Output particles file name.]]></description>
-            <default>q</default>
+            <default>NA</default>
         </geometry>
       </parameters>
       <parameters>
@@ -45,5 +47,15 @@
               <description>Random offsets are drawn from the uniform distribution. This parameter controls the magnitude of the translation by scaling the uniform distribution by the specified amount. </description>
               <default>1.0</default>
           </double>
+
+          <integer>
+              <name>seed</name>
+              <label>Seed</label>
+              <flag>s</flag>
+              <longflag>seed</longflag>
+              <channel>input</channel>
+              <description>Seed for random offset initialization</description>
+              <default>0</default>
+          </integer>
       </parameters>
 </executable>
