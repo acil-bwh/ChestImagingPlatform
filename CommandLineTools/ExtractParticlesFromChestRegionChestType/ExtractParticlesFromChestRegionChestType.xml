@@ -4,11 +4,9 @@
   <title>ExtractParticlesFromChestRegionChestType</title>
   <description>
     <![CDATA[This program allows you to extract particles from an input particles data set using either \
-an input label map or the particles themselves. Many particles datasets contain a 'ChestType' and 'ChestRegion' data field. \
-The values of these fields can be used to isolate particles of interest. Alternatively, a label map can be specified, and only \
-the particles falling in the specified region of interest will be written. Additionally, even if the input particles do not have \
-the ChestType' or 'ChestRegion' data arrays, the output particles data set will have these with region and type values specified \
-at the command line]]>
+an input label map or the particles themselves. Particles datasets contain a 'ChestRegionChestType' point data array. \
+The values in this array can be used to isolate particles of interest. Alternatively, a label map can be specified, and only \
+the particles falling in the specified region of interest will be written.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
@@ -28,7 +26,7 @@ and does not necessarily represent the official views of the National Institutes
       <longflag>ilm</longflag>
       <description><![CDATA[Input label map file name. This is an optional input. If no label map is specified, \
 the 'ChestRegion' and 'ChestType' arrays in the input will be used to extract the region or type specified \
-with the '-r' and '-t' flags, respectively ]]>
+with the '--cipr' and '--cipt' flags, respectively ]]>
       </description>
       <default>NA</default>
     </image>  
@@ -57,19 +55,17 @@ with the '-r' and '-t' flags, respectively ]]>
       <name>cipRegions</name>
       <label>Chest Regions</label>
       <channel>input</channel>
-      <flag>r</flag>
-      <longflag>region</longflag>
-      <description><![CDATA[Chest regions from which to extract particles]]></description>
+      <longflag>cipr</longflag>
+      <description><![CDATA[Chest regions from which to extract particles.]]></description>
     </string-vector>  
 
     <string-vector>
       <name>cipTypes</name>
       <label>CIP Types</label>
       <channel>input</channel>
-      <flag>t</flag>
-      <longflag>type</longflag>
+      <longflag>cipt</longflag>
       <description><![CDATA[Chest types for which to extract particles. If specifying a label map this flag \
-      is not relevent.]]> </description>
+is not relevent.]]> </description>
     </string-vector> 
 
   </parameters>

@@ -12,7 +12,7 @@
 #include "ExtractParticlesFromChestRegionChestTypeCLP.h"
 
 void GetOutputParticlesUsingLabelMap( std::string, std::vector< std::string >, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
-void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string >, std::vector< std::string >,
+void GetOutputParticlesUsingChestRegionChestTypeArray( std::vector< std::string >, std::vector< std::string >,
 							vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
 
 int main( int argc, char *argv[] )
@@ -26,16 +26,16 @@ int main( int argc, char *argv[] )
     particlesReader->SetFileName( inParticlesFileName.c_str() );
     particlesReader->Update();
 
-  // First make sure that the particles have 'ChestRegion' and 'ChestType' arrays
+  // First make sure that the particles have the 'ChestRegionChestType' array
   cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
 
   if ( labelMapFileName.compare( "NA" ) != 0 )
     {
-    GetOutputParticlesUsingLabelMap( labelMapFileName, cipRegions, particlesReader->GetOutput(), outParticles );
+      GetOutputParticlesUsingLabelMap( labelMapFileName, cipRegions, particlesReader->GetOutput(), outParticles );
     }
   else
     {
-    GetOutputParticlesUsingChestRegionChestTypeArrays( cipRegions, cipTypes, particlesReader->GetOutput(), outParticles );
+      GetOutputParticlesUsingChestRegionChestTypeArray( cipRegions, cipTypes, particlesReader->GetOutput(), outParticles );
     }
 
   // Transfer the field array data 
@@ -56,8 +56,8 @@ int main( int argc, char *argv[] )
 // region will be retained. The particles' ChestRegion and ChestType array values
 // will be preserved.
 // B) If a region is specified, all particles falling inside the specified label
-// map's region will be retained. The particles' ChestType array is preserved, but
-// the ChestRegion is overwritten with the specified desired region
+// map's region will be retained. The particles' chest type array is preserved, but
+// the chest region is overwritten with the specified desired region
 void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::string > cipRegions,
 				      vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
 {
@@ -122,7 +122,21 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
 
 		for ( unsigned int j=0; j<numberPointDataArrays; j++ )
 		  {
-		    arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
+		    std::string name( arrayVec[j]->GetName() );
+		    if ( name.compare( "ChestRegionChestType" ) == 0 )
+		      {
+			unsigned short chestRegionChestTypeValue = 
+			  (unsigned short)(inParticles->GetPointData()->GetArray(j)->GetTuple(i)[0]);
+			unsigned char cipType = conventions.GetChestTypeFromValue( chestRegionChestTypeValue );
+			float newChestRegionChestTypeValue = 
+			  float(conventions.GetValueFromChestRegionAndType( cipRegion, cipType ));
+
+			arrayVec[j]->InsertTuple( inc, &newChestRegionChestTypeValue );
+		      }
+		    else
+		      {
+			arrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
+		      }
 		  }
 		inc++;
 
@@ -139,7 +153,7 @@ void GetOutputParticlesUsingLabelMap( std::string fileName, std::vector< std::st
     }
 }
 
-void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string > cipRegions, std::vector< std::string > cipTypes,
+void GetOutputParticlesUsingChestRegionChestTypeArray( std::vector< std::string > cipRegions, std::vector< std::string > cipTypes,
 							vtkSmartPointer< vtkPolyData > inParticles, vtkSmartPointer< vtkPolyData > outParticles )
 {
   cip::ChestConventions conventions;
@@ -162,38 +176,39 @@ void GetOutputParticlesUsingChestRegionChestTypeArrays( std::vector< std::string
   unsigned int inc = 0;
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
+      unsigned short chestRegionChestTypeValue = 
+	(unsigned short)(inParticles->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple(i)[0]);
+      unsigned char cipRegion = conventions.GetChestRegionFromValue( chestRegionChestTypeValue );
+      unsigned char cipType = conventions.GetChestTypeFromValue( chestRegionChestTypeValue );
+
+      bool add = false;
       for ( unsigned int j=0; j<cipTypes.size(); j++ )
 	{
-	  int cipType   = int(conventions.GetChestTypeValueFromName( cipTypes[j] ));
-
-	  if ( int( inParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0] ) == cipType )
+	  if ( cipType == conventions.GetChestTypeValueFromName( cipTypes[j] ) )
 	    {
-	      outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
-
-	      for ( unsigned int j=0; j<numberPointDataArrays; j++ )
-		{
-		  pointArrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
-		}
-
-	      inc++;
+	      add = true;
+	      break;
 	    }
 	}
-
-      for ( unsigned int j=0; j<cipRegions.size(); j++ )
+      if ( !add )
 	{
-	  int cipRegion = int(conventions.GetChestRegionValueFromName( cipRegions[j] ));
-
-	  if ( int( inParticles->GetPointData()->GetArray( "ChestRegion" )->GetTuple(i)[0] ) == cipRegion )
+	  for ( unsigned int j=0; j<cipRegions.size(); j++ )
 	    {
-	      outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
-
-	      for ( unsigned int j=0; j<numberPointDataArrays; j++ )
+	      if ( cipRegion == conventions.GetChestRegionValueFromName( cipRegions[j] ) )
 		{
-		  pointArrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
+		  add = true;
+		  break;
 		}
-
-	      inc++;
 	    }
+	}
+      if ( add )
+	{
+	  outputPoints->InsertNextPoint( inParticles->GetPoint(i) );
+	  for ( unsigned int j=0; j<numberPointDataArrays; j++ )
+	    {
+	      pointArrayVec[j]->InsertTuple( inc, inParticles->GetPointData()->GetArray(j)->GetTuple(i) );
+	    }
+	  inc++;
 	}
     }
 

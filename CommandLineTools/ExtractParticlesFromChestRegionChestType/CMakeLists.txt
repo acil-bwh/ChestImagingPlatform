@@ -24,6 +24,6 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
     ModuleEntryPoint
       --ip ${INPUT_DATA_DIR}/vessel_particles.vtk
       --op ${OUTPUT_DATA_DIR}/${TEST_NAME}.vtk
-      -r 0
-      -t 3
+      --cipr UndefinedRegion
+      --cipt Vessel
 )
