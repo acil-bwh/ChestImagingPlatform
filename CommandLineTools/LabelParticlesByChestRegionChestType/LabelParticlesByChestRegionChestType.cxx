@@ -19,7 +19,6 @@
 #include "LabelParticlesByChestRegionChestTypeCLP.h"
 #include "cipHelper.h"
 
-
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
@@ -27,8 +26,9 @@ int main( int argc, char *argv[] )
   // Instantiate ChestConventions for later use
   cip::ChestConventions conventions;
 
-  float cipRegion = float(conventions.GetChestRegionValueFromName( cipRegionArg ));
-  float cipType = float(conventions.GetChestTypeValueFromName( cipTypeArg ));
+  unsigned char cipRegion = (unsigned char)(conventions.GetChestRegionValueFromName( cipRegionArg ));
+  unsigned char cipType = (unsigned char)(conventions.GetChestTypeValueFromName( cipTypeArg ));
+  float chestRegionChestTypeValue = float(conventions.GetValueFromChestRegionAndType( cipRegion, cipType ));
 
   // Read the particles
   std::cout << "Reading polydata..." << std::endl;
@@ -66,30 +66,37 @@ int main( int argc, char *argv[] )
     // Loop through the particles to label them
     for ( unsigned int i=0; i<particlesReader->GetOutput()->GetNumberOfPoints(); i++ )
       {
-      point[0] = particlesReader->GetOutput()->GetPoint(i)[0];
-      point[1] = particlesReader->GetOutput()->GetPoint(i)[1];
-      point[2] = particlesReader->GetOutput()->GetPoint(i)[2];
+	point[0] = particlesReader->GetOutput()->GetPoint(i)[0];
+	point[1] = particlesReader->GetOutput()->GetPoint(i)[1];
+	point[2] = particlesReader->GetOutput()->GetPoint(i)[2];
+	labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );
+	
+	if ( !labelMapReader->GetOutput()->GetBufferedRegion().IsInside( index ) )
+	  {
+	    std::cerr << "ERROR: Index is outside of image" << std::endl;
+	    return cip::EXITFAILURE;
+	  }
 
-      labelMapReader->GetOutput()->TransformPhysicalPointToIndex( point, index );
+	unsigned short particleValue = 
+	  (unsigned short)(particlesReader->GetOutput()->GetPointData()->GetArray("ChestRegionChestType")->GetTuple( i )[0]);
+	unsigned char cipType = conventions.GetChestTypeFromValue( particleValue );
 
-      unsigned short labelValue = labelMapReader->GetOutput()->GetPixel( index );
+	unsigned short lmValue = labelMapReader->GetOutput()->GetPixel( index );
+	unsigned char cipRegion = conventions.GetChestRegionFromValue( lmValue );
 
-      cipRegion = float( conventions.GetChestRegionFromValue( labelValue ) );
-
-      particlesReader->GetOutput()->GetPointData()->GetArray("ChestRegion")->SetTuple( i, &cipRegion );
-      particlesReader->GetOutput()->GetPointData()->GetArray("ChestType")->SetTuple( i, &cipType );
+	float newValue = float(conventions.GetValueFromChestRegionAndType( cipRegion, cipType ));
+	particlesReader->GetOutput()->GetPointData()->GetArray("ChestRegionChestType")->SetTuple( i, &newValue );
       }
     }
   else
     {
-    // If here, no label map was specified, and we must assign region
-    // and types based on user specification. Loop through the
-    // particles to label them
-    for ( unsigned int i=0; i<particlesReader->GetOutput()->GetNumberOfPoints(); i++ )
-      {
-      particlesReader->GetOutput()->GetPointData()->GetArray("ChestRegion")->SetTuple( i, &cipRegion );
-      particlesReader->GetOutput()->GetPointData()->GetArray("ChestType")->SetTuple( i, &cipType );
-      }
+      // If here, no label map was specified, and we must assign region
+      // and types based on user specification. Loop through the
+      // particles to label them
+      for ( unsigned int i=0; i<particlesReader->GetOutput()->GetNumberOfPoints(); i++ )
+	{
+	  particlesReader->GetOutput()->GetPointData()->GetArray("ChestRegionChestType")->SetTuple( i, &chestRegionChestTypeValue );
+	}
     }
 
   // Write the labeled particles
