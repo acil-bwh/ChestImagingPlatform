@@ -6,39 +6,39 @@
   <version>0.0.1</version>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
-  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes \
+of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not \
+necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
   
   <parameters>
   <label>I/O</label>
   <description>Input/output parameters</description>
-
       <image type="label">
           <name>inLabelMapFileName</name>
           <label>inLabelMapFileName</label>
           <channel>input</channel>
-          <flag>l</flag>
-          <longflag>inLabelMap</longflag>
-          <description><![CDATA[Input label map file name. Used to retrieve spacing, origin, and dimensions for creating output label map]]></description>
-          <default>q</default>
+          <longflag>ilm</longflag>
+          <description><![CDATA[Input label map file name. Used to retrieve spacing, origin, and dimensions for \
+creating output label map]]></description>
+          <default>NA</default>
       </image>      
       <image type="label">
           <name>outLabelMapFileName</name>
           <label>outLabelMapFileName</label>
           <channel>output</channel>
           <flag>o</flag>
-          <longflag>outLabelMap</longflag>
+          <longflag>olm</longflag>
           <description><![CDATA[Output label map file name]]></description>
-          <default>q</default>
+          <default>NA</default>
       </image>
       <geometry type="model">
           <name>particlesFileName</name>
           <label>Particles FileName</label>
           <channel>input</channel>
-          <flag>p</flag>
-          <longflag>particles</longflag>
+          <longflag>ip</longflag>
           <description><![CDATA[Input particles file name]]></description>
-          <default>q</default>
+          <default>NA</default>
       </geometry>
   </parameters>
   
@@ -47,7 +47,7 @@
   <description>Parameters</description>
       <double>
           <name>ctPointSpreadSigma</name>
-          <longflag>ctSigma</longflag>
+          <longflag>sigma</longflag>
           <description>The CT scanner point spread function sigma. 0.0 by default.</description>
           <label>Vessel Sigma Distance</label>
           <constraints>
@@ -61,7 +61,6 @@
       <double>
           <name>radius</name>
           <longflag>radius</longflag>
-          <flag>r</flag>
           <description>Stencil radius in mm.</description>
           <label>radius</label>
           <constraints>
@@ -75,8 +74,9 @@
       <double>
           <name>height</name>
           <longflag>height</longflag>
-          <description>Cylinder stencil height in mm. Default is 1mm. This should typically be set to the inter-particle distance.</description>
-          <label>radius</label>
+          <description>Cylinder stencil height in mm. Default is 1mm. This should typically be set to the \
+inter-particle distance.</description>
+          <label>height</label>
           <constraints>
             <minimum>0.1</minimum>
             <maximum>10</maximum>
@@ -92,7 +92,6 @@
           <flag>v</flag>
           <longflag>vessel</longflag>
           <description><![CDATA[Set this flag to indicate that in the input particles correspond to vessels.]]></description>
-          <default>false</default>
       </boolean>
       <boolean>
           <name>areAirways</name>
@@ -101,7 +100,6 @@
           <flag>a</flag>
           <longflag>airway</longflag>
           <description><![CDATA[Set this flag to indicate that in the input particles correspond to airways.]]></description>
-          <default>false</default>
       </boolean>
       <boolean>
           <name>areFissures</name>
@@ -110,7 +108,6 @@
           <flag>f</flag>
           <longflag>fissure</longflag>
           <description><![CDATA[Set this flag to indicate that in the input particles correspond to fissures.]]></description>
-          <default>false</default>
       </boolean>
       <boolean>
           <name>useSphereStencil</name>
@@ -119,7 +116,6 @@
           <flag>s</flag>
           <longflag>sphere</longflag>
           <description><![CDATA[Set this flag to indicate that the sphere stencil should be used.]]></description>
-          <default>false</default>
       </boolean>
       <boolean>
           <name>useCylinderStencil</name>
@@ -128,15 +124,15 @@
           <flag>c</flag>
           <longflag>cylinder</longflag>
           <description><![CDATA[Set this flag to indicate that the cylinder stencil should be used.]]></description>
-          <default>false</default>
       </boolean>
       <boolean>
           <name>scaleStencil</name>
           <label>scaleStencil</label>
           <channel>input</channel>
           <longflag>scale</longflag>
-          <description><![CDATA[Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).]]></description>
-          <default>false</default>
+          <description><![CDATA[Setting this flag will cause the stencil pattern to be scaled according to particle \
+scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \
+equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).]]></description>
       </boolean>
     </parameters>
 
