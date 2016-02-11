@@ -48,8 +48,7 @@ and does not necessarily represent the official views of the National Institutes
         <name>cipRegionArg</name>
         <label>Chest Region</label>
         <channel>input</channel>
-        <flag>r</flag>
-        <longflag>region</longflag>
+        <longflag>cipr</longflag>
         <description><![CDATA[Chest region for particles labeling. UndefinedRegion by default]]></description>
         <default>UndefinedRegion</default>
     </string>
@@ -57,8 +56,7 @@ and does not necessarily represent the official views of the National Institutes
         <name>cipTypeArg</name>
         <label>Chest Type</label>
         <channel>input</channel>
-        <flag>t</flag>
-        <longflag>type</longflag>
+        <longflag>cipt</longflag>
         <description><![CDATA[Chest type for particles labeling. UndefinedType by default]]></description>
         <default>UndefinedType</default>
     </string>
