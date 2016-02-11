@@ -106,7 +106,8 @@ int main( int argc, char *argv[] )
     smoother->SetNumberOfIterations( smootherIterations );
     smoother->BoundarySmoothingOff();
     smoother->FeatureEdgeSmoothingOff();
-    smoother->SetPassBand( 0.001 );
+    smoother->SetPassBand( 0.01 );
+    smoother->SetFeatureAngle( 120.0 );
     smoother->NonManifoldSmoothingOn();
     smoother->NormalizeCoordinatesOn();
     smoother->Update();
