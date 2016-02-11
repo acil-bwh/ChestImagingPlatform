@@ -26,7 +26,7 @@ class HistDistKNN():
         Indicates what histogram comparison method to use when computing the
         histogram term in the metric.    
     """
-    def __init__(self, n_neighbors, beta, hist_comparison='l1_minkowski'):
+    def __init__(self, n_neighbors=5, beta=0, hist_comparison='l1_minkowski'):
         self.n_neighbors_ = n_neighbors
         self.beta_ = beta
         self.hist_comparison_ = hist_comparison
