@@ -18,6 +18,6 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_dm.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dm.nrrd
     ModuleEntryPoint
-      -l ${INPUT_DATA_DIR}/wholelung-64.nrrd
+      -l ${INPUT_DATA_DIR}/wholeLung-64.nrrd
       -d ${OUTPUT_DATA_DIR}/${TEST_NAME}_dm.nrrd
 )
