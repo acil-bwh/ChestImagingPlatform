@@ -4,17 +4,6 @@
  *  another particles dataset indicating which particles should be
  *  removed from the first dataset. The output if the set of particles
  *  in the first dataset but not in the second.
- *
- *  Usage: RemoveParticlesFromParticlesDataSet \<options\> where \<options\> is one or more of the following:\n
- *    \<-h\>     Display (this) usage information\n
- *    \<-i\>     Input particle data set file name.
- *    \<-r\>     Particle data set file name indicating which
- *               particles should be removed from the data set
- *               specified by the -i flag.
- *    \<-o\>     Output particle data set file name. The particles in
- *               the output will consist of the particles in the data
- *               set specified with the -i flag minus the particles in
- *               the data set specified with the -r flag.
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -25,6 +14,7 @@
 #include "vtkPolyDataWriter.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
+#include "cipHelper.h"
 #include "RemoveParticlesFromParticlesDataSetCLP.h"
 
 void RemoveParticles( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
@@ -124,9 +114,9 @@ void RemoveParticles( vtkSmartPointer< vtkPolyData > particles, vtkSmartPointer<
     cleanedParticles->GetPointData()->AddArray( arrayVec[j] );
     //Array has been added and register with container class. Delete the pointer
     arrayVec[j]->Delete();
-
     }
-    
+  
+  cip::TransferFieldData( particles, cleanedParticles );
 }
 
 #endif
