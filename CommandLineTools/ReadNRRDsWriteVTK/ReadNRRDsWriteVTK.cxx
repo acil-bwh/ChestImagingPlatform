@@ -41,8 +41,10 @@ int main( int argc, char *argv[] )
       return cip::EXITFAILURE;
     }
 
-  float cipRegion = float(conventions.GetChestRegionValueFromName( cipRegionArg ));
-  float cipType = float(conventions.GetChestTypeValueFromName( cipTypeArg ));
+  unsigned char cipRegion = conventions.GetChestRegionValueFromName( cipRegionArg );
+  unsigned char cipType = conventions.GetChestTypeValueFromName( cipTypeArg );
+
+  float chestRegionChestTypeValue = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
 
   std::vector<std::string> arrayNameVec;
   std::vector<std::string> inFileNameVec;
@@ -341,8 +343,7 @@ int main( int argc, char *argv[] )
   cip::AssertChestRegionChestTypeArrayExistence( polyData );
   for ( unsigned int i=0; i<polyData->GetNumberOfPoints(); i++ )
     {
-      polyData->GetPointData()->GetArray("ChestRegion")->SetTuple( i, &cipRegion );
-      polyData->GetPointData()->GetArray("ChestType")->SetTuple( i, &cipType );
+      polyData->GetPointData()->GetArray("ChestRegionChestType")->SetTuple( i, &chestRegionChestTypeValue );
     }
   
   std::cout << "Writing poly data..." << std::endl;
