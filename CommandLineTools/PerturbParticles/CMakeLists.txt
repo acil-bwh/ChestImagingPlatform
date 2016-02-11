@@ -24,8 +24,9 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
     --compareVTKPolyData 
       ${BASELINE_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
+    --comparePointTolerance 4
     ModuleEntryPoint
       --ip ${INPUT_DATA_DIR}/airway_particles.vtk
       --op ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
-      -m 200
+      -m 2
 )
