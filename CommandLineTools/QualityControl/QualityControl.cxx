@@ -5,67 +5,6 @@
  *  images. Currently supported use cases include label map images
  *  designating lung labelings by thirds, whole lung labelings, airway
  *  labelings, and lung lobe labelings.
- * 
- *  $Date: 2012-07-31 12:14:53 -0400 (Tue, 31 Jul 2012) $
- *  $Revision: 200 $
- *  $Author: jross $
- *
- *  USAGE: 
- *
- *  QualityControl  [-i \<string\>] ...  [-f \<string\>] ...  [-r \<string\>]
- *                  ...  [-e \<string\>] ...  [-a \<string\>] [-u \<string\>]
- *                  [-c \<string\>] -l \<string\> [--] [--version] [-h]
- *
- *  Where: 
- *
- *   -i \<string\>,  --rightCT \<string\>  (accepted multiple times)
- *     Right lung CT images. Multiple can be supplied, and the number of
- *     supplied images will determine how many equally spaced output images
- *     will be generated. You must alsosupply a CT image file name. These are
- *     meant to correspond to the images specified withthe -r flag so that
- *     overlay images and non overlay images can be compared
- *
- *   -f \<string\>,  --leftCT \<string\>  (accepted multiple times)
- *     Left lung CT images. Multiple can be supplied, and the number of
- *     supplied images will determine how many equally spaced output images
- *     will be generated. You must alsosupply a CT image file name. These are
- *     meant to correspond to the images specified withthe -e flag so that
- *     overlay images and non overlay images can be compared
- *
- *   -r \<string\>,  --rightLobe \<string\>  (accepted multiple times)
- *     Right lung lobe images. Multiple can be supplied, and the number of
- *     suppliedimages will determine how many equally spaced output images
- *     will be generated. You must alsosupply a CT image file name when using
- *     this flag
- *
- *   -e \<string\>,  --leftLobe \<string\>  (accepted multiple times)
- *     Left lung lobe images. Multiple can be supplied, and the number of
- *     suppliedimages will determine how many equally spaced output images
- *     will be generated. You must alsosupply a CT image file name when using
- *     this flag
- *
- *   -a \<string\>,  --airwayProj \<string\>
- *     Airway projection output image file name
- *
- *   -u \<string\>,  --lungProj \<string\>
- *     Lung projection image output image file name
- *
- *   -c \<string\>,  --ct \<string\>
- *     Input CT image file name. Only needs to be specified if you intend to
- *     createlung lobe QC images
- *
- *   -l \<string\>,  --labelMap \<string\>
- *     (required)  Input label map file name
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
  */
 
 //#ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -98,10 +37,7 @@ namespace
     void GetLungProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
     void GetAirwayProjectionImage( cip::LabelMapType::Pointer, ProjectionImageType::Pointer );
   */
-
-
-    
-    
+        
   double GetWindowLeveledValue( short ctValue )
   {
     double slope     = 255.0/1024.0;
@@ -499,7 +435,7 @@ int main( int argc, char *argv[] )
   ProjectionImageType::Pointer lungProjectionImage   = ProjectionImageType::New();
   ProjectionImageType::Pointer airwayProjectionImage = ProjectionImageType::New();
 
-  if ( lungProjectionImageFileName.compare( "q" ) != 0 )
+  if ( lungProjectionImageFileName.compare( "NA" ) != 0 )
     {
       lungProjectionImage->SetRegions( projectionSize );
       lungProjectionImage->Allocate();
@@ -513,7 +449,7 @@ int main( int argc, char *argv[] )
   //
   // Create the airway projection image if requested
   //
-  if ( airwayProjectionImageFileName.compare( "q" ) != 0 )
+  if ( airwayProjectionImageFileName.compare( "NA" ) != 0 )
     {
       airwayProjectionImage->SetRegions( projectionSize );
       airwayProjectionImage->Allocate();
@@ -529,7 +465,7 @@ int main( int argc, char *argv[] )
   //
   // Read the CT image if requested
   //
-  if ( ctFileName.compare( "q" ) != 0 )
+  if ( ctFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Reading CT image..." << std::endl;
       cip::CTReaderType::Pointer ctReader = cip::CTReaderType::New();
@@ -560,14 +496,14 @@ int main( int argc, char *argv[] )
   leftLungRegions.push_back( cip::LEFTSUPERIORLOBE );
   leftLungRegions.push_back( cip::LEFTINFERIORLOBE );
 
-  if ( leftLungLobeFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
+  if ( leftLungLobeFileNameVec.size() > 0 && ctFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Generating left lung overlay images..." << std::endl;
       GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, leftLungLobeFileNameVec.size(), &leftOverlayVec, 
 				     leftLungRegions, 0.3 );
     }
 
-  if ( leftLungCTFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
+  if ( leftLungCTFileNameVec.size() > 0 && ctFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Generating left lung CT images..." << std::endl;
       GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, leftLungCTFileNameVec.size(), &leftCTVec, 
@@ -586,14 +522,14 @@ int main( int argc, char *argv[] )
   rightLungRegions.push_back( cip::RIGHTMIDDLELOBE );
   rightLungRegions.push_back( cip::RIGHTINFERIORLOBE );
 
-  if ( rightLungLobeFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
+  if ( rightLungLobeFileNameVec.size() > 0 && ctFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Generating right lung overlay images..." << std::endl;
       GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, rightLungLobeFileNameVec.size(), &rightOverlayVec,
 				     rightLungRegions, 0.3 );
     }
 
-  if ( rightLungCTFileNameVec.size() > 0 && ctFileName.compare( "q" ) != 0 )
+  if ( rightLungCTFileNameVec.size() > 0 && ctFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Generating right lung CT images..." << std::endl;
       GenerateLungLobeOverlayImages( labelMapReader->GetOutput(), ctImage, rightLungCTFileNameVec.size(), &rightCTVec,
@@ -603,7 +539,7 @@ int main( int argc, char *argv[] )
   //
   // Write the lung projection image if requested
   //
-  if ( lungProjectionImageFileName.compare( "q" ) != 0 )
+  if ( lungProjectionImageFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Writing lung projection image..." << std::endl;
       ProjectionWriterType::Pointer lungProjectionWriter = ProjectionWriterType::New();
@@ -625,7 +561,7 @@ int main( int argc, char *argv[] )
   //
   // Write the airway projection image if requested
   //
-  if ( airwayProjectionImageFileName.compare( "q" ) != 0 )
+  if ( airwayProjectionImageFileName.compare( "NA" ) != 0 )
     {
       std::cout << "Writing airway projection image..." << std::endl;
       ProjectionWriterType::Pointer airwayProjectionWriter = ProjectionWriterType::New();
