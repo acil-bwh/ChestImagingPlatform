@@ -120,6 +120,22 @@ ExternalProject_Add_Step(${proj} installpydicom
 	DEPENDEES installpynrrd
 )
 
+ExternalProject_Add_Step(${proj} installnetworkx
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --quiet networkx  
+	DEPENDEES installpandas
+)
+
+ExternalProject_Add_Step(${proj} installnibabel
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel 
+	DEPENDEES installpandas
+)
+
+ExternalProject_Add_Step(${proj} installnipype
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nipype
+	DEPENDEES installnibabel
+)
+
+
 
 
 if (UNIX)      
