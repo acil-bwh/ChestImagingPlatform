@@ -188,7 +188,7 @@ class LungLobeSegmentationWorkflow(Workflow):
         extract_left_particles = \
           pe.Node(interface=cip.ExtractParticlesFromChestRegionChestType(), 
                   name='extract_left_particles')
-        extract_left_particles.inputs.region = 'LeftLung'
+        extract_left_particles.inputs.cipr = 'LeftLung'
         extract_left_particles.inputs.op = self._leftFissureParticlesPreFiltered
         if ilm is not None:
             extract_left_particles.inputs.ilm = ilm
@@ -199,7 +199,7 @@ class LungLobeSegmentationWorkflow(Workflow):
         extract_right_particles = \
           pe.Node(interface=cip.ExtractParticlesFromChestRegionChestType(), 
                   name='extract_right_particles')        
-        extract_right_particles.inputs.region = 'RightLung'
+        extract_right_particles.inputs.cipr = 'RightLung'
         extract_right_particles.inputs.op = \
           self._rightFissureParticlesPreFiltered
         if ilm is not None:

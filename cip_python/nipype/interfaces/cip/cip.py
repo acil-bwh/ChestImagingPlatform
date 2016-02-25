@@ -59,11 +59,11 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class ExtractParticlesFromChestRegionChestTypeInputSpec(CommandLineInputSpec):
-    ilm = File(desc="Input label map file name. This is an optional input. If no label map is specified, \nthe 'ChestRegion' and 'ChestType' arrays in the input will be used to extract the region or type specified \nwith the '-r' and '-t' flags, respectively ", exists=True, argstr="--ilm %s")
+    ilm = File(desc="Input label map file name. This is an optional input. If no label map is specified, \nthe 'ChestRegion' and 'ChestType' arrays in the input will be used to extract the region or type specified \nwith the '--cipr' and '--cipt' flags, respectively ", exists=True, argstr="--ilm %s")
     ip = File(desc="Input particles file name", exists=True, argstr="--ip %s")
     op = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--op %s")
-    region = InputMultiPath(traits.Str, desc="Chest regions from which to extract particles", sep=",", argstr="--region %s")
-    type = InputMultiPath(traits.Str, desc="Chest types for which to extract particles. If specifying a label map this flag \n      is not relevent.", sep=",", argstr="--type %s")
+    cipr = InputMultiPath(traits.Str, desc="Chest regions from which to extract particles.", sep=",", argstr="--cipr %s")
+    cipt = InputMultiPath(traits.Str, desc="Chest types for which to extract particles. If specifying a label map this flag \nis not relevent.", sep=",", argstr="--cipt %s")
 
 
 class ExtractParticlesFromChestRegionChestTypeOutputSpec(TraitedSpec):
@@ -95,44 +95,40 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'op':'op.vtk'}
 
 
-class GenerateStatisticsForAirwayGenerationLabelingInputSpec(CommandLineInputSpec):
-    input = InputMultiPath(traits.Str, desc="Input particles file names.", sep=",", argstr="--input %s")
-    ref = File(desc="Specify a (labeled) reference particle dataset to compute statistics for emission probabilities. For each particle in this dataset, every other particle in the files specified with the -i flag will be considered. If the two particles have the same generation label and are within the distance specified by the --ed flag, then the scale difference, angle, and distance between the particles will be computed and used to compute the class conditional probabilities for that generation. This is an optional argument. Note that if it is specified, the same file should not also appear as an input specified with the -i flag.", exists=True, argstr="--ref %s")
-    emissionProbsFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the computed emission probability statistics.", argstr="--emissionProbsFileName %s")
-    ntp = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the computed transition probability scale and angle statics.", argstr="--ntp %s")
-    tp = traits.Either(traits.Bool, File(), hash_files=False, desc="csv file in which to write the transition probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' generation and the columns represent the 'to' generation. The probabilities are computed simply by counting the number of times a given transition occurs and then normalizing.", argstr="--tp %s")
-    distThresh = traits.Float(desc="Particle distance threshold for constructing minimum spanning tree. Particles further apart than this distance will not have an edge placed between them in the weighted graph passed to the min spanning tree algorithm", argstr="--distThresh %f")
-    ed = traits.Float(desc="The radius of the epsilon ball used when considering if a particle should be considered for computing the class-conditional emission probabilities. Only necessary if a reference particle dataset is specified with the --ed flag.", argstr="--ed %f")
+class LabelParticlesByChestRegionChestTypeInputSpec(CommandLineInputSpec):
+    ip = File(desc="Input particles file name.", exists=True, argstr="--ip %s")
+    op = File(desc="Output particles file name.", exists=True, argstr="--op %s")
+    ilm = File(desc="Input label map file name. If specified the 'ChestRegion' value will be determined from the label map", exists=True, argstr="--ilm %s")
+    region = traits.Str(desc="Chest region for particles labeling. UndefinedRegion by default", argstr="--region %s")
+    type = traits.Str(desc="Chest type for particles labeling. UndefinedType by default", argstr="--type %s")
 
 
-class GenerateStatisticsForAirwayGenerationLabelingOutputSpec(TraitedSpec):
-    emissionProbsFileName = File(desc="csv file in which to write the computed emission probability statistics.", exists=True)
-    ntp = File(desc="csv file in which to write the computed transition probability scale and angle statics.", exists=True)
-    tp = File(desc="csv file in which to write the transition probabilities. The output will be an 11x11 matrix. The rows indicate the 'from' generation and the columns represent the 'to' generation. The probabilities are computed simply by counting the number of times a given transition occurs and then normalizing.", exists=True)
+class LabelParticlesByChestRegionChestTypeOutputSpec(TraitedSpec):
+    pass
 
 
-class GenerateStatisticsForAirwayGenerationLabeling(SEMLikeCommandLine):
-    """title: GenerateStatisticsForAirwayGenerationLabeling
+class LabelParticlesByChestRegionChestType(SEMLikeCommandLine):
+    """title: LabelParticlesByChestRegionChestType
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Quantification
 
-description: This program computes statistics needed as inputs to the LabelAirwayParticlesByGeneration program. It computes these statistics over (possibly) multiple, labeled input airway particles datasets. The user must specify information needed to construct the minimum spanning tree (which encodes topology over the particles). This information should be the same that is used for the LabelAirwayParticlesByGeneration program.
+description: This program is used to label particles datasets by chest region and chest type. The user must \nspecify the type of the input particles, but the chest region can either be determined by an input label map or be \nspecified at the command line.
 
 version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = GenerateStatisticsForAirwayGenerationLabelingInputSpec
-    output_spec = GenerateStatisticsForAirwayGenerationLabelingOutputSpec
-    _cmd = " GenerateStatisticsForAirwayGenerationLabeling "
-    _outputs_filenames = {'ntp':'ntp.csv','emissionProbsFileName':'emissionProbsFileName.csv','tp':'tp.csv'}
+    input_spec = LabelParticlesByChestRegionChestTypeInputSpec
+    output_spec = LabelParticlesByChestRegionChestTypeOutputSpec
+    _cmd = " LabelParticlesByChestRegionChestType "
+    _outputs_filenames = {}
 
 
 class ReadNRRDsWriteVTKInputSpec(CommandLineInputSpec):
@@ -145,6 +141,8 @@ class ReadNRRDsWriteVTKInputSpec(CommandLineInputSpec):
     liveth = traits.Float(desc="Live threshold parameter that generated the particle's result. This metadata info is stored as a field data in an array named \'liveth\'", argstr="--liveth %f")
     seedth = traits.Float(desc="Seed treshold parameter that generated the particle's result. This metadata info is stored as a field data in an array named \'seedth\'", argstr="--seedth %f")
     binary = traits.Bool(desc="Ouput vtk file name in binary format.", argstr="--binary ")
+    cipr = traits.Str(desc="Chest region for particles labeling. UndefinedRegion by default", argstr="--cipr %s")
+    cipt = traits.Str(desc="Chest type for particles labeling. UndefinedType by default", argstr="--cipt %s")
 
 
 class ReadNRRDsWriteVTKOutputSpec(TraitedSpec):
@@ -384,19 +382,19 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class QualityControlInputSpec(CommandLineInputSpec):
-    ct = File(desc="Input CT image file name. Only needs to be specified if you intend to create lung lobe QC images", exists=True, argstr="--ct %s")
-    labelMap = File(desc="Input label map file name", exists=True, argstr="--labelMap %s")
-    lungProj = traits.Either(traits.Bool, File(), hash_files=False, desc="Lung projection image output image file name", argstr="--lungProj %s")
-    airwayProj = traits.Either(traits.Bool, File(), hash_files=False, desc="Airway projection output image file name", argstr="--airwayProj %s")
-    leftLobe = InputMultiPath(traits.Str, desc="Left lung lobe images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name when using this flag.", sep=",", argstr="--leftLobe %s")
-    rightLobe = InputMultiPath(traits.Str, desc="Right lung lobe images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name when using this flag.", sep=",", argstr="--rightLobe %s")
-    leftCT = InputMultiPath(traits.Str, desc="Left lung CT images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name. These are meant to correspond to the images specified with the -e flag so that overlay images and non overlay images can be compared", sep=",", argstr="--leftCT %s")
-    rightCT = InputMultiPath(traits.Str, desc="Right lung CT images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name. These are meant to correspond to the images specified with the -r flag so that overlay images and non overlay images can be compared", sep=",", argstr="--rightCT %s")
+    ict = File(desc="Input CT image file name. Only needs to be specified if you intend to create lung lobe QC images", exists=True, argstr="--ict %s")
+    ilm = File(desc="Input label map file name", exists=True, argstr="--ilm %s")
+    lung = traits.Either(traits.Bool, File(), hash_files=False, desc="Lung projection image output image file name", argstr="--lung %s")
+    airway = traits.Either(traits.Bool, File(), hash_files=False, desc="Airway projection output image file name", argstr="--airway %s")
+    leftlobe = InputMultiPath(traits.Str, desc="Left lung lobe images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name when using this flag.", sep=",", argstr="--leftlobe %s")
+    rightlobe = InputMultiPath(traits.Str, desc="Right lung lobe images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name when using this flag.", sep=",", argstr="--rightlobe %s")
+    leftct = InputMultiPath(traits.Str, desc="Left lung CT images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name. These are meant to correspond to the images specified with the -e flag so that overlay images and non overlay images can be compared", sep=",", argstr="--leftct %s")
+    rightct = InputMultiPath(traits.Str, desc="Right lung CT images. Multiple can be supplied, and the number of supplied images will determine how many equally spaced output images will be generated. You must also supply a CT image file name. These are meant to correspond to the images specified with the -r flag so that overlay images and non overlay images can be compared", sep=",", argstr="--rightct %s")
 
 
 class QualityControlOutputSpec(TraitedSpec):
-    lungProj = File(desc="Lung projection image output image file name", exists=True)
-    airwayProj = File(desc="Airway projection output image file name", exists=True)
+    lung = File(desc="Lung projection image output image file name", exists=True)
+    airway = File(desc="Airway projection output image file name", exists=True)
 
 
 class QualityControl(SEMLikeCommandLine):
@@ -420,7 +418,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = QualityControlInputSpec
     output_spec = QualityControlOutputSpec
     _cmd = " QualityControl "
-    _outputs_filenames = {'lungProj':'lungProj.nii','airwayProj':'airwayProj.nii'}
+    _outputs_filenames = {'lung':'lung.nii','airway':'airway.nii'}
 
 
 class ExtractFissureBoundaryFromLobeMapInputSpec(CommandLineInputSpec):
@@ -646,8 +644,8 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class FilterAirwayParticleDataInputSpec(CommandLineInputSpec):
-    ifp = File(desc="Input particles file name", exists=True, argstr="--ifp %s")
-    ofp = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--ofp %s")
+    iap = File(desc="Input particles file name", exists=True, argstr="--iap %s")
+    oap = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--oap %s")
     dist = traits.Float(desc="Maximum inter-particle distance. Two particles must be at least this close \ntogether to be considered for connectivity. , 	    ", argstr="--dist %f")
     angle = traits.Float(desc="Particle angle threshold used to test the connectivity between two particles (in degrees). \nThe vector connecting two particles is computed. The angle formed between the connecting vector and the particle Hessian \neigenvector pointing in the direction of the airway axis is then considered. For both particles, this angle must be below \nthe specified threshold for the particles to be connected.", argstr="--angle %f")
     ratio = traits.Float(desc="Scale ratio threshold in the interval [0,1]. This value indicates the degree to which \ntwo particles can differ in scale and still be considered for connectivity. The higher the value, the more permisse the filter is \nwith respect to scale differences.", argstr="--ratio %f")
@@ -658,7 +656,7 @@ class FilterAirwayParticleDataInputSpec(CommandLineInputSpec):
 
 
 class FilterAirwayParticleDataOutputSpec(TraitedSpec):
-    ofp = File(desc="Output particles file name", exists=True)
+    oap = File(desc="Output particles file name", exists=True)
 
 
 class FilterAirwayParticleData(SEMLikeCommandLine):
@@ -682,7 +680,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = FilterAirwayParticleDataInputSpec
     output_spec = FilterAirwayParticleDataOutputSpec
     _cmd = " FilterAirwayParticleData "
-    _outputs_filenames = {'ofp':'ofp.vtk'}
+    _outputs_filenames = {'oap':'oap.vtk'}
 
 
 class EvaluateLungLobeSegmentationResultsInputSpec(CommandLineInputSpec):
@@ -990,13 +988,14 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class PerturbParticlesInputSpec(CommandLineInputSpec):
-    input = File(desc="Input particles file name.", exists=True, argstr="--input %s")
-    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name.", argstr="--output %s")
+    ip = File(desc="Input particles file name.", exists=True, argstr="--ip %s")
+    op = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name.", argstr="--op %s")
     mag = traits.Float(desc="Random offsets are drawn from the uniform distribution. This parameter controls the magnitude of the translation by scaling the uniform distribution by the specified amount. ", argstr="--mag %f")
+    seed = traits.Int(desc="Seed for random offset initialization", argstr="--seed %d")
 
 
 class PerturbParticlesOutputSpec(TraitedSpec):
-    output = File(desc="Output particles file name.", exists=True)
+    op = File(desc="Output particles file name.", exists=True)
 
 
 class PerturbParticles(SEMLikeCommandLine):
@@ -1004,7 +1003,7 @@ class PerturbParticles(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program can used to perturb a particles dataset. This kind of operation can be useful for experimentation purposes. Currently, the program simply translates the particles dataset by a random offset in the x, y, and z directions. The user can control the magnitude of the random offset that is used.
+description: This program can used to perturb a particles dataset. This kind of operation can be useful \nfor experimentation purposes. Currently, the program simply translates the particles dataset by a random offset in \nthe x, y, and z directions. The user can control the magnitude of the random offset that is used.
 
 version: 0.0.1
 
@@ -1012,7 +1011,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
     
 
 """
@@ -1020,7 +1019,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = PerturbParticlesInputSpec
     output_spec = PerturbParticlesOutputSpec
     _cmd = " PerturbParticles "
-    _outputs_filenames = {'output':'output.vtk'}
+    _outputs_filenames = {'op':'op.vtk'}
 
 
 class ConvertLabelMapValueToChestRegionChestTypeInputSpec(CommandLineInputSpec):
@@ -1088,44 +1087,6 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'out':'out.nii'}
 
 
-class TransferFieldDataToFromPointDataInputSpec(CommandLineInputSpec):
-    input = File(desc="Input VTK polydata file name].", exists=True, argstr="--input %s")
-    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output VTK polydata file name].", argstr="--output %s")
-    mf = traits.Bool(desc="Use this flag to maintain the field data. Setting it to false will eliminate the field data from the output. Only relevant if requesting to transfer field data to point data.", argstr="--mf ")
-    mp = traits.Bool(desc="Use this flag to maintain the point data. Only relevant if requesting to transfer point data to field data.", argstr="--mp ")
-    fp = traits.Bool(desc="Use this flag to transfer field data to point data.", argstr="--fp ")
-    pf = traits.Bool(desc="Use this flag to transfer point data to field data.", argstr="--pf ")
-    binary = traits.Bool(desc="Set to true to save data to binary.", argstr="--binary ")
-
-
-class TransferFieldDataToFromPointDataOutputSpec(TraitedSpec):
-    output = File(desc="Output VTK polydata file name].", exists=True)
-
-
-class TransferFieldDataToFromPointData(SEMLikeCommandLine):
-    """title: TransferFieldDataToFromPointData
-
-category: Chest Imaging Platform.Toolkit.Particles
-
-description: This program can be used to transfer the contents of a VTK polydata's field data to point data and vice-versa. Generally, field data applies to a dataset as a whole and need not have a one-to-one correspondence with the points. However, this may be the case in some instances (esp. with the particles datasets). In those cases it may be helpful to have the data contained in field data arrays also stored in point data arrays (e.g. for rendering purposes). Field data will only be transferred provided that the number of tuples in the field data array is the same as the number of points.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
-  
-
-"""
-
-    input_spec = TransferFieldDataToFromPointDataInputSpec
-    output_spec = TransferFieldDataToFromPointDataOutputSpec
-    _cmd = " TransferFieldDataToFromPointData "
-    _outputs_filenames = {'output':'output.vtk'}
-
-
 class LabelMapFromRegionAndTypePointsInputSpec(CommandLineInputSpec):
     i = File(desc="Input CT file. Either an input CT file or an input label map must be\n      specified in order to acquire the size, spacing, and origin information needed to create", exists=True, argstr="--i %s")
     l = File(desc="Label map file name. Either an input CT file or an input label map must be\n      specified in order to acquire the size, spacing, and origin information needed to create.", exists=True, argstr="--l %s")
@@ -1159,45 +1120,6 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = LabelMapFromRegionAndTypePointsOutputSpec
     _cmd = " LabelMapFromRegionAndTypePoints "
     _outputs_filenames = {'o':'o.nii'}
-
-
-class ComputeFissureFeatureVectorsInputSpec(CommandLineInputSpec):
-    ct = File(desc="Input CT file to be enhanced.", exists=True, argstr="--ct %s")
-    lm = File(desc="Input lung label map file name. This label map will be used to determine whether \n      the feature vectors to compute are in the left or right lung.", exists=True, argstr="--lm %s")
-    vp = traits.Str(desc="Vessel particles to use for the enhancement. Particles are expected to be unfiltered \n      (filtering is done internally for consistency with other data sets).", argstr="--vp %s")
-    points = traits.Str(desc="Particles file indicating at what locations to compute the feature vectors.", argstr="--points %s")
-    rsm = traits.Str(desc="Right lung lobe boundaries shape model file name. The mean points of the shape model will \n      be used to create thin plate spline surfaces. These surfaces will be used to compute certain features. A right \n      shape model file OR a left shape model file (but not both) must be specified.", argstr="--rsm %s")
-    lsm = traits.Str(desc="Left lung lobe boundaries shape model file name. The mean points of the shape model will \n      be used to create a thin plate spline surface. This surface will be used to compute certain features. A right \n      shape model file OR a left shape model file (but not both) must be specified.", argstr="--lsm %s")
-    outt = traits.Str(desc="Comma-separated value (csv) file that will contain the true fissure feature vectors \n      for each point location indicated by the input polydata file.", argstr="--outt %s")
-    outf = traits.Str(desc="Comma-separated value (csv) file that will contain the false fissure feature vectors \n      for each point location indicated by the input polydata file.", argstr="--outf %s")
-
-
-class ComputeFissureFeatureVectorsOutputSpec(TraitedSpec):
-    pass
-
-
-class ComputeFissureFeatureVectors(SEMLikeCommandLine):
-    """title: ComputeFissureFeatureVectors
-
-category: Chest Imaging Platform.Toolkit.Processing
-
-description: This program generates a collection of feature vectors at point locations \n  indicated by an input polydata file.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
-  
-
-"""
-
-    input_spec = ComputeFissureFeatureVectorsInputSpec
-    output_spec = ComputeFissureFeatureVectorsOutputSpec
-    _cmd = " ComputeFissureFeatureVectors "
-    _outputs_filenames = {}
 
 
 class GenerateAtlasConvexHullInputSpec(CommandLineInputSpec):
@@ -1238,42 +1160,6 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = GenerateAtlasConvexHullOutputSpec
     _cmd = " GenerateAtlasConvexHull "
     _outputs_filenames = {}
-
-
-class ReadParticlesWriteConnectedParticlesInputSpec(CommandLineInputSpec):
-    vessel = File(desc="Vessel particles file name", exists=True, argstr="--vessel %s")
-    airway = File(desc="Airway particles file name", exists=True, argstr="--airway %s")
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--out %s")
-    vis = traits.Bool(desc="Visualize the connected polydata", argstr="--vis ")
-    distThresh = traits.Float(desc="Particle distance threshold. If two particles are \n      farther apart than this threshold, they will not considered connected. Otherwise, a graph edge \n      will be formed between the particles where the edge weight is a function of the distance \n      between the particles. The weighted graph is then fed to a minimum spanning tree algorithm, the \n      output of which is used to establish directionality throught the particles for HMM analysis", argstr="--distThresh %f")
-
-
-class ReadParticlesWriteConnectedParticlesOutputSpec(TraitedSpec):
-    out = File(desc="Output particles file name", exists=True)
-
-
-class ReadParticlesWriteConnectedParticles(SEMLikeCommandLine):
-    """title: ReadParticlesWriteConnectedParticles
-
-category: Chest Imaging Platform.Toolkit.Particles
-
-description: This program reads either an airway particles dataset or a \n  vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \n  topology on the particles points. The output polydata is equivalent to the input polydata \n  but with polylines defined indicating the edges between particle points found by the min \n  spanning tree algorithm. The connected dataset is rendered and then optionally written to \n  file.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
-  
-
-"""
-
-    input_spec = ReadParticlesWriteConnectedParticlesInputSpec
-    output_spec = ReadParticlesWriteConnectedParticlesOutputSpec
-    _cmd = " ReadParticlesWriteConnectedParticles "
-    _outputs_filenames = {'out':'out.vtk'}
 
 
 class ReadWriteRegionAndTypePointsInputSpec(CommandLineInputSpec):
@@ -1385,12 +1271,12 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 class RemoveParticlesFromParticlesDataSetInputSpec(CommandLineInputSpec):
     opt_in = File(desc="Input particles file name", exists=True, argstr="--in %s")
-    removeFileName = File(desc="Particle data set file name indicating which particles should be removed from \n            the input data set", exists=True, argstr="--removeFileName %s")
-    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particle data set file name. The particles in the output will consist \n            of the particles in the data set specified with the -i flag minus the particles in \n            the data set specified with the -r flag.", argstr="--out %s")
+    removeFileName = File(desc="Particle data set file name indicating which particles should be removed from \nthe input data set", exists=True, argstr="--removeFileName %s")
+    out = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particle data set file name. The particles in the output will consist \nof the particles in the data set specified with the -i flag minus the particles in \nthe data set specified with the -r flag.", argstr="--out %s")
 
 
 class RemoveParticlesFromParticlesDataSetOutputSpec(TraitedSpec):
-    out = File(desc="Output particle data set file name. The particles in the output will consist \n            of the particles in the data set specified with the -i flag minus the particles in \n            the data set specified with the -r flag.", exists=True)
+    out = File(desc="Output particle data set file name. The particles in the output will consist \nof the particles in the data set specified with the -i flag minus the particles in \nthe data set specified with the -r flag.", exists=True)
 
 
 class RemoveParticlesFromParticlesDataSet(SEMLikeCommandLine):
@@ -1398,7 +1284,7 @@ class RemoveParticlesFromParticlesDataSet(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program accepts two inputs: a particles dataset and another particles dataset\n  indicating which particles should be removed from the first dataset. The output of the set of particles \n  in the first dataset but not in the second.
+description: This program accepts two inputs: a particles dataset and another particles dataset\nindicating which particles should be removed from the first dataset. The output of the set of particles \nin the first dataset but not in the second.
 
 version: 0.0.1
 
@@ -1406,7 +1292,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -1935,24 +1821,21 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class LabelParticlesByChestRegionChestTypeInputSpec(CommandLineInputSpec):
-    ip = File(desc="Input particles file name.", exists=True, argstr="--ip %s")
-    op = File(desc="Output particles file name.", exists=True, argstr="--op %s")
-    ilm = File(desc="Input label map file name. If specified the 'ChestRegion' value will be determined from the label map", exists=True, argstr="--ilm %s")
-    region = traits.Str(desc="Chest region for particles labeling. UndefinedRegion by default", argstr="--region %s")
-    type = traits.Str(desc="Chest type for particles labeling. UndefinedType by default", argstr="--type %s")
+class ReadVTKWriteNRRDsInputSpec(CommandLineInputSpec):
+    ip = File(desc="Input VTK polydata file corresponding to particles data. The contents of this \nfile will be writtent to output files with file names corresponding to the polydata array names. Note that scale \nand 3D position information will be packaged together in one file, with the first three coordinates representing \nspatial location and the fourth component representing scale information. This output file will be designated \nas 'pass.nrrd'. This is consistent with how data is packaged by teem's puller program that is the main engine \nfor producing particles data.", exists=True, argstr="--ip %s")
+    prefix = traits.Str(desc="All output NRRD files will have this prefix. The file names will be determined \nfrom the array names in input VTK polydata file, so a given output file will have the format: prefix + arrayName \n+ .nrrd.", argstr="--prefix %s")
 
 
-class LabelParticlesByChestRegionChestTypeOutputSpec(TraitedSpec):
+class ReadVTKWriteNRRDsOutputSpec(TraitedSpec):
     pass
 
 
-class LabelParticlesByChestRegionChestType(SEMLikeCommandLine):
-    """title: LabelParticlesByChestRegionChestType
+class ReadVTKWriteNRRDs(SEMLikeCommandLine):
+    """title: ReadVTKWriteNRRDsK
 
-category: Chest Imaging Platform.Toolkit.Quantification
+category: Chest Imaging Platform.Toolkit.Utils
 
-description: This program is used to label particles datasets by chest region and chest type. The user must \nspecify the type of the input particles, but the chest region can either be determined by an input label map or be \nspecified at the command line.
+description: This reads a VTK polydata file containing particles data \nand writes a corresponding collection of NRRD files containing array data.
 
 version: 0.0.1
 
@@ -1961,13 +1844,13 @@ license: Slicer
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
-  
+    
 
 """
 
-    input_spec = LabelParticlesByChestRegionChestTypeInputSpec
-    output_spec = LabelParticlesByChestRegionChestTypeOutputSpec
-    _cmd = " LabelParticlesByChestRegionChestType "
+    input_spec = ReadVTKWriteNRRDsInputSpec
+    output_spec = ReadVTKWriteNRRDsOutputSpec
+    _cmd = " ReadVTKWriteNRRDs "
     _outputs_filenames = {}
 
 
@@ -2048,85 +1931,6 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = GenerateOtsuLungCastOutputSpec
     _cmd = " GenerateOtsuLungCast "
     _outputs_filenames = {'olm':'olm.nii'}
-
-
-class FilterConnectedComponentsInputSpec(CommandLineInputSpec):
-    inFileName = File(desc="Input label map which we want to filter.", exists=True, argstr="--inFileName %s")
-    outFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="Output filtered label map file name.", argstr="--outFileName %s")
-    sizeThreshold = traits.Int(desc="Minimum number of voxels in the connected component. Connected componented with number of voxels below this value will be removed from the labelmap.", argstr="--sizeThreshold %d")
-    regionVecInclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionVecInclude %s")
-    typeVecInclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typeVecInclude %s")
-    typePairVecInclude = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to include in the filtering process. This flag should be used together with the -regionPair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typePairVecInclude %s")
-    regionPairVecInclude = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionPairVecInclude %s")
-    regionVecExclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionVecExclude %s")
-    typeVecExclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typeVecExclude %s")
-    typePairVecExclude = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to exclude in the filtering process. This flag should be used together with the -regionPair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typePairVecExclude %s")
-    regionPairVecExclude = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionPairVecExclude %s")
-    ax = traits.Bool(desc="Set if the connected components will be evaluted on one axial slice at a time.  ", argstr="--ax ")
-    cor = traits.Bool(desc="Set if the connected components will be evaluted on one coronal slice at a time.  ", argstr="--cor ")
-    sag = traits.Bool(desc="Set if the connected components will be evaluted on one saggital slice at a time. ", argstr="--sag ")
-    vol = traits.Bool(desc="Set if the connected components will be evaluted on a volumetric basis.  ", argstr="--vol ")
-
-
-class FilterConnectedComponentsOutputSpec(TraitedSpec):
-    outFileName = File(desc="Output filtered label map file name.", exists=True)
-
-
-class FilterConnectedComponents(SEMLikeCommandLine):
-    """title: FilterConnectedComponents
-
-category: Chest Imaging Platform.Toolkit.Processing
-
-description: This program filters out connected components that are smaller than a set size. It reads a labelmap and regions and types. For each region / type or pair in the inclusion set (or each pair not in the exclusion set) , it first finds all the connected components having the corresponding label value. It then proceeds to remove labels for all connected components having a voxel number that is less than a user input threshold.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
-  
-
-"""
-
-    input_spec = FilterConnectedComponentsInputSpec
-    output_spec = FilterConnectedComponentsOutputSpec
-    _cmd = " FilterConnectedComponents "
-    _outputs_filenames = {'outFileName':'outFileName.nii'}
-
-
-class ReadVTKWriteNRRDsInputSpec(CommandLineInputSpec):
-    ip = File(desc="Input VTK polydata file corresponding to particles data. The contents of this \nfile will be writtent to output files with file names corresponding to the polydata array names. Note that scale \nand 3D position information will be packaged together in one file, with the first three coordinates representing \nspatial location and the fourth component representing scale information. This output file will be designated \nas 'pass.nrrd'. This is consistent with how data is packaged by teem's puller program that is the main engine \nfor producing particles data.", exists=True, argstr="--ip %s")
-    prefix = traits.Str(desc="All output NRRD files will have this prefix. The file names will be determined \nfrom the array names in input VTK polydata file, so a given output file will have the format: prefix + arrayName \n+ .nrrd.", argstr="--prefix %s")
-
-
-class ReadVTKWriteNRRDsOutputSpec(TraitedSpec):
-    pass
-
-
-class ReadVTKWriteNRRDs(SEMLikeCommandLine):
-    """title: ReadVTKWriteNRRDsK
-
-category: Chest Imaging Platform.Toolkit.Utils
-
-description: This reads a VTK polydata file containing particles data \nand writes a corresponding collection of NRRD files containing array data.
-
-version: 0.0.1
-
-license: Slicer
-
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
-
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
-    
-
-"""
-
-    input_spec = ReadVTKWriteNRRDsInputSpec
-    output_spec = ReadVTKWriteNRRDsOutputSpec
-    _cmd = " ReadVTKWriteNRRDs "
-    _outputs_filenames = {}
 
 
 class CropLungInputSpec(CommandLineInputSpec):
@@ -2249,43 +2053,50 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'outputFile':'outputFile.nii'}
 
 
-class LabelAirwayParticlesByGenerationInputSpec(CommandLineInputSpec):
-    inPart = File(desc="Input particles file name", exists=True, argstr="--inPart %s")
-    outPart = traits.Either(traits.Bool, File(), hash_files=False, desc="Output particles file name", argstr="--outPart %s")
-    atlas = InputMultiPath(traits.Str, desc="Airway generation labeled atlas file name. \n      An airway generation labeled atlas is a particles data set that has point data array point named \n      'ChestType' that, for each particle, has a correctly labeled airway generation label. \n      Labeling must conform to the standards set forth in 'cipConventions.h'. \n      The atlas must be in the same coordinate frame as the input dataset that \n      is to be labeled. Multiple atlases may be specified. These atlases are \n      used to compute the emission probabilities (see descriptions of the HMM \n      algorithm) using kernel density estimation.", sep=",", argstr="--atlas %s")
-    distThresh = traits.Float(desc="Particle distance threshold. If two particles are \n      farther apart than this threshold, they will not considered connected. Otherwise, a graph edge \n      will be formed between the particles where the edge weight is a function of the distance \n      between the particles. The weighted graph is then fed to a minimum spanning tree algorithm, the \n      output of which is used to establish directionality throught the particles for HMM analysis.", argstr="--distThresh %f")
-    kdeROI = traits.Float(desc="The spherical radius region of interest \n      over which contributions to the kernel density estimation are made. Only atlas particles that \n      are within this physical distance will contribute to the estimate. By default, all atlas \n      particles will contribute to the estimate.", argstr="--kdeROI %f")
-    root = traits.Int(desc="The particle ID of the airway tree root if known.", argstr="--root %d")
-    results = traits.Bool(desc="Print results. Setting this flag assumes that the input particles \n      have been labeled. This option can be used for debugging and for quality assessment.", argstr="--results ")
-    kdeMode = traits.Bool(desc="Set to 1 to use KDE-based classification for airway label assignment. \n      This is equivalent to only using the emission probabilities from the overall HMTM model.", argstr="--kdeMode ")
+class FilterConnectedComponentsInputSpec(CommandLineInputSpec):
+    inFileName = File(desc="Input label map which we want to filter.", exists=True, argstr="--inFileName %s")
+    outFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="Output filtered label map file name.", argstr="--outFileName %s")
+    sizeThreshold = traits.Int(desc="Minimum number of voxels in the connected component. Connected componented with number of voxels below this value will be removed from the labelmap.", argstr="--sizeThreshold %d")
+    regionVecInclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionVecInclude %s")
+    typeVecInclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typeVecInclude %s")
+    typePairVecInclude = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to include in the filtering process. This flag should be used together with the -regionPair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typePairVecInclude %s")
+    regionPairVecInclude = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to include in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionPairVecInclude %s")
+    regionVecExclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionVecExclude %s")
+    typeVecExclude = InputMultiPath(traits.Int, desc="Specify a region in a region-type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typeVecExclude %s")
+    typePairVecExclude = InputMultiPath(traits.Int, desc="Specify a type in a region type pair you want to exclude in the filtering process. This flag should be used together with the -regionPair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--typePairVecExclude %s")
+    regionPairVecExclude = InputMultiPath(traits.Int, desc="Specify a region in a region type pair you want to exclude in the filtering process. This flag should be used together with the -typePair flag. Cannot set both include and exclude criteria.", sep=",", argstr="--regionPairVecExclude %s")
+    ax = traits.Bool(desc="Set if the connected components will be evaluted on one axial slice at a time.  ", argstr="--ax ")
+    cor = traits.Bool(desc="Set if the connected components will be evaluted on one coronal slice at a time.  ", argstr="--cor ")
+    sag = traits.Bool(desc="Set if the connected components will be evaluted on one saggital slice at a time. ", argstr="--sag ")
+    vol = traits.Bool(desc="Set if the connected components will be evaluted on a volumetric basis.  ", argstr="--vol ")
 
 
-class LabelAirwayParticlesByGenerationOutputSpec(TraitedSpec):
-    outPart = File(desc="Output particles file name", exists=True)
+class FilterConnectedComponentsOutputSpec(TraitedSpec):
+    outFileName = File(desc="Output filtered label map file name.", exists=True)
 
 
-class LabelAirwayParticlesByGeneration(SEMLikeCommandLine):
-    """title: LabelAirwayParticlesByGeneration
+class FilterConnectedComponents(SEMLikeCommandLine):
+    """title: FilterConnectedComponents
 
-category: Chest Imaging Platform.Toolkit.Particles
+category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program takes an input airway particles dataset \n  and assigns airway generation labels to each particle. The assigned labels are \n  coded in the ChestType point data arrays in the output particles data set. \n  The algorithm uses a Hidden Markov Model framework work to perform the generation \n  labeling.
+description: This program filters out connected components that are smaller than a set size. It reads a labelmap and regions and types. For each region / type or pair in the inclusion set (or each pair not in the exclusion set) , it first finds all the connected components having the corresponding label value. It then proceeds to remove labels for all connected components having a voxel number that is less than a user input threshold.
 
 version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = LabelAirwayParticlesByGenerationInputSpec
-    output_spec = LabelAirwayParticlesByGenerationOutputSpec
-    _cmd = " LabelAirwayParticlesByGeneration "
-    _outputs_filenames = {'outPart':'outPart.vtk'}
+    input_spec = FilterConnectedComponentsInputSpec
+    output_spec = FilterConnectedComponentsOutputSpec
+    _cmd = " FilterConnectedComponents "
+    _outputs_filenames = {'outFileName':'outFileName.nii'}
 
 
 class ResampleLabelMapInputSpec(CommandLineInputSpec):
@@ -2328,22 +2139,22 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class GenerateStenciledLabelMapFromParticlesInputSpec(CommandLineInputSpec):
-    inLabelMap = File(desc="Input label map file name. Used to retrieve spacing, origin, and dimensions for creating output label map", exists=True, argstr="--inLabelMap %s")
-    outLabelMap = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map file name", argstr="--outLabelMap %s")
-    particles = File(desc="Input particles file name", exists=True, argstr="--particles %s")
-    ctSigma = traits.Float(desc="The CT scanner point spread function sigma. 0.0 by default.", argstr="--ctSigma %f")
+    ilm = File(desc="Input label map file name. Used to retrieve spacing, origin, and dimensions for \ncreating output label map", exists=True, argstr="--ilm %s")
+    olm = traits.Either(traits.Bool, File(), hash_files=False, desc="Output label map file name", argstr="--olm %s")
+    ip = File(desc="Input particles file name", exists=True, argstr="--ip %s")
+    sigma = traits.Float(desc="The CT scanner point spread function sigma. 0.0 by default.", argstr="--sigma %f")
     radius = traits.Float(desc="Stencil radius in mm.", argstr="--radius %f")
-    height = traits.Float(desc="Cylinder stencil height in mm. Default is 1mm. This should typically be set to the inter-particle distance.", argstr="--height %f")
+    height = traits.Float(desc="Cylinder stencil height in mm. Default is 1mm. This should typically be set to the \ninter-particle distance.", argstr="--height %f")
     vessel = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to vessels.", argstr="--vessel ")
     airway = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to airways.", argstr="--airway ")
     fissure = traits.Bool(desc="Set this flag to indicate that in the input particles correspond to fissures.", argstr="--fissure ")
     sphere = traits.Bool(desc="Set this flag to indicate that the sphere stencil should be used.", argstr="--sphere ")
     cylinder = traits.Bool(desc="Set this flag to indicate that the cylinder stencil should be used.", argstr="--cylinder ")
-    scale = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).", argstr="--scale ")
+    scale = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle \nscale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \nequations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).", argstr="--scale ")
 
 
 class GenerateStenciledLabelMapFromParticlesOutputSpec(TraitedSpec):
-    outLabelMap = File(desc="Output label map file name", exists=True)
+    olm = File(desc="Output label map file name", exists=True)
 
 
 class GenerateStenciledLabelMapFromParticles(SEMLikeCommandLine):
@@ -2359,7 +2170,7 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes \nof Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not \nnecessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -2367,7 +2178,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = GenerateStenciledLabelMapFromParticlesInputSpec
     output_spec = GenerateStenciledLabelMapFromParticlesOutputSpec
     _cmd = " GenerateStenciledLabelMapFromParticles "
-    _outputs_filenames = {'outLabelMap':'outLabelMap.nii'}
+    _outputs_filenames = {'olm':'olm.nii'}
 
 
 class ReadDicomWriteTagsInputSpec(CommandLineInputSpec):
@@ -2405,25 +2216,27 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {}
 
 
-class TransferRegionAndTypeIndicesToFromPointsInputSpec(CommandLineInputSpec):
-    ip = File(desc="Input region and type points file name (csv).", exists=True, argstr="--ip %s")
-    ii = File(desc="Input region and type indices file name (csv).", exists=True, argstr="--ii %s")
-    op = traits.Either(traits.Bool, File(), hash_files=False, desc="Output region and type points file name (csv).", argstr="--op %s")
-    oi = traits.Either(traits.Bool, File(), hash_files=False, desc="Output region and type indices file name (csv).", argstr="--oi %s")
-    ict = File(desc="Input reference CT file needed for origin and spacing information", exists=True, argstr="--ict %s")
+class ComputeFissureFeatureVectorsInputSpec(CommandLineInputSpec):
+    ct = File(desc="Input CT file to be enhanced.", exists=True, argstr="--ct %s")
+    lm = File(desc="Input lung label map file name. This label map will be used to determine whether \n      the feature vectors to compute are in the left or right lung.", exists=True, argstr="--lm %s")
+    vp = traits.Str(desc="Vessel particles to use for the enhancement. Particles are expected to be unfiltered \n      (filtering is done internally for consistency with other data sets).", argstr="--vp %s")
+    points = traits.Str(desc="Particles file indicating at what locations to compute the feature vectors.", argstr="--points %s")
+    rsm = traits.Str(desc="Right lung lobe boundaries shape model file name. The mean points of the shape model will \n      be used to create thin plate spline surfaces. These surfaces will be used to compute certain features. A right \n      shape model file OR a left shape model file (but not both) must be specified.", argstr="--rsm %s")
+    lsm = traits.Str(desc="Left lung lobe boundaries shape model file name. The mean points of the shape model will \n      be used to create a thin plate spline surface. This surface will be used to compute certain features. A right \n      shape model file OR a left shape model file (but not both) must be specified.", argstr="--lsm %s")
+    outt = traits.Str(desc="Comma-separated value (csv) file that will contain the true fissure feature vectors \n      for each point location indicated by the input polydata file.", argstr="--outt %s")
+    outf = traits.Str(desc="Comma-separated value (csv) file that will contain the false fissure feature vectors \n      for each point location indicated by the input polydata file.", argstr="--outf %s")
 
 
-class TransferRegionAndTypeIndicesToFromPointsOutputSpec(TraitedSpec):
-    op = File(desc="Output region and type points file name (csv).", exists=True)
-    oi = File(desc="Output region and type indices file name (csv).", exists=True)
+class ComputeFissureFeatureVectorsOutputSpec(TraitedSpec):
+    pass
 
 
-class TransferRegionAndTypeIndicesToFromPoints(SEMLikeCommandLine):
-    """title: TransferRegionAndTypeIndicesToFromPoints
+class ComputeFissureFeatureVectors(SEMLikeCommandLine):
+    """title: ComputeFissureFeatureVectors
 
-category: Chest Imaging Platform.Toolkit.Utils
+category: Chest Imaging Platform.Toolkit.Processing
 
-description: This program converts region and type indices files to region and type \npoints files and vice versa.
+description: This program generates a collection of feature vectors at point locations \n  indicated by an input polydata file.
 
 version: 0.0.1
 
@@ -2431,15 +2244,15 @@ license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = TransferRegionAndTypeIndicesToFromPointsInputSpec
-    output_spec = TransferRegionAndTypeIndicesToFromPointsOutputSpec
-    _cmd = " TransferRegionAndTypeIndicesToFromPoints "
-    _outputs_filenames = {'oi':'oi','op':'op'}
+    input_spec = ComputeFissureFeatureVectorsInputSpec
+    output_spec = ComputeFissureFeatureVectorsOutputSpec
+    _cmd = " ComputeFissureFeatureVectors "
+    _outputs_filenames = {}
 
 
 class GenerateLesionSegmentationInputSpec(CommandLineInputSpec):
@@ -2674,38 +2487,41 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'oct':'oct.nii'}
 
 
-class ScourParticleDataInputSpec(CommandLineInputSpec):
-    opt_in = File(desc="Input particles file name.", exists=True, argstr="--in %s")
-    out = File(desc="Output particles file name.", exists=True, argstr="--out %s")
-    name = InputMultiPath(traits.Str, desc="Specify the name(s) of the arrays to be removed", sep=",", argstr="--name %s")
+class TransferRegionAndTypeIndicesToFromPointsInputSpec(CommandLineInputSpec):
+    ip = File(desc="Input region and type points file name (csv).", exists=True, argstr="--ip %s")
+    ii = File(desc="Input region and type indices file name (csv).", exists=True, argstr="--ii %s")
+    op = traits.Either(traits.Bool, File(), hash_files=False, desc="Output region and type points file name (csv).", argstr="--op %s")
+    oi = traits.Either(traits.Bool, File(), hash_files=False, desc="Output region and type indices file name (csv).", argstr="--oi %s")
+    ict = File(desc="Input reference CT file needed for origin and spacing information", exists=True, argstr="--ict %s")
 
 
-class ScourParticleDataOutputSpec(TraitedSpec):
-    pass
+class TransferRegionAndTypeIndicesToFromPointsOutputSpec(TraitedSpec):
+    op = File(desc="Output region and type points file name (csv).", exists=True)
+    oi = File(desc="Output region and type indices file name (csv).", exists=True)
 
 
-class ScourParticleData(SEMLikeCommandLine):
-    """title: ScourParticleData
+class TransferRegionAndTypeIndicesToFromPoints(SEMLikeCommandLine):
+    """title: TransferRegionAndTypeIndicesToFromPoints
 
-category: Chest Imaging Platform.Toolkit.Particles
+category: Chest Imaging Platform.Toolkit.Utils
 
-description: This program can be used to scour an input particles data set, removing specified field data arrays.
+description: This program converts region and type indices files to region and type \npoints files and vice versa.
 
 version: 0.0.1
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
 
-    input_spec = ScourParticleDataInputSpec
-    output_spec = ScourParticleDataOutputSpec
-    _cmd = " ScourParticleData "
-    _outputs_filenames = {}
+    input_spec = TransferRegionAndTypeIndicesToFromPointsInputSpec
+    output_spec = TransferRegionAndTypeIndicesToFromPointsOutputSpec
+    _cmd = " TransferRegionAndTypeIndicesToFromPoints "
+    _outputs_filenames = {'oi':'oi','op':'op'}
 
 
 class GenerateOverlayImagesInputSpec(CommandLineInputSpec):
