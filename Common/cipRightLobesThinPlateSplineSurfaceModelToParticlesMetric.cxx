@@ -54,7 +54,7 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
 	  this->RightObliqueSurfacePoints.push_back( tmp );
 	}
     }
- 
+
   unsigned int index;
   if ( this->RightHorizontalSurfacePoints.size() == 0 )
     {
@@ -125,7 +125,6 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
 
   double fissureTermValue = this->GetFissureTermValue();
   double vesselTermValue  = this->GetVesselTermValue();
-
   double value = this->FissureTermWeight*fissureTermValue + 500.0*this->VesselTermWeight*vesselTermValue +
     this->RegularizationWeight*regularizer;
 
@@ -134,6 +133,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
 
 double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermValue()
 {
+  cip::ChestConventions conventions;
+
   double fissureTermValue = 0.0;
 
   cip::PointType position(3);
@@ -162,7 +163,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     orientation[1] = this->FissureParticles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[1];
     orientation[2] = this->FissureParticles->GetPointData()->GetArray( "hevec2" )->GetTuple(i)[2];
 
-    float cipType = this->FissureParticles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0];
+    unsigned char cipType = conventions.GetChestTypeFromValue( 
+      this->FissureParticles->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple(i)[0] );
 
     // Determine the domain locations for which the particle is closest
     // to the right oblique and right horizontal TPS surfaces
@@ -217,7 +219,7 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     // Note that we only consider the right horizontal boundary surface provided that the
     // surface right horizontal surface point is above the right oblique surface
     // point or if the chest type is explicity set to HORIZONTALFISSURE
-    if ( cipType == float(cip::OBLIQUEFISSURE) )
+    if ( cipType == (unsigned char)(cip::OBLIQUEFISSURE) )
       {
 	fissureTermValue += roTerm;
       }
@@ -225,7 +227,7 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     else if ( (this->RightHorizontalNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
 	       GetSurfaceHeight( position[0], position[1] ) > this->RightObliqueNewtonOptimizer.
 	       GetMetric().GetThinPlateSplineSurface().GetSurfaceHeight( position[0], position[1] ) &&
-	       rhTerm < roTerm) || cipType == float(cip::HORIZONTALFISSURE) )
+	       rhTerm < roTerm) || cipType == (unsigned char)(cip::HORIZONTALFISSURE) )
       {
     	fissureTermValue += rhTerm;
       }
