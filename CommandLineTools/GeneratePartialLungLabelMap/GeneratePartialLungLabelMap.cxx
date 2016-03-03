@@ -28,7 +28,7 @@ int main( int argc, char *argv[] )
   PARSE_ARGS;
 
   cip::CTReaderType::Pointer reader = cip::CTReaderType::New();
-    reader->SetFileName( fileName.c_str() );
+    reader->SetFileName( ctFileName );
   try
     {
     reader->Update();
@@ -43,7 +43,7 @@ int main( int argc, char *argv[] )
   LowerClipImage( reader->GetOutput(), lowerClipValue, lowerReplacementValue );
 
   std::cout << "Clipping upper CT image values..." << std::endl;
-  UpperClipImage( rader->GetOutput(), upperClipValue, upperReplacementValue );
+  UpperClipImage( reader->GetOutput(), upperClipValue, upperReplacementValue );
 
   std::cout << "Executing partial lung filter..." << std::endl;
   PartialLungType::Pointer partialLungFilter = PartialLungType::New();
