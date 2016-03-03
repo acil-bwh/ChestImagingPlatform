@@ -46,11 +46,15 @@ class FissureParticles(ChestParticles):
 
     iterations : int (optional)
         The number of iterations for which to run the algorithm.
+
+    perm : bool (optional)
+        If true, allow mask and CT volumes to have different shapes or meta data
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, scale=0.9, live_thresh=-15,
                  seed_thresh=-45, down_sample_rate=1,
-                 min_intensity=-920, max_intensity=-400, iterations=200):
+                 min_intensity=-920, max_intensity=-400, iterations=200, 
+                 perm=False):
         ChestParticles.__init__(self, feature_type="ridge_surface",
             in_file_name=in_file_name, 
             out_particles_file_name=out_particles_file_name,
@@ -71,6 +75,8 @@ class FissureParticles(ChestParticles):
         self._no_add = 0
         self._cip_type = 'Fissure'
         self._verbose = 1
+        if perm:
+            self._permissive = True
  
     def execute(self):
         #Pre-processing
@@ -153,7 +159,9 @@ if __name__ == "__main__":
       dest="max_int", default=-400)
     parser.add_argument("--iters", help='Number of algorithm iterations \
       (default 200)', dest="iters", default=200)    
-    
+    parser.add_argument("--perm", help='Allow mask and CT volumes to have \
+      different shapes or meta data', dest="perm", action='store_true')          
+
     op = parser.parse_args()
     
     if op.tmp is not None:
@@ -163,7 +171,7 @@ if __name__ == "__main__":
 
     dp = FissureParticles(op.ict, op.op, tmp, op.ilm, float(op.scale), 
         float(op.lth), float(op.sth), float(op.rate), float(op.min_int), 
-        float(op.max_int), int(op.iters))
+        float(op.max_int), int(op.iters), op.perm)
     dp.execute()
     
     if op.tmp is None:
