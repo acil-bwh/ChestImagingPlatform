@@ -21,7 +21,8 @@ def test_execute():
     
     n_neighbors = 3
     beta = 10.
-    clf = HistDistKNN(n_neighbors=n_neighbors, beta=beta)
+    clf = HistDistKNN(n_neighbors=n_neighbors, beta=beta, \
+        classes = [1,2,3])
     clf.fit(hists, dists, y)
     class_label = clf.predict(test_hist, test_dist)
 
@@ -32,4 +33,11 @@ def test_execute():
     class_labels = clf.predict(test_hists, test_dists)
     assert class_labels[0] == 2 and class_labels[1] == 2, \
       "Class labels not as expected"
+     
+    class_probs = clf.predict_proba(test_hists, test_dists)
+    
+    assert(class_probs == np.array([[ 0., 1., 0.],
+       [ 0., 1., 0.]])).all(), "Probabilities not as expected"
+
+
     
