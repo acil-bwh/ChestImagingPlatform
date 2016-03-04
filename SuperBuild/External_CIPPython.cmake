@@ -17,11 +17,11 @@ else()
 endif()
 
 # Select the master branch by default
-if (PYTHON-DEBUG-MODE)
-	set (tag develop)
-else()
+# if (PYTHON-DEBUG-MODE)
+# 	set (tag develop)
+# else()
 	set (tag master)
-endif()
+# endif()
 
 
 # Install Miniconda
