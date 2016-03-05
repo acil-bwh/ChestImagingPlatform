@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>FitShapeModel</title>
+  <description><![CDATA[This program is used to fit the lung shape model (ASM) to CT image]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/FitShapeModel</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+        and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+  <parameters>
+    <label>I/O</label>
+    <image>
+      <name>imageFileName</name>
+      <flag>i</flag>
+      <longflag>image</longflag>
+      <label>Input Volume</label>
+      <channel>input</channel>
+      <description><![CDATA[Input image file name]]></description>
+      <default>NA</default>
+    </image>
+    <directory>
+      <name>shapeModelDir</name>
+      <label>Input Shape Model Data</label>
+      <channel>input</channel>
+      <flag>d</flag>
+      <longflag>modelDir</longflag>
+      <description><![CDATA[Input lung shape model (ASM) data directory]]></description>
+      <default>/Users/jinho/temp/</default>
+    </directory>
+    <image>
+      <name>outputFileName</name>
+      <label>Output Volume</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>output</longflag>
+      <description><![CDATA[Overlaid image with the result of fitting lung shape model]]></description>
+      <default>NA</default>
+    </image>
+    <geometry>
+      <name>outputGeometry</name>
+      <label>Output Geometry</label>
+      <channel>output</channel>
+      <flag>g</flag>
+      <longflag>outputGeometry</longflag>
+      <description><![CDATA[Output that contains geometry model.]]></description>
+    </geometry>
+  </parameters>
+  <parameters>
+    <label>Alignment Parameters</label>
+    <integer>
+      <name>offsetRL</name>
+      <flag>x</flag>
+      <longflag>offsetRL</longflag>
+      <label>offsetRL</label>
+      <channel>input</channel>
+      <description><![CDATA[Model offset along R - L. Default all (0)]]></description>
+      <constraints>
+          <minimum>-500</minimum>
+          <maximum>500</maximum>
+          <step>10</step>
+      </constraints>
+      <default>60</default>
+    </integer>
+    <integer>
+      <name>offsetAP</name>
+      <flag>y</flag>
+      <longflag>offsetAP</longflag>
+      <label>offsetAP</label>
+      <channel>input</channel>
+      <description><![CDATA[Model offset along A - P. Default all (0)]]></description>
+      <constraints>
+          <minimum>-500</minimum>
+          <maximum>500</maximum>
+          <step>10</step>
+      </constraints>
+      <default>30</default>
+    </integer>
+    <integer>
+      <name>offsetSI</name>
+      <flag>z</flag>
+      <longflag>offsetSI</longflag>
+      <label>offsetSI</label>
+      <channel>input</channel>
+      <description><![CDATA[Model offset along S - I. Default all (0)]]></description>
+      <constraints>
+          <minimum>-500</minimum>
+          <maximum>500</maximum>
+          <step>10</step>
+      </constraints>
+      <default>10</default>
+    </integer>
+  </parameters>
+  <parameters>
+    <label>Run Mode</label>
+    <string-enumeration>
+      <name>runMode</name>
+      <flag>r</flag>
+      <longflag>runMode</longflag>
+      <label>Run Mode</label>
+      <default>Alignment</default>
+      <element>Alignment</element>
+      <element>Fitting</element>
+    </string-enumeration>
+  </parameters>
+  <parameters>
+    <label>Fitting Parameters</label>
+    <double>
+      <name>searchLength</name>
+      <flag>l</flag>
+      <longflag>searchLength</longflag>
+      <label>Search Length</label>
+      <channel>input</channel>
+      <description><![CDATA[Search length per model point]]></description>
+      <constraints>
+          <minimum>10</minimum>
+          <maximum>200</maximum>
+          <step>10</step>
+      </constraints>
+      <default>100</default>
+    </double>
+    <double>
+      <name>sigma</name>
+      <flag>s</flag>
+      <longflag>sigma</longflag>
+      <label>Gaussian Gradient Sigma</label>
+      <channel>input</channel>
+      <description><![CDATA[Standard deviation of Gaussian gradient filter]]></description>
+      <constraints>
+          <minimum>1.0</minimum>
+          <maximum>10.0</maximum>
+          <step>0.1</step>
+      </constraints>
+      <default>1.5</default>
+    </double>
+    <double>
+      <name>decayFactor</name>
+      <flag>f</flag>
+      <longflag>decayFactor</longflag>
+      <label>Decay Factor</label>
+      <channel>input</channel>
+      <description><![CDATA[Decay factor of search length: 1.0: full, 0.0: no decay]]></description>
+      <constraints>
+          <minimum>0.0</minimum>
+          <maximum>1.0</maximum>
+          <step>0.1</step>
+      </constraints>
+      <default>0.8</default>
+    </double>
+    <integer>
+      <name>maxIteration</name>
+      <flag>m</flag>
+      <longflag>maxIteration</longflag>
+      <label>Maximum Iteration</label>
+      <channel>input</channel>
+      <description><![CDATA[Maximum number of iteration]]></description>
+      <constraints>
+          <minimum>10</minimum>
+          <maximum>1000</maximum>
+          <step>10</step>
+      </constraints>
+      <default>400</default>
+    </integer>
+    <integer>
+      <name>numModes</name>
+      <flag>n</flag>
+      <longflag>numModes</longflag>
+      <label>Number of Modes to Use</label>
+      <channel>input</channel>
+      <description><![CDATA[Number of modes to use]]></description>
+      <constraints>
+          <minimum>0</minimum>
+          <maximum>48</maximum>
+          <step>1</step>
+      </constraints>
+      <default>35</default>
+    </integer>
+  </parameters>
+</executable>
