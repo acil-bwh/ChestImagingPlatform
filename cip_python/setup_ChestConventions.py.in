@@ -7,6 +7,9 @@ cip_source_dir = '@CIP_SOURCE_DIR@'
 cip_library_dir = '@CIP_LIBRARY_DIR@'
 cip_python_dir = cip_source_dir + '/cip_python'
 
+#os.environ["CC"] = "@CMAKE_C_COMPILER@"
+#os.environ["CXX"] = "@CMAKE_CXX_COMPILER@"
+
 os.environ["CC"] = "/usr/bin/cc"
 os.environ["CXX"] = "/usr/bin/c++"
 

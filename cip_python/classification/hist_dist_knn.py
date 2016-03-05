@@ -25,11 +25,20 @@ class HistDistKNN():
     hist_comparison : string, optional
         Indicates what histogram comparison method to use when computing the
         histogram term in the metric.    
+    
+    classes : numpy array, shape (num_classes, 1)
+        contains the unique class labels. If None, will be inferred from the
+        training data.
+        
     """
-    def __init__(self, n_neighbors=5, beta=0, hist_comparison='l1_minkowski'):
+    def __init__(self, n_neighbors=5, beta=0, hist_comparison='l1_minkowski', classes = None):
         self.n_neighbors_ = n_neighbors
         self.beta_ = beta
         self.hist_comparison_ = hist_comparison
+        if classes is None:
+            self.classes_ = classes
+        else:    
+            self.classes_ = np.unique(classes)
         
     def fit(self, hists, dists, y):
         """Supply the training data to the classifier.
@@ -53,6 +62,12 @@ class HistDistKNN():
         self.hists_ = hists
         self.dists_ = dists
         self.y_ = y
+        
+        """ If classes was not input into the knn. It could be input
+            if we want to extract class probabilities for some classes
+            that are not in the training data"""
+        if (self.classes_ is None):
+            self.classes_ = np.unique(y)
 
     def predict(self, hist, dist):
         """Predict the class label of the input data point.
@@ -121,3 +136,90 @@ class HistDistKNN():
             else:
                 class_label = Counter(self.y_[ids]).most_common(1)[0][0]
         return class_label
+        
+
+    def predict_proba(self, hist, dist):
+        """Get the class probabilities for the input data point X.
+
+        Parameters
+        ----------
+        hist : array, shape ( B ) or shape ( M, B )
+            Histogram of the test sample or histograms of 'M' test samples.
+
+        dist : float or array, shape ( M ) 
+            Physical distance of test sample to structure of interest or 
+            vector of 'M' distances for 'M' test samples.
+        
+        Returns
+        -------
+        class_probabilities : array, shape (M, n_classes )
+            Array with class probabilities of the 'K' nearest neighbors 
+            for the 'M' test samples. n_classes is the number of self.y_ 
+            unique values. The classes are ordered in ascending order 
+            as per the numpy unique command
+        """
+        
+        if len(hist.shape) == 1:
+            mult_samples = False
+            n_samples = 1
+        else:
+            mult_samples = True
+            n_samples = hist.shape[0]
+        
+        num_classes = self.classes_.shape[0] #2#np.shape(self.classes_)[0]
+        #n_training_samples = np.shape(self.y_)[0]
+        class_probabilities = np.zeros([n_samples, num_classes])
+        # dictlist = [dict() for x in range(n)]
+
+        if mult_samples:
+            assert hist.shape[0] == dist.shape[0], \
+              "Mismatch between histogram and distance data dimension"
+            
+        print("Starting hisdistknn..")
+     
+        for i in xrange(0, n_samples):
+            # Compute the histogram component (hist_comp) of the overall metric
+            # value
+            hist_comp = None
+            if self.hist_comparison_ == 'l1_minkowski':
+                if mult_samples:
+                    hist_comp = sum(abs(hist[i, :] - self.hists_), 1)
+                else:
+                    hist_comp = sum(abs(hist - self.hists_), 1)                    
+            elif self.hist_comparison_ == 'euclidean':
+                if mult_samples:
+                    hist_comp = np.sqrt(sum(np.square(hist[i, :] - self.hists_), 1))
+                else:
+                    hist_comp = np.sqrt(sum(np.square(hist - self.hists_), 1))             
+            else:
+                raise ValueError('Unsupported histogram comparison method')
+    
+            # Compute the distance component (dist_comp) of the overall metric
+            # value
+            if mult_samples:
+                dist_comp = abs(dist[i] - self.dists_)
+            else:
+                dist_comp = abs(dist - self.dists_)
+    
+            # Now compute the complete metric values, and identify the nearest
+            # neighbors
+            metric_vals = hist_comp + self.beta_*dist_comp
+
+            nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
+            ids = metric_vals <= nth_metric_val
+
+            print("Now computing probabilities..")
+            
+            
+            if mult_samples:
+                for class_idx in range (0, num_classes): 
+                    """ For each class, get the class count. returns 0 if class not in data """
+                    class_probabilities[i][class_idx] = \
+                        np.float(Counter(self.y_[ids])[self.classes_[class_idx]])/np.float(self.n_neighbors_)
+                #class_label[i] = Counter(self.y_[ids]).most_common(1)[0][0]
+            else:
+                for class_idx in range (0, num_classes): 
+                    class_probabilities[class_idx] = \
+                        np.float(Counter(self.y_[ids])[self.classes_[class_idx]])/np.float(self.n_neighbors_)
+
+        return class_probabilities

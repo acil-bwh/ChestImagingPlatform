@@ -8,7 +8,7 @@ xml_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Testing", "
 xsd_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Resources", "Schemas", "GeometryTopologyData.xsd"))
 
 def test_geometry_topology_data_schema():
-    """ Validate the current sample xml file (geometryTopologyData-sample.xml) with the current schema
+    """ Validate the current sample xml file (Testing/Data/Input/geometryTopologyData.xml) with the current schema
     """
     # Read xml
     with open(xml_file, 'r+b') as f:

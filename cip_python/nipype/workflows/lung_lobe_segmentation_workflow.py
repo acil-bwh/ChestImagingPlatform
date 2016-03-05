@@ -86,11 +86,14 @@ class LungLobeSegmentationWorkflow(Workflow):
     sth : float, optional
       fissure_particles parameter. Threshold to use when initializing particles. 
       Must be less than zero.        
+    perm : bool, optional
+      fissure_particles parameter. Allow mask and CT volumes to have different 
+      shapes or meta data      .
     """
     def __init__(self, ct_file_name, lobe_seg_file_name, tmp_dir, reg=50, 
         ilap=None, irap=None, ilvp=None, irvp=None, ilm=None, ifp=None, 
         pre_dist=3.0, post_dist=3.0, pre_size=110, post_size=110, iters=200,
-        scale=0.9, lth=-15, sth=-45):
+        scale=0.9, lth=-15, sth=-45, perm=False):
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
         file_and_path = os.path.abspath(__file__)
@@ -165,7 +168,9 @@ class LungLobeSegmentationWorkflow(Workflow):
         fissure_particles_node.inputs.rate = 1.0
         fissure_particles_node.inputs.min_int = -920 
         fissure_particles_node.inputs.max_int =-400
-        fissure_particles_node.inputs.iters = 200  
+        fissure_particles_node.inputs.iters = 200
+        if perm:
+            fissure_particles_node.inputs.perm
         if ilm is not None:
             fissure_particles_node.inputs.ilm = ilm        
             
@@ -188,7 +193,7 @@ class LungLobeSegmentationWorkflow(Workflow):
         extract_left_particles = \
           pe.Node(interface=cip.ExtractParticlesFromChestRegionChestType(), 
                   name='extract_left_particles')
-        extract_left_particles.inputs.region = 'LeftLung'
+        extract_left_particles.inputs.cipr = 'LeftLung'
         extract_left_particles.inputs.op = self._leftFissureParticlesPreFiltered
         if ilm is not None:
             extract_left_particles.inputs.ilm = ilm
@@ -199,7 +204,7 @@ class LungLobeSegmentationWorkflow(Workflow):
         extract_right_particles = \
           pe.Node(interface=cip.ExtractParticlesFromChestRegionChestType(), 
                   name='extract_right_particles')        
-        extract_right_particles.inputs.region = 'RightLung'
+        extract_right_particles.inputs.cipr = 'RightLung'
         extract_right_particles.inputs.op = \
           self._rightFissureParticlesPreFiltered
         if ilm is not None:
@@ -425,7 +430,10 @@ if __name__ == "__main__":
       help='fissure_particles parameter. Threshold to use when initializing \
       particles. Must be less than zero. (Optional)',
       dest='sth', metavar='<float>', default=-45)
-    
+    parser.add_argument("--perm", 
+      help='fissure_particles parameter. Allow mask and CT volumes to have \
+      different shapes or meta data', dest="perm", action='store_true')    
+
     op = parser.parse_args()
 
     if op.in_ct is None:
@@ -439,7 +447,7 @@ if __name__ == "__main__":
         irvp=op.irvp, ilm=op.ilm, ifp=op.ifp, pre_dist=float(op.pre_dist), 
         post_dist=float(op.post_dist), pre_size=int(op.pre_size), 
         post_size=int(op.post_size), iters=int(op.iters), scale=float(op.scale),
-        lth=float(op.lth), sth=float(op.sth))
+        lth=float(op.lth), sth=float(op.sth), perm=op.perm)
 
     wf.run()
-    shutil.rmtree(tmp_dir)
+    #shutil.rmtree(tmp_dir)

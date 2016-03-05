@@ -776,7 +776,9 @@ void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<st
       std::list<unsigned char> cipTypeList;
       for (unsigned int j=0; j<reader->GetOutput()->GetNumberOfPoints(); j++)
 	{
-	  cipTypeList.push_back(static_cast<unsigned char>(reader->GetOutput()->GetPointData()->GetArray("ChestType")->GetTuple(j)[0]));
+	  unsigned char cipType = conventions.GetChestTypeFromValue(
+            (unsigned short)(reader->GetOutput()->GetPointData()->GetArray("ChestRegionChestType")->GetTuple(j)[0]));
+	  cipTypeList.push_back( cipType );
 	}
       cipTypeList.unique();
       cipTypeList.sort();
@@ -819,6 +821,8 @@ void AddParticlesToViewerUsingPresets(cipChestDataViewer* viewer, std::vector<st
 
 vtkSmartPointer<vtkPolyData> GetChestTypeParticlesPolyData(vtkSmartPointer<vtkPolyData> inParticles, unsigned char cipType)
 {
+  cip::ChestConventions conventions;
+
   std::vector< vtkSmartPointer<vtkFloatArray> > arrayVec;
 
   for (int i=0; i<inParticles->GetPointData()->GetNumberOfArrays(); i++)
@@ -836,8 +840,8 @@ vtkSmartPointer<vtkPolyData> GetChestTypeParticlesPolyData(vtkSmartPointer<vtkPo
   unsigned int inc = 0;
   for (unsigned int i=0; i<inParticles->GetNumberOfPoints(); i++)
     {
-      unsigned char tmpType = 
-	static_cast<unsigned char>(inParticles->GetPointData()->GetArray("ChestType")->GetTuple(i)[0]);
+      unsigned char tmpType = conventions.GetChestTypeFromValue(
+        (unsigned short)(inParticles->GetPointData()->GetArray("ChestRegionChestType")->GetTuple(i)[0]));
 
       if (tmpType == cipType)
 	{

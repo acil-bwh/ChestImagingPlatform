@@ -33,6 +33,8 @@ class fissure_particlesInputSpec(BaseInterfaceInputSpec):
       enhance the fissure features within the range [min_int, max_int]', 
       mandatory=False)     
     iters = traits.Int(desc='Number of algorithm iterations', mandatory=False)
+    perm = traits.Bool(desc="Allow mask and CT volumes to have different \
+      shapes or meta data.", argstr="--perm ")
     
 class fissure_particlesOutputSpec(TraitedSpec):      
     op = File(desc='Output particles (vtk format)', mandatory=False)

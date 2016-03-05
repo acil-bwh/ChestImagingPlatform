@@ -8,6 +8,9 @@ Created on Apr 6, 2015
 """
 
 import xml.etree.ElementTree as et
+import os
+import platform
+import time
 
 class GeometryTopologyData:
     # Coordinate System Constants
@@ -40,17 +43,47 @@ class GeometryTopologyData:
         self.points = []    # List of Point objects
         self.bounding_boxes = []    # List of BoundingBox objects
 
-    def add_point(self, point):
+        self.id_seed = 0    # Seed. The structures added with "add_point", etc. will have an id = id_seed + 1
+
+    def add_point(self, point, fill_auto_fields=True):
         """ Add a new Point to the structure
         :param point: Point object """
         self.points.append(point)
+        if fill_auto_fields:
+            self.fill_auto_fields(point)
 
-    def add_bounding_box(self, bounding_box):
+
+    def add_bounding_box(self, bounding_box, fill_auto_fields=True):
         """ Add a new BoundingBox to the structure
         :param bounding_box: BoundingBox object
         :return:
         """
         self.bounding_boxes.append(bounding_box)
+        if fill_auto_fields:
+            self.fill_auto_fields(bounding_box)
+
+
+    def fill_auto_fields(self, structure):
+        """ Fill "auto" fields like timestamp, username, etc, unless there is already a specified value
+        The id will be id_seed + 1
+        @param structure: object whose fields will be filled
+        """
+        if structure.__id__ == 0:
+            structure.__id__ = self.id_seed + 1
+            self.id_seed += 1
+        if not structure.timestamp:
+            structure.timestamp = GeometryTopologyData.get_timestamp()
+        if not structure.user_name:
+            structure.user_name = os.path.split(os.path.expanduser('~'))[-1]
+        if not structure.machine_name:
+            structure.machine_name = platform.node()
+
+    @staticmethod
+    def get_timestamp():
+        """ Get a timestamp of the current date in the preferred format
+        @return:
+        """
+        return time.strftime('%Y-%m-%d %H:%M:%S')
 
     def to_xml(self):
         """ Generate the XML string representation of this object.
@@ -80,8 +113,12 @@ class GeometryTopologyData:
             f.write(s)
 
     @staticmethod
-    def from_xml_file(xml_file):
-        with open(xml_file, 'r+b') as f:
+    def from_xml_file(xml_file_path):
+        """ Get a GeometryTopologyObject from a file
+        @param xml_file_path: file path
+        @return: GeometryTopologyData object
+        """
+        with open(xml_file_path, 'r+b') as f:
             xml = f.read()
             return GeometryTopologyData.from_xml(xml)
 
@@ -89,7 +126,7 @@ class GeometryTopologyData:
     def from_xml(xml):
         """ Build a GeometryTopologyData object from a xml string.
         All the coordinates will be float.
-        remark: It uses the ElementTree instead of lxml module to be compatible with Slicer
+        remark: Use the ElementTree instead of lxml module to be compatible with Slicer
         :param xml: xml string
         :return: new GeometryTopologyData object
         """
@@ -107,44 +144,39 @@ class GeometryTopologyData:
             geometry_topology.coordinate_system = geometry_topology.__coordinate_system_from_str__(s.text)
 
         geometry_topology.lps_to_ijk_transformation_matrix = geometry_topology.__read_transformation_matrix__(root)
-
+        seed = 0
         # Points
-        for point in root.findall("Point"):
-            geometry_topology.add_point(Point.from_xml_node(point))
-
-            # coordinates = []
-            # for coord in point.findall("Coordinate/value"):
-            #     coordinates.append(float(coord.text))
-            # chest_region = int(point.find("ChestRegion").text)
-            # chest_type = int(point.find("ChestType").text)
-            #
-            # # Description
-            # desc = point.find("Description")
-            # if desc is not None:
-            #     desc = desc.text
-            #
-            # geometry_topology.add_point(Point(coordinates, chest_region, chest_type, description=desc))
+        for xml_point_node in root.findall("Point"):
+            point = Point.from_xml_node(xml_point_node)
+            geometry_topology.add_point(point, fill_auto_fields=False)
+            if point.id > seed:
+                seed = point.id
 
         # BoundingBoxes
-        for bb in root.findall("BoundingBox"):
-            geometry_topology.add_bounding_box(BoundingBox.from_xml_node(point))
-            # coordinates_start = []
-            # for coord in bb.findall("Start/value"):
-            #     coordinates_start.append(float(coord.text))
-            # coordinates_size = []
-            # for coord in bb.findall("Size/value"):
-            #     coordinates_size.append(float(coord.text))
-            # chest_region = int(bb.find("ChestRegion").text)
-            # chest_type = int(bb.find("ChestType").text)
-            #
-            # # Description
-            # desc = bb.find("Description")
-            # if desc is not None:
-            #     desc = desc.text
-            #
-            # geometry_topology.add_bounding_box(BoundingBox(coordinates_start, coordinates_size, chest_region, chest_type, description=desc))
+        for xml_bb_node in root.findall("BoundingBox"):
+            bb = BoundingBox.from_xml_node(xml_bb_node)
+            geometry_topology.add_point(bb, fill_auto_fields=False)
+            geometry_topology.add_bounding_box(BoundingBox.from_xml_node(xml_bb_node), fill_auto_fields=False)
+            if bb.id > seed:
+                seed = bb.id
+
+        # Set the new seed so that every point (or bounding box) added with "add_point" has a bigger id
+        geometry_topology.id_seed = seed
 
         return geometry_topology
+
+
+    def get_hashtable(self):
+        """ Return a "hashtable" that will be a dictionary of hash:structure for every point or
+        bounding box present in the structure
+        @return:
+        """
+        hash = {}
+        for p in self.points:
+            hash[p.get_hash()] = p
+        for bb in self.bounding_boxes:
+            hash[bb.get_hash()] = bb
+        return hash
 
     @staticmethod
     def __to_xml_vector__(array, format_="%f"):
@@ -213,23 +245,130 @@ class GeometryTopologyData:
         return "<LPStoIJKTransformationMatrix>%s</LPStoIJKTransformationMatrix>" % s
 
 
-class Point:
-    def __init__(self, chest_region, chest_type, feature_type, coordinate, description=None, format_="%f"):
+class Structure(object):
+    def __init__(self, chest_region, chest_type, feature_type, description=None, format_="%f",
+                   timestamp=None, user_name=None, machine_name=None):
         """
-        :param coordinate: Vector of numeric coordinates
         :param chest_region: chestRegion Id
         :param chest_type: chestType Id
         :param feature_type: feature type Id (artifacts and others)
         :param description: optional description of the content the element
         :param format_: Default format to print the xml output coordinate values (also acceptable: %i for integers or customized)
-        :return:
+        :param timestamp: datetime in format "YYYY/MM/dd HH:mm:ss"
+        :param user_name: logged username
+        :param machine_name: name of the current machine
         """
-        self.coordinate = coordinate
+        self.__id__ = 0
         self.chest_region = chest_region
         self.chest_type = chest_type
         self.feature_type = feature_type
         self.description = description
         self.format = format_
+        self.timestamp = timestamp
+        self.user_name = user_name
+        self.machine_name = machine_name
+
+    @property
+    def id(self):
+        return self.__id__
+
+    def get_hash(self):
+        """ Get a unique identifier for this structure (string encoding all the fields)
+        @return:
+        """
+        return "%03d_%03d_%03d" % (self.chest_region, self.chest_type, self.feature_type)
+
+
+    @staticmethod
+    def from_xml_node(xml_node):
+        """ Return a new instance of a Point object from xml "Point" element
+        :param xml_node: xml Point element coming from a "find" instruction
+        :return: new instance of the structure
+        """
+        id = int(xml_node.find("Id").text)
+        chest_region = int(xml_node.find("ChestRegion").text)
+        chest_type = int(xml_node.find("ChestType").text)
+        featureNode = xml_node.find("ImageFeature")
+        if featureNode is None:
+            feature_type = 0
+        else:
+            feature_type = int(featureNode.text)
+
+        # Description
+        desc = xml_node.find("Description")
+        if desc is not None:
+            desc = desc.text
+
+        # Timestamp and user info
+        timestamp = xml_node.find("Timestamp")
+        if timestamp is not None:
+            timestamp = timestamp.text
+        user_name = xml_node.find("Username")
+        if user_name is not None:
+            user_name = user_name.text
+        machine_name = xml_node.find("MachineName")
+        if machine_name is not None:
+            machine_name = machine_name.text
+
+        structure = Structure(chest_region, chest_type, feature_type, description=desc, timestamp=timestamp,
+                         user_name=user_name, machine_name=machine_name)
+        structure.__id__ = id
+        return structure
+
+    def to_xml(self):
+        """ Get the xml string representation of the structure that can be appended to a concrete structure (Point,
+        BoundingBox, etc)
+        :return: xml string representation of the point
+        """
+        description = ''
+        if self.description is not None:
+            description = '<Description>%s</Description>' % self.description
+
+        timestamp = ''
+        if self.timestamp:
+            timestamp = '<Timestamp>%s</Timestamp>' % self.timestamp
+
+        user_name = ''
+        if self.user_name:
+            user_name = '<UserName>%s</UserName>' % self.user_name
+
+        machine_name = ''
+        if self.machine_name:
+            machine_name = '<MachineName>%s</MachineName>' % self.machine_name
+
+        return '<Id>%i</Id><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s%s%s%s' % \
+            (self.__id__, self.chest_region, self.chest_type, self.feature_type, description, timestamp, user_name, machine_name)
+
+
+class Point(Structure):
+    def __init__(self, chest_region, chest_type, feature_type, coordinate, description=None,
+                 timestamp=None, user_name=None, machine_name=None, format_="%f"):
+        """
+        :param id: bounding box id ("autonumeric")
+        :param chest_region: chestRegion Id
+        :param chest_type: chestType Id
+        :param feature_type: feature type Id (artifacts and others)
+        :param coordinate: Vector of numeric coordinates
+        :param description: optional description of the content the element
+        :param format_: Default format to print the xml output coordinate values (also acceptable: %i for integers or customized)
+        :param timestamp: datetime in format "YYYY/MM/dd HH:mm:ss"
+        :param user_name: logged username
+        :param machine_name: name of the current machine
+        :return:
+        """
+        super(Point, self).__init__(chest_region, chest_type, feature_type, description=description,
+                                timestamp=timestamp, user_name=user_name, machine_name=machine_name, format_=format_)
+
+        self.coordinate = coordinate
+
+    def get_hash(self):
+        """ Get a unique identifier for this structure (string encoding all the fields)
+        @return:
+        """
+        s = super(Point, self).get_hash()
+        for c in self.coordinate:
+            s += "_%f" % c
+        return s
 
     @staticmethod
     def from_xml_node(xml_point_node):
@@ -237,57 +376,64 @@ class Point:
         :param xml_point_node: xml Point element coming from a "find" instruction
         :return: new instance of Point
         """
+        structure = Structure.from_xml_node(xml_point_node)
+
         coordinates = []
         for coord in xml_point_node.findall("Coordinate/value"):
             coordinates.append(float(coord.text))
-        chest_region = int(xml_point_node.find("ChestRegion").text)
-        chest_type = int(xml_point_node.find("ChestType").text)
-        featureNode = xml_point_node.find("ImageFeature")
-        if featureNode is None:
-            feature_type = 0
-        else:
-            feature_type = int(featureNode.text)
 
-        # Description
-        desc = xml_point_node.find("Description")
-        if desc is not None:
-            desc = desc.text
-
-        return Point(chest_region, chest_type, feature_type, coordinates, description=desc)
+        p = Point(structure.chest_region, structure.chest_type, structure.feature_type, coordinates,
+                     description=structure.description, timestamp=structure.timestamp, user_name=structure.user_name,
+                     machine_name=structure.machine_name)
+        p.__id__ = structure.__id__
+        return p
 
     def to_xml(self):
         """ Get the xml string representation of the point
         :return: xml string representation of the point
         """
+        # lines = super(FileCatNoEmpty, self).cat(filepath)
+        structure = super(Point, self).to_xml()
+
+
         coords = GeometryTopologyData.__to_xml_vector__(self.coordinate, self.format)
-        description_str = ''
-        if self.description is not None:
-            description_str = '<Description>%s</Description>' % self.description
+        # description_str = ''
+        # if self.description is not None:
+        #     description_str = '<Description>%s</Description>' % self.description
 
-        return '<Point><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s<Coordinate>%s</Coordinate></Point>' % \
-            (self.chest_region, self.chest_type, self.feature_type, description_str, coords)
+        return '<Point>%s<Coordinate>%s</Coordinate></Point>' % (structure, coords)
 
 
-class BoundingBox:
-    def __init__(self, chest_region, chest_type, feature_type, start, size, description=None, format_="%f"):
+class BoundingBox(Structure):
+    def __init__(self, chest_region, chest_type, feature_type, start, size, description=None,
+                 timestamp=None, user_name=None, machine_name=None, format_="%f"):
         """
-        :param start: vector of coordinates for the starting point of the Bounding Box
-        :param size: vector that contains the size of the bounding box
         :param chest_region: chestRegion Id
         :param chest_type: chestType Id
         :param feature_type: feature type Id (artifacts and others)
+        :param start: vector of coordinates for the starting point of the Bounding Box
+        :param size: vector that contains the size of the bounding box
         :param description: optional description of the content the element
         :param format_: Default format to print the xml output coordinate values (also acceptable: %i for integers or customized)
-        :return:
+        :param timestamp: datetime in format "YYYY/MM/dd HH:mm:ss"
+        :param user_name: logged username
+        :param machine_name: name of the current machine
         """
-        self.chest_region = chest_region
-        self.chest_type = chest_type
-        self.feature_type = feature_type
+        super(BoundingBox, self).__init__(chest_region, chest_type, feature_type, description=description,
+                                timestamp=timestamp, user_name=user_name, machine_name=machine_name, format_=format_)
         self.start = start
         self.size = size
-        self.description = description
-        self.format = format_       # Default format to print the xml output coordinate values (also acceptable: %i or customized)
 
+    def get_hash(self):
+        """ Get a unique identifier for this structure (string encoding all the fields)
+        @return:
+        """
+        s = super(BoundingBox, self).get_hash()
+        for c in self.start:
+            s += "_%f" % c
+        for c in self.size:
+            s += "_%f" % c
+        return s
 
     @staticmethod
     def from_xml_node(xml_bounding_box_node):
@@ -295,26 +441,19 @@ class BoundingBox:
         :param xml_bounding_box_node: xml BoundingBox element coming from a "find" instruction
         :return: new instance of BoundingBox
         """
+        structure = Structure.from_xml_node(xml_bounding_box_node)
         coordinates_start = []
         for coord in xml_bounding_box_node.findall("Start/value"):
             coordinates_start.append(float(coord.text))
         coordinates_size = []
         for coord in xml_bounding_box_node.findall("Size/value"):
             coordinates_size.append(float(coord.text))
-        chest_region = int(xml_bounding_box_node.find("ChestRegion").text)
-        chest_type = int(xml_bounding_box_node.find("ChestType").text)
-        featureNode = xml_bounding_box_node.find("ImageFeature")
-        if featureNode is None:
-            feature_type = 0
-        else:
-            feature_type = int(featureNode.text)
-        # Description
-        desc = xml_bounding_box_node.find("Description")
-        if desc is not None:
-            desc = desc.text
 
-        return BoundingBox(chest_region, chest_type, feature_type, coordinates_start, coordinates_size, description=desc)
-
+        bb = BoundingBox(structure.chest_region, structure.chest_type, structure.feature_type,
+                    coordinates_start, coordinates_size, description=structure.description,
+                    timestamp=structure.timestamp, user_name=structure.user_name, machine_name=structure.machine_name)
+        bb.__id__ = structure.__id__
+        return bb
 
     def to_xml(self):
         """ Get the xml string representation of the bounding box
@@ -322,9 +461,8 @@ class BoundingBox:
         """
         start_str = GeometryTopologyData.__to_xml_vector__(self.start, self.format)
         size_str = GeometryTopologyData.__to_xml_vector__(self.size, self.format)
-        description_str = ''
-        if self.description is not None:
-            description_str = '<Description>%s</Description>' % self.description
-        return '<BoundingBox><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType>' \
-               '<ImageFeature>%i</ImageFeature>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % \
-            (self.chest_region, self.chest_type, self.feature_type, description_str, start_str, size_str)
+        structure = super(BoundingBox, self).to_xml()
+
+        return '<BoundingBox>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % (structure, start_str, size_str)
+
+

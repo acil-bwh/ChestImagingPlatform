@@ -155,9 +155,13 @@ find_package(Git REQUIRED)
 
 set(ep_common_c_flags "${CMAKE_C_FLAGS_INIT} ${ADDITIONAL_C_FLAGS}")
 set(ep_common_cxx_flags "${CMAKE_CXX_FLAGS_INIT} ${ADDITIONAL_CXX_FLAGS}")
-if (APPLE)
-  set(ep_common_cxx_flags "${ep_common_cxx_flags} -stdlib=libstdc++ -mmacosx-version-min=10.6")
+set (USE_CYTHON ON CACHE BOOL "Use Cython to wrap ChestConventions")
+# Cython compatibility with El Capitan and other OS
+if (APPLE AND USE_CYTHON AND NOT CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "" AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "10.10")
+  set(CIP_CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6" CACHE INTERNAL "Cython compatibility")
 endif()
+
+
 
 include(ExternalProject)
 include(ExternalProjectDependency)
@@ -236,6 +240,7 @@ set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the
 mark_as_superbuild(
  VARS
    CIP_PYTHON_DIR:PATH
+   CIP_CMAKE_CXX_FLAGS:STRING
 )
 
 #------------------------------------------------------------------------------
@@ -481,7 +486,9 @@ ExternalProject_Add(${proj}
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${${PROJECT_NAME}_EXTERNAL_PROJECT_ARGS}
     -D${PRIMARY_PROJECT_NAME}_SUPERBUILD:BOOL=OFF    #NOTE: VERY IMPORTANT reprocess top level CMakeList.txt
+    -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${CIP_CMAKE_CXX_FLAGS}
   INSTALL_COMMAND ""
+  
   )
 
 ### Force rebuilding of the main subproject every time building from super structure
