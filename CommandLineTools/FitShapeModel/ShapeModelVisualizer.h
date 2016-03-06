@@ -16,12 +16,12 @@ public:
                         const std::string& outputName,
                         const std::string& outputGeomName );
   virtual ~ShapeModelVisualizer();
-  void update();
-  void writeVTKPointsToOBJ( vtkSmartPointer< vtkPoints > points );
+  void update( double sigma, int iteration = 0 );
+  void writeVTKPointsToOBJ( vtkSmartPointer< vtkPoints > points, int iteration );
 
 protected:
   void updateMeshPoints( vtkSmartPointer< vtkPoints > points );
-  void createGradientMagnitudeImage();
+  void createGradientMagnitudeImage( double sigma );
 
 private:
   const ShapeModel& _shapeModel;

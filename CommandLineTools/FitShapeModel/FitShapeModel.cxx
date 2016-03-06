@@ -96,7 +96,7 @@ namespace
 
     if (runMode == "Alignment")
     {
-      visualizer.update();
+      visualizer.update( sigma );
     }
     else if (runMode == "Fitting")
     {
@@ -107,12 +107,13 @@ namespace
                      sigma,
                      decayFactor,
                      maxIteration,
+                     poseOnlyIteration,
                      numModes,
                      visualizer );
 
       std::cout << "Fitting took " << t.elapsed() << " sec." << std::endl;
 
-      visualizer.update();
+      visualizer.update( sigma );
     } // for fitting
 
     std::cout << "DONE." << std::endl;

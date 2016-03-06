@@ -14,11 +14,11 @@ ShapeModelVisualizer::ShapeModelVisualizer( const ShapeModel& shapeModel,
                                             ImageType::Pointer image,
                                             const std::string& outputName,
                                             const std::string& outputGeomName )
-: _shapeModel(shapeModel),
-  _mesh(mesh),
-  _image(image),
-  _outputName(outputName),
-  _outputGeomName(outputGeomName)
+: _shapeModel( shapeModel ),
+  _mesh( mesh ),
+  _image( image ),
+  _outputName( outputName ),
+  _outputGeomName( outputGeomName )
 {
 }
 
@@ -43,11 +43,11 @@ ShapeModelVisualizer::updateMeshPoints( vtkSmartPointer< vtkPoints > vpoints )
 }
 
 void
-ShapeModelVisualizer::createGradientMagnitudeImage()
+ShapeModelVisualizer::createGradientMagnitudeImage( double sigma )
 {
   GradientMagnitudeRecursiveGaussianImageFilterType::Pointer gradientMagnitudeFilter = GradientMagnitudeRecursiveGaussianImageFilterType::New();
   gradientMagnitudeFilter->SetInput( _image );
-  gradientMagnitudeFilter->SetSigma( 1.5 );
+  gradientMagnitudeFilter->SetSigma( sigma );
   try
   {
     std::cout << "Running gradient magnitude filter..." << std::endl;
@@ -62,7 +62,7 @@ ShapeModelVisualizer::createGradientMagnitudeImage()
 }
 
 void
-ShapeModelVisualizer::update()
+ShapeModelVisualizer::update( double sigma, int iteration /*=0*/)
 {
   updateMeshPoints( _shapeModel.getPolyData()->GetPoints() );
 
@@ -115,35 +115,56 @@ ShapeModelVisualizer::update()
     {
       iit.Value() = it.Value() + (iit.Value() * 0.2 * maxValue); // match the highest intensity of the original image
     }
-  }
-  else // use Gaussian gradient magnitude image for overlay output
-  {
-    createGradientMagnitudeImage();
 
-    ///* reference to combine with gradient magnitude image
-    IteratorType git( _gradientMagnitudeImage, _gradientMagnitudeImage->GetLargestPossibleRegion() );
-    for (git.GoToBegin(), iit.GoToBegin(); !iit.IsAtEnd(); ++git, ++iit)
+    // Write the output to file (or new volume in memory)
+    std::cout << "Writing output..." << std::endl;
+    ImageWriterType::Pointer writer = ImageWriterType::New();
+    writer->SetFileName( _outputName.c_str() );
+    writer->UseCompressionOff();
+    writer->SetInput( meshBinaryImage );
+
+    try
     {
-      iit.Value() = git.Value() + (iit.Value() * 200); // match the highest intensity of the original image
+      writer->Update();
+    }
+    catch (itk::ExceptionObject& e)
+    {
+      throw std::runtime_error( e.what() );
     }
   }
 
-  ImageType::Pointer outputImage = meshBinaryImage;
+  // this flag is mostly for debugging purpose and it takes some time
+  // for a larger size of input images
+  bool useGradientMagnitudeImage = false;
 
-  // Write the output to file (or new volume in memory)
-  std::cout << "Writing output..." << std::endl;
-  ImageWriterType::Pointer writer = ImageWriterType::New();
-  writer->SetFileName( _outputName.c_str() );
-  writer->UseCompressionOff();
-  writer->SetInput( outputImage );
+  if (useGradientMagnitudeImage) // use Gaussian gradient magnitude image for overlay output
+  {
+    createGradientMagnitudeImage( sigma );
 
-  try
-  {
-    writer->Update();
-  }
-  catch (itk::ExceptionObject& e)
-  {
-    throw std::runtime_error( e.what() );
+    /*
+    IteratorType git( _gradientMagnitudeImage, _gradientMagnitudeImage->GetLargestPossibleRegion() );
+    for (git.GoToBegin(), iit.GoToBegin(); !iit.IsAtEnd(); ++git, ++iit)
+    {
+      git.Value() = git.Value() + (iit.Value() * 200); // match the highest intensity of the original image
+    }
+    */
+
+    // Write the output to file (or new volume in memory)
+    std::cout << "Writing output with gradient magnitude image..." << std::endl;
+    ImageWriterType::Pointer writer = ImageWriterType::New();
+    std::string magOutputName = _outputName + "-" + int2str(iteration) + ".nrrd";
+    writer->SetFileName( magOutputName.c_str() );
+    writer->UseCompressionOff();
+    writer->SetInput( _gradientMagnitudeImage );
+
+    try
+    {
+      writer->Update();
+    }
+    catch (itk::ExceptionObject& e)
+    {
+      throw std::runtime_error( e.what() );
+    }
   }
 
   // Write output geometry
@@ -169,18 +190,20 @@ ShapeModelVisualizer::update()
     meshWriter->Write(); // write original mesh
 
     // save OBJ
-    writeVTKPointsToOBJ( polydata->GetPoints() );
+    writeVTKPointsToOBJ( polydata->GetPoints(), iteration );
 
   }
 }
 
 void
-ShapeModelVisualizer::writeVTKPointsToOBJ( vtkSmartPointer< vtkPoints > points )
+ShapeModelVisualizer::writeVTKPointsToOBJ( vtkSmartPointer< vtkPoints > points, int iteration )
 {
+  std::string outputGeomName = _outputGeomName + "-" + int2str(iteration) + ".obj";
+
   updateMeshPoints( points );
 
   MeshWriterType::Pointer meshWriter = MeshWriterType::New();
-  meshWriter->SetFileName((_outputGeomName + "-1.obj").c_str());
+  meshWriter->SetFileName(outputGeomName.c_str());
   meshWriter->SetInput( _mesh );
   try
   {

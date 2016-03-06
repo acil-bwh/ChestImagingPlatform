@@ -27,6 +27,7 @@ ShapeModelOptimizer::run( double maxSearchLength,
                           double sigma,
                           double decayFactor,
                           int maxIteration,
+                          int poseOnlyIteration,
                           int numModes,
                           ShapeModelVisualizer& visualizer )
 {
@@ -73,13 +74,18 @@ ShapeModelOptimizer::run( double maxSearchLength,
   // repeat pose & shape estimation
   // *******************************************************************
   enum FitMode { POSE_ONLY, SHAPE_ONLY, POSE_AND_SHAPE }; // internal for experiment
-  FitMode fitMode = POSE_AND_SHAPE; // estimate pose first
+  FitMode fitMode = POSE_ONLY; // estimate pose first
 
   double p[3];
   double n[3];
 
   for (int m = 0; m < maxIteration; m++)
   {
+    if (m >= poseOnlyIteration)
+    {
+      fitMode = POSE_AND_SHAPE;
+    }
+
     vtkSmartPointer< vtkPolyData > polydata = _shapeModel.getPolyData();
     vtkSmartPointer< vtkPoints > currentImagePoints = polydata->GetPoints();
 

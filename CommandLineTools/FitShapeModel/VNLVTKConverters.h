@@ -15,4 +15,7 @@ double computeMaximumDistanceBetweenTwoPointSets( vtkPoints* source, vtkPoints* 
 double computeAverageDistanceBetweenTwoPointSets( vtkPoints* source, vtkPoints* target );
 void computeDistanceBetweenTwoPointSets( vtkPoints* source, vtkPoints* target, double& avgDist, double& maxDist );
 
+// other utilities
+std::string int2str( int i );
+
 #endif

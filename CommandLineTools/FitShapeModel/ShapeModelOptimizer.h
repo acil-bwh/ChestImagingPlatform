@@ -27,6 +27,7 @@ public:
             double sigma,
             double decayFactor,
             int maxIteration,
+            int poseOnlyIteration,
             int numModes,
             ShapeModelVisualizer& visualizer );
 

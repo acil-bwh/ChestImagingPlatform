@@ -132,9 +132,9 @@
       <constraints>
           <minimum>1.0</minimum>
           <maximum>10.0</maximum>
-          <step>0.1</step>
+          <step>0.5</step>
       </constraints>
-      <default>1.5</default>
+      <default>3.0</default>
     </double>
     <double>
       <name>decayFactor</name>
@@ -163,6 +163,20 @@
           <step>10</step>
       </constraints>
       <default>400</default>
+    </integer>
+    <integer>
+      <name>poseOnlyIteration</name>
+      <flag>p</flag>
+      <longflag>poseOnlyIteration</longflag>
+      <label>First N Iterations for Pose Only</label>
+      <channel>input</channel>
+      <description><![CDATA[First N iterations for pose estimation only]]></description>
+      <constraints>
+          <minimum>0</minimum>
+          <maximum>100</maximum>
+          <step>10</step>
+      </constraints>
+      <default>40</default>
     </integer>
     <integer>
       <name>numModes</name>

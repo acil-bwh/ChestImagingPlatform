@@ -2,6 +2,7 @@
 #include <vtkMath.h>
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
 
 // -------------------------------------------------------------------------
 // helper methods
@@ -108,4 +109,15 @@ computeDistanceBetweenTwoPointSets( vtkPoints* source, vtkPoints* target, double
     maxDist = std::max( maxDist, dist );
   }
   avgDist = sumDist / numPoints;
+}
+
+// ----------------------------------
+// other utilities
+// ----------------------------------
+
+std::string int2str( int i )
+{
+  std::stringstream sstr;
+  sstr << i;
+  return sstr.str();
 }
