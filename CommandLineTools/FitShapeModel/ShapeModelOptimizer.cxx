@@ -33,24 +33,18 @@ ShapeModelOptimizer::run( double maxSearchLength,
   prepareGradientImages( sigma );
 
   ImageType::SpacingType spacing = _image->GetSpacing();
-  double minSpacing = std::min( std::min(spacing[0], spacing[1]), spacing[2] );
 
   // examine gradient image for each model point along normal axis
-  const double stepSearch = minSpacing; // use minimum spacing
   const double threshold = 0.1; // stopping criteria (maximum difference)
   const double minSearchLength = (1.0 - decayFactor) * maxSearchLength;
 
   std::cout << "=============== Fitting Parameters ===============" << std::endl;
   std::cout << "Starting search length: "        << maxSearchLength << std::endl;
-  std::cout << "Search step size: "              << stepSearch      << std::endl;
   std::cout << "Gaussian gradient sigma: "       << sigma           << std::endl;
   std::cout << "Decay factor of search length: " << decayFactor     << std::endl;
   std::cout << "Max iterations: "                << maxIteration    << std::endl;
   std::cout << "Number of modes to use: "        << numModes        << std::endl;
   std::cout << "==================================================" << std::endl;
-
-  double p[3];
-  double n[3];
 
   unsigned int numPoints = _shapeModel.getNumberOfPoints();
 
@@ -81,6 +75,9 @@ ShapeModelOptimizer::run( double maxSearchLength,
   enum FitMode { POSE_ONLY, SHAPE_ONLY, POSE_AND_SHAPE }; // internal for experiment
   FitMode fitMode = POSE_AND_SHAPE; // estimate pose first
 
+  double p[3];
+  double n[3];
+
   for (int m = 0; m < maxIteration; m++)
   {
     vtkSmartPointer< vtkPolyData > polydata = _shapeModel.getPolyData();
@@ -97,13 +94,17 @@ ShapeModelOptimizer::run( double maxSearchLength,
 
     double t = m / (double)(maxIteration - 1);
     double searchLength = (1 - t) * maxSearchLength + t * minSearchLength;
-    int N = (int)(searchLength / stepSearch / 2.0); // num steps per side
 
     double maxMaxMag = 0;
 
     std::vector< PointType > vecOrgPt; // temporary container
     std::vector< PointType > vecQt; // temporary container
     std::vector< double > vecMaxMag; // temporary container
+    vnl_matrix< double > spacingMatrix( 3, 3 ); // to calculate a proper step search depending on normal
+    spacingMatrix.set_identity();
+    spacingMatrix( 0, 0 ) = spacing[0];
+    spacingMatrix( 1, 1 ) = spacing[1];
+    spacingMatrix( 2, 2 ) = spacing[2];
 
     for (unsigned int i = 0; i < numPoints; i++)
     {
@@ -120,11 +121,15 @@ ShapeModelOptimizer::run( double maxSearchLength,
       double maxMag = 0; // maximum gradient magnitude for one sample
       IndexType pixelIndex, lastInsidePixelIndex;
 
+      vnl_vector< double > nvec( n, 3 );
+      double stepSearch = (spacingMatrix * nvec).magnitude(); // step search depends on the spacing values
+      int N = (int)(searchLength / stepSearch / 2.0 + 0.5); // num steps per side
+
       for (int j = -N; j < N; j++) // explore image space along the normal
       {
         for (int k = 0; k < 3; k++)
         {
-          pt[k] = orgPt[k] + j * spacing[k] * n[k];
+          pt[k] = orgPt[k] + j * stepSearch * n[k];
         }
         bool isInside = _gradientImage->TransformPhysicalPointToIndex( pt, pixelIndex );
         if (isInside)
@@ -163,7 +168,7 @@ ShapeModelOptimizer::run( double maxSearchLength,
       double maxMag = vecMaxMag[i];
 
       PointType::VectorType diff = qt - orgPt; // full offset
-      PointType::VectorType::ValueType f = maxMag / maxMaxMag; // fraction of full offset
+      PointType::VectorType::ValueType f = maxMag / std::max( maxMaxMag, 1.0 ); // fraction of full offset
       qt = orgPt + f * diff; // final target point
       targetImagePoints->SetPoint( i, qt[0], qt[1], qt[2] );
     }
@@ -171,7 +176,7 @@ ShapeModelOptimizer::run( double maxSearchLength,
     double avgDist = computeAverageDistanceBetweenTwoPointSets( currentImagePoints, targetImagePoints );
     std::cout << (fitMode == POSE_ONLY ? "[P] " : (fitMode == SHAPE_ONLY ? "[S] " : "[P+S] "));
     std::cout << "Iteration: " << m << " -----" << std::endl;
-    std::cout << "   search range [" << -N * stepSearch << " " << N * stepSearch << "]" << std::endl;
+    std::cout << "   search range [" << -searchLength/2.0 << " " << searchLength/2.0 << "]" << std::endl;
     std::cout << "   average distance to target image points: " << avgDist << std::endl;
     std::cout << "   max magnitude amaong all sample directions: " << maxMaxMag << std::endl;
 
