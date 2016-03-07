@@ -127,7 +127,7 @@ ExternalProject_Add_Step(${proj} installnetworkx
 
 ExternalProject_Add_Step(${proj} installnibabel
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel 
-	DEPENDEES installpandas
+	DEPENDEES installnetworkx
 )
 
 ExternalProject_Add_Step(${proj} installnipype
