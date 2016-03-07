@@ -120,6 +120,11 @@ ShapeModelOptimizer::run( double maxSearchLength,
       PointType orgPt( p );
       CovPixelType normal( n );
 
+      normal.Normalize(); // vtkPolyDataNormals does not always return normalized normals!
+      n[0] = normal[0];
+      n[1] = normal[1];
+      n[2] = normal[2];
+
       qt = orgPt; // target image point
 
       // search for maximum gradient magnitude
