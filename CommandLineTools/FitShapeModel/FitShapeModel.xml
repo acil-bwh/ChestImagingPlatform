@@ -187,7 +187,7 @@
       <description><![CDATA[Number of modes to use]]></description>
       <constraints>
           <minimum>0</minimum>
-          <maximum>48</maximum>
+          <maximum>200</maximum>
           <step>1</step>
       </constraints>
       <default>35</default>
