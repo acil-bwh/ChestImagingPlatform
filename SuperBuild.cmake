@@ -230,6 +230,7 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
+option(USE_CYTHON "Use Cython to Wrap ChestConventions" ON)
 
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
@@ -237,11 +238,6 @@ set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
 set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
 
-mark_as_superbuild(
- VARS
-   CIP_PYTHON_DIR:PATH
-   CIP_CMAKE_CXX_FLAGS:STRING
-)
 
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
@@ -250,7 +246,24 @@ set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 if (WIN32) # libxml2 is a prerequisite for other platforms
   set(LIBXML2_EXTERNAL_NAME LibXml2)
+else()
+  find_package(LibXml2)
+  if (NOT LIBXML2_INCLUDE_DIR)
+    # Try to use CIPPython libraries
+    message("LIBXML libraries NOT found. Use CIPPython ones")
+    SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_DIR}/include/libxml2 CACHE PATH "")
+    SET (LIBXML2_LIBRARIES ${CIP_PYTHON_DIR}/lib/libxml2.dylib CACHE PATH "")
+    SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_DIR}/bin/xmllint CACHE FILEPATH "")
+  endif()
 endif()
+
+mark_as_superbuild(
+ VARS
+   CIP_PYTHON_DIR:PATH
+   CIP_CMAKE_CXX_FLAGS:STRING
+)
+
+
 
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
 set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
@@ -354,6 +367,14 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
   PYTHON_EXECUTABLE:FILEPATH
   PYTHON_INCLUDE_DIR:PATH
   PYTHON_LIBRARY:FILEPATH
+  BUILD_EXAMPLES:BOOL
+  BUILD_TESTING:BOOL
+  ITK_VERSION_MAJOR:STRING
+  ITK_DIR:PATH    
+  USE_CYTHON:BOOL
+  LIBXML2_INCLUDE_DIR:PATH
+  LIBXML2_LIBRARIES:PATH
+  LIBXML2_XMLLINT_EXECUTABLE:FILEPATH
   )
 
 #if(${PRIMARY_PROJECT_NAME}_USE_QT)
@@ -393,11 +414,6 @@ set(${PRIMARY_PROJECT_NAME}_CLI_INSTALL_ARCHIVE_DESTINATION  lib)
 # Add external project CMake args
 #-----------------------------------------------------------------------------
 list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
-  BUILD_EXAMPLES:BOOL
-  BUILD_TESTING:BOOL
-  ITK_VERSION_MAJOR:STRING
-  ITK_DIR:PATH
-
   ${PRIMARY_PROJECT_NAME}_CLI_LIBRARY_OUTPUT_DIRECTORY:PATH
   ${PRIMARY_PROJECT_NAME}_CLI_ARCHIVE_OUTPUT_DIRECTORY:PATH
   ${PRIMARY_PROJECT_NAME}_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH
