@@ -109,29 +109,28 @@ ExternalProject_Add_Step(${proj} matplotlib
 	DEPENDEES installscikit-image
 )
 
-
-ExternalProject_Add_Step(${proj} installpynrrd
-	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --yes --quiet pynrrd  
+ExternalProject_Add_Step(${proj} installnetworkx
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet networkx  
 	DEPENDEES matplotlib
 )
 
+ExternalProject_Add_Step(${proj} installpynrrd
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
+	DEPENDEES installnetworkx
+)
+
 ExternalProject_Add_Step(${proj} installpydicom
-	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --yes --quiet pydicom  
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pydicom  
 	DEPENDEES installpynrrd
 )
 
-ExternalProject_Add_Step(${proj} installnetworkx
-	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet networkx  
-	DEPENDEES installpandas
-)
-
 ExternalProject_Add_Step(${proj} installnibabel
-	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --yes --quiet nibabel 
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel 
 	DEPENDEES installnetworkx
 )
 
 ExternalProject_Add_Step(${proj} installnipype
-	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --yes --quiet nipype
+	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nipype
 	DEPENDEES installnibabel
 )
 
