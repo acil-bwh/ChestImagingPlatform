@@ -38,6 +38,8 @@ private:
   ShapeModel& _shapeModel;
   ImageType::Pointer _image;
   CovImageType::Pointer _gradientImage;
+  GradientInterpolatorType::Pointer _gradientInterpolator;
+  bool _interpolateGradient;
 };
 
 #endif

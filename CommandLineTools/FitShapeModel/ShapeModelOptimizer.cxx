@@ -12,7 +12,9 @@
 
 ShapeModelOptimizer::ShapeModelOptimizer( ShapeModel& shapeModel,
                                           ImageType::Pointer image )
-: _shapeModel(shapeModel), _image(image)
+: _shapeModel(shapeModel),
+  _image(image),
+  _interpolateGradient(true)
 {
   // make sure shape model already contains its initial transform at this time
   std::cout << "Initial transform: " << *_shapeModel.getTransform() << std::endl;
@@ -153,7 +155,9 @@ ShapeModelOptimizer::run( double maxSearchLength,
           pt = lastInsidePt;
           pixelIndex = lastInsidePixelIndex;
         }
-        CovPixelType gradDir = _gradientImage->GetPixel( pixelIndex );
+        CovPixelType gradDir = (_interpolateGradient)
+                               ? _gradientInterpolator->Evaluate( pt )
+                               : _gradientImage->GetPixel( pixelIndex );
         double mag = gradDir.GetNorm();
         if (normal * gradDir > 0 && mag > maxMag)
         {
@@ -272,4 +276,10 @@ ShapeModelOptimizer::prepareGradientImages( double sigma )
     throw std::runtime_error( e.what() );
   }
   _gradientImage = gradientFilter->GetOutput();
+
+  if (_interpolateGradient)
+  {
+    _gradientInterpolator = GradientInterpolatorType::New();
+    _gradientInterpolator->SetInputImage(_gradientImage);
+  }
 }

@@ -11,6 +11,7 @@
 #include "itkTriangleMeshToBinaryImageFilter.h"
 #include "itkGradientMagnitudeRecursiveGaussianImageFilter.h"
 #include "itkGradientRecursiveGaussianImageFilter.h"
+#include "itkVectorLinearInterpolateImageFunction.h"
 
 const unsigned int Dimension = 3; // fixed dimension
 
@@ -33,6 +34,15 @@ typedef itk::MeshFileWriter< MeshType >                    MeshWriterType;
 typedef itk::ImageRegionConstIterator< ImageType >         ConstIteratorType;
 typedef itk::ImageRegionIterator< ImageType >              IteratorType;
 
+// related basic types
+typedef ImageType::PixelType                       PixelType;
+typedef ImageType::IndexType                       IndexType;
+typedef itk::PointSet< PixelType, Dimension >      PointSetType;
+typedef PointSetType::PointType                    PointType;
+typedef MeshType::PointsContainer                  PointsContainer;
+typedef MeshType::PointsContainerPointer           PointsContainerPointer;
+typedef MeshType::PointsContainerIterator          PointsIterator;
+
 // filter types
 typedef itk::TriangleMeshToBinaryImageFilter< MeshType, ImageType >
   TriangleMeshToBinaryImageFilterType;
@@ -43,14 +53,7 @@ typedef itk::GradientMagnitudeRecursiveGaussianImageFilter< ImageType, ImageType
 // the output is a covariant vector of dimension 3 (X, Y, Z)
 typedef itk::GradientRecursiveGaussianImageFilter< ImageType, CovImageType >
   GradientRecursiveGaussianImageFilterType;
-
-// related basic types
-typedef ImageType::PixelType                       PixelType;
-typedef ImageType::IndexType                       IndexType;
-typedef itk::PointSet< PixelType, Dimension >      PointSetType;
-typedef PointSetType::PointType                    PointType;
-typedef MeshType::PointsContainer                  PointsContainer;
-typedef MeshType::PointsContainerPointer           PointsContainerPointer;
-typedef MeshType::PointsContainerIterator          PointsIterator;
+typedef itk::VectorLinearInterpolateImageFunction< CovImageType, PointType::CoordRepType >
+  GradientInterpolatorType;
 
 #endif
