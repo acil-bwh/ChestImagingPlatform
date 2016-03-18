@@ -15,12 +15,24 @@ Dependencies
 
 Python Dependencies
 -------------------
+* cython
 * numpy
 * scipy
-* pynrrd
+* vtk
 * pandas
-* cython
 * nose
+* sphinx
+* SimpleITK
+* lxml
+* scikit-learn
+* scikit-image
+* matplotlib
+* networkx 
+* pynrrd
+* pydicom
+* nibabel
+* nipype
+
 
 Information for Users
 ==========================
