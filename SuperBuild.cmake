@@ -230,6 +230,7 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
+option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML. The building will fail if not found" OFF)
 option(USE_CYTHON "Use Cython to Wrap ChestConventions" ON)
 
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
@@ -247,13 +248,18 @@ set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 if (WIN32) # libxml2 is a prerequisite for other platforms
   set(LIBXML2_EXTERNAL_NAME LibXml2)
 else()
-  find_package(LibXml2)
-  if (NOT LIBXML2_INCLUDE_DIR)
-    # Try to use CIPPython libraries
-    message("LIBXML libraries NOT found. Use CIPPython ones")
-    SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_DIR}/include/libxml2 CACHE PATH "")
-    SET (LIBXML2_LIBRARIES ${CIP_PYTHON_DIR}/lib/libxml2.dylib CACHE PATH "")
-    SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_DIR}/bin/xmllint CACHE FILEPATH "")
+  if (FORCE_SYSTEM_LIBXML)
+    find_package(LibXml2 REQUIRED)
+  else()
+    # Try first system. Otherwise use the binaries downloaded from CIPPython
+    find_package(LibXml2)
+    if (NOT LIBXML2_INCLUDE_DIR)
+      # Try to use CIPPython libraries
+      message("LIBXML libraries NOT found. Use CIPPython ones")
+      SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_DIR}/include/libxml2 CACHE PATH "")
+      SET (LIBXML2_LIBRARIES ${CIP_PYTHON_DIR}/lib/libxml2.dylib CACHE PATH "")
+      SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_DIR}/bin/xmllint CACHE FILEPATH "")
+    endif()
   endif()
 endif()
 

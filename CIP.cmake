@@ -73,9 +73,7 @@ endif( Teem_FOUND )
 #---------------------------------------------------------------------
 # Find LibXml and take it from CIPPython if not found
 if (NOT WIN32)
-  message("Before find_package: ${LIBXML2_INCLUDE_DIR}")  
-  find_package(LibXml2)
-  message("After find_package: ${LIBXML2_INCLUDE_DIR}")  
+  find_package(LibXml2 REQUIRED)
 endif()
 
 #---------------------------------------------------------------------
