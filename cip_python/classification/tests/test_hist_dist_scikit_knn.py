@@ -35,9 +35,7 @@ def test_execute():
       "Class labels not as expected"
      
     class_probs = clf.predict_proba(test_hists, test_dists)
-    pdb.set_trace()
     assert(class_probs == np.array([[ 0., 1., 0.],
        [ 0., 1., 0.]])).all(), "Probabilities not as expected"
 
 
-test_execute()    

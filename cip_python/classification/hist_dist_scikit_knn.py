@@ -131,7 +131,7 @@ class HistDistScikitKNN():
         if len(hist.shape) == 1:
             mult_samples = False
             n_samples = 1
-            classification_data = np.zeros([hist.shape[0]+1])
+            classification_data = np.zeros([n_samples, hist.shape[0]+1])
         else:
             mult_samples = True
             n_samples = hist.shape[0]
@@ -147,10 +147,9 @@ class HistDistScikitKNN():
             classification_data[:,hist.shape[1]] = dist              
 
         else:
-            classification_data[0:hist.shape[0]] = hist
-            classification_data[hist.shape[0]] = dist               
-        
-               
+            classification_data[0,0:hist.shape[0]] = hist
+            classification_data[0,hist.shape[0]] = dist               
+                    
         class_label = self.scikit_knn.predict(classification_data)
         
         return class_label
