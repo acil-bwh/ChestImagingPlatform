@@ -38,10 +38,13 @@ ShapeModelInitializer::run( double offsetX, double offsetY, double offsetZ )
   }
 
   // hard coded initial rotation to reflect ShapeWorks transformation
+  // turned out the rotation part is unnecessary (commented out below)
+  
   // compensating translation by auto-centering and manual offset input
   vtkSmartPointer< vtkMatrix4x4 > matrix = vtkSmartPointer< vtkMatrix4x4 >::New();
-  matrix->SetElement( 0, 0, -1 );
-  matrix->SetElement( 1, 1, -1 );
+  //matrix->SetElement( 0, 0, -1 );
+  //matrix->SetElement( 1, 1, -1 );
+  
   matrix->SetElement( 0, 3, centerOffset[0] + offsetX );
   matrix->SetElement( 1, 3, centerOffset[1] + offsetY );
   matrix->SetElement( 2, 3, centerOffset[2] + offsetZ );

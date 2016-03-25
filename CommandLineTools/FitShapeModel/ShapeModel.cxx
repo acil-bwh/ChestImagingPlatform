@@ -1,5 +1,6 @@
 #include "ShapeModel.h"
 #include "VNLVTKConverters.h"
+#include "cnpy.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -55,6 +56,73 @@ void
 ShapeModel::load( const std::string& dataDir )
 {
   std::cout << "Loading PCA data..." << std::endl;
+  
+  // using binary numpy data loading module
+  // https://github.com/rogersce/cnpy
+  
+  std::string filename = dataDir + "/lung-asm.npz";
+  
+  cnpy::npz_t dataz = cnpy::npz_load( filename );
+
+  // load mean  
+  cnpy::NpyArray& mean = dataz["mean"];
+  unsigned int mean_len = mean.shape[0];
+  
+  std::cout << "mean data length: " << mean_len << std::endl;
+  float* mean_data = reinterpret_cast< float* >( mean.data );
+  
+  _mean.set_size( mean_len );
+  for (unsigned int i = 0; i < mean_len; i++)
+  {
+    _mean[i] = mean_data[i];
+  }
+  _model = _mean;
+  
+  // load variance (eigenvalues)
+  cnpy::NpyArray& variance = dataz["variance"];
+  unsigned int variance_len = variance.shape[0];
+  
+  std::cout << "eigenvalues count: " << variance_len << std::endl;
+  float* variance_data = reinterpret_cast< float* >( variance.data );
+  
+  _eigval.set_size( variance_len );
+  for (unsigned int i = 0; i < variance_len; i++)
+  {
+    _eigval[i] = variance_data[i];
+  }
+  
+  // load modes (eigenvectors)
+  cnpy::NpyArray& modes = dataz["modes"];
+  unsigned int modes_len = modes.shape[0];
+  unsigned int num_modes = modes.shape[1];
+  
+  std::cout << "eigenvectors: rows = " << modes_len << ", columns = " << num_modes << std::endl;
+  
+  if (mean_len != modes_len)
+  {
+    throw std::runtime_error("Lengths of mean vector and mode vector mismatch.");
+  }
+
+  float* modes_data = reinterpret_cast< float* >( modes.data );
+  
+  _eigvec.set_size( modes_len, num_modes );
+  for (unsigned int i = 0; i < modes_len; i++)
+  {
+    for (unsigned int j = 0; j < num_modes; j++)
+    {
+      _eigvec( i, j ) = modes_data[ i * num_modes + j ];
+    }
+  }
+  _eigvecT = _eigvec.transpose();
+}
+
+//
+// loading text data is depricated in favor of loading binary data
+//
+void
+ShapeModel::loadtxt( const std::string& dataDir )
+{
+  std::cout << "Loading PCA data in text format..." << std::endl;
 
   std::string eigvecFileName = dataDir + "/pca-modes.txt";
   std::string eigvalFileName = dataDir + "/pca-eigvals.txt";

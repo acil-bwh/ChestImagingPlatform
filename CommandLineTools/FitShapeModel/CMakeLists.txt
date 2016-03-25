@@ -11,7 +11,8 @@ ADD_LIBRARY( ShapeModelHelper
              ShapeModelOptimizer.cxx
              ShapeModelFinalizer.cxx
              ShapeModelVisualizer.cxx
-             VNLVTKConverters.cxx )
+             VNLVTKConverters.cxx
+             cnpy.cpp )
 
 TARGET_LINK_LIBRARIES( ShapeModelHelper
   ${VTK_LIBRARIES}

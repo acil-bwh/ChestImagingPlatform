@@ -47,6 +47,7 @@ vnlVectorToVTKPoints( const vnl_vector< double >& vnlVector, vtkPoints* points )
   unsigned int numPoints = points->GetNumberOfPoints();
   if (3 * numPoints != vnlVector.size())
   {
+    std::cout << numPoints << " != " << vnlVector.size() / 3 << std::endl;
     throw std::runtime_error("vnlVectorToVTKPoints: size mismatches.");
   }
 

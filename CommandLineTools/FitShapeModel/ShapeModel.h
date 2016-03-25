@@ -31,6 +31,8 @@ public:
 protected:
   // throws std::runtime_error when it failed to load the model
   void load( const std::string& dataDir );
+  // loading text data is depricated in favor of loading binary data
+  void loadtxt( const std::string& dataDir );
   void updatePolyData();
 
 private:
