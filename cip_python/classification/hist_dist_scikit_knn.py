@@ -1,10 +1,6 @@
 import numpy as np
-from numpy import sum, sort, abs
-from collections import Counter
-from sklearn.cross_validation import LeaveOneOut
-from sklearn.neighbors import DistanceMetric
-from sklearn.neighbors import KNeighborsClassifier
-
+from sklearn.neighbors import NearestNeighbors
+from cip_python.classification.hist_dist_knn import HistDistKNN
 import pdb
 
 class HistDistScikitKNN():
@@ -34,7 +30,12 @@ class HistDistScikitKNN():
         training data.
         
     """
-    def __init__(self, n_neighbors=5, beta=0, hist_comparison='manhattan', classes = None):
+    
+    
+
+   
+                         
+    def __init__(self, n_neighbors=5, n_distance_samples = 500, beta=0, hist_comparison='l1_minkowski', classes = None):
         self.n_neighbors_ = n_neighbors
         self.beta_ = beta
         self.hist_comparison_ = hist_comparison
@@ -43,35 +44,15 @@ class HistDistScikitKNN():
         else:    
             self.classes_ = np.unique(classes)
             
-        self.scikit_knn = KNeighborsClassifier(n_neighbors=n_neighbors, algorithm='ball_tree', \
-            metric=hist_comparison)    
-
-        
-    def histdistmetric(x,y,hist_comparison, beta):
-        """ assumes that the data is in the form : [histarray0, ..., histarrayN, distval]
-        """
-        x_hist = x[0:-1]
-        x_dist = x[-1]
-        y_hist = y[0:-1]
-        y_dist = y[-1]  
-    
-    
-        hist_comp = None
+        scikit_metric = None    
         if hist_comparison == 'l1_minkowski':
-            hist_comp = sum(abs(x_hist - y_hist), 1)                    
-        elif hist_comparison == 'euclidean':
-            hist_comp = np.sqrt(sum(np.square(x_hist - y_hist), 1))             
-        else:
-            raise ValueError('Unsupported histogram comparison method')
-    
-        # Compute the distance component (dist_comp) of the overall metric
-        # value
-        dist_comp = abs(x_dist - y_dist)
-    
-        # Now compute the complete metric value
-        metric_val = hist_comp + beta*dist_comp
+            scikit_metric = 'manhattan'             
+        elif hist_comparison  == 'euclidean':
+            scikit_metric = 'euclidean'   
 
-        return metric_val
+        self.scikit_knn = NearestNeighbors(n_neighbors=n_distance_samples, algorithm='ball_tree', metric=scikit_metric)  
+
+   
         
     
     def fit(self, hists, dists, y):
@@ -93,20 +74,26 @@ class HistDistScikitKNN():
         assert hists.shape[0] == dists.shape[0] == y.shape[0], \
           "Data shape mismatch"        
         
+        self.hists_ = hists
+        self.dists_ = dists
+        self.y_ = y
+
         """ If classes was not input into the knn. It could be input
             if we want to extract class probabilities for some classes
             that are not in the training data. """
+                                
         if (self.classes_ is None):
             self.classes_ = np.unique(y)
             
-        """ Generate N by B+1 array to feed into scikit learn classifier. """     
-        training_data = np.zeros([np.shape(hists)[0], np.shape(hists)[1]+1])
-        training_data[:,0:np.shape(hists)[1]] = hists
-        training_data[:,np.shape(hists)[1]] = dists
+        #""" Generate N by B+1 array to feed into scikit learn classifier. """     
+        #training_data = np.zeros([np.shape(hists)[0], np.shape(hists)[1]+1])
+        #training_data[:,0:np.shape(hists)[1]] = hists
+        #training_data[:,np.shape(hists)[1]] = dists
         
+        """ Feed only intensity data into classifier """
         self.uniqueclasses_ = np.unique(y)
                 
-        self.scikit_knn.fit(training_data, y)
+        self.scikit_knn.fit(hists, y)
 
 
     def predict(self, hist, dist):
@@ -131,11 +118,11 @@ class HistDistScikitKNN():
         if len(hist.shape) == 1:
             mult_samples = False
             n_samples = 1
-            classification_data = np.zeros([n_samples, hist.shape[0]+1])
+            #classification_data = np.zeros([n_samples, hist.shape[0]+1])
         else:
             mult_samples = True
             n_samples = hist.shape[0]
-            classification_data = np.zeros([n_samples, hist.shape[1]+1])
+            #classification_data = np.zeros([n_samples, hist.shape[1]+1])
 
         """ Generate N by B+1 array to feed into scikit learn classifier. """     
 
@@ -143,86 +130,24 @@ class HistDistScikitKNN():
             assert hist.shape[0] == dist.shape[0], \
               "Mismatch between histogram and distance data dimension"
             class_label = np.zeros(n_samples)
-            classification_data[:,0:hist.shape[1]] = hist
-            classification_data[:,hist.shape[1]] = dist              
+            #classification_data[:,0:hist.shape[1]] = hist
+            #classification_data[:,hist.shape[1]] = dist              
 
-        else:
-            classification_data[0,0:hist.shape[0]] = hist
-            classification_data[0,hist.shape[0]] = dist               
-                    
-        class_label = self.scikit_knn.predict(classification_data)
+        #else:
+        #    classification_data[0,0:hist.shape[0]] = hist
+        #    classification_data[0,hist.shape[0]] = dist               
         
+              
+        subset_indeces = self.scikit_knn.kneighbors([hist], return_distance=False)[0]
+        subset_training_histogram = self.hists_[subset_indeces]
+        subset_training_distance = self.dists_[subset_indeces]
+        subset_training_class = self.y_[subset_indeces]
+
+        my_knn_classifier2 = HistDistKNN(n_neighbors = self.n_neighbors_ , beta = self.beta_) #HistDistKNN
+        my_knn_classifier2.fit(subset_training_histogram, subset_training_distance, subset_training_class)
+        class_label = my_knn_classifier2.predict(hist, dist)
+            
+                                                
         return class_label
         
 
-    def predict_proba(self, hist, dist):
-        """Get the class probabilities for the input data point X.
-
-        Parameters
-        ----------
-        hist : array, shape ( B ) or shape ( M, B )
-            Histogram of the test sample or histograms of 'M' test samples.
-
-        dist : float or array, shape ( M ) 
-            Physical distance of test sample to structure of interest or 
-            vector of 'M' distances for 'M' test samples.
-        
-        Returns
-        -------
-        class_probabilities : array, shape (M, n_classes )
-            Array with class probabilities of the 'K' nearest neighbors 
-            for the 'M' test samples. n_classes is the number of self.y_ 
-            unique values. The classes are ordered in ascending order 
-            as per the numpy unique command
-        """
-        
-        if len(hist.shape) == 1:
-            mult_samples = False
-            n_samples = 1
-            classification_data = np.zeros([hist.shape[0]+1])
-        else:
-            mult_samples = True
-            n_samples = hist.shape[0]
-            classification_data = np.zeros([n_samples, hist.shape[1]+1])
-
-        """ Generate N by B+1 array to feed into scikit learn classifier. """     
-        num_classes = self.classes_.shape[0] #2#np.shape(self.classes_)[0]
-        
-        if mult_samples:
-            assert hist.shape[0] == dist.shape[0], \
-              "Mismatch between histogram and distance data dimension"
-            class_probabilities = np.zeros([n_samples, num_classes])
-            classification_data[:,0:hist.shape[1]] = hist
-            classification_data[:,hist.shape[1]] = dist              
-
-        else:
-            classification_data[0:hist.shape[0]] = hist
-            classification_data[hist.shape[0]] = dist               
-            class_probabilities = np.zeros([num_classes])
-        
-        # dictlist = [dict() for x in range(n)]
-                
-        class_probabilities_temp = self.scikit_knn.predict_proba(classification_data)
-        
-        """ reconsile between classes available in training data and classes required for probabilities"""
-        if(self.uniqueclasses_ == self.classes_):
-            class_probabilities = class_probabilities_temp
-        else:
-            the_class = 0
-            for the_unique_class in range(0, np.shape(self.uniqueclasses_)[0]):
-                print("the class "+str(the_class)+ " unique class"+str(the_unique_class))
-                if self.classes_[the_class] == self.uniqueclasses_[the_unique_class]:
-                    print("storing prob")
-                    """ find relationship between location in unique and overall. Assuming both in ascending order"""
-                    if mult_samples:
-                        class_probabilities[:,the_class] = class_probabilities_temp[:,the_unique_class] 
-                    else:
-                        class_probabilities[the_class] = class_probabilities_temp[the_unique_class] 
-                          
-                    the_class = the_class+1  
-                else:
-                    if mult_samples:
-                        class_probabilities[:,the_class] = 0
-                    else:
-                        class_probabilities[the_class] = 0          
-        return class_probabilities
