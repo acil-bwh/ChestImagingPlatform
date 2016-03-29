@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-message("SYSTEM_XML: ${USE_SYSTEM_LIBXML}")
 ##################### RPath stuff start ################
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -70,11 +69,6 @@ else ( Teem_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
 endif( Teem_FOUND )
 
-#---------------------------------------------------------------------
-# Find LibXml and take it from CIPPython if not found
-if (NOT WIN32)
-  find_package(LibXml2 REQUIRED)
-endif()
 
 #---------------------------------------------------------------------
 # Find OpenCV
