@@ -5,14 +5,13 @@ PROJECT(GetTransformationKappa)
 set(MODULE_NAME GetTransformationKappa)
 set(MODULE_SRCS )
 
-find_package(LibXml2)
 
- FIND_PACKAGE( VTK REQUIRED )
+FIND_PACKAGE( VTK REQUIRED )
 
- set (UUID_LIBS -luuid)
+set (UUID_LIBS -luuid)
  
 set(MODULE_INCLUDE_DIRECTORIES
-  ${LIBXML2_INCLUDE_DIR}
+  ${VTK_LIBXML_INCLUDE_DIR}
   )
 
 set(MODULE_TARGET_LIBRARIES

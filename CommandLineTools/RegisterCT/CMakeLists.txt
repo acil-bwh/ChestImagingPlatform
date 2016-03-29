@@ -5,12 +5,11 @@ PROJECT(RegisterCT)
 set(MODULE_NAME RegisterCT)
 set(MODULE_SRCS )
 
-find_package(LibXml2)
 
- set (UUID_LIBS -luuid)
+set (UUID_LIBS -luuid)
  
 set(MODULE_INCLUDE_DIRECTORIES
-  ${LIBXML2_INCLUDE_DIR}
+  ${VTK_LIBXML_INCLUDE_DIR}
   )
 
 set(MODULE_TARGET_LIBRARIES

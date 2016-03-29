@@ -245,23 +245,23 @@ set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the
 #------------------------------------------------------------------------------
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
-if (WIN32) # libxml2 is a prerequisite for other platforms
-  set(LIBXML2_EXTERNAL_NAME LibXml2)
-else()
-  if (FORCE_SYSTEM_LIBXML)
-    find_package(LibXml2 REQUIRED)
-  else()
-    # Try first system. Otherwise use the binaries downloaded from CIPPython
-    find_package(LibXml2)
-    if (NOT LIBXML2_INCLUDE_DIR)
-      # Try to use CIPPython libraries
-      message("LIBXML libraries NOT found. Use CIPPython ones")
-      SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_DIR}/include/libxml2 CACHE PATH "")
-      SET (LIBXML2_LIBRARIES ${CIP_PYTHON_DIR}/lib/libxml2.dylib CACHE PATH "")
-      SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_DIR}/bin/xmllint CACHE FILEPATH "")
-    endif()
-  endif()
-endif()
+#if (WIN32) # libxml2 is a prerequisite for other platforms
+#  set(LIBXML2_EXTERNAL_NAME LibXml2)
+#else()
+#  if (FORCE_SYSTEM_LIBXML)
+#    find_package(LibXml2 REQUIRED)
+#  else()
+#    # Try first system. Otherwise use the binaries downloaded from CIPPython
+#    find_package(LibXml2)
+#    if (NOT LIBXML2_INCLUDE_DIR)
+#      # Try to use CIPPython libraries
+#      message("LIBXML libraries NOT found. Use CIPPython ones")
+#      SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_DIR}/include/libxml2 CACHE PATH "")
+#      SET (LIBXML2_LIBRARIES ${CIP_PYTHON_DIR}/lib/libxml2.dylib CACHE PATH "")
+#      SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_DIR}/bin/xmllint CACHE FILEPATH "")
+#    endif()
+#  endif()
+#endif()
 
 mark_as_superbuild(
  VARS
@@ -280,7 +280,7 @@ set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   Boost
   teem
   #OpenCV
-  ${LIBXML2_EXTERNAL_NAME}  
+#  ${LIBXML2_EXTERNAL_NAME}
   )
 
 #-----------------------------------------------------------------------------
@@ -378,9 +378,9 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
   ITK_VERSION_MAJOR:STRING
   ITK_DIR:PATH    
   USE_CYTHON:BOOL
-  LIBXML2_INCLUDE_DIR:PATH
-  LIBXML2_LIBRARIES:PATH
-  LIBXML2_XMLLINT_EXECUTABLE:FILEPATH
+  #LIBXML2_INCLUDE_DIR:PATH
+  #LIBXML2_LIBRARIES:PATH
+  #LIBXML2_XMLLINT_EXECUTABLE:FILEPATH
   )
 
 #if(${PRIMARY_PROJECT_NAME}_USE_QT)
