@@ -5,12 +5,11 @@ PROJECT(RegisterLabelMaps)
 set(MODULE_NAME RegisterLabelMaps)
 set(MODULE_SRCS itkCIPMergeChestLabelMapsImageFilter2D3D.cxx )
 
-find_package(LibXml2)
 
- set (UUID_LIBS -luuid)
+set (UUID_LIBS -luuid)
  
 set(MODULE_INCLUDE_DIRECTORIES
-  ${LIBXML2_INCLUDE_DIR}
+  ${VTK_LIBXML_INCLUDE_DIR}
   )
 
 set(MODULE_TARGET_LIBRARIES
