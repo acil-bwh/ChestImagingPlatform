@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-
 ##################### RPath stuff start ################
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -69,6 +68,7 @@ if ( Teem_FOUND )
 else ( Teem_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
 endif( Teem_FOUND )
+
 
 #---------------------------------------------------------------------
 # Find OpenCV

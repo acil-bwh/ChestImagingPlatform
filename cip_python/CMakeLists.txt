@@ -43,7 +43,6 @@ endif()
 if (NOT CIP_PYTHON_INSTALL_FOLDER)
 	SET (CIP_PYTHON_INSTALL_FOLDER  ${CMAKE_BINARY_DIR})
 endif()
-message("Installing cip_python tools in ${CIP_PYTHON_INSTALL_FOLDER}")
 
 # Copy all python files
 FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR} 
