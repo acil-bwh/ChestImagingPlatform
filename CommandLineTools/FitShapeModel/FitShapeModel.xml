@@ -104,6 +104,7 @@
       <default>Alignment</default>
       <element>Alignment</element>
       <element>Fitting</element>
+      <element>Segmentation</element>
     </string-enumeration>
   </parameters>
   <parameters>

@@ -4,6 +4,7 @@
 #include "ShapeModelInitializer.h"
 #include "ShapeModelOptimizer.h"
 #include "ShapeModelVisualizer.h"
+#include "ShapeModelFinalizer.h"
 #include "FitShapeModelCLP.h"
 
 #include "ShapeModel.h"
@@ -94,14 +95,14 @@ namespace
     ShapeModelInitializer initializer( shapeModel, image );
     initializer.run( offsetRL, offsetAP, offsetSI );
 
+    timer t;
+    
     if (runMode == "Alignment")
     {
-      visualizer.update( sigma );
+      // no action required
     }
-    else if (runMode == "Fitting")
+    else if (runMode == "Fitting" || runMode == "Segmentation")
     {
-      timer t;
-
       ShapeModelOptimizer optimizer( shapeModel, image );
       optimizer.run( searchLength,
                      sigma,
@@ -111,12 +112,18 @@ namespace
                      numModes,
                      visualizer );
 
-      std::cout << "Fitting took " << t.elapsed() << " sec." << std::endl;
-
-      visualizer.update( sigma );
+      if (runMode == "Segmentation")
+      {
+        ShapeModelFinalizer finalizer( shapeModel );
+        finalizer.run();
+        visualizer.setMesh( finalizer.getMesh() );
+      }
     } // for fitting
+    
+    std::cout << runMode << " took " << t.elapsed() << " sec." << std::endl;
 
-    std::cout << "DONE." << std::endl;
+    visualizer.update( sigma );
+    
     return cip::EXITSUCCESS;
   } // DoIT
 } // end of anonymous namespace

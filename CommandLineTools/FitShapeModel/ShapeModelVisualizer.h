@@ -16,6 +16,7 @@ public:
                         const std::string& outputName,
                         const std::string& outputGeomName );
   virtual ~ShapeModelVisualizer();
+  void setMesh( MeshType::Pointer mesh ) { _mesh = mesh; }
   void update( double sigma, int iteration = 0 );
   void writeVTKPointsToOBJ( vtkSmartPointer< vtkPoints > points, int iteration );
 

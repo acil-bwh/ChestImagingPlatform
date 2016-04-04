@@ -17,7 +17,10 @@ ADD_LIBRARY( ShapeModelHelper
 TARGET_LINK_LIBRARIES( ShapeModelHelper
   ${VTK_LIBRARIES}
   ${ITK_LIBRARIES}
+  PoissonRecon
 )
+
+SUBDIRS( PoissonRecon )
 
 find_package(LibXml2)
 
