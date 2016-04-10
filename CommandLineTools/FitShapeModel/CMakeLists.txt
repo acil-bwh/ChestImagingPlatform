@@ -9,9 +9,13 @@ ADD_LIBRARY( ShapeModelHelper
              ShapeModel.cxx
              ShapeModelInitializer.cxx
              ShapeModelOptimizer.cxx
+             ShapeModelOptimizerCT.cxx
+             ShapeModelOptimizerDT.cxx
              ShapeModelFinalizer.cxx
              ShapeModelVisualizer.cxx
+             ShapeModelImageFactory.cxx
              VNLVTKConverters.cxx
+             ShapeModelUtils.cxx
              cnpy.cpp )
 
 TARGET_LINK_LIBRARIES( ShapeModelHelper

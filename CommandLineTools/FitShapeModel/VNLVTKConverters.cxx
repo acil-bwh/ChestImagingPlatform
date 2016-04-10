@@ -111,14 +111,3 @@ computeDistanceBetweenTwoPointSets( vtkPoints* source, vtkPoints* target, double
   }
   avgDist = sumDist / numPoints;
 }
-
-// ----------------------------------
-// other utilities
-// ----------------------------------
-
-std::string int2str( int i )
-{
-  std::stringstream sstr;
-  sstr << i;
-  return sstr.str();
-}

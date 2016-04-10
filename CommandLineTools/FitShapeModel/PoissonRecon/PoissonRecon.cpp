@@ -579,7 +579,9 @@ int PoissonRecon::run( int argc , char* argv[] )
 // JL: create mesh from in-memory raw input points
 // simplified version of _Execute with limited option support
 // -----------------------------------------------------------------------------
-PoissonRecon::MeshData& PoissonRecon::createMesh( const std::vector< float >& points )
+PoissonRecon::MeshData& 
+PoissonRecon::createIsoSurfaceAndMesh( const std::vector< float >& points,
+																			 VolumeData& volume )
 {
 	typedef float Real;
 	const int Degree = 2;
@@ -680,6 +682,32 @@ PoissonRecon::MeshData& PoissonRecon::createMesh( const std::vector< float >& po
 	delete nodeWeights;
 	DumpOutput( "Got average in: %f\n" , Time()-t );
 	DumpOutput( "Iso-Value: %e\n" , isoValue );
+	
+	// test voxel grid output
+	int res = 0;
+	Pointer( Real ) values = tree.Evaluate( solution , res , isoValue , VoxelDepth.value , PrimalVoxel.set );
+	/* sanity check of contents
+	for( int i=0 ; i<res*res*res ; i++ )
+	{
+		if (i % 10 == 0)
+		{
+			printf("%g ", values[i]);
+		}
+	}
+	*/
+	
+	// set output structure
+	volume.res = res;
+	volume.data = values;
+	volume.scale = tree.GetScale();
+	volume.center[0] = tree.GetCenter()[0];
+	volume.center[1] = tree.GetCenter()[1];
+	volume.center[2] = tree.GetCenter()[2];
+	
+	printf("Volume resolution: %d\n", res);
+	printf("Iso-value: %g\n", isoValue);
+	printf("Scale, center: %g, %g, %g, %g\n", tree.GetScale(), tree.GetCenter()[0]
+																		      , tree.GetCenter()[1], tree.GetCenter()[2]);
 
 	if( Out.set )
 	{

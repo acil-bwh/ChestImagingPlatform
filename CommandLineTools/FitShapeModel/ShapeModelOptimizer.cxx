@@ -11,13 +11,12 @@
 #include <algorithm>
 
 ShapeModelOptimizer::ShapeModelOptimizer( ShapeModel& shapeModel,
-                                          ImageType::Pointer image )
-: _shapeModel(shapeModel),
-  _image(image),
-  _interpolateGradient(true)
+                                          ShapeModelImage& image )
+: _shapeModel( shapeModel ),
+  _image( image )
 {
   // make sure shape model already contains its initial transform at this time
-  std::cout << "Initial transform: " << *_shapeModel.getTransform() << std::endl;
+  std::cout << "Initial transform: " << *_shapeModel.getTransform()->GetMatrix() << std::endl;
 }
 
 ShapeModelOptimizer::~ShapeModelOptimizer()
@@ -31,11 +30,13 @@ ShapeModelOptimizer::run( double maxSearchLength,
                           int maxIteration,
                           int poseOnlyIteration,
                           int numModes,
+                          bool verbose,
                           ShapeModelVisualizer& visualizer )
 {
-  prepareGradientImages( sigma );
+  beforeOptimization( sigma );
 
-  ImageType::SpacingType spacing = _image->GetSpacing();
+  double spacing[3];
+  _image.getSpacing( spacing );
 
   // examine gradient image for each model point along normal axis
   const double threshold = 0.1; // stopping criteria (maximum difference)
@@ -103,16 +104,18 @@ ShapeModelOptimizer::run( double maxSearchLength,
     double t = m / (double)(maxIteration - 1);
     double searchLength = (1 - t) * maxSearchLength + t * minSearchLength;
 
-    double maxMaxMag = 0;
-
     std::vector< PointType > vecOrgPt; // temporary container
     std::vector< PointType > vecQt; // temporary container
-    std::vector< double > vecMaxMag; // temporary container
+    std::vector< double > vecMaxEval; // temporary container
+    std::vector< double > vecMinEval; // temporary container
     vnl_matrix< double > spacingMatrix( 3, 3 ); // to calculate a proper step search depending on normal
     spacingMatrix.set_identity();
     spacingMatrix( 0, 0 ) = spacing[0];
     spacingMatrix( 1, 1 ) = spacing[1];
     spacingMatrix( 2, 2 ) = spacing[2];
+
+    double maxMaxEval = -FLT_MAX; // maximum evaluation across all samples
+    double minMinEval = FLT_MAX; // minimum evaluation across all samples
 
     for (unsigned int i = 0; i < numPoints; i++)
     {
@@ -131,12 +134,18 @@ ShapeModelOptimizer::run( double maxSearchLength,
 
       // search for maximum gradient magnitude
       // only when gradient direction is same as normal direction
-      double maxMag = 0; // maximum gradient magnitude for one sample
       IndexType pixelIndex, lastInsidePixelIndex;
 
       vnl_vector< double > nvec( n, 3 );
       double stepSearch = (spacingMatrix * nvec).magnitude(); // step search depends on the spacing values
+      stepSearch /= getSamplingFactor(); // allows super(factor > 1)/under(factor < 1)-sampling
       int N = (int)(searchLength / stepSearch / 2.0 + 0.5); // num steps per side
+
+      int minj = INT_MAX;
+      double prevEval = 0;
+      double minEval = FLT_MAX;
+      double maxEval = -FLT_MAX; // maximum gradient magnitude for one sample
+      PointType prevPt = qt;
 
       for (int j = -N; j < N; j++) // explore image space along the normal
       {
@@ -144,7 +153,7 @@ ShapeModelOptimizer::run( double maxSearchLength,
         {
           pt[k] = orgPt[k] + j * stepSearch * n[k];
         }
-        bool isInside = _gradientImage->TransformPhysicalPointToIndex( pt, pixelIndex );
+        bool isInside = transformPhysicalPointToIndex( pt, pixelIndex );
         if (isInside)
         {
           lastInsidePt = pt;
@@ -155,45 +164,46 @@ ShapeModelOptimizer::run( double maxSearchLength,
           pt = lastInsidePt;
           pixelIndex = lastInsidePixelIndex;
         }
-        CovPixelType gradDir = (_interpolateGradient)
-                               ? _gradientInterpolator->Evaluate( pt )
-                               : _gradientImage->GetPixel( pixelIndex );
-        double mag = gradDir.GetNorm();
-        if (normal * gradDir > 0 && mag > maxMag)
-        {
-          maxMag = mag;
-          qt = pt;
-        }
-      }
+        
+        prevEval = updatePosition( pt, pixelIndex, prevPt, prevEval,
+                                   qt, normal, maxEval, minEval,
+                                   j, minj );
+        prevPt = pt;
+      } // for each search step
 
       // maximum gradient magnitude for all samples
-      maxMaxMag = std::max( maxMag, maxMaxMag );
+      maxMaxEval = std::max( maxEval, maxMaxEval );
+      minMinEval = std::min( minEval, minMinEval );
 
       // store original point, target point, and maximum magnitude
-      vecMaxMag.push_back( maxMag );
+      vecMaxEval.push_back( maxEval );
+      vecMinEval.push_back( minEval );
       vecOrgPt.push_back( orgPt );
       vecQt.push_back( qt );
-    }
+    } // for each model point
 
-    // second phase: make the movement relative to the strength of the edge sigmal
+    // second phase: make the movement relative to the strength of the edge signal
     for (unsigned int i = 0; i < numPoints; i++)
     {
-      PointType orgPt = vecOrgPt[i];
-      PointType qt = vecQt[i];
-      double maxMag = vecMaxMag[i];
-
-      PointType::VectorType diff = qt - orgPt; // full offset
-      PointType::VectorType::ValueType f = maxMag / std::max( maxMaxMag, 1.0 ); // fraction of full offset
-      qt = orgPt + f * diff; // final target point
+      PointType qt = determinePosition( i, vecOrgPt, vecQt, 
+                                        vecMaxEval, vecMinEval, 
+                                        maxMaxEval, minMinEval );
       targetImagePoints->SetPoint( i, qt[0], qt[1], qt[2] );
     }
 
     double avgDist = computeAverageDistanceBetweenTwoPointSets( currentImagePoints, targetImagePoints );
-    std::cout << (fitMode == POSE_ONLY ? "[P] " : (fitMode == SHAPE_ONLY ? "[S] " : "[P+S] "));
-    std::cout << "Iteration: " << m << " -----" << std::endl;
-    std::cout << "   search range [" << -searchLength/2.0 << " " << searchLength/2.0 << "]" << std::endl;
-    std::cout << "   average distance to target image points: " << avgDist << std::endl;
-    std::cout << "   max magnitude amaong all sample directions: " << maxMaxMag << std::endl;
+    if (verbose)
+    {
+      std::cout << (fitMode == POSE_ONLY ? "[P] " : (fitMode == SHAPE_ONLY ? "[S] " : "[P+S] "));
+      std::cout << "Iteration: " << m << " -----" << std::endl;
+      std::cout << "   search range [" << -searchLength/2.0 << " " << searchLength/2.0 << "]" << std::endl;
+      std::cout << "   average distance to target image points: " << avgDist << std::endl;
+      std::cout << "   max magnitude amaong all sample directions: " << maxMaxEval << std::endl;
+    }
+    else
+    {
+      std::cout << "." << std::flush;
+    }
 
     if (fitMode != SHAPE_ONLY)
     {
@@ -239,7 +249,10 @@ ShapeModelOptimizer::run( double maxSearchLength,
     double maxDist;
     computeDistanceBetweenTwoPointSets( pointsBefore, pointsAfter, avgDist, maxDist );
 
-    std::cout << "   maximum distance from previous iteration: " << maxDist << ", average: " << avgDist << std::endl;
+    if (verbose)
+    {
+      std::cout << "   maximum distance from previous iteration: " << maxDist << ", average: " << avgDist << std::endl;
+    }
 
     if (maxDist < threshold)
     {
@@ -250,36 +263,10 @@ ShapeModelOptimizer::run( double maxSearchLength,
       }
       else
       {
-        std::cout << "Stopping." << std::endl;
+        std::cout << "Stopping at iteration " << m << "." << std::endl;
         break;
       }
     }
   } // for m (repeat shape & pose estimation)
   // *******************************************************************
-}
-
-void
-ShapeModelOptimizer::prepareGradientImages( double sigma )
-{
-  GradientRecursiveGaussianImageFilterType::Pointer gradientFilter = GradientRecursiveGaussianImageFilterType::New();
-
-  gradientFilter->SetInput( _image );
-  gradientFilter->SetSigma( sigma );
-  try
-  {
-    std::cout << "Running Gaussian gradient filter..." << std::endl;
-    gradientFilter->Update();
-    std::cout << "Done." << std::endl;
-  }
-  catch (itk::ExceptionObject& e)
-  {
-    throw std::runtime_error( e.what() );
-  }
-  _gradientImage = gradientFilter->GetOutput();
-
-  if (_interpolateGradient)
-  {
-    _gradientInterpolator = GradientInterpolatorType::New();
-    _gradientInterpolator->SetInputImage(_gradientImage);
-  }
 }

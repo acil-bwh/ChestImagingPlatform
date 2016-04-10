@@ -1,12 +1,20 @@
 #include "ShapeModelFinalizer.h"
 #include "ShapeModel.h"
+#include "ShapeModelImage.h"
+#include "ShapeModelMeshWriter.h"
 #include "PoissonRecon/PoissonRecon.h"
 #include <vtkPLYWriter.h>
 #include <vtkCellArray.h>
 #include <vtkTriangle.h>
 
-ShapeModelFinalizer::ShapeModelFinalizer( ShapeModel& shapeModel )
-: _shapeModel(shapeModel)
+ShapeModelFinalizer::ShapeModelFinalizer( ShapeModel& shapeModel,
+                                          const ShapeModelImage& image,
+                                          const std::string& outputName,
+                                          const std::string& outputGeomName )
+: _shapeModel( shapeModel ),
+  _image( image ),
+  _outputName( outputName ),
+  _outputGeomName( outputGeomName )
 {
 }
 
@@ -34,41 +42,20 @@ ShapeModelFinalizer::run()
   
   // perform surface reconstruction from raw points
   PoissonRecon recon;
-  PoissonRecon::MeshData& mesh = recon.createMesh( points );
+  PoissonRecon::VolumeData volume;
+  PoissonRecon::MeshData& mesh = recon.createIsoSurfaceAndMesh( points, volume );
   
   std::cout << "Done. Number of triangles: " << mesh.polygonCount() << std::endl;
   
-  // create VTK polydata (not needed for now but for future reference)
+  // alternative (original) method is createBinaryMeshImage but this is better
+  // since it directly creates binary image from the iso-surface volume data
+  // generated during Poisson reconstruction (no more missing lines!)
+  _image.createBinaryVolumeImage( volume, _outputName );
   
+  // create VTK polydata to save it out output geometry file
   vtkSmartPointer< vtkPolyData > polydata = convertToPolyData( mesh );
-  _shapeModel.setPolyData( polydata );
-
-  // save PLY for testing
-  /*
-  vtkSmartPointer< vtkPLYWriter > ply_writer = vtkSmartPointer< vtkPLYWriter >::New();
-  ply_writer->SetFileName("/Users/jinho/temp/temp-out.ply");
-  ply_writer->SetInputData( polydata );
-  ply_writer->Update();
-  */
-  
-  // create ITK mesh
-  _itkMesh = convertToITKMesh( mesh );
-  
-  // save OBJ for testing
-  /*
-  MeshWriterType::Pointer mesh_writer = MeshWriterType::New();
-  mesh_writer->SetFileName( "/Users/jinho/temp/temp-out.obj" );
-  mesh_writer->SetInput( itk_mesh );
-  
-  try
-  {
-    mesh_writer->Update();
-  }
-  catch (itk::ExceptionObject& e)
-  {
-    throw std::runtime_error( e.what() );
-  }
-  */
+  vtkSmartPointer< vtkPolyData > polydataModelSpace = _shapeModel.transformToModelSpace( polydata );
+  ShapeModelMeshWriter::write( polydataModelSpace, _outputGeomName );
 }
 
 MeshType::Pointer 

@@ -2,6 +2,7 @@
 #define _ShapeModelOptimizer_h_
 
 #include "FitShapeModelTypes.h"
+#include "ShapeModelObject.h"
 #include <vtkOBJReader.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
@@ -15,31 +16,50 @@
 #include <vtkTransformPolyDataFilter.h>
 
 class ShapeModel;
+class ShapeModelImage;
 class ShapeModelVisualizer;
 
-class ShapeModelOptimizer
+class ShapeModelOptimizer : public ShapeModelObject
 {
 public:
   ShapeModelOptimizer( ShapeModel& shapeModel,
-                       ImageType::Pointer image );
+                       ShapeModelImage& image );
   virtual ~ShapeModelOptimizer();
-  void run( double searchLength,
-            double sigma,
-            double decayFactor,
-            int maxIteration,
-            int poseOnlyIteration,
-            int numModes,
-            ShapeModelVisualizer& visualizer );
+  // template method pattern
+  virtual void run( double searchLength,
+                    double sigma,
+                    double decayFactor,
+                    int maxIteration,
+                    int poseOnlyIteration,
+                    int numModes,
+                    bool verbose,
+                    ShapeModelVisualizer& visualizer );
 
 protected:
-  void prepareGradientImages( double sigam );
-
-private:
+  virtual void beforeOptimization( double sigam ) = 0;
+  virtual double getSamplingFactor() const = 0;
+  virtual bool transformPhysicalPointToIndex( const PointType& pt,
+                                              IndexType& pixelIndex ) = 0;
+  virtual double updatePosition( const PointType& pt,
+                                 const IndexType& idx,
+                                 const PointType& prevPt,
+                                 double prevEval,
+                                 PointType& qt, 
+                                 const CovPixelType& normal, 
+                                 double& maxEval,
+                                 double& minEval,
+                                 int j, int& minj ) = 0;
+  virtual PointType determinePosition( unsigned int i, 
+                                       const std::vector<PointType>& vecOrgPt, 
+                                       const std::vector<PointType>& vecQt, 
+                                       const std::vector<double>& vecMaxEval, 
+                                       const std::vector<double>& vecMinEval,
+                                       double maxMaxEval,
+                                       double minMinEval ) = 0;
+  
+protected:
   ShapeModel& _shapeModel;
-  ImageType::Pointer _image;
-  CovImageType::Pointer _gradientImage;
-  GradientInterpolatorType::Pointer _gradientInterpolator;
-  bool _interpolateGradient;
+  ShapeModelImage& _image;
 };
 
 #endif

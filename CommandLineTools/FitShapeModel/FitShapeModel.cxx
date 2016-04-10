@@ -1,8 +1,11 @@
 #include "cipChestConventions.h"
 #include "cipHelper.h"
 #include "FitShapeModelTypes.h"
+#include "ShapeModelImage.h"
+#include "ShapeModelImageFactory.h"
 #include "ShapeModelInitializer.h"
-#include "ShapeModelOptimizer.h"
+#include "ShapeModelOptimizerCT.h"
+#include "ShapeModelOptimizerDT.h"
 #include "ShapeModelVisualizer.h"
 #include "ShapeModelFinalizer.h"
 #include "FitShapeModelCLP.h"
@@ -30,99 +33,85 @@ namespace
   // -------------------------------------------------------------------------
   // main method
 
-  int DoIT(int argc, char * argv[])
+  int DoIT( int argc, char * argv[] )
   {
     PARSE_ARGS;
-
-    // create and load shape model (PCA data)
-    ShapeModel shapeModel( shapeModelDir );
-
+    
+    ShapeModelImage* pimage = ShapeModelImageFactory::create( inputImageType );
+    
     // Read the input ct image
-    std::cout << "Reading CT image..." << std::endl;
-    ImageReaderType::Pointer imageReader = ImageReaderType::New();
-    imageReader->SetFileName( imageFileName.c_str() );
-    try
-    {
-      imageReader->Update();
-    }
-    catch (itk::ExceptionObject& e)
-    {
-      throw std::runtime_error( e.what() );
-    }
+    pimage->read( imageFileName );
+    
+    // create and load shape model (including mesh, PCA data)
+    ShapeModel shapeModel( shapeModelDir );
+    
+    // by default geometry will be output in image space
+    bool outputGeomInModelSpace = (inputImageType == "CT");
 
-    ImageType::Pointer image = imageReader->GetOutput();
-    ImageType::SizeType sz = image->GetLargestPossibleRegion().GetSize();
-
-    ImageType::IndexType originIndex = {0, 0, 0}, centerIndex = {sz[0]/2, sz[1]/2, sz[2]/2};
-    ImageType::PointType originPoint, centerPoint;
-    image->TransformIndexToPhysicalPoint(originIndex, originPoint);
-    image->TransformIndexToPhysicalPoint(centerIndex, centerPoint);
-
-    std::cout << "origin point: " << originPoint << std::endl;
-    std::cout << "center point: " << centerPoint << std::endl;
-    std::cout << "spacing: " << image->GetSpacing() << std::endl;
-
-    // Read shape model data (including mesh, ASM)
-    std::cout << "Reading mesh file..." << std::endl;
-    MeshReaderType::Pointer meshReader = MeshReaderType::New();
-    std::string meshFileName = shapeModelDir + "/mean-mesh.obj";
-    meshReader->SetFileName( meshFileName.c_str() );
-    try
-    {
-      meshReader->Update();
-    }
-    catch (itk::ExceptionObject& e)
-    {
-      throw std::runtime_error( e.what() );
-    }
-
-    MeshType::Pointer mesh = meshReader->GetOutput();
-
-    // secondary reading mesh file using VTK
-    vtkSmartPointer< vtkOBJReader > objReader = vtkSmartPointer< vtkOBJReader >::New();
-    objReader->SetFileName( meshFileName.c_str() );
-    objReader->Update();
-    vtkSmartPointer< vtkPolyData > polydata = vtkSmartPointer< vtkPolyData >::New();
-    polydata->DeepCopy( objReader->GetOutput() );
-
-    std::cout << "VTK: number of mesh points: " << polydata->GetNumberOfPoints() << std::endl;
-
-    shapeModel.setPolyData( polydata );
-
-    ShapeModelVisualizer visualizer( shapeModel, mesh, image, outputFileName, outputGeometry );
-
-    // initialize shape model (for scale & pose initialization using mean shape)
-    ShapeModelInitializer initializer( shapeModel, image );
-    initializer.run( offsetRL, offsetAP, offsetSI );
+    ShapeModelVisualizer visualizer( shapeModel, 
+                                     *pimage, 
+                                     outputFileName, 
+                                     outputGeometry,
+                                     outputGeomInModelSpace );
 
     timer t;
-    
+                                     
+    // initialize shape model (for scale & pose initialization using mean shape)
+    ShapeModelInitializer initializer( shapeModel, *pimage );
+    if (transformFileName.empty())
+    {
+      initializer.run( offsetRL, offsetAP, offsetSI );
+    }
+    else
+    {
+      initializer.run( transformFileName );
+    }
+
     if (runMode == "Alignment")
     {
-      // no action required
+      visualizer.update( sigma );
     }
     else if (runMode == "Fitting" || runMode == "Segmentation")
     {
-      ShapeModelOptimizer optimizer( shapeModel, image );
-      optimizer.run( searchLength,
-                     sigma,
-                     decayFactor,
-                     maxIteration,
-                     poseOnlyIteration,
-                     numModes,
-                     visualizer );
+      ShapeModelOptimizer* poptimizer;
+      if (inputImageType == "CT")
+      {
+        poptimizer = new ShapeModelOptimizerCT( shapeModel, *pimage );
+      }
+      else if (inputImageType == "DT") // distance transform
+      {
+        poptimizer = new ShapeModelOptimizerDT( shapeModel, *pimage );
+      }
+      else
+      {
+        throw std::invalid_argument( "Unsupported input image type: " + inputImageType );
+      }
+
+      poptimizer->run( searchLength,
+                       sigma,
+                       decayFactor,
+                       maxIteration,
+                       poseOnlyIteration,
+                       numModes,
+                       verbose,
+                       visualizer );
 
       if (runMode == "Segmentation")
       {
-        ShapeModelFinalizer finalizer( shapeModel );
+        ShapeModelFinalizer finalizer( shapeModel, *pimage, outputFileName, outputGeometry );
         finalizer.run();
-        visualizer.setMesh( finalizer.getMesh() );
       }
+      else
+      {
+        visualizer.update( sigma );
+      }
+            
+      delete poptimizer;
     } // for fitting
     
     std::cout << runMode << " took " << t.elapsed() << " sec." << std::endl;
 
-    visualizer.update( sigma );
+    delete pimage;
     
     return cip::EXITSUCCESS;
   } // DoIT

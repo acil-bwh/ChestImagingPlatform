@@ -1,13 +1,15 @@
 #ifndef _ShapeModel_h_
 #define _ShapeModel_h_
 
+#include "ShapeModelObject.h"
+
 #include <vnl/vnl_vector.h>
 #include <vnl/vnl_matrix.h>
 #include <vtkTransform.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 
-class ShapeModel
+class ShapeModel : public ShapeModelObject
 {
 public:
   ShapeModel(const std::string& dataDir);
@@ -21,8 +23,9 @@ public:
   unsigned int getNumberOfPoints() { return _mean.size() / 3; }
 
   vtkSmartPointer< vtkPolyData > getPolyData() const { return _polydata; }
-  void setPolyData( vtkSmartPointer< vtkPolyData > polydata ) { _polydata = polydata; }
   vtkSmartPointer< vtkTransform > getTransform() const { return _transform; }
+  vtkSmartPointer< vtkPolyData > getPolyDataModelSpace() const;
+  vtkSmartPointer< vtkPolyData > transformToModelSpace( vtkSmartPointer< vtkPolyData > polydata ) const;
   void setTransform( vtkSmartPointer< vtkTransform > transform ) {
     _transform = transform;
     updatePolyData();
@@ -46,4 +49,4 @@ private:
   vtkSmartPointer< vtkTransform > _transform; // model to image transform (scale & pose)
 };
 
-#endif
+#endif //_ShapeModel_h_

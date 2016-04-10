@@ -1,26 +1,33 @@
 #ifndef _ShapeModelFinalizer_h_
 #define _ShapeModelFinalizer_h_
 
-#include <vtkSmartPointer.h>
-#include <vtkPolyData.h>
+#include "ShapeModelObject.h"
 #include "FitShapeModelTypes.h"
 #include "PoissonRecon/PoissonRecon.h"
 
-class ShapeModel;
+#include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
 
-class ShapeModelFinalizer
+class ShapeModel;
+class ShapeModelImage;
+
+class ShapeModelFinalizer : public ShapeModelObject
 {
 public:
-  ShapeModelFinalizer( ShapeModel& shapeModel );
+  ShapeModelFinalizer( ShapeModel& shapeModel,
+                       const ShapeModelImage& image,
+                       const std::string& outputName,
+                       const std::string& outputGeomName );
   virtual ~ShapeModelFinalizer();
-  MeshType::Pointer getMesh() const { return _itkMesh; }
   void run();
 protected:
   vtkSmartPointer< vtkPolyData > convertToPolyData( PoissonRecon::MeshData& mesh );
   MeshType::Pointer convertToITKMesh( PoissonRecon::MeshData& mesh );
 private:
   ShapeModel& _shapeModel;
-  MeshType::Pointer _itkMesh;
+  const ShapeModelImage& _image;
+  std::string _outputName;
+  std::string _outputGeomName;
 };
 
 #endif

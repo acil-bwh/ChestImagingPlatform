@@ -5,11 +5,25 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
+#include <vtkSmartPointer.h>
+#include <vtkOBJReader.h>
 #include <vtkTransformPolyDataFilter.h>
 
 ShapeModel::ShapeModel( const std::string& dataDir )
 {
-  load( dataDir );
+  load( dataDir ); // load PCA data
+  
+  // Read shape model data (including mesh, ASM) using VTK
+  std::cout << "Reading mean mesh file..." << std::endl;
+  std::string meshFileName = dataDir + "/mean-mesh.obj";
+
+  vtkSmartPointer< vtkOBJReader > objReader = vtkSmartPointer< vtkOBJReader >::New();
+  objReader->SetFileName( meshFileName.c_str() );
+  objReader->Update();
+  _polydata = vtkSmartPointer< vtkPolyData >::New();
+  _polydata->DeepCopy( objReader->GetOutput() );
+
+  std::cout << "VTK: number of mesh points: " << _polydata->GetNumberOfPoints() << std::endl;
 }
 
 ShapeModel::~ShapeModel()
@@ -179,4 +193,26 @@ ShapeModel::updatePolyData()
   modelToImageTransformFilter->SetTransform( _transform ); // model coord -> image coord in the Sun's paper
   modelToImageTransformFilter->Update();
   _polydata = modelToImageTransformFilter->GetOutput(); // update input with output
+}
+
+vtkSmartPointer< vtkPolyData >
+ShapeModel::getPolyDataModelSpace() const
+{
+  return transformToModelSpace( this->getPolyData() );
+}
+
+vtkSmartPointer< vtkPolyData >
+ShapeModel::transformToModelSpace( vtkSmartPointer< vtkPolyData > polydata ) const
+{
+  vtkSmartPointer< vtkMatrix4x4 > matrix = vtkSmartPointer< vtkMatrix4x4 >::New();
+  this->getTransform()->GetInverse( matrix );
+
+  vtkSmartPointer< vtkTransform > imageToModelTransform = vtkSmartPointer< vtkTransform >::New();
+  imageToModelTransform->SetMatrix( matrix );
+
+  vtkSmartPointer< vtkTransformPolyDataFilter > imageToModelTransformFilter = vtkSmartPointer< vtkTransformPolyDataFilter >::New();
+  imageToModelTransformFilter->SetInputData( polydata ); // original mean data (model coordinate system)
+  imageToModelTransformFilter->SetTransform( imageToModelTransform ); // model coord -> image coord in the Sun's paper
+  imageToModelTransformFilter->Update();
+  return imageToModelTransformFilter->GetOutput();
 }

@@ -310,6 +310,9 @@ public:
 	typedef typename TreeOctNode::     NeighborKey< 1 , 1 >      AdjacenctNodeKey;
 	typedef typename TreeOctNode::ConstNeighborKey< 1 , 1 > ConstAdjacenctNodeKey;
 
+	Real GetScale() const { return _scale; }
+	Point3D< Real > GetCenter() const { return _center; }
+	
 	template< class V >
 	struct ProjectiveData
 	{

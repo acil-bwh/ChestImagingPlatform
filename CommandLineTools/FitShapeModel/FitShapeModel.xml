@@ -51,6 +51,14 @@
   </parameters>
   <parameters>
     <label>Alignment Parameters</label>
+    <file>
+      <name>transformFileName</name>
+      <label>Input Transform File</label>
+      <channel>input</channel>
+      <flag>t</flag>
+      <longflag>transformFileName</longflag>
+      <description><![CDATA[Input transform file name.]]></description>
+    </file>
     <integer>
       <name>offsetRL</name>
       <flag>x</flag>
@@ -106,9 +114,25 @@
       <element>Fitting</element>
       <element>Segmentation</element>
     </string-enumeration>
+    <boolean>
+      <name>verbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <label>Verbose</label>
+      <default>false</default>
+    </boolean>
   </parameters>
   <parameters>
     <label>Fitting Parameters</label>
+    <string-enumeration>
+      <name>inputImageType</name>
+      <flag>e</flag>
+      <longflag>inputImageType</longflag>
+      <label>Input Image Type</label>
+      <default>CT</default>
+      <element>CT</element>
+      <element>DT</element>
+    </string-enumeration>
     <double>
       <name>searchLength</name>
       <flag>l</flag>

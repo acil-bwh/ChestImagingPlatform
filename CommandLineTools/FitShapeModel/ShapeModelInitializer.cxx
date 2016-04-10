@@ -1,11 +1,12 @@
 #include "ShapeModelInitializer.h"
 #include "ShapeModel.h"
+#include "ShapeModelImage.h"
 #include <vtkCenterOfMass.h>
 
 ShapeModelInitializer::ShapeModelInitializer( ShapeModel& shapeModel,
-                                              ImageType::Pointer image )
-: _shapeModel(shapeModel),
-  _image(image)
+                                              ShapeModelImage& image )
+: _shapeModel( shapeModel ),
+  _image( image )
 {
 }
 
@@ -13,15 +14,54 @@ ShapeModelInitializer::~ShapeModelInitializer()
 {
 }
 
+void 
+ShapeModelInitializer::run( const std::string& transformFileName )
+{
+  TransformFileReaderType::Pointer transformReader = TransformFileReaderType::New();
+  transformReader->SetFileName( transformFileName );
+  try
+  {
+    transformReader->Update();
+  }
+  catch ( itk::ExceptionObject &e )
+  {
+    throw std::runtime_error( e.what() );
+  }
+  
+  TransformFileReaderType::TransformListType::const_iterator it;
+  it = transformReader->GetTransformList()->begin();
+  
+  TransformType::Pointer itkTransform = static_cast< TransformType* >( (*it).GetPointer() );
+  const TransformType::ParametersType parameters = itkTransform->GetParameters();
+  
+  // convert itk transform parameters to vtk homogeneous 4x4 matrix
+  vtkSmartPointer< vtkMatrix4x4 > matrix = vtkSmartPointer< vtkMatrix4x4 >::New();
+
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      matrix->SetElement( i, j, parameters[i * Dimension + j] );
+    }
+    matrix->SetElement( i, Dimension, parameters[i + Dimension * Dimension] );
+  }
+  
+  //std::cout << "Initial transform matrix: " << *matrix << std::endl;
+
+  // set initial transform to shape model
+  vtkSmartPointer< vtkTransform > transform = vtkSmartPointer< vtkTransform >::New();
+  transform->SetMatrix( matrix );
+
+  // initializer will output the transform to the shape model directly
+  _shapeModel.setTransform( transform );
+}
+
 void
 ShapeModelInitializer::run( double offsetX, double offsetY, double offsetZ )
 {
-  ImageType::SizeType sz = _image->GetLargestPossibleRegion().GetSize();
-  ImageType::IndexType centerIndex = { sz[0]/2, sz[1]/2, sz[2]/2} ;
-
-  ImageType::PointType centerPoint;
-  _image->TransformIndexToPhysicalPoint( centerIndex, centerPoint );
-
+  double centerPoint[3];
+  _image.getCenter( centerPoint );
+  
   // Compute the center of mass
   vtkSmartPointer< vtkCenterOfMass > centerOfMassFilter = vtkSmartPointer< vtkCenterOfMass >::New();
   centerOfMassFilter->SetInputData( _shapeModel.getPolyData() );
@@ -49,9 +89,33 @@ ShapeModelInitializer::run( double offsetX, double offsetY, double offsetZ )
   matrix->SetElement( 1, 3, centerOffset[1] + offsetY );
   matrix->SetElement( 2, 3, centerOffset[2] + offsetZ );
 
+  //std::cout << "Initial transform matrix: " << *matrix << std::endl;
+
   vtkSmartPointer< vtkTransform > transform = vtkSmartPointer< vtkTransform >::New();
   transform->SetMatrix( matrix );
 
   // initializer will output the transform to the shape model directly
-  _shapeModel.setTransform(transform);
+  _shapeModel.setTransform( transform );
+  
+  // save transform to itk transform file for testing
+  /*
+  TransformFileWriterTemplateType::Pointer writer = TransformFileWriterTemplateType::New();
+    
+  TransformType::Pointer itkTransform = TransformType::New();
+  TransformType::ParametersType parameters( Dimension * Dimension + Dimension );
+
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      parameters[i * Dimension + j] = matrix->GetElement( i, j );
+    }
+    parameters[i + Dimension * Dimension] = matrix->GetElement( i, Dimension );
+  }
+  
+  itkTransform->SetParameters( parameters );
+  writer->SetInput( itkTransform );
+  writer->SetFileName( "/Users/jinho/temp/temp.tfm" );
+  writer->Update();
+  */
 }
