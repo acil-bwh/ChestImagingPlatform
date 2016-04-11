@@ -76,4 +76,3 @@ class RindVsCorePartition(ChestPartition):
         
         self.partition_labelmap_[lung_labelmap==0]=0
         
-        pdb.set_trace()

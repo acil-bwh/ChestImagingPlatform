@@ -16,7 +16,7 @@ class ChestPartition:
     
     1) Overload the declare_partition_regions that will declare all the possible
          regions that can exist within a partinion
-    2) Overload the 'compute_partition' method that will compute the partitions 
+    2) Overload the 'execute' method that will compute the partition 
     3) Overload the 'get_partition_region_mask' method which returns a mask for a 
          given partition region.   
 
@@ -38,7 +38,7 @@ class ChestPartition:
     def execute(self):
         pass
         
-    def get_partition(self, partition_region): # Can potentially have multiple partition regions
+    def get_partition_region_mask(self, partition_region): # Can potentially have multiple partition regions
         # and use and 'and operator'    
         """ Get a mask corresponding to the partition defined by the partition region
         

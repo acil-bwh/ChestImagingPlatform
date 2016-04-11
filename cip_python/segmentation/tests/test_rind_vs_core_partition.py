@@ -30,8 +30,6 @@ def test_execute():
     
     #assert np.sum(np.abs(grid_segmentation-grid_array))==0, 'grid not as \
     #    expected'
-    rind_lm = rind_core_partitioner.get_partition('Rind')
+    rind_lm = rind_core_partitioner.get_partition_region_mask('Rind')
 
-    pdb.set_trace()
-test_execute()
 
