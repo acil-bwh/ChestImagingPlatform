@@ -16,7 +16,7 @@ partition_name = this_dir + '/../../../Testing/Data/Input/rind_partition-64.nrrd
 def test_execute():
     image_io = ImageReaderWriter()
     lm_array,lm_header=image_io.read_in_numpy(lm_name)
-    #grid_array, grid_header = image_io.read_in_numpy(grid_name)
+    partition_ref_array, partition_header = image_io.read_in_numpy(partition_name)
     
     
     spacing = np.zeros(3)
@@ -27,9 +27,7 @@ def test_execute():
     rind_core_partitioner = RindVsCorePartition(rind_width=10.0)
     rind_core_partitioner.execute(lm_array, spacing)
     
-    
-    #assert np.sum(np.abs(grid_segmentation-grid_array))==0, 'grid not as \
-    #    expected'
     rind_lm = rind_core_partitioner.get_partition_region_mask('Rind')
-
+    assert np.sum(np.abs(partition_ref_array-rind_lm))==0, 'rind not as \
+        expected'
 

@@ -2,6 +2,8 @@ import numpy as np
 import scipy.ndimage.morphology as scimorph
 from cip_python.segmentation.chest_partition import ChestPartition
 import pdb
+from cip_python.segmentation.chest_partition import ChestPartitionRegionConventions
+
 
 class RindVsCorePartition(ChestPartition):
     """General class for rind versus core partition generation.
@@ -53,6 +55,7 @@ class RindVsCorePartition(ChestPartition):
         None  
         """
         
+        cp = ChestPartitionRegionConventions()
         
         # Compute the distance map associated with lung_labelmap
         lung_labelmap[lung_labelmap > 0] = 1
@@ -70,9 +73,9 @@ class RindVsCorePartition(ChestPartition):
         rind_width_voxels = rind_width/spacing[0]
         
         self.partition_labelmap_ = np.zeros_like(lung_labelmap)
-        
-        self.partition_labelmap_[(lung_distance_map<=rind_width_voxels)] = self.partition_region_conventions['Rind']
-        self.partition_labelmap_[(lung_distance_map>rind_width_voxels) ] = self.partition_region_conventions['Core']
+        #pdb.set_trace()
+        self.partition_labelmap_[(lung_distance_map<=rind_width_voxels)] = cp.get_partition_region_value_from_name('Rind')
+        self.partition_labelmap_[(lung_distance_map>rind_width_voxels) ] = cp.get_partition_region_value_from_name('Core')
         
         self.partition_labelmap_[lung_labelmap==0]=0
         
