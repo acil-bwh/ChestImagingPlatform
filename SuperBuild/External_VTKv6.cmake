@@ -156,6 +156,10 @@ endif()
 
 mark_as_superbuild(VTK_SOURCE_DIR:PATH)
 
+set (VTK_LIBXML_INCLUDE_DIR ${VTK_SOURCE_DIR}/ThirdParty/libxml2/vtklibxml2)
+mark_as_superbuild(VTK_LIBXML_INCLUDE_DIR:PATH)
+
+
 mark_as_superbuild(
   VARS VTK_DIR:PATH
   LABELS "FIND_PACKAGE"
@@ -163,3 +167,4 @@ mark_as_superbuild(
 
 ExternalProject_Message(${proj} "PNG_INCLUDE_DIR:${PNG_INCLUDE_DIR}")
 ExternalProject_Message(${proj} "PNG_LIBRARY:${PNG_LIBRARY}")
+ExternalProject_Message(${proj} "LIBXML_INCLUDE_DIR:${VTK_LIBXML_INCLUDE_DIR}")

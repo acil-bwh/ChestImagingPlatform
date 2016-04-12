@@ -11,7 +11,7 @@
 
 #include "cipGeometryTopologyData.h"
 #include <string>
-#include <libxml/xmlwriter.h> 
+#include <libxml/xmlwriter.h>
 #include <libxml/parser.h>
 
 namespace cip

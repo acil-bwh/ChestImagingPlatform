@@ -12,6 +12,8 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
+#include <cmath>
+
 #include "vtkComputeAirwayWallPolyData.h"
 
 #include "vtkCellArray.h"
@@ -29,11 +31,6 @@
 
 #include "vtkNRRDWriterCIP.h"
 #include "vtkSmartPointer.h"
-
-
-#ifdef WIN32
-#define round(x) floor((x)+0.5)
-#endif
 
 vtkStandardNewMacro(vtkComputeAirwayWallPolyData);
 
@@ -715,9 +712,9 @@ void vtkComputeAirwayWallPolyData::CreateAirwayImage(vtkImageData *resliceCT,vtk
       //So on and so forth...
       // Simple NN
       for (int cc=0;cc<rgbImage->GetNumberOfScalarComponents();cc++)
-	rgbImage->SetScalarComponentFromFloat(round(px),round(py),0,cc,0);
+	    rgbImage->SetScalarComponentFromFloat(std::floor(px), std::floor(py),0,cc,0);
       
-      rgbImage->SetScalarComponentFromFloat(round(px),round(py),0,colorChannel[ii],255);
+      rgbImage->SetScalarComponentFromFloat(std::floor(px), std::floor(py),0,colorChannel[ii],255);
       
     }
   }
