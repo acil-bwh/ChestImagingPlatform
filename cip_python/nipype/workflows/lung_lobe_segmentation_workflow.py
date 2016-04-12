@@ -337,8 +337,8 @@ class LungLobeSegmentationWorkflow(Workflow):
                      segment_lung_lobes, 'lofp')
         self.connect(post_filter_ro_fissure_particle_data, 'ofp',
                      segment_lung_lobes, 'rofp')
-        self.connect(post_filter_rh_fissure_particle_data, 'ofp',
-                     segment_lung_lobes, 'rhfp')                
+        #self.connect(post_filter_rh_fissure_particle_data, 'ofp',
+        #             segment_lung_lobes, 'rhfp')                
         self.connect(generate_lobe_surface_models, "olsm",
                      fit_lobe_surface_models_to_particle_data, "ilsm")
         self.connect(generate_lobe_surface_models, "orsm",
@@ -450,4 +450,4 @@ if __name__ == "__main__":
         lth=float(op.lth), sth=float(op.sth), perm=op.perm)
 
     wf.run()
-    #shutil.rmtree(tmp_dir)
+    shutil.rmtree(tmp_dir)
