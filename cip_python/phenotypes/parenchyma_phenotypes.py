@@ -6,6 +6,7 @@ from cip_python.phenotypes.phenotypes import Phenotypes
 from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.ChestConventions import ChestConventions
 import pdb
+import time
 
 class ParenchymaPhenotypes(Phenotypes):
     """General purpose class for generating parenchyma-based phenotypes.
@@ -324,6 +325,7 @@ class ParenchymaPhenotypes(Phenotypes):
 #        if ps == None:
 #            ps = parser.get_all_pairs()
         # Now compute the phenotypes and populate the data frame
+
         c = ChestConventions()
         if rs is not None:
             for r in rs:
@@ -349,6 +351,7 @@ class ParenchymaPhenotypes(Phenotypes):
                             self.add_pheno_group(ct, mask_region, mask_region,None,
                                                     c.GetChestRegionName(r),
                                                     c.GetChestWildCardName(), n)
+                                                    
         if ts is not None:
             for t in ts:
                 if t != 0:
@@ -360,13 +363,15 @@ class ParenchymaPhenotypes(Phenotypes):
         if ps is not None:
             for i in xrange(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
+                    tic = time.clock()
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
-                    mask_region = parser.get_mask(chest_region=int(ps[i, 0]))
-                    mask_type = parser.get_mask(chest_type=int(ps[i, 1]))
-                    
+                    toc0 = time.clock()                    
+                    # this here below is what is taking time
+                    #mask_region = parser.get_mask(chest_region=int(ps[i, 0]))
+                    #mask_type = parser.get_mask(chest_type=int(ps[i, 1]))
                     for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask, mask_region, mask_type,
+                        self.add_pheno_group(ct, mask, None, None,
                             c.GetChestRegionName(int(ps[i, 0])),
                             c.GetChestTypeName(int(ps[i, 1])), n)
 
@@ -415,8 +420,8 @@ class ParenchymaPhenotypes(Phenotypes):
         #print "Region: %s, Type: %s, Pheno: %s" % \
         #    (chest_region, chest_type, pheno_name)
         pheno_val = None
-        
         mask_sum = np.sum(mask)
+        #pdb.set_trace()
         if pheno_name == 'LAA950' and mask_sum > 0:
             pheno_val = float(np.sum(ct[mask] <= -950.))/mask_sum
         elif pheno_name == 'LAA910' and mask_sum > 0:

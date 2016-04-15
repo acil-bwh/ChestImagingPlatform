@@ -1,8 +1,18 @@
 import numpy as np
 from cip_python.ChestConventions import ChestConventions
-
+import time
+from sets import Set
 import pdb
 
+def f(n, _set): return n in _set
+
+def contains(label, set_of_labels):
+        """ True if label is in a set of values. 
+        That means: if label is in set_of_labels, the function returns True.
+        I will leave to the reader the deduction of what the function returns if label is not in set_of_labels..
+        """
+        return label in set_of_labels
+        
 class RegionTypeParser():
     """Parses the chest-region chest-type input data to identify all existing
     chest regions, chest types, and region-type pairs.
@@ -25,6 +35,9 @@ class RegionTypeParser():
         assert len(data.shape) > 0, "Empty data set"
 
         self.labels_ = np.unique(self._data)
+   
+
+    
 
     def get_mask(self, chest_region=None, chest_type=None):
         """Get's boolean mask of all data indices that match the chest-region
@@ -82,12 +95,21 @@ class RegionTypeParser():
                     CheckSubordinateSuperiorChestRegionRelationship(r, \
                     chest_region):
                     mask_labels.append(l)
-
+                
         mask = np.empty(self._data.shape, dtype=bool)
         mask[:] = False
+        
+        contains_np = np.frompyfunc(contains, 2, 1)
+        mask = contains_np(self._data, Set(mask_labels)).astype(bool)
 
-        for ml in mask_labels:
-            mask = np.logical_or(mask, self._data == ml)
+        ### This below here is the bottleneck
+        #print(mask_labels)
+        #for ml in mask_labels:
+        #    print(ml)
+        #    #mask = np.logical_or(mask, self._data == ml)
+        #    mask[self._data == ml] = 1 #np.logical_or(mask, self._data == ml)
+        #    toc0 = time.clock()                    
+        #    print("time in mask labels loop new"+ str(toc0-tic))
 
         return mask
 
