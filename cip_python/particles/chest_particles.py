@@ -66,14 +66,14 @@ class ChestParticles:
         self._feature_type = feature_type        
         self._inverse_kernel_params = ""
         self._init_params = ""
-        self._tmp_dir = tmp_dir
-        self._in_file_name = in_file_name
-        self._mask_file_name = mask_file_name
+        self._tmp_dir = os.path.splitdrive(tmp_dir)[1] # To avoid puller confusion on Windows
+        self._in_file_name = os.path.splitdrive(in_file_name)[1]
+        self._mask_file_name = os.path.splitdrive(mask_file_name)[1]
         self._in_particles_file_name = "NA"
-        self._out_particles_file_name = out_particles_file_name
+        self._out_particles_file_name = os.path.splitdrive(out_particles_file_name)[1]
         self._cip_region = 'UndefinedRegion'
         self._cip_type = 'UndefinedType'
-        
+               
         # The following takes on values 'DiscreteGaussian' or
         # 'ContinuousGaussian' and controls the way in which spatial smoothing
         # is done.
