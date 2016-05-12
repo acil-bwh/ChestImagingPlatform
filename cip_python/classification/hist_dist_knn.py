@@ -2,8 +2,6 @@ import numpy as np
 from numpy import sum, sort, abs
 from collections import Counter
 
-import pdb
-
 class HistDistKNN():
     """K-nearest neighbors using histogram and distance (HistDist) metric. The
     metric is given by: histogram_metric + beta*distance_metric, where 
@@ -88,6 +86,7 @@ class HistDistKNN():
             a vector containing class labels for the 'M' test samples (if 
             multiple test samples are specified).
         """
+        
         if len(hist.shape) == 1:
             mult_samples = False
             n_samples = 1
@@ -159,24 +158,27 @@ class HistDistKNN():
             as per the numpy unique command
         """
         
+        num_classes = self.classes_.shape[0] #2#np.shape(self.classes_)[0]
+
         if len(hist.shape) == 1:
             mult_samples = False
             n_samples = 1
+            class_probabilities = np.zeros([num_classes])
         else:
             mult_samples = True
             n_samples = hist.shape[0]
+            class_probabilities = np.zeros([n_samples, num_classes])
         
-        num_classes = self.classes_.shape[0] #2#np.shape(self.classes_)[0]
         #n_training_samples = np.shape(self.y_)[0]
-        class_probabilities = np.zeros([n_samples, num_classes])
+                    
+
+        
         # dictlist = [dict() for x in range(n)]
 
         if mult_samples:
             assert hist.shape[0] == dist.shape[0], \
               "Mismatch between histogram and distance data dimension"
-            
-        print("Starting hisdistknn..")
-     
+                         
         for i in xrange(0, n_samples):
             # Compute the histogram component (hist_comp) of the overall metric
             # value
@@ -207,8 +209,6 @@ class HistDistKNN():
 
             nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
             ids = metric_vals <= nth_metric_val
-
-            print("Now computing probabilities..")
             
             
             if mult_samples:
@@ -219,7 +219,7 @@ class HistDistKNN():
                 #class_label[i] = Counter(self.y_[ids]).most_common(1)[0][0]
             else:
                 for class_idx in range (0, num_classes): 
+                    pdb.set_trace()
                     class_probabilities[class_idx] = \
                         np.float(Counter(self.y_[ids])[self.classes_[class_idx]])/np.float(self.n_neighbors_)
-
         return class_probabilities
