@@ -410,7 +410,7 @@ class ChestParticles:
             self._init_params + " " + self._reconKernelParams + " " + \
             self._optimizerParams + " -o " + output + " -maxi " + \
             str(self._iterations)
-
+        
         if self._debug == True:
             print tmp_command
 
@@ -422,7 +422,6 @@ class ChestParticles:
                         " | unu 2op + - " + str(self._max_scale) + \
                         " | unu inset -min M 0 -s - -i " + output + " -o " + output
         
-            #print tmp_command
             if self._debug == True:
                 print tmp_command
             subprocess.call( tmp_command, shell=True )
@@ -551,6 +550,7 @@ class ChestParticles:
       
         if out_particles == None:
             out_particles = self._out_particles_file_name
+            
         #Adjust scale if down-sampling was performed
         if self._down_sample_rate > 1:
             self.adjust_scale(in_particles)
@@ -581,12 +581,18 @@ class ChestParticles:
 
     def clean_tmp_dir(self):
         if self._clean_tmp_dir == True:
-            print "Cleaning tempoarary directory..."
-            tmp_command = "/bin/rm " + os.path.join(self._tmp_dir, "*")
-
-            if self._debug == True:
-                print tmp_command
-            subprocess.call( tmp_command, shell=True )
+            print "Cleaning temporary directory..."
+            
+#            tmp_command = "\bin\rm " + os.path.join(self._tmp_dir, "*")
+#            print tmp_command
+#
+#            if self._debug == True:
+#                print tmp_command
+#            subprocess.call( tmp_command, shell=True )
+            list_dir=os.listdir(self._tmp_dir)
+            for file in list_dir:
+                tmp = os.path.join(self._tmp_dir, file)
+                os.remove(tmp)
 
     def merge_particles(self,input_list,output_merged):
         particles = str()
