@@ -168,7 +168,7 @@ class xMLPointsQC:
         
         for point_ix in range(0,num_points):
             if(np.mod(point_ix,20)==0):
-                print("case: "+str(point_ix))
+                print("point: "+str(point_ix))
             patch = patch_list_c[point_ix][0]  
                 
             bounds = [patch_list_c[point_ix][3][0],patch_list_c[point_ix][3][1],patch_list_c[point_ix][3][2], \
@@ -212,9 +212,10 @@ class xMLPointsQC:
             patch2=scipy.ndimage.interpolation.affine_transform(\
                 patch2,transform.T,order=2,\
                 cval=0.0,output=np.float32, output_shape=np.shape(np.transpose(patch2)))
-                                            
+                            
+            print("generating figure")
             fig = plt.figure()  
-                
+            print("fig generated")    
             gs=GridSpec(9,10) # 2 rows, 3 columns
                                             
             #ax_1 = fig.add_subplot(gs[0:8,1:9])
