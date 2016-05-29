@@ -1,3 +1,6 @@
+.*
+!/.gitignore
+
 CMakeCache.txt
 CMakeFiles
 MakeFile
@@ -18,7 +21,7 @@ cip_python/ChestConventions.so
 cip_python/wrap_ChestConventions.cpp
 MyInsideClass.*
 Sandbox
-gitignore
+
 Testing/Data/Input/CropLung_LeftLung_Test_ct.nrrd
 
 Testing/Data/Input/CropLung_LeftLung_Test_lm.nrrd
@@ -27,6 +30,4 @@ Testing/Data/Input/CropLung_RightLung_Test_ct.nrrd
 
 Testing/Data/Input/CropLung_RightLung_Test_lm.nrrd
 
-.cproject
 
-.project
