@@ -172,7 +172,7 @@ class AirwayParticlesPipeline:
 #
             # Compute Frangi
             if self._init_method == 'Frangi':
-                tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f ValleyLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.5 --beta 0.5 --C 50 -o %(out)s"
+                tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f ValleyLine --std %(minscale)f,%(maxscale)f,4 --ssm 1 --alpha 0.5 --beta 0.5 --C 50 -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
                 tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
                 print tmpCommand
@@ -184,7 +184,7 @@ class AirwayParticlesPipeline:
                 print tmpCommand
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'StrainEnergy':
-                tmpCommand = "ComputeFeatureStrength -i %(in)s -m StrainEnergy -f RidgeLine --std %(minscale)f,4,%(maxscale)f --ssm 1 --alpha 0.2 --beta 0.1 --kappa 0.5 --nu 0.1 -o %(out)s"
+                tmpCommand = "ComputeFeatureStrength -i %(in)s -m StrainEnergy -f RidgeLine --std %(minscale)f,%(maxscale)f,4 --ssm 1 --alpha 0.2 --beta 0.1 --kappa 0.5 --nu 0.1 -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
                 tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
                 print tmpCommand
