@@ -57,9 +57,9 @@ class AirwayParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6., live_thresh=40.,
-                 seed_thresh=30., scale_samples=5, down_sample_rate=1,
-                 min_intensity=-1100, max_intensity=-400):
+                 mask_file_name=None, max_scale=9., live_thresh=132.5,
+                 seed_thresh=97.5, scale_samples=6, down_sample_rate=1,
+                 min_intensity=-1100, max_intensity=-800):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
@@ -75,15 +75,15 @@ class AirwayParticles(ChestParticles):
         self._live_thresh = live_thresh
         self._seed_thresh = seed_thresh
        
-        self._phase_iterations = [100, 10, 75]
+        self._phase_iterations = [57,153,153]
 
-        self._phase_irads=[1.7,1.15,1.15]
-        self._phase_srads=[1.2,2,4]
+        self._phase_irads=[1.75,1.25,1.75]
+        self._phase_srads=[1.25,2.0,2.0]
 
-        self._phase_population_control_periods = [6,20,17]
-        self._phase_alphas = [1.0, 0.35, 0.84]
-        self._phase_betas = [0.77, 0.75, 0.57]
-        self._phase_gammas = [0.37, 0.53, 0.57]
+        self._phase_population_control_periods = [5,15,5]
+        self._phase_alphas = [0.75, 0.25, 0.75]
+        self._phase_betas = [0.25, 0.75, 0.25]
+        self._phase_gammas = [0.75, 0.75, 0.75]
 
         self._cip_type = 'Airway'
         
@@ -187,7 +187,7 @@ class AirwayParticles(ChestParticles):
         print "finished saving\#####n"
 
         #Clean tmp Directory
-        self.clean_tmp_dir()
+#        self.clean_tmp_dir()
 
 if __name__ == "__main__":
   from argparse import ArgumentParser
@@ -204,21 +204,21 @@ if __name__ == "__main__":
                     dest="output_particles")
   parser.add_argument("-t", help='tmp directory', dest="tmp_dir")
   parser.add_argument("-s", help='max scale [default: %(default)s)]',
-                    dest="max_scale", default=6.0, type=float)
+                    dest="max_scale", default=10.0, type=float)
   parser.add_argument("-r", help='down sampling rate (>=1) [default: \
     %(default)s]', dest="down_sample_rate", default=1.0, type=float)
   parser.add_argument("-n", help='number of scale volumes [default: \
-    %(default)s]', dest="scale_samples", default=5, type=int)
+    %(default)s]', dest="scale_samples", default=8, type=int)
   parser.add_argument("--lth", help='live threshold (>0) [default: \
-    %(default)s]', dest="live_th", default=40.0, type=float)
+    %(default)s]', dest="live_th", default=93.7629, type=float)
   parser.add_argument("--sth", help='seed threshold (>0) [default: \
-    %(default)s]', dest="seed_th", default=30.0, type=float)
+    %(default)s]', dest="seed_th", default=128.384, type=float)
   parser.add_argument("--minI",
     help='min intensity for feature [default: %(default)s]',
     dest="min_intensity", default=-1100, type=float)
   parser.add_argument("--maxI",
     help='max intensity for feature [default: %(default)s]',
-    dest="max_intensity", default=-400, type=float)
+    dest="max_intensity", default=-800, type=float)
 
   op = parser.parse_args()
 
