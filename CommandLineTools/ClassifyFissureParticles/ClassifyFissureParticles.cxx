@@ -42,7 +42,7 @@ struct PARTICLEINFO
 
 void GetParticleDistanceAndAngle( vtkPolyData*, unsigned int, const cipThinPlateSplineSurface&, double*, double* );
 void TallyParticleInfo( vtkPolyData*, std::vector< cipThinPlateSplineSurface >, std::map< unsigned int, PARTICLEINFO >* );
-void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >*, std::vector< cipThinPlateSplineSurface >, double, double, double );
+void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >*, std::vector< cipThinPlateSplineSurface >, double, double, double, double );
 void WriteParticlesToFile( vtkSmartPointer< vtkPolyData >, std::map< unsigned int, PARTICLEINFO >, std::string, unsigned char );
 
 int main( int argc, char *argv[] )
@@ -114,7 +114,7 @@ int main( int argc, char *argv[] )
 
   // Now classify the particles
   std::cout << "Classifying particles..." << std::endl;
-  ClassifyParticles( &particleToInfoMap, tpsVec, distanceWeight, angleWeight, threshold );
+  ClassifyParticles( &particleToInfoMap, tpsVec, distanceWeight, angleWeight, fischerThreshold, distanceThreshold );
 
   // Write the classified (fissure) particles to file
   if ( loClassifiedFileName.compare( "NA" ) != 0 )
@@ -241,7 +241,7 @@ void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineS
 }
 
 void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMap, std::vector< cipThinPlateSplineSurface > tpsVec, 
-                        double distanceWeight, double angleWeight, double threshold )
+                        double distanceWeight, double angleWeight, double fischerThreshold, double distanceThreshold )
 {
   std::map< unsigned int, PARTICLEINFO >::iterator it = (*particleToInfoMap).begin();
 
@@ -256,7 +256,7 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
 
     if ( projection.size() == 1 )
       {
-      if ( projection[0] > threshold )
+      if ( projection[0] > fischerThreshold && (*it).second.distance[0] < distanceThreshold )
         {
 	  (*it).second.cipType = (unsigned char)( cip::OBLIQUEFISSURE );
         }
@@ -270,7 +270,7 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
       // If here, we're necessarily talking about the right lung
       if ( projection[0] >= projection[1] )
         {
-        if ( projection[0] > threshold )
+        if ( projection[0] > fischerThreshold && (*it).second.distance[0] < distanceThreshold )
           {
 	    (*it).second.cipType = (unsigned char)( cip::OBLIQUEFISSURE );
           }
@@ -281,7 +281,7 @@ void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMa
         }
       else
         {
-        if ( projection[1] > threshold )
+        if ( projection[1] > fischerThreshold && (*it).second.distance[1] < distanceThreshold )
           {
 	    (*it).second.cipType = (unsigned char)( cip::HORIZONTALFISSURE );
           }

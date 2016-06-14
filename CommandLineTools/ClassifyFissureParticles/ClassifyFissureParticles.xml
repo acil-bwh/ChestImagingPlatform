@@ -97,12 +97,20 @@ and does not necessarily represent the official views of the National Institutes
     </double>
 
     <double>
-      <name>threshold</name>
+      <name>fischerThreshold</name>
       <flag>t</flag>
-      <longflag>thresh</longflag>
+      <longflag>fischer_thresh</longflag>
       <description>Threshold for Fischer discriminant based classification</description>
       <label>Threshold</label>
       <default>-30.0</default>
+    </double>
+
+    <double>
+      <name>distanceThreshold</name>
+      <longflag>dist_thresh</longflag>
+      <description>Optional. A particle will be classified as fissure if the Fischer linear discrimant classifier classifies it as such and if it is within this distance to the lobe surface model.</description>
+      <label>Distance Threshold</label>
+      <default>1000</default>
     </double>
   </parameters>
 </executable>
