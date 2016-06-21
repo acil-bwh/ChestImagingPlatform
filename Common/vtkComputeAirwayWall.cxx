@@ -58,7 +58,7 @@ this->UseWeights = 0;
 // Params for Ray configuration
 this->RMin = 0;
 this->RMax = 12.7;
-this->Delta = 0.1;
+this->Delta = 0.5;
 this->Scale = 3;
 
 this->NumberOfThetaSamples = 128;
