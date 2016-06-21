@@ -1,11 +1,10 @@
 import numpy as np
 from scipy.stats import mode, kurtosis, skew
 from optparse import OptionParser
-import nrrd
+import warnings, nrrd, pdb
 from cip_python.phenotypes.phenotypes import Phenotypes
 from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.ChestConventions import ChestConventions
-import pdb
 
 class ParenchymaPhenotypes(Phenotypes):
     """General purpose class for generating parenchyma-based phenotypes.
@@ -52,24 +51,29 @@ class ParenchymaPhenotypes(Phenotypes):
     that are <= -500 HU
     'Volume': Volume of the structure, measured in liters
     'Mass': Mass of the structure measure in grams    
-    'NormalParenchyma': A "chest-type-based" phenotype. It is the percentage of
-    a given region occupied by the 'NormalParenchyma' chest-type
-    'PanlobularEmphysema': A "chest-type-based" phenotype. It is the percentage 
-    of a given region occupied by the 'PanlobularEmphysema' chest-type
-    'ParaseptalEmphysema': A "chest-type-based" phenotype. It is the percentage 
-    of a given region occupied by the 'ParaseptalEmphysema' chest-type
-    'MildCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
-    percentage of a given region occupied by the 'MildCentrilobularEmphysema' 
-    chest-type
-    'ModerateCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
-    percentage of a given region occupied by the 'ModerateCentrilobularEmphysema' 
-    chest-type
-    'SevereCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
-    percentage of a given region occupied by the 'SevereCentrilobularEmphysema' 
-    chest-type
-    'MildParaseptalEmphysema': A "chest-type-based" phenotype. It is the 
-    percentage of a given region occupied by the 'MildParaseptalEmphysema' 
-    chest-type
+    'TypeFrac': The fraction of a type in a specified chest-region chest-type
+    pair within the chest region of that pair.
+    'NormalParenchyma': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
+    "chest-type-based" phenotype. It is the percentage of a given region 
+    occupied by the 'NormalParenchyma' chest-type
+    'PanlobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
+    "chest-type-based" phenotype. It is the percentage of a given region 
+    occupied by the 'PanlobularEmphysema' chest-type
+    'ParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
+    "chest-type-based" phenotype. It is the percentage of a given region 
+    occupied by the 'ParaseptalEmphysema' chest-type
+    'MildCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
+    Previously: A "chest-type-based" phenotype. It is the percentage of a given 
+    region occupied by the 'MildCentrilobularEmphysema' chest-type
+    'ModerateCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
+    Previously: A "chest-type-based" phenotype. It is the percentage of a given 
+    region occupied by the 'ModerateCentrilobularEmphysema' chest-type
+    'SevereCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
+    Previously: A "chest-type-based" phenotype. It is the percentage of a given 
+    region occupied by the 'SevereCentrilobularEmphysema' chest-type
+    'MildParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A
+    "chest-type-based" phenotype. It is the percentage of a given region 
+    occupied by the 'MildParaseptalEmphysema' chest-type
     
     Parameters
     ----------
@@ -138,7 +142,7 @@ class ParenchymaPhenotypes(Phenotypes):
                  'HUSkewness', 'HUMode', 'HUMedian', 'HUMin', 'HUMax',
                  'HUMean500', 'HUStd500', 'HUKurtosis500', 'HUSkewness500',
                  'HUMode500', 'HUMedian500', 'HUMin500', 'HUMax500', 'Volume',
-                 'Mass', 'TypePerc', 'NormalParenchyma', 'PanlobularEmphysema',
+                 'Mass', 'TypeFrac', 'NormalParenchyma', 'PanlobularEmphysema',
                  'ParaseptalEmphysema', 'MildCentrilobularEmphysema', 
                  'ModerateCentrilobularEmphysema', 
                  'SevereCentrilobularEmphysema', 'MildParaseptalEmphysema']
@@ -155,7 +159,7 @@ class ParenchymaPhenotypes(Phenotypes):
         """
         return self.cid_
 
-    def execute(self, ct, lm, cid, spacing, chest_regions=None,
+    def execute(self, lm, cid, spacing, ct=None, chest_regions=None,
                 chest_types=None, pairs=None, pheno_names=None):
         """Compute the phenotypes for the specified structures for the
         specified threshold values.
@@ -201,34 +205,32 @@ class ParenchymaPhenotypes(Phenotypes):
         values that are <= -500 HU
         'Volume': Volume of the structure, measured in liters
         'Mass': Mass of the structure measure in grams
-        'TypePerc': Percentage for a given type over the total region.
-        'NormalParenchyma': A "chest-type-based" phenotype. It is the 
-        percentage of a given region occupied by the 'NormalParenchyma' 
-        chest-type
-        'PanlobularEmphysema': A "chest-type-based" phenotype. It is the 
-        percentage of a given region occupied by the 'PanlobularEmphysema' 
-        chest-type
-        'ParaseptalEmphysema': A "chest-type-based" phenotype. It is the 
-        percentage of a given region occupied by the 'ParaseptalEmphysema' 
-        chest-type
-        'MildCentrilobularEmphysema': A "chest-type-based" phenotype. It is the 
-        percentage of a given region occupied by the 
-        'MildCentrilobularEmphysema' chest-type
-        'ModerateCentrilobularEmphysema': A "chest-type-based" phenotype. It is 
-        the percentage of a given region occupied by the 
-        'ModerateCentrilobularEmphysema' chest-type
-        'SevereCentrilobularEmphysema': A "chest-type-based" phenotype. It is 
-        the percentage of a given region occupied by the 
-        'SevereCentrilobularEmphysema' chest-type
-        'MildParaseptalEmphysema': A "chest-type-based" phenotype. It is the 
-        percentage of a given region occupied by the 'MildParaseptalEmphysema' 
-        chest-type
-    
+        'TypeFrac': The fraction of a type in a specified chest-region 
+        chest-type pair within the chest region of that pair.
+        'NormalParenchyma': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
+        "chest-type-based" phenotype. It is the percentage of a given region 
+        occupied by the 'NormalParenchyma' chest-type
+        'PanlobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A
+        "chest-type-based" phenotype. It is the percentage of a given region 
+        occupied by the 'PanlobularEmphysema' chest-type
+        'ParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
+        "chest-type-based" phenotype. It is the percentage of a given region 
+        occupied by the 'ParaseptalEmphysema' chest-type
+        'MildCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
+        Previously: A "chest-type-based" phenotype. It is the percentage of a 
+        given region occupied by the 'MildCentrilobularEmphysema' chest-type
+        'ModerateCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
+        Previously: A "chest-type-based" phenotype. It is the percentage of a 
+        given region occupied by the 'ModerateCentrilobularEmphysema' chest-type
+        'SevereCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
+        Previously: A "chest-type-based" phenotype. It is the percentage of a 
+        given region occupied by the 'SevereCentrilobularEmphysema' chest-type
+        'MildParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
+        Previously: A "chest-type-based" phenotype. It is the percentage of a 
+        given region occupied by the 'MildParaseptalEmphysema' chest-type        
+        
         Parameters
         ----------
-        ct : array, shape ( X, Y, Z )
-            The 3D CT image array
-
         lm : array, shape ( X, Y, Z )
             The 3D label map array
 
@@ -237,7 +239,10 @@ class ParenchymaPhenotypes(Phenotypes):
 
         spacing : array, shape ( 3 )
             The x, y, and z spacing, respectively, of the CT volume
-            
+
+        ct : array, shape ( X, Y, Z )
+            The 3D CT image array
+                        
         chest_regions : array, shape ( R ), optional
             Array of integers, with each element in the interval [0, 255],
             indicating the chest regions over which to compute the LAA. If none
@@ -276,13 +281,15 @@ class ParenchymaPhenotypes(Phenotypes):
             Dataframe containing info about machine, run time, and chest region
             chest type phenotype quantities.         
         """
-        assert len(ct.shape) == len(lm.shape), \
-            "CT and label map are not the same dimension"    
+        if ct is not None:
+            assert len(ct.shape) == len(lm.shape), \
+              "CT and label map are not the same dimension"    
 
-        dim = len(ct.shape)
-        for i in xrange(0, dim):
-            assert ct.shape[0] == lm.shape[0], \
-                "Disagreement in CT and label map dimension"
+        dim = len(lm.shape)
+        if ct is not None:
+            for i in xrange(0, dim):
+                assert ct.shape[0] == lm.shape[0], \
+                  "Disagreement in CT and label map dimension"
 
         assert type(cid) == str, "cid must be a string"
         self.cid_ = cid
@@ -294,9 +301,19 @@ class ParenchymaPhenotypes(Phenotypes):
         elif self.requested_pheno_names is not None:
             phenos_to_compute = self.requested_pheno_names
 
-        rs = None
-        ts = None
-        ps = None
+        deprecated_phenos = ['NormalParenchyma', 'PanlobularEmphysema',
+            'ParaseptalEmphysema', 'MildCentrilobularEmphysema',
+            'ModerateCentrilobularEmphysema', 'SevereCentrilobularEmphysema',
+            'MildParaseptalEmphysema']
+
+        for p in phenos_to_compute:
+            if p in deprecated_phenos:
+                warnings.warn('{} is deprecated. Use TypeFrac instead.'.\
+                              format(p), DeprecationWarning)
+            
+        rs = np.array([])
+        ts = np.array([])
+        ps = np.array([])
         if chest_regions is not None:
             rs = chest_regions
         elif self.chest_regions_ is not None:
@@ -312,86 +329,64 @@ class ParenchymaPhenotypes(Phenotypes):
 
         parser = RegionTypeParser(lm)
         
-        if rs == None and ts == None and ps == None:
+        if rs.size == 0 and ts.size == 0 and ps.size == 0:
             rs = parser.get_all_chest_regions()
             ts = parser.get_chest_types()
             ps = parser.get_all_pairs()
 
-#        if rs == None:
-#            rs = parser.get_all_chest_regions()
-#        if ts == None:
-#            ts = parser.get_chest_types()
-#        if ps == None:
-#            ps = parser.get_all_pairs()
         # Now compute the phenotypes and populate the data frame
         c = ChestConventions()
-        if rs is not None:
-            for r in rs:
-                if r != 0:
-                    mask_region = parser.get_mask(chest_region=r)
-                    for n in phenos_to_compute:
-                        # First check to see if 'pheno_name' is a valid chest
-                        # type. If it is, then it as a "chest-type-based"
-                        # phenotype, and it is computed as the percentage of the
-                        # given region occupied by the given chest-type
-                        if c.IsChestType(n):
-                            chest_type_val = \
-                              c.GetChestTypeValueFromName(n)
-                            mask_type = \
-                              parser.get_mask(chest_type=chest_type_val)
-                            pheno_val = \
-                              np.sum(np.logical_and(mask_type, mask_region))/\
-                              float(np.sum(mask_region))
-                            self.add_pheno([c.GetChestRegionName(r), 
-                                            c.GetChestWildCardName()], 
-                                            n, pheno_val)
-                        else:
-                            self.add_pheno_group(ct, mask_region, mask_region,None,
-                                                    c.GetChestRegionName(r),
-                                                    c.GetChestWildCardName(), n)
-        if ts is not None:
-            for t in ts:
-                if t != 0:
-                    mask_type = parser.get_mask(chest_type=t)
-                    for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask_type, None, mask_type,
-                                                c.GetChestWildCardName(),
-                                                c.GetChestTypeName(t), n)
-        if ps is not None:
+        for r in rs:
+            if r != 0:
+                mask_region = parser.get_mask(chest_region=r)
+                for n in phenos_to_compute:
+                    self.add_pheno_group(ct, mask_region, mask_region, 
+                                         None, c.GetChestRegionName(r),
+                                         c.GetChestWildCardName(), n)                                                    
+        for t in ts:
+            if t != 0:
+                mask_type = parser.get_mask(chest_type=t)
+                for n in phenos_to_compute:
+                    self.add_pheno_group(ct, mask_type, None, mask_type,
+                                         c.GetChestWildCardName(),
+                                         c.GetChestTypeName(t), n)
+        if ps.size > 0:
             for i in xrange(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
-                    mask_region = parser.get_mask(chest_region=int(ps[i, 0]))
-                    mask_type = parser.get_mask(chest_type=int(ps[i, 1]))
-                    
-                    for n in phenos_to_compute:
-                        self.add_pheno_group(ct, mask, mask_region, mask_type,
-                            c.GetChestRegionName(int(ps[i, 0])),
-                            c.GetChestTypeName(int(ps[i, 1])), n)
+                    for n in phenos_to_compute:                        
+                        if n == 'TypeFrac':
+                            mask_region = \
+                              parser.get_mask(chest_region=int(ps[i, 0]))
+                            self.add_pheno_group(ct, mask, mask_region, 
+                                None, c.GetChestRegionName(int(ps[i, 0])),
+                                c.GetChestTypeName(int(ps[i, 1])), n)
+                        else:
+                            self.add_pheno_group(ct, mask, None, None,
+                                c.GetChestRegionName(int(ps[i, 0])),
+                                c.GetChestTypeName(int(ps[i, 1])), n)
 
         return self._df
 
-    def add_pheno_group(self, ct, mask, mask_region, mask_type, chest_region, chest_type, pheno_name):
-        """For a given mask, this function computes all non chest-type-based 
-        phenotypes corresponding to the masked structure and adds them to the 
-        dataframe with the 'add_pheno' method. (Chest-type-based phenotypes are
-        phenotypes computed as the percentage of a given chest-type in a given
-        region).
-
+    def add_pheno_group(self, ct, mask, mask_region, mask_type, chest_region, 
+                        chest_type, pheno_name):
+        """This function computes phenotypes and adds them to the dataframe with
+        the 'add_pheno' method. 
+        
         Parameters
         ----------
         ct : array, shape ( X, Y, Z )
             The 3D CT image array
 
-        mask : boolean array, shape ( X, Y, Z )
+        mask : boolean array, shape ( X, Y, Z ), optional
             Boolean mask where True values indicate presence of the structure
             of interest
             
-        mask_region: boolean array, shape ( X, Y, Z )
+        mask_region: boolean array, shape ( X, Y, Z ), optional
             Boolean mask for the corresponding region
             
-        mask_type: boolean array, shape ( X, Y, Z )
+        mask_type: boolean array, shape ( X, Y, Z ), optional
             Boolean mask for the corresponding type
 
         chest_region : string
@@ -412,131 +407,140 @@ class ParenchymaPhenotypes(Phenotypes):
         distributions'
         """
         assert pheno_name in self.pheno_names_, "Invalid phenotype name"
-        #print "Region: %s, Type: %s, Pheno: %s" % \
-        #    (chest_region, chest_type, pheno_name)
+
         pheno_val = None
-        
         mask_sum = np.sum(mask)
-        if pheno_name == 'LAA950' and mask_sum > 0:
-            pheno_val = float(np.sum(ct[mask] <= -950.))/mask_sum
-        elif pheno_name == 'LAA910' and mask_sum > 0:
-            pheno_val = float(np.sum(ct[mask] <= -910.))/mask_sum            
-        elif pheno_name == 'LAA856'and mask_sum > 0:
-            pheno_val = float(np.sum(ct[mask] <= -856.))/mask_sum            
-        elif pheno_name == 'HAA700' and mask_sum > 0:
-            pheno_val = float(np.sum(ct[mask] >= -700.))/mask_sum            
-        elif pheno_name == 'HAA600' and mask_sum > 0:
-            pheno_val = float(np.sum(ct[mask] >= -600))/mask_sum            
-        elif pheno_name == 'HAA500' and mask_sum > 0:
-            pheno_val = float(np.sum(ct[mask] >= -500))/mask_sum
-        elif pheno_name == 'HAA250' and mask_sum > 0:
-            pheno_val = float(np.sum(ct[mask] >= -250))/mask_sum 
-        elif pheno_name == 'Perc15' and mask_sum > 0:
-            pheno_val = np.percentile(ct[mask], 15)
-        elif pheno_name == 'Perc10' and mask_sum > 0:
-            pheno_val = np.percentile(ct[mask], 10)            
-        elif pheno_name == 'HUMean' and mask_sum > 0:
-            pheno_val = np.mean(ct[mask])
-        elif pheno_name == 'HUStd' and mask_sum > 0:
-            pheno_val = np.std(ct[mask])
-        elif pheno_name == 'HUKurtosis' and mask_sum > 0:
-            pheno_val = kurtosis(ct[mask], bias=False, fisher=True)
-        elif pheno_name == 'HUSkewness' and mask_sum > 0:
-            pheno_val = skew(ct[mask], bias=False)
-        elif pheno_name == 'HUMode' and mask_sum > 0:
-            min_val = np.min(ct[mask])
-            pheno_val = np.argmax(np.bincount(ct[mask] + \
-                np.abs(min_val))) - np.abs(min_val)
-        elif pheno_name == 'HUMedian' and mask_sum > 0:
-            pheno_val = np.median(ct[mask])
-        elif pheno_name == 'HUMin' and mask_sum > 0:
-            pheno_val = np.min(ct[mask])
-        elif pheno_name == 'HUMax' and mask_sum > 0:
-            pheno_val = np.max(ct[mask])
-        elif pheno_name == 'HUMean500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0] > 0:
-                pheno_val = np.mean(hus)
-        elif pheno_name == 'HUStd500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0] > 0:
-                pheno_val = np.std(hus)
-        elif pheno_name == 'HUKurtosis500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0]:
-                pheno_val = kurtosis(hus, bias=False, fisher=True)
-        elif pheno_name == 'HUSkewness500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0] > 0:
-                pheno_val = skew(hus, bias=False)
-        elif pheno_name == 'HUMode500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0] > 0:
-                min_val = np.min(hus)
-                pheno_val = np.argmax(np.bincount(hus +\
-                    np.abs(min_val))) - np.abs(min_val)                
-        elif pheno_name == 'HUMedian500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0] > 0:
-                pheno_val = np.median(hus)
-        elif pheno_name == 'HUMin500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0] > 0:
-                pheno_val = np.min(hus)
-        elif pheno_name == 'HUMax500' and mask_sum > 0:
-            hus = ct[np.logical_and(mask, ct <= -500)]
-            if hus.shape[0] > 0:
-                pheno_val = np.max(hus)
-        elif pheno_name == 'Volume':
-            pheno_val = np.prod(self._spacing)*float(mask_sum)/1e6
-        elif pheno_name == 'Mass' and mask_sum > 0:
-            # This quantity is computed in a piecewise linear form according
-            # to the prescription presented in ref. [1]. Mass is computed in
-            # grams. First compute the contribution in HU interval from -98
-            # and below.
-            pheno_val = 0.0
-            HU_tmp = ct[np.logical_and(mask, ct < -98)].clip(-1000)
-            if HU_tmp.shape[0] > 0:
-                m = (1.21e-3-0.93)/(-1000+98)
-                b = 1.21e-3 + 1000*m
-                pheno_val += np.sum((m*HU_tmp + b)*\
-                    np.prod(self._spacing)*0.001)
-    
-                # Now compute the mass contribution in the interval [-98, 18] 
-                # HU. Note the in the original paper, the interval is defined 
-                # from -98HU to 14HU, but we extend in slightly here so there 
-                # are no gaps in coverage. The values we report in the interval 
-                # [14, 23] should be viewed as approximate.
-                HU_tmp = ct[np.logical_and(np.logical_and(mask, ct >= -98),
-                                           ct <= 18)]
+
+        if ct is not None:
+            if pheno_name == 'LAA950' and mask_sum > 0:
+                pheno_val = float(np.sum(ct[mask] <= -950.))/mask_sum
+            elif pheno_name == 'LAA910' and mask_sum > 0:
+                pheno_val = float(np.sum(ct[mask] <= -910.))/mask_sum            
+            elif pheno_name == 'LAA856'and mask_sum > 0:
+                pheno_val = float(np.sum(ct[mask] <= -856.))/mask_sum            
+            elif pheno_name == 'HAA700' and mask_sum > 0:
+                pheno_val = float(np.sum(ct[mask] >= -700.))/mask_sum            
+            elif pheno_name == 'HAA600' and mask_sum > 0:
+                pheno_val = float(np.sum(ct[mask] >= -600))/mask_sum            
+            elif pheno_name == 'HAA500' and mask_sum > 0:
+                pheno_val = float(np.sum(ct[mask] >= -500))/mask_sum
+            elif pheno_name == 'HAA250' and mask_sum > 0:
+                pheno_val = float(np.sum(ct[mask] >= -250))/mask_sum 
+            elif pheno_name == 'Perc15' and mask_sum > 0:
+                pheno_val = np.percentile(ct[mask], 15)
+            elif pheno_name == 'Perc10' and mask_sum > 0:
+                pheno_val = np.percentile(ct[mask], 10)            
+            elif pheno_name == 'HUMean' and mask_sum > 0:
+                pheno_val = np.mean(ct[mask])
+            elif pheno_name == 'HUStd' and mask_sum > 0:
+                pheno_val = np.std(ct[mask])
+            elif pheno_name == 'HUKurtosis' and mask_sum > 0:
+                pheno_val = kurtosis(ct[mask], bias=False, fisher=True)
+            elif pheno_name == 'HUSkewness' and mask_sum > 0:
+                pheno_val = skew(ct[mask], bias=False)
+            elif pheno_name == 'HUMode' and mask_sum > 0:
+                min_val = np.min(ct[mask])
+                pheno_val = np.argmax(np.bincount(ct[mask] + \
+                    np.abs(min_val))) - np.abs(min_val)
+            elif pheno_name == 'HUMedian' and mask_sum > 0:
+                pheno_val = np.median(ct[mask])
+            elif pheno_name == 'HUMin' and mask_sum > 0:
+                pheno_val = np.min(ct[mask])
+            elif pheno_name == 'HUMax' and mask_sum > 0:
+                pheno_val = np.max(ct[mask])
+            elif pheno_name == 'HUMean500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0] > 0:
+                    pheno_val = np.mean(hus)
+            elif pheno_name == 'HUStd500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0] > 0:
+                    pheno_val = np.std(hus)
+            elif pheno_name == 'HUKurtosis500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0]:
+                    pheno_val = kurtosis(hus, bias=False, fisher=True)
+            elif pheno_name == 'HUSkewness500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0] > 0:
+                    pheno_val = skew(hus, bias=False)
+            elif pheno_name == 'HUMode500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0] > 0:
+                    min_val = np.min(hus)
+                    pheno_val = np.argmax(np.bincount(hus +\
+                        np.abs(min_val))) - np.abs(min_val)                
+            elif pheno_name == 'HUMedian500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0] > 0:
+                    pheno_val = np.median(hus)
+            elif pheno_name == 'HUMin500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0] > 0:
+                    pheno_val = np.min(hus)
+            elif pheno_name == 'HUMax500' and mask_sum > 0:
+                hus = ct[np.logical_and(mask, ct <= -500)]
+                if hus.shape[0] > 0:
+                    pheno_val = np.max(hus)
+            elif pheno_name == 'Volume':
+                pheno_val = np.prod(self._spacing)*float(mask_sum)/1e6
+            elif pheno_name == 'Mass' and mask_sum > 0:
+                # This quantity is computed in a piecewise linear form according
+                # to the prescription presented in ref. [1]. Mass is computed in
+                # grams. First compute the contribution in HU interval from -98
+                # and below.
+                pheno_val = 0.0
+                HU_tmp = ct[np.logical_and(mask, ct < -98)].clip(-1000)
                 if HU_tmp.shape[0] > 0:
-                    pheno_val += np.sum((1.018 + 0.893*HU_tmp/1000.0)*\
+                    m = (1.21e-3-0.93)/(-1000+98)
+                    b = 1.21e-3 + 1000*m
+                    pheno_val += np.sum((m*HU_tmp + b)*\
                         np.prod(self._spacing)*0.001)
     
-                # Compute the mass contribution in the interval (18, 100]
-                HU_tmp = ct[np.logical_and(np.logical_and(mask, ct > 18),
-                                           ct <= 100)]
-                if HU_tmp.shape[0] > 0:
-                    pheno_val += np.sum((1.003 + 1.169*HU_tmp/1000.0)*\
-                        np.prod(self._spacing)*0.001)
+                    # Now compute the mass contribution in the interval 
+                    # [-98, 18] HU. Note the in the original paper, the interval
+                    # is defined from -98HU to 14HU, but we extend in slightly 
+                    # here so there are no gaps in coverage. The values we 
+                    # report in the interval [14, 23] should be viewed as 
+                    # approximate.
+                    HU_tmp = ct[np.logical_and(np.logical_and(mask, ct >= -98),
+                                               ct <= 18)]
+                    if HU_tmp.shape[0] > 0:
+                        pheno_val += np.sum((1.018 + 0.893*HU_tmp/1000.0)*\
+                            np.prod(self._spacing)*0.001)
     
-                # Compute the mass contribution in the interval > 100
-                HU_tmp = ct[np.logical_and(mask, ct > 100)]
-                if HU_tmp.shape[0] > 0:
-                    pheno_val += np.sum((1.017 + 0.592*HU_tmp/1000.0)*\
-                        np.prod(self._spacing)*0.001)
+                    # Compute the mass contribution in the interval (18, 100]
+                    HU_tmp = ct[np.logical_and(np.logical_and(mask, ct > 18),
+                                               ct <= 100)]
+                    if HU_tmp.shape[0] > 0:
+                        pheno_val += np.sum((1.003 + 1.169*HU_tmp/1000.0)*\
+                            np.prod(self._spacing)*0.001)
     
-#        elif pheno_name == 'TypePerc'and mask_region is not None and mask_type is not None:
-#            denom = np.sum(mask_region)
-#            if denom > 0:
-#                pheno_val = np.sum(mask_type)/denom
-#
+                    # Compute the mass contribution in the interval > 100
+                    HU_tmp = ct[np.logical_and(mask, ct > 100)]
+                    if HU_tmp.shape[0] > 0:
+                        pheno_val += np.sum((1.017 + 0.592*HU_tmp/1000.0)*\
+                            np.prod(self._spacing)*0.001)    
+        elif pheno_name == 'TypeFrac'and mask is not None and \
+          mask_region is not None:
+            denom = np.sum(mask_region)
+            if denom > 0:
+                pheno_val = float(np.sum(mask))/float(denom)
+
         if pheno_val is not None:
             self.add_pheno([chest_region, chest_type], pheno_name, pheno_val)
 
 if __name__ == "__main__":
     desc = """Generates parenchyma phenotypes given input CT and segmentation \
-    data"""
+    data. Note that in general, specified chest-regions, chest-types, and \
+    region-type pairs indicate the parts of the image over which the requested \
+    phenotypes are computed. An exception is the TypeFrac phenotype; in that 
+    case, a region-type pair must be specified. The TypeFrac phenotype is \
+    computed by calculating the fraction of the pair's chest-region that is \
+    covered by the pair's chest-type. For example, if a user is interested in \
+    the fraction of paraseptal emphysema in the left lung, he/she would \
+    specify the TypeFrac phenotype and the LeftLung,ParaseptalEmphysema \
+    region-type pair."""
     
     parser = OptionParser(description=desc)
     parser.add_option('--in_ct',
@@ -571,7 +575,11 @@ if __name__ == "__main__":
                       phenotypes. For a given pair, the first entry is \
                       interpreted as the chest region, and the second entry \
                       is interpreted as the chest type. E.g. LeftLung,Vessel \
-                      would be a valid entry.',
+                      would be a valid entry. Note that region-type pairs are \
+                      interpreted differently in the case of the TypeFrac \
+                      phenotype. In that case, the specified pair is used to \
+                      compute the fraction of the chest type within the \
+                      chest region.',
                       dest='pairs', metavar='<string>', default=None)
     parser.add_option('--pheno_names',
                       help='Comma separated list of phenotype value names to \
@@ -581,12 +589,15 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     lm, lm_header = image_io.read_in_numpy(options.in_lm)
-    ct, ct_header = image_io.read_in_numpy(options.in_ct)    
+
+    ct = None
+    if options.in_ct is not None:
+        ct, ct_header = image_io.read_in_numpy(options.in_ct)    
 
     spacing = np.zeros(3)
-    spacing[0] = ct_header['space directions'][0][0]
-    spacing[1] = ct_header['space directions'][1][1]
-    spacing[2] = ct_header['space directions'][2][2]
+    spacing[0] = lm_header['space directions'][0][0]
+    spacing[1] = lm_header['space directions'][1][1]
+    spacing[2] = lm_header['space directions'][2][2]
 
     regions = None
     if options.chest_regions is not None:
@@ -608,8 +619,8 @@ if __name__ == "__main__":
     paren_pheno = ParenchymaPhenotypes(chest_regions=regions,
             chest_types=types, pairs=pairs, pheno_names=pheno_names)
 
-    df = paren_pheno.execute(ct, lm, options.cid, spacing)
-    
+    df = paren_pheno.execute(lm, options.cid, spacing, ct=ct)
+
     if options.out_csv is not None:
         if pheno_names is None:
             df.to_csv(options.out_csv, index=False)            

@@ -17,11 +17,11 @@ else()
 endif()
 
 # Select the master branch by default
-if (PYTHON-DEBUG-MODE)
-	set (tag develop)
-else()
+# if (PYTHON-DEBUG-MODE)
+# 	set (tag develop)
+# else()
 	set (tag master)
-endif()
+# endif()
 
 
 # Install Miniconda
@@ -109,10 +109,14 @@ ExternalProject_Add_Step(${proj} matplotlib
 	DEPENDEES installscikit-image
 )
 
+ExternalProject_Add_Step(${proj} installnetworkx
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet networkx  
+	DEPENDEES matplotlib
+)
 
 ExternalProject_Add_Step(${proj} installpynrrd
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd  
-	DEPENDEES matplotlib
+	DEPENDEES installnetworkx
 )
 
 ExternalProject_Add_Step(${proj} installpydicom
@@ -120,14 +124,9 @@ ExternalProject_Add_Step(${proj} installpydicom
 	DEPENDEES installpynrrd
 )
 
-ExternalProject_Add_Step(${proj} installnetworkx
-	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --quiet networkx  
-	DEPENDEES installpandas
-)
-
 ExternalProject_Add_Step(${proj} installnibabel
 	COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel 
-	DEPENDEES installpandas
+	DEPENDEES installnetworkx
 )
 
 ExternalProject_Add_Step(${proj} installnipype

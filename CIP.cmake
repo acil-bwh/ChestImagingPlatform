@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-
 ##################### RPath stuff start ################
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -69,6 +68,7 @@ if ( Teem_FOUND )
 else ( Teem_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
 endif( Teem_FOUND )
+
 
 #---------------------------------------------------------------------
 # Find OpenCV
@@ -272,9 +272,9 @@ SET( CIP_DIR ${CIP_BINARY_DIR} )
 
 
 # Option to disable ChestConventions wrapping when cip python is not going to be needed.
-SET(CIP_WRAPCHESTCONVENTIONS ON CACHE BOOL "Wrap ChestConventions, needed for python modules")
-mark_as_advanced(FORCE CIP_WRAPCHESTCONVENTIONS)
-message("ChestConv: ${CIP_WRAPCHESTCONVENTIONS}")
+# SET(USE_CYTHON ON CACHE BOOL "Wrap ChestConventions, needed for python modules")
+# mark_as_advanced(FORCE USE_CYTHON)
+#message("-- USE CYTHON: ${USE_CYTHON}")
 
 
 # The "use" file.
@@ -300,9 +300,10 @@ if(APPLE)
   set(CMAKE_EXE_LINKER_FLAGS "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
   #Flag for Cython (See https://support.enthought.com/hc/en-us/articles/204469410-OS-X-GCC-Clang-and-Cython-in-10-9-Mavericks)
   #Due to the change to clang on OS X 1.9, you have to build against the old libs (libstdc++ and not the clang one - libc++).
-  set(CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6")
-
+  #set(CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6")
+  #set (CMAKE_CXX_FLAGS ${CIP_cxx_flags})
 endif()
+
     #-----------------------------------------------------------------------------
 # Add needed flag for gnu on linux like enviroments to build static common libs
 # suitable for linking with shared object libs.

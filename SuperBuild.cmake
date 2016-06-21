@@ -155,9 +155,13 @@ find_package(Git REQUIRED)
 
 set(ep_common_c_flags "${CMAKE_C_FLAGS_INIT} ${ADDITIONAL_C_FLAGS}")
 set(ep_common_cxx_flags "${CMAKE_CXX_FLAGS_INIT} ${ADDITIONAL_CXX_FLAGS}")
-if (APPLE)
-  set(ep_common_cxx_flags "${ep_common_cxx_flags} -stdlib=libstdc++ -mmacosx-version-min=10.6")
+set (USE_CYTHON ON CACHE BOOL "Use Cython to wrap ChestConventions")
+# Cython compatibility with El Capitan and other OS
+if (APPLE AND USE_CYTHON AND NOT CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "" AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "10.10")
+  set(CIP_CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6" CACHE INTERNAL "Cython compatibility")
 endif()
+
+
 
 include(ExternalProject)
 include(ExternalProjectDependency)
@@ -226,6 +230,8 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
+option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML. The building will fail if not found" OFF)
+option(USE_CYTHON "Use Cython to Wrap ChestConventions" ON)
 
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
@@ -233,19 +239,37 @@ set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
 set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
 
-mark_as_superbuild(
- VARS
-   CIP_PYTHON_DIR:PATH
-)
 
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
-if (WIN32) # libxml2 is a prerequisite for other platforms
-  set(LIBXML2_EXTERNAL_NAME LibXml2)
-endif()
+#if (WIN32) # libxml2 is a prerequisite for other platforms
+#  set(LIBXML2_EXTERNAL_NAME LibXml2)
+#else()
+#  if (FORCE_SYSTEM_LIBXML)
+#    find_package(LibXml2 REQUIRED)
+#  else()
+#    # Try first system. Otherwise use the binaries downloaded from CIPPython
+#    find_package(LibXml2)
+#    if (NOT LIBXML2_INCLUDE_DIR)
+#      # Try to use CIPPython libraries
+#      message("LIBXML libraries NOT found. Use CIPPython ones")
+#      SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_DIR}/include/libxml2 CACHE PATH "")
+#      SET (LIBXML2_LIBRARIES ${CIP_PYTHON_DIR}/lib/libxml2.dylib CACHE PATH "")
+#      SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_DIR}/bin/xmllint CACHE FILEPATH "")
+#    endif()
+#  endif()
+#endif()
+
+mark_as_superbuild(
+ VARS
+   CIP_PYTHON_DIR:PATH
+   CIP_CMAKE_CXX_FLAGS:STRING
+)
+
+
 
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
 set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
@@ -256,7 +280,7 @@ set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
   Boost
   teem
   #OpenCV
-  ${LIBXML2_EXTERNAL_NAME}  
+#  ${LIBXML2_EXTERNAL_NAME}
   )
 
 #-----------------------------------------------------------------------------
@@ -349,6 +373,14 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
   PYTHON_EXECUTABLE:FILEPATH
   PYTHON_INCLUDE_DIR:PATH
   PYTHON_LIBRARY:FILEPATH
+  BUILD_EXAMPLES:BOOL
+  BUILD_TESTING:BOOL
+  ITK_VERSION_MAJOR:STRING
+  ITK_DIR:PATH    
+  USE_CYTHON:BOOL
+  #LIBXML2_INCLUDE_DIR:PATH
+  #LIBXML2_LIBRARIES:PATH
+  #LIBXML2_XMLLINT_EXECUTABLE:FILEPATH
   )
 
 #if(${PRIMARY_PROJECT_NAME}_USE_QT)
@@ -388,11 +420,6 @@ set(${PRIMARY_PROJECT_NAME}_CLI_INSTALL_ARCHIVE_DESTINATION  lib)
 # Add external project CMake args
 #-----------------------------------------------------------------------------
 list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
-  BUILD_EXAMPLES:BOOL
-  BUILD_TESTING:BOOL
-  ITK_VERSION_MAJOR:STRING
-  ITK_DIR:PATH
-
   ${PRIMARY_PROJECT_NAME}_CLI_LIBRARY_OUTPUT_DIRECTORY:PATH
   ${PRIMARY_PROJECT_NAME}_CLI_ARCHIVE_OUTPUT_DIRECTORY:PATH
   ${PRIMARY_PROJECT_NAME}_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH
@@ -481,7 +508,9 @@ ExternalProject_Add(${proj}
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${${PROJECT_NAME}_EXTERNAL_PROJECT_ARGS}
     -D${PRIMARY_PROJECT_NAME}_SUPERBUILD:BOOL=OFF    #NOTE: VERY IMPORTANT reprocess top level CMakeList.txt
+    -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${CIP_CMAKE_CXX_FLAGS}
   INSTALL_COMMAND ""
+  
   )
 
 ### Force rebuilding of the main subproject every time building from super structure

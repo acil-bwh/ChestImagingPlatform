@@ -7,8 +7,12 @@ cip_source_dir = '@CIP_SOURCE_DIR@'
 cip_library_dir = '@CIP_LIBRARY_DIR@'
 cip_python_dir = cip_source_dir + '/cip_python'
 
+#os.environ["CC"] = "@CMAKE_C_COMPILER@"
+#os.environ["CXX"] = "@CMAKE_CXX_COMPILER@"
+
 os.environ["CC"] = "/usr/bin/cc"
 os.environ["CXX"] = "/usr/bin/c++"
+os.environ["MACOSX_DEPLOYMENT_TARGET"] = "@CMAKE_OSX_DEPLOYMENT_TARGET@"
 
 sources = [cip_python_dir + '/wrap_ChestConventions.pyx']
 libraries = ["ChestConventions"]
@@ -25,6 +29,7 @@ setup(
                   language="c++",
                   library_dirs=library_dirs,
                   runtime_library_dirs=runtime_library_dirs,
-                  libraries=libraries   
-                  )]
+                  libraries=libraries
+                  #extra_compile_args=['-stdlib=libc++']
+    )]
 )

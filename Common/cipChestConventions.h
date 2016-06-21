@@ -208,6 +208,8 @@ enum ChestType {
   BENIGNNODULE,                   //87
   MALIGNANTNODULE,                //88
   SEPTUM,                         //89
+  FIBRONODULAR,                   //90
+  MESOTHELIOMA,                   //91
 };
 
 enum ImageFeature {

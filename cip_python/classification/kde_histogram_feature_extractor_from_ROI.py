@@ -41,6 +41,7 @@ class kdeHistExtractorFromROI:
         #  get the list of all histogaram bin values
         self.bin_values = np.arange(lower_limit, upper_limit+1)
         self.hist_ = None
+        self.kde_ = None
             
        
                                                             
@@ -76,6 +77,7 @@ class kdeHistExtractorFromROI:
         X_plot = self.bin_values[:, np.newaxis]
         log_dens = kde.score_samples(X_plot)
         the_hist = np.exp(log_dens)
+        self.kde_ = kde
         #the_hist = the_hist/np.sum(the_hist)
          
         return the_hist

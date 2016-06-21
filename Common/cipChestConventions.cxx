@@ -4,7 +4,7 @@
 cip::ChestConventions::ChestConventions()
 {
   m_NumberOfEnumeratedChestRegions  = 69;
-  m_NumberOfEnumeratedChestTypes    = 90;
+  m_NumberOfEnumeratedChestTypes    = 92;
   m_NumberOfEnumeratedImageFeatures = 7;
 
   typedef std::pair< unsigned char, unsigned char > Region_Pair;
@@ -331,6 +331,8 @@ cip::ChestConventions::ChestConventions()
   ChestTypes.push_back( (unsigned char)( BENIGNNODULE ) );
   ChestTypes.push_back( (unsigned char)( MALIGNANTNODULE ) );    
   ChestTypes.push_back( (unsigned char)( SEPTUM ) );    
+  ChestTypes.push_back( (unsigned char)( FIBRONODULAR ) );    
+  ChestTypes.push_back( (unsigned char)( MESOTHELIOMA ) );    
     
   ImageFeatures.push_back( (unsigned char) ( UNDEFINEDFEATURE ));
   ImageFeatures.push_back( (unsigned char) ( CTARTIFACT ));
@@ -500,6 +502,8 @@ cip::ChestConventions::ChestConventions()
   ChestTypeNames.push_back( "BenignNodule" );  
   ChestTypeNames.push_back( "MalignantNodule" );  
   ChestTypeNames.push_back( "Septum" );  
+  ChestTypeNames.push_back( "Fibronodular" );  
+  ChestTypeNames.push_back( "Mesothelioma" );  
 
   ImageFeatureNames.push_back( "UndefinedFeature" );
   ImageFeatureNames.push_back( "CTArtifact" );
@@ -559,7 +563,7 @@ cip::ChestConventions::ChestConventions()
   ParenchymaPhenotypeNames.push_back( "HUMax500" );
   ParenchymaPhenotypeNames.push_back( "Volume" );
   ParenchymaPhenotypeNames.push_back( "Mass" );
-  ParenchymaPhenotypeNames.push_back( "TypePerc" );
+  ParenchymaPhenotypeNames.push_back( "TypeFrac" );
   ParenchymaPhenotypeNames.push_back( "NormalParenchyma" );
   ParenchymaPhenotypeNames.push_back( "PanlobularEmphysema" );
   ParenchymaPhenotypeNames.push_back( "ParaseptalEmphysema" );
@@ -684,6 +688,8 @@ cip::ChestConventions::ChestConventions()
   double* t088 = new double[3]; t088[0] = 0.01; t088[1] = 0.02; t088[2] = 0.03; ChestTypeColors.push_back( t088 ); //BENIGNNODULE
   double* t089 = new double[3]; t089[0] = 0.01; t089[1] = 0.02; t089[2] = 0.04; ChestTypeColors.push_back( t089 ); //MALIGNANTNODULE
   double* t090 = new double[3]; t090[0] = 0.01; t090[1] = 0.03; t090[2] = 0.04; ChestTypeColors.push_back( t090 ); //SEPTUM
+  double* t091 = new double[3]; t091[0] = 0.02; t091[1] = 0.03; t091[2] = 0.04; ChestTypeColors.push_back( t091 ); //FIBRONODULAR
+  double* t092 = new double[3]; t092[0] = 0.03; t092[1] = 0.03; t092[2] = 0.04; ChestTypeColors.push_back( t092 ); //MESOTHELIOMA
 
   //
   // Each region is associated with a color. This is generally

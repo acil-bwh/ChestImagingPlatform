@@ -39,5 +39,3 @@ def test_execute():
     assert(class_probs == np.array([[ 0., 1., 0.],
        [ 0., 1., 0.]])).all(), "Probabilities not as expected"
 
-
-    
