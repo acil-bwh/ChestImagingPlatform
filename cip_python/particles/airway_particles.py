@@ -57,9 +57,9 @@ class AirwayParticles(ChestParticles):
 
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=6., live_thresh=40.,
-                 seed_thresh=30., scale_samples=5, down_sample_rate=1,
-                 min_intensity=-1100, max_intensity=-400):
+                 mask_file_name=None, max_scale=6., live_thresh=135.75,
+                 seed_thresh=125.55, scale_samples=6, down_sample_rate=1,
+                 min_intensity=-1100, max_intensity=-500):
         ChestParticles.__init__(self, feature_type="valley_line",
                             in_file_name=in_file_name,
                             out_particles_file_name=out_particles_file_name,
@@ -75,15 +75,15 @@ class AirwayParticles(ChestParticles):
         self._live_thresh = live_thresh
         self._seed_thresh = seed_thresh
        
-        self._phase_iterations = [100, 10, 75]
+        self._phase_iterations = [48,180,40]
 
-        self._phase_irads=[1.7,1.15,1.15]
-        self._phase_srads=[1.2,2,4]
+        self._phase_irads=[1.94396,1.52298,1.0]
+        self._phase_srads=[1.05966,4.12374,4.94739]
 
-        self._phase_population_control_periods = [6,20,17]
-        self._phase_alphas = [1.0, 0.35, 0.84]
-        self._phase_betas = [0.77, 0.75, 0.57]
-        self._phase_gammas = [0.37, 0.53, 0.57]
+        self._phase_population_control_periods = [3,9,18]
+        self._phase_alphas = [0.990458, 0.999429, 0.694357]
+        self._phase_betas = [0.976696, 0.228277, 0.999034]
+        self._phase_gammas = [0.107816, 0.367268, 0.51446]
 
         self._cip_type = 'Airway'
         
@@ -189,7 +189,7 @@ class AirwayParticles(ChestParticles):
         print "finished saving\#####n"
 
         #Clean tmp Directory
-        self.clean_tmp_dir()
+#        self.clean_tmp_dir()
 
 if __name__ == "__main__":
   from argparse import ArgumentParser
@@ -210,19 +210,20 @@ if __name__ == "__main__":
   parser.add_argument("-r", help='down sampling rate (>=1) [default: \
     %(default)s]', dest="down_sample_rate", default=1.0, type=float)
   parser.add_argument("-n", help='number of scale volumes [default: \
-    %(default)s]', dest="scale_samples", default=5, type=int)
+    %(default)s]', dest="scale_samples", default=6, type=int)
   parser.add_argument("--lth", help='live threshold (>0) [default: \
-    %(default)s]', dest="live_th", default=40.0, type=float)
+    %(default)s]', dest="live_th", default=135.705, type=float)
   parser.add_argument("--sth", help='seed threshold (>0) [default: \
-    %(default)s]', dest="seed_th", default=30.0, type=float)
+    %(default)s]', dest="seed_th", default=125.155, type=float)
   parser.add_argument("--minI",
     help='min intensity for feature [default: %(default)s]',
     dest="min_intensity", default=-1100, type=float)
   parser.add_argument("--maxI",
     help='max intensity for feature [default: %(default)s]',
-    dest="max_intensity", default=-400, type=float)
+    dest="max_intensity", default=-500, type=float)
   parser.add_argument("--perm",dest="permissive",action='store_true',
     help='Permissive mode enable. Allow volumes of different shapes and origin')
+
   op = parser.parse_args()
 
   if op.tmp_dir is not None:

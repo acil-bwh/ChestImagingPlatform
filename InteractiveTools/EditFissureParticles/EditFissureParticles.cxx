@@ -172,7 +172,7 @@ will be retained in the output";
   std::cout << "Writing labeled particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outParticlesFileName.c_str() );
-    writer->SetInput( outParticles );
+    writer->SetInputData( outParticles );
     //writer->SetFileTypeToASCII();
     writer->Write();  
 
@@ -210,7 +210,7 @@ void AddComponentsToInteractor( cipFissureDataInteractor* interactor, vtkSmartPo
       // The input particles may already be labeled. Get the ChestType
       // recorded for thie component. By default we will color according
       // to this type
-      unsigned char cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) );
+      //unsigned char cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) );
       
       bool addComponent = true;
       
@@ -281,7 +281,9 @@ void AddSpecifiedParticlesToInteractor( cipFissureDataInteractor* interactor, vt
 	  // Get the particle's type in order to retrieve color later. We're assuming that all particles
 	  // for the specification have the same type, so we can grab the type of any one of them for the
 	  // color.
-	  cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(p)) );
+	  cipType = conventions.GetChestTypeFromValue((unsigned short)(*(particles->GetPointData()->
+									 GetArray( "ChestRegionChestType" )->GetTuple(p))));
+	  
 	  points->InsertNextPoint( particles->GetPoint(p) );
 
 	  for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
@@ -307,9 +309,9 @@ void AddSpecifiedParticlesToInteractor( cipFissureDataInteractor* interactor, vt
       {
       conventions.GetChestTypeColor( cipType, color );
 
-      r = color[0];
-      g = color[1];
-      b = color[2];
+      r = 1.0; //color[0];
+      g = 1.0; //color[1];
+      b = 1.0; //color[2];
       }
 
     polyData->SetPoints( points );
@@ -318,7 +320,7 @@ void AddSpecifiedParticlesToInteractor( cipFissureDataInteractor* interactor, vt
       polyData->GetPointData()->AddArray( arrayVec[j] );
       }
 
-    interactor->SetFissureParticles( polyData, particleSize, interactorActorName ); 
+    interactor->SetFissureParticlesAsDiscs( polyData, particleSize, interactorActorName ); 
     interactor->SetActorColor( interactorActorName, r, g, b );
     interactor->SetActorOpacity( interactorActorName, 1 );  
     }
@@ -355,7 +357,9 @@ vtkSmartPointer< vtkPolyData > GetLabeledFissureParticles( cipFissureDataInterac
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
     unsigned short componentLabel = particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)[0];
-    float cipType = particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)[0];
+    unsigned char cipType = conventions.GetChestTypeFromValue((unsigned short)(*(particles->GetPointData()->
+				GetArray( "ChestRegionChestType" )->GetTuple(i))));
+    
     std::string name = (*componentLabelToNameMap)[componentLabel];
     
     if ( interactor->Exists( name ) )
@@ -366,16 +370,22 @@ vtkSmartPointer< vtkPolyData > GetLabeledFissureParticles( cipFissureDataInterac
 	     cipType == cip::FISSURE || cipType == cip::OBLIQUEFISSURE || cipType == cip::HORIZONTALFISSURE )
 	  {
 	    outPoints->InsertNextPoint( particles->GetPoint(i) );
-	    float tmp;
+	    unsigned char tmp;
 	    if ( cipTypeFromColor != 0 )
 	      {
-		tmp = float(cipTypeFromColor);
+		tmp = cipTypeFromColor;
 	      }
 	    else
 	      {
 		tmp = cipType;
 	      }
-	    particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &tmp );
+
+	    unsigned short currentChestRegionChestTypeValue = 
+	      (unsigned short)(*(particles->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple(i)));
+	    unsigned char cipRegion = conventions.GetChestRegionFromValue( currentChestRegionChestTypeValue );
+	    float newChestRegionChestTypeValue = float(conventions.GetValueFromChestRegionAndType( cipRegion, tmp ));
+	    particles->GetPointData()->GetArray( "ChestRegionChestType" )->SetTuple( i, &newChestRegionChestTypeValue );
+	    
 	    for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
 	      {
 		arrayVec[j]->InsertTuple( inc, particles->GetPointData()->GetArray(j)->GetTuple(i) );

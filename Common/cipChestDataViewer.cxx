@@ -633,7 +633,6 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
   vtkPolyData* sculptedTensorsPolyData = vtkPolyData::New();
     sculptedTensorsPolyData->SetPoints( polyData->GetPoints() );
     sculptedTensorsPolyData->GetPointData()->SetTensors( dbar );
-  sculptedTensorsPolyData->Print( std::cout );
 
   vtkSuperquadricTensorGlyphFilter* epp = vtkSuperquadricTensorGlyphFilter::New();
     epp->SetInputData( sculptedTensorsPolyData );

@@ -216,9 +216,9 @@ class AirwayParticlesPipeline:
                 subprocess.call( tmpCommand, shell=True )    
                 
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
-                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
-                subprocess.call( tmpCommand, shell=True )     
+#                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+#                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
+#                subprocess.call( tmpCommand, shell=True )     
                 
             elif self._init_method == 'AirwayMask':
                 mask_name = self._airway_mask_name
@@ -228,10 +228,9 @@ class AirwayParticlesPipeline:
                 # print tmpCommand
                 subprocess.call( tmpCommand, shell=True )    
                 
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
-                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
-#                print tmpCommand
-                subprocess.call( tmpCommand , shell=True)
+#                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+#                tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
+#                subprocess.call( tmpCommand , shell=True)
             
             #Binary Thinning
             tmpCommand = "GenerateBinaryThinning3D -i %(in)s -o %(out)s"

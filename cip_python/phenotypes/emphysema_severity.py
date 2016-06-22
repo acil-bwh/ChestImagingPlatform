@@ -506,7 +506,7 @@ if __name__ == "__main__":
   
     from argparse import ArgumentParser
     import os
-    desc = """ implementing the emphysema severity index. Training data with features consisting on 6 emphysema subtype
+    desc = """ Computes the emphysema severity index. Training data with features consisting on 6 emphysema subtype
     (N,	LH_PS, LH_PL, LH_CL1, LH_CL2, LH_CL3) are used in order to define either 1 or multiple paths (4 to be specific)."""
     
     test_dataset=os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../Resources/EmphysemaSeverity/Testing_emphysemaClassificationPhenotypes.csv')
