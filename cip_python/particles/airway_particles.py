@@ -89,8 +89,10 @@ class AirwayParticles(ChestParticles):
         
         #Default init
         self._init_mode = "PerVoxel"
-        self._ppv = 2
+        self._ppv = 1
         self._nss = 2
+    
+        self._binning_width = 1.5
 
     def execute(self):
 
@@ -194,15 +196,15 @@ if __name__ == "__main__":
 
   parser = ArgumentParser(description='Airway particles generation tool.')
   
-  parser.add_argument("-i", help='input CT scan', dest="input_ct")
+  parser.add_argument("-i", help='input CT scan', dest="input_ct",required=True)
   parser.add_argument("-m", help='input mask for seeding', dest="input_mask",
     default=None)
   parser.add_argument("-p", help='input particle points to initialize (if not \
     specified a per-voxel approach is used)', dest="input_particles", 
     default=None)
   parser.add_argument("-o", help='output particles (vtk format)',
-                    dest="output_particles")
-  parser.add_argument("-t", help='tmp directory', dest="tmp_dir")
+                    dest="output_particles",required=True)
+  parser.add_argument("-t", help='tmp directory. if not provided, it creates a tmp system dir', dest="tmp_dir")
   parser.add_argument("-s", help='max scale [default: %(default)s)]',
                     dest="max_scale", default=6.0, type=float)
   parser.add_argument("-r", help='down sampling rate (>=1) [default: \
@@ -219,7 +221,8 @@ if __name__ == "__main__":
   parser.add_argument("--maxI",
     help='max intensity for feature [default: %(default)s]',
     dest="max_intensity", default=-400, type=float)
-
+  parser.add_argument("--perm",dest="permissive",action='store_true',
+    help='Permissive mode enable. Allow volumes of different shapes and origin')
   op = parser.parse_args()
 
   if op.tmp_dir is not None:
@@ -231,6 +234,9 @@ if __name__ == "__main__":
     op.input_mask, float(op.max_scale), float(op.live_th), float(op.seed_th), 
     int(op.scale_samples), float(op.down_sample_rate), float(op.min_intensity),
     float(op.max_intensity))
+
+  if op.permissive == True:
+    ap._permissive=True
 
   if op.input_particles == None:
       pass
