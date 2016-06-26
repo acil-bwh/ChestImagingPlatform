@@ -102,6 +102,10 @@ if( CIP_INTEGRATE_WITH_SLICER ) # may be set with remote module options
   set( LIBRARY_OUTPUT_PATH ${CIP_CLI_LIBRARY_OUTPUT_DIRECTORY} )
   set( EXECUTABLE_OUTPUT_PATH ${CIP_CLI_RUNTIME_OUTPUT_DIRECTORY} )
 
+  if( WIN32 ) # to not be overrided by slicer default
+    set( BUILD_SHARED_LIBS OFF )
+  endif( WIN32 )
+
 else()
   
   set( LIBRARY_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
