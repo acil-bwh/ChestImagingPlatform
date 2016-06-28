@@ -3,23 +3,27 @@ from libcpp cimport bool
 
 cdef extern from "cipChestConventions.h" namespace "cip":
     cdef cppclass _ChestConventions "cip::ChestConventions":
-      _ChestConventions()
-      unsigned char GetNumberOfEnumeratedChestRegions() const
-      unsigned char GetNumberOfEnumeratedChestTypes() const
-      unsigned char GetChestRegionFromValue(unsigned short value) const
-      unsigned char GetChestTypeFromValue(unsigned short value) const
-      string GetChestTypeName(unsigned char whichType) const
-      string GetChestRegionName(unsigned char whichType) const
-      string GetChestRegionNameFromValue(unsigned short value) const
-      string GetChestTypeNameFromValue(unsigned short value) const
-      string GetChestWildCardName() const
-      unsigned short GetValueFromChestRegionAndType(unsigned char region, unsigned char type) const
-      unsigned char GetChestRegionValueFromName(string regionString) const
-      unsigned char GetChestTypeValueFromName(string typeString) const
-      bool CheckSubordinateSuperiorChestRegionRelationship(unsigned char subordinate, unsigned char superior)
-      bool IsPhenotypeName(string) const
-      bool IsChestRegion(string) const
-      bool IsChestType(string) const
+        _ChestConventions()
+        unsigned char GetNumberOfEnumeratedChestRegions() const
+        unsigned char GetNumberOfEnumeratedChestTypes() const
+        unsigned char GetChestRegionFromValue(unsigned short value) const
+        unsigned char GetChestTypeFromValue(unsigned short value) const
+        string GetChestTypeName(unsigned char whichType) const
+        string GetChestRegionName(unsigned char whichType) const
+        string GetChestRegionNameFromValue(unsigned short value) const
+        string GetChestTypeNameFromValue(unsigned short value) const
+        string GetChestWildCardName() const
+        unsigned short GetValueFromChestRegionAndType(unsigned char region, unsigned char type) const
+        unsigned char GetChestRegionValueFromName(string regionString) const
+        unsigned char GetChestTypeValueFromName(string typeString) const
+        bool CheckSubordinateSuperiorChestRegionRelationship(unsigned char subordinate, unsigned char superior)
+        bool IsBodyCompositionPhenotypeName(string name) const
+        bool IsParenchymaPhenotypeName(string name) const
+        bool IsHistogramPhenotypeName(string name) const
+        bool IsPulmonaryVasculaturePhenotypeName(string name) const
+        bool IsPhenotypeName(string name) const
+        bool IsChestRegion(string name) const
+        bool IsChestType(string name) const
 
 cdef class ChestConventions:
     cdef _ChestConventions *thisptr
@@ -66,14 +70,26 @@ cdef class ChestConventions:
     cpdef unsigned char GetChestTypeValueFromName(self, string typeString):
         return self.thisptr.GetChestTypeValueFromName(typeString)
 
-    cpdef bool CheckSubordinateSuperiorChestRegionRelationship(self, unsigned char subordinate, unsigned char superior):
+    cpdef bool CheckSubordinateSuperiorChestRegionRelationship(self, unsigned char subordinate, unsigned char superior):    
         return self.thisptr.CheckSubordinateSuperiorChestRegionRelationship(subordinate, superior)
+
+    cpdef bool IsBodyCompositionPhenotypeName(self, string name):
+        return self.thisptr.IsBodyCompositionPhenotypeName(name)
+
+    cpdef bool IsParenchymaPhenotypeName(self, string name):
+        return self.thisptr.IsParenchymaPhenotypeName(name)
+
+    cpdef bool IsHistogramPhenotypeName(self, string name):
+        return self.thisptr.IsHistogramPhenotypeName(name)
+
+    cpdef bool IsPulmonaryVasculaturePhenotypeName(self, string name):
+        return self.thisptr.IsPulmonaryVasculaturePhenotypeName(name)
 
     cpdef bool IsPhenotypeName(self, string name):
         return self.thisptr.IsPhenotypeName(name)
 
-    cpdef bool IsChestRegion(self, string name):
+    cpdef bool IsChestRegion(self, string name):    
         return self.thisptr.IsChestRegion(name)
 
-    cpdef bool IsChestType(self, string name):
+    cpdef bool IsChestType(self, string name):    
         return self.thisptr.IsChestType(name)
