@@ -5,7 +5,7 @@ from Cython.Distutils import build_ext
 
 cip_source_dir = '@CIP_SOURCE_DIR@'
 cip_library_dir = '@CIP_LIBRARY_DIR@'
-cip_python_dir = cip_source_dir + '/cip_python'
+cip_python_dir = '@CMAKE_CURRENT_BINARY_DIR@'
 
 #os.environ["CC"] = "@CMAKE_C_COMPILER@"
 #os.environ["CXX"] = "@CMAKE_CXX_COMPILER@"
@@ -21,7 +21,7 @@ runtime_library_dirs = [] # setting it may cause exception on Windows build
 include_dirs = [cip_source_dir + '/Common/']
 
 setup(
-    cmdclass = {'build_ext': build_ext},    
+    cmdclass = {'build_ext': build_ext},
     ext_modules = [
         Extension("ChestConventions",
                   sources=sources,
@@ -29,7 +29,7 @@ setup(
                   language="c++",
                   library_dirs=library_dirs,
                   runtime_library_dirs=runtime_library_dirs,
-                  libraries=libraries
-                  #extra_compile_args=['-stdlib=libc++']
+                  libraries=libraries,
+                  #extra_compile_args=['-stdlib=libstdc++']
     )]
 )
