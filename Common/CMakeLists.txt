@@ -115,6 +115,19 @@ target_link_libraries(${LIB_NAME}
   )
 
 # --------------------------------------------------------------------------
+# Install library
+# --------------------------------------------------------------------------
+
+if(NOT DEFINED CIP_INSTALL_LIB_DIR)
+  set(CIP_INSTALL_LIB_DIR lib)
+endif()
+
+install(TARGETS ${LIB_NAME}
+  RUNTIME DESTINATION ${CIP_INSTALL_LIB_DIR} COMPONENT RuntimeLibraries
+  LIBRARY DESTINATION ${CIP_INSTALL_LIB_DIR} COMPONENT RuntimeLibraries
+  ARCHIVE DESTINATION ${CIP_INSTALL_LIB_DIR} COMPONENT Development)
+
+# --------------------------------------------------------------------------
 # Create separate library for the cipChestConventions. This will enable easy wrapping in python
 # --------------------------------------------------------------------------
 add_library( ChestConventions cipChestConventions.cxx )

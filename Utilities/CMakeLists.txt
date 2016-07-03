@@ -118,18 +118,15 @@ export(TARGETS ${lib_name} APPEND FILE ${${PROJECT_NAME}_EXPORT_FILE})
 # --------------------------------------------------------------------------
 # Install library
 # --------------------------------------------------------------------------
-if(NOT DEFINED ${PROJECT_NAME}_INSTALL_BIN_DIR)
-  set(${PROJECT_NAME}_INSTALL_BIN_DIR bin)
-endif()
-if(NOT DEFINED ${PROJECT_NAME}_INSTALL_LIB_DIR)
-  set(${PROJECT_NAME}_INSTALL_LIB_DIR lib/${PROJECT_NAME})
+
+if(NOT DEFINED CIP_INSTALL_LIB_DIR)
+  set(CIP_INSTALL_LIB_DIR lib)
 endif()
 
-install(TARGETS ${lib_name}
-  RUNTIME DESTINATION ${${PROJECT_NAME}_INSTALL_BIN_DIR} COMPONENT RuntimeLibraries
-  LIBRARY DESTINATION ${${PROJECT_NAME}_INSTALL_LIB_DIR} COMPONENT RuntimeLibraries
-  ARCHIVE DESTINATION ${${PROJECT_NAME}_INSTALL_LIB_DIR} COMPONENT Development
-  )
+install(TARGETS ${LIB_NAME}
+  RUNTIME DESTINATION ${CIP_INSTALL_LIB_DIR} COMPONENT RuntimeLibraries
+  LIBRARY DESTINATION ${CIP_INSTALL_LIB_DIR} COMPONENT RuntimeLibraries
+  ARCHIVE DESTINATION ${CIP_INSTALL_LIB_DIR} COMPONENT Development)
 
 # --------------------------------------------------------------------------
 # Python Wrapping
