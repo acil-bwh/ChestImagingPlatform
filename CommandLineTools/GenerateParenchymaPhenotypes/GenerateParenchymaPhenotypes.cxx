@@ -57,7 +57,7 @@
 #include "itkImageRegionIterator.h"
 #include "cipChestConventions.h"
 #include "cipHelper.h"
-#include "GenerateRegionHistogramsAndParenchymaPhenotypesCLP.h"
+#include "GenerateParenchymaPhenotypesCLP.h"
 
 namespace
 {
