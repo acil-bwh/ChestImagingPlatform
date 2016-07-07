@@ -37,6 +37,8 @@ int main( int argc, char *argv[] )
     {
     std::cerr << "Exception caught reading CT image:";
     std::cerr << excp << std::endl;
+
+    return cip::NRRDREADFAILURE;
     }
 
   std::cout << "Clipping low CT image values..." << std::endl;
@@ -68,6 +70,8 @@ int main( int argc, char *argv[] )
     {
       std::cerr << "Exception caught segmenting lungs:";
       std::cerr << excp << std::endl;
+
+      return cip::SEGMENTATIONFAILURE;
     }
 
   // //
@@ -105,6 +109,8 @@ int main( int argc, char *argv[] )
     {
     std::cerr << "Exception caught while writing lung mask:";
     std::cerr << excp << std::endl;
+
+    return cip::LABELMAPWRITEFAILURE;
     }
 
   std::cout << "DONE." << std::endl;
