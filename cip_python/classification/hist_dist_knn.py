@@ -237,15 +237,3 @@ class HistDistKNN():
                     #    np.float(Counter(self.y_[ids])[self.classes_[class_idx]])/np.float(self.n_neighbors_)
             #if(np.sum(    class_probabilities))<1:
         return class_probabilities
-
-    
- 
-    
-    
-
-                    
-
-
-      
-            
-            
