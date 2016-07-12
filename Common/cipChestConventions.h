@@ -209,6 +209,7 @@ enum ChestType {
   MALIGNANTNODULE,                //88
   SEPTUM,                         //89
   FIBRONODULAR,                   //90
+  MESOTHELIOMA,                   //91
 };
 
 enum ImageFeature {
@@ -237,6 +238,7 @@ enum ReturnCode {
   QUALITYCONTROLIMAGEWRITEFAILURE,
   INSUFFICIENTDATAFAILURE,
   GENERATEDISTANCEMAPFAILURE,
+  SEGMENTATIONFAILURE,
 };
 
 /**

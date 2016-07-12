@@ -2,8 +2,6 @@ import numpy as np
 from numpy import sum, sort, abs
 from collections import Counter
 
-import pdb
-
 class HistDistKNN():
     """K-nearest neighbors using histogram and distance (HistDist) metric. The
     metric is given by: histogram_metric + beta*distance_metric, where 
@@ -88,6 +86,7 @@ class HistDistKNN():
             a vector containing class labels for the 'M' test samples (if 
             multiple test samples are specified).
         """
+        
         if len(hist.shape) == 1:
             mult_samples = False
             n_samples = 1
@@ -210,6 +209,7 @@ class HistDistKNN():
 
             nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
             ids = metric_vals <= nth_metric_val
+<<<<<<< HEAD
     
     
     
@@ -220,7 +220,7 @@ class HistDistKNN():
                   y_ids = self.y_[ids][0:self.n_neighbors_]
             else:
                   y_ids = self.y_[ids]
-               
+
             if mult_samples:
                 for class_idx in range (0, num_classes): 
                     """ For each class, get the class count. returns 0 if class not in data """

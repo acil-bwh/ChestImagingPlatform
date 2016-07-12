@@ -69,6 +69,10 @@ class LungLobeSegmentationWorkflow(Workflow):
         FilterFissureParticlesData CLI parameter. Component size cardinality 
         threshold for fissure particle pre-filtering. Only components with this 
         many particles or more will be retained in the output.
+    dist_thersh : double, optional
+        ClassifyFissureParticles CLI parameter. A particle will be classified
+        as fissure if the Fischer linear discrimant classifier classifies it as
+        such and if it is within this distance to the lobe surface model
     post_size : int, optional
         FilterFissureParticlesData CLI parameter. Component size cardinality 
         threshold for fissure particle post-filtering. Only components with this
@@ -92,8 +96,8 @@ class LungLobeSegmentationWorkflow(Workflow):
     """
     def __init__(self, ct_file_name, lobe_seg_file_name, tmp_dir, reg=50, 
         ilap=None, irap=None, ilvp=None, irvp=None, ilm=None, ifp=None, 
-        pre_dist=3.0, post_dist=3.0, pre_size=110, post_size=110, iters=200,
-        scale=0.9, lth=-15, sth=-45, perm=False):
+        pre_dist=3.0, post_dist=3.0, pre_size=110, dist_thresh, post_size=110,
+        iters=200, scale=0.9, lth=-15, sth=-45, perm=False):
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
         file_and_path = os.path.abspath(__file__)
@@ -237,8 +241,11 @@ class LungLobeSegmentationWorkflow(Workflow):
         classify_right_fissure_particles = \
           pe.Node(interface=cip.ClassifyFissureParticles(), 
                   name='classify_right_fissure_particles')        
-        classify_right_fissure_particles.inputs.oro = self._roClassifiedFissureParticles
-        classify_right_fissure_particles.inputs.orh = self._rhClassifiedFissureParticles        
+        classify_right_fissure_particles.inputs.oro = \
+          self._roClassifiedFissureParticles
+        classify_right_fissure_particles.inputs.orh = \
+          self._rhClassifiedFissureParticles
+        classify_right_fissure_particles.inputs.dist_thresh = dist_thresh
         
         #----------------------------------------------------------------------
         # Create node for left fissure particle classification
@@ -248,6 +255,7 @@ class LungLobeSegmentationWorkflow(Workflow):
                   name='classify_left_fissure_particles')        
         classify_left_fissure_particles.inputs.olo = \
           self._loClassifiedFissureParticles
+        classify_left_fissure_particles.inputs.dist_thresh = dist_thresh
         
         #----------------------------------------------------------------------
         # Create node for post-filtering left oblique fissure particles
@@ -408,6 +416,11 @@ if __name__ == "__main__":
       components with this many particles or more will be retained in the \
       output. (Optional)',
       dest='pre_size', metavar='<int>', default=110)
+    parser.add_argument('--dist_thresh', 
+      help='ClassifyFissureParticles CLI parameter. A particle will be classified \
+      as fissure if the Fischer linear discrimant classifier classifies it as \
+      such and if it is within this distance to the lobe surface model. (Optional)',
+      dest='dist_thresh', metavar='<float>', default=1000)
     parser.add_argument('--postsize', 
       help='FilterFissureParticlesData CLI parameter. Component size \
       cardinality threshold for fissure particle post-filtering. Only \
@@ -445,9 +458,10 @@ if __name__ == "__main__":
     wf = LungLobeSegmentationWorkflow(op.in_ct, op.out, tmp_dir, 
         reg=float(op.reg), ilap=op.ilap, irap=op.irap, ilvp=op.ilvp, 
         irvp=op.irvp, ilm=op.ilm, ifp=op.ifp, pre_dist=float(op.pre_dist), 
-        post_dist=float(op.post_dist), pre_size=int(op.pre_size), 
-        post_size=int(op.post_size), iters=int(op.iters), scale=float(op.scale),
-        lth=float(op.lth), sth=float(op.sth), perm=op.perm)
+        post_dist=float(op.post_dist), pre_size=int(op.pre_size),
+        dist_thresh=float(op.dist_thresh), post_size=int(op.post_size),
+        iters=int(op.iters), scale=float(op.scale), lth=float(op.lth),
+        sth=float(op.sth), perm=op.perm)
 
     wf.run()
     shutil.rmtree(tmp_dir)

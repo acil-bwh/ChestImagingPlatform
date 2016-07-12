@@ -123,7 +123,7 @@ void cipFissureDataInteractor::SetConnectedFissureParticles( vtkSmartPointer< vt
       tmpPolyData->GetPointData()->AddArray( arrayVec[j] );
       }
 
-    this->SetFissureParticles( tmpPolyData, particleSize, name );
+    this->SetFissureParticlesAsDiscs( tmpPolyData, particleSize, name );
     this->SetActorColor( name, 1.0, 1.0, 1.0 );
     this->SetActorOpacity( name, 1.0 );
       

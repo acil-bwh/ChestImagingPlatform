@@ -99,8 +99,8 @@ class LabelParticlesByChestRegionChestTypeInputSpec(CommandLineInputSpec):
     ip = File(desc="Input particles file name.", exists=True, argstr="--ip %s")
     op = File(desc="Output particles file name.", exists=True, argstr="--op %s")
     ilm = File(desc="Input label map file name. If specified the 'ChestRegion' value will be determined from the label map", exists=True, argstr="--ilm %s")
-    region = traits.Str(desc="Chest region for particles labeling. UndefinedRegion by default", argstr="--region %s")
-    type = traits.Str(desc="Chest type for particles labeling. UndefinedType by default", argstr="--type %s")
+    cipr = traits.Str(desc="Chest region for particles labeling. UndefinedRegion by default", argstr="--cipr %s")
+    cipt = traits.Str(desc="Chest type for particles labeling. UndefinedType by default", argstr="--cipt %s")
 
 
 class LabelParticlesByChestRegionChestTypeOutputSpec(TraitedSpec):
@@ -1304,12 +1304,12 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class ConvertDicomInputSpec(CommandLineInputSpec):
-    inputDicomDirectory = Directory(desc="Input dicom directory", exists=True, argstr="--inputDicomDirectory %s")
-    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--output %s")
+    dir = Directory(desc="Input dicom directory", exists=True, argstr="--dir %s")
+    oct = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--oct %s")
 
 
 class ConvertDicomOutputSpec(TraitedSpec):
-    output = File(desc="Output image file name", exists=True)
+    oct = File(desc="Output image file name", exists=True)
 
 
 class ConvertDicom(SEMLikeCommandLine):
@@ -1335,7 +1335,7 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     input_spec = ConvertDicomInputSpec
     output_spec = ConvertDicomOutputSpec
     _cmd = " ConvertDicom "
-    _outputs_filenames = {'output':'output.nii'}
+    _outputs_filenames = {'oct':'oct.nii'}
 
 
 class FitLobeSurfaceModelsToParticleDataInputSpec(CommandLineInputSpec):
@@ -1681,7 +1681,8 @@ class ClassifyFissureParticlesInputSpec(CommandLineInputSpec):
     orh = traits.Either(traits.Bool, File(), hash_files=False, desc="Right horizontal classified particles file name", argstr="--orh %s")
     dist = traits.Float(desc="Distance weight for Fischer discriminant projection", argstr="--dist %f")
     angle = traits.Float(desc="Angle weight for Fischer discriminant projection", argstr="--angle %f")
-    thresh = traits.Float(desc="Threshold for Fischer discriminant based classification", argstr="--thresh %f")
+    fischer_thresh = traits.Float(desc="Threshold for Fischer discriminant based classification", argstr="--fischer_thresh %f")
+    dist_thresh = traits.Float(desc="Optional. A particle will be classified as fissure if the Fischer linear discrimant classifier classifies it as such and if it is within this distance to the lobe surface model.", argstr="--dist_thresh %f")
 
 
 class ClassifyFissureParticlesOutputSpec(TraitedSpec):

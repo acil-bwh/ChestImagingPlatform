@@ -356,9 +356,12 @@ if __name__ == "__main__":
     #Remove empty entries
     modules_list.remove('')
     modules_list.remove('Testing')
-        
+    modules_list.remove('GenerateStatisticsForAirwayGenerationLabeling')
+    modules_list.remove('LabelAirwayParticlesByGeneration')
+    modules_list.remove('ReadParticlesWriteConnectedParticles')
+    modules_list.remove('SegmentLungAirways')
     print 'Number of modules founds ' + str(len(modules_list))
-
+    
     ## SlicerExecutionModel compliant tools that are usually statically built, and don't need the Slicer3 --launcher
     generate_all_classes(modules_list=modules_list,launcher=[],module_name='cip')
 
