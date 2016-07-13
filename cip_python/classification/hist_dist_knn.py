@@ -209,17 +209,31 @@ class HistDistKNN():
 
             nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
             ids = metric_vals <= nth_metric_val
-            
-            
+<<<<<<< HEAD
+    
+    
+    
+            #if(np.shape(ids)[0])>self.n_neighbors_:
+            #    ids = ids[0:self.n_neighbors_]
+            #y_ids = np.zeros([self.n_neighbors_,1])
+            if(np.shape(self.y_[ids])[0] > self.n_neighbors_):
+                  y_ids = self.y_[ids][0:self.n_neighbors_]
+            else:
+                  y_ids = self.y_[ids]
+
             if mult_samples:
                 for class_idx in range (0, num_classes): 
                     """ For each class, get the class count. returns 0 if class not in data """
+                    
                     class_probabilities[i][class_idx] = \
-                        np.float(Counter(self.y_[ids])[self.classes_[class_idx]])/np.float(self.n_neighbors_)
+                        np.float(Counter(y_ids)[self.classes_[class_idx]])/np.float(self.n_neighbors_)
                 #class_label[i] = Counter(self.y_[ids]).most_common(1)[0][0]
             else:
                 for class_idx in range (0, num_classes): 
-                    pdb.set_trace()
                     class_probabilities[class_idx] = \
-                        np.float(Counter(self.y_[ids])[self.classes_[class_idx]])/np.float(self.n_neighbors_)
+                        np.float(Counter(y_ids)[self.classes_[class_idx]])/np.float(self.n_neighbors_)
+
+                    #class_probabilities[class_idx] = \
+                    #    np.float(Counter(self.y_[ids])[self.classes_[class_idx]])/np.float(self.n_neighbors_)
+            #if(np.sum(    class_probabilities))<1:
         return class_probabilities
