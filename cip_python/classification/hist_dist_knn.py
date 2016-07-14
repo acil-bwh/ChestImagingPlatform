@@ -209,9 +209,6 @@ class HistDistKNN():
 
             nth_metric_val = sort(metric_vals)[self.n_neighbors_-1]
             ids = metric_vals <= nth_metric_val
-<<<<<<< HEAD
-    
-    
     
             #if(np.shape(ids)[0])>self.n_neighbors_:
             #    ids = ids[0:self.n_neighbors_]

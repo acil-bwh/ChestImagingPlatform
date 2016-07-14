@@ -49,7 +49,7 @@ class HistDistScikitKNN():
             scikit_metric = 'manhattan'             
         elif hist_comparison  == 'euclidean':
             scikit_metric = 'euclidean'   
-
+        print(scikit_metric)    
         self.scikit_knn = NearestNeighbors(n_neighbors=n_distance_samples, algorithm='ball_tree', metric=scikit_metric)  
 
    
