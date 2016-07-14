@@ -42,15 +42,6 @@ and does not necessarily represent the official views of the National Institutes
 can be supplied to assist the segmentation for difficult cases.]]></description>
       <default>NA</default>
     </image>  
-
-    <string>
-      <name>ctDir</name>
-      <label>CT directory name</label>
-      <channel>input</channel>
-      <longflag>dir</longflag>
-      <description><![CDATA[Directory containing DICOM images to segment.]]></description>
-      <default>NA</default>
-    </string>  
   </parameters>
 
   <parameters advanced="true">
