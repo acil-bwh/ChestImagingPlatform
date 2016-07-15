@@ -22,19 +22,30 @@ typedef itk::GDCMSeriesFileNames              NamesGeneratorType;
 typedef itk::ImageSeriesReader< ImageType >   ReaderType;
 typedef itk::ImageFileWriter< ImageType >     WriterType;
 
+int DoIt( std::string, std::string );
+
 int main( int argc, char *argv[] )
 {    
   PARSE_ARGS;  
+
+  int code = DoIt( dicomDir, outputImageFileName );
+  std::cout << "DONE." << std::endl;
+
+  return code;
+}
+
+int DoIt( std::string dicomDir, std::string outputImageFileName )
+{  
+  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
+    namesGenerator->SetInputDirectory( dicomDir );
+    namesGenerator->Update();
 
   // Read the DICOM data
   ImageIOType::Pointer gdcmIO = ImageIOType::New();
 
   std::cout << "Getting file names..." << std::endl;
-  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
-    namesGenerator->SetInputDirectory( dicomDir );
-
-  const ReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
-
+  std::vector< std::string > filenames = namesGenerator->GetInputFileNames();  
+  
   // Write the DICOM data
   std::cout << "Reading DICOM image..." << std::endl;
   ReaderType::Pointer dicomReader = ReaderType::New();
@@ -66,8 +77,6 @@ int main( int argc, char *argv[] )
     std::cerr << excp << std::endl;
     return cip::NRRDWRITEFAILURE;
     }
-
-  std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
 }
