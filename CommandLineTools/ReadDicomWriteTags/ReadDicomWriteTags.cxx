@@ -2,41 +2,6 @@
  *  \ingroup commandLineTools 
  *  \details This program reads a CT (DICOM) image, extracts tags of
  *  interest and their values and then prints them file.
- *
- *  $Date: 2012-04-24 13:46:21 -0700 (Tue, 24 Apr 2012) $
- *  $Revision: 82 $
- *  $Author: jross $
- *
- *  USAGE:
- *
- *  ReadDicomWriteTags.exe  [-i \<string\>] ...  [-s \<int\>] -o \<string\>
- *                          -r \<string\> [--] [--version] [-h]
- *
- *  Where:
- *
- *   -i \<string\>,  --dirList \<string\>  (accepted multiple times)
- *     Specifiy as many input directories as desired using this flag.Note
- *     that if a root dicom directory is specified using the -r flag,
- *     anydirectory specified using the -i will be eliminated from
- *     considerationand overwritten using the root directory
- *
- *   -s \<int\>,  --series \<int\>
- *     Use this flag to specifiy the series number
- *
- *   -o \<string\>,  --output \<string\>
- *     (required)  Output csv file containing dicom tag information
- *
- *   -r \<string\>,  --root \<string\>
- *     (required)  Root directory containing the other dicom directories
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
  */
 
 #include "cipChestConventions.h"
@@ -46,121 +11,112 @@
 #include "itkImageSeriesReader.h"
 #include "itkImageFileReader.h"
 #include <itksys/SystemTools.hxx>
-//#include "ReadDicomWriteTags.h"
 #include "ReadDicomWriteTagsCLP.h"
 
 namespace
 {
-typedef itk::Image< short, 3 >                                                   Short3DImageType;
-typedef itk::Image< short, 2 >                                                   Short2DImageType;
-typedef itk::ImageSeriesReader< Short3DImageType >                               SeriesReaderType;
-typedef itk::GDCMImageIO                                                         ImageIOType;
-typedef itk::GDCMSeriesFileNames                                                 NamesGeneratorType;
-typedef itk::MetaDataDictionary                                                  DictionaryType;
-typedef itk::MetaDataObject< std::string >                                       MetaDataStringType;
-typedef itk::ImageFileReader< Short3DImageType >                                 Image3DReaderType;
-typedef itk::ImageFileReader< Short2DImageType >                                 Image2DReaderType;
-
-
-
+  typedef itk::Image< short, 3 >                      Short3DImageType;
+  typedef itk::Image< short, 2 >                      Short2DImageType;
+  typedef itk::ImageSeriesReader< Short3DImageType >  SeriesReaderType;
+  typedef itk::GDCMImageIO                            ImageIOType;
+  typedef itk::GDCMSeriesFileNames                    NamesGeneratorType;
+  typedef itk::MetaDataDictionary                     DictionaryType;
+  typedef itk::MetaDataObject< std::string >          MetaDataStringType;
+  typedef itk::ImageFileReader< Short3DImageType >    Image3DReaderType;
+  typedef itk::ImageFileReader< Short2DImageType >    Image2DReaderType;
     
-struct TAGS
-{
-  std::string patientName;
-  std::string patientID;
-  std::string studyDate;
-  std::string institution;
-  std::string ctManufacturer;
-  std::string ctModel;
-  std::string dateOfLastCalibration;
-  std::string convolutionKernel;
-  std::string studyDescription;
-  std::string modalitiesInStudy;
-  std::string imageComments;
-  std::string sliceThickness;
-  std::string exposureTime;
-  std::string xRayTubeCurrent;
-  std::string kvp;
-  std::string windowCenter;
-  std::string windowWidth;
-  std::string contrastBolusAgent;
-  std::string dataCollectionDiameter;
-  std::string reconstructionDiameter;
-  std::string distanceSourceToDetector;
-  std::string distanceSourceToPatient;
-  std::string gantryDetectorTilt;
-  std::string tableHeight;
-  std::string exposure;
-  std::string focalSpots;
-  std::string imagePositionPatient;
-  std::string sliceLocation;
-  std::string pixelSpacing;
-  std::string rescaleIntercept;
-  std::string rescaleSlope;
-  std::string protocolName;
-  std::string acquisitionData;
-  std::string studyID;
-  std::string seriesDescription;
-  std::string seriesTime;
-  std::string patientBirthDate;
-  std::string filterType;
-  std::string stationName;
-  std::string studyTime;
-  std::string acquisitionTime;
-  std::string patientPosition;
+  struct TAGS
+  {
+    std::string patientName;
+    std::string patientID;
+    std::string studyDate;
+    std::string institution;
+    std::string ctManufacturer;
+    std::string ctModel;
+    std::string dateOfLastCalibration;
+    std::string convolutionKernel;
+    std::string studyDescription;
+    std::string modalitiesInStudy;
+    std::string imageComments;
+    std::string sliceThickness;
+    std::string exposureTime;
+    std::string xRayTubeCurrent;
+    std::string kvp;
+    std::string windowCenter;
+    std::string windowWidth;
+    std::string contrastBolusAgent;
+    std::string dataCollectionDiameter;
+    std::string reconstructionDiameter;
+    std::string distanceSourceToDetector;
+    std::string distanceSourceToPatient;
+    std::string gantryDetectorTilt;
+    std::string tableHeight;
+    std::string exposure;
+    std::string focalSpots;
+    std::string imagePositionPatient;
+    std::string sliceLocation;
+    std::string pixelSpacing;
+    std::string rescaleIntercept;
+    std::string rescaleSlope;
+    std::string protocolName;
+    std::string acquisitionData;
+    std::string studyID;
+    std::string seriesDescription;
+    std::string seriesTime;
+    std::string patientBirthDate;
+    std::string filterType;
+    std::string stationName;
+    std::string studyTime;
+    std::string acquisitionTime;
+    std::string patientPosition;
+    std::string  studyInstanceUID;
+    std::string  seriesInstanceUID;
+    std::string  acquisitionDate;
+    std::string  seriesDate;
+    std::string  modality;
+    int validTags;
+  };
 
-  //Rola additions
-  std::string  studyInstanceUID;
-  std::string  seriesInstanceUID;
-  std::string  acquisitionDate;
-  std::string  seriesDate;
-  std::string  modality;
-  int validTags;
-};
-
-    TAGS GetTagValues( std::string  );
-    std::string GetTagValue( std::string, const DictionaryType &  );
-    
-TAGS GetTagValues( std::string dicomDir )
-{
+  TAGS GetTagValues( std::string  );
+  std::string GetTagValue( std::string, const DictionaryType &  );
+  
+  TAGS GetTagValues( std::string dicomDir )
+  {
     TAGS tagValues;
     
     ImageIOType::Pointer gdcmIO = ImageIOType::New();
-        
+    
     std::cout << dicomDir << std::endl;
     NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
     namesGenerator->SetInputDirectory( dicomDir );
-        
+    
     std::vector< std::string > filenames = namesGenerator->GetInputFileNames();
         
     if ( filenames.size() == 0 )
-    {
+      {
         tagValues.validTags = -1;
-    }
+      }
     else
-    {
+      {
         tagValues.validTags = 1;
         
         std::cout << "Reading dicom image..." << std::endl;
         Image2DReaderType::Pointer reader = Image2DReaderType::New();
-        std::cout << filenames[0] << std::endl;
-        reader->SetFileName( filenames[0] );
-        reader->SetImageIO( gdcmIO );
-        try
-        {
-            reader->Update();
-        }
+          reader->SetFileName( filenames[0] );
+          reader->SetImageIO( gdcmIO );
+	try
+	  {
+          reader->Update();
+	  }
         catch ( itk::ExceptionObject &excp )
-        {
-            std::cerr << "Exception caught reading image:";
-            std::cerr << excp << std::endl;
-        }
+	  {
+          std::cerr << "Exception caught reading image:";
+	  std::cerr << excp << std::endl;
+	  }
             
         const DictionaryType & dictionary = gdcmIO->GetMetaDataDictionary();
         
-        //
         //  Define values for specific entries
-        //
         std::string patientNameEntryID             = "0010|0010";
         std::string patientIDEntryID               = "0010|0020";
         std::string studyDateEntryID               = "0008|0020";
@@ -251,23 +207,19 @@ TAGS GetTagValues( std::string dicomDir )
         tagValues.studyTime                = GetTagValue( studyTimeID, dictionary );
         tagValues.acquisitionTime          = GetTagValue( acquisitionTimeID, dictionary );
         tagValues.patientPosition          = GetTagValue( patientPositionID, dictionary );
-        
-        //new additions
         tagValues.studyInstanceUID         = GetTagValue( studyInstanceUIDID, dictionary );
         tagValues.seriesInstanceUID        = GetTagValue( seriesInstanceUIDID, dictionary );
         tagValues.acquisitionDate          = GetTagValue( acquisitionDateID, dictionary );
         tagValues.seriesDate               = GetTagValue( seriesDateID, dictionary );
-        tagValues.modality                 = GetTagValue( modalityID, dictionary );
-        
-            
-    }
+        tagValues.modality                 = GetTagValue( modalityID, dictionary );                    
+      }
         
     return tagValues;
-}
+  }
+  
     
-    
-std::string GetTagValue( std::string entryID, const DictionaryType & dictionary )
-{
+  std::string GetTagValue( std::string entryID, const DictionaryType & dictionary )
+  {
     std::string tagValue;
     
     DictionaryType::ConstIterator tagItr;
@@ -275,48 +227,47 @@ std::string GetTagValue( std::string entryID, const DictionaryType & dictionary 
     
     tagItr = dictionary.Find( entryID );
     
-    if( tagItr == end )
-    {
+    if ( tagItr == end )
+      {
         std::cerr << "Tag " << entryID;
         std::cerr << " not found in the DICOM header. Returning blank entry." << std::endl;
         
         return tagValue;
-    }
+      }
         
     MetaDataStringType::ConstPointer entryValue = dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer());
         
     tagValue = entryValue->GetMetaDataObjectValue();
         
-    //
     // Replace commas and new-lines with spaces
-    //
     unsigned int commaLocation = tagValue.find( ',' );
     
     //First check if comma exists
     if (commaLocation <tagValue.length())
-    {
+      {
         if ( commaLocation != std::string::npos )
-        {
+	  {
             tagValue.replace( commaLocation, 1, " " );
-        }
+	  }
         
         unsigned int newlineLocation = tagValue.find( '\n' );
         if ( newlineLocation != std::string::npos )
-        {
+	  {
             if (newlineLocation<tagValue.length())
-            {
+	      {
                 tagValue.replace( newlineLocation, 1, " " );
-            }
-        }
-    }
+	      }
+	  }
+      }
+    
     return tagValue;
-}
+  }
     
-    
-void WriteTagsToFile( std::string outputFileName, std::vector< std::string > directoryList, std::vector< TAGS > tagsVec )
-{
+  
+  void WriteTagsToFile( std::string outputFileName, std::vector< std::string > directoryList, std::vector< TAGS > tagsVec )
+  {
     std::ofstream csvFile( outputFileName.c_str() );
-        
+    
     csvFile << "Directory,patientName,patientID,studyDate,institution,ctManufacturer,ctModel,dateOfLastCalibration,";
     csvFile << "convolutionKernel,studyDescription,modalitiesInStudy,imageComments,sliceThickness,exposureTime,";
     csvFile << "xRayTubeCurrent,kvp,windowCenter,windowWidth,contrastBolusAgent,";
@@ -327,11 +278,11 @@ void WriteTagsToFile( std::string outputFileName, std::vector< std::string > dir
     csvFile << "patientPosition,studyInstanceUID,seriesInstanceUID,acquisitionDate,seriesDate,modality" << std::endl;
         
     for ( unsigned int i=0; i<directoryList.size(); i++ )
-    {
+      {
         csvFile << directoryList[i] << ",";
         
         if ( tagsVec[i].validTags == 1 )
-        {
+	  {
             csvFile << tagsVec[i].patientName<< ",";
             csvFile << tagsVec[i].patientID << ",";
             csvFile << tagsVec[i].studyDate << ",";
@@ -374,17 +325,14 @@ void WriteTagsToFile( std::string outputFileName, std::vector< std::string > dir
             csvFile << tagsVec[i].studyTime << ",";
             csvFile << tagsVec[i].acquisitionTime << ",";
             csvFile << tagsVec[i].patientPosition << ",";
-            // csvFile << tagsVec[i].patientPosition << std::endl;
-            
-            //additions
             csvFile << tagsVec[i].studyInstanceUID<<"," ;
             csvFile << tagsVec[i].seriesInstanceUID << ",";
             csvFile << tagsVec[i].acquisitionDate << ",";
             csvFile << tagsVec[i].seriesDate <<",";
-            csvFile << tagsVec[i].modality <<std::endl;
-        }
+            csvFile << tagsVec[i].modality << std::endl;
+	  }
         else
-        {
+	  {
             csvFile << "NA" << "," << "NA" << ",";
             csvFile << "NA" << ",";
             csvFile << "NA" << "," << "NA" << "," << "NA" << ",";
@@ -416,97 +364,80 @@ void WriteTagsToFile( std::string outputFileName, std::vector< std::string > dir
             csvFile << "NA" << ",";
             csvFile << "NA" << ",";
             csvFile << "NA" << ",";
-            //5 additions
             csvFile << "NA" << ",";
             csvFile << "NA" << ",";
             csvFile << "NA" << ",";
             csvFile << "NA" << ",";
             csvFile << "NA" << ",";
-            
-            //from before
             csvFile << "NA" << std::endl;
-        }
-    }
-        
+	  }
+      }
+    
     csvFile.close();
-}
-    
-    
-std::vector< std::string > GetDirectoryList( char* rootDicomDirectory )
-{
+  }
+      
+  std::vector< std::string > GetDirectoryList( char* rootDicomDirectory )
+  {
     std::vector< std::string > directoryList;
         
-    //
     // Write the list of dicom directories (inside the root directory)
     // to a file
-    //
     char lsDirectoryCommand[1024];
     sprintf( lsDirectoryCommand, "ls %s > directoryList.txt", rootDicomDirectory );
     system( lsDirectoryCommand );
     
-    //
     // Read in the file containing the list of dicom directories and
     // save the entries in a vector
-    //
     std::ifstream directoryListFile( "directoryList.txt" );
-        
+    
     while ( !directoryListFile.eof() )
-    {
+      {
         char directory[1024];
         directoryListFile.getline( directory, 1024 );
         
         std::string directoryString( directory );
         
         directoryList.push_back( directoryString );
-    }
-        
+      }
+    
     directoryListFile.close();
-        
-    //
+    
     // Remove the directory list file that was temporarily written
-    //
     system( "rm directoryList.txt" );
     
     return directoryList;
-}
-
+  }
+  
 } //end namespace
 
 int main( int argc, char* argv[] )
 {
-  //
-  // Begin by defining the arguments to be passed
-  //
- 
-
   std::vector< std::string > directoryList;
-   
+  
   PARSE_ARGS;
-
+  
   for ( unsigned int i=0; i<directoryListArg.size(); i++ )
-      {
-         directoryList.push_back( directoryListArg[i] );
-      }
-
-  //
-  // Loop through the directories and get the dicom tags for each
-  // dicom dataset
-  //
-  std::cout << "Getting tags for each dicom dataset..." << std::endl;
-  std::vector< TAGS > tagsVec;
-
-  for ( unsigned int i=0; i<directoryList.size(); i++ )
-    {    
-    TAGS tempTags = GetTagValues( directoryList[i] );
-
-    tagsVec.push_back( tempTags );
+    {
+      directoryList.push_back( directoryListArg[i] );
     }
 
+  // Loop through the directories and get the dicom tags for each
+  // dicom dataset
+  std::cout << "Getting tags for each dicom dataset..." << std::endl;
+  std::vector< TAGS > tagsVec;
+  
+  for ( unsigned int i=0; i<directoryList.size(); i++ )
+    {    
+      TAGS tempTags = GetTagValues( directoryList[i] );
+      
+      tagsVec.push_back( tempTags );
+    }
+  
   std::cout << "Writing output file..." << std::endl;
   WriteTagsToFile( outputFileName, directoryList, tagsVec );
-
+  
   std::cout << "DONE." << std::endl;
-
+  
   return EXIT_SUCCESS;
 }
 
