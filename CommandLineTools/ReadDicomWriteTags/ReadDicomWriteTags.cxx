@@ -158,13 +158,11 @@ namespace
         std::string studyTimeID                    = "0008|0020";
         std::string acquisitionTimeID              = "0008|0032";
         std::string patientPositionID              = "0018|5100";
-            
-        //new additions
-        std::string  studyInstanceUIDID            = "0020|000d";
-        std::string  seriesInstanceUIDID           = "0020|000e";
-        std::string  acquisitionDateID             = "0008|0022";
-        std::string  seriesDateID                  = "0008|0021";
-        std::string  modalityID                    = "0008|0060";
+        std::string studyInstanceUIDID             = "0020|000d";
+        std::string seriesInstanceUIDID            = "0020|000e";
+        std::string acquisitionDateID              = "0008|0022";
+        std::string seriesDateID                   = "0008|0021";
+        std::string modalityID                     = "0008|0060";
         
         tagValues.patientName              = GetTagValue( patientNameEntryID, dictionary );
         tagValues.patientID                = GetTagValue( patientIDEntryID, dictionary );
