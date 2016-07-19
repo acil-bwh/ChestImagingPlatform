@@ -78,5 +78,14 @@ will be retained in the output</description>
       <default>110</default>
     </integer>
 
+    <integer>
+      <name>maxComponentSize</name>
+      <flag>m</flag>
+      <longflag>maxSize</longflag>
+      <description>Maximum component size. No component will be larger than the specified size</description>
+      <label>Maximum component size</label>
+      <default>4000</default>
+    </integer>
+    
   </parameters>
 </executable>

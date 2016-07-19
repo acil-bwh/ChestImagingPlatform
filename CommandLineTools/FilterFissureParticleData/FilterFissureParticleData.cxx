@@ -27,6 +27,7 @@ int main( int argc, char *argv[] )
     particleFilter.SetInterParticleSpacing( interParticleSpacing );
     particleFilter.SetParticleDistanceThreshold( distanceThreshold );
     particleFilter.SetInput( reader->GetOutput() );
+    particleFilter.SetMaximumComponentSize( maxComponentSize );	
     particleFilter.SetComponentSizeThreshold( componentSizeThreshold );
     particleFilter.SetParticleAngleThreshold( angleThreshold );
     particleFilter.Update();

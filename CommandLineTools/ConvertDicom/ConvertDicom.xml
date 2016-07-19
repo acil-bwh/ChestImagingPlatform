@@ -16,13 +16,13 @@ and does not necessarily represent the official views of the National Institutes
    </acknowledgements>
   <parameters>
   <label>I/O</label>
-      <directory>
+      <string>
           <name>dicomDir</name>
           <longflag>dir</longflag>
           <label>Input Dicom Data</label>
           <channel>input</channel>
           <description><![CDATA[Input dicom directory]]></description>
-      </directory>
+      </string>
     <image>
       <name>outputImageFileName</name>
       <label>output Image FileName</label>
