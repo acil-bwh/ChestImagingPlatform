@@ -71,7 +71,7 @@ class RindVsCorePartition(ChestPartition):
         
         # Convert the rind width from mm to voxels
         rind_width_voxels = rind_width/spacing[0]
-        
+
         self.partition_labelmap_ = np.zeros_like(lung_labelmap)
         #pdb.set_trace()
         self.partition_labelmap_[(lung_distance_map<=rind_width_voxels)] = cp.get_partition_region_value_from_name('Rind')

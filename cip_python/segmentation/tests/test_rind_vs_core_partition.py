@@ -1,10 +1,12 @@
 import os.path
 import pandas as pd
-#import nrrd
+import nrrd
 from cip_python.segmentation.rind_vs_core_partition import RindVsCorePartition
 import numpy as np
 import pdb
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from cip_python.segmentation.chest_partition_manager import ChestPartitionManager
+from cip_python.segmentation.chest_partition_manager import ChestPartitionRegionConventions
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
@@ -31,3 +33,14 @@ def test_execute():
     assert np.sum(np.abs(partition_ref_array-rind_lm))==0, 'rind not as \
         expected'
 
+
+    rind_core_partitioner2 = ChestPartitionManager(lm_array)
+    cp = ChestPartitionRegionConventions()  
+    rind_lm = rind_core_partitioner2.get_partition_region_mask(\
+        cp.get_partition_region_value_from_name('Rind'), rind_width=10.0, spacing=spacing)
+    
+    
+    assert np.sum(np.abs(partition_ref_array-rind_lm))==0, 'rind 2 not as \
+        expected'
+    
+test_execute()
