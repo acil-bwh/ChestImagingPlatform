@@ -21,7 +21,7 @@ runtime_library_dirs = [] # setting it may cause exception on Windows build
 include_dirs = [cip_source_dir + '/Common/']
 
 setup(
-    cmdclass = {'build_ext': build_ext},
+    cmdclass = {'build_ext': build_ext},    
     ext_modules = [
         Extension("ChestConventions",
                   sources=sources,
@@ -29,7 +29,7 @@ setup(
                   language="c++",
                   library_dirs=library_dirs,
                   runtime_library_dirs=runtime_library_dirs,
-                  libraries=libraries,
-                  #extra_compile_args=['-stdlib=libstdc++']
+                  libraries=libraries
+                  #extra_compile_args=['-stdlib=libc++']
     )]
 )
