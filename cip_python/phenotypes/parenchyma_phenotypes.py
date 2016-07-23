@@ -339,38 +339,33 @@ class ParenchymaPhenotypes(Phenotypes):
         for r in rs:
             if r != 0:
                 mask_region = parser.get_mask(chest_region=r)
-                for n in phenos_to_compute:
-                    self.add_pheno_group(ct, mask_region, mask_region, 
-                                         None, c.GetChestRegionName(r),
-                                         c.GetChestWildCardName(), n)                                                    
+                self.add_pheno_group(ct, mask_region, mask_region,
+                                      None, c.GetChestRegionName(r),
+                                      c.GetChestWildCardName(), phenos_to_compute)
         for t in ts:
             if t != 0:
                 mask_type = parser.get_mask(chest_type=t)
-                for n in phenos_to_compute:
-                    self.add_pheno_group(ct, mask_type, None, mask_type,
-                                         c.GetChestWildCardName(),
-                                         c.GetChestTypeName(t), n)
+                self.add_pheno_group(ct, mask_type, None, mask_type,
+                                      c.GetChestWildCardName(),
+                                      c.GetChestTypeName(t), phenos_to_compute)
         if ps.size > 0:
             for i in xrange(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
-                    for n in phenos_to_compute:                        
-                        if n == 'TypeFrac':
-                            mask_region = \
-                              parser.get_mask(chest_region=int(ps[i, 0]))
-                            self.add_pheno_group(ct, mask, mask_region, 
-                                None, c.GetChestRegionName(int(ps[i, 0])),
-                                c.GetChestTypeName(int(ps[i, 1])), n)
-                        else:
-                            self.add_pheno_group(ct, mask, None, None,
-                                c.GetChestRegionName(int(ps[i, 0])),
-                                c.GetChestTypeName(int(ps[i, 1])), n)
+                    if 'TypeFrac' in phenos_to_compute:
+                        mask_region = parser.get_mask(chest_region=int(ps[i, 0]))
+                    else:
+                        mask_region = None
+                  
+                    self.add_pheno_group(ct, mask, mask_region,
+                                      None, c.GetChestRegionName(int(ps[i, 0])),
+                                      c.GetChestTypeName(int(ps[i, 1])), phenos_to_compute)
 
         return self._df
 
     def add_pheno_group(self, ct, mask, mask_region, mask_type, chest_region, 
-                        chest_type, pheno_name):
+                        chest_type, phenos_to_compute):
         """This function computes phenotypes and adds them to the dataframe with
         the 'add_pheno' method. 
         
@@ -406,129 +401,127 @@ class ParenchymaPhenotypes(Phenotypes):
         parameters needed for Monte Carlo simulations of clinical dose
         distributions'
         """
-        assert pheno_name in self.pheno_names_, "Invalid phenotype name"
+        assert phenos_to_compute in self.pheno_names_, "Invalid phenotype name"
 
-        pheno_val = None
         mask_sum = np.sum(mask)
-
+        
         if ct is not None:
-            if pheno_name == 'LAA950' and mask_sum > 0:
-                pheno_val = float(np.sum(ct[mask] <= -950.))/mask_sum
-            elif pheno_name == 'LAA910' and mask_sum > 0:
-                pheno_val = float(np.sum(ct[mask] <= -910.))/mask_sum            
-            elif pheno_name == 'LAA856'and mask_sum > 0:
-                pheno_val = float(np.sum(ct[mask] <= -856.))/mask_sum            
-            elif pheno_name == 'HAA700' and mask_sum > 0:
-                pheno_val = float(np.sum(ct[mask] >= -700.))/mask_sum            
-            elif pheno_name == 'HAA600' and mask_sum > 0:
-                pheno_val = float(np.sum(ct[mask] >= -600))/mask_sum            
-            elif pheno_name == 'HAA500' and mask_sum > 0:
-                pheno_val = float(np.sum(ct[mask] >= -500))/mask_sum
-            elif pheno_name == 'HAA250' and mask_sum > 0:
-                pheno_val = float(np.sum(ct[mask] >= -250))/mask_sum 
-            elif pheno_name == 'Perc15' and mask_sum > 0:
-                pheno_val = np.percentile(ct[mask], 15)
-            elif pheno_name == 'Perc10' and mask_sum > 0:
-                pheno_val = np.percentile(ct[mask], 10)            
-            elif pheno_name == 'HUMean' and mask_sum > 0:
-                pheno_val = np.mean(ct[mask])
-            elif pheno_name == 'HUStd' and mask_sum > 0:
-                pheno_val = np.std(ct[mask])
-            elif pheno_name == 'HUKurtosis' and mask_sum > 0:
-                pheno_val = kurtosis(ct[mask], bias=False, fisher=True)
-            elif pheno_name == 'HUSkewness' and mask_sum > 0:
-                pheno_val = skew(ct[mask], bias=False)
-            elif pheno_name == 'HUMode' and mask_sum > 0:
-                min_val = np.min(ct[mask])
-                pheno_val = np.argmax(np.bincount(ct[mask] + \
-                    np.abs(min_val))) - np.abs(min_val)
-            elif pheno_name == 'HUMedian' and mask_sum > 0:
-                pheno_val = np.median(ct[mask])
-            elif pheno_name == 'HUMin' and mask_sum > 0:
-                pheno_val = np.min(ct[mask])
-            elif pheno_name == 'HUMax' and mask_sum > 0:
-                pheno_val = np.max(ct[mask])
-            elif pheno_name == 'HUMean500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0] > 0:
-                    pheno_val = np.mean(hus)
-            elif pheno_name == 'HUStd500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0] > 0:
-                    pheno_val = np.std(hus)
-            elif pheno_name == 'HUKurtosis500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0]:
-                    pheno_val = kurtosis(hus, bias=False, fisher=True)
-            elif pheno_name == 'HUSkewness500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0] > 0:
-                    pheno_val = skew(hus, bias=False)
-            elif pheno_name == 'HUMode500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0] > 0:
-                    min_val = np.min(hus)
-                    pheno_val = np.argmax(np.bincount(hus +\
-                        np.abs(min_val))) - np.abs(min_val)                
-            elif pheno_name == 'HUMedian500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0] > 0:
-                    pheno_val = np.median(hus)
-            elif pheno_name == 'HUMin500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0] > 0:
-                    pheno_val = np.min(hus)
-            elif pheno_name == 'HUMax500' and mask_sum > 0:
-                hus = ct[np.logical_and(mask, ct <= -500)]
-                if hus.shape[0] > 0:
-                    pheno_val = np.max(hus)
-            elif pheno_name == 'Volume':
-                pheno_val = np.prod(self._spacing)*float(mask_sum)/1e6
-            elif pheno_name == 'Mass' and mask_sum > 0:
-                # This quantity is computed in a piecewise linear form according
-                # to the prescription presented in ref. [1]. Mass is computed in
-                # grams. First compute the contribution in HU interval from -98
-                # and below.
-                pheno_val = 0.0
-                HU_tmp = ct[np.logical_and(mask, ct < -98)].clip(-1000)
-                if HU_tmp.shape[0] > 0:
-                    m = (1.21e-3-0.93)/(-1000+98)
-                    b = 1.21e-3 + 1000*m
-                    pheno_val += np.sum((m*HU_tmp + b)*\
-                        np.prod(self._spacing)*0.001)
-    
-                    # Now compute the mass contribution in the interval 
-                    # [-98, 18] HU. Note the in the original paper, the interval
-                    # is defined from -98HU to 14HU, but we extend in slightly 
-                    # here so there are no gaps in coverage. The values we 
-                    # report in the interval [14, 23] should be viewed as 
-                    # approximate.
-                    HU_tmp = ct[np.logical_and(np.logical_and(mask, ct >= -98),
-                                               ct <= 18)]
-                    if HU_tmp.shape[0] > 0:
-                        pheno_val += np.sum((1.018 + 0.893*HU_tmp/1000.0)*\
-                            np.prod(self._spacing)*0.001)
-    
-                    # Compute the mass contribution in the interval (18, 100]
-                    HU_tmp = ct[np.logical_and(np.logical_and(mask, ct > 18),
-                                               ct <= 100)]
-                    if HU_tmp.shape[0] > 0:
-                        pheno_val += np.sum((1.003 + 1.169*HU_tmp/1000.0)*\
-                            np.prod(self._spacing)*0.001)
-    
-                    # Compute the mass contribution in the interval > 100
-                    HU_tmp = ct[np.logical_and(mask, ct > 100)]
-                    if HU_tmp.shape[0] > 0:
-                        pheno_val += np.sum((1.017 + 0.592*HU_tmp/1000.0)*\
-                            np.prod(self._spacing)*0.001)    
-        elif pheno_name == 'TypeFrac'and mask is not None and \
-          mask_region is not None:
-            denom = np.sum(mask_region)
-            if denom > 0:
-                pheno_val = float(np.sum(mask))/float(denom)
+            ct_mask=ct[mask]
+            hus=ct[np.logical_and(mask, ct <= -500)]
 
-        if pheno_val is not None:
-            self.add_pheno([chest_region, chest_type], pheno_name, pheno_val)
+            for pheno_name in phenos_to_compute:
+              pheno_val = None
+              if pheno_name == 'LAA950' and mask_sum > 0:
+                  pheno_val = float(np.sum(ct_mask <= -950.))/mask_sum
+              elif pheno_name == 'LAA910' and mask_sum > 0:
+                  pheno_val = float(np.sum(ct_mask <= -910.))/mask_sum
+              elif pheno_name == 'LAA856'and mask_sum > 0:
+                  pheno_val = float(np.sum(ct_mask <= -856.))/mask_sum
+              elif pheno_name == 'HAA700' and mask_sum > 0:
+                  pheno_val = float(np.sum(ct_mask >= -700.))/mask_sum
+              elif pheno_name == 'HAA600' and mask_sum > 0:
+                  pheno_val = float(np.sum(ct_mask >= -600))/mask_sum
+              elif pheno_name == 'HAA500' and mask_sum > 0:
+                  pheno_val = float(np.sum(ct_mask >= -500))/mask_sum
+              elif pheno_name == 'HAA250' and mask_sum > 0:
+                  pheno_val = float(np.sum(ct_mask >= -250))/mask_sum
+              elif pheno_name == 'Perc15' and mask_sum > 0:
+                  pheno_val = np.percentile(ct_mask, 15)
+              elif pheno_name == 'Perc10' and mask_sum > 0:
+                  pheno_val = np.percentile(ct_mask, 10)
+              elif pheno_name == 'HUMean' and mask_sum > 0:
+                  pheno_val = np.mean(ct_mask)
+              elif pheno_name == 'HUStd' and mask_sum > 0:
+                  pheno_val = np.std(ct_mask)
+              elif pheno_name == 'HUKurtosis' and mask_sum > 0:
+                  pheno_val = kurtosis(ct_mask, bias=False, fisher=True)
+              elif pheno_name == 'HUSkewness' and mask_sum > 0:
+                  pheno_val = skew(ct_mask, bias=False)
+              elif pheno_name == 'HUMode' and mask_sum > 0:
+                  min_val = np.min(ct_mask)
+                  pheno_val = np.argmax(np.bincount(ct_mask + \
+                      np.abs(min_val))) - np.abs(min_val)
+              elif pheno_name == 'HUMedian' and mask_sum > 0:
+                  pheno_val = np.median(ct_mask)
+              elif pheno_name == 'HUMin' and mask_sum > 0:
+                  pheno_val = np.min(ct_mask)
+              elif pheno_name == 'HUMax' and mask_sum > 0:
+                  pheno_val = np.max(ct_mask)
+              elif pheno_name == 'HUMean500' and mask_sum > 0:
+                  hus = ct[np.logical_and(mask, ct <= -500)]
+                  if hus.shape[0] > 0:
+                      pheno_val = np.mean(hus)
+              elif pheno_name == 'HUStd500' and mask_sum > 0:
+                  if hus.shape[0] > 0:
+                      pheno_val = np.std(hus)
+              elif pheno_name == 'HUKurtosis500' and mask_sum > 0:
+                  if hus.shape[0]:
+                      pheno_val = kurtosis(hus, bias=False, fisher=True)
+              elif pheno_name == 'HUSkewness500' and mask_sum > 0:
+                  if hus.shape[0] > 0:
+                      pheno_val = skew(hus, bias=False)
+              elif pheno_name == 'HUMode500' and mask_sum > 0:
+                  if hus.shape[0] > 0:
+                      min_val = np.min(hus)
+                      pheno_val = np.argmax(np.bincount(hus +\
+                          np.abs(min_val))) - np.abs(min_val)                
+              elif pheno_name == 'HUMedian500' and mask_sum > 0:
+                  if hus.shape[0] > 0:
+                      pheno_val = np.median(hus)
+              elif pheno_name == 'HUMin500' and mask_sum > 0:
+                  if hus.shape[0] > 0:
+                      pheno_val = np.min(hus)
+              elif pheno_name == 'HUMax500' and mask_sum > 0:
+                  hus = ct[np.logical_and(mask, ct <= -500)]
+                  if hus.shape[0] > 0:
+                      pheno_val = np.max(hus)
+              elif pheno_name == 'Volume':
+                  pheno_val = np.prod(self._spacing)*float(mask_sum)/1e6
+              elif pheno_name == 'Mass' and mask_sum > 0:
+                  # This quantity is computed in a piecewise linear form according
+                  # to the prescription presented in ref. [1]. Mass is computed in
+                  # grams. First compute the contribution in HU interval from -98
+                  # and below.
+                  pheno_val = 0.0
+                  HU_tmp = ct[np.logical_and(mask, ct < -98)].clip(-1000)
+                  if HU_tmp.shape[0] > 0:
+                      m = (1.21e-3-0.93)/(-1000+98)
+                      b = 1.21e-3 + 1000*m
+                      pheno_val += np.sum((m*HU_tmp + b)*\
+                          np.prod(self._spacing)*0.001)
+      
+                      # Now compute the mass contribution in the interval 
+                      # [-98, 18] HU. Note the in the original paper, the interval
+                      # is defined from -98HU to 14HU, but we extend in slightly 
+                      # here so there are no gaps in coverage. The values we 
+                      # report in the interval [14, 23] should be viewed as 
+                      # approximate.
+                      HU_tmp = ct[np.logical_and(np.logical_and(mask, ct >= -98),
+                                                 ct <= 18)]
+                      if HU_tmp.shape[0] > 0:
+                          pheno_val += np.sum((1.018 + 0.893*HU_tmp/1000.0)*\
+                              np.prod(self._spacing)*0.001)
+      
+                      # Compute the mass contribution in the interval (18, 100]
+                      HU_tmp = ct[np.logical_and(np.logical_and(mask, ct > 18),
+                                                 ct <= 100)]
+                      if HU_tmp.shape[0] > 0:
+                          pheno_val += np.sum((1.003 + 1.169*HU_tmp/1000.0)*\
+                              np.prod(self._spacing)*0.001)
+      
+                      # Compute the mass contribution in the interval > 100
+                      HU_tmp = ct[np.logical_and(mask, ct > 100)]
+                      if HU_tmp.shape[0] > 0:
+                          pheno_val += np.sum((1.017 + 0.592*HU_tmp/1000.0)*\
+                              np.prod(self._spacing)*0.001)
+              elif pheno_name == 'TypeFrac'and mask is not None and \
+                mask_region is not None:
+                  denom = np.sum(mask_region)
+                  if denom > 0:
+                      pheno_val = float(np.sum(mask))/float(denom)
+              
+              if pheno_val is not None:
+                  self.add_pheno([chest_region, chest_type], pheno_name, pheno_val)
 
 if __name__ == "__main__":
     desc = """Generates parenchyma phenotypes given input CT and segmentation \
