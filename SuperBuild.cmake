@@ -155,7 +155,7 @@ find_package(Git REQUIRED)
 
 set(ep_common_c_flags "${CMAKE_C_FLAGS_INIT} ${ADDITIONAL_C_FLAGS}")
 set(ep_common_cxx_flags "${CMAKE_CXX_FLAGS_INIT} ${ADDITIONAL_CXX_FLAGS}")
-set (USE_CYTHON ON CACHE BOOL "Use Cython to wrap ChestConventions")
+set (USE_CYTHON OFF CACHE BOOL "Use Cython to wrap ChestConventions")
 # Cython compatibility with El Capitan and other OS
 if (APPLE AND USE_CYTHON AND NOT CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "" AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "10.10")
   set(CIP_CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6" CACHE INTERNAL "Cython compatibility")
