@@ -55,7 +55,7 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
 
   ExternalProject_Add_Step(${proj} installnumpy
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet numpy
-    DEPENDEES installcython
+    DEPENDEES install
   )
 
   ExternalProject_Add_Step(${proj} installscipy
