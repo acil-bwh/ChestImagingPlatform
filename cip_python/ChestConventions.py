@@ -265,6 +265,7 @@ class ChestConventionsInitializer(object):
     __preconfigured_colors__ = None
     __body_composition_phenotype_names__ = None
     __parenchyma_phenotype_names__ = None
+    __pulmonary_vasculature_phenotype_names__ = None
 
     @staticmethod
     def xml_root_conventions():
@@ -457,6 +458,16 @@ class ChestConventionsInitializer(object):
                 parent.findall("Name"))
         return ChestConventionsInitializer.__parenchyma_phenotype_names__
 
+    @staticmethod
+    def pulmonary_vasculature_phenotype_names():
+        if ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__ is None:
+            root = ChestConventionsInitializer.xml_root_conventions()
+            ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__ = list()
+            parent = root.find("PulmonaryVasculaturePhenotypeNames")
+            map(lambda n: ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__.append(n.text),
+                parent.findall("Name"))
+        return ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__
+
 #############################
 # CHEST CONVENTIONS
 #############################
@@ -469,6 +480,7 @@ class ChestConventions(object):
     #
     BodyCompositionPhenotypeNames = ChestConventionsInitializer.body_composition_phenotype_names()   # List of strings
     ParenchymaPhenotypeNames = ChestConventionsInitializer.parenchyma_phenotype_names()   # List of strings
+    PulmonaryVasculaturePhenotypeNames = ChestConventionsInitializer.pulmonary_vasculature_phenotype_names()   # List of strings
 
     @staticmethod
     def GetNumberOfEnumeratedChestRegions():
