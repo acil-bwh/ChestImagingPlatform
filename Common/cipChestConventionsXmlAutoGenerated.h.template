@@ -6,7 +6,10 @@
 
 namespace cip {
 /**
- * Note that ChestRegions are sorted hierarchically via the HierarchyMap structure
+ *  Note that chest regions are inherently hierarchical. If you add a
+ *  region to the enumerated list below, you should also update the
+ *  'ChestRegionHierarchyMap' described below.  Additionally, the
+ *  ChestRegions should be updated in the constructor.
  */
     enum ChestRegion {
 //##CHEST_REGION_ENUM##
@@ -37,17 +40,6 @@ namespace cip {
         ChestConventionsStatic(){
             BuildStructures();
         }
-        ~ChestConventionsStatic(){
-            for ( unsigned int i=0; i<ChestRegionColors.size(); i++ )
-            {
-                delete[] ChestRegionColors[i];
-            }
-
-            for ( unsigned int i=0; i<ChestTypeColors.size(); i++ )
-            {
-                delete[] ChestTypeColors[i];
-            }
-        }
 
         std::vector< unsigned char >              ChestRegions;
         std::vector< unsigned char >              ChestTypes;
@@ -57,14 +49,24 @@ namespace cip {
         std::vector< std::string >                ImageFeatureNames;
         std::vector< double* >                    ChestRegionColors;
         std::vector< double* >                    ChestTypeColors;
+
+        /**
+         *  The following class will define the hierarchy among the various
+         *  regions defined in 'ChestRegion' above.  If a new region is added
+         *  to the enumerated list above, the class below should be updated
+         *  as well to reflect the update.  'ChestRegionHierarchyMap' contains
+         *  a mapping between all regions in the 'ChestRegion' enumerated list
+         *  and the region directly above it in the hierarchy.
+         */
         std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;
+
         std::vector< std::string >  BodyCompositionPhenotypeNames;
         std::vector< std::string >  ParenchymaPhenotypeNames;
         std::vector< std::string >  HistogramPhenotypeNames;
         std::vector< std::string >  PulmonaryVasculaturePhenotypeNames;
     private:
         void BuildStructures() {
-            // Structures that will be automatically generated
+            // All the static structures will be automatically generated here
 //##STRUCTURES##
         }
     };
