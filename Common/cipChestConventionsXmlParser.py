@@ -64,7 +64,7 @@ for replacement in replacements:
 # Hierarchy map
 replacement_text += "\n"
 replacement_text += \
-"""         // For the hierarchical relationships, leftness and rightness
+"""            // For the hierarchical relationships, leftness and rightness
             // are respected before any relationship that transcends
             // leftness or rightness. For example left lower third maps to
             // left lung, not lower third, etc. The exception to this rule
@@ -79,6 +79,7 @@ for hierarchy_node in xml_root.findall("ChestRegionHierarchyMap/Hierarchy"):
 
 # Colors
 i = 0
+replacement_text += "\n"
 replacements = (
     "ChestTypes/ChestType",
     "ChestRegions/ChestRegion")

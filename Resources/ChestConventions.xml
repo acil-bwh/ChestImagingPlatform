@@ -971,314 +971,314 @@
         </ChestType>
     </ChestTypes>
     <ChestRegionHierarchyMap>
-        <Hiearchy>
+        <Hierarchy>
             <Parent>LEFTSUPERIORLOBE</Parent>
             <Child>LEFTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTINFERIORLOBE</Parent>
             <Child>LEFTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTSUPERIORLOBE</Parent>
             <Child>RIGHTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTMIDDLELOBE</Parent>
             <Child>RIGHTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTINFERIORLOBE</Parent>
             <Child>RIGHTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTLUNG</Parent>
             <Child>WHOLELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTLUNG</Parent>
             <Child>WHOLELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTUPPERTHIRD</Parent>
             <Child>LEFTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTMIDDLETHIRD</Parent>
             <Child>LEFTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTLOWERTHIRD</Parent>
             <Child>LEFTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTUPPERTHIRD</Parent>
             <Child>RIGHTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTMIDDLETHIRD</Parent>
             <Child>RIGHTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTLOWERTHIRD</Parent>
             <Child>RIGHTLUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>WHOLEHEART</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>AORTA</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>PULMONARYARTERY</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LOWERTHIRD</Parent>
             <Child>WHOLELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>MIDDLETHIRD</Parent>
             <Child>WHOLELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>UPPERTHIRD</Parent>
             <Child>WHOLELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>MEDIASTINUM</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>WHOLEHEART</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>AORTA</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LIVER</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>SPLEEN</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>ABDOMEN</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>PARAVERTEBRAL</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>SKELETON</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>STERNUM</Parent>
             <Child>SKELETON</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>HUMERI</Parent>
             <Child>SKELETON</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTHUMERUS</Parent>
             <Child>HUMERI</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTHUMERUS</Parent>
             <Child>HUMERI</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTHUMERUS</Parent>
             <Child>LEFT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTHUMERUS</Parent>
             <Child>RIGHT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>SCAPULAE</Parent>
             <Child>SKELETON</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTSCAPULA</Parent>
             <Child>SCAPULAE</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTSCAPULA</Parent>
             <Child>SCAPULAE</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTSCAPULA</Parent>
             <Child>LEFT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTSCAPULA</Parent>
             <Child>RIGHT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>HILA</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTHILUM</Parent>
             <Child>HILA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTHILUM</Parent>
             <Child>HILA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTHILUM</Parent>
             <Child>LEFT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTHILUM</Parent>
             <Child>RIGHT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>KIDNEYS</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTKIDNEY</Parent>
             <Child>KIDNEYS</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTKIDNEY</Parent>
             <Child>KIDNEYS</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTKIDNEY</Parent>
             <Child>LEFT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTKIDNEY</Parent>
             <Child>RIGHT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>ASCENDINGAORTA</Parent>
             <Child>AORTA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>TRANSVERSALAORTA</Parent>
             <Child>AORTA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>DESCENDINGAORTA</Parent>
             <Child>AORTA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTSUBCLAVIAN</Parent>
             <Child>TRANSVERSALAORTA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTSUBCLAVIAN</Parent>
             <Child>TRANSVERSALAORTA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTSUBCLAVIAN</Parent>
             <Child>LEFT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTSUBCLAVIAN</Parent>
             <Child>RIGHT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTCORONARYARTERY</Parent>
             <Child>ASCENDINGAORTA</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTCORONARYARTERY</Parent>
             <Child>LEFT</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>SPINE</Parent>
             <Child>SKELETON</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTVENTRICLE</Parent>
             <Child>WHOLEHEART</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTVENTRICLE</Parent>
             <Child>WHOLEHEART</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTVENTRICLE</Parent>
             <Child>WHOLEHEART</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTATRIUM</Parent>
             <Child>WHOLEHEART</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTATRIUM</Parent>
             <Child>WHOLEHEART</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTATRIUM</Parent>
             <Child>WHOLEHEART</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTPECTORALIS</Parent>
             <Child>PECTORALIS</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTPECTORALIS</Parent>
             <Child>PECTORALIS</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>TRACHEA2</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTMAINBRONCHUS</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTMAINBRONCHUS</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>ESOPHAGUS</Parent>
             <Child>MEDIASTINUM</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTCHESTWALL</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTCHESTWALL</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>LEFTDIAPHRAGM</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>RIGHTDIAPHRAGM</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>HIATUS</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>PECTORALIS</Parent>
             <Child>OUTSIDELUNG</Child>
-        </Hiearchy>
-        <Hiearchy>
+        </Hierarchy>
+        <Hierarchy>
             <Parent>SPINALCORD</Parent>
             <Child>SPINE</Child>
-        </Hiearchy>
+        </Hierarchy>
     </ChestRegionHierarchyMap>
     <ImageFeatures>
         <ImageFeature>
