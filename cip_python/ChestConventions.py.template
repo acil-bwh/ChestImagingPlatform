@@ -154,7 +154,7 @@ class ChestConventionsInitializer(object):
             for hierarchy_node in parent.findall("Hierarchy"):
                 p = eval("ChestRegion.{}".format(hierarchy_node.find("Parent").text))
                 c = eval("ChestRegion.{}".format(hierarchy_node.find("Child").text))
-                ChestConventionsInitializer.__chest_regions_hierarchy__.append((p,c))
+                ChestConventionsInitializer.__chest_regions_hierarchy__.append((c,p))
         return ChestConventionsInitializer.__chest_regions_hierarchy__
 
 

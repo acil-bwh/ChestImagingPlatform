@@ -81,7 +81,7 @@ for hierarchy_node in xml_root.findall("ChestRegionHierarchyMap/Hierarchy"):
     replacement_text_cxx += \
 """            ChestRegionHierarchyMap.insert(Region_Pair((unsigned char)({}),
                                                        (unsigned char)({}) ) );""".format(
-            hierarchy_node.find("Parent").text, hierarchy_node.find("Child").text)
+            hierarchy_node.find("Child").text, hierarchy_node.find("Parent").text)
     replacement_text_cxx += "\n"
 
 # Colors
