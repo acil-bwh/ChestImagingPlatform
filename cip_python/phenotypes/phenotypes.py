@@ -214,19 +214,15 @@ class Phenotypes:
         # Make sure CID has been set
         assert self.static_names_handler_['CID'] is not None, \
             "CID has not been set"
-
-        # Make sure the pheno name is valid
-        assert c.IsPhenotypeName(pheno_name) or pheno_name == \
-            c.GetChestWildCardName(), "Invalid phenotype name"
+        
+        # Check if pheno_name is valid
+        assert pheno_name in self.pheno_names_, \
+          "Invalid phenotype name: %s" % pheno_name
         
         # Check if key is valid
         for i in xrange(0, num_keys):
             assert key_value[i] in self.valid_key_values_[self.key_names_[i]], \
                 "Invalid key: %s" % key_value[i]
-    
-        # Check if pheno_name is valid
-        assert pheno_name in self.pheno_names_, \
-            "Invalid phenotype name: %s" % pheno_name
           
         # Check if key already exists, otherwise add entry to data frame
         key_exists = True
