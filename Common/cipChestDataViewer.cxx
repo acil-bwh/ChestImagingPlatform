@@ -565,29 +565,28 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
     centerOfMass[1] = 0;
     centerOfMass[2] = 0;
 
+
   for ( unsigned int i=0; i<numberOfParticles; i++ )
     {
     centerOfMass[0] += polyData->GetPoint(i)[0];
     centerOfMass[1] += polyData->GetPoint(i)[1];
     centerOfMass[2] += polyData->GetPoint(i)[2];
 
-    float* val0 = new float[1];
-    float* val1 = new float[1];
-    float* val2 = new float[1];
-
-    vals0->GetTupleValue( i, val0 );
-    vals1->GetTupleValue( i, val1 );
-    vals2->GetTupleValue( i, val2 );
+    double val0[1];
+    double val1[1];
+    double val2[1];
+    vals0->GetTuple( i, val0 );
+    vals1->GetTuple( i, val1 );
+    vals2->GetTuple( i, val2 );
 
     float mag = vcl_sqrt( std::pow( *val0, 2 ) + std::pow( *val1, 2 ) + std::pow( *val2, 2 ) );
 
-    float* vec0 = new float[3];
-    float* vec1 = new float[3];
-    float* vec2 = new float[3];
-
-    vecs0->GetTupleValue( i, vec0 );
-    vecs1->GetTupleValue( i, vec1 );
-    vecs2->GetTupleValue( i, vec2 );
+    double vec0[3];
+    double vec1[3];
+    double vec2[3];
+    vecs0->GetTuple( i, vec0 );
+    vecs1->GetTuple( i, vec1 );
+    vecs2->GetTuple( i, vec2 );
 
     vnl_matrix_fixed< double, 3, 3 > M1;
     M1(0,0) = vec0[0]*vec0[0];   M1(0,1) = vec0[0]*vec0[1];   M1(0,2) = vec0[0]*vec0[2];
@@ -604,8 +603,7 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
     M3(1,0) = vec2[1]*vec2[0];   M3(1,1) = vec2[1]*vec2[1];   M3(1,2) = vec2[1]*vec2[2];
     M3(2,0) = vec2[2]*vec2[0];   M3(2,1) = vec2[2]*vec2[1];   M3(2,2) = vec2[2]*vec2[2];
 
-    float* scale = new float[1];
-
+    double scale[1];
     if ( fissureParticles )
       {
       *scale = 1.0;
@@ -615,7 +613,7 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
       }
     else
       {
-      scaleArray->GetTupleValue( i, scale );
+      scaleArray->GetTuple( i, scale );
       M1 *= vcl_abs( *val0/mag );
       M2 *= vcl_abs( *val1/mag );
       M3 *= vcl_abs( *val2/mag );
