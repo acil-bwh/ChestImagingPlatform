@@ -49,8 +49,11 @@ def test_writer_numpy():
   np_image,metainfo=image_io.read_in_numpy(file_name)
   image_io.write_from_numpy(np_image,metainfo,output_filename)
   np_image2,metainfo2=image_io.read_in_numpy(output_filename)
-  
-  assert np.mean(np_image-np_image2) < np.spacing(1) and metainfo==metainfo2, \
+  print metainfo
+  print metainfo2
+  assert np.mean(np_image-np_image2) < np.spacing(1) and metainfo['space origin']==metainfo2['space origin'] \
+          and metainfo['space directions']==metainfo2['space directions'] \
+          and metainfo['spacing']==metainfo2['spacing'], \
     "Image does not match in read/write operation"
 
 def test_clean():
