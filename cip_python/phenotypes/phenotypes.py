@@ -1,4 +1,4 @@
-import os
+import platform
 import datetime
 import numpy as np
 import pandas as pd
@@ -111,7 +111,7 @@ class Phenotypes:
         os_arch : string
             The OS architecture on which the phenotype data is generated.
         """
-        return os.uname()[4]
+        return platform.uname()[4]
 
     def get_os_kernel(self):
         """Get the OS kernel on which the phenotype data is generated.
@@ -121,7 +121,7 @@ class Phenotypes:
         os_kernel : string
             The OS kernel on which the phenotype data is generated.
         """
-        return os.uname()[2]
+        return platform.uname()[2]
 
     def get_os_version(self):
         """Get the OS version on which the phenotype data is generated.
@@ -131,7 +131,7 @@ class Phenotypes:
         os_version : string
             The OS version on which the phenotype data is generated.
         """
-        return os.uname()[3]
+        return platform.uname()[3]
 
     def get_os_name(self):
         """Get the OS name on which the phenotype data is generated.
@@ -141,7 +141,7 @@ class Phenotypes:
         os_name : string
             The OS name on which the phenotype data is generated.
         """
-        return os.uname()[0]
+        return platform.uname()[0]
 
     def get_machine(self):
         """Get the machine name on which the phenotype data is generated.
@@ -151,7 +151,7 @@ class Phenotypes:
         machine : string
             The machine name on which the phenotype data is generated.
         """
-        return os.uname()[1]
+        return platform.uname()[1]
 
     def declare_pheno_names(self):
         """

@@ -54,11 +54,13 @@ class RegionTypeParser():
             chest-type query. The chest region hierarchy is honored.
         """
         if chest_region is not None:
-            if type(chest_region) != int and type(chest_region) != np.int64:
+            if type(chest_region) != int and type(chest_region) != np.int64 \
+              and type(chest_region) != np.int32:
                 raise ValueError(
                     'chest_region must be an int between 0 and 255 inclusive')
         if chest_type is not None:
-            if type(chest_type) != int and type(chest_type) != np.int64:
+            if type(chest_type) != int and type(chest_type) != np.int64 \
+              and type(chest_type) != np.int32:
                 raise ValueError(
                     'chest_type must be an int between 0 and 255 inclusive')        
         
