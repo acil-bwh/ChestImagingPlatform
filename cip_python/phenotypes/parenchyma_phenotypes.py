@@ -1,10 +1,11 @@
 import numpy as np
 from scipy.stats import mode, kurtosis, skew
 from optparse import OptionParser
-import warnings, nrrd, pdb
+import warnings
 from cip_python.phenotypes.phenotypes import Phenotypes
 from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.ChestConventions import ChestConventions
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
 class ParenchymaPhenotypes(Phenotypes):
     """General purpose class for generating parenchyma-based phenotypes.
@@ -126,6 +127,11 @@ class ParenchymaPhenotypes(Phenotypes):
                 inc += 1    
                 
         self.requested_pheno_names = pheno_names
+        
+        self.deprecated_phenos_ = ['NormalParenchyma', 'PanlobularEmphysema',
+                                   'ParaseptalEmphysema', 'MildCentrilobularEmphysema',
+                                   'ModerateCentrilobularEmphysema', 'SevereCentrilobularEmphysema',
+                                   'MildParaseptalEmphysema']
 
         Phenotypes.__init__(self)    
 
@@ -137,15 +143,10 @@ class ParenchymaPhenotypes(Phenotypes):
         names : list of strings
             Phenotype names
         """
-        names = ['LAA950', 'LAA910', 'LAA856', 'HAA700', 'HAA600', 'HAA500',
-                 'HAA250', 'Perc10', 'Perc15', 'HUMean', 'HUStd', 'HUKurtosis',
-                 'HUSkewness', 'HUMode', 'HUMedian', 'HUMin', 'HUMax',
-                 'HUMean500', 'HUStd500', 'HUKurtosis500', 'HUSkewness500',
-                 'HUMode500', 'HUMedian500', 'HUMin500', 'HUMax500', 'Volume',
-                 'Mass', 'TypeFrac', 'NormalParenchyma', 'PanlobularEmphysema',
-                 'ParaseptalEmphysema', 'MildCentrilobularEmphysema', 
-                 'ModerateCentrilobularEmphysema', 
-                 'SevereCentrilobularEmphysema', 'MildParaseptalEmphysema']
+        
+        #Get phenotypes list from ChestConventions
+        c=ChestConventions()
+        names = c.ParenchymaPhenotypeNames
         
         return names
 
@@ -281,6 +282,7 @@ class ParenchymaPhenotypes(Phenotypes):
             Dataframe containing info about machine, run time, and chest region
             chest type phenotype quantities.         
         """
+        c = ChestConventions()
         if ct is not None:
             assert len(ct.shape) == len(lm.shape), \
               "CT and label map are not the same dimension"    
@@ -295,19 +297,29 @@ class ParenchymaPhenotypes(Phenotypes):
         self.cid_ = cid
         self._spacing = spacing
 
+
+        #Derive phenos to compute from list provided
+        # As default use the list that is provided in the constructor of phenotypes
         phenos_to_compute = self.pheno_names_
+        
         if pheno_names is not None:
             phenos_to_compute = pheno_names
         elif self.requested_pheno_names is not None:
             phenos_to_compute = self.requested_pheno_names
 
-        deprecated_phenos = ['NormalParenchyma', 'PanlobularEmphysema',
-            'ParaseptalEmphysema', 'MildCentrilobularEmphysema',
-            'ModerateCentrilobularEmphysema', 'SevereCentrilobularEmphysema',
-            'MildParaseptalEmphysema']
+        #Deal with wildcard: defaul to main pheno list if wildcard is provided
+        if c.GetChestWildCardName() in phenos_to_compute:
+            phenos_to_compute = self.pheno_names_
 
+
+        #Check validity of phenotypes
+        for pheno_name in phenos_to_compute:
+            assert pheno_name in self.pheno_names_, \
+                  "Invalid phenotype name " + pheno_name
+
+        #Warn for phenotpyes that have been deprecated
         for p in phenos_to_compute:
-            if p in deprecated_phenos:
+            if p in self.deprecated_phenos_:
                 warnings.warn('{} is deprecated. Use TypeFrac instead.'.\
                               format(p), DeprecationWarning)
             
@@ -335,7 +347,6 @@ class ParenchymaPhenotypes(Phenotypes):
             ps = parser.get_all_pairs()
 
         # Now compute the phenotypes and populate the data frame
-        c = ChestConventions()
         for r in rs:
             if r != 0:
                 mask_region = parser.get_mask(chest_region=r)
@@ -403,15 +414,16 @@ class ParenchymaPhenotypes(Phenotypes):
         distributions'
         """
         mask_sum = np.sum(mask)
-
+        print mask_sum
         if ct is not None:
             ct_mask=ct[mask]
             hus=ct[np.logical_and(mask, ct <= -500)]
 
             for pheno_name in phenos_to_compute:
                 assert pheno_name in self.pheno_names_, \
-                  "Invalid phenotype name"
+                  "Invalid phenotype name " + pheno_name
                 pheno_val = None
+                print pheno_name
                 if pheno_name == 'LAA950' and mask_sum > 0:
                     pheno_val = float(np.sum(ct_mask <= -950.))/mask_sum
                 elif pheno_name == 'LAA910' and mask_sum > 0:
@@ -589,16 +601,19 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
 
+    image_io = ImageReaderWriter()
     lm, lm_header = image_io.read_in_numpy(options.in_lm)
 
     ct = None
     if options.in_ct is not None:
         ct, ct_header = image_io.read_in_numpy(options.in_ct)    
 
-    spacing = np.zeros(3)
-    spacing[0] = lm_header['space directions'][0][0]
-    spacing[1] = lm_header['space directions'][1][1]
-    spacing[2] = lm_header['space directions'][2][2]
+#    spacing = np.zeros(3)
+#    spacing[0] = lm_header['space directions'][0][0]
+#    spacing[1] = lm_header['space directions'][1][1]
+#    spacing[2] = lm_header['space directions'][2][2]
+    spacing = lm_header['spacing']
+
 
     regions = None
     if options.chest_regions is not None:
