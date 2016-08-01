@@ -1,13 +1,7 @@
 import numpy as np
 from cip_python.ChestConventions import ChestConventions
-from sets import Set
-import pdb
 
-def contains(label, set_of_labels):
-        """ True if label is in the set of labels. 
-        """
-        return label in set_of_labels
-        
+
 class RegionTypeParser():
     """Parses the chest-region chest-type input data to identify all existing
     chest regions, chest types, and region-type pairs.
@@ -91,8 +85,8 @@ class RegionTypeParser():
         mask = np.empty(self._data.shape, dtype=bool)
         mask[:] = False
         
-        contains_np = np.frompyfunc(contains, 2, 1)
-        mask = contains_np(self._data, Set(mask_labels)).astype(bool)
+        for ll in set(mask_labels):
+            mask[self._data==ll]=True
 
         return mask
 
