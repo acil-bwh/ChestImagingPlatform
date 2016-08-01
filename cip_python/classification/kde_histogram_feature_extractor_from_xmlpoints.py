@@ -93,8 +93,8 @@ class kdeHistExtractorFromXML:
             XML string representation of a  GeometryTopologyData object
         """                
         #build transformation matrix
-        the_origin = np.array(ct_header['origin'])
-        the_direction = np.reshape(np.array(ct_header['direction']), [3,3])
+        the_origin = np.array(ct_header['space origin'])
+        the_direction = np.reshape(np.array(ct_header['space directions']), [3,3])
         the_spacing = np.array(ct_header['spacing'])
 
         matrix = np.zeros([4,4])
