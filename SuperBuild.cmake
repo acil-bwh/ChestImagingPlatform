@@ -155,12 +155,6 @@ find_package(Git REQUIRED)
 
 set(ep_common_c_flags "${CMAKE_C_FLAGS_INIT} ${ADDITIONAL_C_FLAGS}")
 set(ep_common_cxx_flags "${CMAKE_CXX_FLAGS_INIT} ${ADDITIONAL_CXX_FLAGS}")
-set (USE_CYTHON OFF CACHE BOOL "Use Cython to wrap ChestConventions")
-# Cython compatibility with El Capitan and other OS
-if (APPLE AND USE_CYTHON AND NOT CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "" AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "10.10")
-  set(CIP_CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6" CACHE INTERNAL "Cython compatibility")
-endif()
-
 
 
 include(ExternalProject)
@@ -231,7 +225,6 @@ option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined versio
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
 option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML. The building will fail if not found" OFF)
-option(USE_CYTHON "Use Cython to Wrap ChestConventions" ON)
 
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
@@ -377,7 +370,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
   BUILD_TESTING:BOOL
   ITK_VERSION_MAJOR:STRING
   ITK_DIR:PATH    
-  USE_CYTHON:BOOL
   #LIBXML2_INCLUDE_DIR:PATH
   #LIBXML2_LIBRARIES:PATH
   #LIBXML2_XMLLINT_EXECUTABLE:FILEPATH

@@ -80,7 +80,6 @@ SET(CLIS_DIRS
 
 #Append CLIS that depends on BOOST
 IF (CIP_USE_BOOST)
-
   list (APPEND ${CLIS_DIRS}
     ReadParticlesWriteConnectedParticles
     LabelAirwayParticlesByGeneration
