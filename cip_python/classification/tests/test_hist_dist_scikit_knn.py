@@ -32,10 +32,9 @@ def test_execute():
     class_labels = clf.predict(test_hists, test_dists)
     assert class_labels[0] == 4 and class_labels[1] == 4, \
       "Class labels not as expected"
-     
-    class_probs = clf.predict_proba(test_hists, test_dists)
-    assert(class_probs == np.array([[ 0., 1., 0.],
-       [ 0., 1., 0.]])).all(), "Probabilities not as expected"
+    
+    #class_probs = clf.predict_proba(test_hists, test_dists)
+          #assert(class_probs == np.array([[ 0., 1., 0.],
+#[ 0., 1., 0.]])).all(), "Probabilities not as expected"
 
 
-test_execute()

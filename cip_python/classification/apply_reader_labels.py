@@ -50,10 +50,16 @@ def apply_reader_labels(seg, seg_header, features_df, plocs_df=None,
         sp_y = seg_header['spacing'][1]
         sp_z = seg_header['spacing'][2]
 
-        or_x = seg_header['origin'][0]
-        or_y = seg_header['origin'][1]
-        or_z = seg_header['origin'][2]
-        
+        or_x = None
+        or_y = None
+        or_z = None
+        for k in seg_header.keys():
+            if 'origin' in k:
+                or_x = seg_header[k][0]
+                or_y = seg_header[k][1]
+                or_z = seg_header[k][2]
+        assert or_x is not None, "Origin not retrieved from header"
+                
         ilocs_df = \
           pd.DataFrame(columns=['Region', ' Type', \
                                 ' X index', ' Y index', ' Z index'])

@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from cip_python.classification.hist_dist_knn import HistDistKNN
-import pdb
 
 class HistDistScikitKNN():
     """K-nearest neighbors using histogram and distance a user defined metric. Uses 
@@ -44,13 +43,14 @@ class HistDistScikitKNN():
         else:    
             self.classes_ = np.unique(classes)
             
-        scikit_metric = None    
+        self.scikit_metric_ = None    
         if hist_comparison == 'l1_minkowski':
-            scikit_metric = 'manhattan'             
+            self.scikit_metric_ = 'manhattan'             
         elif hist_comparison  == 'euclidean':
-            scikit_metric = 'euclidean'   
-        print(scikit_metric)    
-        self.scikit_knn = NearestNeighbors(n_neighbors=n_distance_samples, algorithm='ball_tree', metric=scikit_metric)  
+            self.scikit_metric_ = 'euclidean'   
+  
+        self.n_distance_samples_  = n_distance_samples
+        self.scikit_knn = None
 
    
         
@@ -77,6 +77,12 @@ class HistDistScikitKNN():
         self.hists_ = hists
         self.dists_ = dists
         self.y_ = y
+        
+        #import pdb
+        #pdb.set_trace()
+        n_dist_samples = min(self.n_distance_samples_, hists.shape[0])
+        self.scikit_knn = NearestNeighbors(n_dist_samples, algorithm='ball_tree', metric=self.scikit_metric_)  
+
 
         """ If classes was not input into the knn. It could be input
             if we want to extract class probabilities for some classes
@@ -137,8 +143,19 @@ class HistDistScikitKNN():
         #    classification_data[0,0:hist.shape[0]] = hist
         #    classification_data[0,hist.shape[0]] = dist               
         
-              
-        subset_indeces = self.scikit_knn.kneighbors([hist], return_distance=False)[0]
+        #import pdb
+        #pdb.set_trace()      
+        subset_indeces = []
+        
+        print(hist.shape)
+        print(np.shape(hist.shape))
+        
+        if (np.shape(hist.shape)[0] > 1):
+            print("using hist")
+            subset_indeces = self.scikit_knn.kneighbors(hist, return_distance=False)[0]
+        else:
+            subset_indeces = self.scikit_knn.kneighbors([hist], return_distance=False)[0]
+        #pdb.set_trace()  
         subset_training_histogram = self.hists_[subset_indeces]
         subset_training_distance = self.dists_[subset_indeces]
         subset_training_class = self.y_[subset_indeces]

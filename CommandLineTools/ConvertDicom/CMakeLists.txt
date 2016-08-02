@@ -16,10 +16,10 @@ cipMacroBuildCLI(
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
     --compareCT 
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_ct-64Dicom.nrrd
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64Dicom.nrrd
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_simple_dicom.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_simple_dicom.nrrd
     ModuleEntryPoint
-      --dir ${INPUT_DATA_DIR}/ct-64Dicom
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64Dicom.nrrd
+      --dir ${INPUT_DATA_DIR}/simple_dicom
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_simple_dicom.nrrd
 )
 
