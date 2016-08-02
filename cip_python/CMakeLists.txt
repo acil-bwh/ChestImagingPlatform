@@ -14,7 +14,7 @@ ELSE ( WIN32 )
 ENDIF ( WIN32 )
 
 if (NOT CIP_PYTHON_INSTALL_FOLDER)
-	SET (CIP_PYTHON_INSTALL_FOLDER  ${CMAKE_BINARY_DIR})
+	SET (CIP_PYTHON_INSTALL_FOLDER  ${CMAKE_BINARY_DIR}/cip_python)
 endif()
 
 if (USE_CYTHON)
@@ -48,23 +48,46 @@ else()
 endif()
 
 
-# Copy all python files
-FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR} 
-	DESTINATION ${CIP_PYTHON_INSTALL_FOLDER}
-	FILES_MATCHING PATTERN "*.py")
+IF ( WIN32 )
+  #NIPYPE is not supported on Windows
+  SET(PYTHON_MODULES 
+	classification
+	input_output
+	particles
+	phenotypes
+	qualitycontrol
+	registration
+	segmentation
+	utils
+	visualization
+  )
+ELSE ( )
+  SET(PYTHON_MODULES 
+	classification
+	input_output
+	nipype
+	particles
+	phenotypes
+	qualitycontrol
+	registration
+	segmentation
+	utils
+	visualization
+  )
+ENDIF ( )
 
-# Copy special needed files
-FILE (COPY ${CMAKE_CURRENT_SOURCE_DIR}
-	DESTINATION ${CIP_PYTHON_INSTALL_FOLDER}
-	FILES_MATCHING PATTERN "GeometryTopologyData.xsd")
 
-# Include current tests in order that can be identified by ctest
-IF ( CIP_BUILD_TESTING )
- SUBDIRS ( particles )
- SUBDIRS ( phenotypes )
- SUBDIRS ( utils )
- SUBDIRS ( nipype )
- SUBDIRS ( segmentation )
- SUBDIRS ( classification )
- SUBDIRS ( input_output )
-ENDIF( CIP_BUILD_TESTING ) 
+FOREACH (PYTHON_MODULE ${PYTHON_MODULES})
+	# Include current tests in order that can be identified by ctest
+	IF ( CIP_BUILD_TESTING )
+		SUBDIRS(${PYTHON_MODULE})
+	ENDIF ( )
+
+	#Perform Module installation
+	SET (SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_MODULE})
+	SET (TARGET_DIR ${CIP_PYTHON_INSTALL_FOLDER})
+	FILE (INSTALL ${SOURCE_DIR} 
+	  DESTINATION ${TARGET_DIR}
+	  FILES_MATCHING PATTERN "*.py")
+ENDFOREACH ( )
+
