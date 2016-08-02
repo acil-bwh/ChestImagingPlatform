@@ -75,7 +75,7 @@ class kdeHistExtractorFromXML:
 
     
         
-    def fit(self, ct, ct_header, lm, xml_object):
+    def fit(self, ct, ct_header, lm, xml_object, partial_lung_lm=None):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
         non-zero voxels in 'lm' using the CT data in 'ct'.
         
@@ -115,12 +115,17 @@ class kdeHistExtractorFromXML:
         # loop through each point and create a patch around it
         inc = 1
         the_patch = np.zeros_like(lm)
+        pdb.set_trace()
+        
+        mychestConvenstion =ChestConventions()
+        regions = dict()
         for the_point in my_geometry_data.points : 
             coordinates = the_point.coordinate
               
             ijk_val = transformationMatrix.MultiplyPoint([coordinates[0],\
                 coordinates[1],coordinates[2],1]) # need to append a 1 at th eend of point
-
+            regions[inc] = mychestConvenstion.GetChestRegionName(partial_lung_lm[int(ijk_val[0]), \
+                int(ijk_val[1]), int(ijk_val[2])])
             # from here we can build the patches ...       
             the_patch[int(ijk_val[0])-2:int(ijk_val[0])+3, int(ijk_val[1])- \
                 2:int(ijk_val[1])+3,int(ijk_val[2])] = inc
@@ -135,11 +140,10 @@ class kdeHistExtractorFromXML:
         self.df_ = self.hist_extractor.df_
 
         inc = 1
-        mychestConvenstion =ChestConventions()
         for the_point in my_geometry_data.points : 
             index = self.df_['patch_label'] == inc          
-            self.df_.ix[index, 'ChestRegion'] = \
-                mychestConvenstion.GetChestRegionName(the_point.chest_region)
+            self.df_.ix[index, 'ChestRegion'] = regions[inc]
+                #mychestConvenstion.GetChestRegionName(the_point.chest_region)
             self.df_.ix[index, 'ChestType'] = \
                 mychestConvenstion.GetChestTypeName(the_point.chest_type)
             inc = inc+1
