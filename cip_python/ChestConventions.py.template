@@ -437,14 +437,14 @@ class ChestConventions(object):
     @staticmethod
     def GetChestRegionValueFromName(regionString):
         for key,value in ChestConventions.ChestRegions.iteritems():
-            if value[1] == regionString:
+            if value[1].lower() == regionString.lower():
                 return key
         raise KeyError("Region not found: " + regionString)
 
     @staticmethod
     def GetChestTypeValueFromName(typeString):
         for key, value in ChestConventions.ChestTypes.iteritems():
-            if value[1] == typeString:
+            if value[1].lower() == typeString.lower():
                 return key
         raise KeyError("Type not found: " + typeString)
 
