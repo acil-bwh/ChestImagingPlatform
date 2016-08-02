@@ -28,21 +28,21 @@ int main( int argc, char* argv[] )
       extractor->SetInput( reader->GetOutput() );
       extractor->SetChestRegion( 1 );
       extractor->Update();
-    
+
     IteratorType eIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
     IteratorType rIt( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
-    
+
     eIt.GoToBegin();
     rIt.GoToBegin();
     while ( !eIt.IsAtEnd() )
       {
-	if ( (rIt.Get() == 2 || rIt.Get() == 3 || rIt.Get() == 771 || rIt.Get() == 515 
+	if ( (rIt.Get() == 2 || rIt.Get() == 3 || rIt.Get() == 771 || rIt.Get() == 515
 	      || rIt.Get() == 770 || rIt.Get() == 514) && eIt.Get() != 1)
 	  {
 	  std::cout << "FAILED" << std::endl;
 	  return 1;
 	  }
-	if ( !(rIt.Get() == 2 || rIt.Get() == 3 || rIt.Get() == 771 || rIt.Get() == 515 
+	if ( !(rIt.Get() == 2 || rIt.Get() == 3 || rIt.Get() == 771 || rIt.Get() == 515
 	       || rIt.Get() == 770 || rIt.Get() == 514) && eIt.Get() == 1)
 	  {
 	    std::cout << "FAILED" << std::endl;
@@ -53,7 +53,7 @@ int main( int argc, char* argv[] )
 	  std::cout << "FAILED" << std::endl;
 	  return 1;
 	  }
-	
+
 	++eIt;
 	++rIt;
       }
@@ -66,10 +66,10 @@ int main( int argc, char* argv[] )
       extractor->SetInput( reader->GetOutput() );
       extractor->SetChestType( 2 );
       extractor->Update();
-    
+
     IteratorType eIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
     IteratorType rIt( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
-    
+
     eIt.GoToBegin();
     rIt.GoToBegin();
     while ( !eIt.IsAtEnd() )
@@ -83,7 +83,7 @@ int main( int argc, char* argv[] )
 	  {
 	  std::cout << "FAILED" << std::endl;
 	  return 1;
-	  }	
+	  }
 	if ( eIt.Get() != 0 && eIt.Get() != 512 )
 	  {
 	  std::cout << "FAILED" << std::endl;
@@ -102,10 +102,10 @@ int main( int argc, char* argv[] )
       extractor->SetInput( reader->GetOutput() );
       extractor->SetRegionAndType( 2, 3 );
       extractor->Update();
-    
+
     IteratorType eIt( extractor->GetOutput(), extractor->GetOutput()->GetBufferedRegion() );
     IteratorType rIt( reader->GetOutput(), reader->GetOutput()->GetBufferedRegion() );
-    
+
     eIt.GoToBegin();
     rIt.GoToBegin();
     while ( !eIt.IsAtEnd() )
@@ -119,7 +119,7 @@ int main( int argc, char* argv[] )
 	  {
 	  std::cout << "FAILED" << std::endl;
 	  return 1;
-	  }	
+	  }
 	if ( eIt.Get() != 0 && eIt.Get() != 770 )
 	  {
 	  std::cout << "FAILED" << std::endl;

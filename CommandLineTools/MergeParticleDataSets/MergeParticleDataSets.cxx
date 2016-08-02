@@ -32,16 +32,11 @@ int main( int argc, char *argv[] )
         particlesReader->SetFileName( inFileNamesVec[i].c_str() );
 	particlesReader->Update();
       
-      // If the particles data sets have different field data, exit. We will eventually
+      // If the particles data sets have different field data, don't merge them. We will eventually
       // want a way to handle merging particles data sets with different field data, but
       // in such a case the field data of both data sets should be reflected in the merged
       // data set.
-      if ( particlesReader->GetOutput()->GetFieldData()->GetNumberOfArrays() == 0)
-	{
-	  std::cout << inFileNamesVec[i] << " has no field data. Skipping this data set..." << std::endl;
-	  continue;
-	}
-      else if ( mergedParticles->GetFieldData()->GetNumberOfArrays() == 0 )
+      if ( mergedParticles->GetFieldData()->GetNumberOfArrays() == 0 && i == 0 )
 	{
 	  cip::TransferFieldData( particlesReader->GetOutput(), mergedParticles );
 	}

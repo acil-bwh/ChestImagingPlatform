@@ -94,8 +94,8 @@ class DistanceFeatureExtractorFromXML:
             Input mask where distance features wil be extracted.    
         """        
         #build transformation matrix
-        the_origin = np.array(distance_header['origin'])
-        the_direction = np.reshape(np.array(distance_header['direction']), [3,3])
+        the_origin = np.array(distance_header['space origin'])
+        the_direction = np.reshape(np.array(distance_header['space directions']), [3,3])
         the_spacing = np.array(distance_header['spacing'])
 
         matrix = np.zeros([4,4])
