@@ -115,7 +115,6 @@ class kdeHistExtractorFromXML:
         # loop through each point and create a patch around it
         inc = 1
         the_patch = np.zeros_like(lm)
-        pdb.set_trace()
         
         mychestConvenstion =ChestConventions()
         regions = dict()
@@ -124,7 +123,10 @@ class kdeHistExtractorFromXML:
               
             ijk_val = transformationMatrix.MultiplyPoint([coordinates[0],\
                 coordinates[1],coordinates[2],1]) # need to append a 1 at th eend of point
-            regions[inc] = mychestConvenstion.GetChestRegionName(partial_lung_lm[int(ijk_val[0]), \
+            if (partial_lung_lm is None):
+                    regions[inc] = 'UndefinedRegion'
+            else:
+                    regions[inc] = mychestConvenstion.GetChestRegionName(partial_lung_lm[int(ijk_val[0]), \
                 int(ijk_val[1]), int(ijk_val[2])])
             # from here we can build the patches ...       
             the_patch[int(ijk_val[0])-2:int(ijk_val[0])+3, int(ijk_val[1])- \
