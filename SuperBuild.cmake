@@ -21,8 +21,8 @@ mark_as_advanced(${PRIMARY_PROJECT_NAME}_USE_QT)
 set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build, only version 4 allowed.")
 set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
 
-set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build. Version 6 is strongly recommended.")
-set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
+set(VTK_VERSION_MAJOR 7 CACHE STRING "Choose the expected VTK major version to build. Version 7 is strongly recommended.")
+set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6" "7")
 
 
 #-----------------------------------------------------------------------------
