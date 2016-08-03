@@ -1,7 +1,7 @@
 import numpy as np
 from optparse import OptionParser
 import nrrd
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
 from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
 

@@ -1,7 +1,7 @@
 import os.path
 import pandas as pd
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
 from cip_python.phenotypes.body_composition_phenotypes import *
 import pdb
 

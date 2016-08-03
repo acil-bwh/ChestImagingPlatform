@@ -1,87 +1,11 @@
 import os.path as path
 from collections import OrderedDict
 import xml.etree.ElementTree as et
-import inspect
-
-
-class Enum(object):
-    @classmethod
-    def elems_as_list(cls):
-        """ Get a list of tuples (string, int) with all the elements
-        Returns
-        -------
-        List of tuples (string, int)
-        """
-        return [i for i in inspect.getmembers(cls) if isinstance(i[1], int)]
-
-    @classmethod
-    def elems_as_dictionary(cls, key_is_integer=True):
-        """  Return a dictionary with all the elems in the enum class
-        Parameters
-        ----------
-        key_is_integer: if True, the key of the dictionary is the integer value. Otherwise, the key will be the string representation
-
-        Examples
-        -------
-        ChestRegion.get_elems(key_is_integer=True) = {0:'UNDEFINEDREGION', 1:'WHOLELUNG', ... }
-        ChestRegion.get_elems(key_is_integer=False) = {'UNDEFINEDREGION':0, 'WHOLELUNG':1, ... }
-
-        Returns
-        -------
-        Dictionary with the values (see examples)
-        """
-        # Get just the "enum" elements of the class
-        all_members = cls.elems_as_list()
-
-        if key_is_integer:
-            # dictionary int->string
-            key = 1
-            value = 0
-        else:
-            # dictionary string->int
-            key = 0
-            value = 1
-
-        result = {}
-        for elem in all_members:
-            result[elem[key]] = elem[value]
-        return result
-
-    @classmethod
-    def number_of_elems(cls):
-        """ Get the total number of element in the class
-        Returns
-        -------
-        int
-        """
-        return len(cls.elems_as_list())
-
-
-#############################
-# ENUMERATIONS
-#############################
-class ChestRegion(Enum):
-    """Populated automatically from /Resources/ChestConventions.xml file"""
-//##CHEST_REGION_ENUM##
-
-class ChestType(Enum):
-    """Populated automatically from /Resources/ChestConventions.xml file"""
-//##CHEST_TYPE_ENUM##
-
-
-class ImageFeature(Enum):
-    """Populated automatically from /Resources/ChestConventions.xml file"""
-//##IMAGE_FEATURE_ENUM##
-
-
-class ReturnCode(Enum):
-    """Populated automatically from /Resources/ChestConventions.xml file"""
-//##RETURN_CODE_ENUM##
-
+from .chest_conventions_static import *
 
 class ChestConventionsInitializer(object):
     #root_xml_path = "/Users/jonieva/Projects/CIP/Resources/ChestConventions/"
-    root_xml_path = path.realpath(path.join(path.dirname(__file__), "..", "Resources", "ChestConventions.xml"))
+    root_xml_path = path.realpath(path.join(path.dirname(__file__), "..", "..", "Resources", "ChestConventions.xml"))
     __xml_conventions__ = None
 
     __chest_regions__ = None
@@ -249,10 +173,10 @@ class ChestConventionsInitializer(object):
 # CHEST CONVENTIONS
 #############################
 class ChestConventions(object):
-    ChestRegions = ChestConventionsInitializer.chest_regions()      # 1: "WHOLELUNG", "WholeLung", [0.42, 0.38, 0.75]
-    ChestRegionsHierarchy = ChestConventionsInitializer.chest_regions_hierarchy()     # LEFTSUPERIORLOBE, LEFTLUNG
-    ChestTypes = ChestConventionsInitializer.chest_types()          # 1:, "NORMALPARENCHYMA", "NormalParenchyma", [0.99, 0.99, 0.99]
-    ImageFeatures = ChestConventionsInitializer.image_features()    # 1: "CTARTIFACT", "CTArtifact"
+    ChestRegionsCollection = ChestConventionsInitializer.chest_regions()      # 1: "WHOLELUNG", "WholeLung", [0.42, 0.38, 0.75]
+    ChestRegionsHierarchyCollection = ChestConventionsInitializer.chest_regions_hierarchy()     # LEFTSUPERIORLOBE, LEFTLUNG
+    ChestTypesCollection = ChestConventionsInitializer.chest_types()          # 1:, "NORMALPARENCHYMA", "NormalParenchyma", [0.99, 0.99, 0.99]
+    ImageFeaturesCollection = ChestConventionsInitializer.image_features()    # 1: "CTARTIFACT", "CTArtifact"
     # PreconfiguredColors = ChestConventionsInitializer.preconfigured_colors()
     #
     BodyCompositionPhenotypeNames = ChestConventionsInitializer.body_composition_phenotype_names()   # List of strings
@@ -261,30 +185,30 @@ class ChestConventions(object):
 
     @staticmethod
     def GetNumberOfEnumeratedChestRegions():
-        return len(ChestConventions.ChestRegions)
+        return len(ChestConventions.ChestRegionsCollection)
 
     @staticmethod
     def GetNumberOfEnumeratedChestTypes():
-        return len(ChestConventions.ChestTypes)
+        return len(ChestConventions.ChestTypesCollection)
 
     @staticmethod
     def GetNumberOfEnumeratedImageFeatures():
-        return len(ChestConventions.ImageFeatures)
+        return len(ChestConventions.ImageFeaturesCollection)
 
     @staticmethod
     def CheckSubordinateSuperiorChestRegionRelationship(subordinate, superior):
         if subordinate == superior:
             return True
 
-            if ChestRegion.UNDEFINEDREGION in (subordinate, superior):
-                return False
-
-            while subordinate in ChestConventions.ChestRegionsHierarchy:
-                subordinate = ChestConventions.ChestRegionsHierarchy[subordinate]
-                if subordinate==superior:
-                    return True
-
+        if ChestRegion.UNDEFINEDREGION in (subordinate, superior):
             return False
+
+        while subordinate in ChestConventions.ChestRegionsHierarchyCollection:
+            subordinate = ChestConventions.ChestRegionsHierarchyCollection[subordinate]
+            if subordinate == superior:
+                return True
+
+        return False
 
     @staticmethod
     def GetChestRegionFromValue(value):
@@ -292,7 +216,7 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestTypeFromColor(color):
-        for key, value in ChestConventions.ChestTypes.iteritems():
+        for key, value in ChestConventions.ChestTypesCollection.iteritems():
             if value[1] == color[0] and value[2] == color[1] and value[3] == color[2]:
                 return key
         # Not found
@@ -300,7 +224,7 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestRegionFromColor(color):
-        for key, value in ChestConventions.ChestRegions.iteritems():
+        for key, value in ChestConventions.ChestRegionsCollection.iteritems():
             if value[1] == color[0] and value[2] == color[1] and value[3] == color[2]:
                 return key
         # Not found
@@ -317,9 +241,9 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestTypeName(whichType):
-        if not ChestConventions.ChestTypes.has_key(whichType):
+        if not ChestConventions.ChestTypesCollection.has_key(whichType):
             raise IndexError("Key {0} is not a valid ChestType".format(whichType))
-        return ChestConventions.ChestTypes[whichType][1]
+        return ChestConventions.ChestTypesCollection[whichType][1]
 
     @staticmethod
     def GetChestTypeColor(whichType, color=None):
@@ -336,9 +260,9 @@ class ChestConventions(object):
         3-Tuple with the color
 
         """
-        if not ChestConventions.ChestTypes.has_key(whichType):
+        if not ChestConventions.ChestTypesCollection.has_key(whichType):
             raise IndexError("Key {0} is not a valid ChestType".format(whichType))
-        col = ChestConventions.ChestTypes[whichType][1:4]
+        col = ChestConventions.ChestTypesCollection[whichType][1:4]
         if color is not None:
             color[0] = col[0]
             color[1] = col[1]
@@ -360,9 +284,9 @@ class ChestConventions(object):
         -------
         3-Tuple with the color
         """
-        if not ChestConventions.ChestRegions.has_key(whichRegion):
+        if not ChestConventions.ChestRegionsCollection.has_key(whichRegion):
             raise IndexError("Key {0} is not a valid ChestRegion".format(whichRegion))
-        col = ChestConventions.ChestRegions[whichRegion][1:4]
+        col = ChestConventions.ChestRegionsCollection[whichRegion][1:4]
         if color is not None:
             color[0] = col[0]
             color[1] = col[1]
@@ -417,9 +341,9 @@ class ChestConventions(object):
         Returns:
 
         """
-        if not ChestConventions.ChestRegions.has_key(whichRegion):
+        if not ChestConventions.ChestRegionsCollection.has_key(whichRegion):
             raise IndexError("Key {0} is not a valid ChestRegion".format(whichRegion))
-        return ChestConventions.ChestRegions[whichRegion][1]
+        return ChestConventions.ChestRegionsCollection[whichRegion][1]
 
     @staticmethod
     def GetChestRegionNameFromValue(value):
@@ -430,7 +354,7 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestTypeNameFromValue(value):
-        return ChestConventions.ChestTypes[value][1]
+        return ChestConventions.ChestTypesCollection[value][1]
 
     @staticmethod
     def GetValueFromChestRegionAndType(region, type):
@@ -438,14 +362,14 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestRegionValueFromName(regionString):
-        for key,value in ChestConventions.ChestRegions.iteritems():
+        for key,value in ChestConventions.ChestRegionsCollection.iteritems():
             if value[1].lower() == regionString.lower():
                 return key
         raise KeyError("Region not found: " + regionString)
 
     @staticmethod
     def GetChestTypeValueFromName(typeString):
-        for key, value in ChestConventions.ChestTypes.iteritems():
+        for key, value in ChestConventions.ChestTypesCollection.iteritems():
             if value[1].lower() == typeString.lower():
                 return key
         raise KeyError("Type not found: " + typeString)
@@ -467,9 +391,9 @@ class ChestConventions(object):
 
     @staticmethod
     def GetImageFeatureName(whichFeature):
-        if not ChestConventions.ImageFeatures.has_key(whichFeature):
+        if not ChestConventions.ImageFeaturesCollection.has_key(whichFeature):
             raise IndexError("Key {0} is not a valid Image Feature".format(whichFeature))
-        return ChestConventions.ImageFeatures[whichFeature][1]
+        return ChestConventions.ImageFeaturesCollection[whichFeature][1]
 
     @staticmethod
     def IsBodyCompositionPhenotypeName(pheno):
@@ -497,11 +421,11 @@ class ChestConventions(object):
 
     @staticmethod
     def IsChestType(chestType):
-        return chestType in ChestConventions.ChestTypes
+        return chestType in ChestConventions.ChestTypesCollection
 
     @staticmethod
     def IsChestRegion(chestRegion):
-        return chestRegion in ChestConventions.ChestRegions
+        return chestRegion in ChestConventions.ChestRegionsCollection
 
     @staticmethod
     def GetPhenotypeNamesLists():

@@ -1,6 +1,6 @@
 import numpy as np
 from optparse import OptionParser
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
 import nrrd
 import pdb
 import pandas as pd

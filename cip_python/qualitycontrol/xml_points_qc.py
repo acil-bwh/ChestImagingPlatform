@@ -1,18 +1,10 @@
 # -*- coding: utf-8 -*-
-import scipy.io as sio
 import numpy as np
 from optparse import OptionParser
-import pdb
-import pandas as pd
-import sys
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-from cip_python.utils.geometry_topology_data import  *
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import *
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
-from cip_python.classification.get_ct_patch_from_center \
-  import get_bounds_from_center
-from cip_python.classification.get_ct_patch_from_center \
-  import get_patch_given_bounds
+from cip_python.classification.get_ct_patch_from_center import get_bounds_from_center
+from cip_python.classification.get_ct_patch_from_center import get_patch_given_bounds
 import vtk
 import os   
 import scipy.ndimage
@@ -101,7 +93,7 @@ class xMLPointsQC:
         
         # loop through each point and create a patch around it
         inc = 0
-        mychestConvenstion =ChestConventions()
+        myChestConventions = ChestConventions()
         case_patch_list = []
         for the_point in my_geometry_data.points : 
             coordinates = the_point.coordinate
@@ -116,14 +108,10 @@ class xMLPointsQC:
             ct_patch = get_patch_given_bounds(ct,test_bounds)
             lm_patch = get_patch_given_bounds(lm,test_bounds)
                   
-
-            ChestRegion = \
-                mychestConvenstion.GetChestRegionName(the_point.chest_region)
-            ChestType = \
-                mychestConvenstion.GetChestTypeName(the_point.chest_type)
+            chest_type = myChestConventions.GetChestTypeName(the_point.chest_type)
 
             if(ct_patch != None):    
-               case_patch_list.append([ct_patch,lm_patch,ChestType, test_bounds])
+               case_patch_list.append([ct_patch,lm_patch,chest_type, test_bounds])
             else:
                print("Error! point "+str(inc)+" out of bounds!! "+\
                 str(coordinates[0])+" "+str(coordinates[1])+" "+str(coordinates[2])+" mapped to "+\
