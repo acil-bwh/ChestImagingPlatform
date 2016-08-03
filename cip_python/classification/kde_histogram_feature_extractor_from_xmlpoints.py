@@ -1,28 +1,24 @@
-import scipy.io as sio
-import numpy as np
-from optparse import OptionParser
-import pdb
-import pandas as pd
-import warnings
 import sys
+from optparse import OptionParser
+
+import numpy as np
+import pandas as pd
+
 sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-from cip_python.classification.hist_dist_knn import HistDistKNN
-from cip_python.ChestConventions import ChestConventions
 from cip_python.classification.kde_histogram_feature_extractor \
   import kdeHistExtractor
-from cip_python.utils.geometry_topology_data import  *
+import cip_python.common as common
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import vtk
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
    
     
 import nrrd
 #from cip_python.io.image_reader_writer import ImageReaderWriter
-import time
 
 
-     
-               
+
+
 class kdeHistExtractorFromXML:
     """General purpose class implementing a kernel density estimation histogram
     extraction given points from an xml file. 
@@ -110,7 +106,7 @@ class kdeHistExtractorFromXML:
     
         transformationMatrix.Invert()
         # extract points
-        my_geometry_data = GeometryTopologyData.from_xml(xml_object) 
+        my_geometry_data = common.GeometryTopologyData.from_xml(xml_object)
         
         # loop through each point and create a patch around it
         inc = 1

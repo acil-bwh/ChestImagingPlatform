@@ -1,7 +1,6 @@
-import os, sys
+import os
+from cip_python.common import *
 from lxml import etree
-from cip_python.utils.geometry_topology_data import *
-
 
 this_dir = os.path.dirname(os.path.realpath(__file__))     # Directory where this file is contained
 xml_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Testing", "Data", "Input", "geometryTopologyData.xml"))

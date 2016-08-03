@@ -1,9 +1,10 @@
-from cip_python.utils.geometry_topology_data import  *
-from lxml import etree
 import os
-from cip_python.ChestConventions import ChestConventions
 from optparse import OptionParser
+
 import pandas as pd
+import cip_python.common as common
+from lxml import etree
+
 
 class ReadGeometryTopologyPointWriteDataFrame:
     """
@@ -39,9 +40,9 @@ class ReadGeometryTopologyPointWriteDataFrame:
         xmlparser = etree.XMLParser(schema=schema)
         etree.fromstring(xml, xmlparser)
             
-        my_geometry_data = GeometryTopologyData.from_xml(xml) 
+        my_geometry_data = common.GeometryTopologyData.from_xml(xml)
 
-        c = ChestConventions()
+        c = common.ChestConventions()
         for the_point in my_geometry_data.points : 
             tmp = dict()
             tmp['Region'] = c.GetChestRegionName(the_point.chest_region)

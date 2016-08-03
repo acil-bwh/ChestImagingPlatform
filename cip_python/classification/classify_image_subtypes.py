@@ -21,23 +21,16 @@ import scipy.io as sio
 from scipy import ndimage
 import pandas as pd
 
-from cip_python.classification.distance_feature_extractor \
-  import DistanceFeatureExtractor 
+from cip_python.common import ChestConventions
+from cip_python.classification.distance_feature_extractor import DistanceFeatureExtractor
 from cip_python.classification.hist_dist_knn import HistDistKNN
-from cip_python.ChestConventions import ChestConventions
-from cip_python.classification.kde_histogram_feature_extractor \
-  import kdeHistExtractor
+from cip_python.classification.kde_histogram_feature_extractor import kdeHistExtractor
 from cip_python.segmentation.grid_segmenter import GridSegmenter
-from cip_python.utils.apply_label_from_classification import  \
-    apply_label_from_classification
-from cip_python.classification.get_ct_patch_from_center \
-  import get_bounds_from_center
-from cip_python.classification.get_ct_patch_from_center \
-  import get_patch_given_bounds
-from cip_python.classification.kde_histogram_feature_extractor_from_ROI \
-  import kdeHistExtractorFromROI
-from cip_python.classification.distance_feature_extractor_from_ROI \
-  import DistExtractorFromROI
+from cip_python.utils.apply_label_from_classification import  apply_label_from_classification
+from cip_python.classification.get_ct_patch_from_center import get_bounds_from_center
+from cip_python.classification.get_ct_patch_from_center import get_patch_given_bounds
+from cip_python.classification.kde_histogram_feature_extractor_from_ROI import kdeHistExtractorFromROI
+from cip_python.classification.distance_feature_extractor_from_ROI import DistExtractorFromROI
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
 global ct      

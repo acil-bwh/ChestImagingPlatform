@@ -8,7 +8,7 @@ from sklearn.neighbors import KernelDensity
 import nrrd
 from scipy import ndimage
 from kde_bandwidth import botev_bandwidth
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
 #from cip_python.io.image_reader_writer import ImageReaderWriter
 import time
      

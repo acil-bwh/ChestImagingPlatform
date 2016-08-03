@@ -2,7 +2,7 @@ import platform
 import datetime
 import numpy as np
 import pandas as pd
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
 
 import pdb
 

@@ -19,7 +19,8 @@ endif()
 
 IF ( WIN32 )
   #NIPYPE is not supported on Windows
-  SET(PYTHON_MODULES 
+  SET(PYTHON_MODULES
+    common
 	classification
 	input_output
 	particles
@@ -31,7 +32,8 @@ IF ( WIN32 )
 	visualization
   )
 ELSE ( )
-  SET(PYTHON_MODULES 
+  SET(PYTHON_MODULES
+    common
 	classification
 	input_output
 	nipype
@@ -59,4 +61,3 @@ FOREACH (PYTHON_MODULE ${PYTHON_MODULES})
 	  DESTINATION ${TARGET_DIR}
 	  FILES_MATCHING PATTERN "*.py")
 ENDFOREACH ( )
-

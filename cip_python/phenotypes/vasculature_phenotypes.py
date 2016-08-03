@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 from cip_python.phenotypes.phenotypes import Phenotypes
 from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
 
 
 
