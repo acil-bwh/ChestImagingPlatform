@@ -26,6 +26,12 @@ int main( int argc, char *argv[] )
 {    
   PARSE_ARGS;
 
+  if ( !useCylinderStencil && !useSphereStencil )
+    {
+      std::cerr << "Must specify to use either cylinder or sphere stencil" << std::endl;
+      return cip::EXITFAILURE;
+    }
+  
   // Read the particles
   std::cout << "Reading particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
