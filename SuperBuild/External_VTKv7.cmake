@@ -1,6 +1,9 @@
 
 set(proj VTKv7)
 
+set(USE_BOOST ON CACHE BOOL "Enable Boost in VTK and CIP")
+mark_as_superbuild(USE_BOOST)
+
 # Set dependency list
 set(${proj}_DEPENDENCIES "zlib")
 
@@ -136,6 +139,9 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
       -DVTK_ENABLE_KITS:BOOL=${VTK_ENABLE_KITS}
       -DModule_vtkTestingRendering:BOOL=ON
+      -DModule_vtkInfovisBoostGraphAlgorithms:BOOL=${USE_BOOST}
+      -DBoost_DIR:PATH=${BOOST_DIR}
+      -DBoost_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
       ${EXTERNAL_PROJECT_OPTIONAL_ARGS}
     INSTALL_COMMAND ""
     DEPENDS

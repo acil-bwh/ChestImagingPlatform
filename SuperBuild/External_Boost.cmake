@@ -45,7 +45,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     BUILD_COMMAND ${CMAKE_COMMAND}
     INSTALL_COMMAND ""
   )
-  set(BOOST_ROOT        ${Boost_Install_Dir})
+  set(BOOST_DIR        ${Boost_Install_Dir})
   set(BOOST_INCLUDE_DIR ${Boost_Install_Dir}/include)
 else()
   if(${USE_SYSTEM_${extProjName}})
