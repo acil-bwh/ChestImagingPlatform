@@ -18,7 +18,6 @@ from cip_python.phenotypes.phenotypes import Phenotypes
 from cip_python.utils.region_type_parser import RegionTypeParser
 from cip_python.common import ChestConventions
 
-
 class VasculaturePhenotypes(Phenotypes):
   """Compute vasculare spectific phenotypes
     

@@ -8,7 +8,7 @@ from sklearn.neighbors import KernelDensity
 from scipy import ndimage
 from kde_bandwidth import botev_bandwidth
 import time
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
      
 class DistExtractorFromROI:
     """General purpose class implementing a distance feature
