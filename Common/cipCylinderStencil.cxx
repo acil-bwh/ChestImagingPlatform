@@ -303,7 +303,7 @@ double cipCylinderStencil::GetAngleBetweenVectors( double vec1[3], double vec2[3
 
   double arg = (vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2])/(vec1Mag*vec2Mag);
 
-  if ( abs( arg ) > 1.0 )
+  if ( std::abs( arg ) > 1.0 )
     {
     arg = 1.0;
     }
