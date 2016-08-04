@@ -16,8 +16,7 @@ import matplotlib.pyplot as plt
 
 from cip_python.phenotypes.phenotypes import Phenotypes
 from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.ChestConventions import ChestConventions
-
+from cip_python.common import ChestConventions
 
 
 class VasculaturePhenotypes(Phenotypes):
@@ -125,7 +124,7 @@ class VasculaturePhenotypes(Phenotypes):
       region_arr[kk]=c.GetChestRegionFromValue(region_type_arr[kk])
       type_arr[kk]=c.GetChestTypeFromValue(region_type_arr[kk]
     
-    print c.GetChestRegionValueFromName('Vessel')
+    #print c.GetChestTypeValueFromName('Vessel')
     vessel_type = c.GetChestTypeValueFromName('Vessel')
     
     vessel_mask = (type_arr==vessel_type)
