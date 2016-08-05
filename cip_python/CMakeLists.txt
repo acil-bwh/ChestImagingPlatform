@@ -47,6 +47,9 @@ ELSE ( )
   )
 ENDIF ( )
 
+FILE (INSTALL ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
+		DESTINATION ${CIP_PYTHON_INSTALL_FOLDER}
+		)
 
 FOREACH (PYTHON_MODULE ${PYTHON_MODULES})
 	# Include current tests in order that can be identified by ctest
