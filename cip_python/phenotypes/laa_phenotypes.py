@@ -1,8 +1,7 @@
 import numpy as np
-import phenotypes
-from cip_python.phenotypes.phenotypes import Phenotypes
+from . import Phenotypes
+from ..common import ChestConventions
 from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.common import ChestConventions
 
 import pdb
 

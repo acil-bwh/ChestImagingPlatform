@@ -1,14 +1,5 @@
-import scipy.io as sio
 import numpy as np
-from optparse import OptionParser
-import pdb
-import pandas as pd
-import warnings
-from sklearn.neighbors import KernelDensity
-from scipy import ndimage
-from kde_bandwidth import botev_bandwidth
-import time
-from cip_python.common import ChestConventions
+from ..common import ChestConventions
      
 class DistExtractorFromROI:
     """General purpose class implementing a distance feature

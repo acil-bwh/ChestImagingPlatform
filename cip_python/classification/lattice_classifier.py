@@ -1,14 +1,3 @@
-import scipy.io as sio
-import numpy as np
-from optparse import OptionParser
-import matplotlib.pyplot as plt
-import pdb
-import pandas as pd
-import warnings
-from sklearn.neighbors import KernelDensity
-import nrrd
-from kde_bandwidth import botev_bandwidth
-
 class kde_lattice_classifier:
     """General purpose class implementing a lattice kernel density classification. 
 
@@ -38,8 +27,9 @@ class kde_lattice_classifier:
     def fit(self, input_kde, input_distance, input_neighbours):
         pass
     
-    def predict():
+    def predict(self):
+        pass
                 
-    def get_patch_unaries():
+    def get_patch_unaries(self):
         pass
         

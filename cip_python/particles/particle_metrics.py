@@ -1,13 +1,7 @@
-
-import subprocess
 import numpy as np
-from numpy import linalg as LA
-from numpy import sum, sqrt
-import tempfile, shutil
 import vtk
-from vtk.util.numpy_support import vtk_to_numpy
-import pdb
-from cip_python.particles.vessel_particles import VesselParticles
+from numpy import linalg as LA
+
 
 class ParticleMetrics:
     """Handles computation of metrics used to compare two particles data sets.

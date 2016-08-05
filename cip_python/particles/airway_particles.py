@@ -7,9 +7,8 @@
 #       passes they are irrelevant.
 
 import os
-import pdb
 import tempfile, shutil
-from cip_python.particles.chest_particles import ChestParticles
+from . import ChestParticles
 
 class AirwayParticles(ChestParticles):
     """Class for airway-specific particles sampling

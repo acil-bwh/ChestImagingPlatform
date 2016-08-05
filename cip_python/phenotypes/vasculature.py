@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from cip_python.phenotypes.phenotypes import Phenotypes
+from . import Phenotypes
 
 
 class VasculaturePhenotypes(Phenotypes):

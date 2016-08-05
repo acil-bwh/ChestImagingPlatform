@@ -1,8 +1,7 @@
 import numpy as np
 from optparse import OptionParser
-from cip_python.common import ChestConventions
+from ..common import ChestConventions
 import nrrd
-import pdb
 import pandas as pd
 #from cip_python.io.image_reader_writer import ImageReaderWriter
           

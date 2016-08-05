@@ -7,10 +7,9 @@
 #       passes they are irrelevant.
 
 import os
-import pdb
 import math
 from optparse import OptionParser
-from cip_python.particles.chest_particles import ChestParticles
+from . import ChestParticles
 
 class MultiResVesselParticles(ChestParticles):
     """Class for multiresolution vessel-specific particles sampling

@@ -1,7 +1,7 @@
 import os.path
 import numpy as np
 from cip_python.utils.remap_lm import *
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from cip_python.input_output import ImageReaderWriter
 import pdb
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,

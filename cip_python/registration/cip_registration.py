@@ -3,7 +3,6 @@
 import subprocess
 import os
 import sys
-from subprocess import PIPE
 from lxml import etree
 import time
 
@@ -21,16 +20,14 @@ from optparse import OptionParser
 
 
 class ANTSRegistration():
-
-  def __init__():
-  
-    toolsPaths = ['TEEM_PATH','ITKTOOLS_PATH','ANTS_PATH'];
-    self.path=dict()
-    for path_name in toolsPaths:
-      self.path[path_name]=os.environ.get(path_name,False)
-        if self.path[path_name] == False:
-          print path_name + " environment variable is not set"
-          #Raise exception
+    def __init__(self):
+        toolsPaths = ['TEEM_PATH','ITKTOOLS_PATH','ANTS_PATH']
+        self.path=dict()
+        for path_name in toolsPaths:
+            self.path[path_name]=os.environ.get(path_name,False)
+            if self.path[path_name] == False:
+                print path_name + " environment variable is not set"
+                    #Raise exception
 
 
   def transform_data ( reference_im, moving_im, transforms_list, output):

@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
-from cip_python.classification.hist_dist_knn import HistDistKNN
+from cip_python.classification import HistDistKNN
 
 class HistDistScikitKNN():
     """K-nearest neighbors using histogram and distance a user defined metric. Uses 
@@ -29,11 +29,6 @@ class HistDistScikitKNN():
         training data.
         
     """
-    
-    
-
-   
-                         
     def __init__(self, n_neighbors=5, n_distance_samples = 500, beta=0, hist_comparison='l1_minkowski', classes = None):
         self.n_neighbors_ = n_neighbors
         self.beta_ = beta
@@ -52,9 +47,6 @@ class HistDistScikitKNN():
         self.n_distance_samples_  = n_distance_samples
         self.scikit_knn = None
 
-   
-        
-    
     def fit(self, hists, dists, y):
         """Supply the training data to the classifier.
 
@@ -143,10 +135,7 @@ class HistDistScikitKNN():
         #    classification_data[0,0:hist.shape[0]] = hist
         #    classification_data[0,hist.shape[0]] = dist               
         
-        #import pdb
-        #pdb.set_trace()      
-        subset_indeces = []
-        
+
         print(hist.shape)
         print(np.shape(hist.shape))
         
@@ -155,7 +144,6 @@ class HistDistScikitKNN():
             subset_indeces = self.scikit_knn.kneighbors(hist, return_distance=False)[0]
         else:
             subset_indeces = self.scikit_knn.kneighbors([hist], return_distance=False)[0]
-        #pdb.set_trace()  
         subset_training_histogram = self.hists_[subset_indeces]
         subset_training_distance = self.dists_[subset_indeces]
         subset_training_class = self.y_[subset_indeces]

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from optparse import OptionParser
-from cip_python.common import *
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
-from cip_python.classification.get_ct_patch_from_center import get_bounds_from_center
-from cip_python.classification.get_ct_patch_from_center import get_patch_given_bounds
+import cip_python.common as common
+from ..input_output import ImageReaderWriter
+from ..classification.get_ct_patch_from_center import Patcher
 import vtk
 import os   
 import scipy.ndimage
@@ -89,11 +88,11 @@ class xMLPointsQC:
     
         transformationMatrix.Invert()
         # extract points
-        my_geometry_data = GeometryTopologyData.from_xml(xml_object) 
+        my_geometry_data = common.GeometryTopologyData.from_xml(xml_object)
         
         # loop through each point and create a patch around it
         inc = 0
-        myChestConventions = ChestConventions()
+        myChestConventions = common.ChestConventions()
         case_patch_list = []
         for the_point in my_geometry_data.points : 
             coordinates = the_point.coordinate
@@ -103,10 +102,10 @@ class xMLPointsQC:
                 coordinates[1],coordinates[2],1]) # need to append a 1 at th eend of point
 
             # from here we can build the patches ... 
-            test_bounds = get_bounds_from_center(ct,ijk_val,[self.x_extent,\
+            test_bounds = Patcher.get_bounds_from_center(ct,ijk_val,[self.x_extent,\
                 self.y_extent,self.z_extent])
-            ct_patch = get_patch_given_bounds(ct,test_bounds)
-            lm_patch = get_patch_given_bounds(lm,test_bounds)
+            ct_patch = Patcher.get_patch_given_bounds(ct,test_bounds)
+            lm_patch = Patcher.get_patch_given_bounds(lm,test_bounds)
                   
             chest_type = myChestConventions.GetChestTypeName(the_point.chest_type)
 

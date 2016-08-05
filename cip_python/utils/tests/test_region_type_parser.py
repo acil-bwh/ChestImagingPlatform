@@ -1,6 +1,6 @@
 import os.path
 from cip_python.utils.region_type_parser import *
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from cip_python.input_output import ImageReaderWriter
 import pdb
 import unittest
 

@@ -1,8 +1,6 @@
 import numpy as np
-from skimage.segmentation import slic
 from optparse import OptionParser
-import pdb
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from ..input_output import ImageReaderWriter
      
 class GridSegmenter:
     """Segments a volume into a grid of volume patches. 

@@ -4,8 +4,6 @@ from optparse import OptionParser
 import dicom
 from dicom.tag import Tag
 
-import pdb
-
 def anonymize_dicom(ds):
     """Anonymizes a dicom dataset. A value of 'Anonymized' is set for all tags
     that take a string-type entry. Other tags are set to empty entries.

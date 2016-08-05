@@ -1,5 +1,5 @@
 import sys
-from cip_python.utils.feature_maps import PolynomialFeatureMap
+from cip_python.utils import PolynomialFeatureMap
 import numpy as np
 #import Capture
 
