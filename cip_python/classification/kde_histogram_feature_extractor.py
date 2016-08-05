@@ -1,16 +1,13 @@
-import scipy.io as sio
-import numpy as np
-from optparse import OptionParser
-import pdb
-import pandas as pd
 import warnings
-from sklearn.neighbors import KernelDensity
-from scipy import ndimage
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from optparse import OptionParser
+import numpy as np
+import pandas as pd
 from kde_bandwidth import botev_bandwidth
-#from cip_python.io.image_reader_writer import ImageReaderWriter
-import time
-     
+from scipy import ndimage
+from sklearn.neighbors import KernelDensity
+
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
+
 class kdeHistExtractor:
     """General purpose class implementing a kernel density estimation histogram
     extractor. 

@@ -1,6 +1,5 @@
 import numpy as np
-from cip_python.utils.compute_dice_coefficient import compute_dice_coefficient
-import pdb
+from cip_python.utils import compute_dice_coefficient
 
 def test_compute_dice_coefficient():
     ref = np.zeros([3, 3, 3])

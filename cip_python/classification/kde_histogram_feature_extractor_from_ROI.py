@@ -1,14 +1,10 @@
-import scipy.io as sio
-import numpy as np
-from optparse import OptionParser
-import pdb
-import pandas as pd
 import warnings
+
+import numpy as np
 from sklearn.neighbors import KernelDensity
-from scipy import ndimage
-from kde_bandwidth import botev_bandwidth
-import time
-     
+
+from . import botev_bandwidth
+
 class kdeHistExtractorFromROI:
     """General purpose class implementing a kernel density estimation histogram
     extractor from the CT patch. 

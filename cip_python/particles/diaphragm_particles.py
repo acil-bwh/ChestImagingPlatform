@@ -9,7 +9,7 @@
 import os
 from optparse import OptionParser
 
-from cip_python.particles.chest_particles import ChestParticles
+from . import ChestParticles
 
 class DiaphragmParticles(ChestParticles):
     """Class for diaphragm-specific particles sampling

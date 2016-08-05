@@ -1,10 +1,8 @@
-import os
 from cip_python.common import *
 from lxml import etree
 
-this_dir = os.path.dirname(os.path.realpath(__file__))     # Directory where this file is contained
-xml_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Testing", "Data", "Input", "geometryTopologyData.xml"))
-xsd_file = os.path.abspath(os.path.join(this_dir, "..", "..", "..", "Resources", "Schemas", "GeometryTopologyData.xsd"))
+xml_file = Paths.testing_file_path('geometryTopologyData.xml')
+xsd_file = Paths.resources_file_path('Schemas/GeometryTopologyData.xsd')
 
 def test_geometry_topology_data_schema():
     """ Validate the current sample xml file (Testing/Data/Input/geometryTopologyData.xml) with the current schema

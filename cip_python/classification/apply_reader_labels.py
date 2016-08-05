@@ -1,88 +1,89 @@
-import pandas as pd
 from optparse import OptionParser
+
 import numpy as np
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+import pandas as pd
+from cip_python.input_output import ImageReaderWriter
 
-import pdb
+class LabelsReader(object):
 
-def apply_reader_labels(seg, seg_header, features_df, plocs_df=None, 
-                        ilocs_df=None):
-    """Apply reader labels stored in the region-type locations dataframe to 
-    the features dataframe. Note that features_df is modified in place.
+    def apply_reader_labels(self, seg, seg_header, features_df, plocs_df=None,
+                            ilocs_df=None):
+        """Apply reader labels stored in the region-type locations dataframe to
+        the features dataframe. Note that features_df is modified in place.
 
-    Parameters
-    ----------
-    seg : numpy array, shape ( I, J, K )
-        Array containing the segmentation information. This array is used to 
-        generate the mapping between the coordinates in the region-type 
-        locations dataframe to the patch labels in the features dataframe. Note
-        that the same patches (segmentation) volume must be used here as was 
-        used to generate the data in the features file.
+        Parameters
+        ----------
+        seg : numpy array, shape ( I, J, K )
+            Array containing the segmentation information. This array is used to
+            generate the mapping between the coordinates in the region-type
+            locations dataframe to the patch labels in the features dataframe. Note
+            that the same patches (segmentation) volume must be used here as was
+            used to generate the data in the features file.
 
-    seg_header : nrrd header
-        Header information corresponding to the segmentation volume. This header
-        information is used to map between physical coordinates contained in the
-        plocs_df (if specified), to an index location in the segmentation 
-        volume.
-    
-    features_df : pandas dataframe
-        Contains the feature vectors that the labels will be assigned to.
-    
-    plocs_df : pandas dataframe, optional
-        Contains reader-assigned labels in the ChestRegion and ChestType columns
-        and corresponding physical (world) coordinates. Note that either a 
-        plocs_df or an ilocs_df must be specified.
-    
-    ilocs_df : pandas dataframe, options
-        Contains reader-assigned labels in the ChestRegion and ChestType columns
-        and corresponding image index coordinates. Note that either a plocs_df 
-        or an ilocs_df must be specified.
-    """
-    if plocs_df is None and ilocs_df is None:
-      raise ValueError("Must specify either plocs_df or ilocs_df")
+        seg_header : nrrd header
+            Header information corresponding to the segmentation volume. This header
+            information is used to map between physical coordinates contained in the
+            plocs_df (if specified), to an index location in the segmentation
+            volume.
 
-    if plocs_df is not None and ilocs_df is not None:
-      raise ValueError("Must specify either plocs_df or ilocs_df, not both")
+        features_df : pandas dataframe
+            Contains the feature vectors that the labels will be assigned to.
 
-    # If a plocs_df is specified, create an ilocs_df from it
-    if plocs_df is not None:
-        sp_x = seg_header['spacing'][0]
-        sp_y = seg_header['spacing'][1]
-        sp_z = seg_header['spacing'][2]
+        plocs_df : pandas dataframe, optional
+            Contains reader-assigned labels in the ChestRegion and ChestType columns
+            and corresponding physical (world) coordinates. Note that either a
+            plocs_df or an ilocs_df must be specified.
 
-        or_x = None
-        or_y = None
-        or_z = None
-        for k in seg_header.keys():
-            if 'origin' in k:
-                or_x = seg_header[k][0]
-                or_y = seg_header[k][1]
-                or_z = seg_header[k][2]
-        assert or_x is not None, "Origin not retrieved from header"
-                
-        ilocs_df = \
-          pd.DataFrame(columns=['Region', ' Type', \
-                                ' X index', ' Y index', ' Z index'])
-        for i in xrange(0, plocs_df.shape[0]):
-            cip_region = plocs_df.ix[i, 'Region']
-            cip_type = plocs_df.ix[i, ' Type']
-            x_index = np.int((plocs_df.ix[i, ' X point'] - or_x)/sp_x)
-            y_index = np.int((plocs_df.ix[i, ' Y point'] - or_y)/sp_y)
-            z_index = np.int((plocs_df.ix[i, ' Z point'] - or_z)/sp_z)
-            ilocs_df.loc[i] = [cip_region, cip_type, x_index, y_index, z_index] 
+        ilocs_df : pandas dataframe, options
+            Contains reader-assigned labels in the ChestRegion and ChestType columns
+            and corresponding image index coordinates. Note that either a plocs_df
+            or an ilocs_df must be specified.
+        """
+        if plocs_df is None and ilocs_df is None:
+          raise ValueError("Must specify either plocs_df or ilocs_df")
 
-    for n in xrange(0, ilocs_df.shape[0]):
-        i = ilocs_df.ix[n, ' X index']
-        j = ilocs_df.ix[n, ' Y index']
-        k = ilocs_df.ix[n, ' Z index']                
-        seg_value = seg[i, j, k]
+        if plocs_df is not None and ilocs_df is not None:
+          raise ValueError("Must specify either plocs_df or ilocs_df, not both")
 
-        cip_region = ilocs_df.ix[n, 'Region']
-        cip_type = ilocs_df.ix[n, ' Type']        
+        # If a plocs_df is specified, create an ilocs_df from it
+        if plocs_df is not None:
+            sp_x = seg_header['spacing'][0]
+            sp_y = seg_header['spacing'][1]
+            sp_z = seg_header['spacing'][2]
 
-        index = features_df['patch_label'] == seg_value
-        features_df.ix[index, 'ChestRegion'] = cip_region
-        features_df.ix[index, 'ChestType'] = cip_type        
+            or_x = None
+            or_y = None
+            or_z = None
+            for k in seg_header.keys():
+                if 'origin' in k:
+                    or_x = seg_header[k][0]
+                    or_y = seg_header[k][1]
+                    or_z = seg_header[k][2]
+            assert or_x is not None, "Origin not retrieved from header"
+
+            ilocs_df = \
+              pd.DataFrame(columns=['Region', ' Type', \
+                                    ' X index', ' Y index', ' Z index'])
+            for i in xrange(0, plocs_df.shape[0]):
+                cip_region = plocs_df.ix[i, 'Region']
+                cip_type = plocs_df.ix[i, ' Type']
+                x_index = np.int((plocs_df.ix[i, ' X point'] - or_x)/sp_x)
+                y_index = np.int((plocs_df.ix[i, ' Y point'] - or_y)/sp_y)
+                z_index = np.int((plocs_df.ix[i, ' Z point'] - or_z)/sp_z)
+                ilocs_df.loc[i] = [cip_region, cip_type, x_index, y_index, z_index]
+
+        for n in xrange(0, ilocs_df.shape[0]):
+            i = ilocs_df.ix[n, ' X index']
+            j = ilocs_df.ix[n, ' Y index']
+            k = ilocs_df.ix[n, ' Z index']
+            seg_value = seg[i, j, k]
+
+            cip_region = ilocs_df.ix[n, 'Region']
+            cip_type = ilocs_df.ix[n, ' Type']
+
+            index = features_df['patch_label'] == seg_value
+            features_df.ix[index, 'ChestRegion'] = cip_region
+            features_df.ix[index, 'ChestType'] = cip_type
         
 if __name__ == "__main__":
     desc = """Apply reader labels stored in the region-type locations file to \
@@ -144,7 +145,8 @@ if __name__ == "__main__":
         plocs_df = pd.read_csv(options.ilocs)
 
     print "Applying reader labels..."
-    apply_reader_labels(seg, seg_header, features_df, plocs_df, ilocs_df)
+    reader = LabelsReader()
+    reader.apply_reader_labels(seg, seg_header, features_df, plocs_df, ilocs_df)
 
     if options.labeled is not None:
         print "Writing labeled features..."

@@ -4,9 +4,10 @@ import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype import SelectFiles, Node
 from cip_python.nipype.cip_node import CIPNode
 from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
-import cip_python.nipype.interfaces.cip as cip
-import cip_python.nipype.interfaces.cip.cip_python_interfaces \
-  as cip_python_interfaces
+from ..interfaces import cip
+from ..interfaces.cip import cip_python_interfaces
+# import cip_python.nipype.interfaces.cip.cip_python_interfaces \
+#   as cip_python_interfaces
 import nipype.interfaces.utility as util     # utility
 import nipype.interfaces.io as nio           # Data i/o
 from nipype import config, logging

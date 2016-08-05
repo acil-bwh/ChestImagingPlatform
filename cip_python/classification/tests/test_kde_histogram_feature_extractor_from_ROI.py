@@ -1,23 +1,16 @@
 import os.path
 import pandas as pd
 import nrrd
-
 import numpy as np
-import pdb
-from pandas.util.testing import assert_frame_equal
-import sys
-from cip_python.classification.kde_histogram_feature_extractor_from_ROI \
-  import kdeHistExtractorFromROI
-      
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
 
-  
+from cip_python.classification import kdeHistExtractorFromROI
+from cip_python.common import Paths
+
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
-ref_csv = this_dir + '/../../../Testing/Data/Input/simple_ct_histogramFeatures.csv'
+ct_name = Paths.testing_file_path('simple_ct.nrrd')
+ref_csv = Paths.testing_file_path('simple_ct_histogramFeatures.csv')
 
 def test_execute():
     ct_array, ct_header = nrrd.read(ct_name)

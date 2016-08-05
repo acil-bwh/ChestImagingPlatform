@@ -1,5 +1,4 @@
 import numpy as np
-import pdb
 
 class ChestPartitionRegionConventions:
     """ Class defining chest partition conventions. For now a simple class where a list

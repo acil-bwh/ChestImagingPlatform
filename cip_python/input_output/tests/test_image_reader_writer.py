@@ -1,14 +1,15 @@
 import os.path
 import numpy as np
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import SimpleITK as sitk
 import tempfile,shutil
+
+from cip_python.input_output import ImageReaderWriter
+from cip_python.common import Paths
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-file_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
+file_name = Paths.testing_file_path('simple_ct.nrrd')
 tmp_dir=tempfile.mkdtemp()
 output_filename = os.path.join(tmp_dir,'simple_ct.nrrd')
 

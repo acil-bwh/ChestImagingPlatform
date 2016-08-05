@@ -4,19 +4,12 @@ from optparse import OptionParser
 import numpy as np
 import pandas as pd
 
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-from cip_python.classification.kde_histogram_feature_extractor \
-  import kdeHistExtractor
+from cip_python.classification import kdeHistExtractor
+import vtk
+import nrrd
 import cip_python.common as common
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
-import vtk
 from cip_python.common import ChestConventions
-   
-    
-import nrrd
-#from cip_python.io.image_reader_writer import ImageReaderWriter
-
-
 
 
 class kdeHistExtractorFromXML:

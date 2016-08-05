@@ -4,9 +4,9 @@ import nrrd
 import numpy as np
 import pandas as pd
 import vtk
-from cip_python.classification.distance_feature_extractor \
-  import DistanceFeatureExtractor
-import cip_python.common as common
+
+from ..common import GeometryTopologyData
+from . import DistanceFeatureExtractor
 
 
 class DistanceFeatureExtractorFromXML:
@@ -102,7 +102,7 @@ class DistanceFeatureExtractorFromXML:
     
         transformationMatrix.Invert()
         # extract points
-        my_geometry_data = common.GeometryTopologyData.from_xml(xml_object)
+        my_geometry_data = GeometryTopologyData.from_xml(xml_object)
         
         # loop through each point and create a patch around it
         inc = 1

@@ -11,6 +11,7 @@ from vtk.util.numpy_support import numpy_to_vtk
 from vtk.util.numpy_support import numpy_to_vtkIdTypeArray
 
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 class ClusterParticles:

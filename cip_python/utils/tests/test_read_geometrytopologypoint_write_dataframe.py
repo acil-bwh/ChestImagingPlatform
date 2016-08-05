@@ -1,24 +1,17 @@
-from cip_python.utils.read_geometrytopologypoint_write_dataframe import  *
-import pdb
-import os.path
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
+from cip_python.utils import ReadGeometryTopologyPointWriteDataFrame
+from cip_python.common import Paths
+
 def test_execute():
-    
     # convert to csv (we get a pandas dataframe)
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-    in_xml = this_dir + \
-        '/../../../Testing/Data/Input/simple_regionAndTypePoints.xml'
-    in_xml = this_dir + \
-        '/../../../Testing/Data/Input/geometryTopologyData.xml'
-    
-    my_csv_writer = ReadGeometryTopologyPointWriteDataFrame(in_file_name = \
-        in_xml)     
+    in_xml = Paths.testing_file_path('geometryTopologyData.xml')
+
+    my_csv_writer = ReadGeometryTopologyPointWriteDataFrame(in_file_name=in_xml)
     my_csv_writer.execute()  
 
     # compare to expected pandas dataframe
-    
     cols = ['Region','Type', 'X point', 'Y point', 'Z point']
     ref_df = pd.DataFrame(columns=cols)
     tmp = dict()

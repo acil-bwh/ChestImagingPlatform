@@ -1,7 +1,6 @@
 from __future__ import division, absolute_import, print_function
 import numpy as np
 from scipy import fftpack, optimize
-import pdb
 
 if hasattr(np, 'float128'):
     large_float = np.float128

@@ -3,7 +3,7 @@ import nrrd
 import subprocess
 import numpy as np
 from scipy import ndimage
-from cip_python.utils.get_closest_cases import getClosestCases
+from ..utils import getClosestCases
 
 def clean_ct(CT_original, CT_clean):
 

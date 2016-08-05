@@ -2,9 +2,7 @@ import platform
 import datetime
 import numpy as np
 import pandas as pd
-from cip_python.common import ChestConventions
-
-import pdb
+from ..common import ChestConventions
 
 class Phenotypes:
     """Base class for phenotype genearting classes.

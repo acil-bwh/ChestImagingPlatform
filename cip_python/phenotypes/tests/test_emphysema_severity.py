@@ -1,9 +1,12 @@
-import os
-from cip_python.phenotypes.emphysema_severity import *
+import numpy as np
 import pandas as pd
 
-test_dataset=os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../../Resources/EmphysemaSeverity/Testing_emphysemaClassificationPhenotypes.csv')
-training_dataset=os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../../Resources/EmphysemaSeverity/Training_emphysemaClassificationPhenotypes.csv')
+from cip_python.phenotypes import EmphysemaSeverityIndex
+from cip_python.common import Paths
+
+
+test_dataset = Paths.resources_file_path('EmphysemaSeverity/Testing_emphysemaClassificationPhenotypes.csv')
+training_dataset = Paths.resources_file_path('EmphysemaSeverity/Training_emphysemaClassificationPhenotypes.csv')
 
 in_df_training = pd.read_csv(training_dataset)
 in_df_testing = pd.read_csv(test_dataset)

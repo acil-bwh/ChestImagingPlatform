@@ -1,17 +1,13 @@
-import scipy.io as sio
-import numpy as np
-from optparse import OptionParser
-import pdb
-import pandas as pd
-import warnings
-from sklearn.neighbors import KernelDensity
-import nrrd
-from scipy import ndimage
-from kde_bandwidth import botev_bandwidth
-from cip_python.common import ChestConventions
-#from cip_python.io.image_reader_writer import ImageReaderWriter
 import time
-     
+from optparse import OptionParser
+
+import nrrd
+import numpy as np
+import pandas as pd
+from scipy import ndimage
+
+from ..common import ChestConventions
+
 class DistanceFeatureExtractor:
     """General purpose class implementing a distance feature extractor. 
 

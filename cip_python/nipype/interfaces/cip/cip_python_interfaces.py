@@ -5,10 +5,9 @@ import numpy as np
 from nipype.interfaces.base import BaseInterface, \
     BaseInterfaceInputSpec, traits, File, TraitedSpec
 from nipype.utils.filemanip import split_filename
-from cip_python.phenotypes.parenchyma_phenotypes import ParenchymaPhenotypes
-from cip_python.phenotypes.body_composition_phenotypes \
-  import BodyCompositionPhenotypes
-from cip_python.particles.fissure_particles import FissureParticles
+from cip_python.phenotypes import ParenchymaPhenotypes
+from cip_python.phenotypes import BodyCompositionPhenotypes
+from cip_python.particles import FissureParticles
 import pdb
 
 # example http://nipy.sourceforge.net/nipype/devel/python_interface_devel.html

@@ -1,4 +1,4 @@
-from cip_python.classification.hist_dist_scikit_knn import HistDistScikitKNN
+from cip_python.classification import HistDistScikitKNN
 import numpy as np
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,

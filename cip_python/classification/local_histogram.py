@@ -2,34 +2,22 @@
 ##!/usr/bin/python
 from __future__ import division
 
-import sys,os
-import scipy.io
-import numpy as np
-from scipy.stats import norm
-from scipy import fftpack, optimize
-
-from sklearn.neighbors import KernelDensity
-from sklearn import neighbors
-import nrrd
-from sklearn.feature_extraction import image
-from numpy.lib.stride_tricks import as_strided as ast
+import copy_reg
 import math
-import scipy.io
-from multiprocessing import Pool
-import multiprocessing as mp
-
-import copy_reg, copy, pickle
+import os
 import types
-
-import matplotlib.pyplot as plt
-
-import scipy as sci
-import scipy.optimize
+from multiprocessing import Pool
+import nrrd
+import numpy as np
 import scipy.fftpack
+import scipy.io
+import scipy.io
+import scipy.optimize
+from numpy.lib.stride_tricks import as_strided as ast
 from scipy import interpolate
+from sklearn import neighbors
 
-import kde_
-
+from . import botev_bandwidth
 
 def _pickle_method(m):
     if m.im_self is None:
@@ -56,7 +44,7 @@ class LocalHistogram():
       self.database =database
 
       self.X_plot = np.linspace(-1050, 3050, 4096)[:, np.newaxis]
-      self.bb=kde_.botev_bandwidth(4096,-1050,3050)
+      self.bb=botev_bandwidth(4096,-1050,3050)
 
       #Classifier: might be interested to test different kNN weight schemes: uniform vs distance
       self.clf = neighbors.KNeighborsClassifier(5, metric='l1',weights='distance')
