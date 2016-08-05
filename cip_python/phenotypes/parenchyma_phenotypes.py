@@ -5,7 +5,7 @@ import warnings
 from . import Phenotypes
 from ..common import ChestConventions
 from ..input_output import ImageReaderWriter
-from cip_python.utils.region_type_parser import RegionTypeParser
+from ..utils import RegionTypeParser
 
 class ParenchymaPhenotypes(Phenotypes):
     """General purpose class for generating parenchyma-based phenotypes.

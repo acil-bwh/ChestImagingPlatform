@@ -1,9 +1,7 @@
 import numpy as np
 from . import Phenotypes
 from ..common import ChestConventions
-from cip_python.utils.region_type_parser import RegionTypeParser
-
-import pdb
+from ..utils import RegionTypeParser
 
 class LAAPhenotypes(Phenotypes):
     """Compute a low attenuating area (LAA) phenotype.

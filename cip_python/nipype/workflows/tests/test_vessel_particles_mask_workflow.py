@@ -1,7 +1,7 @@
 import os.path
 import tempfile, shutil
 import nrrd
-from cip_python.utils.compute_dice_coefficient import compute_dice_coefficient
+from cip_python.utils import compute_dice_coefficient
 from cip_python.nipype.workflows import VesselParticlesMaskWorkflow
 
 from cip_python.common import Paths

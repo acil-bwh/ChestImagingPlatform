@@ -1,14 +1,11 @@
-import os.path
-import numpy as np
 from cip_python.utils.remap_lm import *
 from cip_python.input_output import ImageReaderWriter
-import pdb
+from cip_python.common import Paths
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-file_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
+file_name = Paths.testing_file_path('simple_lm.nrrd')
 image_io = ImageReaderWriter()
 lm, header = image_io.read_in_numpy(file_name)
 

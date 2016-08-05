@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 from . import Phenotypes
 from ..common import ChestConventions
-from cip_python.utils.region_type_parser import RegionTypeParser
+from ..utils import RegionTypeParser
 
 class VasculaturePhenotypes(Phenotypes):
   """Compute vasculare spectific phenotypes

@@ -7,7 +7,7 @@
 
 import subprocess
 import os
-from cip_python.utils.read_nrrds_write_vtk import ReadNRRDsWriteVTK
+from ..utils import ReadNRRDsWriteVTK
 from ..input_output import ImageReaderWriter
 
 class ChestParticles:

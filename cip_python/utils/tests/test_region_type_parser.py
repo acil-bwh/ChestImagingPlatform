@@ -1,8 +1,9 @@
 import os.path
-from cip_python.utils.region_type_parser import *
-from cip_python.input_output import ImageReaderWriter
-import pdb
+import numpy as np
 import unittest
+
+from cip_python.utils import RegionTypeParser
+from cip_python.input_output import ImageReaderWriter
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 

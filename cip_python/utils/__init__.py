@@ -4,8 +4,8 @@ from cluster_particles import *
 from compute_dice_coefficient import *
 from feature_maps import *
 from generate_overlay_image import *
-from get_closest_cases import *
 from get_mi_similarity_vec import *
+from get_closest_cases import *
 from polynomial_feature_map import *
 from query_dicom_directories import *
 from quick_airway_vessel_segmentation import *

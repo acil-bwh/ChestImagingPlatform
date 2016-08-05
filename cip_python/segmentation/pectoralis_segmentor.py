@@ -3,7 +3,6 @@ import pickle
 import nrrd
 import numpy as np
 
-#from . import segment_pec_with_atlas
 from cip_python.segmentation.segment_chest_with_atlas import segment_pec_with_atlas
 
 class pectoralis_segmentor:

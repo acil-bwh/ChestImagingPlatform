@@ -4,7 +4,7 @@ from optparse import OptionParser
 from ..input_output import ImageReaderWriter
 from . import Phenotypes
 from ..common import ChestConventions
-from cip_python.utils.region_type_parser import RegionTypeParser
+from ..utils import RegionTypeParser
 
 class BodyCompositionPhenotypes(Phenotypes):
     """General purpose class for generating body composition-based phenotypes.
