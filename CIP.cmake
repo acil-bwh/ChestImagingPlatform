@@ -52,11 +52,11 @@ else ( VTK_FOUND )
 endif ( VTK_FOUND )
 
 #Check Boost status
-if (USE_BOOST)
-  message(STATUS "BOOST ON")
+if(TARGET vtkInfovisBoostGraphAlgorithms)   # Make sure we have the needed module
+  message(STATUS "Using Infovis Boost")
   SET(CIP_USE_BOOST ON)
 else()
-  message(STATUS "BOOST OFF")
+  message(STATUS "vtkInfovisBoostGraphAlgorithms not found! CIP will NOT use Boost")
   SET(CIP_USE_BOOST OFF)
 endif()
 
