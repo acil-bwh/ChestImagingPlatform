@@ -52,10 +52,11 @@ else ( VTK_FOUND )
 endif ( VTK_FOUND )
 
 #Check Boost status
-if(TARGET vtkInfovisBoostGraphAlgorithms)
-  message(STATUS "VTK Built with BOOST Graph")
+if (USE_BOOST)
+  message(STATUS "BOOST ON")
   SET(CIP_USE_BOOST ON)
 else()
+  message(STATUS "BOOST OFF")
   SET(CIP_USE_BOOST OFF)
 endif()
 

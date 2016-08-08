@@ -263,19 +263,35 @@ mark_as_superbuild(
 )
 
 
-
+set(USE_BOOST ON CACHE BOOL "Enable Boost in VTK and CIP")
+mark_as_superbuild(USE_BOOST)
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
-set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
-  CIPPython
-  SlicerExecutionModel
-  ${VTK_EXTERNAL_NAME}
-  ${ITK_EXTERNAL_NAME}
-  Boost
-  teem
-  #OpenCV
-#  ${LIBXML2_EXTERNAL_NAME}
-  )
+if (USE_BOOST)
+  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+    CIPPython
+    SlicerExecutionModel
+    ${VTK_EXTERNAL_NAME}
+    ${ITK_EXTERNAL_NAME}
+    Boost
+    teem
+    #OpenCV
+  #  ${LIBXML2_EXTERNAL_NAME}
+    )
+else()
+  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+          CIPPython
+          SlicerExecutionModel
+          ${VTK_EXTERNAL_NAME}
+          ${ITK_EXTERNAL_NAME}
+          #Boost
+          teem
+          #OpenCV
+          #  ${LIBXML2_EXTERNAL_NAME}
+          )
+  message("BOOST disabled")
+endif()
 
+message ("PRIMARY_PROJECT_NAME_DEPENDENCIES after boost: ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}")
 #-----------------------------------------------------------------------------
 # Define Superbuild global variables
 #-----------------------------------------------------------------------------
