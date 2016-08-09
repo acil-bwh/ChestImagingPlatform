@@ -27,7 +27,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   #set(${proj}_URL http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.gz )
   set(${proj}_URL https://acil.s3.amazonaws.com/external_deps/boost_1_54_0_nodoc.tar.gz)
-  set(${proj}_MD5 bf4e59dc78095278b8a7edf18b2f52e4 )
+  set(${proj}_MD5 81bb79d6939601b43e681449e3eae7df )
   if(CMAKE_COMPILER_IS_CLANGXX)
     set(CLANG_ARG -DCMAKE_COMPILER_IS_CLANGXX:BOOL=ON)
   endif()

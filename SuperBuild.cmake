@@ -291,7 +291,7 @@ else()
   message("BOOST disabled")
 endif()
 
-message ("PRIMARY_PROJECT_NAME_DEPENDENCIES after boost: ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}")
+message (STATUS "PRIMARY_PROJECT_NAME_DEPENDENCIES: ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}")
 #-----------------------------------------------------------------------------
 # Define Superbuild global variables
 #-----------------------------------------------------------------------------
