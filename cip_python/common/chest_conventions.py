@@ -197,6 +197,12 @@ class ChestConventions(object):
 
     @staticmethod
     def CheckSubordinateSuperiorChestRegionRelationship(subordinate, superior):
+        """
+        This method checks if the chest region 'subordinate' is within the chest region 'superior'.
+        :param subordinate: int
+        :param superior: int
+        :return: boolean
+        """
         if subordinate == superior:
             return True
 
@@ -212,10 +218,23 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestRegionFromValue(value):
+        """
+        Given an unsigned short value, this method will compute the 8-bit region value corresponding to the input
+        :param value: int
+        :return: int
+        """
         return 255 & value  # Less significant byte
 
     @staticmethod
     def GetChestTypeFromColor(color):
+        """
+        The 'color' param is assumed to have three components, each in
+        the interval [0,1]. All chest type colors will be tested until a
+        color match is found. If no match is found, 'UNDEFINEDTYPYE'
+        will be returned
+        :param color: tuple/array of 3 components
+        :return: int
+        """
         for key, value in ChestConventions.ChestTypesCollection.iteritems():
             if value[1] == color[0] and value[2] == color[1] and value[3] == color[2]:
                 return key
@@ -224,6 +243,14 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestRegionFromColor(color):
+        """
+        The 'color' param is assumed to have three components, each in
+        the interval [0,1]. All chest type colors will be tested until a
+        color match is found. If no match is found, 'UNDEFINEDREGION'
+        will be returned
+        :param color: tuple/array of 3 components
+        :return: int
+        """
         for key, value in ChestConventions.ChestRegionsCollection.iteritems():
             if value[1] == color[0] and value[2] == color[1] and value[3] == color[2]:
                 return key
@@ -232,6 +259,11 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestTypeFromValue(value):
+        """
+        Given an unsigned short value, this method will compute the 8-bit type value corresponding to the input
+        :param value: int
+        :return: int
+        """
         return value >> 8   # Most significant byte
 
 
@@ -241,25 +273,30 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestTypeName(whichType):
+        """
+         Given an int value corresponding to a chest type, this method will return the string name equivalent.
+        :param whichType: int
+        :return: string code (descriptive, ex: WholeLung")
+        """
         if not ChestConventions.ChestTypesCollection.has_key(whichType):
-            raise IndexError("Key {0} is not a valid ChestType".format(whichType))
+            #raise IndexError("Key {0} is not a valid ChestType".format(whichType))
+            # C++ compatibility:
+            return ChestConventions.GetChestTypeName(ChestType.UNDEFINEDTYPE)
         return ChestConventions.ChestTypesCollection[whichType][1]
 
     @staticmethod
     def GetChestTypeColor(whichType, color=None):
-        """ Get the color for a ChestType.
+        """
+        Get the color for a ChestType.
         If color has some value, it will suppose to be a list where the color will be stored (just for compatibility purposes).
         In any case, the color will be returned as the result of the function
-        Parameters
-        ----------
-        whichType
-        color
-
-        Returns
-        -------
-        3-Tuple with the color
-
+        :param whichType: int or string code
+        :param color: 3-tuple where the result will be stored (for C++ compatibility reasons)
+        :return: 3-tuple result
         """
+        if type(whichType) == str:
+            whichType = ChestConventions.GetChestTypeValueFromName(whichType)
+
         if not ChestConventions.ChestTypesCollection.has_key(whichType):
             raise IndexError("Key {0} is not a valid ChestType".format(whichType))
         col = ChestConventions.ChestTypesCollection[whichType][1:4]
@@ -272,9 +309,15 @@ class ChestConventions(object):
 
     @staticmethod
     def GetChestRegionColor(whichRegion, color=None):
-        """ Get the color for a ChestRegion.
+        """
+        Get the color for a ChestRegion.
         If color has some value, it will suppose to be a list where the color will be stored (just for compatibility purposes).
         In any case, the color will be returned as the result of the function
+        :param whichRegion: int
+        :param color: 3-tuple color
+        :return:
+        """
+        """
         Parameters
         ----------
         whichRegion
@@ -335,102 +378,187 @@ class ChestConventions(object):
     def GetChestRegionName(whichRegion):
         """
         Given an unsigned char value corresponding to a chest region, this method will return the string name equivalent
-        Args:
-            whichRegion:
-
-        Returns:
-
+        :param whichRegion: int
+        :return:
         """
         if not ChestConventions.ChestRegionsCollection.has_key(whichRegion):
-            raise IndexError("Key {0} is not a valid ChestRegion".format(whichRegion))
+            #raise IndexError("Key {0} is not a valid ChestRegion".format(whichRegion))
+            # C++ compatibility:
+            return ChestConventions.GetChestRegionName(ChestRegion.UNDEFINEDREGION)
         return ChestConventions.ChestRegionsCollection[whichRegion][1]
 
     @staticmethod
     def GetChestRegionNameFromValue(value):
-        """ C++ compatibility
+        """
+        Given an int code, this method will return the string name of the corresponding chest region.
+        C++ compatibility
+        :param value: int
+        :return: descriptive string (Ex: "WholeLung")
         """
         return ChestConventions.GetChestRegionName(value)
 
 
     @staticmethod
     def GetChestTypeNameFromValue(value):
-        return ChestConventions.ChestTypesCollection[value][1]
+        """
+        Given an int code, this method will return the string name of the corresponding chest type.
+        C++ compatibility
+        :param value: int
+        :return: descriptive string (Ex: "WholeLung")
+        """
+        return ChestConventions.GetChestTypeName(value)
 
     @staticmethod
     def GetValueFromChestRegionAndType(region, type):
+        """
+        Get a single coded int from an int region and an int type, with the combination of most-less significant byte
+        :param region: int
+        :param type: int
+        :return: int
+        """
         return (type << 8) + region
 
     @staticmethod
     def GetChestRegionValueFromName(regionString):
+        """
+        Given a string identifying one of the enumerated chest regions, this method will return the int code equivalent.
+         If no match is found, the method will return UNDEFINEDREGION
+        :param regionString: string (case-insensitve, but compare with string descriptive names (ex: WholeLung))
+        :return: int
+        """
         for key,value in ChestConventions.ChestRegionsCollection.iteritems():
             if value[1].lower() == regionString.lower():
                 return key
-        raise KeyError("Region not found: " + regionString)
+        #raise KeyError("Region not found: " + regionString)
+        # C++ Compatibility:
+        return ChestRegion.UNDEFINEDREGION
 
     @staticmethod
     def GetChestTypeValueFromName(typeString):
+        """
+        Given a string identifying one of the enumerated chest types, this method will return the int code equivalent.
+         If no match is found, the method will return UNDEFINEDTYPE
+        :param regionString: string (case-insensitve, but compare with string descriptive names (ex: WholeLung))
+        :return: int
+        """
         for key, value in ChestConventions.ChestTypesCollection.iteritems():
             if value[1].lower() == typeString.lower():
                 return key
-        raise KeyError("Type not found: " + typeString)
+       # raise KeyError("Type not found: " + typeString)
+        # C++ Compatibility:
+        return ChestType.UNDEFINEDTYPE
 
     @staticmethod
     def GetChestRegion(i):
-        """C++ compatibility"""
+        """DEPRECATED. Just for C++ compatibility"""
         return i
 
     @staticmethod
     def GetChestType(i):
-        """C++ compatibility"""
+        """DEPRECATED. Just for C++ compatibility"""
         return i
 
     @staticmethod
     def GetImageFeature(i):
-        """C++ compatibility"""
+        """DEPRECATED. Just for C++ compatibility"""
         return i
 
     @staticmethod
     def GetImageFeatureName(whichFeature):
+        """
+         Given an int value corresponding to an ImageFeature, this method will return the string name equivalent
+        :param whichFeature: int
+        :return: descriptive string
+        """
         if not ChestConventions.ImageFeaturesCollection.has_key(whichFeature):
-            raise IndexError("Key {0} is not a valid Image Feature".format(whichFeature))
+            #raise IndexError("Key {0} is not a valid Image Feature".format(whichFeature))
+            # C++ compatibility:
+            return ChestConventions.GetImageFeatureName(ImageFeature.UNDEFINEDFEATURE)
         return ChestConventions.ImageFeaturesCollection[whichFeature][1]
 
     @staticmethod
-    def IsBodyCompositionPhenotypeName(pheno):
-        return pheno in ChestConventions.BodyCompositionPhenotypeNames
+    def IsBodyCompositionPhenotypeName(phenotypeName):
+        """
+        Returns true if the passed phenotype is among the allowed body composition phenotype names.
+        :param phenotypeName: str
+        :return: boolean
+        """
+        return phenotypeName in ChestConventions.BodyCompositionPhenotypeNames
 
     @staticmethod
-    def IsParenchymaPhenotypeName(pheno):
-        return pheno in ChestConventions.ParenchymaPhenotypeNames
+    def IsParenchymaPhenotypeName(phenotypeName):
+        """
+        Returns true if the passed phenotype is among the allowed parenchyma phenotype names.
+        :param phenotypeName: str
+        :return: boolean
+        """
+        return phenotypeName in ChestConventions.ParenchymaPhenotypeNames
 
     @staticmethod
-    def IsPulmonaryVasculaturePhenotypeName(pheno):
-        return pheno in ChestConventions.PulmonaryVasculaturePhenotypeNames
+    def IsPulmonaryVasculaturePhenotypeName(phenotypeName):
+        """
+        Returns true if the passed phenotype is among the allowed body composition phenotype names.
+        :param phenotypeName: str
+        :return: boolean
+        """
+        return phenotypeName in ChestConventions.PulmonaryVasculaturePhenotypeNames
 
     @staticmethod
-    def IsHistogramPhenotypeName(pheno):
-        return False    # Not used so far
+    def IsHistogramPhenotypeName(phenotypeName):
+        """
+        DEPRECATED. Not used so far
+        :param phenotypeName:
+        :return: False
+        """
+        return False
 
-    # In case there are more phenotypes lists, they should be added in the GetPhenotypeNamesLists() function
+    # NOTE: In case there are more phenotypes lists, they should be added to the GetPhenotypeNamesLists() function
 
     @staticmethod
-    def IsPhenotypeName(pheno):
+    def IsPhenotypeName(phenotypeName):
+        """
+        True if phenotypeName is in any of the current phenotype lists
+        :param phenotypeName: str
+        :return: Boolean
+        """
         for l in ChestConventions.GetPhenotypeNamesLists():
-            if pheno in l: return True
+            if phenotypeName in l: return True
         return False
 
     @staticmethod
+    def GetPhenotypeNamesLists():
+        """
+        Get all the current phenotype lists
+        :return: list
+        """
+        return [ChestConventions.BodyCompositionPhenotypeNames, ChestConventions.ParenchymaPhenotypeNames,
+                ChestConventions.PulmonaryVasculaturePhenotypeNames]
+
+
+    @staticmethod
     def IsChestType(chestType):
+        """
+        True if the code matches to a current chest type.
+        Please note that the code can be either a descriptive string or an int code for C++ compatibility
+        :param chestType: string (for C++ compatibility) or int code
+        :return: Boolean
+        """
+        if type(chestType) == str:
+            chestType = ChestConventions.GetChestTypeValueFromName(chestType)
         return chestType in ChestConventions.ChestTypesCollection
 
     @staticmethod
     def IsChestRegion(chestRegion):
+        """
+        True if the code matches to a current chest retgion.
+        Please note that the code can be either a descriptive string or an int code for C++ compatibility
+        :param chestRegion: string (for C++ compatibility) or int code
+        :return: Boolean
+        """
+        if type(chestRegion) == str:
+            chestRegion = ChestConventions.GetChestRegionValueFromName(chestRegion)
         return chestRegion in ChestConventions.ChestRegionsCollection
 
-    @staticmethod
-    def GetPhenotypeNamesLists():
-        return [ChestConventions.BodyCompositionPhenotypeNames, ChestConventions.ParenchymaPhenotypeNames,
-                ChestConventions.PulmonaryVasculaturePhenotypeNames]
 
 
 
