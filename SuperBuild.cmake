@@ -262,9 +262,18 @@ mark_as_superbuild(
    CIP_CMAKE_CXX_FLAGS:STRING
 )
 
-
-set(USE_BOOST ON CACHE BOOL "Enable Boost in VTK and CIP")
+if (NOT DEFINED USE_BOOST)
+  # Boost will be ON by default, except for recent versions of Visual Studio compiler (>= Visual Studio 2013)
+  if (MSVC_VERSION GREATER 1700)
+    # Disable boost
+    set(USE_BOOST OFF CACHE BOOL "Enable Boost in VTK and CIP")
+    message(WARNING "Boost is not supported for Visual Studio >= 2013")
+  else()
+    set(USE_BOOST ON CACHE BOOL "Enable Boost in VTK and CIP")
+  endif()
+endif()
 mark_as_superbuild(USE_BOOST)
+
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
 if (USE_BOOST)
   set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
@@ -283,12 +292,8 @@ else()
           SlicerExecutionModel
           ${VTK_EXTERNAL_NAME}
           ${ITK_EXTERNAL_NAME}
-          #Boost
           teem
-          #OpenCV
-          #  ${LIBXML2_EXTERNAL_NAME}
           )
-  message("BOOST disabled")
 endif()
 
 message (STATUS "PRIMARY_PROJECT_NAME_DEPENDENCIES: ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}")
