@@ -8,4 +8,8 @@ import visualization
 import qualitycontrol
 import segmentation
 import registration
-import nipype
+import os
+if os.sys.platform == "win32":
+  print ("Warning: nipype not available in Windows")
+else:
+  import nipype
