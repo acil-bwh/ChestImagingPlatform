@@ -544,8 +544,15 @@ class ChestConventions(object):
         :return: Boolean
         """
         if type(chestType) == str:
-            chestType = ChestConventions.GetChestTypeValueFromName(chestType)
-        return chestType in ChestConventions.ChestTypesCollection
+            # Loop over the exact Chest Types description names (C++ compatibility)
+            for t in ChestConventions.ChestTypesCollection.itervalues():
+                if chestType == t[1]:
+                    return True
+            return False
+
+        else:
+            # Int code
+            return chestType in ChestConventions.ChestTypesCollection
 
     @staticmethod
     def IsChestRegion(chestRegion):
@@ -556,10 +563,15 @@ class ChestConventions(object):
         :return: Boolean
         """
         if type(chestRegion) == str:
-            chestRegion = ChestConventions.GetChestRegionValueFromName(chestRegion)
-        return chestRegion in ChestConventions.ChestRegionsCollection
-
-
+            # Loop over the exact Chest Region description names (C++ compatibility)
+            for r in ChestConventions.ChestRegionsCollection.itervalues():
+                if chestRegion == r[1]:
+                    return True
+            return False
+        else:
+            # Int code
+            return chestRegion in ChestConventions.ChestRegionsCollection
+      
 
 
 #############################
