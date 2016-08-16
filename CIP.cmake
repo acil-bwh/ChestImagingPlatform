@@ -194,6 +194,7 @@ include_directories( ${CIP_INCLUDE_DIRECTORIES} )
 # Copy external files
 ADD_CUSTOM_TARGET(copy-external-files ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_CURRENT_BINARY_DIR}/Resources
+    COMMENT "Copying Resource files"
   )
 
 
@@ -248,9 +249,10 @@ if(BUILD_SANDBOX)
   SUBDIRS (Sandbox)
 endif(BUILD_SANDBOX)
 
-if ( CIP_BUILD_TESTING_PYTHON )
- SUBDIRS ( cip_python )
-endif( CIP_BUILD_TESTING_PYTHON ) 
+SET(INSTALL_CIP_PYTHON_LIBRARY ON CACHE BOOL "Install Python components of CIP")
+if ( INSTALL_CIP_PYTHON_LIBRARY )
+  SUBDIRS ( cip_python )
+endif( INSTALL_CIP_PYTHON_LIBRARY )
 
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)

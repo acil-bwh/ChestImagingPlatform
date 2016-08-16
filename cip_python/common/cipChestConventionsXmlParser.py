@@ -30,13 +30,13 @@ if op.template_cxx_path is not None and osp.isfile(op.template_cxx_path):
     with open(op.template_cxx_path, "rb") as f:
         template_cxx = f.read()
 else:
-    template_cxx = None
+    template_cxx = ""
 
 if op.template_python_path is not None and osp.isfile(op.template_python_path):
     with open(op.template_python_path, "rb") as f:
         template_python = f.read()
 else:
-    template_python = None
+    template_python = ""
 
 # Read the XML
 with open(op.xml_conventions_file, "rb") as f:
