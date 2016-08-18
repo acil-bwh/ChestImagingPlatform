@@ -120,7 +120,9 @@ target_link_libraries(${LIB_NAME}
 
 # Generate the static ChestConventions files
 # Use CIP Python (default) or any other python otherwise
-IF (CIP_PYTHON_DIR)
+IF (CIP_PYTHON_EXECUTABLE)
+  SET(MYPYTHON ${CIP_PYTHON_EXECUTABLE})
+ELSEIF(CIP_PYTHON_DIR)
   IF (WIN32)
     SET(MYPYTHON ${CIP_PYTHON_DIR}/python.exe)
   ELSE()
