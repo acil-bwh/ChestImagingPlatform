@@ -108,6 +108,18 @@ int main( int argc, char *argv[] )
       sigmaMaximum = gaussianStd[ 1 ];
       numberOfSigmaSteps = static_cast<unsigned int>( gaussianStd[ 2 ] );
     }
+  
+  bool generateScalesOutput;
+    
+  if (scaleFileName.length() == 0 )
+    {
+      generateScalesOutput = false;
+    }
+  else
+    {
+      generateScalesOutput = true;
+    }
+    
     
   // Set threads
   unsigned int maxThreads = itk::MultiThreader::GetGlobalDefaultNumberOfThreads();
@@ -119,20 +131,34 @@ int main( int argc, char *argv[] )
   
   itk::MultiThreader::SetGlobalMaximumNumberOfThreads( maxThreads );
   
+    
+  // Read the input image now that filter is good to go
+  cip::CTType::Pointer ctImage;
+
+  std::cout << "Reading CT from file..." << std::endl;
+  ctImage = ReadCTFromFile( ctFileName );
+
+  if (ctImage.GetPointer() == NULL)
+    {
+        return cip::NRRDREADFAILURE;
+    }
+
+  std::cout<<sigmaMinimum<<" "<<sigmaMaximum<<" "<<numberOfSigmaSteps<<std::endl;
+    
   // Create multi-scale filter. */
   MultiScaleFilterType::Pointer multiScaleFilter = MultiScaleFilterType::New();
-  
-  bool generateScalesOutput;
+    
+  // Filter set up before execution
+  multiScaleFilter->SetSigmaMinimum( sigmaMinimum );
+  multiScaleFilter->SetSigmaMaximum( sigmaMaximum );
+  multiScaleFilter->SetNumberOfSigmaSteps( numberOfSigmaSteps );
+  multiScaleFilter->SetNonNegativeHessianBasedMeasure( true );
+  multiScaleFilter->SetGenerateScalesOutput( generateScalesOutput );
+  multiScaleFilter->SetSigmaStepMethod( sigmaStepMethod );
+  multiScaleFilter->SetRescale( !rescaleOff );
+  multiScaleFilter->SetInput( ctImage );
+   
 
-  if (scaleFileName.length() == 0 )
-    {
-      generateScalesOutput = false;
-    }
-  else
-    {
-      generateScalesOutput = true;
-    }
-  
   // Create Functor function based on selected method and connect to filter
   if ( method == "Frangi" )
     {
@@ -352,28 +378,6 @@ int main( int argc, char *argv[] )
       return cip::EXITFAILURE;
     }
   
-  // Read the input image now that filter is good to go  
-  cip::CTType::Pointer ctImage;
-  
-  std::cout << "Reading CT from file..." << std::endl;
-  ctImage = ReadCTFromFile( ctFileName );
-  
-  if (ctImage.GetPointer() == NULL)
-    {
-      return cip::NRRDREADFAILURE;
-    }
-  
-  std::cout<<sigmaMinimum<<" "<<sigmaMaximum<<" "<<numberOfSigmaSteps<<std::endl;
-  
-  // Finish Filter set up before execution
-  multiScaleFilter->SetSigmaMinimum( sigmaMinimum );
-  multiScaleFilter->SetSigmaMaximum( sigmaMaximum );
-  multiScaleFilter->SetNumberOfSigmaSteps( numberOfSigmaSteps );
-  multiScaleFilter->SetNonNegativeHessianBasedMeasure( true );
-  multiScaleFilter->SetGenerateScalesOutput( generateScalesOutput );
-  multiScaleFilter->SetSigmaStepMethod( sigmaStepMethod );
-  multiScaleFilter->SetRescale( rescale );
-  multiScaleFilter->SetInput( ctImage );  
   try
     {
       multiScaleFilter->Update();
