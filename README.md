@@ -3,36 +3,10 @@ ChestImagingPlatform
 
 The Brigham and Women's Hospital (BWH) Applied Chest Imaging Lab's (ACIL) Chest Imaging Platform private repository
 
-
-Dependencies
+Building Instructions
 ============
-
-* ITK 
-* VTK (must build with boost for airway generation labeling) 
-* boost (needed for airway generation labeling) 
-* teem 
-* FLTK (needed for ACILAssistant)
-
-Python Dependencies
--------------------
-* cython
-* numpy
-* scipy
-* vtk
-* pandas
-* nose
-* sphinx
-* SimpleITK
-* lxml
-* scikit-learn
-* scikit-image
-* matplotlib
-* networkx 
-* pynrrd
-* pydicom
-* nibabel
-* nipype
-
+You can find instructions about building CIP [here] [3].
+The building process will resovle dependencies for CIP.
 
 Information for Users
 ==========================
@@ -67,3 +41,4 @@ For C++ code, we follow [ITK Coding Style Guide] [1]. For python code, we follow
 
 [1]: http://www.vtk.org/Wiki/ITK/Coding_Style_Guide  "ITK Coding Style Guide"
 [2]: http://www.python.org/dev/peps/pep-0008/        "PEP 8"
+[3]: https://github.com/acil-bwh/ChestImagingPlatform/wiki#building-instructions
