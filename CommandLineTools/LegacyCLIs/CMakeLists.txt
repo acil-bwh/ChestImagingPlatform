@@ -8,6 +8,7 @@ ENDIF (WIN32)
 
 SET(CLIS_DIRS
   TransferFieldDataToFromPointData
+  UpdateParticlesData
 )
 
 
