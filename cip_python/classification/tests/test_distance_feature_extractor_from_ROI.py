@@ -1,23 +1,12 @@
-import os.path
-import pandas as pd
-import nrrd
-
 import numpy as np
-import pdb
-from pandas.util.testing import assert_frame_equal
-import sys
 
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-
-
-from cip_python.classification.distance_feature_extractor_from_ROI \
-  import DistExtractorFromROI
+from cip_python.common import Paths
+from cip_python.classification import DistExtractorFromROI
       
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
+ct_name = Paths.testing_file_path('simple_ct.nrrd')
 
 def test_execute():
     lm = np.ones([2, 2, 1])

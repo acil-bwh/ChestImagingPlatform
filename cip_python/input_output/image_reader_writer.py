@@ -49,9 +49,13 @@ class ImageReaderWriter:
         np_array = sitk.GetArrayFromImage(sitk_image)
         np_array = np_array.transpose(self._np_axes_order)
         metainfo=dict()
-        metainfo['origin']=sitk_image.GetOrigin()
+        metainfo['space origin']=sitk_image.GetOrigin()
         metainfo['spacing']=sitk_image.GetSpacing()
-        metainfo['direction']=sitk_image.GetDirection()
+        metainfo['space directions']=sitk_image.GetDirection()
+        #Include additional metadata specific to format
+        for key in sitk_image.GetMetaDataKeys():
+          metainfo[key]=sitk_image.GetMetaData(key)
+        
         return np_array,metainfo
 
     def write(self,sitk_image,file_name):
@@ -77,8 +81,8 @@ class ImageReaderWriter:
           sitk_image.CopyInformation(sitk_image_tempate)
       else:
           sitk_image.SetSpacing(metainfo['spacing'])
-          sitk_image.SetOrigin(metainfo['origin'])
-          sitk_image.SetDirection(metainfo['direction'])
+          sitk_image.SetOrigin(metainfo['space origin'])
+          sitk_image.SetDirection(metainfo['space directions'])
 
       return sitk_image
 
@@ -102,6 +106,6 @@ class ImageReaderWriter:
         """
         sitk_image=sitk.GetImageFromArray(npy_array.transpose(self._np_axes_order))
         sitk_image.SetSpacing(metainfo['spacing'])
-        sitk_image.SetOrigin(metainfo['origin'])
-        sitk_image.SetDirection(metainfo['direction'])
+        sitk_image.SetOrigin(metainfo['space origin'])
+        sitk_image.SetDirection(metainfo['space directions'])
         self.write(sitk_image,file_name)

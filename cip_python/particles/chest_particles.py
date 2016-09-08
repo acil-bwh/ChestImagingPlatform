@@ -5,12 +5,10 @@
 # TODO: Create a separate class for probing points (post-processing unu calls)
 #------------------------------------------------------------------------------------
 
-import pdb
 import subprocess
 import os
-from subprocess import PIPE
-from cip_python.utils.read_nrrds_write_vtk import ReadNRRDsWriteVTK
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from ..utils import ReadNRRDsWriteVTK
+from ..input_output import ImageReaderWriter
 
 class ChestParticles:
     """Base class for airway, vessel, and fissure particles classes.

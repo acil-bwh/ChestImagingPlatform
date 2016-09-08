@@ -1,16 +1,13 @@
 # -*- encoding: utf-8 -*-
 ##!/usr/bin/python
 from __future__ import division
-import sys
-import scipy.io
+
 import numpy as np
-from scipy.stats import norm
-from scipy import fftpack, optimize
-
-
 import scipy as sci
-import scipy.optimize
 import scipy.fftpack
+import scipy.io
+import scipy.optimize
+
 
 class botev_bandwidth():
   """

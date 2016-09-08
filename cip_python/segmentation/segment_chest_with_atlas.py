@@ -1,16 +1,9 @@
-import sys
-#sys.path.append("/Users/rolaharmouche/Library/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/")
-#~/Slicer4-SuperBuild-Debug/Cython-0.16/
-#sys.path.append("/Users/rolaharmouche/Documents/Code/gco_python-new/gco_src")
 import numpy as np
 import scipy
-#import scipy.scipy.ndimage as scipy.ndimage
 from scipy import stats
-#from scipy.stats import multivariate_normal
 from pygco import cut_from_graph
-from cip_python.utils.weighted_feature_map_densities \
-    import ExpWeightedFeatureMapDensity
-from cip_python.utils.feature_maps import PolynomialFeatureMap
+from ..utils import ExpWeightedFeatureMapDensity
+from ..utils import PolynomialFeatureMap
 #import pylab as plt
 import cip_python.gaussian_rician as gc
 import math

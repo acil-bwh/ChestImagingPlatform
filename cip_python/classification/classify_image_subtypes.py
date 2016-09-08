@@ -1,46 +1,23 @@
-import sys
-import os
-
 import numpy as np
 from optparse import OptionParser
 import time
-import subprocess
-import glob
-import pdb
 import multiprocessing
 from multiprocessing import Pool
-import multiprocessing as mp
-from multiprocessing import Process, Value, Array
 import ctypes
-import copy_reg, copy, pickle
+import copy_reg
 import types 
  
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neighbors import DistanceMetric
-import scipy.io as sio
 from scipy import ndimage
 import pandas as pd
 
-from cip_python.classification.distance_feature_extractor \
-  import DistanceFeatureExtractor 
-from cip_python.classification.hist_dist_knn import HistDistKNN
-from cip_python.ChestConventions import ChestConventions
-from cip_python.classification.kde_histogram_feature_extractor \
-  import kdeHistExtractor
+from ..common import ChestConventions
+from ..input_output import ImageReaderWriter
+from . import HistDistKNN
+from . import kdeHistExtractorFromROI
+from . import DistExtractorFromROI
+from . import Patcher
 from cip_python.segmentation.grid_segmenter import GridSegmenter
-from cip_python.utils.apply_label_from_classification import  \
-    apply_label_from_classification
-from cip_python.classification.get_ct_patch_from_center \
-  import get_bounds_from_center
-from cip_python.classification.get_ct_patch_from_center \
-  import get_patch_given_bounds
-from cip_python.classification.kde_histogram_feature_extractor_from_ROI \
-  import kdeHistExtractorFromROI
-from cip_python.classification.distance_feature_extractor_from_ROI \
-  import DistExtractorFromROI
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
-
-global ct      
+global ct
       
 def _pickle_method(m):
     if m.im_self is None:
@@ -211,11 +188,10 @@ class ParenchymaSubtypeClassifier:
             # unique_patch_labels_positive:
             """ Extract ROI """            
             patch_center = map(int, self.patch_centers[patch_index])
-            patch_bounds = get_bounds_from_center(ct,patch_center, \
-                self.feature_extent)
-            patch_ct = get_patch_given_bounds(ct,patch_bounds)
-            patch_lm = get_patch_given_bounds(lm,patch_bounds)
-            patch_distance = get_patch_given_bounds(distance_image,\
+            patch_bounds = Patcher.get_bounds_from_center(ct,patch_center, self.feature_extent)
+            patch_ct = Patcher.get_patch_given_bounds(ct,patch_bounds)
+            patch_lm = Patcher.get_patch_given_bounds(lm,patch_bounds)
+            patch_distance = Patcher.get_patch_given_bounds(distance_image,\
                 patch_bounds)
 
             if (np.sum(patch_lm) > 2):
@@ -236,16 +212,14 @@ class ParenchymaSubtypeClassifier:
                 the_histogram = my_hist_extractor.hist_[0:600]
                 the_distance = dist_extractor.dist_
                         
-                predicted_value_tmp = self.knn_classifier.predict(\
-                    the_histogram, the_distance)
+                predicted_value_tmp = self.knn_classifier.predict(the_histogram, the_distance)
                 predicted_values[inc] = \
-                    [mychestConvenstion.GetValueFromChestRegionAndType(0,\
-                        predicted_value_tmp)]
+                    [mychestConvenstion.GetValueFromChestRegionAndType(0, predicted_value_tmp)]
 
                 patch_to_label_bounds[inc] = \
-                    get_bounds_from_center(ct,patch_center,  self.patch_size)
+                    Patcher.get_bounds_from_center(ct,patch_center,  self.patch_size)
   
-                inc = inc+1
+                inc += 1
         
         output = dict()
            

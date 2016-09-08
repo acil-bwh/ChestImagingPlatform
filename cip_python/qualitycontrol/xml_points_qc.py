@@ -1,18 +1,9 @@
 # -*- coding: utf-8 -*-
-import scipy.io as sio
 import numpy as np
 from optparse import OptionParser
-import pdb
-import pandas as pd
-import sys
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-from cip_python.utils.geometry_topology_data import  *
-from cip_python.ChestConventions import ChestConventions
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
-from cip_python.classification.get_ct_patch_from_center \
-  import get_bounds_from_center
-from cip_python.classification.get_ct_patch_from_center \
-  import get_patch_given_bounds
+import cip_python.common as common
+from ..input_output import ImageReaderWriter
+from ..classification.get_ct_patch_from_center import Patcher
 import vtk
 import os   
 import scipy.ndimage
@@ -80,8 +71,8 @@ class xMLPointsQC:
             
         """                
         #build transformation matrix
-        the_origin = np.array(ct_header['origin'])
-        the_direction = np.reshape(np.array(ct_header['direction']), [3,3])
+        the_origin = np.array(ct_header['space origin'])
+        the_direction = np.reshape(np.array(ct_header['space directions']), [3,3])
         the_spacing = np.array(ct_header['spacing'])
 
         matrix = np.zeros([4,4])
@@ -97,11 +88,11 @@ class xMLPointsQC:
     
         transformationMatrix.Invert()
         # extract points
-        my_geometry_data = GeometryTopologyData.from_xml(xml_object) 
+        my_geometry_data = common.GeometryTopologyData.from_xml(xml_object)
         
         # loop through each point and create a patch around it
         inc = 0
-        mychestConvenstion =ChestConventions()
+        myChestConventions = common.ChestConventions()
         case_patch_list = []
         for the_point in my_geometry_data.points : 
             coordinates = the_point.coordinate
@@ -111,19 +102,15 @@ class xMLPointsQC:
                 coordinates[1],coordinates[2],1]) # need to append a 1 at th eend of point
 
             # from here we can build the patches ... 
-            test_bounds = get_bounds_from_center(ct,ijk_val,[self.x_extent,\
+            test_bounds = Patcher.get_bounds_from_center(ct,ijk_val,[self.x_extent,\
                 self.y_extent,self.z_extent])
-            ct_patch = get_patch_given_bounds(ct,test_bounds)
-            lm_patch = get_patch_given_bounds(lm,test_bounds)
+            ct_patch = Patcher.get_patch_given_bounds(ct,test_bounds)
+            lm_patch = Patcher.get_patch_given_bounds(lm,test_bounds)
                   
-
-            ChestRegion = \
-                mychestConvenstion.GetChestRegionName(the_point.chest_region)
-            ChestType = \
-                mychestConvenstion.GetChestTypeName(the_point.chest_type)
+            chest_type = myChestConventions.GetChestTypeName(the_point.chest_type)
 
             if(ct_patch != None):    
-               case_patch_list.append([ct_patch,lm_patch,ChestType, test_bounds])
+               case_patch_list.append([ct_patch,lm_patch,chest_type, test_bounds])
             else:
                print("Error! point "+str(inc)+" out of bounds!! "+\
                 str(coordinates[0])+" "+str(coordinates[1])+" "+str(coordinates[2])+" mapped to "+\

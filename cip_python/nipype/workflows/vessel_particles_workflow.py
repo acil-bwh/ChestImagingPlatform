@@ -1,13 +1,10 @@
 import cip_python.nipype.interfaces.cip as cip
-import cip_python.nipype.interfaces.unu as unu
-from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
-import nipype.pipeline.engine as pe        
+import os
+import nipype.pipeline.engine as pe
 from nipype.pipeline.engine import Workflow
-import tempfile, shutil
-import sys
-import os 
-import pdb
+from .. import CIPConventionManager as CM
 
+#TODO: invalid class at the moment
 class VesselParticlesWorkflow(Workflow):
     """This workflow produces vessel particles files for specified chest 
     regions. Output files are in .vtk format and have file names automatically
@@ -55,10 +52,10 @@ class VesselParticlesWorkflow(Workflow):
           pe.Node(interface=cip.GeneratePartialLungLabelMap(), 
                   name='generate_partial_lung_label_map')
         generate_partial_lung_label_map.inputs.ct = ct_file_name
-        generate_partial_lung_label_map.inputs.
+        # generate_partial_lung_label_map.inputs.
         
         extract_chest_label_map = \
           pe.Node(interface=cip.ExtractChestLabelMap(),
                   name='extract_chest_label_map')
-        extract_chest_label_map.inputs.outFileName = 
-        extract_chest_label_map.inputs.
+        # extract_chest_label_map.inputs.outFileName =
+        # extract_chest_label_map.inputs.

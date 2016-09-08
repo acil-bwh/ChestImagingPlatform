@@ -1,19 +1,14 @@
 #!/usr/bin/python
 
-import vtk, math
-import numpy as np
-from numpy import linalg as LA
-from vtk.util.numpy_support import vtk_to_numpy
-from scipy.stats import kde
-from scipy.integrate import quadrature
-import os.path
-
 import matplotlib
+import numpy as np
+import vtk
+from vtk.util.numpy_support import vtk_to_numpy
+
 #Use Agg backend to allow non-interactive rendering 
 #without relying on X-windows. Other options are: PDF, Cairo..
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 
 class VasculatureQualityControl():

@@ -1,13 +1,13 @@
 from argparse import ArgumentParser
-import cip_python.nipype.interfaces.cip as cip
-import cip_python.nipype.interfaces.unu as unu
-import cip_python.nipype.interfaces.cip.cip_python_interfaces \
-  as cip_python_interfaces
-from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
+# import cip_python.nipype.interfaces.cip as cip
+
+# import cip_python.nipype.interfaces.unu as unu
+# import cip_python.nipype.interfaces.cip.cip_python_interfaces \
+#   as cip_python_interfaces
+# from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype.pipeline.engine import Workflow
 import tempfile, shutil, sys, os, pickle, gzip
-import pdb
 
 class LungLobeSegmentationWorkflow(Workflow):
     """This workflow generates a lung lobe segmentation given an input CT image.
@@ -99,6 +99,7 @@ class LungLobeSegmentationWorkflow(Workflow):
         pre_dist=3.0, post_dist=3.0, pre_size=110, dist_thresh=1000, 
         post_size=110, iters=200, scale=0.9, lth=-15, sth=-45, 
         perm=False):
+
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
         file_and_path = os.path.abspath(__file__)

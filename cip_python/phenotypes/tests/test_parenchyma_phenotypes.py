@@ -1,18 +1,19 @@
 import os.path
-import pandas as pd
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
-from cip_python.ChestConventions import ChestConventions
-from cip_python.phenotypes.parenchyma_phenotypes import *
-import pdb
+import numpy as np
+
+from cip_python.input_output import ImageReaderWriter
+from cip_python.common import ChestConventions, Paths
+from cip_python.phenotypes import ParenchymaPhenotypes
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
 image_io = ImageReaderWriter()
-this_dir = os.path.dirname(os.path.realpath(__file__))
-lm_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
+
+ct_name = Paths.testing_file_path('simple_ct.nrrd')
+lm_name = Paths.testing_file_path('simple_lm.nrrd')
+
 lm, lm_header = image_io.read_in_numpy(lm_name)
-ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
 ct, ct_header=image_io.read_in_numpy(ct_name)
 
 def test_execute():

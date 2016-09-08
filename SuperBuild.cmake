@@ -21,8 +21,8 @@ mark_as_advanced(${PRIMARY_PROJECT_NAME}_USE_QT)
 set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build, only version 4 allowed.")
 set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
 
-set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build. Version 6 is strongly recommended.")
-set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
+set(VTK_VERSION_MAJOR 7 CACHE STRING "Choose the expected VTK major version to build. Version 7 is strongly recommended.")
+set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "6" "7")
 
 
 #-----------------------------------------------------------------------------
@@ -155,12 +155,6 @@ find_package(Git REQUIRED)
 
 set(ep_common_c_flags "${CMAKE_C_FLAGS_INIT} ${ADDITIONAL_C_FLAGS}")
 set(ep_common_cxx_flags "${CMAKE_CXX_FLAGS_INIT} ${ADDITIONAL_CXX_FLAGS}")
-set (USE_CYTHON OFF CACHE BOOL "Use Cython to wrap ChestConventions")
-# Cython compatibility with El Capitan and other OS
-if (APPLE AND USE_CYTHON AND NOT CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "" AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "10.10")
-  set(CIP_CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6" CACHE INTERNAL "Cython compatibility")
-endif()
-
 
 
 include(ExternalProject)
@@ -231,7 +225,6 @@ option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined versio
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
 option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML. The building will fail if not found" OFF)
-option(USE_CYTHON "Use Cython to Wrap ChestConventions" ON)
 
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
@@ -269,20 +262,41 @@ mark_as_superbuild(
    CIP_CMAKE_CXX_FLAGS:STRING
 )
 
-
+if (NOT DEFINED USE_BOOST)
+  # Boost will be ON by default, except for recent versions of Visual Studio compiler (>= Visual Studio 2013)
+  if (MSVC_VERSION GREATER 1700)
+    # Disable boost
+    set(USE_BOOST OFF CACHE BOOL "Enable Boost in VTK and CIP")
+    message(WARNING "Boost is not supported for Visual Studio >= 2013")
+  else()
+    set(USE_BOOST ON CACHE BOOL "Enable Boost in VTK and CIP")
+  endif()
+endif()
+mark_as_superbuild(USE_BOOST)
 
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
-set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
-  CIPPython
-  SlicerExecutionModel
-  ${VTK_EXTERNAL_NAME}
-  ${ITK_EXTERNAL_NAME}
-  Boost
-  teem
-  #OpenCV
-#  ${LIBXML2_EXTERNAL_NAME}
-  )
+if (USE_BOOST)
+  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+    CIPPython
+    SlicerExecutionModel
+    ${VTK_EXTERNAL_NAME}
+    ${ITK_EXTERNAL_NAME}
+    Boost
+    teem
+    #OpenCV
+  #  ${LIBXML2_EXTERNAL_NAME}
+    )
+else()
+  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+          CIPPython
+          SlicerExecutionModel
+          ${VTK_EXTERNAL_NAME}
+          ${ITK_EXTERNAL_NAME}
+          teem
+          )
+endif()
 
+message (STATUS "PRIMARY_PROJECT_NAME_DEPENDENCIES: ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}")
 #-----------------------------------------------------------------------------
 # Define Superbuild global variables
 #-----------------------------------------------------------------------------
@@ -377,7 +391,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
   BUILD_TESTING:BOOL
   ITK_VERSION_MAJOR:STRING
   ITK_DIR:PATH    
-  USE_CYTHON:BOOL
   #LIBXML2_INCLUDE_DIR:PATH
   #LIBXML2_LIBRARIES:PATH
   #LIBXML2_XMLLINT_EXECUTABLE:FILEPATH

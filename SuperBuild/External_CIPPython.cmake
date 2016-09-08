@@ -36,22 +36,11 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   # Install Python packages.
   # Every package depends on the previous one to allow multi-threading in cmake. Otherwise conda will make trouble when installing packages in parallel
 
-  # Note: pip not needed because it is installed by cython. It causes some conflicts otherwise
-  # ExternalProject_Add_Step(${proj} installpip
-  # 	COMMAND ${CIP_PYTHON_DIR}/bin/conda install --yes --quiet pip
-  # 	DEPENDEES install
-  # )
-
   if (UNIX)
     SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_DIR}/bin)
   else() # Windows
       SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_DIR}/Scripts)
   endif()
-
-#  ExternalProject_Add_Step(${proj} installcython
-#    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet cython
-#    DEPENDEES install
-#  )
 
   ExternalProject_Add_Step(${proj} installnumpy
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet numpy
@@ -128,12 +117,13 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     DEPENDEES installnetworkx
   )
 
-  ExternalProject_Add_Step(${proj} installnipype
-    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nipype
-    DEPENDEES installnibabel
-  )
-
-
+  #Nipype is not supported in Win32
+  IF ( NOT WIN32 )
+    ExternalProject_Add_Step(${proj} installnipype
+      COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nipype
+      DEPENDEES installnibabel
+    )
+  ENDIF( )
 
   if (UNIX)
     #Set Python variables that can be referenced by other modules

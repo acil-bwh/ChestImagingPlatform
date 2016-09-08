@@ -31,7 +31,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   endif()
 
   set(ITKv4_REPOSITORY ${git_protocol}://github.com/Slicer/ITK.git)
-  set(ITKv4_GIT_TAG 7db7b60a55a962a74cd3c3138e9b7bb972948f28)
+  set(ITKv4_GIT_TAG 16df9b689856cd4a8dd22a2cef92f5ee7222da0c) #ITK master (v4.10.0rc2)
   set(CIP_ITKV3_COMPATIBILITY OFF) # to match the default setting of Slicer
 
   set(EXTERNAL_PROJECT_OPTIONAL_CMAKE_CACHE_ARGS)
@@ -64,6 +64,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DITKV3_COMPATIBILITY:BOOL=OFF
       -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DModule_ITKReview:BOOL=ON
+      -DModule_MGHIO:BOOL=ON
       -DBUILD_SHARED_LIBS:BOOL=ON
       -DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel

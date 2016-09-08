@@ -1,28 +1,17 @@
-import scipy.io as sio
-import numpy as np
-from optparse import OptionParser
-import pdb
-import pandas as pd
-import warnings
 import sys
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-from cip_python.classification.hist_dist_knn import HistDistKNN
-from cip_python.ChestConventions import ChestConventions
-from cip_python.classification.kde_histogram_feature_extractor \
-  import kdeHistExtractor
-from cip_python.utils.geometry_topology_data import  *
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from optparse import OptionParser
+
+import numpy as np
+import pandas as pd
+
+from cip_python.classification import kdeHistExtractor
 import vtk
-from cip_python.ChestConventions import ChestConventions
-   
-    
 import nrrd
-#from cip_python.io.image_reader_writer import ImageReaderWriter
-import time
+import cip_python.common as common
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from cip_python.common import ChestConventions
 
 
-     
-               
 class kdeHistExtractorFromXML:
     """General purpose class implementing a kernel density estimation histogram
     extraction given points from an xml file. 
@@ -75,7 +64,7 @@ class kdeHistExtractorFromXML:
 
     
         
-    def fit(self, ct, ct_header, lm, xml_object):
+    def fit(self, ct, ct_header, lm, xml_object, partial_lung_lm=None):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
         non-zero voxels in 'lm' using the CT data in 'ct'.
         
@@ -93,8 +82,8 @@ class kdeHistExtractorFromXML:
             XML string representation of a  GeometryTopologyData object
         """                
         #build transformation matrix
-        the_origin = np.array(ct_header['origin'])
-        the_direction = np.reshape(np.array(ct_header['direction']), [3,3])
+        the_origin = np.array(ct_header['space origin'])
+        the_direction = np.reshape(np.array(ct_header['space directions']), [3,3])
         the_spacing = np.array(ct_header['spacing'])
 
         matrix = np.zeros([4,4])
@@ -110,17 +99,24 @@ class kdeHistExtractorFromXML:
     
         transformationMatrix.Invert()
         # extract points
-        my_geometry_data = GeometryTopologyData.from_xml(xml_object) 
+        my_geometry_data = common.GeometryTopologyData.from_xml(xml_object)
         
         # loop through each point and create a patch around it
         inc = 1
         the_patch = np.zeros_like(lm)
+        
+        mychestConvenstion =ChestConventions()
+        regions = dict()
         for the_point in my_geometry_data.points : 
             coordinates = the_point.coordinate
               
             ijk_val = transformationMatrix.MultiplyPoint([coordinates[0],\
                 coordinates[1],coordinates[2],1]) # need to append a 1 at th eend of point
-
+            if (partial_lung_lm is None):
+                    regions[inc] = 'UndefinedRegion'
+            else:
+                    regions[inc] = mychestConvenstion.GetChestRegionName(partial_lung_lm[int(ijk_val[0]), \
+                int(ijk_val[1]), int(ijk_val[2])])
             # from here we can build the patches ...       
             the_patch[int(ijk_val[0])-2:int(ijk_val[0])+3, int(ijk_val[1])- \
                 2:int(ijk_val[1])+3,int(ijk_val[2])] = inc
@@ -135,11 +131,10 @@ class kdeHistExtractorFromXML:
         self.df_ = self.hist_extractor.df_
 
         inc = 1
-        mychestConvenstion =ChestConventions()
         for the_point in my_geometry_data.points : 
             index = self.df_['patch_label'] == inc          
-            self.df_.ix[index, 'ChestRegion'] = \
-                mychestConvenstion.GetChestRegionName(the_point.chest_region)
+            self.df_.ix[index, 'ChestRegion'] = regions[inc]
+                #mychestConvenstion.GetChestRegionName(the_point.chest_region)
             self.df_.ix[index, 'ChestType'] = \
                 mychestConvenstion.GetChestTypeName(the_point.chest_type)
             inc = inc+1

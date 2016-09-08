@@ -12,7 +12,7 @@ import os
 import platform
 import time
 
-class GeometryTopologyData:
+class GeometryTopologyData(object):
     # Coordinate System Constants
     UNKNOWN = 0
     IJK = 1
@@ -34,34 +34,52 @@ class GeometryTopologyData:
     def num_dimensions(self, value):
         self.__num_dimensions__ = value
 
+    @property
+    def lps_to_ijk_transformation_matrix_array(self):
+        """ LPS_IJK transformation matrix in a numpy format
+        """
+        if self.lps_to_ijk_transformation_matrix is None:
+            return None
+        if self.__lps_to_ijk_transformation_matrix_array__ is None:
+            import numpy as np
+            self.__lps_to_ijk_transformation_matrix_array__ = np.array(self.lps_to_ijk_transformation_matrix, dtype=np.float)
+        return self.__lps_to_ijk_transformation_matrix_array__
+
 
     def __init__(self):
         self.__num_dimensions__ = 0
         self.coordinate_system = self.UNKNOWN
-        self.lps_to_ijk_transformation_matrix = None    # 4x4 transformation matrix to go from LPS to IJK (in the shape of a 4x4 list)
+        self.lps_to_ijk_transformation_matrix = None    # Transformation matrix to go from LPS to IJK (in the shape of a 4x4 list)
+        self.__lps_to_ijk_transformation_matrix_array__ = None  # Same matrix in a numpy array
 
         self.points = []    # List of Point objects
         self.bounding_boxes = []    # List of BoundingBox objects
 
         self.id_seed = 0    # Seed. The structures added with "add_point", etc. will have an id = id_seed + 1
 
-    def add_point(self, point, fill_auto_fields=True):
+    def add_point(self, point, fill_auto_fields=True, timestamp=None):
         """ Add a new Point to the structure
-        :param point: Point object """
+        :param point: Point object
+        :param fill_auto_fields: fill automatically UserName, MachineName, etc.
+        :param timestamp: optional timestamp to be set in the object
+        """
         self.points.append(point)
         if fill_auto_fields:
             self.fill_auto_fields(point)
+        if timestamp:
+            point.timestamp = timestamp
 
-
-    def add_bounding_box(self, bounding_box, fill_auto_fields=True):
+    def add_bounding_box(self, bounding_box, fill_auto_fields=True, timestamp=None):
         """ Add a new BoundingBox to the structure
         :param bounding_box: BoundingBox object
-        :return:
+        :param fill_auto_fields: fill automatically UserName, MachineName, etc.
+        :param timestamp: optional timestamp to be set in the object
         """
         self.bounding_boxes.append(bounding_box)
         if fill_auto_fields:
             self.fill_auto_fields(bounding_box)
-
+        if timestamp:
+            bounding_box.timestamp = timestamp
 
     def fill_auto_fields(self, structure):
         """ Fill "auto" fields like timestamp, username, etc, unless there is already a specified value
@@ -97,7 +115,8 @@ class GeometryTopologyData:
         if self.lps_to_ijk_transformation_matrix is not None:
             output += self.__write_transformation_matrix__(self.lps_to_ijk_transformation_matrix)
 
-        # Concatenate points
+        # Concatenate points (sort first)
+        self.points.sort(key=lambda p: p.__id__)
         points = "".join(map(lambda i:i.to_xml(), self.points))
         # Concatenate bounding boxes
         bounding_boxes = "".join(map(lambda i:i.to_xml(), self.bounding_boxes))
@@ -303,7 +322,7 @@ class Structure(object):
         timestamp = xml_node.find("Timestamp")
         if timestamp is not None:
             timestamp = timestamp.text
-        user_name = xml_node.find("Username")
+        user_name = xml_node.find("UserName")
         if user_name is not None:
             user_name = user_name.text
         machine_name = xml_node.find("MachineName")
@@ -464,5 +483,3 @@ class BoundingBox(Structure):
         structure = super(BoundingBox, self).to_xml()
 
         return '<BoundingBox>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % (structure, start_str, size_str)
-
-

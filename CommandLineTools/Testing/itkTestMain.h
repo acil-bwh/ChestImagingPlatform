@@ -501,7 +501,8 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
   //1.  Check Point
   if ( numTestPoints != numBaselinePoints )
     {
-      std::cerr << "Test and baseline have different number of points" << std::endl;
+      std::cerr << "Test and baseline have different number of points (" <<
+	numTestPoints << " vs " << numBaselinePoints << ")" << std::endl;
       return 1;
     }
   

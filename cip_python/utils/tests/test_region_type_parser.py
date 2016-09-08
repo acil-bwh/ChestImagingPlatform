@@ -1,84 +1,114 @@
 import os.path
-from cip_python.utils.region_type_parser import *
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
-import pdb
+import numpy as np
+import unittest
+
+from cip_python.utils import RegionTypeParser
+from cip_python.input_output import ImageReaderWriter
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-file_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
-image_io = ImageReaderWriter()
-im, header = image_io.read_in_numpy(file_name) 
-parser = RegionTypeParser(im)
 
-gt_labels = np.array([0, 2, 3, 512, 514, 515, 770, 771])
+class BaseTestMethods(unittest.TestCase):
+    __test__=False
+    def test_label_equality(self):
+        assert self.parser.labels_.size == self.gt_labels.size, \
+            "Number of labels not as expected"
+      
+        for gt_label in self.gt_labels:
+            labels_match = False
+            for label in self.parser.labels_:
+                if label == gt_label:
+                    labels_match = True
+            assert labels_match, "Labels do not match with ground truth"
 
-def test_label_equality():
-    assert parser.labels_.size == gt_labels.size, \
-        "Number of labels not as expected"
+
+    def test_get_chest_regions(self):
     
-    for gt_label in gt_labels:
-        labels_match = False
-        for label in parser.labels_: 
-            if label == gt_label:
-                labels_match = True
-        assert labels_match, "Labels do not match with ground truth"
+        assert np.sum(np.sort(self.gt_regions) == np.sort(self.parser.get_chest_regions())) \
+            == len(self.gt_regions), "Retrieved chest regions not as expected"
 
-def test_get_mask():
-    X = 5
-    Y = 11
-    Z = 3
-    gt_mask = np.empty([5, 11, 3], dtype=bool)
+    def test_get_all_chest_regions(self):
 
-    # Test if we can correctly extract the WHOLELUNG region
-    gt_mask[:, :, :] = False
-    gt_mask[1:4, 1:4, 1] = True
-    gt_mask[1:4, 7:10, 1] = True    
+      assert np.sum(np.sort(self.gt_all_regions) == \
+                    np.sort(self.parser.get_all_chest_regions())) == len(self.gt_all_regions), \
+        "Retrieved chest regions not as expected"
 
-    assert np.sum(parser.get_mask(chest_region=1) == gt_mask) == X*Y*Z, \
-        "Mask is not as expected"
+    def test_get_chest_types(self):
+    
+        assert np.sum(np.sort(self.gt_types) == np.sort(self.parser.get_chest_types())) \
+            == len(self.gt_types), "Retrieved chest types not as expected"
+    
+    def test_get_all_pairs(self):
 
-    # Test if we can correctly extract the AIRWAY type
-    gt_mask[:, :, :] = False
-    gt_mask[2, 5, 0] = True
-    gt_mask[2, 5, 1] = True    
-    gt_mask[2, 2, 1] = True    
-    gt_mask[2, 8, 1] = True
+        assert np.sum(self.parser.get_all_pairs() == self.gt_all_pairs) == len(self.gt_all_pairs.flatten()), \
+            "Retrieved pairs are not as expected"
 
-    assert np.sum(parser.get_mask(chest_type=2) == gt_mask) == X*Y*Z, \
-        "Mask is not as expected"
 
-    # Test if we can correctly extract LEFTLUNG, AIRWAY
-    gt_mask[:, :, :] = False
-    gt_mask[2, 8, 1] = True
+class SimpleTest(BaseTestMethods):
+    __test__=True
+    def setUp(self):
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        file_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
+        image_io = ImageReaderWriter()
+        im, header = image_io.read_in_numpy(file_name) 
+        self.parser = RegionTypeParser(im)
 
-    assert np.sum(parser.get_mask(chest_region=3, chest_type=2) == gt_mask) == \
-        X*Y*Z, "Mask is not as expected"
+        self.gt_labels = np.array([0, 2, 3, 512, 514, 515, 770, 771])
+        self.gt_regions = np.array([0, 2, 3], dtype=int)
+        self.gt_all_regions = np.array([0, 1, 2, 3], dtype=int)
+        self.gt_types = np.array([0, 2, 3], dtype=int)
+        self.gt_all_pairs = np.array([[0, 0], [1, 0], [2, 0], [3, 0], [0, 2], [1, 2],
+                               [2, 2], [3, 2], [1, 3], [2, 3], [3, 3]])
 
-def test_get_chest_regions():
-    gt_regions = np.array([0, 2, 3], dtype=int)
 
-    assert np.sum(np.sort(gt_regions) == np.sort(parser.get_chest_regions())) \
-        == 3, "Retrieved chest regions not as expected"
+    def test_get_mask(self):
+        X = 5
+        Y = 11
+        Z = 3
+        gt_mask = np.empty([5, 11, 3], dtype=bool)
+        
+        # Test if we can correctly extract the WHOLELUNG region
+        gt_mask[:, :, :] = False
+        gt_mask[1:4, 1:4, 1] = True
+        gt_mask[1:4, 7:10, 1] = True
+        
+        assert np.sum(self.parser.get_mask(chest_region=1) == gt_mask) == X*Y*Z, \
+            "Mask is not as expected"
+    
+        # Test if we can correctly extract the AIRWAY type
+        gt_mask[:, :, :] = False
+        gt_mask[2, 5, 0] = True
+        gt_mask[2, 5, 1] = True
+        gt_mask[2, 2, 1] = True
+        gt_mask[2, 8, 1] = True
+        
+        assert np.sum(self.parser.get_mask(chest_type=2) == gt_mask) == X*Y*Z, \
+            "Mask is not as expected"
+        
+        # Test if we can correctly extract LEFTLUNG, AIRWAY
+        gt_mask[:, :, :] = False
+        gt_mask[2, 8, 1] = True
+        
+        assert np.sum(self.parser.get_mask(chest_region=3, chest_type=2) == gt_mask) == \
+            X*Y*Z, "Mask is not as expected"
 
-def test_get_all_chest_regions():
-    gt_regions = np.array([0, 1, 2, 3], dtype=int)
+class ArrayTest(BaseTestMethods):
+    __test__=True
+    def setUp(self):
+        lm=np.zeros([10,10,10],dtype=np.uint16)
+        lm[:,1,:]=9
+        lm[:,2,:]=10
+        lm[:,3,:]=11
+        lm[:,5,:]=12
+        lm[:,6,:]=13
+        lm[:,7,:]=14
 
-    assert np.sum(np.sort(gt_regions) == \
-                  np.sort(parser.get_all_chest_regions())) == 4, \
-                  "Retrieved chest regions not as expected"
+        self.parser = RegionTypeParser(lm)
 
-def test_get_chest_types():
-    gt_types = np.array([0, 2, 3], dtype=int)
-
-    assert np.sum(np.sort(gt_types) == np.sort(parser.get_chest_types())) \
-        == 3, "Retrieved chest types not as expected"
-
-def test_get_all_pairs():
-    gt_pairs = np.array([[0, 0], [1, 0], [2, 0], [3, 0], [0, 2], [1, 2],
-                         [2, 2], [3, 2], [1, 3], [2, 3], [3, 3]])
-
-    assert np.sum(parser.get_all_pairs() == gt_pairs) == 22, \
-        "Retrieved pairs are not as expected"
-
+        self.gt_labels = np.array([0,9,10,11,12,13,14], dtype=int)
+        self.gt_regions = np.array([0,9,10,11,12,13,14], dtype=int)
+        self.gt_all_regions = np.array([0,1,2,3,9,10,11,12,13,14], dtype=int)
+        self.gt_types = np.array([0], dtype=int)
+        self.gt_all_pairs = np.array([[0, 0], [1, 0], [3, 0], [9, 0], [10, 0],
+                               [11, 0], [2, 0], [12, 0], [13, 0], [14, 0]])

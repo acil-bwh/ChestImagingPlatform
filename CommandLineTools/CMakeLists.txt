@@ -2,11 +2,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT( CommandLineTools )
 
-IF (WIN32)
-ADD_DEFINITIONS(-DUSE_STATIC_CIP_LIBS)
-ENDIF (WIN32)
+if (WIN32)
+  ADD_DEFINITIONS(-DUSE_STATIC_CIP_LIBS)
+endif (WIN32)
 
-SET(CLIS_DIRS
+set(CLIS_DIRS
   ConvertDicom
   MergeParticleDataSets
   RemoveParticlesFromParticlesDataSet
@@ -79,29 +79,30 @@ SET(CLIS_DIRS
 )
 
 #Append CLIS that depends on BOOST
-IF (CIP_USE_BOOST)
-
-  list (APPEND ${CLIS_DIRS}
+if ( CIP_USE_BOOST )
+  message ( "Appending new list" )
+  list (APPEND CLIS_DIRS
     ReadParticlesWriteConnectedParticles
     LabelAirwayParticlesByGeneration
     GenerateStatisticsForAirwayGenerationLabeling
   )
 
-ENDIF(CIP_USE_BOOST)
+endif( )
 
-foreach (CLI ${CLIS_DIRS})
+foreach ( CLI ${CLIS_DIRS} )
   set(BUILD_${CLI} ON CACHE BOOL "BUILD_${CLI}" )
   if(BUILD_${CLI})
       SUBDIRS (${CLI})
   endif(BUILD_${CLI})
-endforeach(CLI)
+endforeach( )
 
 
 
-SET(BUILD_LEGACYCLIS OFF CACHE BOOL "BUILD_LEGACYCLIS")
-IF(BUILD_LEGACYCLIS)
+set(BUILD_LEGACYCLIS OFF CACHE BOOL "BUILD_LEGACYCLIS")
+
+if ( BUILD_LEGACYCLIS )
   SUBDIRS (LegacyCLIs)
-ENDIF(BUILD_LEGACYCLIS)
+endif( )
 
 
 

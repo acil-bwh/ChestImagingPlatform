@@ -1,11 +1,10 @@
 import numpy as np
 from scipy.stats import mode, kurtosis, skew
 from optparse import OptionParser
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
-from cip_python.phenotypes.phenotypes import Phenotypes
-from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.ChestConventions import ChestConventions
-import pdb
+from ..input_output import ImageReaderWriter
+from . import Phenotypes
+from ..common import ChestConventions
+from ..utils import RegionTypeParser
 
 class BodyCompositionPhenotypes(Phenotypes):
     """General purpose class for generating body composition-based phenotypes.

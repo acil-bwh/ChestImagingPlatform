@@ -14,11 +14,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from cip_python.phenotypes.phenotypes import Phenotypes
-from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.ChestConventions import ChestConventions
-
-
+from . import Phenotypes
+from ..common import ChestConventions
+from ..utils import RegionTypeParser
 
 class VasculaturePhenotypes(Phenotypes):
   """Compute vasculare spectific phenotypes
@@ -28,7 +26,7 @@ class VasculaturePhenotypes(Phenotypes):
     
   """
   def __init__(self,vessel,cid,chest_regions=None,output_prefix=None,min_csa=0,max_csa=90,plot=False):
-  
+    #TODO: FIX THIS!! Many wrong parameters, inexistent variables, etc.
     self._chest_region_type_assert(chest_regions,chest_types,pairs)
     self.chest_regions_ = chest_regions
     
@@ -123,9 +121,9 @@ class VasculaturePhenotypes(Phenotypes):
     
     for kk in xrange(len(region_type_arr)):
       region_arr[kk]=c.GetChestRegionFromValue(region_type_arr[kk])
-      type_arr[kk]=c.GetChestTypeFromValue(region_type_arr[kk]
+      type_arr[kk]=c.GetChestTypeFromValue(region_type_arr[kk])
     
-    print c.GetChestRegionValueFromName('Vessel')
+    #print c.GetChestTypeValueFromName('Vessel')
     vessel_type = c.GetChestTypeValueFromName('Vessel')
     
     vessel_mask = (type_arr==vessel_type)
@@ -150,11 +148,11 @@ class VasculaturePhenotypes(Phenotypes):
           
           region_name=c.GetChestRegionName(r_id)
           type_name = c.GetChestTypeName(vessel_type_id)
-          p_csa=self.compute_bv_profile_from_scale(array_v['scale'][region_vessel_mask]))
+          p_csa=self.compute_bv_profile_from_scale(array_v['scale'][region_vessel_mask])
           n_points = np.sum(region_vessel_mask==True)
           
           if self.plot==True:
-            profiles.append([region_name,type_name,p_csa,n_points)
+            profiles.append([region_name,type_name,p_csa,n_points])
 
           #Compute blood volume phenotypes integrating along profile
           pheno_name='TBV'
@@ -258,4 +256,4 @@ if __name__ == "__main__":
     vp=VasculaturePhenotypes(vessel,options.cid,options.output_prefix,plot=options.plot)
     vp.execute()
                              
-    vp.to_csv(os.path.join(output_prefix,'_vasculaturePhenotypes.csv')
+    vp.to_csv(os.path.join(output_prefix,'_vasculaturePhenotypes.csv'))

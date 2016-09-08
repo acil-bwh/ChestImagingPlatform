@@ -3,7 +3,7 @@ import pdb
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.lda import LDA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from numpy.polynomial import polynomial as P
 import math
 from scipy.interpolate import PchipInterpolator    

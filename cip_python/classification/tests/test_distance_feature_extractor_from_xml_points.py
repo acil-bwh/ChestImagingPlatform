@@ -1,26 +1,15 @@
-import os.path
-import pandas as pd
-import nrrd
-import sys
-
-sys.path.append("/Users/rolaharmouche/ChestImagingPlatform/")
-
-from cip_python.classification.distance_feature_extractor_from_xmlpoints \
-  import DistanceFeatureExtractorFromXML
 import numpy as np
-import pdb
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
-#from pandas.util.testing import assert_frame_equal
+from cip_python.classification import DistanceFeatureExtractorFromXML
+from cip_python.input_output import ImageReaderWriter
+from cip_python.common import Paths
 
-#from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
-                    
-this_dir = os.path.dirname(os.path.realpath(__file__))                    
-ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
-in_xml = this_dir + '/../../../Testing/Data/Input/simple_ct_regionAndTypePoints.xml'
+
+ct_name = Paths.testing_file_path('simple_ct.nrrd')
+in_xml = Paths.testing_file_path('simple_ct_regionAndTypePoints.xml')
 
 def test_execute():
     lm = np.ones([5, 11, 3])

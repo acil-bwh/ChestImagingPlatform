@@ -1,14 +1,15 @@
 import os.path
 import numpy as np
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
 import SimpleITK as sitk
 import tempfile,shutil
+
+from cip_python.input_output import ImageReaderWriter
+from cip_python.common import Paths
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-file_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
+file_name = Paths.testing_file_path('simple_ct.nrrd')
 tmp_dir=tempfile.mkdtemp()
 output_filename = os.path.join(tmp_dir,'simple_ct.nrrd')
 
@@ -49,8 +50,11 @@ def test_writer_numpy():
   np_image,metainfo=image_io.read_in_numpy(file_name)
   image_io.write_from_numpy(np_image,metainfo,output_filename)
   np_image2,metainfo2=image_io.read_in_numpy(output_filename)
-  
-  assert np.mean(np_image-np_image2) < np.spacing(1) and metainfo==metainfo2, \
+  print metainfo
+  print metainfo2
+  assert np.mean(np_image-np_image2) < np.spacing(1) and metainfo['space origin']==metainfo2['space origin'] \
+          and metainfo['space directions']==metainfo2['space directions'] \
+          and metainfo['spacing']==metainfo2['spacing'], \
     "Image does not match in read/write operation"
 
 def test_clean():

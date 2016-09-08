@@ -10,6 +10,10 @@ if (CIP_USE_PYTHONQT)
   list(APPEND ${proj}_DEPENDENCIES python)
 endif()
 
+if (USE_BOOST)
+  list(APPEND ${proj}_DEPENDENCIES Boost)
+endif()
+
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
 
@@ -128,6 +132,8 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
       -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
       -DModule_vtkTestingRendering:BOOL=ON
+      -DModule_vtkInfovisBoostGraphAlgorithms:BOOL=${USE_BOOST}
+      -DBOOST_ROOT:PATH=${BOOST_DIR}
       ${EXTERNAL_PROJECT_OPTIONAL_ARGS}
     INSTALL_COMMAND ""
     DEPENDS

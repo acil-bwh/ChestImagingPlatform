@@ -1,10 +1,8 @@
-import os
+import platform
 import datetime
 import numpy as np
 import pandas as pd
-from cip_python.ChestConventions import ChestConventions
-
-import pdb
+from ..common import ChestConventions
 
 class Phenotypes:
     """Base class for phenotype genearting classes.
@@ -111,7 +109,7 @@ class Phenotypes:
         os_arch : string
             The OS architecture on which the phenotype data is generated.
         """
-        return os.uname()[4]
+        return platform.uname()[4]
 
     def get_os_kernel(self):
         """Get the OS kernel on which the phenotype data is generated.
@@ -121,7 +119,7 @@ class Phenotypes:
         os_kernel : string
             The OS kernel on which the phenotype data is generated.
         """
-        return os.uname()[2]
+        return platform.uname()[2]
 
     def get_os_version(self):
         """Get the OS version on which the phenotype data is generated.
@@ -131,7 +129,7 @@ class Phenotypes:
         os_version : string
             The OS version on which the phenotype data is generated.
         """
-        return os.uname()[3]
+        return platform.uname()[3]
 
     def get_os_name(self):
         """Get the OS name on which the phenotype data is generated.
@@ -141,7 +139,7 @@ class Phenotypes:
         os_name : string
             The OS name on which the phenotype data is generated.
         """
-        return os.uname()[0]
+        return platform.uname()[0]
 
     def get_machine(self):
         """Get the machine name on which the phenotype data is generated.
@@ -151,7 +149,7 @@ class Phenotypes:
         machine : string
             The machine name on which the phenotype data is generated.
         """
-        return os.uname()[1]
+        return platform.uname()[1]
 
     def declare_pheno_names(self):
         """
@@ -214,19 +212,15 @@ class Phenotypes:
         # Make sure CID has been set
         assert self.static_names_handler_['CID'] is not None, \
             "CID has not been set"
-
-        # Make sure the pheno name is valid
-        assert c.IsPhenotypeName(pheno_name) or pheno_name == \
-            c.GetChestWildCardName(), "Invalid phenotype name"
+        
+        # Check if pheno_name is valid
+        assert pheno_name in self.pheno_names_, \
+          "Invalid phenotype name: %s" % pheno_name
         
         # Check if key is valid
         for i in xrange(0, num_keys):
             assert key_value[i] in self.valid_key_values_[self.key_names_[i]], \
                 "Invalid key: %s" % key_value[i]
-    
-        # Check if pheno_name is valid
-        assert pheno_name in self.pheno_names_, \
-            "Invalid phenotype name: %s" % pheno_name
           
         # Check if key already exists, otherwise add entry to data frame
         key_exists = True

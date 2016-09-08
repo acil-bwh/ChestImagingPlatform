@@ -21,9 +21,10 @@ cipMacroBuildCLI(
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
    --compareVTKPolyData
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_wholeLung-64.vtk
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_wholeLung-64.vtk
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_simple_lm.vtk
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_simple_lm.vtk
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/wholeLung-64.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_wholeLung-64.vtk
+      -i ${INPUT_DATA_DIR}/simple_lm.nrrd
+      -l 2
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_simple_lm.vtk
 )

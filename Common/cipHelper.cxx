@@ -999,8 +999,6 @@ void cip::TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData > inPol
   unsigned int numberOfFieldDataArrays = inPolyData->GetFieldData()->GetNumberOfArrays();
   unsigned int numberOfPointDataArrays = inPolyData->GetPointData()->GetNumberOfArrays();
 
-  vtkSmartPointer< vtkPoints > outputPoints = vtkSmartPointer< vtkPoints >::New();
-
   outPolyData->SetPoints( inPolyData->GetPoints() );
 
   // First create a list of the point data already stored in the input polydata.

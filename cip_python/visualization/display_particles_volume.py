@@ -20,7 +20,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 # python ./display_particles_volume.py -i /Volumes/PE/nick/phgroup/finalcohortassembled/099/099_pect_phfirst_051314/099_pect_phfirst_051314_leftVesselParticles.vtk,/Volumes/PE/nick/phgroup/finalcohortassembled/099/099_pect_phfirst_051314/099_pect_phfirst_051314_rightVesselParticles.vtk -s 0.5,0.5 --feature vessel --useFieldData 1 --hth -300 --color red,green
 
-class DisplayParticles:
+class DisplayParticlesVolume:
     def __init__(self, file_list,spacing_list,feature_type,irad = 1.2, h_th=-200,
                  glyph_type='sphere', glyph_scale_factor=1,use_field_data=True, opacity_list=[],
                  color_list=[], lung=[]):
@@ -613,7 +613,7 @@ if __name__ == "__main__":
 
     print use_field_data
 
-    dv = DisplayParticles(file_list, spacing_list,options.feature_type,float(options.irad),float(options.hth), \
-        'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lung_filename)
+    dv = DisplayParticlesVolume(file_list, spacing_list, options.feature_type, float(options.irad), float(options.hth), \
+        'cylinder', float(options.glyph_scale_factor), use_field_data, opacity_list, color_list, lung_filename)
     dv.capture_prefix = options.capture_prefix
     dv.execute()

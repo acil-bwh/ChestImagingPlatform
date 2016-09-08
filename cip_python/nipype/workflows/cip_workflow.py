@@ -1,11 +1,9 @@
-import cip_python.nipype.interfaces.cip as cip
-import cip_python.nipype.interfaces.cip.cip_python_interfaces \
-  as cip_python_interfaces
+# import cip_python.nipype.interfaces.cip as cip
+# import cip_python.nipype.interfaces.cip.cip_python_interfaces \
+#   as cip_python_interfaces
 import nipype.interfaces.spm as spm         # the spm interfaces
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
-import sys
-import os 
-from nipype import SelectFiles, Node
+# from nipype import SelectFiles, Node
 
 class CipWorkflow(pe.Workflow):      
 

@@ -1,13 +1,7 @@
 import numpy as np
-from cip_python.ChestConventions import ChestConventions
-from sets import Set
-import pdb
+from cip_python.common import ChestConventions
 
-def contains(label, set_of_labels):
-        """ True if label is in the set of labels. 
-        """
-        return label in set_of_labels
-        
+
 class RegionTypeParser():
     """Parses the chest-region chest-type input data to identify all existing
     chest regions, chest types, and region-type pairs.
@@ -60,11 +54,13 @@ class RegionTypeParser():
             chest-type query. The chest region hierarchy is honored.
         """
         if chest_region is not None:
-            if type(chest_region) != int and type(chest_region) != np.int64:
+            if type(chest_region) != int and type(chest_region) != np.int64 \
+              and type(chest_region) != np.int32:
                 raise ValueError(
                     'chest_region must be an int between 0 and 255 inclusive')
         if chest_type is not None:
-            if type(chest_type) != int and type(chest_type) != np.int64:
+            if type(chest_type) != int and type(chest_type) != np.int64 \
+              and type(chest_type) != np.int32:
                 raise ValueError(
                     'chest_type must be an int between 0 and 255 inclusive')        
         
@@ -91,8 +87,8 @@ class RegionTypeParser():
         mask = np.empty(self._data.shape, dtype=bool)
         mask[:] = False
         
-        contains_np = np.frompyfunc(contains, 2, 1)
-        mask = contains_np(self._data, Set(mask_labels)).astype(bool)
+        for ll in set(mask_labels):
+            mask[self._data==ll]=True
 
         return mask
 

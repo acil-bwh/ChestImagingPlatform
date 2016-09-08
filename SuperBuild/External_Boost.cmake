@@ -24,9 +24,10 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- End Project specific additions
 # SVN is too slow SVN_REPOSITORY http://svn.boost.org/svn/boost/trunk
 # SVN is too slow SVN_REVISION -r "82586"
+
   #set(${proj}_URL http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.gz )
-  set(${proj}_URL https://acil.s3.amazonaws.com/external_deps/boost_1_54_0.tar.gz)
-  set(${proj}_MD5 efbfbff5a85a9330951f243d0a46e4b9 )
+  set(${proj}_URL https://acil.s3.amazonaws.com/external_deps/boost_1_54_0_nodoc.tar.gz)
+  set(${proj}_MD5 81bb79d6939601b43e681449e3eae7df )
   if(CMAKE_COMPILER_IS_CLANGXX)
     set(CLANG_ARG -DCMAKE_COMPILER_IS_CLANGXX:BOOL=ON)
   endif()
@@ -34,6 +35,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     URL ${${proj}_URL}
     URL_MD5 ${${proj}_MD5}
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}
+    #DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E echo "Remove this line and uncomment GIT_REPOSITORY and GIT_TAG"
+    #SOURCE_DIR ../../Downloads/boost_1_54_0/
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CONFIGURE_COMMAND ${CMAKE_COMMAND}
     ${CLANG_ARG}
@@ -45,8 +48,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     BUILD_COMMAND ${CMAKE_COMMAND}
     INSTALL_COMMAND ""
   )
-  set(BOOST_ROOT        ${Boost_Install_Dir})
-  set(BOOST_INCLUDE_DIR ${Boost_Install_Dir}/include)
+  set(BOOST_DIR        ${Boost_Install_Dir})
+
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${proj} ${${extProjName}_REQUIRED_VERSION} REQUIRED)

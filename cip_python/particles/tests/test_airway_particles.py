@@ -1,24 +1,18 @@
 import os.path
-import subprocess
-import numpy as np
-from numpy import sum, sqrt
-import tempfile, shutil
+import shutil
+import tempfile
+
 import vtk
-from vtk.util.numpy_support import vtk_to_numpy
-import pdb
 from cip_python.particles.airway_particles import AirwayParticles
 from cip_python.particles.particle_metrics import ParticleMetrics
+from cip_python.common import Paths
 
 def test_airway_particles():
   try:
-    # Get the path to the this test so that we can reference the test data
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-
     # Set up the inputs to AirwayParticles
-    input_ct = this_dir + '/../../../Testing/Data/Input/airwaygauss.nrrd'
-    input_mask = this_dir + '/../../../Testing/Data/Input/airwaygauss_mask.nrrd'
+    input_ct = Paths.testing_file_path('airwaygauss.nrrd')
+    input_mask = Paths.testing_file_path('airwaygauss_mask.nrrd')
       
-    #tmp_dir = this_dir + '/../../../Testing/tmp/'
     tmp_dir = tempfile.mkdtemp()
     output_particles = os.path.join(tmp_dir,'airway_particles.vtk')
     print tmp_dir
@@ -39,8 +33,7 @@ def test_airway_particles():
     
     # Read in the reference data set for comparison
     ref_reader = vtk.vtkPolyDataReader()
-    ref_reader.SetFileName(this_dir +
-                    '/../../../Testing/Data/Input/airway_particles.vtk')
+    ref_reader.SetFileName(Paths.testing_file_path('airway_particles.vtk'))
     ref_reader.Update()
 
     # Now read in the output data set

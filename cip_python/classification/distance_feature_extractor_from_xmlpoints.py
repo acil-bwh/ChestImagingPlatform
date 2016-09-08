@@ -1,23 +1,14 @@
-import scipy.io as sio
-import numpy as np
 from optparse import OptionParser
-import pdb
-import pandas as pd
-import warnings
-from sklearn.neighbors import KernelDensity
+
 import nrrd
-from scipy import ndimage
-from kde_bandwidth import botev_bandwidth
-from cip_python.ChestConventions import ChestConventions
-#from cip_python.io.image_reader_writer import ImageReaderWriter
-#from cip_python.classification.distance_feature_extractor_from_xmlpoints \
-#  import DistanceFeatureExtractorFromXML
-from cip_python.utils.geometry_topology_data import  *
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
+import numpy as np
+import pandas as pd
 import vtk
-from cip_python.classification.distance_feature_extractor \
-  import DistanceFeatureExtractor
-       
+
+from ..common import GeometryTopologyData
+from . import DistanceFeatureExtractor
+
+
 class DistanceFeatureExtractorFromXML:
     """General purpose class implementing a distance feature extractor from
     an xml file. 
@@ -94,8 +85,8 @@ class DistanceFeatureExtractorFromXML:
             Input mask where distance features wil be extracted.    
         """        
         #build transformation matrix
-        the_origin = np.array(distance_header['origin'])
-        the_direction = np.reshape(np.array(distance_header['direction']), [3,3])
+        the_origin = np.array(distance_header['space origin'])
+        the_direction = np.reshape(np.array(distance_header['space directions']), [3,3])
         the_spacing = np.array(distance_header['spacing'])
 
         matrix = np.zeros([4,4])
@@ -111,7 +102,7 @@ class DistanceFeatureExtractorFromXML:
     
         transformationMatrix.Invert()
         # extract points
-        my_geometry_data = GeometryTopologyData.from_xml(xml_object) 
+        my_geometry_data = GeometryTopologyData.from_xml(xml_object)
         
         # loop through each point and create a patch around it
         inc = 1

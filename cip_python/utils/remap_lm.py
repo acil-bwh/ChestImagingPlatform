@@ -1,12 +1,8 @@
 import numpy as np
 from optparse import OptionParser
-import nrrd
-from cip_python.ChestConventions import ChestConventions
-from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.input_output.image_reader_writer import ImageReaderWriter
-
-
-import pdb
+from ..common import ChestConventions
+from ..utils import RegionTypeParser
+from ..input_output import ImageReaderWriter
 
 def remap_lm(lm, region_maps=None, type_maps=None, pair_maps=None):
     """Overwrites values in an input label map using the specified mappings.

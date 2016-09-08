@@ -58,21 +58,24 @@
           <description><![CDATA[Gaussian smoothing standard deviation. 1 value: sigma, 3 values: sigmaMin, sigmaMax, numberOfSteps]]></description>
         </double-vector>
     
-        <double>
+        <integer-enumeration>
           <name>sigmaStepMethod</name>
           <longflag>ssm</longflag>
           <label>sigmaStepMethod</label>
           <channel>input</channel>
+          <element>0</element>
+          <element>1</element>
           <description><![CDATA[Sigma step method. Choose one of: 0 - Equispapced sigma steps, 1 - Logarithmic sigma steps.]]></description>
           <default>1</default>
-        </double>
+        </integer-enumeration>
       
         <boolean>
-          <name>rescale</name>
-          <longflag>rescale</longflag>
-          <label>rescale</label>
+          <name>rescaleOff</name>
+          <longflag>rescaleOff</longflag>
+          <label>rescaleOff</label>
           <channel>input</channel>
-          <description><![CDATA[Rescale the input in the range 0-1]]></description>
+          <description><![CDATA[Rescale the output in the range 0-1]]></description>
+          <default>false</default>
         </boolean>
     
       <integer>
@@ -166,10 +169,10 @@
              <description><![CDATA[C param: noise leve]]></description>
              <constraints>
                <minimum>0</minimum>
-               <maximum>300</maximum>
-               <step>0.1</step>
+               <maximum>1000</maximum>
+               <step>1</step>
              </constraints>
-             <default>0.5</default>
+             <default>500</default>
            </double>
   
            </parameters>

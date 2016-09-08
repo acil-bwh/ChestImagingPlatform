@@ -1,15 +1,11 @@
 from optparse import OptionParser
-import cip_python.nipype.interfaces.cip as cip
-import cip_python.nipype.interfaces.unu as unu
-import cip_python.nipype.interfaces.cip.cip_python_interfaces \
-  as cip_python_interfaces
-from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
+import os
+import tempfile, shutil
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype.pipeline.engine import Workflow
-import tempfile, shutil
-import sys
-import os 
-import pdb
+from ..interfaces import cip
+from ..interfaces import unu
+from .. import CIPConventionManager as CM
 
 class VesselParticlesMaskWorkflow(Workflow):
     """This workflow produces a vessel seeds mask that is intended to be used
