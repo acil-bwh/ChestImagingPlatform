@@ -69,8 +69,8 @@ macro(cipMacroBuildCLI)
   	# Default directories for input and ouput data for the tests
   	SET (INPUT_DATA_DIR ${CIP_SOURCE_DIR}/Testing/Data/Input)      # Input files
   	SET (BASELINE_DATA_DIR ${CIP_SOURCE_DIR}/CommandLineTools/${MODULE_NAME}/Data/Baseline)    # Expected output files
-    SET (OUTPUT_DATA_DIR ${CIP_BINARY_DIR}/CommandLineTools/Testing/Output)                    # Testing output files
-  	
+	SET (BASELINE_DATA_DIR_LEGACY ${CIP_SOURCE_DIR}/CommandLineTools/LegacyCLIs/${MODULE_NAME}/Data/Baseline)    # Expected output files	
+        SET (OUTPUT_DATA_DIR ${CIP_BINARY_DIR}/CommandLineTools/Testing/Output)                    # Testing output files  	
   		
   	FILE(MAKE_DIRECTORY "${BASELINE_DATA_DIR}")
     FILE(MAKE_DIRECTORY "${OUTPUT_DATA_DIR}")
