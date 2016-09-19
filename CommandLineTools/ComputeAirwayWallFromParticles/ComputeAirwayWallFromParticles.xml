@@ -122,7 +122,23 @@ and does not necessarily represent the official views of the National Institutes
     <description>Compute airway wall in-plane ignoring airway longitudinal axis.</description>
     <default>false</default>
   </boolean>
-    
+  
+  <boolean>
+      <name>centroidCentering</name>
+      <label>Centroid centering</label>
+      <longflag>centroidCentering</longflag>
+      <description>Center airway point based on lumen centroid.</description>
+      <default>false</default>
+  </boolean>
+  
+  <boolean>
+      <name>fineCentering</name>
+      <label>Fine centering</label>
+      <longflag>fineCentering</longflag>
+      <description>Center airway point at lumen intensity minimum.</description>
+      <default>false</default>
+  </boolean>
+  
   <boolean>
     <name>largeAirways</name>
     <label>Large airways mode</label>
