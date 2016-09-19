@@ -119,7 +119,10 @@ public:
   vtkGetMacro(NumberOfQuantities,int);
 
   vtkGetObjectMacro(StatsMean,vtkDoubleArray);
-  vtkGetObjectMacro(StatsMinMax,vtkDoubleArray);
+  vtkGetObjectMacro(StatsStd,vtkDoubleArray);
+  vtkGetObjectMacro(StatsMin,vtkDoubleArray);
+  vtkGetObjectMacro(StatsMax,vtkDoubleArray);
+
   vtkGetObjectMacro(InnerContour,vtkPolyData);
   vtkGetObjectMacro(OuterContour,vtkPolyData);
 
@@ -158,7 +161,9 @@ protected:
   int WallThreshold;
   double GradientThreshold;
   vtkDoubleArray *StatsMean;
-  vtkDoubleArray *StatsMinMax;
+  vtkDoubleArray *StatsStd;
+  vtkDoubleArray *StatsMin;
+  vtkDoubleArray *StatsMax;
 
   vtkPolyData *InnerContour;
   vtkPolyData *OuterContour;
