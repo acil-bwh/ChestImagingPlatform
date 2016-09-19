@@ -847,7 +847,7 @@ double vtkExtractAirwayTree::ScaleSelection(gageContext *gtx, gagePerVolume *pvl
     S = S+deltaS;
      idx++;
      } while( S <= maxS);
-    cout<<"Sopt: "<<Sopt<<"  prevV: "<<prevV<<endl;
+   //cout<<"Sopt: "<<Sopt<<"  prevV: "<<prevV<<endl;
 
     S = initS;
     idx = 0;

@@ -232,8 +232,8 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   
   output->DeepCopy(input);
   
-  cout<<"Spacing: "<<sp[0]<<" "<<sp[1]<<" "<<sp[2]<<endl;
-  cout<<"Origin: "<<orig[0]<<" "<<orig[1]<<" "<<orig[2]<<endl;
+  //cout<<"Spacing: "<<sp[0]<<" "<<sp[1]<<" "<<sp[2]<<endl;
+  ///cout<<"Origin: "<<orig[0]<<" "<<orig[1]<<" "<<orig[2]<<endl;
   
   double resolution = this->Resolution;
 
@@ -394,12 +394,12 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
    
   //reslicer->SetCenter(0.5+(p[0]+orig[0])/sp[0],511-((p[1]+orig[1])/sp[1])+0.5,(p[2]-orig[2])/sp[2]);
   ijk[0]=(p[0]-orig[0])/sp[0] ;
-  //ijk[1]= (dim[1]-1) - (p[1]-orig[1])/sp[1];  // j coordinate has to be reflected (vtk origin is lower left and DICOM origing is upper left).
+  //ijk[1]= (dim[1]-1) - (p[1]-orig[1])/sp[1];  // j coordinate has to be reflected (vtk origin is lower left and DICOM origing is upper left). Needed when using vtkCIPNRRDReader
   ijk[1]= (p[1]-orig[1])/sp[1];
   ijk[2]=(p[2]-orig[2])/sp[2];
-  std::cout<<"point id: "<<k<<"LPS: "<<p[0]<<" "<<p[1]<<" "<<p[2]<<std::endl;
-
-  std::cout<<"point id: "<<k<<"Ijk: "<<ijk[0]<<" "<<ijk[1]<<" "<<ijk[2]<<std::endl;
+      
+  //std::cout<<"point id: "<<k<<"LPS: "<<p[0]<<" "<<p[1]<<" "<<p[2]<<std::endl;
+  //std::cout<<"point id: "<<k<<"Ijk: "<<ijk[0]<<" "<<ijk[1]<<" "<<ijk[2]<<std::endl;
   if (this->GetCentroidCentering()) {
       this->ComputeCenterFromCentroid(this->GetImage(),ijk,ijk);
   }

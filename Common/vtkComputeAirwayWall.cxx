@@ -1556,8 +1556,8 @@ for (int k=0; k<nzeros; k++) {
     // Check that the inner wall location gradient is above the threshold.
     if (fabs(valg)<this->GradientThreshold)
 	    {
-	      cout<<" Gradient= "<<fabs(valg)<<" at rmin="<<rmin<<endl;
-              continue;
+	      //cout<<" Gradient= "<<fabs(valg)<<" at rmin="<<rmin<<endl;
+          continue;
 	    }
             //cout<<"Find rmin: "<<rmin<<endl;
     }
