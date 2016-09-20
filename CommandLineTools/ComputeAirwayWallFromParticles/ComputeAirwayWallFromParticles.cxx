@@ -40,18 +40,36 @@ int main( int argc, char *argv[] )
   ConnectorType::Pointer connector = ConnectorType::New();
     connector->SetInput( reader->GetOutput() );
     connector->Update();
+    
+  
+  //Extract direction information
+  cip::CTType::DirectionType d=reader->GetOutput()->GetDirection();
+  vtkSmartPointer< vtkMatrix4x4 > lps = vtkSmartPointer< vtkMatrix4x4 >::New();
+  for (int i=0; i<3; i++)
+        for (int k=0; k<3; k++)
+            lps->SetElement(i,k, d(i,k));
+    
+  // Add translation to the user matrix
+  cip::CTType::PointType origin=reader->GetOutput()->GetOrigin();
+  
+  for (int i=0; i<3; i++)
+    {
+        lps->SetElement(i,3, origin[i]);
+    }
 
-  // Note: since we converted to using the ITK-VTK glue to handle reading the image,
-  // we are now using the 'connector' to communicate with VTK. 'ras' here no longer
-  // serves the purpose it previously did.
-  vtkSmartPointer< vtkMatrix4x4 > ras = vtkSmartPointer< vtkMatrix4x4 >::New();
   
   //Particles are in LPS (b/c we assume that images come from DICOM).
-  //NRRD reader assumes RAS, so we have to transform the origin for the pipeline to work
-  vtkSmartPointer< vtkImageChangeInformation > ctOrigin = vtkSmartPointer< vtkImageChangeInformation >::New();
+  //Make sure that the origin in the vtkImageData is properly set up.
+    vtkSmartPointer< vtkImageChangeInformation > ctOrigin = vtkSmartPointer< vtkImageChangeInformation >::New();
     ctOrigin->SetInputData( connector->GetOutput() );
-    ctOrigin->SetOutputOrigin(-1.0*ras->GetElement(0,3),-1.0*ras->GetElement(1,3),ras->GetElement(2,3));
+    ctOrigin->SetOutputOrigin(1.0*lps->GetElement(0,3),1.0*lps->GetElement(1,3),lps->GetElement(2,3));
     ctOrigin->Update();
+  
+    //std::cout<<"Origin ITK reader: "<<reader->GetOutput()->GetOrigin()[0]<<" "<<
+    //reader->GetOutput()->GetOrigin()[1]<<" "<<reader->GetOutput()->GetOrigin()[2]<<std::endl;
+
+    //std::cout<<"Origing tt: "<<ctOrigin->GetOutput()->GetOrigin()[0]<<" "<<
+    //ctOrigin->GetOutput()->GetOrigin()[1]<<" "<<ctOrigin->GetOutput()->GetOrigin()[2]<<std::endl;
   
   std::cout << "Reading particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > airwayParticlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
@@ -93,7 +111,8 @@ int main( int argc, char *argv[] )
     {
       solver->SetMethod(2);
     }
-  
+    
+  solver->SetDelta(1);
   solver->SetNumberOfThetaSamples(numberOfRays);
 
   // Airway wall computing filter
@@ -102,7 +121,19 @@ int main( int argc, char *argv[] )
     filter->SetInputData(particles);
     filter->SetImage(transformedCT->GetOutput());
     filter->SetWallSolver(solver);
-  
+    if ( fineCentering == true )
+    {
+      filter->FineCenteringOn();
+    } else {
+      filter->FineCenteringOff();
+    }
+    if ( centroidCentering == true)
+    {
+      filter->CentroidCenteringOn();
+    } else {
+      filter->CentroidCenteringOff();
+    }
+    
   // Setting up thresholds
   solver->SetGradientThreshold(gradientThreshold);
   solver->SetWallThreshold(wallThreshold);

@@ -57,7 +57,23 @@ public:
   vtkBooleanMacro(Reformat,int);
   vtkSetMacro(Reformat,int);
   vtkGetMacro(Reformat,int);
-  
+ 
+    
+  // Description:
+  // Center airway ponit on the centroid of the airway lumen.
+  // Lumen is estimated by thresholding.
+  vtkBooleanMacro(CentroidCentering,int);
+  vtkSetMacro(CentroidCentering,int);
+  vtkGetMacro(CentroidCentering,int);
+    
+  // Description:
+  // Center airway point the lumen intensity minima.
+  // The minima is computed by gradient descent.
+  vtkBooleanMacro(FineCentering,int);
+  vtkSetMacro(FineCentering,int);
+  vtkGetMacro(FineCentering,int);
+    
+
   // Description:
   // Reformat airway along airway long axis
   vtkSetMacro(Resolution,double);
@@ -106,6 +122,8 @@ protected:
   void ComputeCellData();
   int AxisMode;
   int Reformat;
+  int CentroidCentering;
+  int FineCentering;
   double Resolution;
   vtkComputeAirwayWall *WallSolver;
   vtkDoubleArray *AxisArray;
@@ -116,6 +134,10 @@ protected:
   double SegmentPercentage;
   int SaveAirwayImage;
   char *AirwayImagePrefix;
+    
+  int AirBaselineIntensity;
+  int AirWallThreshold;
+    
   
   //array names variables for the wall metrics
   char arrayNameMean[256];
@@ -127,6 +149,8 @@ protected:
   void SetWallSolver(vtkComputeAirwayWall *ref, vtkComputeAirwayWall *out);
   void ComputeAirwayAxisFromLines();
   void CreateAirwayImage(vtkImageData *resliceCT,vtkEllipseFitting *eifit,vtkEllipseFitting *eofit,vtkImageData *airwayImage);
+  void ComputeCenterFromCentroid(vtkImageData *inputImage,double ijk[3],double ijk_out[3]);
+    
   
 private:
   vtkComputeAirwayWallPolyData(const vtkComputeAirwayWallPolyData&);  // Not implemented.

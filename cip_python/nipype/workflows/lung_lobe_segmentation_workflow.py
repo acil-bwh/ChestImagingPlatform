@@ -96,8 +96,10 @@ class LungLobeSegmentationWorkflow(Workflow):
     """
     def __init__(self, ct_file_name, lobe_seg_file_name, tmp_dir, reg=50, 
         ilap=None, irap=None, ilvp=None, irvp=None, ilm=None, ifp=None, 
-        pre_dist=3.0, post_dist=3.0, pre_size=110, dist_thresh=0, post_size=110,
-        iters=200, scale=0.9, lth=-15, sth=-45, perm=False):
+        pre_dist=3.0, post_dist=3.0, pre_size=110, dist_thresh=1000, 
+        post_size=110, iters=200, scale=0.9, lth=-15, sth=-45, 
+        perm=False):
+
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
         file_and_path = os.path.abspath(__file__)
