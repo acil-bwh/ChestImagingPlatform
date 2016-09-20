@@ -60,18 +60,11 @@ int main( int argc, char *argv[] )
 	}
     }
   
-  if ( mergedParticles->GetFieldData()->GetNumberOfArrays() > 0 )
-    {
-      std::cout << "Writing merged particles..." << std::endl;
-      vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
-        particlesWriter->SetInputData( mergedParticles );
-	particlesWriter->SetFileName( outFileName.c_str() );
-	particlesWriter->Write();      
-    }
-  else
-    {
-      std::cout << "No valid particles to write..." << std::endl;
-    }
+  std::cout << "Writing merged particles..." << std::endl;
+  vtkSmartPointer< vtkPolyDataWriter > particlesWriter = vtkSmartPointer< vtkPolyDataWriter >::New();
+    particlesWriter->SetInputData( mergedParticles );
+    particlesWriter->SetFileName( outFileName.c_str() );
+    particlesWriter->Write();      
 
   std::cout << "DONE." << std::endl;
 
