@@ -114,6 +114,10 @@ int main( int argc, char *argv[] )
     
   solver->SetDelta(1);
   solver->SetNumberOfThetaSamples(numberOfRays);
+    
+  // Outlier rejection parameter
+  solver->SetStdFactor(stdFactor);
+    
 
   // Airway wall computing filter
   vtkSmartPointer< vtkComputeAirwayWallPolyData > filter = 
