@@ -94,6 +94,11 @@ public:
   vtkGetMacro(Scale,double);
   vtkGetMacro(NumberOfThetaSamples,int);
   vtkSetMacro(NumberOfThetaSamples,int);
+    
+  // Description: Set/Get factor to remove outlier rays
+    // the criteria is mean + StdFactor * std where mean and std are computed over all the airway rays
+  vtkSetMacro(StdFactor,double);
+  vtkGetMacro(StdFactor,double);
 
   // Description: Set/Get alpha value. Alpha is a factor
   // to define the parenchymal extent of an airway to be used
@@ -191,6 +196,9 @@ protected:
   int ActivateSector;
 
   int NumberOfQuantities;
+    
+  double StdFactor;
+    
 private:
   vtkComputeAirwayWall(const vtkComputeAirwayWall&);  // Not implemented.
   void operator=(const vtkComputeAirwayWall&);  // Not implemented.

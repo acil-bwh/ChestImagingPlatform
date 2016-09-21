@@ -73,6 +73,10 @@ this->ActivateSector = 0;
 this->Alpha = 3;
 this->T = 7.5;
 
+    
+// Outlier detection paramas
+this->StdFactor = 2.0;
+    
 this->StatsMean = vtkDoubleArray::New();
 this->StatsStd = vtkDoubleArray::New();
 this->StatsMin = vtkDoubleArray::New();
@@ -1401,7 +1405,7 @@ void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
   e2 = e2/tt;
   std = sqrt(e2-mean*mean);
 
-  //Compute a mean and std that is robust to outlier
+  //Compute a mean and std that is robust to outliers
   // We use (r-mean)+- 2sigma
   double meanr = 0;
   double e2r =0;
@@ -1425,7 +1429,7 @@ void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
 
   //Set points to -1 that fall beyond the criteria
   for (int k=0; k<r->GetNumberOfTuples(); k++) {
-    if (fabs(r->GetValue(k)-meanr) >= 2*stdr) {
+    if (fabs(r->GetValue(k)-meanr) >= this->StdFactor*stdr) {
       r->SetValue(k,-1);
     }
   }
