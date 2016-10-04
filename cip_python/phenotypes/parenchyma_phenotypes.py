@@ -2,10 +2,10 @@ import numpy as np
 from scipy.stats import mode, kurtosis, skew
 from optparse import OptionParser
 import warnings
-from . import Phenotypes
-from ..common import ChestConventions
-from ..input_output import ImageReaderWriter
-from ..utils import RegionTypeParser
+from cip_python.phenotypes import Phenotypes
+from cip_python.common import ChestConventions
+from cip_python.input_output import ImageReaderWriter
+from cip_python.utils import RegionTypeParser
 
 class ParenchymaPhenotypes(Phenotypes):
     """General purpose class for generating parenchyma-based phenotypes.
