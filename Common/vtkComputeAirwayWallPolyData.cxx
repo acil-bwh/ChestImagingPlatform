@@ -519,7 +519,7 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
      vtkImageData *airwayImage = vtkImageData::New();
      this->CreateAirwayImage(reslicer->GetOutput(),eifit,eofit,airwayImage);
      writer->SetInputData(airwayImage);
-     sprintf(fileName,"%s%03lld.png",this->AirwayImagePrefix,k);
+     sprintf(fileName,"%s_airwayWallImage%s-%05lld.png",this->AirwayImagePrefix,methodTag.c_str(),k);
      writer->SetFileName(fileName);
      writer->Write();
      airwayImage->Delete();

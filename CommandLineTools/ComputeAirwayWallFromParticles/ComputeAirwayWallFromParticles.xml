@@ -114,7 +114,20 @@ and does not necessarily represent the official views of the National Institutes
     </constraints>
     <default>0.6</default>
   </double>
-    
+  
+  <double>
+      <name>stdFactor</name>
+      <label>Std Factor</label>
+      <description>Factor of the std that will be allowed. This factor can be used to reject wall detections that are outlier. Reducing the factor will less variance arond the mean value.</description>
+      <longflag>stdFactor</longflag>
+      <constraints>
+          <minimum>0.1</minimum>
+          <maximum>5</maximum>
+          <step>0.1</step>
+      </constraints>
+      <default>2</default>
+  </double>
+  
   <boolean>
     <name>inPlane</name>
     <label>In-plane mode</label>

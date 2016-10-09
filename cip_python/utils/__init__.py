@@ -11,6 +11,7 @@ from query_dicom_directories import *
 from quick_airway_vessel_segmentation import *
 from generate_CLIs_description import *
 from read_geometrytopologypoint_write_dataframe import *
+from read_geometrytopologypoint_write_polydata import *
 from read_nrrds_write_vtk import *
 from region_type_parser import *
 from remap_lm import *

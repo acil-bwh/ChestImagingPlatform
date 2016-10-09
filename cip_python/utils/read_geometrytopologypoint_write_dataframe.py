@@ -43,7 +43,7 @@ class ReadGeometryTopologyPointWriteDataFrame:
         my_geometry_data = common.GeometryTopologyData.from_xml(xml)
 
         c = common.ChestConventions()
-        for the_point in my_geometry_data.points : 
+        for the_point in my_geometry_data.points:
             tmp = dict()
             tmp['Region'] = c.GetChestRegionName(the_point.chest_region)
             tmp['Type'] = c.GetChestTypeName(the_point.chest_type) 
