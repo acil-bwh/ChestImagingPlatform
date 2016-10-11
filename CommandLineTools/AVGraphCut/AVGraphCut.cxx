@@ -17,7 +17,7 @@
 
 using namespace std;
 
-std::vector<int> AVGraphCut(int num_els, int num_labels, vector<int> source, vector<int> sink,
+std::vector<int> AVGraphCut(int num_els, int num_labels, vector<int> source, vector<int> sink, 
 							vector<vector<int>> adj, int method)
 {
 	std::vector<int> result;   // stores result of optimization
@@ -122,7 +122,7 @@ int main( int argc, char *argv[] )
 
   while (getline(adjFile, line))
   {
-	  float value;
+	  int value;
 	  stringstream ss(line);
 
 	  adjMatrix.push_back(std::vector<int>());
