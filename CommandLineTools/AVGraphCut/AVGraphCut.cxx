@@ -2,7 +2,7 @@
  *  \ingroup commandLineTools 
  */
 
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "cipChestConventions.h"
 #include "cipHelper.h"
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 using namespace std;
 
 std::vector<int> AVGraphCut(int num_els, int num_labels, vector<int> source, vector<int> sink, 
-							vector<vector<int>> adj, int method)
+							vector< vector<int> > adj, int method)
 {
 	std::vector<int> result;   // stores result of optimization
 
@@ -115,9 +115,9 @@ int main( int argc, char *argv[] )
 	  m = 1;
   }
 
-  ifstream adjFile(adjMat);
+  ifstream adjFile(adjMat.c_str());
   string line;
-  vector<vector<int>> adjMatrix;
+  vector< vector<int> > adjMatrix;
   int i = 0;
 
   while (getline(adjFile, line))
@@ -135,7 +135,7 @@ int main( int argc, char *argv[] )
   }
   
   std::vector<int> w_source;
-  ifstream sourceFile(WSource);
+  ifstream sourceFile(WSource.c_str());
 
   float sourceNum;
   while (sourceFile >> sourceNum){
@@ -143,7 +143,7 @@ int main( int argc, char *argv[] )
   }
 
   std::vector<int> w_sink;
-  ifstream sinkFile(WSink);
+  ifstream sinkFile(WSink.c_str());
 
   float sinkNum;
   while (sinkFile >> sinkNum){
@@ -152,7 +152,7 @@ int main( int argc, char *argv[] )
 
   std::vector<int> GCResult = AVGraphCut(w_source.size(), num_labels, w_source, w_sink, adjMatrix, m);
   
-  SaveData(GCResult, OutputFileName, Method);
+  SaveData(GCResult, OutputFileName.c_str(), Method);
   std::cout << "    DONE" << std::endl;
 
   //printf("\n  Finished %d (%d) clock per sec %d \n", clock() / CLOCKS_PER_SEC, clock(), CLOCKS_PER_SEC);

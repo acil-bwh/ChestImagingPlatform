@@ -1,4 +1,4 @@
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "GCoptimization.h"
 #include "LinkedBlockList.h"
 #include <stdio.h>
