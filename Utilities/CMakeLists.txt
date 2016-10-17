@@ -11,7 +11,9 @@ set(${PROJECT_NAME}_INCLUDE_DIRS
        ${CMAKE_CURRENT_SOURCE_DIR}/ITK 
        ${CMAKE_CURRENT_BINARY_DIR}/ITK
        ${CMAKE_CURRENT_SOURCE_DIR}/LesionSizingToolkit
-       ${CMAKE_CURRENT_SOURCE_DIR}/LesionSizingToolkit
+       ${CMAKE_CURRENT_BINARY_DIR}/LesionSizingToolkit
+       ${CMAKE_CURRENT_SOURCE_DIR}/GraphCutsOptimization
+       ${CMAKE_CURRENT_SOURCE_DIR}/GraphCutsOptimization
      CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
 
 
@@ -51,8 +53,10 @@ endif()
 # --------------------------------------------------------------------------
 SET (CIP_UTILITIES_VTK ${CMAKE_CURRENT_SOURCE_DIR}/VTK)
 SET (CIP_UTILITIES_ITK ${CMAKE_CURRENT_SOURCE_DIR}/ITK)
+SET (CIP_UTILITIES_GCO ${CMAKE_CURRENT_SOURCE_DIR}/GraphCutsOptimization)
 
 SET ( CIPUtilities_SRCS
+  ## VTK
   ${CIP_UTILITIES_VTK}/vtkSuperquadricTensorGlyphFilter.cxx
   ${CIP_UTILITIES_VTK}/vtkGlyph3DWithScaling.cxx
   ${CIP_UTILITIES_VTK}/vtkImageConnectivity.cxx           
@@ -60,7 +64,13 @@ SET ( CIPUtilities_SRCS
   ${CIP_UTILITIES_VTK}/vtkImageNeighborhoodFilter.cxx
   ${CIP_UTILITIES_VTK}/vtkNRRDReaderCIP.cxx
   ${CIP_UTILITIES_VTK}/vtkNRRDWriterCIP.cxx
+  ## ITK
   ${CIP_UTILITIES_ITK}/itkFactoryRegistration.cxx
+  ## GCO
+  ${CIP_UTILITIES_GCO}/GCoptimization.cpp
+  ${CIP_UTILITIES_GCO}/LinkedBlockList.cpp
+  ${CIP_UTILITIES_GCO}/graph.cpp
+  ${CIP_UTILITIES_GCO}/maxflow.cpp
 )
 
 # --------------------------------------------------------------------------
