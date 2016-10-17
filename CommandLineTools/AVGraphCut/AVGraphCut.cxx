@@ -91,7 +91,7 @@ std::vector<int> AVGraphCut(int num_els, int num_labels, vector<int> source, vec
 
 void SaveData(std::vector<int> res, string namefile, string meth){
 	std::cout << "    Saving " << meth << " Output..." << std::endl;
-	ofstream outfile(namefile);
+	ofstream outfile(namefile.c_str());
 	if (outfile.is_open())
 	{
 		outfile << res[0];
@@ -152,7 +152,7 @@ int main( int argc, char *argv[] )
 
   std::vector<int> GCResult = AVGraphCut(w_source.size(), num_labels, w_source, w_sink, adjMatrix, m);
   
-  SaveData(GCResult, OutputFileName.c_str(), Method);
+  SaveData(GCResult, OutputFileName, Method);
   std::cout << "    DONE" << std::endl;
 
   //printf("\n  Finished %d (%d) clock per sec %d \n", clock() / CLOCKS_PER_SEC, clock(), CLOCKS_PER_SEC);
