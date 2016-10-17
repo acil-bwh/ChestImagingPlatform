@@ -13,7 +13,7 @@ set(${PROJECT_NAME}_INCLUDE_DIRS
        ${CMAKE_CURRENT_SOURCE_DIR}/LesionSizingToolkit
        ${CMAKE_CURRENT_BINARY_DIR}/LesionSizingToolkit
        ${CMAKE_CURRENT_SOURCE_DIR}/GraphCutsOptimization
-       ${CMAKE_CURRENT_SOURCE_DIR}/GraphCutsOptimization
+       ${CMAKE_CURRENT_BINARY_DIR}/GraphCutsOptimization
      CACHE INTERNAL "${PROJECT_NAME} include dirs" FORCE)
 
 
