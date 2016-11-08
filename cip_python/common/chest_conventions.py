@@ -37,13 +37,10 @@ class ChestConventionsInitializer(object):
         Lists of lists (every row of the csv file will be a list of strings
         """
         import csv
-        if not path.isdir(ChestConventionsInitializer.root_xml_path):
-            raise AttributeError("The directory where all the csv files should be saved has not been found ({0})".
-                                 format(ChestConventionsInitializer.root_xml_path))
-
-        csv_file_path = path.join(ChestConventionsInitializer.root_xml_path, file_name)
+        folder = path.dirname(ChestConventionsInitializer.root_xml_path)
+        csv_file_path = path.join(folder, file_name)
         if not path.exists(csv_file_path):
-            raise NameError("File {0} not found".format(csv_file_path))
+            raise NameError("Resources file not found ({})".format(csv_file_path))
         with open(csv_file_path, 'rb') as f:
             reader = csv.reader(f)
             # Return the concatenation of all the rows in a list
@@ -177,7 +174,7 @@ class ChestConventions(object):
     ChestRegionsHierarchyCollection = ChestConventionsInitializer.chest_regions_hierarchy()     # LEFTSUPERIORLOBE, LEFTLUNG
     ChestTypesCollection = ChestConventionsInitializer.chest_types()          # 1:, "NORMALPARENCHYMA", "NormalParenchyma", [0.99, 0.99, 0.99]
     ImageFeaturesCollection = ChestConventionsInitializer.image_features()    # 1: "CTARTIFACT", "CTArtifact"
-    # PreconfiguredColors = ChestConventionsInitializer.preconfigured_colors()
+    PreconfiguredColors = ChestConventionsInitializer.preconfigured_colors()
     #
     BodyCompositionPhenotypeNames = ChestConventionsInitializer.body_composition_phenotype_names()   # List of strings
     ParenchymaPhenotypeNames = ChestConventionsInitializer.parenchyma_phenotype_names()   # List of strings
@@ -299,7 +296,7 @@ class ChestConventions(object):
 
         if not ChestConventions.ChestTypesCollection.has_key(whichType):
             raise IndexError("Key {0} is not a valid ChestType".format(whichType))
-        col = ChestConventions.ChestTypesCollection[whichType][1:4]
+        col = ChestConventions.ChestTypesCollection[whichType][2]
         if color is not None:
             color[0] = col[0]
             color[1] = col[1]
@@ -329,7 +326,7 @@ class ChestConventions(object):
         """
         if not ChestConventions.ChestRegionsCollection.has_key(whichRegion):
             raise IndexError("Key {0} is not a valid ChestRegion".format(whichRegion))
-        col = ChestConventions.ChestRegionsCollection[whichRegion][1:4]
+        col = ChestConventions.ChestRegionsCollection[whichRegion][2]
         if color is not None:
             color[0] = col[0]
             color[1] = col[1]
@@ -352,7 +349,6 @@ class ChestConventions(object):
         -------
         3-Tuple with the color
         """
-        # TODO: override color in preconfigured combination (csv file)
         # Check first if the combination is preconfigured
         if ChestConventions.PreconfiguredColors.has_key((whichRegion, whichType)):
             col = ChestConventions.PreconfiguredColors[(whichRegion, whichType)]
@@ -361,8 +357,11 @@ class ChestConventions(object):
         elif whichType == ChestType.UNDEFINEDTYPE:
             col = ChestConventions.GetChestRegionColor(whichRegion)
         else:
+            # Just take the average of two colors
             reg_color = ChestConventions.GetChestRegionColor(whichRegion)
             type_color = ChestConventions.GetChestTypeColor(whichType)
+            print (reg_color)
+            print (type_color)
             col = ((reg_color[0] + type_color[0]) / 2.0,
                    (reg_color[1] + type_color[1]) / 2.0,
                    (reg_color[2] + type_color[2]) / 2.0)
@@ -571,6 +570,12 @@ class ChestConventions(object):
         else:
             # Int code
             return chestRegion in ChestConventions.ChestRegionsCollection
+
+    @staticmethod
+    def generateSlicerColorMap():
+        for reg in ChestConventions.ChestRegionsCollection:
+            for _type in ChestConventions.ChestTypesCollection:
+
       
 
 
@@ -699,3 +704,4 @@ class ChestConventions(object):
 #     compare_python_c_methods(p_methods, c_methods)
 #     print("Python --> C++ checking...OK")
 #
+
