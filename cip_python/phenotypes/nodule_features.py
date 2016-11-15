@@ -946,7 +946,7 @@ class TextureGLCM:
                             # if i >= grayLevels.min and i <= grayLevels.max and j >= grayLevels.min and j <= grayLevels.max:
                             out[i_idx, j_idx, distances_idx, angles_idx] += 1
             # Check if the user has cancelled the process
-            if iteration % 10 == 0:
+            if iteration % 10 == 0 and self.checkStopProcessFunction is not None:
                 self.checkStopProcessFunction()
 
         return (out)
