@@ -571,10 +571,6 @@ class ChestConventions(object):
             # Int code
             return chestRegion in ChestConventions.ChestRegionsCollection
 
-    @staticmethod
-    def generateSlicerColorMap():
-        for reg in ChestConventions.ChestRegionsCollection:
-            for _type in ChestConventions.ChestTypesCollection:
 
       
 
