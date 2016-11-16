@@ -15,16 +15,19 @@ import itertools
 
 class NoduleSegmenter:
 
-    def __init__(self, input_ct, nodule_lm, seed_point, l_type, segm_thresh, feature_classes, csv_file_path, all_features):
+    def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, sphere_rad,
+                 feature_classes, csv_file_path, all_features):
         self.WORKING_MODE_HUMAN = 0
         self.WORKING_MODE_SMALL_ANIMAL = 1
         self.MAX_TUMOR_RADIUS = 30
 
         self._input_ct = input_ct
         self._nodule_lm = nodule_lm
+        self._nodule_id = nodule_id
         self._seed_point = seed_point
         self._lesion_type = l_type
         self._segmentation_threshold = segm_thresh
+        self._sphere_radius = sphere_rad
         self._all_features = all_features
         self._feature_classes = feature_classes
         self._current_distance_maps = {}
@@ -32,7 +35,7 @@ class NoduleSegmenter:
         self._csv_file_path = csv_file_path
         self._analyzedSpheres = set()
 
-    def noduleAnalysis(self, cid, sphere_radius, whole_lm=None):
+    def noduleAnalysis(self, cid, whole_lm=None):
         """ Compute all the features that are currently selected, for the nodule and/or for
         the surrounding spheres
         """
@@ -61,8 +64,8 @@ class NoduleSegmenter:
             # Print analysis results
             print(self._analysis_results[keyName])
 
-            if sphere_radius is not None:
-                for sr in sphere_radius:
+            if len(self._sphere_radius) > 0:
+                for sr in self._sphere_radius:
                     self._current_distance_maps[cid] = self.getCurrentDistanceMap()
                     self.runAnalysisSphere(cid, self._current_distance_maps[cid], sr, selectedMainFeaturesKeys,
                                            selectedFeatureKeys, whole_lm)
@@ -323,25 +326,37 @@ class NoduleSegmenter:
         date = time.strftime("%Y/%m/%d %H:%M:%S")
         # noduleKeys = self.logic.getAllNoduleKeys(self.currentVolume)
         # for noduleIndex in noduleKeys:
-        self._analysis_results[keyName]["CaseId"] = keyName
+        self._analysis_results[keyName]["Case ID"] = keyName
+        self._analysis_results[keyName]["Nodule Number"] = self._nodule_id
         self._analysis_results[keyName]["Date"] = date
         # d[keyName]["Nodule"] = noduleIndex
-        self._analysis_results[keyName]["Threshold"] = self._segmentation_threshold
-        self._analysis_results[keyName]["LesionType"] = self._lesion_type
-        self._analysis_results[keyName]["Seeds_LPS"] = self._seed_point
+        self._analysis_results[keyName]["Lesion Type"] = self._lesion_type
+        if len(self._seed_point) > 0:
+            self._analysis_results[keyName]["Seeds (LPS)"] = self._seed_point
+        else:
+            self._analysis_results[keyName]["Seeds (LPS)"] = ''
+        if self._segmentation_threshold is not None:
+            self._analysis_results[keyName]["Threshold"] = self._segmentation_threshold
+        else:
+            self._analysis_results[keyName]["Threshold"] = ''
+        if len(self._sphere_radius) > 0:
+            self._analysis_results[keyName]["Sphere Radius"] = self._sphere_radius
+        else:
+            self._analysis_results[keyName]["Sphere Radius"] = ''
 
     def saveCurrentValues(self, analysis_results):
         """ Save a new row of information in the current csv file that stores the data  (from a dictionary of items)
         :param kwargs: dictionary of values
         """
         # Check that we have all the "columns"
-        storedColumnNames = ["CaseId", "Date", "LesionType", "Seeds_LPS"]
+        storedColumnNames = ["Case ID", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold",
+                             "Sphere Radius"]
         # Create a single features list with all the "child" features
         storedColumnNames.extend(itertools.chain.from_iterable(self._all_features.itervalues()))
 
         orderedColumns = []
         # Always add a timestamp as the first value
-        orderedColumns.append(time.strftime("%Y/%m/%d %H:%M:%S"))
+        # orderedColumns.append(time.strftime("%Y/%m/%d %H:%M:%S"))
         for column in storedColumnNames:
             if analysis_results.has_key(column):
                 orderedColumns.append(analysis_results[column])
@@ -395,7 +410,7 @@ def run_lung_segmentation(i_ct_filename, o_lm):
 
 
 def write_csv_first_row(csv_file_path, feature_classes):
-    column_names = ["Timestamp", "CaseId", "Date", "LesionType", "Seeds_LPS"]
+    column_names = ["Case ID", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold", "Sphere Radius"]
     column_names.extend(itertools.chain.from_iterable(feature_classes.itervalues()))
     with open(csv_file_path, 'a+b') as csvfile:
         writer = csv.writer(csvfile)
@@ -439,7 +454,10 @@ if __name__ == "__main__":
                         default=None)
     parser.add_argument('--seed',
                         help='Coordinates (x,y,z) of lesion location (RAS).', dest='seed_point',
-                        metavar='<string>', default='[]')
+                        metavar='<string>', default=None)
+    parser.add_argument('--n_id',
+                        help='Nodule ID. Used to distinguish multiple nodules of the same case', dest='n_id',
+                        metavar='<int>', default=1)
     parser.add_argument('--type',
                         help='Type for each lesion indicated. Choose between Unknown, \
                         Nodule and Tumor types',
@@ -501,20 +519,21 @@ if __name__ == "__main__":
 
     options = parser.parse_args()
 
+    input_ct = sitk.ReadImage(options.in_ct)
     fileparts = os.path.splitext(options.in_ct)
     case_id = fileparts[0].split('/')[-1:][0]
 
-    input_ct = sitk.ReadImage(options.in_ct)
-    if options.seed_point is not '[]':
+    seed_point = []
+    if options.seed_point is not None:
         seed_point = [float(s) for s in options.seed_point.split(',')]
         seed_point = ras_to_lps(seed_point)
         seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
-    else:
-        seed_point = []
 
     lesion_type = options.type
     max_radius = int(options.max_rad)
-    segm_threshold = float(options.segm_th)
+    segm_threshold = None
+    sphere_rad = []
+    nodule_id = options.n_id
 
     tmp_dir = options.tmp_dir
     if tmp_dir is not None and not os.path.exists(tmp_dir):
@@ -529,6 +548,7 @@ if __name__ == "__main__":
         if not os.path.exists(n_lm_filename):
             if len(seed_point) == 0:
                 parser.error("Nodule segmentation requires seed point")
+            segm_threshold = float(options.segm_th)
             run_nodule_segmentation(input_ct, options.in_ct, max_radius,
                                     seed_point, n_lm_filename, float(segm_threshold))
     else:
@@ -536,6 +556,7 @@ if __name__ == "__main__":
         if not os.path.exists(n_lm_filename):
             if len(seed_point) == 0:
                 parser.error("Nodule segmentation requires seed point")
+            segm_threshold = float(options.segm_th)
             run_nodule_segmentation(input_ct, options.in_ct, max_radius,
                                     seed_point, n_lm_filename, float(segm_threshold))
     nodule_lm = sitk.ReadImage(n_lm_filename)
@@ -543,7 +564,6 @@ if __name__ == "__main__":
     all_feature_classes = get_all_features()
     feature_classes = collections.OrderedDict()
     parenchyma_lm = None
-    sphere_rad = None
 
     if options.compute_all:
         feature_classes = all_feature_classes
@@ -614,12 +634,13 @@ if __name__ == "__main__":
             elif options.par_features is not None:
                 feature_classes["Parenchymal Volume"] = [ff for ff in str.split(options.par_features, ',')]
 
+    sphere_rad = []
     if options.sphere_rad is not None:
         sphere_rad = [int(r) for r in options.sphere_rad.split(',')]
 
     if not os.path.exists(options.csv_file):
         write_csv_first_row(options.csv_file, all_feature_classes)
 
-    ns = NoduleSegmenter(input_ct, nodule_lm, seed_point, lesion_type, segm_threshold, feature_classes,
-                         options.csv_file, all_feature_classes)
-    ns.noduleAnalysis(case_id, sphere_rad, whole_lm=parenchyma_lm)
+    ns = NoduleSegmenter(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sphere_rad,
+                         feature_classes, options.csv_file, all_feature_classes)
+    ns.noduleAnalysis(case_id, whole_lm=parenchyma_lm)
