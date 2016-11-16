@@ -9,9 +9,11 @@ import vtk
 import csv
 import itertools
 import SimpleITK as sitk
+import xml.etree.ElementTree as ET
 from cip_python.phenotypes.phenotypes import Phenotypes
 from argparse import ArgumentParser
 from cip_python.segmentation.nodule_segmenter import NoduleSegmenter
+
 
 class FirstOrderStatistics:
     def __init__(self, parameterValues, bins, grayLevels, allKeys):
@@ -1714,6 +1716,30 @@ def get_all_features():
     feature_classes["Parenchymal Volume"] = ParenchymalVolume.getAllEmphysemaDescriptions()
     return feature_classes
 
+
+def get_nodule_information(xml_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    nodules_id = []
+    nodules_type = []
+    nodules_seed = []
+
+    coord_syst = root.find('CoordinateSystem').text
+
+    for n in root.findall('Point'):
+        n_id = n.find('Id').text
+        nodules_id.append(n_id)
+        t = n.find('Description').text
+        nodules_type.append(t)
+        coordinate = n.find('Coordinate')
+        seed = []
+        for s in coordinate.findall('value'):
+            seed.append(s.text)
+        nodules_seed.append(seed)
+
+    return coord_syst, nodules_id, nodules_type, nodules_seed
+
+
 if __name__ == "__main__":
     desc = """This module allows to segment benign nodules and tumors in the lung.
             Besides, it analyzes a lot of different features inside the nodule and in its surroundings,
@@ -1723,20 +1749,13 @@ if __name__ == "__main__":
     parser.add_argument('--in_ct',
                         help='Input CT file', dest='in_ct', metavar='<string>',
                         default=None)
-    parser.add_argument('--seed',
-                        help='Coordinates (x,y,z) of lesion location (RAS).', dest='seed_point',
+    parser.add_argument('--xml',
+                        help='XML file containing nodule information for the input ct.', dest='xml_file',
                         metavar='<string>', default=None)
-    parser.add_argument('--n_id',
-                        help='Nodule ID. Used to distinguish multiple nodules of the same case', dest='n_id',
-                        metavar='<int>', default=1)
-    parser.add_argument('--type',
-                        help='Type for each lesion indicated. Choose between Unknown, \
-                        Nodule and Tumor types',
-                        dest='type', metavar='<string>', default='Unknown')
     parser.add_argument('--max_rad',
                         help='Maximum radius (mm) for the lesion. Recommended: 30 mm \
                         for humans and 3 mm for small animals',
-                        dest='max_rad', metavar='<string>', default=30)
+                        dest='max_rad', metavar='<float>', default=30.0)
     parser.add_argument('--n_lm',
                         help='Nodule labelmap. If labelmap exists, it will be used for \
                         analysis. Otherwise, nodule will be segmented first.', dest='n_lm',
@@ -1748,13 +1767,13 @@ if __name__ == "__main__":
     parser.add_argument('--out_csv',
                         help='CSV file to save nodule analysis.', dest='csv_file', metavar='<string>',
                         default=None)
+    parser.add_argument('--th',
+                        help='Threshold value for nodule segmentation. All the voxels above the threshold will be \
+                          considered nodule)',
+                        dest='segm_th', metavar='<float>', default=None)
     parser.add_argument('--compute_all',
                         help='Set this flag to compute all features of all classes. If not setting this flag, \
                         select features to be computed.', dest='compute_all', action='store_true')
-    parser.add_argument('--th',
-                      help='Threshold value for nodule segmentation. All the voxels above the threshold will be \
-                      considered nodule)',
-                      dest='segm_th', metavar='<float>', default=0.0)
     parser.add_argument('--fos_feat',
                         help='First Order Statistics features. For computation of \
                         all fos features indicate all.',
@@ -1783,7 +1802,7 @@ if __name__ == "__main__":
                         dest='par_features', metavar='<string>', default=None)
     parser.add_argument('--sphere_rad',
                         help='Radius(es) for Sphere computation.', metavar='<float>', dest='sphere_rad',
-                        default=0.0)
+                        default=None)
     parser.add_argument('--tmp',
                         help='Temp directory for saving computed labelmaps.', metavar='<string>',
                         dest='tmp_dir', default=None)
@@ -1793,60 +1812,39 @@ if __name__ == "__main__":
     input_ct = sitk.ReadImage(options.in_ct)
     fileparts = os.path.splitext(options.in_ct)
     case_id = fileparts[0].split('/')[-1:][0]
+    n_lm_names = options.n_lm
+    if n_lm_names is not None:
+        n_lm_names = [str(lm) for lm in str.split(options.n_lm, ',')]
 
-    seed_point = []
-    if options.seed_point is not None:
-        seed_point = [float(s) for s in options.seed_point.split(',')]
-        seed_point = ras_to_lps(seed_point)
-        seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
+    coord_system, ids, types, seeds = get_nodule_information(options.xml_file)
+    max_rad = [float(r) for r in str.split(options.max_rad, ',')]
 
-    lesion_type = options.type
-    max_radius = int(options.max_rad)
-    segm_threshold = None
-    nodule_id = options.n_id
+    segm_th = options.segm_th
+    if segm_th is not None:
+        segm_th = [float(t) for t in str.split(options.segm_th, ',')]
+    sph_rad = options.sphere_rad
+    if sph_rad is not None:
+        sph_rad = [float(sr) for sr in str.split(options.sphere_rad, ',')]
+
+    all_feature_classes = get_all_features()
+    feature_classes = collections.OrderedDict()
 
     tmp_dir = options.tmp_dir
     if tmp_dir is not None and not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
+        os.makedirs(tmp_dir)
     elif tmp_dir is None:
         tmp_dir = os.path.join(os.getcwd(), 'LabelMaps')
         if not os.path.exists(tmp_dir):
             os.makedirs(tmp_dir)
 
-    n_lm_filename = options.n_lm
-    if n_lm_filename is not None:
-        if not os.path.exists(n_lm_filename):
-            if len(seed_point) == 0:
-                parser.error("Nodule segmentation requires seed point")
-            segm_threshold = float(options.segm_th)
-            nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_radius, seed_point,
-                                               n_lm_filename, float(segm_threshold))
-            nodule_segmenter.segment_nodule()
-    else:
-        n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
-        if not os.path.exists(n_lm_filename):
-            if len(seed_point) == 0:
-                parser.error("Nodule segmentation requires seed point")
-            segm_threshold = float(options.segm_th)
-            nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_radius, seed_point,
-                                               n_lm_filename, float(segm_threshold))
-            nodule_segmenter.segment_nodule()
-    nodule_lm = sitk.ReadImage(n_lm_filename)
-
-    all_feature_classes = get_all_features()
-    feature_classes = collections.OrderedDict()
     parenchyma_lm = None
-
     if options.compute_all:
         feature_classes = all_feature_classes
         par_lm_filename = options.par_lm
-        if par_lm_filename is not None:
-            if not os.path.exists(par_lm_filename):
-                run_lung_segmentation(options.in_ct, par_lm_filename)
-        else:
+        if par_lm_filename is None:
             par_lm_filename = tmp_dir + '/' + case_id + '_partialLungLabelMap.nrrd'
-            if not os.path.exists(par_lm_filename):
-                run_lung_segmentation(options.in_ct, par_lm_filename)
+        if not os.path.exists(par_lm_filename):
+            run_lung_segmentation(options.in_ct, par_lm_filename)
 
         parenchyma_lm = sitk.ReadImage(par_lm_filename)
         parenchyma_lm_array = sitk.GetArrayFromImage(parenchyma_lm)
@@ -1887,13 +1885,11 @@ if __name__ == "__main__":
 
         if options.par_features is not None:
             par_lm_filename = options.par_lm
-            if par_lm_filename is not None:
-                if not os.path.exists(par_lm_filename):
-                    run_lung_segmentation(options.in_ct, par_lm_filename)
-            else:
+            if par_lm_filename is None:
                 par_lm_filename = tmp_dir + '/' + case_id + '_partialLungLabelMap.nrrd'
-                if not os.path.exists(par_lm_filename):
-                    run_lung_segmentation(options.in_ct, par_lm_filename)
+            if not os.path.exists(par_lm_filename):
+                run_lung_segmentation(options.in_ct, par_lm_filename)
+
             parenchyma_lm = sitk.ReadImage(par_lm_filename)
             parenchyma_lm_array = sitk.GetArrayFromImage(parenchyma_lm)
             parenchyma_lm_array[parenchyma_lm_array > 0] = 1
@@ -1906,11 +1902,42 @@ if __name__ == "__main__":
             elif options.par_features is not None:
                 feature_classes["Parenchymal Volume"] = [ff for ff in str.split(options.par_features, ',')]
 
-    sphere_rad = float(options.sphere_rad)
+    for i in range(len(ids)):
+        seed_point = [float(s) for s in seeds[i]]
+        if coord_system == 'RAS':
+            seed_point = ras_to_lps(seed_point)
+        seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
 
-    if not os.path.exists(options.csv_file):
-        write_csv_first_row(options.csv_file, all_feature_classes)
+        lesion_type = types[i][2:]
+        nodule_id = ids[i]
+        max_radius = max_rad[i]
+        if segm_th is not None:
+            segm_threshold = segm_th[i]
+        else:
+            segm_threshold = None
 
-    ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sphere_rad,
-                         feature_classes, options.csv_file, all_feature_classes)
-    ns.execute(case_id, whole_lm=parenchyma_lm)
+        if n_lm_names is None:
+            n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
+        elif n_lm_names[i] is None:
+            n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
+        else:
+            n_lm_filename = n_lm_names[i]
+
+        if not os.path.exists(n_lm_filename):
+            nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_radius, seed_point,
+                                               n_lm_filename, segm_threshold)
+            nodule_segmenter.segment_nodule()
+
+        nodule_lm = sitk.ReadImage(n_lm_filename)
+
+        if sph_rad is not None:
+            sphere_rad = sph_rad[i]
+        else:
+            sphere_rad = 0.0
+
+        if not os.path.exists(options.csv_file):
+            write_csv_first_row(options.csv_file, all_feature_classes)
+
+        ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sphere_rad,
+                             feature_classes, options.csv_file, all_feature_classes)
+        ns.execute(case_id, whole_lm=parenchyma_lm)
