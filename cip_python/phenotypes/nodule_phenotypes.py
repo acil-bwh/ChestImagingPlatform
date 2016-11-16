@@ -1,11 +1,17 @@
-import vtk
-import string
-import numpy
-import math
-import operator
+import os
 import collections
-import time
 import numpy as np
+import time
+import subprocess
+import operator
+import math
+import vtk
+import csv
+import itertools
+import SimpleITK as sitk
+from cip_python.phenotypes.phenotypes import Phenotypes
+from argparse import ArgumentParser
+from cip_python.segmentation.nodule_segmenter import NoduleSegmenter
 
 class FirstOrderStatistics:
     def __init__(self, parameterValues, bins, grayLevels, allKeys):
@@ -47,40 +53,40 @@ class FirstOrderStatistics:
         return (grayLevels)
 
     def energyValue(self, parameterArray):
-        return (numpy.sum(parameterArray ** 2))
+        return (np.sum(parameterArray ** 2))
 
     def entropyValue(self, bins):
-        return (numpy.sum(bins * numpy.where(bins != 0, numpy.log2(bins), 0)))
+        return (np.sum(bins * np.where(bins != 0, np.log2(bins), 0)))
 
     def minIntensity(self, parameterArray):
-        return (numpy.min(parameterArray))
+        return (np.min(parameterArray))
 
     def maxIntensity(self, parameterArray):
-        return (numpy.max(parameterArray))
+        return (np.max(parameterArray))
 
     def meanIntensity(self, parameterArray):
-        return (numpy.mean(parameterArray))
+        return (np.mean(parameterArray))
 
     def medianIntensity(self, parameterArray):
-        return (numpy.median(parameterArray))
+        return (np.median(parameterArray))
 
     def rangeIntensity(self, parameterArray):
-        return (numpy.max(parameterArray) - numpy.min(parameterArray))
+        return (np.max(parameterArray) - np.min(parameterArray))
 
     def meanDeviation(self, parameterArray):
-        return (numpy.mean(numpy.absolute((numpy.mean(parameterArray) - parameterArray))))
+        return (np.mean(np.absolute((np.mean(parameterArray) - parameterArray))))
 
     def rootMeanSquared(self, parameterArray):
-        return (((numpy.sum(parameterArray ** 2)) / (parameterArray.size)) ** (1 / 2.0))
+        return (((np.sum(parameterArray ** 2)) / (parameterArray.size)) ** (1 / 2.0))
 
     def standardDeviation(self, parameterArray):
-        return (numpy.std(parameterArray))
+        return (np.std(parameterArray))
 
     def ventilationHeterogeneity(self, parameterArray):
         # Keep just the points that are in the range (-1000, 0]
         arr = parameterArray[((parameterArray > -1000) & (parameterArray <= 0))]
         # Convert to float to apply the formula
-        arr = arr.astype(numpy.float)
+        arr = arr.astype(np.float)
         # Apply formula
         arr = -arr / (arr + 1000)
         arr **= (1/3.0)
@@ -89,11 +95,11 @@ class FirstOrderStatistics:
     def _moment(self, a, moment=1, axis=0):
         # Modified from SciPy module
         if moment == 1:
-            return numpy.float64(0.0)
+            return np.float64(0.0)
         else:
-            mn = numpy.expand_dims(numpy.mean(a, axis), axis)
-            s = numpy.power((a - mn), moment)
-            return numpy.mean(s, axis)
+            mn = np.expand_dims(np.mean(a, axis), axis)
+            s = np.power((a - mn), moment)
+            return np.mean(s, axis)
 
     def skewnessValue(self, a, axis=0):
         # Modified from SciPy module
@@ -104,7 +110,7 @@ class FirstOrderStatistics:
 
         # Control Flow: if m2==0 then vals = 0; else vals = m3/m2**1.5
         zero = (m2 == 0)
-        vals = numpy.where(zero, 0, m3 / m2 ** 1.5)
+        vals = np.where(zero, 0, m3 / m2 ** 1.5)
 
         if vals.ndim == 0:
             return vals.item()
@@ -118,11 +124,11 @@ class FirstOrderStatistics:
         zero = (m2 == 0)
 
         # Set Floating-Point Error Handling
-        olderr = numpy.seterr(all='ignore')
+        olderr = np.seterr(all='ignore')
         try:
-            vals = numpy.where(zero, 0, m4 / m2 ** 2.0)
+            vals = np.where(zero, 0, m4 / m2 ** 2.0)
         finally:
-            numpy.seterr(**olderr)
+            np.seterr(**olderr)
         if vals.ndim == 0:
             vals = vals.item()  # array scalar
 
@@ -132,10 +138,10 @@ class FirstOrderStatistics:
             return vals
 
     def varianceValue(self, parameterArray):
-        return (numpy.std(parameterArray) ** 2)
+        return (np.std(parameterArray) ** 2)
 
     def uniformityValue(self, bins):
-        return (numpy.sum(bins ** 2))
+        return (np.sum(bins ** 2))
 
     def EvaluateFeatures(self, printTiming=False, checkStopProcessFunction=None):
         # Evaluate dictionary elements corresponding to user-selected keys
@@ -202,18 +208,18 @@ class GeometricalMeasures:
         # vectorize
         for i, j, k, l_slice in zip(*extrudedMatrixCoordinates):
             for l in xrange(l_slice.start, l_slice.stop):
-                fxy = numpy.array([extrudedMatrix[i + 1, j, k, l], extrudedMatrix[i - 1, j, k, l]]) == 0
-                fyz = numpy.array([extrudedMatrix[i, j + 1, k, l], extrudedMatrix[i, j - 1, k, l]]) == 0
-                fxz = numpy.array([extrudedMatrix[i, j, k + 1, l], extrudedMatrix[i, j, k - 1, l]]) == 0
-                f4d = numpy.array([extrudedMatrix[i, j, k, l + 1], extrudedMatrix[i, j, k, l - 1]]) == 0
+                fxy = np.array([extrudedMatrix[i + 1, j, k, l], extrudedMatrix[i - 1, j, k, l]]) == 0
+                fyz = np.array([extrudedMatrix[i, j + 1, k, l], extrudedMatrix[i, j - 1, k, l]]) == 0
+                fxz = np.array([extrudedMatrix[i, j, k + 1, l], extrudedMatrix[i, j, k - 1, l]]) == 0
+                f4d = np.array([extrudedMatrix[i, j, k, l + 1], extrudedMatrix[i, j, k, l - 1]]) == 0
 
-                extrudedElementSurface = (numpy.sum(fxz) * xz) + (numpy.sum(fyz) * yz) + (numpy.sum(fxy) * xy) + (
-                numpy.sum(f4d) * fourD)
+                extrudedElementSurface = (np.sum(fxz) * xz) + (np.sum(fyz) * yz) + (np.sum(fxy) * xy) + (
+                np.sum(f4d) * fourD)
                 extrudedSurfaceArea += extrudedElementSurface
         return (extrudedSurfaceArea)
 
     def extrudedVolume(self, extrudedMatrix, extrudedMatrixCoordinates, cubicMMPerVoxel):
-        extrudedElementsSize = extrudedMatrix[numpy.where(extrudedMatrix == 1)].size
+        extrudedElementsSize = extrudedMatrix[np.where(extrudedMatrix == 1)].size
         return (extrudedElementsSize * cubicMMPerVoxel)
 
     def extrudedSurfaceVolumeRatio(self, labelNodeSpacing, extrudedMatrix, extrudedMatrixCoordinates, parameterValues,
@@ -227,17 +233,17 @@ class GeometricalMeasures:
         # extrude 3D image into a binary 4D array with the intensity or parameter value as the 4th Dimension
         # need to normalize CT images with a shift of 120 Hounsfield units
 
-        parameterValues = numpy.abs(parameterValues)
+        parameterValues = np.abs(parameterValues)
 
         # maximum intensity/parameter value appended as shape of 4th dimension
-        extrudedShape = parameterMatrix.shape + (numpy.max(parameterValues),)
+        extrudedShape = parameterMatrix.shape + (np.max(parameterValues),)
 
         # pad shape by 1 unit in all 8 directions
         extrudedShape = tuple(map(operator.add, extrudedShape, [2, 2, 2, 2]))
 
-        extrudedMatrix = numpy.zeros(extrudedShape)
+        extrudedMatrix = np.zeros(extrudedShape)
         extrudedMatrixCoordinates = tuple(map(operator.add, parameterMatrixCoordinates, ([1, 1, 1]))) + (
-        numpy.array([slice(1, value + 1) for value in parameterValues]),)
+        np.array([slice(1, value + 1) for value in parameterValues]),)
         for slice4D in zip(*extrudedMatrixCoordinates):
             extrudedMatrix[slice4D] = 1
         return (extrudedMatrix, extrudedMatrixCoordinates)
@@ -320,10 +326,10 @@ class MorphologyStatistics:
         surfaceArea = 0
         for voxel in xrange(0, matrixSAValues.size):
             i, j, k = matrixSACoordinates[0][voxel], matrixSACoordinates[1][voxel], matrixSACoordinates[2][voxel]
-            fxy = (numpy.array([a[i + 1, j, k], a[i - 1, j, k]]) == 0)  # evaluate to 1 if true, 0 if false
-            fyz = (numpy.array([a[i, j + 1, k], a[i, j - 1, k]]) == 0)  # evaluate to 1 if true, 0 if false
-            fxz = (numpy.array([a[i, j, k + 1], a[i, j, k - 1]]) == 0)  # evaluate to 1 if true, 0 if false
-            surface = (numpy.sum(fxz) * xz) + (numpy.sum(fyz) * yz) + (numpy.sum(fxy) * xy)
+            fxy = (np.array([a[i + 1, j, k], a[i - 1, j, k]]) == 0)  # evaluate to 1 if true, 0 if false
+            fyz = (np.array([a[i, j + 1, k], a[i, j - 1, k]]) == 0)  # evaluate to 1 if true, 0 if false
+            fxz = (np.array([a[i, j, k + 1], a[i, j, k - 1]]) == 0)  # evaluate to 1 if true, 0 if false
+            surface = (np.sum(fxz) * xz) + (np.sum(fyz) * yz) + (np.sum(fxy) * xy)
             surfaceArea += surface
         return (surfaceArea)
 
@@ -341,22 +347,22 @@ class MorphologyStatistics:
 
         x, y, z = labelNodeSpacing
 
-        minBounds = numpy.array(
-            [numpy.min(matrixSACoordinates[0]), numpy.min(matrixSACoordinates[1]), numpy.min(matrixSACoordinates[2])])
-        maxBounds = numpy.array(
-            [numpy.max(matrixSACoordinates[0]), numpy.max(matrixSACoordinates[1]), numpy.max(matrixSACoordinates[2])])
+        minBounds = np.array(
+            [np.min(matrixSACoordinates[0]), np.min(matrixSACoordinates[1]), np.min(matrixSACoordinates[2])])
+        maxBounds = np.array(
+            [np.max(matrixSACoordinates[0]), np.max(matrixSACoordinates[1]), np.max(matrixSACoordinates[2])])
 
-        a = numpy.array(zip(*matrixSACoordinates))
-        edgeVoxelsMinCoords = numpy.vstack(
+        a = np.array(zip(*matrixSACoordinates))
+        edgeVoxelsMinCoords = np.vstack(
             [a[a[:, 0] == minBounds[0]], a[a[:, 1] == minBounds[1]], a[a[:, 2] == minBounds[2]]]) * [z, y, x]
-        edgeVoxelsMaxCoords = numpy.vstack(
+        edgeVoxelsMaxCoords = np.vstack(
             [(a[a[:, 0] == maxBounds[0]] + 1), (a[a[:, 1] == maxBounds[1]] + 1), (a[a[:, 2] == maxBounds[2]] + 1)]) * [
                                   z, y, x]
 
         maxDiameter = 1
         for voxel1 in edgeVoxelsMaxCoords:
             for voxel2 in edgeVoxelsMinCoords:
-                voxelDistance = numpy.sqrt(numpy.sum((voxel2 - voxel1) ** 2))
+                voxelDistance = np.sqrt(np.sum((voxel2 - voxel1) ** 2))
                 if voxelDistance > maxDiameter:
                     maxDiameter = voxelDistance
         return (maxDiameter)
@@ -533,18 +539,18 @@ class RenyiDimensions:
         # c must be padded to a cube with shape equal to next greatest power of two
         # i.e. a 3D array with shape: (3,13,9) is padded to shape: (16,16,16)
 
-        # exception for numpy.sum(c) = 0?
-        c = c / float(numpy.sum(c))
+        # exception for np.sum(c) = 0?
+        c = c / float(np.sum(c))
         maxDim = c.shape[0]
-        p = int(numpy.log2(maxDim))
-        n = numpy.zeros(p + 1)
-        eps = numpy.spacing(1)
+        p = int(np.log2(maxDim))
+        n = np.zeros(p + 1)
+        eps = np.spacing(1)
 
         # Initialize N(s) value at the finest/voxel-level scale
         if (q == 1):
-            n[p] = numpy.sum(c[matrixCoordinatesPadded] * numpy.log(1 / (c[matrixCoordinatesPadded] + eps)))
+            n[p] = np.sum(c[matrixCoordinatesPadded] * np.log(1 / (c[matrixCoordinatesPadded] + eps)))
         else:
-            n[p] = numpy.sum(c[matrixCoordinatesPadded] ** q)
+            n[p] = np.sum(c[matrixCoordinatesPadded] ** q)
 
         for g in xrange(p - 1, -1, -1):
             siz = 2 ** (p - g)
@@ -552,28 +558,28 @@ class RenyiDimensions:
             for i in xrange(0, maxDim - siz + 1, siz):
                 for j in xrange(0, maxDim - siz + 1, siz):
                     for k in xrange(0, maxDim - siz + 1, siz):
-                        box = numpy.array([c[i, j, k], c[i + siz2, j, k], c[i, j + siz2, k], c[i + siz2, j + siz2, k],
+                        box = np.array([c[i, j, k], c[i + siz2, j, k], c[i, j + siz2, k], c[i + siz2, j + siz2, k],
                                            c[i, j, k + siz2], c[i + siz2, j, k + siz2], c[i, j + siz2, k + siz2],
                                            c[i + siz2, j + siz2, k + siz2]])
-                        c[i, j, k] = numpy.any(box != 0) if (q == 0) else numpy.sum(box) ** q
+                        c[i, j, k] = np.any(box != 0) if (q == 0) else np.sum(box) ** q
                     if self.checkStopProcessFunction is not None:
                         self.checkStopProcessFunction()
                         # print (i, j, k, '                ', c[i,j,k])
             pi = c[0:(maxDim - siz + 1):siz, 0:(maxDim - siz + 1):siz, 0:(maxDim - siz + 1):siz]
             if (q == 1):
-                n[g] = numpy.sum(pi * numpy.log(1 / (pi + eps)))
+                n[g] = np.sum(pi * np.log(1 / (pi + eps)))
             else:
-                n[g] = numpy.sum(pi)
+                n[g] = np.sum(pi)
                 # print ('p, g, siz, siz2', p, g, siz, siz2, '         n[g]: ', n[g])
 
-        r = numpy.log(2.0 ** (numpy.arange(p + 1)))  # log(1/scale)
-        scaleMatrix = numpy.array([r, numpy.ones(p + 1)])
+        r = np.log(2.0 ** (np.arange(p + 1)))  # log(1/scale)
+        scaleMatrix = np.array([r, np.ones(p + 1)])
         # print ('n(s): ', n)
         # print ('log (1/s): ', r)
 
         if (q != 1):
-            n = (1 / float(1 - q)) * numpy.log(n)
-        renyiDimension = numpy.linalg.lstsq(scaleMatrix.T, n)[0][0]
+            n = (1 / float(1 - q)) * np.log(n)
+        renyiDimension = np.linalg.lstsq(scaleMatrix.T, n)[0][0]
 
         return (renyiDimension)
 
@@ -627,10 +633,10 @@ class TextureGLCM:
         :return:
         """
         # generate container for GLCM Matrices, self.P_glcm
-        # make distance an optional parameter, as in: distances = numpy.arange(parameter)
-        distances = numpy.array([1])
+        # make distance an optional parameter, as in: distances = np.arange(parameter)
+        distances = np.array([1])
         directions = 26
-        self.P_glcm = numpy.zeros((self.Ng, self.Ng, distances.size, directions))
+        self.P_glcm = np.zeros((self.Ng, self.Ng, distances.size, directions))
         t1 = time.time()
         self.P_glcm = self.calculate_glcm(self.grayLevels, self.parameterMatrix, self.parameterMatrixCoordinates,
                                           distances, directions, self.Ng, self.P_glcm)
@@ -638,19 +644,19 @@ class TextureGLCM:
             print("- Time to calculate glmc matrix: {0} secs".format(time.time() - t1))
         # make each GLCM symmetric an optional parameter
         # if symmetric:
-        # Pt = numpy.transpose(P, (1, 0, 2, 3))
+        # Pt = np.transpose(P, (1, 0, 2, 3))
         # P = P + Pt
 
         ##Calculate GLCM Coefficients
-        self.ivector = numpy.arange(1, self.Ng + 1)  # shape = (self.Ng, distances.size, directions)
-        self.jvector = numpy.arange(1, self.Ng + 1)  # shape = (self.Ng, distances.size, directions)
-        self.eps = numpy.spacing(1)
+        self.ivector = np.arange(1, self.Ng + 1)  # shape = (self.Ng, distances.size, directions)
+        self.jvector = np.arange(1, self.Ng + 1)  # shape = (self.Ng, distances.size, directions)
+        self.eps = np.spacing(1)
 
-        self.prodMatrix = numpy.multiply.outer(self.ivector, self.jvector)  # shape = (self.Ng, self.Ng)
-        self.sumMatrix = numpy.add.outer(self.ivector, self.jvector)  # shape = (self.Ng, self.Ng)
-        self.diffMatrix = numpy.absolute(numpy.subtract.outer(self.ivector, self.jvector))  # shape = (self.Ng, self.Ng)
-        self.kValuesSum = numpy.arange(2, (self.Ng * 2) + 1)  # shape = (2*self.Ng-1)
-        self.kValuesDiff = numpy.arange(0, self.Ng)  # shape = (self.Ng-1)
+        self.prodMatrix = np.multiply.outer(self.ivector, self.jvector)  # shape = (self.Ng, self.Ng)
+        self.sumMatrix = np.add.outer(self.ivector, self.jvector)  # shape = (self.Ng, self.Ng)
+        self.diffMatrix = np.absolute(np.subtract.outer(self.ivector, self.jvector))  # shape = (self.Ng, self.Ng)
+        self.kValuesSum = np.arange(2, (self.Ng * 2) + 1)  # shape = (2*self.Ng-1)
+        self.kValuesDiff = np.arange(0, self.Ng)  # shape = (self.Ng-1)
 
         # shape = (distances.size, directions)
         self.u = self.P_glcm.mean(0).mean(0)
@@ -670,35 +676,35 @@ class TextureGLCM:
         self.sigy = self.py.std(0)
 
         # shape = (2*self.Ng-1, distances.size, directions)
-        self.pxAddy = numpy.array([numpy.sum(self.P_glcm[self.sumMatrix == k], 0) for k in self.kValuesSum])
+        self.pxAddy = np.array([np.sum(self.P_glcm[self.sumMatrix == k], 0) for k in self.kValuesSum])
         # shape = (self.Ng, distances.size, directions)
-        self.pxSuby = numpy.array([numpy.sum(self.P_glcm[self.diffMatrix == k], 0) for k in self.kValuesDiff])
+        self.pxSuby = np.array([np.sum(self.P_glcm[self.diffMatrix == k], 0) for k in self.kValuesDiff])
 
         # entropy of self.px #shape = (distances.size, directions)
-        self.HX = (-1) * numpy.sum((self.px * numpy.where(self.px != 0, numpy.log2(self.px), numpy.log2(self.eps))), 0)
+        self.HX = (-1) * np.sum((self.px * np.where(self.px != 0, np.log2(self.px), np.log2(self.eps))), 0)
         # entropy of py #shape = (distances.size, directions)
-        self.HY = (-1) * numpy.sum((self.py * numpy.where(self.py != 0, numpy.log2(self.py), numpy.log2(self.eps))), 0)
+        self.HY = (-1) * np.sum((self.py * np.where(self.py != 0, np.log2(self.py), np.log2(self.eps))), 0)
         # shape = (distances.size, directions)
-        self.HXY = (-1) * numpy.sum(
-            numpy.sum((self.P_glcm * numpy.where(self.P_glcm != 0, numpy.log2(self.P_glcm), numpy.log2(self.eps))), 0),
+        self.HXY = (-1) * np.sum(
+            np.sum((self.P_glcm * np.where(self.P_glcm != 0, np.log2(self.P_glcm), np.log2(self.eps))), 0),
             0)
 
-        self.pxy = numpy.zeros(self.P_glcm.shape)  # shape = (self.Ng, self.Ng, distances.size, directions)
+        self.pxy = np.zeros(self.P_glcm.shape)  # shape = (self.Ng, self.Ng, distances.size, directions)
         for a in xrange(directions):
             for g in xrange(distances.size):
-                self.pxy[:, :, g, a] = numpy.multiply.outer(self.px[:, g, a], self.py[:, g, a])
+                self.pxy[:, :, g, a] = np.multiply.outer(self.px[:, g, a], self.py[:, g, a])
 
-        self.HXY1 = (-1) * numpy.sum(
-            numpy.sum((self.P_glcm * numpy.where(self.pxy != 0, numpy.log2(self.pxy), numpy.log2(self.eps))), 0),
+        self.HXY1 = (-1) * np.sum(
+            np.sum((self.P_glcm * np.where(self.pxy != 0, np.log2(self.pxy), np.log2(self.eps))), 0),
             0)  # shape = (distances.size, directions)
-        self.HXY2 = (-1) * numpy.sum(
-            numpy.sum((self.pxy * numpy.where(self.pxy != 0, numpy.log2(self.pxy), numpy.log2(self.eps))), 0),
+        self.HXY2 = (-1) * np.sum(
+            np.sum((self.pxy * np.where(self.pxy != 0, np.log2(self.pxy), np.log2(self.eps))), 0),
             0)  # shape = (distances.size, directions)
         if printTiming:
             print("- Time to calculate total glmc coefficients: {0} secs".format(time.time() - t1))
 
     def autocorrelationGLCM(self, P_glcm, prodMatrix, meanFlag=True):
-        ac = numpy.sum(numpy.sum(P_glcm * prodMatrix[:, :, None, None], 0), 0)
+        ac = np.sum(np.sum(P_glcm * prodMatrix[:, :, None, None], 0), 0)
         if meanFlag:
             return (ac.mean())
         else:
@@ -706,8 +712,8 @@ class TextureGLCM:
 
     def clusterProminenceGLCM(self, P_glcm, sumMatrix, ux, uy, meanFlag=True):
         # Need to validate function
-        cp = numpy.sum(
-            numpy.sum((P_glcm * ((sumMatrix[:, :, None, None] - ux[None, None, :, :] - uy[None, None, :, :]) ** 4)), 0),
+        cp = np.sum(
+            np.sum((P_glcm * ((sumMatrix[:, :, None, None] - ux[None, None, :, :] - uy[None, None, :, :]) ** 4)), 0),
             0)
         if meanFlag:
             return (cp.mean())
@@ -716,8 +722,8 @@ class TextureGLCM:
 
     def clusterShadeGLCM(self, P_glcm, sumMatrix, ux, uy, meanFlag=True):
         # Need to validate function
-        cs = numpy.sum(
-            numpy.sum((P_glcm * ((sumMatrix[:, :, None, None] - ux[None, None, :, :] - uy[None, None, :, :]) ** 3)), 0),
+        cs = np.sum(
+            np.sum((P_glcm * ((sumMatrix[:, :, None, None] - ux[None, None, :, :] - uy[None, None, :, :]) ** 3)), 0),
             0)
         if meanFlag:
             return (cs.mean())
@@ -726,8 +732,8 @@ class TextureGLCM:
 
     def clusterTendencyGLCM(self, P_glcm, sumMatrix, ux, uy, meanFlag=True):
         # Need to validate function
-        ct = numpy.sum(
-            numpy.sum((P_glcm * ((sumMatrix[:, :, None, None] - ux[None, None, :, :] - uy[None, None, :, :]) ** 2)), 0),
+        ct = np.sum(
+            np.sum((P_glcm * ((sumMatrix[:, :, None, None] - ux[None, None, :, :] - uy[None, None, :, :]) ** 2)), 0),
             0)
         if meanFlag:
             return (ct.mean())
@@ -735,7 +741,7 @@ class TextureGLCM:
             return ct
 
     def contrastGLCM(self, P_glcm, diffMatrix, meanFlag=True):
-        cont = numpy.sum(numpy.sum((P_glcm * (diffMatrix[:, :, None, None] ** 2)), 0), 0)
+        cont = np.sum(np.sum((P_glcm * (diffMatrix[:, :, None, None] ** 2)), 0), 0)
         if meanFlag:
             return (cont.mean())
         else:
@@ -745,8 +751,8 @@ class TextureGLCM:
         # Need to validate function
         uxy = ux * uy
         sigxy = sigx * sigy
-        corr = numpy.sum(
-            numpy.sum(((P_glcm * prodMatrix[:, :, None, None] - uxy[None, None, :, :]) / (sigxy[None, None, :, :])), 0),
+        corr = np.sum(
+            np.sum(((P_glcm * prodMatrix[:, :, None, None] - uxy[None, None, :, :]) / (sigxy[None, None, :, :])), 0),
             0)
         if meanFlag:
             return (corr.mean())
@@ -754,60 +760,60 @@ class TextureGLCM:
             return corr
 
     def differenceEntropyGLCM(self, pxSuby, eps, meanFlag=True):
-        difent = numpy.sum((pxSuby * numpy.where(pxSuby != 0, numpy.log2(pxSuby), numpy.log2(eps))), 0)
+        difent = np.sum((pxSuby * np.where(pxSuby != 0, np.log2(pxSuby), np.log2(eps))), 0)
         if meanFlag:
             return (difent.mean())
         else:
             return difent
 
     def dissimilarityGLCM(self, P_glcm, diffMatrix, meanFlag=True):
-        dis = numpy.sum(numpy.sum((P_glcm * diffMatrix[:, :, None, None]), 0), 0)
+        dis = np.sum(np.sum((P_glcm * diffMatrix[:, :, None, None]), 0), 0)
         if meanFlag:
             return (dis.mean())
         else:
             return dis
 
     def energyGLCM(self, P_glcm, meanFlag=True):
-        ene = numpy.sum(numpy.sum((P_glcm ** 2), 0), 0)
+        ene = np.sum(np.sum((P_glcm ** 2), 0), 0)
         if meanFlag:
             return (ene.mean())
         else:
             return ene
 
     def entropyGLCM(self, P_glcm, pxy, eps, meanFlag=True):
-        ent = -1 * numpy.sum(numpy.sum((P_glcm * numpy.where(pxy != 0, numpy.log2(pxy), numpy.log2(eps))), 0), 0)
+        ent = -1 * np.sum(np.sum((P_glcm * np.where(pxy != 0, np.log2(pxy), np.log2(eps))), 0), 0)
         if meanFlag:
             return (ent.mean())
         else:
             return ent
 
     def homogeneity1GLCM(self, P_glcm, diffMatrix, meanFlag=True):
-        homo1 = numpy.sum(numpy.sum((P_glcm / (1 + diffMatrix[:, :, None, None])), 0), 0)
+        homo1 = np.sum(np.sum((P_glcm / (1 + diffMatrix[:, :, None, None])), 0), 0)
         if meanFlag:
             return (homo1.mean())
         else:
             return homo1
 
     def homogeneity2GLCM(self, P_glcm, diffMatrix, meanFlag=True):
-        homo2 = numpy.sum(numpy.sum((P_glcm / (1 + diffMatrix[:, :, None, None] ** 2)), 0), 0)
+        homo2 = np.sum(np.sum((P_glcm / (1 + diffMatrix[:, :, None, None] ** 2)), 0), 0)
         if meanFlag:
             return (homo2.mean())
         else:
             return homo2
 
     def imc1GLCM(self, HXY, HXY1, HX, HY, meanFlag=True):
-        imc1 = (self.HXY - self.HXY1) / numpy.max(([self.HX, self.HY]), 0)
+        imc1 = (self.HXY - self.HXY1) / np.max(([self.HX, self.HY]), 0)
         if meanFlag:
             return (imc1.mean())
         else:
             return imc1
 
             # def imc2GLCM(self,):
-            # imc2[g,a] = ( 1-numpy.e**(-2*(HXY2[g,a]-HXY[g,a])) )**(0.5) #nan value too high
+            # imc2[g,a] = ( 1-np.e**(-2*(HXY2[g,a]-HXY[g,a])) )**(0.5) #nan value too high
 
             # produces Nan(square root of a negative)
             # exponent = decimal.Decimal( -2*(HXY2[g,a]-self.HXY[g,a]) )
-            # imc2.append( ( decimal.Decimal(1)-decimal.Decimal(numpy.e)**(exponent) )**(decimal.Decimal(0.5)) )
+            # imc2.append( ( decimal.Decimal(1)-decimal.Decimal(np.e)**(exponent) )**(decimal.Decimal(0.5)) )
 
             # if meanFlag:
             # return (homo2.mean())
@@ -815,23 +821,23 @@ class TextureGLCM:
             # return homo2
 
     def idmnGLCM(self, P_glcm, diffMatrix, Ng, meanFlag=True):
-        idmn = numpy.sum(numpy.sum((P_glcm / (1 + ((diffMatrix[:, :, None, None] ** 2) / (Ng ** 2)))), 0), 0)
+        idmn = np.sum(np.sum((P_glcm / (1 + ((diffMatrix[:, :, None, None] ** 2) / (Ng ** 2)))), 0), 0)
         if meanFlag:
             return (idmn.mean())
         else:
             return idmn
 
     def idnGLCM(self, P_glcm, diffMatrix, Ng, meanFlag=True):
-        idn = numpy.sum(numpy.sum((P_glcm / (1 + (diffMatrix[:, :, None, None] / Ng))), 0), 0)
+        idn = np.sum(np.sum((P_glcm / (1 + (diffMatrix[:, :, None, None] / Ng))), 0), 0)
         if meanFlag:
             return (idn.mean())
         else:
             return idn
 
     def inverseVarianceGLCM(self, P_glcm, diffMatrix, Ng, meanFlag=True):
-        maskDiags = numpy.ones(diffMatrix.shape, dtype=bool)
-        maskDiags[numpy.diag_indices(Ng)] = False
-        inv = numpy.sum((P_glcm[maskDiags] / (diffMatrix[:, :, None, None] ** 2)[maskDiags]), 0)
+        maskDiags = np.ones(diffMatrix.shape, dtype=bool)
+        maskDiags[np.diag_indices(Ng)] = False
+        inv = np.sum((P_glcm[maskDiags] / (diffMatrix[:, :, None, None] ** 2)[maskDiags]), 0)
         if meanFlag:
             return (inv.mean())
         else:
@@ -845,28 +851,28 @@ class TextureGLCM:
             return maxprob
 
     def sumAverageGLCM(self, pxAddy, kValuesSum, meanFlag=True):
-        sumavg = numpy.sum((kValuesSum[:, None, None] * pxAddy), 0)
+        sumavg = np.sum((kValuesSum[:, None, None] * pxAddy), 0)
         if meanFlag:
             return (sumavg.mean())
         else:
             return sumavg
 
     def sumEntropyGLCM(self, pxAddy, eps, meanFlag=True):
-        sumentr = (-1) * numpy.sum((pxAddy * numpy.where(pxAddy != 0, numpy.log2(pxAddy), numpy.log2(eps))), 0)
+        sumentr = (-1) * np.sum((pxAddy * np.where(pxAddy != 0, np.log2(pxAddy), np.log2(eps))), 0)
         if meanFlag:
             return (sumentr.mean())
         else:
             return sumentr
 
     def sumVarianceGLCM(self, pxAddy, kValuesSum, meanFlag=True):
-        sumvar = numpy.sum((pxAddy * ((kValuesSum[:, None, None] - kValuesSum[:, None, None] * pxAddy) ** 2)), 0)
+        sumvar = np.sum((pxAddy * ((kValuesSum[:, None, None] - kValuesSum[:, None, None] * pxAddy) ** 2)), 0)
         if meanFlag:
             return (sumvar.mean())
         else:
             return sumvar
 
     def varianceGLCM(self, P_glcm, ivector, u, meanFlag=True):
-        vari = numpy.sum(numpy.sum((P_glcm * ((ivector[:, None] - u) ** 2)[:, None, None, :]), 0), 0)
+        vari = np.sum(np.sum((P_glcm * ((ivector[:, None] - u) ** 2)[:, None, None, :]), 0), 0)
         if meanFlag:
             return (vari.mean())
         else:
@@ -890,7 +896,7 @@ class TextureGLCM:
         col = 0
         height = 0
 
-        angles = numpy.array([(1, 0, 0),
+        angles = np.array([(1, 0, 0),
                               (-1, 0, 0),
                               (0, 1, 0),
                               (0, -1, 0),
@@ -930,7 +936,7 @@ class TextureGLCM:
                     distance = distances[distances_idx]
 
                     i = matrix[h, c, r]
-                    i_idx = numpy.nonzero(grayLevels == i)
+                    i_idx = np.nonzero(grayLevels == i)
 
                     row = r + angle[2]
                     col = c + angle[1]
@@ -942,7 +948,7 @@ class TextureGLCM:
                     if row >= 0 and row < rows and col >= 0 and col < cols:
                         if tuple((height, col, row)) in indices:
                             j = matrix[height, col, row]
-                            j_idx = numpy.nonzero(grayLevels == j)
+                            j_idx = np.nonzero(grayLevels == j)
                             # if i >= grayLevels.min and i <= grayLevels.max and j >= grayLevels.min and j <= grayLevels.max:
                             out[i_idx, j_idx, distances_idx, angles_idx] += 1
             # Check if the user has cancelled the process
@@ -1010,22 +1016,22 @@ class TextureGLRL:
     def CalculateCoefficients(self):
         self.angles = 13
         self.Ng = self.numGrayLevels
-        self.Nr = numpy.max(self.parameterMatrix.shape)
+        self.Nr = np.max(self.parameterMatrix.shape)
         self.Np = self.parameterValues.size
-        self.eps = numpy.spacing(1)
+        self.eps = np.spacing(1)
 
-        self.P_glrl = numpy.zeros(
+        self.P_glrl = np.zeros(
             (self.Ng, self.Nr, self.angles))  # maximum run length in P matrix initialized to highest gray level
         self.P_glrl = self.calculate_glrl(self.grayLevels, self.Ng, self.parameterMatrix,
                                           self.parameterMatrixCoordinates, self.angles, self.P_glrl)
 
-        self.sumP_glrl = numpy.sum(numpy.sum(self.P_glrl, 0), 0) + self.eps
-        self.ivector = numpy.arange(self.Ng) + 1
-        self.jvector = numpy.arange(self.Nr) + 1
+        self.sumP_glrl = np.sum(np.sum(self.P_glrl, 0), 0) + self.eps
+        self.ivector = np.arange(self.Ng) + 1
+        self.jvector = np.arange(self.Nr) + 1
 
     def shortRunEmphasis(self, P_glrl, jvector, sumP_glrl, meanFlag=True):
         try:
-            sre = numpy.sum(numpy.sum((P_glrl / ((jvector ** 2)[None, :, None])), 0), 0) / (sumP_glrl[None, None, :])
+            sre = np.sum(np.sum((P_glrl / ((jvector ** 2)[None, :, None])), 0), 0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             sre = 0
         if meanFlag:
@@ -1035,7 +1041,7 @@ class TextureGLRL:
 
     def longRunEmphasis(self, P_glrl, jvector, sumP_glrl, meanFlag=True):
         try:
-            lre = numpy.sum(numpy.sum((P_glrl * ((jvector ** 2)[None, :, None])), 0), 0) / (sumP_glrl[None, None, :])
+            lre = np.sum(np.sum((P_glrl * ((jvector ** 2)[None, :, None])), 0), 0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             lre = 0
         if meanFlag:
@@ -1045,7 +1051,7 @@ class TextureGLRL:
 
     def grayLevelNonUniformity(self, P_glrl, sumP_glrl, meanFlag=True):
         try:
-            gln = numpy.sum((numpy.sum(P_glrl, 1) ** 2), 0) / (sumP_glrl[None, None, :])
+            gln = np.sum((np.sum(P_glrl, 1) ** 2), 0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             gln = 0
         if meanFlag:
@@ -1055,7 +1061,7 @@ class TextureGLRL:
 
     def runLengthNonUniformity(self, P_glrl, sumP_glrl, meanFlag=True):
         try:
-            rln = numpy.sum((numpy.sum(P_glrl, 0) ** 2), 0) / (sumP_glrl[None, None, :])
+            rln = np.sum((np.sum(P_glrl, 0) ** 2), 0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             rln = 0
         if meanFlag:
@@ -1065,7 +1071,7 @@ class TextureGLRL:
 
     def runPercentage(self, P_glrl, Np, meanFlag=True):
         try:
-            rp = numpy.sum(numpy.sum((P_glrl / (Np)), 0), 0)
+            rp = np.sum(np.sum((P_glrl / (Np)), 0), 0)
         except ZeroDivisionError:
             rp = 0
         if meanFlag:
@@ -1075,7 +1081,7 @@ class TextureGLRL:
 
     def lowGrayLevelRunEmphasis(self, P_glrl, ivector, sumP_glrl, meanFlag=True):
         try:
-            lglre = numpy.sum(numpy.sum((P_glrl / ((ivector ** 2)[:, None, None])), 0), 0) / (sumP_glrl[None, None, :])
+            lglre = np.sum(np.sum((P_glrl / ((ivector ** 2)[:, None, None])), 0), 0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             lglre = 0
         if meanFlag:
@@ -1085,7 +1091,7 @@ class TextureGLRL:
 
     def highGrayLevelRunEmphasis(self, P_glrl, ivector, sumP_glrl, meanFlag=True):
         try:
-            hglre = numpy.sum(numpy.sum((P_glrl * ((ivector ** 2)[:, None, None])), 0), 0) / (sumP_glrl[None, None, :])
+            hglre = np.sum(np.sum((P_glrl * ((ivector ** 2)[:, None, None])), 0), 0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             hglre = 0
         if meanFlag:
@@ -1095,7 +1101,7 @@ class TextureGLRL:
 
     def shortRunLowGrayLevelEmphasis(self, P_glrl, ivector, jvector, sumP_glrl, meanFlag=True):
         try:
-            srlgle = numpy.sum(numpy.sum((P_glrl / ((jvector ** 2)[None, :, None] * (ivector ** 2)[:, None, None])), 0),
+            srlgle = np.sum(np.sum((P_glrl / ((jvector ** 2)[None, :, None] * (ivector ** 2)[:, None, None])), 0),
                                0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             srlgle = 0
@@ -1106,8 +1112,8 @@ class TextureGLRL:
 
     def shortRunHighGrayLevelEmphasis(self, P_glrl, ivector, jvector, sumP_glrl, meanFlag=True):
         try:
-            srhgle = numpy.sum(
-                numpy.sum(((P_glrl * (ivector ** 2)[:, None, None]) / ((jvector ** 2)[None, :, None])), 0), 0) / (
+            srhgle = np.sum(
+                np.sum(((P_glrl * (ivector ** 2)[:, None, None]) / ((jvector ** 2)[None, :, None])), 0), 0) / (
                          sumP_glrl[None, None, :])
         except ZeroDivisionError:
             srhgle = 0
@@ -1118,8 +1124,8 @@ class TextureGLRL:
 
     def longRunLowGrayLevelEmphasis(self, P_glrl, ivector, jvector, sumP_glrl, meanFlag=True):
         try:
-            lrlgle = numpy.sum(
-                numpy.sum(((P_glrl * (jvector ** 2)[None, :, None]) / ((ivector ** 2)[:, None, None])), 0), 0) / (
+            lrlgle = np.sum(
+                np.sum(((P_glrl * (jvector ** 2)[None, :, None]) / ((ivector ** 2)[:, None, None])), 0), 0) / (
                          sumP_glrl[None, None, :])
         except ZeroDivisionError:
             lrlgle = 0
@@ -1130,7 +1136,7 @@ class TextureGLRL:
 
     def longRunHighGrayLevelEmphasis(self, P_glrl, ivector, jvector, sumP_glrl, meanFlag=True):
         try:
-            lrhgle = numpy.sum(numpy.sum((P_glrl * (ivector ** 2)[:, None, None] * (jvector ** 2)[None, :, None]), 0),
+            lrhgle = np.sum(np.sum((P_glrl * (ivector ** 2)[:, None, None] * (jvector ** 2)[None, :, None]), 0),
                                0) / (sumP_glrl[None, None, :])
         except ZeroDivisionError:
             lrhgle = 0
@@ -1150,42 +1156,42 @@ class TextureGLRL:
         # Generate a 1D array for each valid offset of the diagonal, a, in the range specified by lowBound and highBound
         # Convert each 1D array to a python list ( matrix.diagonal(a,,).tolist() )
         # Join lists using reduce(lamda x,y: x+y, ...) to represent all 1D arrays for the direction/diagonal
-        # Use filter(lambda x: numpy.nonzero(x)[0].size>1, ....) to filter 1D arrays of size < 2 or value == 0 or padValue
+        # Use filter(lambda x: np.nonzero(x)[0].size>1, ....) to filter 1D arrays of size < 2 or value == 0 or padValue
 
         # Should change from nonzero() to filter for the padValue specifically (NaN, eps, etc)
 
         # (1,0,0), #(-1,0,0),
-        aDiags = reduce(lambda x, y: x + y, [a.tolist() for a in numpy.transpose(matrix, (1, 2, 0))])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, aDiags))
+        aDiags = reduce(lambda x, y: x + y, [a.tolist() for a in np.transpose(matrix, (1, 2, 0))])
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, aDiags))
 
         # (0,1,0), #(0,-1,0),
-        bDiags = reduce(lambda x, y: x + y, [a.tolist() for a in numpy.transpose(matrix, (0, 2, 1))])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, bDiags))
+        bDiags = reduce(lambda x, y: x + y, [a.tolist() for a in np.transpose(matrix, (0, 2, 1))])
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, bDiags))
 
         # (0,0,1), #(0,0,-1),
-        cDiags = reduce(lambda x, y: x + y, [a.tolist() for a in numpy.transpose(matrix, (0, 1, 2))])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, cDiags))
+        cDiags = reduce(lambda x, y: x + y, [a.tolist() for a in np.transpose(matrix, (0, 1, 2))])
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, cDiags))
 
         # (1,1,0),#(-1,-1,0),
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[1]
 
         dDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 0, 1).tolist() for a in xrange(lowBound, highBound)])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, dDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, dDiags))
 
         # (1,0,1), #(-1,0-1),
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[2]
 
         eDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 0, 2).tolist() for a in xrange(lowBound, highBound)])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, eDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, eDiags))
 
         # (0,1,1), #(0,-1,-1),
         lowBound = -matrix.shape[1] + 1
         highBound = matrix.shape[2]
 
         fDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 1, 2).tolist() for a in xrange(lowBound, highBound)])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, fDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, fDiags))
 
         # (1,-1,0), #(-1,1,0),
         lowBound = -matrix.shape[0] + 1
@@ -1193,7 +1199,7 @@ class TextureGLRL:
 
         gDiags = reduce(lambda x, y: x + y,
                         [matrix[:, ::-1, :].diagonal(a, 0, 1).tolist() for a in xrange(lowBound, highBound)])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, gDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, gDiags))
 
         # (-1,0,1), #(1,0,-1),
         lowBound = -matrix.shape[0] + 1
@@ -1201,7 +1207,7 @@ class TextureGLRL:
 
         hDiags = reduce(lambda x, y: x + y,
                         [matrix[:, :, ::-1].diagonal(a, 0, 2).tolist() for a in xrange(lowBound, highBound)])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, hDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, hDiags))
 
         # (0,1,-1), #(0,-1,1),
         lowBound = -matrix.shape[1] + 1
@@ -1209,59 +1215,59 @@ class TextureGLRL:
 
         iDiags = reduce(lambda x, y: x + y,
                         [matrix[:, :, ::-1].diagonal(a, 1, 2).tolist() for a in xrange(lowBound, highBound)])
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, iDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, iDiags))
 
         # (1,1,1), #(-1,-1,-1)
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[1]
 
-        jDiags = [numpy.diagonal(h, x, 0, 1).tolist() for h in
+        jDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
                   [matrix.diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
                   xrange(-h.shape[0] + 1, h.shape[1])]
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, jDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, jDiags))
 
         # (-1,1,-1), #(1,-1,1),
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[1]
 
-        kDiags = [numpy.diagonal(h, x, 0, 1).tolist() for h in
+        kDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
                   [matrix[:, ::-1, :].diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
                   xrange(-h.shape[0] + 1, h.shape[1])]
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, kDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, kDiags))
 
         # (1,1,-1), #(-1,-1,1),
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[1]
 
-        lDiags = [numpy.diagonal(h, x, 0, 1).tolist() for h in
+        lDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
                   [matrix[:, :, ::-1].diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
                   xrange(-h.shape[0] + 1, h.shape[1])]
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, lDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, lDiags))
 
         # (-1,1,1), #(1,-1,-1),
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[1]
 
-        mDiags = [numpy.diagonal(h, x, 0, 1).tolist() for h in
+        mDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
                   [matrix[:, ::-1, ::-1].diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
                   xrange(-h.shape[0] + 1, h.shape[1])]
-        matrixDiagonals.append(filter(lambda x: numpy.nonzero(x)[0].size > 1, mDiags))
+        matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, mDiags))
 
-        # [n for n in mDiags if numpy.nonzero(n)[0].size>1] instead of filter(lambda x: numpy.nonzero(x)[0].size>1, mDiags)?
+        # [n for n in mDiags if np.nonzero(n)[0].size>1] instead of filter(lambda x: np.nonzero(x)[0].size>1, mDiags)?
 
         # Run-Length Encoding (rle) for the 13 list of diagonals (1 list per 3D direction/angle)
         for angle in xrange(0, len(matrixDiagonals)):
             P = P_out[:, :, angle]
             for diagonal in matrixDiagonals[angle]:
-                diagonal = numpy.array(diagonal, dtype='int')
-                pos, = numpy.where(
-                    numpy.diff(diagonal) != 0)  # can use instead of using map operator._ on np.where tuples
-                pos = numpy.concatenate(([0], pos + 1, [len(diagonal)]))
+                diagonal = np.array(diagonal, dtype='int')
+                pos, = np.where(
+                    np.diff(diagonal) != 0)  # can use instead of using map operator._ on np.where tuples
+                pos = np.concatenate(([0], pos + 1, [len(diagonal)]))
 
                 # a or pos[:-1] = run start #b or pos[1:] = run stop #diagonal[a] is matrix value
                 # adjust condition for pos[:-1] != padVal = 0 to != padVal = eps or NaN or whatever pad value
                 rle = zip([n for n in diagonal[pos[:-1]] if n != padVal], pos[1:] - pos[:-1])
-                rle = [[numpy.where(grayLevels == x)[0][0], y - 1] for x, y in
+                rle = [[np.where(grayLevels == x)[0][0], y - 1] for x, y in
                        rle]  # rle = map(lambda (x,y): [voxelToIndexDict[x],y-1], rle)
 
                 # Increment GLRL matrix counter at coordinates defined by the run-length encoding
@@ -1300,3 +1306,611 @@ class TextureGLRL:
                 if checkStopProcessFunction is not None:
                     checkStopProcessFunction()
             return self.textureFeaturesGLRL, self.textureFeaturesGLRLTiming
+
+
+class NodulePhenotypes(Phenotypes):
+
+    def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, sphere_rad,
+                 feature_classes, csv_file_path, all_features):
+        self.WORKING_MODE_HUMAN = 0
+        self.WORKING_MODE_SMALL_ANIMAL = 1
+        self.MAX_TUMOR_RADIUS = 30
+
+        self._input_ct = input_ct
+        self._nodule_lm = nodule_lm
+        self._nodule_id = nodule_id
+        self._seed_point = seed_point
+        self._lesion_type = l_type
+        self._segmentation_threshold = segm_thresh
+        self._sphere_radius = sphere_rad
+        self._all_features = all_features
+        self._feature_classes = feature_classes
+        self._current_distance_maps = {}
+        self._analysis_results = dict()
+        self._csv_file_path = csv_file_path
+        self._analyzedSpheres = set()
+
+    def execute(self, cid, whole_lm=None):
+        """ Compute all the features that are currently selected, for the nodule and/or for
+        the surrounding spheres
+        """
+        # build list of features and feature classes based on what is checked by the user
+        selectedMainFeaturesKeys = set()
+        selectedFeatureKeys = set()
+
+        try:
+            # Analysis for the volume and the nodule:
+            keyName = cid
+            feature_widgets = collections.OrderedDict()
+            for key in self._feature_classes.keys():
+                feature_widgets[key] = list()
+
+            for fc in self._feature_classes:
+                for f in self._feature_classes[fc]:
+                    selectedMainFeaturesKeys.add(fc)
+                    selectedFeatureKeys.add(str(f))
+
+            print("******** Nodule analysis results...")
+            nodule_lm_array = sitk.GetArrayFromImage(self._nodule_lm)
+            self._analysis_results[keyName] = collections.OrderedDict()
+            self._analysis_results[keyName] = self.runAnalysis(whole_lm, nodule_lm_array, self._analysis_results[keyName],
+                                                               selectedMainFeaturesKeys, selectedFeatureKeys)
+
+            # Print analysis results
+            print(self._analysis_results[keyName])
+
+            if self._sphere_radius > 0.0:
+                self._current_distance_maps[cid] = self.getCurrentDistanceMap()
+                self.runAnalysisSphere(cid, self._current_distance_maps[cid], self._sphere_radius,
+                                       selectedMainFeaturesKeys, selectedFeatureKeys, whole_lm)
+                self._analyzedSpheres.add(self._sphere_radius)
+
+        finally:
+            self.saveReport(cid)
+
+    def runAnalysis(self, whole_lm, n_lm_array, results_storage, feature_categories_keys, feature_keys):
+        t1 = time.time()
+        i_ct_array = sitk.GetArrayFromImage(self._input_ct)
+        targetVoxels, targetVoxelsCoordinates = self.tumorVoxelsAndCoordinates(n_lm_array, i_ct_array)
+        print("Time to calculate tumorVoxelsAndCoordinates: {0} seconds".format(time.time() - t1))
+        print np.shape(targetVoxels)
+        print np.shape(targetVoxelsCoordinates)
+        # create a padded, rectangular matrix with shape equal to the shape of the tumor
+        t1 = time.time()
+        matrix, matrixCoordinates = self.paddedTumorMatrixAndCoordinates(targetVoxels, targetVoxelsCoordinates)
+        print("Time to calculate paddedTumorMatrixAndCoordinates: {0} seconds".format(time.time() - t1))
+
+        # get Histogram data
+        t1 = time.time()
+        bins, grayLevels, numGrayLevels = self.getHistogramData(targetVoxels)
+        print("Time to calculate histogram: {0} seconds".format(time.time() - t1))
+
+        # First Order Statistics
+        if "First-Order Statistics" in feature_categories_keys:
+            firstOrderStatistics = FirstOrderStatistics(targetVoxels, bins, numGrayLevels, feature_keys)
+            results = firstOrderStatistics.EvaluateFeatures()
+            results_storage.update(results)
+
+        # Shape/Size and Morphological Features
+        if "Morphology and Shape" in feature_categories_keys:
+            # extend padding by one row/column for all 6 directions
+            if len(matrix) == 0:
+                matrixSA = matrix
+                matrixSACoordinates = matrixCoordinates
+            else:
+                maxDimsSA = tuple(map(operator.add, matrix.shape, ([2, 2, 2])))
+                matrixSA, matrixSACoordinates = self.padMatrix(matrix, matrixCoordinates, maxDimsSA, targetVoxels)
+            morphologyStatistics = MorphologyStatistics(self._input_ct.GetSpacing(), matrixSA,
+                                                                        matrixSACoordinates, targetVoxels, feature_keys)
+            results = morphologyStatistics.EvaluateFeatures()
+            results_storage.update(results)
+
+        # Texture Features(GLCM)
+        if "Texture: GLCM" in feature_categories_keys:
+            textureFeaturesGLCM = TextureGLCM(grayLevels, numGrayLevels, matrix, matrixCoordinates,
+                                                              targetVoxels, feature_keys, None)
+            results = textureFeaturesGLCM.EvaluateFeatures()
+            results_storage.update(results)
+
+        # Texture Features(GLRL)
+        if "Texture: GLRL" in feature_categories_keys:
+            textureFeaturesGLRL = TextureGLRL(grayLevels, numGrayLevels, matrix, matrixCoordinates,
+                                                              targetVoxels, feature_keys)
+            results = textureFeaturesGLRL.EvaluateFeatures()
+            results_storage.update(results)
+
+        # Geometrical Measures
+        if "Geometrical Measures" in feature_categories_keys:
+            geometricalMeasures = GeometricalMeasures(self._input_ct.GetSpacing(), matrix,
+                                                                      matrixCoordinates, targetVoxels, feature_keys)
+            results = geometricalMeasures.EvaluateFeatures()
+            results_storage.update(results)
+
+        # Renyi Dimensions
+        if "Renyi Dimensions" in feature_categories_keys:
+            # extend padding to dimension lengths equal to next power of 2
+            maxDims = tuple([int(pow(2, math.ceil(np.log2(np.max(matrix.shape)))))] * 3)
+            matrixPadded, matrixPaddedCoordinates = self.padMatrix(matrix, matrixCoordinates, maxDims, targetVoxels)
+            renyiDimensions = RenyiDimensions(matrixPadded, matrixPaddedCoordinates, feature_keys)
+            results = renyiDimensions.EvaluateFeatures()
+            results_storage.update(results)
+
+        # Parenchymal Volume
+        if "Parenchymal Volume" in feature_categories_keys:
+            parenchyma_lm_array = sitk.GetArrayFromImage(whole_lm)
+            parenchymalVolume = ParenchymalVolume(parenchyma_lm_array, n_lm_array,
+                                                                  self._input_ct.GetSpacing(), feature_keys)
+            results = parenchymalVolume.EvaluateFeatures()
+            results_storage.update(results)
+
+        # filter for user-queried features only
+        results_storage = collections.OrderedDict((k, results_storage[k]) for k in feature_keys)
+
+        return results_storage
+
+    def runAnalysisSphere(self, cid, dist_map, radius, selectedMainFeaturesKeys, selectedFeatureKeys,
+                          parenchymaWholeVolumeArray=None):
+        """ Run the selected features for an sphere of radius r (excluding the nodule itself)
+        @param cid: case_id
+        @param dist_map: distance map
+        @param radius:
+        @param parenchymaWholeVolumeArray: parenchyma volume (only used in parenchyma analysis). np array
+        """
+        keyName = "{0}_r{1}".format(cid, int(radius))
+        sphere_lm_array = self.getSphereLabelMapArray(dist_map, radius)
+        if sphere_lm_array.max() == 0:
+            # Nothing to analyze
+            results = {}
+            for key in selectedFeatureKeys:
+                results[key] = 0
+            self._analysis_results[keyName] = results
+        else:
+            self._analysis_results[keyName] = collections.OrderedDict()
+            self.runAnalysis(parenchymaWholeVolumeArray, sphere_lm_array, self._analysis_results[keyName],
+                             selectedMainFeaturesKeys, selectedFeatureKeys)
+
+            print("********* Results for the sphere of radius {0}:".format(radius))
+            print(self._analysis_results[keyName])
+
+    def tumorVoxelsAndCoordinates(self, arrayROI, arrayData):
+        coordinates = np.where(arrayROI != 0)  # can define specific label values to target or avoid
+        values = arrayData[coordinates].astype('int64')
+        return values, coordinates
+
+    def paddedTumorMatrixAndCoordinates(self, targetVoxels, targetVoxelsCoordinates):
+        if len(targetVoxels) == 0:
+            # Nothing to analyze
+            empty = np.array([])
+            return (empty, (empty, empty, empty))
+
+        ijkMinBounds = np.min(targetVoxelsCoordinates, 1)
+        ijkMaxBounds = np.max(targetVoxelsCoordinates, 1)
+        matrix = np.zeros(ijkMaxBounds - ijkMinBounds + 1)
+        matrixCoordinates = tuple(map(operator.sub, targetVoxelsCoordinates, tuple(ijkMinBounds)))
+        matrix[matrixCoordinates] = targetVoxels
+        return matrix, matrixCoordinates
+
+    def getHistogramData(self, voxelArray):
+        # with np.histogram(), all but the last bin is half-open, so make one extra bin container
+        binContainers = np.arange(voxelArray.min(), voxelArray.max() + 2)
+        bins = np.histogram(voxelArray, bins=binContainers)[0]  # frequencies
+        grayLevels = np.unique(voxelArray)  # discrete gray levels
+        numGrayLevels = grayLevels.size
+        return bins, grayLevels, numGrayLevels
+
+    def padMatrix(self, a, matrixCoordinates, dims, voxelArray):
+        # pads matrix 'a' with zeros and resizes 'a' to a cube with dimensions increased to the next greatest power of 2
+        # np version 1.7 has np.pad function
+
+        # center coordinates onto padded matrix    # consider padding with NaN or eps = np.spacing(1)
+        pad = tuple(map(operator.div, tuple(map(operator.sub, dims, a.shape)), ([2, 2, 2])))
+        matrixCoordinatesPadded = tuple(map(operator.add, matrixCoordinates, pad))
+        matrix2 = np.zeros(dims)
+        matrix2[matrixCoordinatesPadded] = voxelArray
+        return matrix2, matrixCoordinatesPadded
+
+    def getPredefinedSpheresDict(self, i_ct):
+        """Get predefined spheres """
+        spheresDict = dict()
+        spheresDict[self.WORKING_MODE_HUMAN] = (15, 20, 25)  # Humans
+        spheresDict[self.WORKING_MODE_SMALL_ANIMAL] = (1.5, 2, 2.5)  # Mouse
+
+        return spheresDict[self.getWorkingMode(i_ct)]
+
+    def getWorkingMode(self, i_ct):
+        """
+        Get the right working mode for this volume based on the size
+        @param i_ct:
+        @return: self.WORKING_MODE_HUMAN or self.WORKING_MODE_SMALL_ANIMAL
+        """
+        size = i_ct.GetSpacing()[0] * i_ct.GetImageData().GetDimensions()[0]
+        return self.WORKING_MODE_HUMAN if size >= 100 else self.WORKING_MODE_SMALL_ANIMAL
+
+    def compute_centroid(self, np_array, labelId=1):
+        """ Calculate the coordinates of a centroid for a concrete labelId (default=1)
+        :param np_array: np array
+        :param labelId: label id (default = 1)
+        :return: np array with the coordinates (int format)
+        """
+        mean = np.mean(np.where(np_array == labelId), axis=1)
+        return np.asarray(np.round(mean, 0), np.int)
+
+    def vtk_np_coordinate(self, vtk_coordinate):
+        """ Adapt a coordinate in VTK to a np array format handled by VTK (ie in a reversed order)
+        :param itk_coordinate: coordinate in VTK (xyz)
+        :return: coordinate in np (zyx)
+        """
+        l = list(vtk_coordinate)
+        l.reverse()
+        return l
+
+    def np_itk_coordinate(self, np_coordinate, convert_to_int=True):
+        """ Adapt a coordinate in np to a ITK format (ie in a reversed order and converted to int type)
+        :param np_coordinate: coordinate in np (zyx)
+        :param convert_to_int: convert the coordinate to int type, needed for SimpleITK image coordinates
+        :return: coordinate in ITK (xyz)
+        """
+        if convert_to_int:
+            return [int(np_coordinate[2]), int(np_coordinate[1]), int(np_coordinate[0])]
+        return [np_coordinate[2], np_coordinate[1], np_coordinate[0]]
+
+    def getCurrentDistanceMap(self):
+        """ Calculate the distance map to the centroid for the current labelmap volume.
+        To that end, we have to calculate first the centroid.
+        Please note the results could be cached
+        @return:
+        """
+        nodule_lm_array = sitk.GetArrayFromImage(self._nodule_lm)
+        centroid = self.compute_centroid(nodule_lm_array)
+        # Calculate the distance map for the specified origin
+        # Get the dimensions of the volume in ZYX coords
+        i_ct_array = sitk.GetArrayFromImage(self._input_ct)
+        dims = i_ct_array.shape
+        # Speed map (all ones because the growth will be constant).
+        # The dimensions are reversed because we want the format in ZYX coordinates
+        input = np.ones(dims, np.int32)
+        sitkImage = sitk.GetImageFromArray(input)
+        sitkImage.SetSpacing(self._input_ct.GetSpacing())
+        fastMarchingFilter = sitk.FastMarchingImageFilter()
+        fastMarchingFilter.SetStoppingValue(self.MAX_TUMOR_RADIUS)
+        # Reverse the coordinate of the centroid
+        seeds = [self.np_itk_coordinate(centroid)]
+        fastMarchingFilter.SetTrialPoints(seeds)
+        output = fastMarchingFilter.Execute(sitkImage)
+        # self._current_distance_maps[cid] = sitk.GetArrayFromImage(output)
+
+        return sitk.GetArrayFromImage(output)
+
+    def getSphereLabelMapArray(self, dm, radius):
+        """ Get a labelmap np array that contains a sphere centered in the nodule centroid, with radius "radius" and that
+        EXCLUDES the nodule itself.
+        If the results are not cached, this method creates the volume and calculates the labelmap
+        @param radius: radius of the sphere
+        @return: labelmap array for a sphere of this radius
+        """
+        # If the sphere was already calculated, return the results
+        # name = "SphereLabelmap_r{0}".format(radius)
+        # Try to get first the node from the subject hierarchy tree
+        # Otherwise, Init with the current segmented nodule labelmap
+        # Create and save the labelmap in the Subject hierarchy
+        nodule_lm_array = sitk.GetArrayFromImage(self._nodule_lm)
+        sphere_lm_array = sitk.GetArrayFromImage(self._nodule_lm)
+        # Mask with the voxels that are inside the radius of the sphere
+        # dm = self._current_distance_maps[cid]
+        sphere_lm_array[dm <= radius] = 1
+        # Exclude the nodule
+        sphere_lm_array[nodule_lm_array == 1] = 0
+        return sphere_lm_array
+
+    def saveReport(self, cid):
+        """ Save the current values in a persistent csv file
+        """
+        keyName = cid
+        radius = ''
+        self.saveBasicData(keyName, radius)
+        self.saveCurrentValues(self._analysis_results[keyName])
+
+        # Get all the spheres for this nodule
+        for rad in self._analyzedSpheres:
+            keyName = "{}_r{}".format(cid, int(rad))
+            radius = self._sphere_radius
+            self.saveBasicData(keyName, radius)
+            self.saveCurrentValues(self._analysis_results[keyName])
+
+    def saveBasicData(self, keyName, rad):
+        date = time.strftime("%Y/%m/%d %H:%M:%S")
+        self._analysis_results[keyName]["Case ID"] = keyName
+        self._analysis_results[keyName]["Nodule Number"] = self._nodule_id
+        self._analysis_results[keyName]["Date"] = date
+        self._analysis_results[keyName]["Lesion Type"] = self._lesion_type
+        if len(self._seed_point) > 0:
+            self._analysis_results[keyName]["Seeds (LPS)"] = self._seed_point
+        else:
+            self._analysis_results[keyName]["Seeds (LPS)"] = ''
+        if self._segmentation_threshold is not None:
+            self._analysis_results[keyName]["Threshold"] = self._segmentation_threshold
+        else:
+            self._analysis_results[keyName]["Threshold"] = ''
+        self._analysis_results[keyName]["Sphere Radius"] = rad
+
+    def saveCurrentValues(self, analysis_results):
+        """ Save a new row of information in the current csv file that stores the data  (from a dictionary of items)
+        :param kwargs: dictionary of values
+        """
+        # Check that we have all the "columns"
+        storedColumnNames = ["Case ID", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold",
+                             "Sphere Radius"]
+        # Create a single features list with all the "child" features
+        storedColumnNames.extend(itertools.chain.from_iterable(self._all_features.itervalues()))
+
+        orderedColumns = []
+        # Always add a timestamp as the first value
+        # orderedColumns.append(time.strftime("%Y/%m/%d %H:%M:%S"))
+        for column in storedColumnNames:
+            if analysis_results.has_key(column):
+                orderedColumns.append(analysis_results[column])
+            else:
+                orderedColumns.append('')
+
+        with open(self._csv_file_path, 'a+b') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(orderedColumns)
+
+
+def ras_to_lps(coords):
+    """ Convert from RAS to LPS or viceversa (it is just flipping the first axis)
+    :return: list of 3 coordinates
+    """
+    lps_to_ras_matrix = vtk.vtkMatrix4x4()
+    lps_to_ras_matrix.SetElement(0, 0, -1)
+    lps_to_ras_matrix.SetElement(1, 1, -1)
+
+    cl = list(coords)
+    cl.append(1)
+
+    return list(lps_to_ras_matrix.MultiplyPoint(cl)[:-1])
+
+
+def run_lung_segmentation(i_ct_filename, o_lm):
+    """ Run the nodule segmentation through a CLI
+    """
+    tmpCommand = "GeneratePartialLungLabelMap --ict %(in)s --olm %(out)s"
+    tmpCommand = tmpCommand % {'in': i_ct_filename, 'out': o_lm}
+    # tmpCommand = os.path.join(path['CIP_PATH'], tmpCommand)
+    subprocess.call(tmpCommand, shell=True)
+
+
+def write_csv_first_row(csv_file_path, feature_classes):
+    column_names = ["Case ID", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold", "Sphere Radius"]
+    column_names.extend(itertools.chain.from_iterable(feature_classes.itervalues()))
+    with open(csv_file_path, 'a+b') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(column_names)
+
+
+def get_all_features():
+    feature_classes = collections.OrderedDict()
+    feature_classes["First-Order Statistics"] = ["Voxel Count", "Gray Levels", "Energy", "Entropy",
+                                                 "Minimum Intensity", "Maximum Intensity", "Mean Intensity",
+                                                 "Median Intensity", "Range", "Mean Deviation",
+                                                 "Root Mean Square", "Standard Deviation",
+                                                 "Ventilation Heterogeneity", "Skewness", "Kurtosis",
+                                                 "Variance", "Uniformity"]
+    feature_classes["Morphology and Shape"] = ["Volume mm^3", "Volume cc", "Surface Area mm^2",
+                                               "Surface:Volume Ratio", "Compactness 1", "Compactness 2",
+                                               "Maximum 3D Diameter", "Spherical Disproportion",
+                                               "Sphericity"]
+    feature_classes["Texture: GLCM"] = ["Autocorrelation", "Cluster Prominence", "Cluster Shade",
+                                        "Cluster Tendency", "Contrast", "Correlation",
+                                        "Difference Entropy", "Dissimilarity", "Energy (GLCM)", "Entropy(GLCM)",
+                                        "Homogeneity 1", "Homogeneity 2", "IMC1", "IDMN", "IDN", "Inverse Variance",
+                                        "Maximum Probability", "Sum Average", "Sum Entropy",
+                                        "Sum Variance", "Variance (GLCM)"]  # IMC2 missing
+    feature_classes["Texture: GLRL"] = ["SRE", "LRE", "GLN", "RLN", "RP", "LGLRE", "HGLRE", "SRLGLE",
+                                        "SRHGLE", "LRLGLE", "LRHGLE"]
+    feature_classes["Geometrical Measures"] = ["Extruded Surface Area", "Extruded Volume",
+                                               "Extruded Surface:Volume Ratio"]
+    feature_classes["Renyi Dimensions"] = ["Box-Counting Dimension", "Information Dimension", "Correlation Dimension"]
+    feature_classes["Parenchymal Volume"] = ParenchymalVolume.getAllEmphysemaDescriptions()
+    return feature_classes
+
+if __name__ == "__main__":
+    desc = """This module allows to segment benign nodules and tumors in the lung.
+            Besides, it analyzes a lot of different features inside the nodule and in its surroundings,
+            in concentric spheres of different radius centered in the centroid of the nodule"""
+
+    parser = ArgumentParser(description=desc)
+    parser.add_argument('--in_ct',
+                        help='Input CT file', dest='in_ct', metavar='<string>',
+                        default=None)
+    parser.add_argument('--seed',
+                        help='Coordinates (x,y,z) of lesion location (RAS).', dest='seed_point',
+                        metavar='<string>', default=None)
+    parser.add_argument('--n_id',
+                        help='Nodule ID. Used to distinguish multiple nodules of the same case', dest='n_id',
+                        metavar='<int>', default=1)
+    parser.add_argument('--type',
+                        help='Type for each lesion indicated. Choose between Unknown, \
+                        Nodule and Tumor types',
+                        dest='type', metavar='<string>', default='Unknown')
+    parser.add_argument('--max_rad',
+                        help='Maximum radius (mm) for the lesion. Recommended: 30 mm \
+                        for humans and 3 mm for small animals',
+                        dest='max_rad', metavar='<string>', default=30)
+    parser.add_argument('--n_lm',
+                        help='Nodule labelmap. If labelmap exists, it will be used for \
+                        analysis. Otherwise, nodule will be segmented first.', dest='n_lm',
+                        metavar='<string>', default=None)
+    parser.add_argument('--par_lm',
+                        help='Partial lung labelmap. If labelmap exists, it will be used for parenchyma analysis. \
+                        Otherwise, labelmap will be created first.',
+                        dest='par_lm', default=None)
+    parser.add_argument('--out_csv',
+                        help='CSV file to save nodule analysis.', dest='csv_file', metavar='<string>',
+                        default=None)
+    parser.add_argument('--compute_all',
+                        help='Set this flag to compute all features of all classes. If not setting this flag, \
+                        select features to be computed.', dest='compute_all', action='store_true')
+    parser.add_argument('--th',
+                      help='Threshold value for nodule segmentation. All the voxels above the threshold will be \
+                      considered nodule)',
+                      dest='segm_th', metavar='<float>', default=0.0)
+    parser.add_argument('--fos_feat',
+                        help='First Order Statistics features. For computation of \
+                        all fos features indicate all.',
+                        dest='fos_features', metavar='<string>', default=None)
+    parser.add_argument('--ms_feat',
+                        help='Morphology and Shape features. For computation of \
+                        all ms features indicate all.',
+                        dest='ms_features', metavar='<string>', default=None)
+    parser.add_argument('--glcm_feat',
+                        help='Gray-Level Co-ocurrence Matrices features. For computation of \
+                        all glcm features indicate all.',
+                        dest='glcm_features', metavar='<string>', default=None)
+    parser.add_argument('--glrl_feat',
+                        help='Gray-Level Run Length features. For computation of \
+                        all glrl features indicate all.',
+                        dest='glrl_features', metavar='<string>', default=None)
+    parser.add_argument('--renyi_dim',
+                        help='Renyi Dimensions. For computation of all renyi dimensions indicate all.',
+                        dest='renyi_dimensions', metavar='<string>', default=None)
+    parser.add_argument('--geom_meas',
+                        help='Geometrical Measures. For computation of all renyi dimensions indicate all.',
+                        dest='geom_measures', metavar='<string>', default=None)
+    parser.add_argument('--par_feat',
+                        help='Parenchymal volume features. For computation of \
+                                  all features indicate all.',
+                        dest='par_features', metavar='<string>', default=None)
+    parser.add_argument('--sphere_rad',
+                        help='Radius(es) for Sphere computation.', metavar='<float>', dest='sphere_rad',
+                        default=0.0)
+    parser.add_argument('--tmp',
+                        help='Temp directory for saving computed labelmaps.', metavar='<string>',
+                        dest='tmp_dir', default=None)
+
+    options = parser.parse_args()
+
+    input_ct = sitk.ReadImage(options.in_ct)
+    fileparts = os.path.splitext(options.in_ct)
+    case_id = fileparts[0].split('/')[-1:][0]
+
+    seed_point = []
+    if options.seed_point is not None:
+        seed_point = [float(s) for s in options.seed_point.split(',')]
+        seed_point = ras_to_lps(seed_point)
+        seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
+
+    lesion_type = options.type
+    max_radius = int(options.max_rad)
+    segm_threshold = None
+    nodule_id = options.n_id
+
+    tmp_dir = options.tmp_dir
+    if tmp_dir is not None and not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+    elif tmp_dir is None:
+        tmp_dir = os.path.join(os.getcwd(), 'LabelMaps')
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+
+    n_lm_filename = options.n_lm
+    if n_lm_filename is not None:
+        if not os.path.exists(n_lm_filename):
+            if len(seed_point) == 0:
+                parser.error("Nodule segmentation requires seed point")
+            segm_threshold = float(options.segm_th)
+            nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_radius, seed_point,
+                                               n_lm_filename, float(segm_threshold))
+            nodule_segmenter.segment_nodule()
+    else:
+        n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
+        if not os.path.exists(n_lm_filename):
+            if len(seed_point) == 0:
+                parser.error("Nodule segmentation requires seed point")
+            segm_threshold = float(options.segm_th)
+            nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_radius, seed_point,
+                                               n_lm_filename, float(segm_threshold))
+            nodule_segmenter.segment_nodule()
+    nodule_lm = sitk.ReadImage(n_lm_filename)
+
+    all_feature_classes = get_all_features()
+    feature_classes = collections.OrderedDict()
+    parenchyma_lm = None
+
+    if options.compute_all:
+        feature_classes = all_feature_classes
+        par_lm_filename = options.par_lm
+        if par_lm_filename is not None:
+            if not os.path.exists(par_lm_filename):
+                run_lung_segmentation(options.in_ct, par_lm_filename)
+        else:
+            par_lm_filename = tmp_dir + '/' + case_id + '_partialLungLabelMap.nrrd'
+            if not os.path.exists(par_lm_filename):
+                run_lung_segmentation(options.in_ct, par_lm_filename)
+
+        parenchyma_lm = sitk.ReadImage(par_lm_filename)
+        parenchyma_lm_array = sitk.GetArrayFromImage(parenchyma_lm)
+        parenchyma_lm_array[parenchyma_lm_array > 0] = 1
+        parenchyma_lm = sitk.GetImageFromArray(parenchyma_lm_array)
+        parenchyma_lm.SetSpacing(input_ct.GetSpacing())
+        parenchyma_lm.SetOrigin(input_ct.GetOrigin())
+    else:
+        if options.fos_features == 'all':
+            feature_classes["First-Order Statistics"] = all_feature_classes["First-Order Statistics"]
+        elif options.fos_features is not None:
+            feature_classes["First-Order Statistics"] = [ff for ff in str.split(options.fos_features, ',')]
+
+        if options.ms_features == 'all':
+            feature_classes["Morphology and Shape"] = all_feature_classes["Morphology and Shape"]
+        elif options.ms_features is not None:
+            feature_classes["Morphology and Shape"] = [ff for ff in str.split(options.ms_features, ',')]
+
+        if options.glcm_features == 'all':
+            feature_classes["Texture: GLCM"] = all_feature_classes["Texture: GLCM"]
+        elif options.glcm_features is not None:
+            feature_classes["Texture: GLCM"] = [ff for ff in str.split(options.glcm_features, ',')]
+
+        if options.glrl_features == 'all':
+            feature_classes["Texture: GLRL"] = all_feature_classes["Texture: GLRL"]
+        elif options.glrl_features is not None:
+            feature_classes["Texture: GLRL"] = [ff for ff in str.split(options.glrl_features, ',')]
+
+        if options.geom_measures == 'all':
+            feature_classes["Geometrical Measures"] = all_feature_classes["Geometrical Measures"]
+        elif options.geom_measures is not None:
+            feature_classes["Geometrical Measures"] = [ff for ff in str.split(options.geom_measures, ',')]
+
+        if options.renyi_dimensions == 'all':
+            feature_classes["Renyi Dimensions"] = all_feature_classes["Renyi Dimensions"]
+        elif options.renyi_dimensions is not None:
+            feature_classes["Renyi Dimensions"] = [ff for ff in str.split(options.renyi_dimensions, ',')]
+
+        if options.par_features is not None:
+            par_lm_filename = options.par_lm
+            if par_lm_filename is not None:
+                if not os.path.exists(par_lm_filename):
+                    run_lung_segmentation(options.in_ct, par_lm_filename)
+            else:
+                par_lm_filename = tmp_dir + '/' + case_id + '_partialLungLabelMap.nrrd'
+                if not os.path.exists(par_lm_filename):
+                    run_lung_segmentation(options.in_ct, par_lm_filename)
+            parenchyma_lm = sitk.ReadImage(par_lm_filename)
+            parenchyma_lm_array = sitk.GetArrayFromImage(parenchyma_lm)
+            parenchyma_lm_array[parenchyma_lm_array > 0] = 1
+            parenchyma_lm = sitk.GetImageFromArray(parenchyma_lm_array)
+            parenchyma_lm.SetSpacing(input_ct.GetSpacing())
+            parenchyma_lm.SetOrigin(input_ct.GetOrigin())
+
+            if options.par_features == 'all':
+                feature_classes["Parenchymal Volume"] = all_feature_classes["Parenchymal Volume"]
+            elif options.par_features is not None:
+                feature_classes["Parenchymal Volume"] = [ff for ff in str.split(options.par_features, ',')]
+
+    sphere_rad = float(options.sphere_rad)
+
+    if not os.path.exists(options.csv_file):
+        write_csv_first_row(options.csv_file, all_feature_classes)
+
+    ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sphere_rad,
+                         feature_classes, options.csv_file, all_feature_classes)
+    ns.execute(case_id, whole_lm=parenchyma_lm)
