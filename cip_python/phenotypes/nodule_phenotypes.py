@@ -10,7 +10,6 @@ import csv
 import itertools
 import SimpleITK as sitk
 import xml.etree.ElementTree as ET
-from cip_python.phenotypes.phenotypes import Phenotypes
 from argparse import ArgumentParser
 from cip_python.segmentation.nodule_segmenter import NoduleSegmenter
 
@@ -1310,7 +1309,7 @@ class TextureGLRL:
             return self.textureFeaturesGLRL, self.textureFeaturesGLRLTiming
 
 
-class NodulePhenotypes(Phenotypes):
+class NodulePhenotypes:
 
     def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, sphere_rad,
                  feature_classes, csv_file_path, all_features):
@@ -1752,14 +1751,18 @@ if __name__ == "__main__":
     parser.add_argument('--xml',
                         help='XML file containing nodule information for the input ct.', dest='xml_file',
                         metavar='<string>', default=None)
-    parser.add_argument('--max_rad',
-                        help='Maximum radius (mm) for the lesion. Recommended: 30 mm \
-                        for humans and 3 mm for small animals',
-                        dest='max_rad', metavar='<float>', default=30.0)
     parser.add_argument('--n_lm',
                         help='Nodule labelmap. If labelmap exists, it will be used for \
                         analysis. Otherwise, nodule will be segmented first.', dest='n_lm',
                         metavar='<string>', default=None)
+    parser.add_argument('--max_rad',
+                        help='Maximum radius (mm) for the lesion. Recommended: 30 mm \
+                        for humans and 3 mm for small animals',
+                        dest='max_rad', metavar='<float>', default=30.0)
+    parser.add_argument('--th',
+                        help='Threshold value for nodule segmentation. All the voxels above the threshold will be \
+                              considered nodule)',
+                        dest='segm_th', metavar='<float>', default=None)
     parser.add_argument('--par_lm',
                         help='Partial lung labelmap. If labelmap exists, it will be used for parenchyma analysis. \
                         Otherwise, labelmap will be created first.',
@@ -1767,10 +1770,6 @@ if __name__ == "__main__":
     parser.add_argument('--out_csv',
                         help='CSV file to save nodule analysis.', dest='csv_file', metavar='<string>',
                         default=None)
-    parser.add_argument('--th',
-                        help='Threshold value for nodule segmentation. All the voxels above the threshold will be \
-                          considered nodule)',
-                        dest='segm_th', metavar='<float>', default=None)
     parser.add_argument('--compute_all',
                         help='Set this flag to compute all features of all classes. If not setting this flag, \
                         select features to be computed.', dest='compute_all', action='store_true')
