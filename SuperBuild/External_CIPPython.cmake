@@ -119,13 +119,14 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
 
   #Nipype is not supported in Win32
   IF ( NOT WIN32 )
-    ExternalProject_Add_Step(${proj} configparser
-            COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nipype
+    # configparser should be imported directly from nipype, but as of today it doesn't
+    ExternalProject_Add_Step(${proj} installconfigparser
+            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet configparser
             DEPENDEES installnibabel
             )
     ExternalProject_Add_Step(${proj} installnipype
       COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nipype
-      DEPENDEES installnibabel
+      DEPENDEES installconfigparser
     )
   ENDIF( )
 
