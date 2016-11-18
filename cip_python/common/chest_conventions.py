@@ -1,7 +1,7 @@
 import os.path as path
 from collections import OrderedDict
 import xml.etree.ElementTree as et
-from .chest_conventions_static import *
+from cip_python.common.chest_conventions_static import *
 
 class ChestConventionsInitializer(object):
     #root_xml_path = "/Users/jonieva/Projects/CIP/Resources/ChestConventions/"

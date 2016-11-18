@@ -9,7 +9,7 @@
 import os
 import math
 from optparse import OptionParser
-from . import ChestParticles
+from cip_python.particles import ChestParticles
 
 class MultiResAirwayParticles(ChestParticles):
     """Class for multiresolution airway-specific particles sampling

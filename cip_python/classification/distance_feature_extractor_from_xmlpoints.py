@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import vtk
 
-from ..common import GeometryTopologyData
-from . import DistanceFeatureExtractor
+from cip_python.common import GeometryTopologyData
+from cip_python.classification import DistanceFeatureExtractor
 
 
 class DistanceFeatureExtractorFromXML:

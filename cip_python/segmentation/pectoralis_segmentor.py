@@ -109,3 +109,11 @@ class pectoralis_segmentor:
         print("out volume shape in pectoralis segmentor, new")
         print(np.shape(output_volume))
         return output_volume, prior_probabilities, out_posteriors
+
+
+
+
+
+
+
+

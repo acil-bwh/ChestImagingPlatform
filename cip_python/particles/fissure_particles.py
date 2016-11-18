@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import tempfile, shutil
 import os
 
-from . import ChestParticles
+from cip_python.particles import ChestParticles
 
 class FissureParticles(ChestParticles):
     """Class for fissure-specific particles sampling

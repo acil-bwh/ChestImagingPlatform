@@ -8,7 +8,7 @@
 
 import os
 import tempfile, shutil
-from . import ChestParticles
+from cip_python.particles import ChestParticles
 
 class AirwayParticles(ChestParticles):
     """Class for airway-specific particles sampling

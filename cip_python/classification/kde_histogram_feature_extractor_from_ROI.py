@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 from sklearn.neighbors import KernelDensity
 
-from . import botev_bandwidth
+from cip_python.classification import botev_bandwidth
 
 class kdeHistExtractorFromROI:
     """General purpose class implementing a kernel density estimation histogram

@@ -10,12 +10,12 @@ import types
 from scipy import ndimage
 import pandas as pd
 
-from ..common import ChestConventions
-from ..input_output import ImageReaderWriter
-from . import HistDistKNN
-from . import kdeHistExtractorFromROI
-from . import DistExtractorFromROI
-from . import Patcher
+from cip_python.common import ChestConventions
+from cip_python.input_output import ImageReaderWriter
+from cip_python.classification import HistDistKNN
+from cip_python.classification import kdeHistExtractorFromROI
+from cip_python.classification import DistExtractorFromROI
+from cip_python.classification import Patcher
 from cip_python.segmentation.grid_segmenter import GridSegmenter
 global ct
       
