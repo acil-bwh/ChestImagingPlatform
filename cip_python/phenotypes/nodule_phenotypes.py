@@ -11,7 +11,7 @@ import itertools
 import SimpleITK as sitk
 import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
-from cip_python.segmentation.nodule_segmenter import NoduleSegmenter
+from cip_python.segmentation import NoduleSegmenter
 
 
 class FirstOrderStatistics:
