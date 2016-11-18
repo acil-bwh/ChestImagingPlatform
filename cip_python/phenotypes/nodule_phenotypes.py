@@ -10,7 +10,7 @@ import csv
 import itertools
 import SimpleITK as sitk
 import xml.etree.ElementTree as ET
-from argparse import ArgumentParser
+from optparse import OptionParser
 from cip_python.segmentation import NoduleSegmenter
 
 
@@ -1744,69 +1744,69 @@ if __name__ == "__main__":
             Besides, it analyzes a lot of different features inside the nodule and in its surroundings,
             in concentric spheres of different radius centered in the centroid of the nodule"""
 
-    parser = ArgumentParser(description=desc)
-    parser.add_argument('--in_ct',
+    parser = OptionParser(description=desc)
+    parser.add_option('--in_ct',
                         help='Input CT file', dest='in_ct', metavar='<string>',
                         default=None)
-    parser.add_argument('--xml',
+    parser.add_option('--xml',
                         help='XML file containing nodule information for the input ct.', dest='xml_file',
                         metavar='<string>', default=None)
-    parser.add_argument('--n_lm',
+    parser.add_option('--n_lm',
                         help='Nodule labelmap. If labelmap exists, it will be used for \
                         analysis. Otherwise, nodule will be segmented first.', dest='n_lm',
                         metavar='<string>', default=None)
-    parser.add_argument('--max_rad',
+    parser.add_option('--max_rad',
                         help='Maximum radius (mm) for the lesion. Recommended: 30 mm \
                         for humans and 3 mm for small animals',
                         dest='max_rad', metavar='<float>', default=30.0)
-    parser.add_argument('--th',
+    parser.add_option('--th',
                         help='Threshold value for nodule segmentation. All the voxels above the threshold will be \
                               considered nodule)',
                         dest='segm_th', metavar='<float>', default=None)
-    parser.add_argument('--par_lm',
+    parser.add_option('--par_lm',
                         help='Partial lung labelmap. If labelmap exists, it will be used for parenchyma analysis. \
                         Otherwise, labelmap will be created first.',
-                        dest='par_lm', default=None)
-    parser.add_argument('--out_csv',
+                        dest='par_lm', metavar='<string>', default=None)
+    parser.add_option('--out_csv',
                         help='CSV file to save nodule analysis.', dest='csv_file', metavar='<string>',
                         default=None)
-    parser.add_argument('--compute_all',
+    parser.add_option('--compute_all',
                         help='Set this flag to compute all features of all classes. If not setting this flag, \
                         select features to be computed.', dest='compute_all', action='store_true')
-    parser.add_argument('--fos_feat',
+    parser.add_option('--fos_feat',
                         help='First Order Statistics features. For computation of \
                         all fos features indicate all.',
                         dest='fos_features', metavar='<string>', default=None)
-    parser.add_argument('--ms_feat',
+    parser.add_option('--ms_feat',
                         help='Morphology and Shape features. For computation of \
                         all ms features indicate all.',
                         dest='ms_features', metavar='<string>', default=None)
-    parser.add_argument('--glcm_feat',
+    parser.add_option('--glcm_feat',
                         help='Gray-Level Co-ocurrence Matrices features. For computation of \
                         all glcm features indicate all.',
                         dest='glcm_features', metavar='<string>', default=None)
-    parser.add_argument('--glrl_feat',
+    parser.add_option('--glrl_feat',
                         help='Gray-Level Run Length features. For computation of \
                         all glrl features indicate all.',
                         dest='glrl_features', metavar='<string>', default=None)
-    parser.add_argument('--renyi_dim',
+    parser.add_option('--renyi_dim',
                         help='Renyi Dimensions. For computation of all renyi dimensions indicate all.',
                         dest='renyi_dimensions', metavar='<string>', default=None)
-    parser.add_argument('--geom_meas',
+    parser.add_option('--geom_meas',
                         help='Geometrical Measures. For computation of all renyi dimensions indicate all.',
                         dest='geom_measures', metavar='<string>', default=None)
-    parser.add_argument('--par_feat',
+    parser.add_option('--par_feat',
                         help='Parenchymal volume features. For computation of \
                                   all features indicate all.',
                         dest='par_features', metavar='<string>', default=None)
-    parser.add_argument('--sphere_rad',
+    parser.add_option('--sphere_rad',
                         help='Radius(es) for Sphere computation.', metavar='<float>', dest='sphere_rad',
                         default=None)
-    parser.add_argument('--tmp',
+    parser.add_option('--tmp',
                         help='Temp directory for saving computed labelmaps.', metavar='<string>',
                         dest='tmp_dir', default=None)
 
-    options = parser.parse_args()
+    (options, args) = parser.parse_args()
 
     input_ct = sitk.ReadImage(options.in_ct)
     fileparts = os.path.splitext(options.in_ct)
