@@ -1,6 +1,6 @@
 import SimpleITK as sitk
 import numpy as np
-
+from cip_python.input_output import ImageReaderWriter
 
 class LocateCARDIAGatedArtifacts:
 
@@ -44,25 +44,14 @@ if __name__ == "__main__":
     parser.add_option('--olm', help='Output CT image for artifacts removal.', dest="o_lm", metavar='<string>')
     options, args = parser.parse_args()
 
-    input_ct = sitk.ReadImage(options.i_ct)
+    image_read_write = ImageReaderWriter()
+    input_ct = image_read_write.read(options.i_ct)
 
     la_class = LocateCARDIAGatedArtifacts(input_ct)
     artifacts_lm = la_class.locate_artifacts()
-    artifacts_lm = np.transpose(artifacts_lm, (2, 1, 0))
 
-    metainfo = dict()
-    metainfo['space origin'] = input_ct.GetOrigin()
-    metainfo['spacing'] = input_ct.GetSpacing()
-    metainfo['space directions'] = input_ct.GetDirection()
-
-    output_lm = sitk.GetImageFromArray(artifacts_lm)
-
-    output_lm.SetSpacing(metainfo['spacing'])
-    output_lm.SetOrigin(metainfo['space origin'])
-    output_lm.SetDirection(metainfo['space directions'])
-
-    sitk.WriteImage(output_lm, options.o_lm)
-
+    output_lm = image_read_write.numpy_to_sitkImage(artifacts_lm, sitk_image_tempate=input_ct)
+    image_read_write.write(output_lm, options.o_lm)
 
 
 
