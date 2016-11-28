@@ -415,6 +415,54 @@
             <Name>SpinalCord</Name>
             <Color>0.49;0.49;0.89</Color>
         </ChestRegion>
+        <ChestRegion>
+            <Id>69</Id>
+            <Code>SUPERIORMESENTERICARTERY</Code>
+            <Name>SuperiorMesentericArtery</Name>
+            <Color>0.49;0.49;0.9</Color>
+        </ChestRegion>
+        <ChestRegion>
+            <Id>70</Id>
+            <Code>PANCREAS</Code>
+            <Name>Pancreas</Name>
+            <Color>0.49;0.49;0.91</Color>
+        </ChestRegion>
+        <ChestRegion>
+            <Id>71</Id>
+            <Code>PANCREASHEAD</Code>
+            <Name>Pancreas</Name>
+            <Color>0.49;0.49;0.92</Color>
+        </ChestRegion>
+        <ChestRegion>
+            <Id>72</Id>
+            <Code>LEFTANTERIORCHESTWALL</Code>
+            <Name>LeftAnteriorChestWall</Name>
+            <Color>0.49;0.49;0.835</Color>
+        </ChestRegion>
+        <ChestRegion>
+            <Id>73</Id>
+            <Code>RIGHTANTERIORCHESTWALL</Code>
+            <Name>RightAnteriorChestWall</Name>
+            <Color>0.49;0.49;0.845</Color>
+        </ChestRegion>
+        <ChestRegion>
+            <Id>74</Id>
+            <Code>LEFTPOSTERIORCHESTWALL</Code>
+            <Name>LeftPosteriorChestWall</Name>
+            <Color>0.49;0.49;0.8355</Color>
+        </ChestRegion>
+        <ChestRegion>
+            <Id>75</Id>
+            <Code>RIGHTPOSTERIORCHESTWALL</Code>
+            <Name>RightPosteriorChestWall</Name>
+            <Color>0.49;0.49;0.8455</Color>
+        </ChestRegion>
+        <ChestRegion>
+            <Id>76</Id>
+            <Code>TRACHEACARINA</Code>
+            <Name>TracheaCarina</Name>
+            <Color>0.49;0.49;0.93</Color>
+        </ChestRegion>
     </ChestRegions>
     <ChestTypes>
         <ChestType>
@@ -1260,6 +1308,22 @@
             <Parent>OUTSIDELUNG</Parent>
         </Hierarchy>
         <Hierarchy>
+            <Child>RIGHTANTERIORCHESTWALL</Child>
+            <Parent>RIGHTCHESTWALL</Parent>
+        </Hierarchy>
+        <Hierarchy>
+            <Child>RIGHTPOSTERIORCHESTWALL</Child>
+            <Parent>RIGHTCHESTWALL</Parent>
+        </Hierarchy>
+        <Hierarchy>
+            <Child>LEFTANTERIORCHESTWALL</Child>
+            <Parent>LEFTCHESTWALL</Parent>
+        </Hierarchy>
+        <Hierarchy>
+            <Child>LEFTPOSTERIORCHESTWALL</Child>
+            <Parent>LEFTCHESTWALL</Parent>
+        </Hierarchy>
+        <Hierarchy>
             <Child>LEFTDIAPHRAGM</Child>
             <Parent>OUTSIDELUNG</Parent>
         </Hierarchy>
@@ -1278,6 +1342,14 @@
         <Hierarchy>
             <Child>SPINALCORD</Child>
             <Parent>SPINE</Parent>
+        </Hierarchy>
+        <Hierarchy>
+            <Child>PANCREASHEAD</Child>
+            <Parent>PANCREAS</Parent>
+        </Hierarchy>
+        <Hierarchy>
+            <Child>TRACHEACARINA</Child>
+            <Parent>TRACHEA</Parent>
         </Hierarchy>
     </ChestRegionHierarchyMap>
     <ImageFeatures>
