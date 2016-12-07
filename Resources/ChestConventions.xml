@@ -1528,4 +1528,24 @@
         <Name>BV40_45</Name>
         <Name>TBV</Name>
     </PulmonaryVasculaturePhenotypeNames>
+    <AirwayPhenotypeNames>
+        <Name>innerRadius</Name>
+        <Name>outerRadius</Name>
+        <Name>wallThickness</Name>
+        <Name>innerPerimeter</Name>
+        <Name>outerPerimeter</Name>
+        <Name>innerArea</Name>
+        <Name>outerArea</Name>
+        <Name>wallArea</Name>
+        <Name>wallAreaPerc</Name>
+        <Name>Pi10</Name>
+        <Name>Pi15</Name>
+        <Name>wallIntensity</Name>
+        <Name>peakWallIntensity</Name>
+        <Name>innerWallIntensity</Name>
+        <Name>outerWallIntensity</Name>
+        <Name>power</Name>
+        <Name>numPointsTotal</Name>
+        <Name>numPointsAfterExclusion</Name>
+    </AirwayPhenotypeNames>
 </ChestConventions>
