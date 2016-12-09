@@ -2,12 +2,13 @@ import SimpleITK as sitk
 import numpy as np
 from cip_python.input_output import ImageReaderWriter
 
+
 class LocateCARDIAGatedArtifacts:
 
     def __init__(self, input_ct):
         self._input_ct = input_ct
 
-    def locate_artifacts(self):
+    def locate_artifacts(self, thresh):
 
         input_image = sitk.GetArrayFromImage(self._input_ct)
         input_image = np.transpose(input_image, (2, 1, 0))
@@ -27,7 +28,7 @@ class LocateCARDIAGatedArtifacts:
 
         diff_mean = np.diff(proj_mean)
 
-        indexes = np.nonzero(diff_mean < -0.5)
+        indexes = np.nonzero(diff_mean < -thresh)
 
         art_lm = np.ones(input_image.shape, 'int32')
         for idx in indexes:
@@ -42,13 +43,15 @@ if __name__ == "__main__":
     parser = optparse.OptionParser(description='Filter to convert CT signal into 2D projection and remove artifacts.')
     parser.add_option('--ict', help='Input CT image to analyze.', dest="i_ct", metavar='<string>')
     parser.add_option('--olm', help='Output CT image for artifacts removal.', dest="o_lm", metavar='<string>')
+    parser.add_option('--th', help='Threshold value for sensitivity.', dest="th", metavar='<float>')
     options, args = parser.parse_args()
 
     image_read_write = ImageReaderWriter()
     input_ct = image_read_write.read(options.i_ct)
+    threshold = float(options.th)
 
     la_class = LocateCARDIAGatedArtifacts(input_ct)
-    artifacts_lm = la_class.locate_artifacts()
+    artifacts_lm = la_class.locate_artifacts(threshold)
 
     output_lm = image_read_write.numpy_to_sitkImage(artifacts_lm, sitk_image_tempate=input_ct)
     image_read_write.write(output_lm, options.o_lm)
