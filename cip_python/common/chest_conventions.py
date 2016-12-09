@@ -16,6 +16,7 @@ class ChestConventionsInitializer(object):
     __body_composition_phenotype_names__ = None
     __parenchyma_phenotype_names__ = None
     __pulmonary_vasculature_phenotype_names__ = None
+    __airway_phenotype_names__ = None
 
     @staticmethod
     def xml_root_conventions():
@@ -166,6 +167,16 @@ class ChestConventionsInitializer(object):
                 parent.findall("Name"))
         return ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__
 
+    @staticmethod
+    def airway_phenotype_names():
+        if ChestConventionsInitializer.__airway_phenotype_names__ is None:
+            root = ChestConventionsInitializer.xml_root_conventions()
+            ChestConventionsInitializer.__airway_phenotype_names__ = list()
+            parent = root.find("AirwayPhenotypeNames")
+            map(lambda n: ChestConventionsInitializer.__airway_phenotype_names__.append(n.text),
+                parent.findall("Name"))
+        return ChestConventionsInitializer.__airway_phenotype_names__
+
 #############################
 # CHEST CONVENTIONS
 #############################
@@ -179,6 +190,7 @@ class ChestConventions(object):
     BodyCompositionPhenotypeNames = ChestConventionsInitializer.body_composition_phenotype_names()   # List of strings
     ParenchymaPhenotypeNames = ChestConventionsInitializer.parenchyma_phenotype_names()   # List of strings
     PulmonaryVasculaturePhenotypeNames = ChestConventionsInitializer.pulmonary_vasculature_phenotype_names()   # List of strings
+    AirwayPhenotypeNames = ChestConventionsInitializer.airway_phenotype_names()   # List of strings
 
     @staticmethod
     def GetNumberOfEnumeratedChestRegions():
@@ -503,6 +515,16 @@ class ChestConventions(object):
         return phenotypeName in ChestConventions.PulmonaryVasculaturePhenotypeNames
 
     @staticmethod
+    def IsAirwayPhenotypeName(phenotypeName):
+        """
+            Returns true if the passed phenotype is among the allowed body composition phenotype names.
+            :param phenotypeName: str
+            :return: boolean
+            """
+        return phenotypeName in ChestConventions.AirwayPhenotypeNames
+
+
+    @staticmethod
     def IsHistogramPhenotypeName(phenotypeName):
         """
         DEPRECATED. Not used so far
@@ -531,7 +553,7 @@ class ChestConventions(object):
         :return: list
         """
         return [ChestConventions.BodyCompositionPhenotypeNames, ChestConventions.ParenchymaPhenotypeNames,
-                ChestConventions.PulmonaryVasculaturePhenotypeNames]
+                ChestConventions.PulmonaryVasculaturePhenotypeNames, ChestConventions.AirwayPhenotypeNames]
 
 
     @staticmethod
