@@ -1899,7 +1899,8 @@ if __name__ == "__main__":
     tmp_dir = options.tmp_dir
     if tmp_dir is not None and not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
-    elif tmp_dir is None:
+    elif tmp_dir is None and (options.par_lm is None or options.n_lm is None):
+        #Auto create tmp_dir only if we need it to store par_lm or n_lm
         tmp_dir = os.path.join(os.getcwd(), 'LabelMaps')
         if not os.path.exists(tmp_dir):
             os.makedirs(tmp_dir)
