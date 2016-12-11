@@ -41,6 +41,9 @@ class FirstOrderStatistics:
         self.firstOrderStatistics["Kurtosis"] = "self.kurtosisValue(self.parameterValues)"
         self.firstOrderStatistics["Variance"] = "self.varianceValue(self.parameterValues)"
         self.firstOrderStatistics["Uniformity"] = "self.uniformityValue(self.bins)"
+        self.firstOrderStatistics["LAA950Perc"] = "self.laa950PercValue(self.parameterValues)"
+        self.firstOrderStatistics["LAA910Perc"] = "self.laa910PercValue(self.parameterValues)"
+        self.firstOrderStatistics["LAA856Perc"] = "self.laa856PercValue(self.parameterValues)"
 
         self.parameterValues = parameterValues
         self.bins = bins
@@ -143,6 +146,18 @@ class FirstOrderStatistics:
 
     def uniformityValue(self, bins):
         return (np.sum(bins ** 2))
+
+    def laa950PercValue(self, parameterArray):
+        arr = (parameterArray <= -950)
+        return 100.0*arr.sum()/np.prod(arr.shape)
+
+    def laa910PercValue(self, parameterArray):
+        arr = (parameterArray <= -910)
+        return 100.0*arr.sum()/np.prod(arr.shape)
+
+    def laa856PercValue(self, parameterArray):
+        arr = (parameterArray <= -856)
+        return 100.0*arr.sum()/np.prod(arr.shape)
 
     def EvaluateFeatures(self, printTiming=False, checkStopProcessFunction=None):
         # Evaluate dictionary elements corresponding to user-selected keys
@@ -550,12 +565,14 @@ class RenyiDimensions:
         # Initialize N(s) value at the finest/voxel-level scale
         if (q == 1):
             n[p] = np.sum(c[matrixCoordinatesPadded] * np.log(1 / (c[matrixCoordinatesPadded] + eps)))
+            if np.isnan(n[p]):
+                n[p]=0.0
         else:
             n[p] = np.sum(c[matrixCoordinatesPadded] ** q)
 
         for g in xrange(p - 1, -1, -1):
             siz = 2 ** (p - g)
-            siz2 = round(siz / 2)
+            siz2 = int(round(siz / 2))
             for i in xrange(0, maxDim - siz + 1, siz):
                 for j in xrange(0, maxDim - siz + 1, siz):
                     for k in xrange(0, maxDim - siz + 1, siz):
@@ -567,11 +584,16 @@ class RenyiDimensions:
                         self.checkStopProcessFunction()
                         # print (i, j, k, '                ', c[i,j,k])
             pi = c[0:(maxDim - siz + 1):siz, 0:(maxDim - siz + 1):siz, 0:(maxDim - siz + 1):siz]
+            
+            #For some reason pi has nan. Let set those places to zero. I do not know if this is the right choice.
+            pi[np.isnan(pi)]=0
             if (q == 1):
                 n[g] = np.sum(pi * np.log(1 / (pi + eps)))
+                if np.isnan(n[g]):
+                    n[g]=0.0
             else:
                 n[g] = np.sum(pi)
-                # print ('p, g, siz, siz2', p, g, siz, siz2, '         n[g]: ', n[g])
+            #print ('p, g, siz, siz2', p, g, siz, siz2, '         n[g]: ', n[g])
 
         r = np.log(2.0 ** (np.arange(p + 1)))  # log(1/scale)
         scaleMatrix = np.array([r, np.ones(p + 1)])
@@ -1311,8 +1333,8 @@ class TextureGLRL:
 
 class NodulePhenotypes:
 
-    def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, sphere_rad,
-                 feature_classes, csv_file_path, all_features):
+    def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, sphere_rads,
+                 feature_classes, csv_file_path, all_features,subtypes_lm):
         self.WORKING_MODE_HUMAN = 0
         self.WORKING_MODE_SMALL_ANIMAL = 1
         self.MAX_TUMOR_RADIUS = 30
@@ -1323,13 +1345,14 @@ class NodulePhenotypes:
         self._seed_point = seed_point
         self._lesion_type = l_type
         self._segmentation_threshold = segm_thresh
-        self._sphere_radius = sphere_rad
+        self._sphere_radius = sphere_rads
         self._all_features = all_features
         self._feature_classes = feature_classes
         self._current_distance_maps = {}
         self._analysis_results = dict()
         self._csv_file_path = csv_file_path
-        self._analyzedSpheres = set()
+        self._analyzedSpheres = list()
+        self._subtypes_lm = subtypes_lm
 
     def execute(self, cid, whole_lm=None):
         """ Compute all the features that are currently selected, for the nodule and/or for
@@ -1354,22 +1377,25 @@ class NodulePhenotypes:
             print("******** Nodule analysis results...")
             nodule_lm_array = sitk.GetArrayFromImage(self._nodule_lm)
             self._analysis_results[keyName] = collections.OrderedDict()
-            self._analysis_results[keyName] = self.runAnalysis(whole_lm, nodule_lm_array, self._analysis_results[keyName],
+            self._analysis_results[keyName] = self.runAnalysis(self._subtypes_lm, nodule_lm_array, self._analysis_results[keyName],
                                                                selectedMainFeaturesKeys, selectedFeatureKeys)
 
             # Print analysis results
             print(self._analysis_results[keyName])
 
-            if self._sphere_radius > 0.0:
-                self._current_distance_maps[cid] = self.getCurrentDistanceMap()
-                self.runAnalysisSphere(cid, self._current_distance_maps[cid], self._sphere_radius,
-                                       selectedMainFeaturesKeys, selectedFeatureKeys, whole_lm)
-                self._analyzedSpheres.add(self._sphere_radius)
+            if self._sphere_radius is not None:
+                self._current_distance_maps[cid] = self.getCurrentDistanceMap(whole_lm)
+                for sph_rad in self._sphere_radius:
+                    if sph_rad > 0.0:
+                        print "Running analysis for "+str(sph_rad)
+                        self.runAnalysisSphere(cid, self._current_distance_maps[cid], sph_rad,
+                                       selectedMainFeaturesKeys, selectedFeatureKeys, self._subtypes_lm)
+                        self._analyzedSpheres.append(sph_rad)
 
         finally:
             self.saveReport(cid)
 
-    def runAnalysis(self, whole_lm, n_lm_array, results_storage, feature_categories_keys, feature_keys):
+    def runAnalysis(self, subtype_lm, n_lm_array, results_storage, feature_categories_keys, feature_keys):
         t1 = time.time()
         i_ct_array = sitk.GetArrayFromImage(self._input_ct)
         targetVoxels, targetVoxelsCoordinates = self.tumorVoxelsAndCoordinates(n_lm_array, i_ct_array)
@@ -1437,8 +1463,8 @@ class NodulePhenotypes:
             results_storage.update(results)
 
         # Parenchymal Volume
-        if "Parenchymal Volume" in feature_categories_keys:
-            parenchyma_lm_array = sitk.GetArrayFromImage(whole_lm)
+        if "Parenchymal Volume" in feature_categories_keys and subtypes_lm is not None:
+            parenchyma_lm_array = sitk.GetArrayFromImage(subtype_lm)
             parenchymalVolume = ParenchymalVolume(parenchyma_lm_array, n_lm_array,
                                                                   self._input_ct.GetSpacing(), feature_keys)
             results = parenchymalVolume.EvaluateFeatures()
@@ -1450,12 +1476,12 @@ class NodulePhenotypes:
         return results_storage
 
     def runAnalysisSphere(self, cid, dist_map, radius, selectedMainFeaturesKeys, selectedFeatureKeys,
-                          parenchymaWholeVolumeArray=None):
+                          subtypesWholeVolumeArray=None):
         """ Run the selected features for an sphere of radius r (excluding the nodule itself)
         @param cid: case_id
         @param dist_map: distance map
         @param radius:
-        @param parenchymaWholeVolumeArray: parenchyma volume (only used in parenchyma analysis). np array
+        @param subtypesWholeVolumeArray: subtypes volume (only used in parenchyma analysis). np array
         """
         keyName = "{0}_r{1}".format(cid, int(radius))
         sphere_lm_array = self.getSphereLabelMapArray(dist_map, radius)
@@ -1467,7 +1493,7 @@ class NodulePhenotypes:
             self._analysis_results[keyName] = results
         else:
             self._analysis_results[keyName] = collections.OrderedDict()
-            self.runAnalysis(parenchymaWholeVolumeArray, sphere_lm_array, self._analysis_results[keyName],
+            self.runAnalysis(subtypesWholeVolumeArray, sphere_lm_array, self._analysis_results[keyName],
                              selectedMainFeaturesKeys, selectedFeatureKeys)
 
             print("********* Results for the sphere of radius {0}:".format(radius))
@@ -1555,7 +1581,7 @@ class NodulePhenotypes:
             return [int(np_coordinate[2]), int(np_coordinate[1]), int(np_coordinate[0])]
         return [np_coordinate[2], np_coordinate[1], np_coordinate[0]]
 
-    def getCurrentDistanceMap(self):
+    def getCurrentDistanceMap(self,whole_lm):
         """ Calculate the distance map to the centroid for the current labelmap volume.
         To that end, we have to calculate first the centroid.
         Please note the results could be cached
@@ -1570,6 +1596,11 @@ class NodulePhenotypes:
         # Speed map (all ones because the growth will be constant).
         # The dimensions are reversed because we want the format in ZYX coordinates
         input = np.ones(dims, np.int32)
+        # Make sure that DM does not overextend the whole lung
+        if whole_lm is not None:
+            whole_lm_array = sitk.GetArrayFromImage(whole_lm)
+            #Set speed image to 0 outside the lung
+            input[whole_lm_array==0]=0
         sitkImage = sitk.GetImageFromArray(input)
         sitkImage.SetSpacing(self._input_ct.GetSpacing())
         fastMarchingFilter = sitk.FastMarchingImageFilter()
@@ -1578,6 +1609,7 @@ class NodulePhenotypes:
         seeds = [self.np_itk_coordinate(centroid)]
         fastMarchingFilter.SetTrialPoints(seeds)
         output = fastMarchingFilter.Execute(sitkImage)
+
         # self._current_distance_maps[cid] = sitk.GetArrayFromImage(output)
 
         return sitk.GetArrayFromImage(output)
@@ -1608,19 +1640,21 @@ class NodulePhenotypes:
         """
         keyName = cid
         radius = ''
-        self.saveBasicData(keyName, radius)
+        self.saveBasicData(keyName,cid,radius)
         self.saveCurrentValues(self._analysis_results[keyName])
 
         # Get all the spheres for this nodule
         for rad in self._analyzedSpheres:
             keyName = "{}_r{}".format(cid, int(rad))
-            radius = self._sphere_radius
-            self.saveBasicData(keyName, radius)
+            radius = rad
+            print "Saving basic data "+str(radius)
+            self.saveBasicData(keyName,cid,radius)
             self.saveCurrentValues(self._analysis_results[keyName])
 
-    def saveBasicData(self, keyName, rad):
+    def saveBasicData(self, keyName,cid,rad):
         date = time.strftime("%Y/%m/%d %H:%M:%S")
-        self._analysis_results[keyName]["Case ID"] = keyName
+        self._analysis_results[keyName]["Case ID"] = cid
+        self._analysis_results[keyName]["Sphere Radius"] = rad
         self._analysis_results[keyName]["Nodule Number"] = self._nodule_id
         self._analysis_results[keyName]["Date"] = date
         self._analysis_results[keyName]["Lesion Type"] = self._lesion_type
@@ -1632,15 +1666,13 @@ class NodulePhenotypes:
             self._analysis_results[keyName]["Threshold"] = self._segmentation_threshold
         else:
             self._analysis_results[keyName]["Threshold"] = ''
-        self._analysis_results[keyName]["Sphere Radius"] = rad
 
     def saveCurrentValues(self, analysis_results):
         """ Save a new row of information in the current csv file that stores the data  (from a dictionary of items)
         :param kwargs: dictionary of values
         """
         # Check that we have all the "columns"
-        storedColumnNames = ["Case ID", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold",
-                             "Sphere Radius"]
+        storedColumnNames = ["Case ID", "Sphere Radius", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold"]
         # Create a single features list with all the "child" features
         storedColumnNames.extend(itertools.chain.from_iterable(self._all_features.itervalues()))
 
@@ -1682,9 +1714,9 @@ def run_lung_segmentation(i_ct_filename, o_lm):
 
 
 def write_csv_first_row(csv_file_path, feature_classes):
-    column_names = ["Case ID", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold", "Sphere Radius"]
+    column_names = ["Case ID", "Sphere Radius", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold"]
     column_names.extend(itertools.chain.from_iterable(feature_classes.itervalues()))
-    with open(csv_file_path, 'a+b') as csvfile:
+    with open(csv_file_path, 'w+b') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(column_names)
 
@@ -1696,21 +1728,26 @@ def get_all_features():
                                                  "Median Intensity", "Range", "Mean Deviation",
                                                  "Root Mean Square", "Standard Deviation",
                                                  "Ventilation Heterogeneity", "Skewness", "Kurtosis",
-                                                 "Variance", "Uniformity"]
+                                                 "Variance", "Uniformity","LAA950Perc","LAA910Perc","LAA856Perc"]
+
     feature_classes["Morphology and Shape"] = ["Volume mm^3", "Volume cc", "Surface Area mm^2",
                                                "Surface:Volume Ratio", "Compactness 1", "Compactness 2",
                                                "Maximum 3D Diameter", "Spherical Disproportion",
                                                "Sphericity"]
+
     feature_classes["Texture: GLCM"] = ["Autocorrelation", "Cluster Prominence", "Cluster Shade",
                                         "Cluster Tendency", "Contrast", "Correlation",
                                         "Difference Entropy", "Dissimilarity", "Energy (GLCM)", "Entropy(GLCM)",
                                         "Homogeneity 1", "Homogeneity 2", "IMC1", "IDMN", "IDN", "Inverse Variance",
                                         "Maximum Probability", "Sum Average", "Sum Entropy",
                                         "Sum Variance", "Variance (GLCM)"]  # IMC2 missing
+
     feature_classes["Texture: GLRL"] = ["SRE", "LRE", "GLN", "RLN", "RP", "LGLRE", "HGLRE", "SRLGLE",
                                         "SRHGLE", "LRLGLE", "LRHGLE"]
+
     feature_classes["Geometrical Measures"] = ["Extruded Surface Area", "Extruded Volume",
                                                "Extruded Surface:Volume Ratio"]
+
     feature_classes["Renyi Dimensions"] = ["Box-Counting Dimension", "Information Dimension", "Correlation Dimension"]
     feature_classes["Parenchymal Volume"] = ParenchymalVolume.getAllEmphysemaDescriptions()
     return feature_classes
@@ -1751,6 +1788,15 @@ if __name__ == "__main__":
     parser.add_option('--xml',
                         help='XML file containing nodule information for the input ct.', dest='xml_file',
                         metavar='<string>', default=None)
+    parser.add_option('--cid',
+                      help='Case ID to use otherwise it is guess from filename (not recommended)',dest='cid',
+                      metavar='<string>', default=None)
+    parser.add_option('--coords',
+                      help='coordinates of the nodule if xml is not provided',dest='coords',
+                      metavar='<string>', default=None)
+    parser.add_option('--type',
+                          help='type of nodule if xml is not provided',dest='type',
+                          metavar='<string>', default=None)
     parser.add_option('--n_lm',
                         help='Nodule labelmap. If labelmap exists, it will be used for \
                         analysis. Otherwise, nodule will be segmented first.', dest='n_lm',
@@ -1767,6 +1813,9 @@ if __name__ == "__main__":
                         help='Partial lung labelmap. If labelmap exists, it will be used for parenchyma analysis. \
                         Otherwise, labelmap will be created first.',
                         dest='par_lm', metavar='<string>', default=None)
+    parser.add_option('--subtypes_lm',
+                        help='Subtypes labelmap to use for parenchyma analysis.',
+                        dest='subtypes_lm', metavar='<string>', default=None)
     parser.add_option('--out_csv',
                         help='CSV file to save nodule analysis.', dest='csv_file', metavar='<string>',
                         default=None)
@@ -1800,7 +1849,7 @@ if __name__ == "__main__":
                                   all features indicate all.',
                         dest='par_features', metavar='<string>', default=None)
     parser.add_option('--sphere_rad',
-                        help='Radius(es) for Sphere computation.', metavar='<float>', dest='sphere_rad',
+                        help='Radius(es) for Sphere computation.', metavar='<float>', dest='sphere_rads',
                         default=None)
     parser.add_option('--tmp',
                         help='Temp directory for saving computed labelmaps.', metavar='<string>',
@@ -1810,20 +1859,39 @@ if __name__ == "__main__":
 
     input_ct = sitk.ReadImage(options.in_ct)
     fileparts = os.path.splitext(options.in_ct)
-    case_id = fileparts[0].split('/')[-1:][0]
+    
+    if options.cid is None:
+        case_id = fileparts[0].split('/')[-1:][0]
+    else:
+        case_id = options.cid
+
     n_lm_names = options.n_lm
     if n_lm_names is not None:
         n_lm_names = [str(lm) for lm in str.split(options.n_lm, ',')]
 
-    coord_system, ids, types, seeds = get_nodule_information(options.xml_file)
-    max_rad = [float(r) for r in str.split(options.max_rad, ',')]
+    if options.xml_file is not None:
+        coord_system, ids, types, seeds = get_nodule_information(options.xml_file)
+    else:
+        if options.coords is not None:
+            no_xml_coords = [float(t) for t in str.split(options.coords, ',')]
+        else:
+            no_xml_coords = [0,0,0]
+
+        if options.type is not None:
+            no_xml_type = options.type
+        else:
+            no_xml_type = "Undefined"
+    
+    
+    #max_rad = [float(r) for r in str.split(options.max_rad, ',')]
+    max_rad = float(options.max_rad)
 
     segm_th = options.segm_th
     if segm_th is not None:
         segm_th = [float(t) for t in str.split(options.segm_th, ',')]
-    sph_rad = options.sphere_rad
-    if sph_rad is not None:
-        sph_rad = [float(sr) for sr in str.split(options.sphere_rad, ',')]
+    sph_rads = options.sphere_rads
+    if sph_rads is not None:
+        sph_rads = [float(sr) for sr in str.split(options.sphere_rads, ',')]
 
     all_feature_classes = get_all_features()
     feature_classes = collections.OrderedDict()
@@ -1837,11 +1905,10 @@ if __name__ == "__main__":
             os.makedirs(tmp_dir)
 
     parenchyma_lm = None
-    if options.compute_all:
-        feature_classes = all_feature_classes
-        par_lm_filename = options.par_lm
-        if par_lm_filename is None:
-            par_lm_filename = tmp_dir + '/' + case_id + '_partialLungLabelMap.nrrd'
+
+    par_lm_filename = options.par_lm
+    if par_lm_filename is None:
+        par_lm_filename = tmp_dir + '/' + case_id + '_partialLungLabelMap.nrrd'
         if not os.path.exists(par_lm_filename):
             run_lung_segmentation(options.in_ct, par_lm_filename)
 
@@ -1851,6 +1918,18 @@ if __name__ == "__main__":
         parenchyma_lm = sitk.GetImageFromArray(parenchyma_lm_array)
         parenchyma_lm.SetSpacing(input_ct.GetSpacing())
         parenchyma_lm.SetOrigin(input_ct.GetOrigin())
+    else:
+        parenchyma_lm = sitk.ReadImage(par_lm_filename)
+
+    subtypes_lm = None
+    if options.compute_all:
+        feature_classes = all_feature_classes
+        subtypes_lm_filename = options.subtypes_lm
+        if subtypes_lm_filename is not None:
+            subtypes_lm = sitk.ReadImage(par_lm_filename)
+        else:
+            print "Subtype image is necessary to compute all phenotypes"
+
     else:
         if options.fos_features == 'all':
             feature_classes["First-Order Statistics"] = all_feature_classes["First-Order Statistics"]
@@ -1883,60 +1962,83 @@ if __name__ == "__main__":
             feature_classes["Renyi Dimensions"] = [ff for ff in str.split(options.renyi_dimensions, ',')]
 
         if options.par_features is not None:
-            par_lm_filename = options.par_lm
-            if par_lm_filename is None:
-                par_lm_filename = tmp_dir + '/' + case_id + '_partialLungLabelMap.nrrd'
-            if not os.path.exists(par_lm_filename):
-                run_lung_segmentation(options.in_ct, par_lm_filename)
+            subtypes_lm_filename = options.subtypes_lm
+            if subtypes_lm_filename is not None:
+                subtypes_lm = sitk.ReadImage(par_lm_filename)
+                if options.par_features == 'all':
+                    feature_classes["Parenchymal Volume"] = all_feature_classes["Parenchymal Volume"]
+                elif options.par_features is not None:
+                    feature_classes["Parenchymal Volume"] = [ff for ff in str.split(options.par_features, ',')]
+            else:
+                print "Parenchymal features will not be computed because subtype labelmap is not provided"
 
-            parenchyma_lm = sitk.ReadImage(par_lm_filename)
-            parenchyma_lm_array = sitk.GetArrayFromImage(parenchyma_lm)
-            parenchyma_lm_array[parenchyma_lm_array > 0] = 1
-            parenchyma_lm = sitk.GetImageFromArray(parenchyma_lm_array)
-            parenchyma_lm.SetSpacing(input_ct.GetSpacing())
-            parenchyma_lm.SetOrigin(input_ct.GetOrigin())
 
-            if options.par_features == 'all':
-                feature_classes["Parenchymal Volume"] = all_feature_classes["Parenchymal Volume"]
-            elif options.par_features is not None:
-                feature_classes["Parenchymal Volume"] = [ff for ff in str.split(options.par_features, ',')]
+    nodule_lm_list=[]
+    nodule_id_list=[]
+    nodule_type_list=[]
+    nodule_coord_list=[]
+    nodule_th_list=[]
+    if options.xml_file is not None:
+        #Parse the xml and create nodule segmentation for each point
+        for i in range(len(ids)):
+            seed_point = [float(s) for s in seeds[i]]
+            if coord_system == 'RAS':
+                seed_point = ras_to_lps(seed_point)
+            seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
 
-    for i in range(len(ids)):
-        seed_point = [float(s) for s in seeds[i]]
-        if coord_system == 'RAS':
-            seed_point = ras_to_lps(seed_point)
-        seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
+            lesion_type = types[i][2:]
+            nodule_id = ids[i]
+            max_radius = max_rad[i]
+            if segm_th is not None:
+                segm_threshold = segm_th[i]
+            else:
+                segm_threshold = None
 
-        lesion_type = types[i][2:]
-        nodule_id = ids[i]
-        max_radius = max_rad[i]
-        if segm_th is not None:
-            segm_threshold = segm_th[i]
-        else:
-            segm_threshold = None
+            if n_lm_names is None:
+                n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
+            elif n_lm_names[i] is None:
+                n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
+            else:
+                n_lm_filename = n_lm_names[i]
 
-        if n_lm_names is None:
-            n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
-        elif n_lm_names[i] is None:
-            n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
-        else:
-            n_lm_filename = n_lm_names[i]
+            if not os.path.exists(n_lm_filename):
+                nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_radius, seed_point,
+                                                   n_lm_filename, segm_threshold)
+                nodule_segmenter.segment_nodule()
+            nodule_lm_list.append(n_lm_filename)
+            nodule_id_list.append(nodule_id)
+            nodule_type_list.append(lesion_type)
+            nodule_coord_list.append(seed_point)
+            nodule_th_list.append(segm_threshold)
+    else:
+        #Define naive default values. This is just a fall back in case we only get a nodule labelmap
+        for i in range(len(n_lm_names)):
+            nodule_lm_list.append(n_lm_names[i])
+            nodule_id_list.append(i)
+            nodule_type_list.append(no_xml_type)
+            nodule_coord_list.append(no_xml_coords)
+            nodule_th_list.append(0.5)
 
-        if not os.path.exists(n_lm_filename):
-            nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_radius, seed_point,
-                                               n_lm_filename, segm_threshold)
-            nodule_segmenter.segment_nodule()
+
+#if not os.path.exists(options.csv_file):
+    write_csv_first_row(options.csv_file, all_feature_classes)
+
+    for i in range(len(nodule_lm_list)):
+        
+        n_lm_filename=nodule_lm_list[i]
+        nodule_id=nodule_id_list[i]
+        lesion_type=nodule_type_list[i]
+        seed_point=nodule_coord_list[i]
+        segm_threshold=nodule_th_list[i]
 
         nodule_lm = sitk.ReadImage(n_lm_filename)
 
-        if sph_rad is not None:
-            sphere_rad = sph_rad[i]
-        else:
-            sphere_rad = 0.0
+#        for j in range (len(sph_rads)):
+#            if sph_rads is not None:
+#                sphere_rad = sph_rads[j]
+#            else:
+#                sphere_rad = 0.0
 
-        if not os.path.exists(options.csv_file):
-            write_csv_first_row(options.csv_file, all_feature_classes)
-
-        ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sphere_rad,
-                             feature_classes, options.csv_file, all_feature_classes)
+        ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sph_rads,
+                             feature_classes, options.csv_file, all_feature_classes,subtypes_lm=subtypes_lm)
         ns.execute(case_id, whole_lm=parenchyma_lm)
