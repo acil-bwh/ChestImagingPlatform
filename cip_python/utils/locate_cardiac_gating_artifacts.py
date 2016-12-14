@@ -30,9 +30,9 @@ class LocateCardiacGatingArtifacts:
 
         indexes = np.nonzero(diff_mean < -thresh)
 
-        art_lm = np.ones(input_image.shape, 'int32')
+        art_lm = np.zeros(input_image.shape, 'uint16')
         for idx in indexes:
-            art_lm[:, :, idx] = 0
+            art_lm[:, :, idx] = 1
 
         return art_lm
 
@@ -44,6 +44,8 @@ if __name__ == "__main__":
     parser.add_option('--ict', help='Input CT image to analyze.', dest="i_ct", metavar='<string>')
     parser.add_option('--olm', help='Output CT image for artifacts removal.', dest="o_lm", metavar='<string>')
     parser.add_option('--th', help='Threshold value for sensitivity.', dest="th", metavar='<float>')
+    parser.add_option('--invert', help='Invert the output mask.', dest="invert", action="store_true")
+
     options, args = parser.parse_args()
 
     image_read_write = ImageReaderWriter()
@@ -52,6 +54,10 @@ if __name__ == "__main__":
 
     la_class = LocateCardiacGatingArtifacts(input_ct)
     artifacts_lm = la_class.locate_artifacts(threshold)
+
+
+    if options.invert == True:
+        artifacts_lm = 1 - artifacts_lm
 
     output_lm = image_read_write.numpy_to_sitkImage(artifacts_lm, sitk_image_tempate=input_ct)
     image_read_write.write(output_lm, options.o_lm)
