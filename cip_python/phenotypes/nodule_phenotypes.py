@@ -1334,7 +1334,7 @@ class TextureGLRL:
 class NodulePhenotypes:
 
     def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, sphere_rads,
-                 feature_classes, csv_file_path, all_features,subtypes_lm):
+                 feature_classes, csv_file_path, all_features,subtypes_lm,absolute_sphere_rads=True):
         self.WORKING_MODE_HUMAN = 0
         self.WORKING_MODE_SMALL_ANIMAL = 1
         self.MAX_TUMOR_RADIUS = 30
@@ -1353,6 +1353,7 @@ class NodulePhenotypes:
         self._csv_file_path = csv_file_path
         self._analyzedSpheres = list()
         self._subtypes_lm = subtypes_lm
+        self._absolute_sphere_rads = absolute_sphere_rads
 
     def execute(self, cid, whole_lm=None):
         """ Compute all the features that are currently selected, for the nodule and/or for
@@ -1384,7 +1385,13 @@ class NodulePhenotypes:
             print(self._analysis_results[keyName])
 
             if self._sphere_radius is not None:
-                self._current_distance_maps[cid] = self.getCurrentDistanceMap(whole_lm)
+                if self._absolute_sphere_rads == True:
+                    print "Radius in reference to centroid"
+                    self._current_distance_maps[cid] = self.getCurrentDistanceMapFromCentroid(whole_lm)
+                else:
+                    print "Radius in reference to nodule boundary"
+                    self._current_distance_maps[cid] = self.getCurrentDistanceMapFromNodule(whole_lm)
+                
                 for sph_rad in self._sphere_radius:
                     if sph_rad > 0.0:
                         print "Running analysis for "+str(sph_rad)
@@ -1485,6 +1492,11 @@ class NodulePhenotypes:
         """
         keyName = "{0}_r{1}".format(cid, int(radius))
         sphere_lm_array = self.getSphereLabelMapArray(dist_map, radius)
+        
+        #sphere_lm = sitk.GetImageFromArray(sphere_lm_array)
+        #sphere_lm.CopyInformation(self._input_ct)
+        #sitk.WriteImage(sphere_lm,'sphere-'+str(radius)+'.nrrd')
+        
         if sphere_lm_array.max() == 0:
             # Nothing to analyze
             results = {}
@@ -1581,7 +1593,7 @@ class NodulePhenotypes:
             return [int(np_coordinate[2]), int(np_coordinate[1]), int(np_coordinate[0])]
         return [np_coordinate[2], np_coordinate[1], np_coordinate[0]]
 
-    def getCurrentDistanceMap(self,whole_lm):
+    def getCurrentDistanceMapFromCentroid(self,whole_lm):
         """ Calculate the distance map to the centroid for the current labelmap volume.
         To that end, we have to calculate first the centroid.
         Please note the results could be cached
@@ -1596,11 +1608,7 @@ class NodulePhenotypes:
         # Speed map (all ones because the growth will be constant).
         # The dimensions are reversed because we want the format in ZYX coordinates
         input = np.ones(dims, np.int32)
-        # Make sure that DM does not overextend the whole lung
-        if whole_lm is not None:
-            whole_lm_array = sitk.GetArrayFromImage(whole_lm)
-            #Set speed image to 0 outside the lung
-            input[whole_lm_array==0]=0
+
         sitkImage = sitk.GetImageFromArray(input)
         sitkImage.SetSpacing(self._input_ct.GetSpacing())
         fastMarchingFilter = sitk.FastMarchingImageFilter()
@@ -1609,10 +1617,40 @@ class NodulePhenotypes:
         seeds = [self.np_itk_coordinate(centroid)]
         fastMarchingFilter.SetTrialPoints(seeds)
         output = fastMarchingFilter.Execute(sitkImage)
+        output_array=sitk.GetArrayFromImage(output)
+
+        # Make sure that DM does not overextend the whole lung
+        # We did not do this setting up the speed image to zero because sometimes the centroid can fall
+        # outside the lung field, and we will kill the evolution.
+        # We rather set the distance map to an imposible value (-1) outside the lung.
+        if whole_lm is not None:
+            whole_lm_array = sitk.GetArrayFromImage(whole_lm)
+            #Set speed image to 0 outside the lung
+            output_array[whole_lm_array==0]=-1
 
         # self._current_distance_maps[cid] = sitk.GetArrayFromImage(output)
 
-        return sitk.GetArrayFromImage(output)
+        return output_array
+
+
+    def getCurrentDistanceMapFromNodule(self,whole_lm):
+        """ Calculate the distance map to the surface of the nodule.
+        Please note the results could be cached
+        @return:
+        """
+    
+        #Set Distance map filter
+        output=sitk.SignedMaurerDistanceMap(self._nodule_lm,False,False,True)
+        output_array=sitk.GetArrayFromImage(output)
+        
+        if whole_lm is not None:
+            whole_lm_array = sitk.GetArrayFromImage(whole_lm)
+            #Set speed image to 0 outside the lung
+            output_array[whole_lm_array==0]=-1
+        
+        # self._current_distance_maps[cid] = sitk.GetArrayFromImage(output)
+        
+        return output_array
 
     def getSphereLabelMapArray(self, dm, radius):
         """ Get a labelmap np array that contains a sphere centered in the nodule centroid, with radius "radius" and that
@@ -1630,7 +1668,8 @@ class NodulePhenotypes:
         sphere_lm_array = sitk.GetArrayFromImage(self._nodule_lm)
         # Mask with the voxels that are inside the radius of the sphere
         # dm = self._current_distance_maps[cid]
-        sphere_lm_array[dm <= radius] = 1
+        #Make sure that we analyze dm>0 to exclude areas outside the lung with dm=-1
+        sphere_lm_array[(dm <= radius) & ( dm > 0 )] = 1
         # Exclude the nodule
         sphere_lm_array[nodule_lm_array == 1] = 0
         return sphere_lm_array
@@ -1640,7 +1679,12 @@ class NodulePhenotypes:
         """
         keyName = cid
         radius = ''
-        self.saveBasicData(keyName,cid,radius)
+        if self._absolute_sphere_rads:
+            reference="Centroid"
+        else:
+            reference="Boundary"
+        
+        self.saveBasicData(keyName,cid,radius,reference)
         self.saveCurrentValues(self._analysis_results[keyName])
 
         # Get all the spheres for this nodule
@@ -1648,13 +1692,14 @@ class NodulePhenotypes:
             keyName = "{}_r{}".format(cid, int(rad))
             radius = rad
             print "Saving basic data "+str(radius)
-            self.saveBasicData(keyName,cid,radius)
+            self.saveBasicData(keyName,cid,radius,reference)
             self.saveCurrentValues(self._analysis_results[keyName])
 
-    def saveBasicData(self, keyName,cid,rad):
+    def saveBasicData(self, keyName,cid,rad,reference):
         date = time.strftime("%Y/%m/%d %H:%M:%S")
         self._analysis_results[keyName]["Case ID"] = cid
         self._analysis_results[keyName]["Sphere Radius"] = rad
+        self._analysis_results[keyName]["Sphere Reference"] = reference
         self._analysis_results[keyName]["Nodule Number"] = self._nodule_id
         self._analysis_results[keyName]["Date"] = date
         self._analysis_results[keyName]["Lesion Type"] = self._lesion_type
@@ -1672,7 +1717,7 @@ class NodulePhenotypes:
         :param kwargs: dictionary of values
         """
         # Check that we have all the "columns"
-        storedColumnNames = ["Case ID", "Sphere Radius", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold"]
+        storedColumnNames = ["Case ID", "Sphere Radius", "Sphere Reference", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold"]
         # Create a single features list with all the "child" features
         storedColumnNames.extend(itertools.chain.from_iterable(self._all_features.itervalues()))
 
@@ -1714,7 +1759,7 @@ def run_lung_segmentation(i_ct_filename, o_lm):
 
 
 def write_csv_first_row(csv_file_path, feature_classes):
-    column_names = ["Case ID", "Sphere Radius", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold"]
+    column_names = ["Case ID", "Sphere Radius", "Sphere Reference", "Nodule Number", "Date", "Lesion Type", "Seeds (LPS)", "Threshold"]
     column_names.extend(itertools.chain.from_iterable(feature_classes.itervalues()))
     with open(csv_file_path, 'w+b') as csvfile:
         writer = csv.writer(csvfile)
@@ -1851,6 +1896,9 @@ if __name__ == "__main__":
     parser.add_option('--sphere_rad',
                         help='Radius(es) for Sphere computation.', metavar='<float>', dest='sphere_rads',
                         default=None)
+    parser.add_option('--relative_spheres',
+                        help='Radius are relative metrics from the surface of the nodule, otherwise, the sphere radius describe absolute values from the centroid of the tumor',
+                        dest='relative_spheres',action="store_true")
     parser.add_option('--tmp',
                         help='Temp directory for saving computed labelmaps.', metavar='<string>',
                         dest='tmp_dir', default=None)
@@ -2024,6 +2072,11 @@ if __name__ == "__main__":
 #if not os.path.exists(options.csv_file):
     write_csv_first_row(options.csv_file, all_feature_classes)
 
+    if options.relative_spheres:
+        absolute_flag=False
+    else:
+        absolute_flag=True
+
     for i in range(len(nodule_lm_list)):
         
         n_lm_filename=nodule_lm_list[i]
@@ -2040,6 +2093,7 @@ if __name__ == "__main__":
 #            else:
 #                sphere_rad = 0.0
 
+
         ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sph_rads,
-                             feature_classes, options.csv_file, all_feature_classes,subtypes_lm=subtypes_lm)
+                             feature_classes, options.csv_file, all_feature_classes,subtypes_lm=subtypes_lm,absolute_sphere_rads=absolute_flag)
         ns.execute(case_id, whole_lm=parenchyma_lm)
