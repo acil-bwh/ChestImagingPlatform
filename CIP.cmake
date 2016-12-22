@@ -147,7 +147,7 @@ if ( CIP_BUILD_TESTING_LARGE )
   include(MIDAS)
   include(MIDASAPILogin)
  
-  set(MIDAS_REST_URL "http://midas.airwayinspector.org/rest" CACHE STRING "The MIDAS server where testing data resides")
+  set(MIDAS_REST_URL "http://midas.chestimagingplatform.org/rest" CACHE STRING "The MIDAS server where testing data resides")
   set(MIDAS_KEY_DIR "${CMAKE_SOURCE_DIR}/Testing/Data/Large/MIDAS_Keys" CACHE PATH "Directory where hash files are stored (included in Source code)")
   set(MIDAS_DATA_DIR "${CIP_BINARY_DIR}/Testing/Data/Large/MIDAS_Data" CACHE PATH "Directory where downloaded files are stored (local directory)")
   FILE(MAKE_DIRECTORY ${MIDAS_DATA_DIR})
