@@ -216,3 +216,19 @@ ShapeModel::transformToModelSpace( vtkSmartPointer< vtkPolyData > polydata ) con
   imageToModelTransformFilter->Update();
   return imageToModelTransformFilter->GetOutput();
 }
+
+vtkSmartPointer< vtkPolyData > 
+ShapeModel::getTargetPolyData() const 
+{
+  vtkSmartPointer< vtkPolyData > target_polydata = vtkSmartPointer< vtkPolyData >::New();
+  /*
+  vtkSmartPointer< vtkPoints > image_points = vtkSmartPointer< vtkPoints >::New();
+  image_points->SetNumberOfPoints( this->getNumberOfPoints() );
+  vnlVectorToVTKPoints( _image, image_points );
+  target_polydata->SetPoints( image_points );
+  */
+  target_polydata->DeepCopy( _polydata );
+  vnlVectorToVTKPoints( _image, target_polydata->GetPoints() );
+  
+  return target_polydata;
+}

@@ -16,15 +16,15 @@ protected:
   virtual double getSamplingFactor() const { return 1.0; }
   virtual bool transformPhysicalPointToIndex( const PointType& pt,
                                               IndexType& pixelIndex );
-  virtual double updatePosition( const PointType& pt,
-                                 const IndexType& idx,
-                                 const PointType& prevPt,
-                                 double prevEval,
-                                 PointType& qt, 
-                                 const CovPixelType& normal, 
-                                 double& maxEval,
-                                 double& minEval,
-                                 int j, int& minj );
+  virtual bool updatePosition( const PointType& pt,
+                               const IndexType& idx,
+                               const PointType& prevPt,
+                               double& prevEval,
+                               PointType& qt, 
+                               const CovPixelType& normal, 
+                               double& maxEval,
+                               double& minEval,
+                               int j, int& minj );
   virtual PointType determinePosition( unsigned int i, 
                                        const std::vector<PointType>& vecOrgPt, 
                                        const std::vector<PointType>& vecQt, 

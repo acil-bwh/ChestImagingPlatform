@@ -26,7 +26,8 @@ public:
                        ShapeModelImage& image );
   virtual ~ShapeModelOptimizer();
   // template method pattern
-  virtual void run( double searchLength,
+  virtual void run( const std::string& inputFileName,
+                    double searchLength,
                     double sigma,
                     double decayFactor,
                     int maxIteration,
@@ -40,15 +41,15 @@ protected:
   virtual double getSamplingFactor() const = 0;
   virtual bool transformPhysicalPointToIndex( const PointType& pt,
                                               IndexType& pixelIndex ) = 0;
-  virtual double updatePosition( const PointType& pt,
-                                 const IndexType& idx,
-                                 const PointType& prevPt,
-                                 double prevEval,
-                                 PointType& qt, 
-                                 const CovPixelType& normal, 
-                                 double& maxEval,
-                                 double& minEval,
-                                 int j, int& minj ) = 0;
+  virtual bool updatePosition( const PointType& pt,
+                               const IndexType& idx,
+                               const PointType& prevPt,
+                               double& prevEval,
+                               PointType& qt, 
+                               const CovPixelType& normal, 
+                               double& maxEval,
+                               double& minEval,
+                               int j, int& minj ) = 0;
   virtual PointType determinePosition( unsigned int i, 
                                        const std::vector<PointType>& vecOrgPt, 
                                        const std::vector<PointType>& vecQt, 

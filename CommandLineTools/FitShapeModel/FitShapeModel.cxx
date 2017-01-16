@@ -87,7 +87,8 @@ namespace
         throw std::invalid_argument( "Unsupported input image type: " + inputImageType );
       }
 
-      poptimizer->run( searchLength,
+      poptimizer->run( imageFileName,
+                       searchLength,
                        sigma,
                        decayFactor,
                        maxIteration,

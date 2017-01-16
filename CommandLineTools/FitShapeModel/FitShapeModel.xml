@@ -38,7 +38,6 @@
       <flag>o</flag>
       <longflag>output</longflag>
       <description><![CDATA[Overlaid image with the result of fitting lung shape model]]></description>
-      <default>NA</default>
     </image>
     <geometry>
       <name>outputGeometry</name>

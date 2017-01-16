@@ -37,11 +37,11 @@ ShapeModelOptimizerDT::transformPhysicalPointToIndex( const PointType& pt,
   return _itkImage->TransformPhysicalPointToIndex( pt, pixelIndex );
 }
 
-double 
+bool 
 ShapeModelOptimizerDT::updatePosition( const PointType& pt,
                                        const IndexType& idx,
                                        const PointType& prevPt,
-                                       double prevEval,
+                                       double& prevEval,
                                        PointType& qt, 
                                        const CovPixelType& normal, 
                                        double& maxEval,
@@ -49,22 +49,30 @@ ShapeModelOptimizerDT::updatePosition( const PointType& pt,
                                        int j, int& minj )
 {
   double curEval = _imageInterpolator->Evaluate( pt );
-
-  if (curEval < 0 && prevEval > 0 && abs(j) < minj) // detect zero crossing
+  bool updated = false;
+  //std::cout << "curEval: " << curEval << " at j = " << j << std::endl;
+  
+  if (((curEval == 0) || (curEval < 0 && prevEval > 0)) && abs(j) < minj) // detect zero crossing
   {
-    //std::cout << "sample " << i << ": " << cost << " at j = " << j << std::endl;
-    double a = exp( -fabs(prevEval) ); // closeness to zero (max 1 at 0)
-    double b = exp( -fabs(curEval) ); // closeness to zero (max 1 at 0)
+    double a = fabs(prevEval); // distance to zero of previous pixel
+    double b = fabs(curEval); // distance to zero of current pixel
+    double w = a / (a + b); // weight of current pixel relative to previous pixel
+    /*
+    double a = exp( -fabs(prevEval) ); // closeness to zero of previous pixel (max 1 at 0)
+    double b = exp( -fabs(curEval) ); // closeness to zero of current pixel (max 1 at 0)
     double w = b / (a + b); // weight of current pixel relative to previous pixel
-
+    */
     for (int k = 0; k < 3; k++)
     {
       qt[k] = w * pt[k] + (1.0 - w) * prevPt[k]; // linear interpolation
     }
     minj = j;
     minEval = curEval;
+    updated = true;
   }
-  return curEval;
+  
+  prevEval = curEval;
+  return updated;
 }
 
 PointType 

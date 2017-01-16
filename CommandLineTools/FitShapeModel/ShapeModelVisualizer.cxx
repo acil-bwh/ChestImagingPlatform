@@ -49,28 +49,33 @@ ShapeModelVisualizer::updateMeshPoints( vtkSmartPointer< vtkPoints > vpoints )
 void
 ShapeModelVisualizer::update( double sigma, int iteration /*=0*/)
 {
-  updateMeshPoints( _shapeModel.getPolyData()->GetPoints() );
-
-  std::cout << "Creating binary image from mesh, writing to " << _outputName << std::endl;
-  
-  // using ITK filter: TriangleMeshToBinaryImageFilter
-  _image.createBinaryMeshImage( _mesh, _outputName );
-  
-  // this flag is mostly for debugging purpose and it takes some time
-  // for a larger size of input images
-  bool useGradientMagnitudeImage = false;
-
-  if (useGradientMagnitudeImage) // use Gaussian gradient magnitude image for overlay output
+  if (!_outputName.empty())
   {
-    _image.createGradientMagnitudeImage( sigma, _outputName );
+    updateMeshPoints( _shapeModel.getPolyData()->GetPoints() );
+
+    std::cout << "Creating binary image from mesh, writing to " << _outputName << std::endl;
+    
+    // using ITK filter: TriangleMeshToBinaryImageFilter
+    _image.createBinaryMeshImage( _mesh, _outputName );
+    
+    // this flag is mostly for debugging purpose and it takes some time
+    // for a larger size of input images
+    bool useGradientMagnitudeImage = false;
+
+    if (useGradientMagnitudeImage) // use Gaussian gradient magnitude image for overlay output
+    {
+      _image.createGradientMagnitudeImage( sigma, _outputName );
+    }
   }
 
   // Write output geometry
   if (!_outputGeomName.empty())
   {
+    // for DT mode, use getTargetPolyData() instead of getPolyData() to save 
+    // the target image points instead of reconstructed model points
     vtkSmartPointer< vtkPolyData > polydata =
       (_outputGeomInModelSpace) ? _shapeModel.getPolyDataModelSpace()
-                                : _shapeModel.getPolyData();
+                                : _shapeModel.getTargetPolyData();
     ShapeModelMeshWriter::write( polydata, _outputGeomName );
   }
 }

@@ -58,11 +58,11 @@ ShapeModelOptimizerCT::transformPhysicalPointToIndex( const PointType& pt,
   return _gradientImage->TransformPhysicalPointToIndex( pt, pixelIndex );
 }
 
-double 
+bool 
 ShapeModelOptimizerCT::updatePosition( const PointType& pt,
                                        const IndexType& idx,
                                        const PointType& prevPt,
-                                       double prevEval,
+                                       double& prevEval,
                                        PointType& qt, 
                                        const CovPixelType& normal, 
                                        double& maxEval,
@@ -73,12 +73,17 @@ ShapeModelOptimizerCT::updatePosition( const PointType& pt,
                          ? _gradientInterpolator->Evaluate( pt )
                          : _gradientImage->GetPixel( idx );
   double curEval = gradDir.GetNorm();
+  bool updated = false;
+  
   if (normal * gradDir > 0 && curEval > maxEval)
   {
     maxEval = curEval;
     qt = pt;
+    updated = true;
   }
-  return curEval;
+  
+  prevEval = curEval;
+  return updated;
 }
 
 PointType 

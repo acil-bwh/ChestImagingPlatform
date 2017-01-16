@@ -20,7 +20,8 @@ public:
   const vnl_matrix< double >& getEigVec() const { return _eigvec; }
   const vnl_vector< double >& getModel() const { return _model; }
 
-  unsigned int getNumberOfPoints() { return _mean.size() / 3; }
+  unsigned int getNumberOfPoints() const { return _mean.size() / 3; }
+  unsigned int getNumberOfModes() const { return _eigvec.cols(); }
 
   vtkSmartPointer< vtkPolyData > getPolyData() const { return _polydata; }
   vtkSmartPointer< vtkTransform > getTransform() const { return _transform; }
@@ -30,6 +31,9 @@ public:
     _transform = transform;
     updatePolyData();
   }
+  
+  void setImagePoints( const vnl_vector<double>& imagePoints ) { _image = imagePoints; }
+  vtkSmartPointer< vtkPolyData > getTargetPolyData() const;
 
 protected:
   // throws std::runtime_error when it failed to load the model
@@ -44,6 +48,7 @@ private:
   vnl_vector< double > _eigval;
   vnl_vector< double > _mean;
   vnl_vector< double > _model; // point model reconstructed from coef
+  vnl_vector< double > _image; // target point model in image space 
 
   vtkSmartPointer< vtkPolyData > _polydata; // polydata to keep the surface & normal
   vtkSmartPointer< vtkTransform > _transform; // model to image transform (scale & pose)
