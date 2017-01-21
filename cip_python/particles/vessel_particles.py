@@ -6,7 +6,7 @@
 
 import os
 import tempfile, shutil
-from . import ChestParticles
+from cip_python.particles import ChestParticles
 
 class VesselParticles(ChestParticles):
     """Class for vessel-specific particles sampling
