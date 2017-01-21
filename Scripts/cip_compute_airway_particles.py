@@ -210,7 +210,7 @@ class AirwayParticlesPipeline:
                 subprocess.call( tmpCommand, shell=True )
                 
                 tmpCommand ="CropLung --cipr %(region)s -m 0 -v 0 --ict %(mask-in)s --ilm %(lm-in)s --oct %(mask-out)s --olm %(lm-out)s"
-                tmpCommand = tmpCommand % {'region':ii,'mask-in':airwaysFileName,'lm-in':pl_file_name,'mask-out':featureMapFileNameRegion,'lm-out':pl_file_nameRegion}
+                tmpCommand = tmpCommand % {'region':ii,'mask-in':airwaysFileName,'lm-in':pl_file_name,'mask-out':maskFileNameRegion,'lm-out':pl_file_nameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
                 # print tmpCommand
                 subprocess.call( tmpCommand, shell=True )    
@@ -223,7 +223,7 @@ class AirwayParticlesPipeline:
             elif self._init_method == 'AirwayMask':
                 mask_name = self._airway_mask_name
                 tmpCommand ="CropLung --cipr %(region)s -m 0 -v 0 --ict %(mask-in)s --ilm %(lm-in)s --oct %(mask-out)s --olm %(lm-out)s"
-                tmpCommand = tmpCommand % {'region':ii,'mask-in':mask_name,'lm-in':pl_file_name,'mask-out':featureMapFileNameRegion,'lm-out':pl_file_nameRegion}
+                tmpCommand = tmpCommand % {'region':ii,'mask-in':mask_name,'lm-in':pl_file_name,'mask-out':maskFileNameRegion,'lm-out':pl_file_nameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
                 # print tmpCommand
                 subprocess.call( tmpCommand, shell=True )    

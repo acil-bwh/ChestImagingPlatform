@@ -1,9 +1,9 @@
 import os, sys, subprocess
 import numpy as np
 import nrrd
-from . import register_tobase_get_closest
-from . import compute_dice_similarity_from_filenames
-from . import construct_probabilistic_atlas
+from cip_python.segmentation import register_tobase_get_closest
+from cip_python.segmentation import compute_dice_similarity_from_filenames
+from cip_python.segmentation import construct_probabilistic_atlas
 # from .utils import getClosestCases
 
 def compute_atlas_from_labelfiles(input_vol, testing_ct_filename, training_ct_filenames,\

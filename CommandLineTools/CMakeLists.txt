@@ -76,6 +76,7 @@ set(CLIS_DIRS
   RegionTypeLocationsToROIVolume
   ExtractFissureBoundaryFromLobeMap
   ExecuteSystemCommand
+  AVGraphCut
 )
 
 #Append CLIS that depends on BOOST

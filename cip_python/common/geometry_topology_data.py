@@ -174,7 +174,6 @@ class GeometryTopologyData(object):
         # BoundingBoxes
         for xml_bb_node in root.findall("BoundingBox"):
             bb = BoundingBox.from_xml_node(xml_bb_node)
-            geometry_topology.add_point(bb, fill_auto_fields=False)
             geometry_topology.add_bounding_box(BoundingBox.from_xml_node(xml_bb_node), fill_auto_fields=False)
             if bb.id > seed:
                 seed = bb.id

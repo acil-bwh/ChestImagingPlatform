@@ -9,3 +9,4 @@ from register_tobase_get_closest import *
 # from rind_vs_core_partition import *
 # from segment_chest_with_atlas import *
 from slic_segmenter import *
+from nodule_segmenter import *

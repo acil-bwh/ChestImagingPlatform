@@ -14,9 +14,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from . import Phenotypes
-from ..common import ChestConventions
-from ..utils import RegionTypeParser
+from cip_python.phenotypes import Phenotypes
+from cip_python.common import ChestConventions
+from cip_python.utils import RegionTypeParser
 
 class VasculaturePhenotypes(Phenotypes):
   """Compute vasculare spectific phenotypes
