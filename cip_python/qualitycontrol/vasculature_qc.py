@@ -9,6 +9,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 #without relying on X-windows. Other options are: PDF, Cairo..
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class VasculatureQualityControl():
