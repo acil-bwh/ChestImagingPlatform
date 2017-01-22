@@ -1851,7 +1851,7 @@ if __name__ == "__main__":
                       help='Case ID to use otherwise it is guess from filename (not recommended)',dest='cid',
                       metavar='<string>', default=None)
     parser.add_option('--coords',
-                      help='coordinates of the nodule if xml is not provided',dest='coords',
+                      help='coordinates of the nodule if xml is not provided (LPS coordinates)',dest='coords',
                       metavar='<string>', default=None)
     parser.add_option('--type',
                           help='type of nodule if xml is not provided',dest='type',
@@ -2080,12 +2080,22 @@ if __name__ == "__main__":
             nodule_th_list.append(segm_threshold)
     else:
         #Define naive default values. This is just a fall back in case we only get a nodule labelmap
+        if segm_th is None:
+            segm_th=[0.5]
+        
+        if n_lm_names is None:
+            n_lm_filename = tmp_dir + '/' + case_id + '_noduleLabelMap.nrrd'
+            nodule_segmenter = NoduleSegmenter(input_ct, options.in_ct, max_rad, no_xml_coords,
+                                           n_lm_filename, segm_th[0])
+            nodule_segmenter.segment_nodule()
+            n_lm_names=[n_lm_filename]
+
         for i in range(len(n_lm_names)):
             nodule_lm_list.append(n_lm_names[i])
             nodule_id_list.append(i)
             nodule_type_list.append(no_xml_type)
             nodule_coord_list.append(no_xml_coords)
-            nodule_th_list.append(0.5)
+            nodule_th_list.append(segm_th[0])
 
 
 #if not os.path.exists(options.csv_file):
