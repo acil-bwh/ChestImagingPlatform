@@ -1333,8 +1333,8 @@ class TextureGLRL:
 
 class NodulePhenotypes:
 
-    def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, sphere_rads,
-                 feature_classes, csv_file_path, all_features,subtypes_lm,absolute_sphere_rads=True):
+    def __init__(self, input_ct, nodule_lm, nodule_id, seed_point, l_type, segm_thresh, c_sphere_rads,b_sphere_rads,
+                 feature_classes, csv_file_path, all_features,subtypes_lm):
         self.WORKING_MODE_HUMAN = 0
         self.WORKING_MODE_SMALL_ANIMAL = 1
         self.MAX_TUMOR_RADIUS = 30
@@ -1345,15 +1345,16 @@ class NodulePhenotypes:
         self._seed_point = seed_point
         self._lesion_type = l_type
         self._segmentation_threshold = segm_thresh
-        self._sphere_radius = sphere_rads
+        self._centroid_sphere_radius = c_sphere_rads
+        self._boundary_sphere_radius = b_sphere_rads
         self._all_features = all_features
         self._feature_classes = feature_classes
         self._current_distance_maps = {}
         self._analysis_results = dict()
         self._csv_file_path = csv_file_path
-        self._analyzedSpheres = list()
+        self._centroid_analyzedSpheres = list()
+        self._boundary_analyzedSpheres = list()
         self._subtypes_lm = subtypes_lm
-        self._absolute_sphere_rads = absolute_sphere_rads
 
     def execute(self, cid, whole_lm=None):
         """ Compute all the features that are currently selected, for the nodule and/or for
@@ -1377,27 +1378,37 @@ class NodulePhenotypes:
 
             print("******** Nodule analysis results...")
             nodule_lm_array = sitk.GetArrayFromImage(self._nodule_lm)
-            self._analysis_results[keyName] = collections.OrderedDict()
-            self._analysis_results[keyName] = self.runAnalysis(self._subtypes_lm, nodule_lm_array, self._analysis_results[keyName],
+            reference="Interior"
+            self._analysis_results[keyName,reference] = collections.OrderedDict()
+            self._analysis_results[keyName,reference] = self.runAnalysis(self._subtypes_lm, nodule_lm_array, self._analysis_results[keyName,reference],
                                                                selectedMainFeaturesKeys, selectedFeatureKeys)
 
             # Print analysis results
-            print(self._analysis_results[keyName])
+            print(self._analysis_results[keyName,reference])
 
-            if self._sphere_radius is not None:
-                if self._absolute_sphere_rads == True:
-                    print "Radius in reference to centroid"
-                    self._current_distance_maps[cid] = self.getCurrentDistanceMapFromCentroid(whole_lm)
-                else:
-                    print "Radius in reference to nodule boundary"
-                    self._current_distance_maps[cid] = self.getCurrentDistanceMapFromNodule(whole_lm)
-                
-                for sph_rad in self._sphere_radius:
+            if self._centroid_sphere_radius is not None:
+                print "Radius in reference to centroid"
+                self._current_distance_maps[cid] = self.getCurrentDistanceMapFromCentroid(whole_lm)
+                reference="Centroid"
+                for sph_rad in self._centroid_sphere_radius:
                     if sph_rad > 0.0:
                         print "Running analysis for "+str(sph_rad)
-                        self.runAnalysisSphere(cid, self._current_distance_maps[cid], sph_rad,
+                        self.runAnalysisSphere(cid, reference, self._current_distance_maps[cid], sph_rad,
                                        selectedMainFeaturesKeys, selectedFeatureKeys, self._subtypes_lm)
-                        self._analyzedSpheres.append(sph_rad)
+                        self._centroid_analyzedSpheres.append(sph_rad)
+            
+            if self._boundary_sphere_radius is not None:
+                print "Radius in reference to nodule boundary"
+                self._current_distance_maps[cid] = self.getCurrentDistanceMapFromNodule(whole_lm)
+                reference="Boundary"
+                for sph_rad in self._boundary_sphere_radius:
+                    if sph_rad > 0.0:
+                        print "Running analysis for "+str(sph_rad)
+                        self.runAnalysisSphere(cid, reference, self._current_distance_maps[cid], sph_rad,
+                                               selectedMainFeaturesKeys, selectedFeatureKeys, self._subtypes_lm)
+                        self._boundary_analyzedSpheres.append(sph_rad)
+                        
+
 
         finally:
             self.saveReport(cid)
@@ -1482,7 +1493,7 @@ class NodulePhenotypes:
 
         return results_storage
 
-    def runAnalysisSphere(self, cid, dist_map, radius, selectedMainFeaturesKeys, selectedFeatureKeys,
+    def runAnalysisSphere(self, cid, reference, dist_map, radius, selectedMainFeaturesKeys, selectedFeatureKeys,
                           subtypesWholeVolumeArray=None):
         """ Run the selected features for an sphere of radius r (excluding the nodule itself)
         @param cid: case_id
@@ -1502,14 +1513,14 @@ class NodulePhenotypes:
             results = {}
             for key in selectedFeatureKeys:
                 results[key] = 0
-            self._analysis_results[keyName] = results
+            self._analysis_results[keyName,reference] = results
         else:
-            self._analysis_results[keyName] = collections.OrderedDict()
-            self.runAnalysis(subtypesWholeVolumeArray, sphere_lm_array, self._analysis_results[keyName],
+            self._analysis_results[keyName,reference] = collections.OrderedDict()
+            self.runAnalysis(subtypesWholeVolumeArray, sphere_lm_array, self._analysis_results[keyName,reference],
                              selectedMainFeaturesKeys, selectedFeatureKeys)
 
             print("********* Results for the sphere of radius {0}:".format(radius))
-            print(self._analysis_results[keyName])
+            print(self._analysis_results[keyName,reference])
 
     def tumorVoxelsAndCoordinates(self, arrayROI, arrayData):
         coordinates = np.where(arrayROI != 0)  # can define specific label values to target or avoid
@@ -1679,38 +1690,41 @@ class NodulePhenotypes:
         """
         keyName = cid
         radius = ''
-        if self._absolute_sphere_rads:
-            reference="Centroid"
-        else:
-            reference="Boundary"
+        reference="Interior"
         
         self.saveBasicData(keyName,cid,radius,reference)
-        self.saveCurrentValues(self._analysis_results[keyName])
+        self.saveCurrentValues(self._analysis_results[keyName,reference])
 
         # Get all the spheres for this nodule
-        for rad in self._analyzedSpheres:
-            keyName = "{}_r{}".format(cid, int(rad))
-            radius = rad
-            print "Saving basic data "+str(radius)
-            self.saveBasicData(keyName,cid,radius,reference)
-            self.saveCurrentValues(self._analysis_results[keyName])
+        analyzedSpheres=dict()
+        analyzedSpheres["Centroid"]=self._centroid_analyzedSpheres
+        analyzedSpheres["Boundary"]=self._boundary_analyzedSpheres
+
+        for reference in ["Centroid","Boundary"]:
+            #print analyzedSpheres[reference]
+            for rad in analyzedSpheres[reference]:
+                keyName = "{}_r{}".format(cid, int(rad))
+                radius = rad
+                print "Saving basic data "+str(radius)
+                self.saveBasicData(keyName,cid,radius,reference)
+                self.saveCurrentValues(self._analysis_results[keyName,reference])
 
     def saveBasicData(self, keyName,cid,rad,reference):
         date = time.strftime("%Y/%m/%d %H:%M:%S")
-        self._analysis_results[keyName]["Case ID"] = cid
-        self._analysis_results[keyName]["Sphere Radius"] = rad
-        self._analysis_results[keyName]["Sphere Reference"] = reference
-        self._analysis_results[keyName]["Nodule Number"] = self._nodule_id
-        self._analysis_results[keyName]["Date"] = date
-        self._analysis_results[keyName]["Lesion Type"] = self._lesion_type
+        self._analysis_results[keyName,reference]["Case ID"] = cid
+        self._analysis_results[keyName,reference]["Sphere Radius"] = rad
+        self._analysis_results[keyName,reference]["Sphere Reference"] = reference
+        self._analysis_results[keyName,reference]["Nodule Number"] = self._nodule_id
+        self._analysis_results[keyName,reference]["Date"] = date
+        self._analysis_results[keyName,reference]["Lesion Type"] = self._lesion_type
         if len(self._seed_point) > 0:
-            self._analysis_results[keyName]["Seeds (LPS)"] = self._seed_point
+            self._analysis_results[keyName,reference]["Seeds (LPS)"] = self._seed_point
         else:
-            self._analysis_results[keyName]["Seeds (LPS)"] = ''
+            self._analysis_results[keyName,reference]["Seeds (LPS)"] = ''
         if self._segmentation_threshold is not None:
-            self._analysis_results[keyName]["Threshold"] = self._segmentation_threshold
+            self._analysis_results[keyName,reference]["Threshold"] = self._segmentation_threshold
         else:
-            self._analysis_results[keyName]["Threshold"] = ''
+            self._analysis_results[keyName,reference]["Threshold"] = ''
 
     def saveCurrentValues(self, analysis_results):
         """ Save a new row of information in the current csv file that stores the data  (from a dictionary of items)
@@ -1893,12 +1907,12 @@ if __name__ == "__main__":
                         help='Parenchymal volume features. For computation of \
                                   all features indicate all.',
                         dest='par_features', metavar='<string>', default=None)
-    parser.add_option('--sphere_rad',
-                        help='Radius(es) for Sphere computation.', metavar='<float>', dest='sphere_rads',
+    parser.add_option('--centroid_sphere_rad',
+                        help='Radius(es) for Sphere computation computed from the centroid of the nodule.', metavar='<float>', dest='centroid_sphere_rads',
                         default=None)
-    parser.add_option('--relative_spheres',
-                        help='Radius are relative metrics from the surface of the nodule, otherwise, the sphere radius describe absolute values from the centroid of the tumor',
-                        dest='relative_spheres',action="store_true")
+    parser.add_option('--boundary_sphere_rad',
+                        help='Radius(es) for Sphere computation computed from the boundary of the nodule surface.', metavar='<float>', dest='boundary_sphere_rads',
+                        default=None)
     parser.add_option('--tmp',
                         help='Temp directory for saving computed labelmaps.', metavar='<string>',
                         dest='tmp_dir', default=None)
@@ -1937,9 +1951,14 @@ if __name__ == "__main__":
     segm_th = options.segm_th
     if segm_th is not None:
         segm_th = [float(t) for t in str.split(options.segm_th, ',')]
-    sph_rads = options.sphere_rads
-    if sph_rads is not None:
-        sph_rads = [float(sr) for sr in str.split(options.sphere_rads, ',')]
+    c_sph_rads = options.centroid_sphere_rads
+    if c_sph_rads is not None:
+        c_sph_rads = [float(sr) for sr in str.split(options.centroid_sphere_rads, ',')]
+
+    b_sph_rads = options.boundary_sphere_rads
+    if b_sph_rads is not None:
+        b_sph_rads = [float(sr) for sr in str.split(options.boundary_sphere_rads, ',')]
+
 
     all_feature_classes = get_all_features()
     feature_classes = collections.OrderedDict()
@@ -2072,10 +2091,6 @@ if __name__ == "__main__":
 #if not os.path.exists(options.csv_file):
     write_csv_first_row(options.csv_file, all_feature_classes)
 
-    if options.relative_spheres:
-        absolute_flag=False
-    else:
-        absolute_flag=True
 
     for i in range(len(nodule_lm_list)):
         
@@ -2094,6 +2109,6 @@ if __name__ == "__main__":
 #                sphere_rad = 0.0
 
 
-        ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, sph_rads,
-                             feature_classes, options.csv_file, all_feature_classes,subtypes_lm=subtypes_lm,absolute_sphere_rads=absolute_flag)
+        ns = NodulePhenotypes(input_ct, nodule_lm, nodule_id, seed_point, lesion_type, segm_threshold, c_sph_rads,b_sph_rads,
+                             feature_classes, options.csv_file, all_feature_classes,subtypes_lm=subtypes_lm)
         ns.execute(case_id, whole_lm=parenchyma_lm)
