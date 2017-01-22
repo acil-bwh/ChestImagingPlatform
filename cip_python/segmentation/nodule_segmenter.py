@@ -17,7 +17,7 @@ class NoduleSegmenter:
         """ Run the nodule segmentation through a CLI
         """
         tmpCommand = "GenerateLesionSegmentation -i %(in)s -o %(out)s --seeds %(sd)s --maximumRadius %(maxrad)f -f"
-        tmpCommand = tmpCommand % {'in': self._input_ct_filename, 'out': self._output_lm, 'sd': self._seed,
+        tmpCommand = tmpCommand % {'in': self._input_ct_filename, 'out': self._output_lm, 'sd': ",".join(map(str,self._seed)),
                                    'maxrad': self._max_radius}
         # tmpCommand = os.path.join(path['CIP_PATH'], tmpCommand)
         subprocess.call(tmpCommand, shell=True)
