@@ -22,6 +22,7 @@ public:
 
   unsigned int getNumberOfPoints() const { return _mean.size() / 3; }
   unsigned int getNumberOfModes() const { return _eigvec.cols(); }
+  unsigned int getNumberOfLeftPoints() const { return _numLeftPoints; }
 
   vtkSmartPointer< vtkPolyData > getPolyData() const { return _polydata; }
   vtkSmartPointer< vtkTransform > getTransform() const { return _transform; }
@@ -49,6 +50,8 @@ private:
   vnl_vector< double > _mean;
   vnl_vector< double > _model; // point model reconstructed from coef
   vnl_vector< double > _image; // target point model in image space 
+  
+  unsigned int _numLeftPoints; // number of points on the left ASM model (only for combined ASM)
 
   vtkSmartPointer< vtkPolyData > _polydata; // polydata to keep the surface & normal
   vtkSmartPointer< vtkTransform > _transform; // model to image transform (scale & pose)

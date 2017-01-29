@@ -4,6 +4,7 @@
 #include "VTKPolyDataToITKMesh.h"
 #include "ShapeModelUtils.h"
 #include <vtkPLYWriter.h>
+#include <vtkSTLWriter.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <string.h>
 
@@ -26,6 +27,13 @@ public:
       plyWriter->SetFileName( outputName.c_str() );
       plyWriter->SetInputData( polydata );
       plyWriter->Update();
+    }
+    else if (iequals( ext, "STL" ))
+    {
+      vtkSmartPointer< vtkSTLWriter > stlWriter = vtkSmartPointer< vtkSTLWriter >::New();
+      stlWriter->SetFileName( outputName.c_str() );
+      stlWriter->SetInputData( polydata );
+      stlWriter->Update();
     }
     else if (iequals( ext, "OBJ" )) // VTK does not have vtkOBJWriter...
     {

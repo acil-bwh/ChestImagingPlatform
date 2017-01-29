@@ -24,7 +24,7 @@ public:
   virtual void getSpacing( double* spacing ) const = 0;
   virtual void createBinaryMeshImage ( MeshType::Pointer mesh,
                                        const std::string& outputName ) const = 0;
-  virtual void createBinaryVolumeImage ( PoissonRecon::VolumeData& volume,
+  virtual void createBinaryVolumeImage ( std::vector< PoissonRecon::VolumeData* > volumes,
                                          const std::string& outputName ) const = 0;
   virtual void createGradientMagnitudeImage ( double sigma,
                                               const std::string& outputName ) const = 0;

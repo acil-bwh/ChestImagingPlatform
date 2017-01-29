@@ -17,7 +17,7 @@ public:
   void getSpacing( double* ) const;
   void createBinaryMeshImage( MeshType::Pointer mesh,
                               const std::string& outputName ) const;
-  void createBinaryVolumeImage ( PoissonRecon::VolumeData& volume,
+  void createBinaryVolumeImage ( std::vector< PoissonRecon::VolumeData* > volumes,
                                  const std::string& outputName ) const;
   void createGradientMagnitudeImage( double sigma,
                                      const std::string& outputName ) const;
@@ -163,38 +163,56 @@ ShapeModelImageITK< T >::createBinaryMeshImage( MeshType::Pointer mesh,
 
 template < typename T >
 void 
-ShapeModelImageITK< T >::createBinaryVolumeImage ( PoissonRecon::VolumeData& volume,
+ShapeModelImageITK< T >::createBinaryVolumeImage ( std::vector< PoissonRecon::VolumeData* > volumes,
                                                    const std::string& outputName ) const
 {
-  unsigned int N = volume.res; // input (reference) volume resolution
-
-  // create itk image from input volume data
-  FloatImageType::RegionType region;
-  FloatImageType::IndexType start;
-  start[0] = start[1] = start[2] = 0;
- 
-  FloatImageType::SizeType size;
-  size[0] = size[1] = size[2] = N;
- 
-  region.SetSize( size );
-  region.SetIndex( start );
- 
-  FloatImageType::Pointer volumeImage = FloatImageType::New();
-  volumeImage->SetRegions( region );
-  volumeImage->Allocate();
-
-  itk::ImageRegionIterator< FloatImageType > vit( volumeImage, volumeImage->GetLargestPossibleRegion() );
-  unsigned int i = 0;
-  for (vit.GoToBegin(); !vit.IsAtEnd(); ++vit)
+  if (volumes.size() == 0)
   {
-    vit.Value() = volume.data[i++];
+    std::cout << "Input volume vector is empty." << std::endl;
+    return;
   }
   
+  // Overlay on top of the the input image
+  bool useInputImage = true;
+  std::vector< FloatImageType::Pointer > volumeImages;
   typedef itk::LinearInterpolateImageFunction< FloatImageType, typename PointType::CoordRepType >
     LinearInterpolatorType;
-  LinearInterpolatorType::Pointer volumeImageInterpolator = LinearInterpolatorType::New();
-  volumeImageInterpolator->SetInputImage( volumeImage );
+  std::vector< LinearInterpolatorType::Pointer > volumeImageInterpolators;
+
+  for (unsigned int vi = 0; vi < volumes.size(); vi++)
+  {
+    PoissonRecon::VolumeData& volume = *volumes[vi];
+    unsigned int N = volume.res; // input (reference) volume resolution
+
+    // create itk image from input volume data
+    FloatImageType::RegionType region;
+    FloatImageType::IndexType start;
+    start[0] = start[1] = start[2] = 0;
+   
+    FloatImageType::SizeType size;
+    size[0] = size[1] = size[2] = N;
+   
+    region.SetSize( size );
+    region.SetIndex( start );
+   
+    FloatImageType::Pointer volumeImage = FloatImageType::New();
+    volumeImage->SetRegions( region );
+    volumeImage->Allocate();
+
+    itk::ImageRegionIterator< FloatImageType > vit( volumeImage, volumeImage->GetLargestPossibleRegion() );
+    unsigned int i = 0;
+    for (vit.GoToBegin(); !vit.IsAtEnd(); ++vit)
+    {
+      vit.Value() = volume.data[i++];
+    }
     
+    LinearInterpolatorType::Pointer volumeImageInterpolator = LinearInterpolatorType::New();
+    volumeImageInterpolator->SetInputImage( volumeImage );
+    
+    volumeImages.push_back(volumeImage);
+    volumeImageInterpolators.push_back(volumeImageInterpolator);
+  }
+        
   // duplicate the input image and use it as a target composite image
   typename FT::ImageDuplicatorType::Pointer duplicator = FT::ImageDuplicatorType::New();
   duplicator->SetInputImage( _image );
@@ -221,9 +239,6 @@ ShapeModelImageITK< T >::createBinaryVolumeImage ( PoissonRecon::VolumeData& vol
     }
   }
 
-  // Overlay on top of the the input image
-  bool useInputImage = true;
-
   if (useInputImage)
   {
     PointType vpt; // input volume index = position
@@ -232,27 +247,33 @@ ShapeModelImageITK< T >::createBinaryVolumeImage ( PoissonRecon::VolumeData& vol
     {
       PointType pt;
       _image->TransformIndexToPhysicalPoint( iit.GetIndex(), pt );
-      
-      // transform point from input image space to volume image space
-      for (int k = 0; k < 3; k++)
-      {
-        vpt[k] = (pt[k] - volume.center[k]) * N / volume.scale;
-      }
-      
       float binary_value = 0;
-      FloatImageType::IndexType vid;
-      bool inside = volumeImage->TransformPhysicalPointToIndex( vpt, vid );
-      if (inside)
+
+      for (unsigned int vi = 0; vi < volumes.size(); vi++)
       {
-        if (volumeImageInterpolator->Evaluate( vpt ) > 0) // point is inside of iso-surface of volume
+        PoissonRecon::VolumeData& volume = *volumes[vi];
+        unsigned int N = volume.res; // input (reference) volume resolution
+
+        // transform point from input image space to volume image space
+        for (int k = 0; k < 3; k++)
         {
-          binary_value = 1.0;
+          vpt[k] = (pt[k] - volume.center[k]) * N / volume.scale;
+        }
+        
+        FloatImageType::IndexType vid;
+        bool inside = volumeImages[vi]->TransformPhysicalPointToIndex( vpt, vid );
+        if (inside)
+        {
+          if (volumeImageInterpolators[vi]->Evaluate( vpt ) > 0) // point is inside of iso-surface of volume
+          {
+            binary_value = 1.0;
+          }
         }
       }
       
       iit.Value() = it.Value() + (binary_value * 0.2 * maxValue); // match the highest intensity of the original image
     }
-    
+  
     // Write the output to file (or new volume in memory)
     std::cout << "Writing output..." << std::endl;
     typename FT::ImageWriterType::Pointer writer = FT::ImageWriterType::New();

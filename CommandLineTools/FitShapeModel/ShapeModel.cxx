@@ -9,7 +9,7 @@
 #include <vtkOBJReader.h>
 #include <vtkTransformPolyDataFilter.h>
 
-ShapeModel::ShapeModel( const std::string& dataDir )
+ShapeModel::ShapeModel( const std::string& dataDir ) : _numLeftPoints(0)
 {
   load( dataDir ); // load PCA data
   
@@ -24,6 +24,17 @@ ShapeModel::ShapeModel( const std::string& dataDir )
   _polydata->DeepCopy( objReader->GetOutput() );
 
   std::cout << "VTK: number of mesh points: " << _polydata->GetNumberOfPoints() << std::endl;
+
+  // read number of left ASM points for combined ASM (only if exists)
+  std::string leftPointCountFile = dataDir + "/left-point-count.txt";
+  std::ifstream ifs;
+  ifs.open( leftPointCountFile.c_str() );
+  if (!ifs.fail()) // assume the combined ASM data
+  {
+    ifs >> _numLeftPoints;
+    std::cout << "Number of points on left ASM: " << _numLeftPoints << std::endl;
+    ifs.close();
+  }
 }
 
 ShapeModel::~ShapeModel()

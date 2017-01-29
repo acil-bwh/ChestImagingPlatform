@@ -26,10 +26,10 @@ public:
   {
     _image.createBinaryMeshImage( mesh, outputName );
   }
-  virtual void createBinaryVolumeImage ( PoissonRecon::VolumeData& volume,
+  virtual void createBinaryVolumeImage ( std::vector< PoissonRecon::VolumeData* > volumes,
                                          const std::string& outputName ) const
   {
-    _image.createBinaryVolumeImage( volume, outputName );
+    _image.createBinaryVolumeImage( volumes, outputName );
   }
   virtual void createGradientMagnitudeImage( double sigma,
                                              const std::string& outputName ) const
