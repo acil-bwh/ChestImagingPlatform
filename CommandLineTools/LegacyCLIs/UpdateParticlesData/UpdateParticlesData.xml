@@ -29,4 +29,17 @@
       <default>NA</default>
     </geometry>    
   </parameters>
+
+  <parameters>
+    <double>
+      <name>scale</name>
+      <flag>s</flag>
+      <longflag>scale</longflag>
+      <description>Scale value to assign to the scale array for every particle. Should only be used if existing scale \
+array values are incorrect (e.g. 0). A value less than or equal to 0 will be ignored. </description>
+      <label>Particle scale</label>
+      <default>0</default>
+    </double>
+  </parameters>
+  
 </executable>

@@ -133,6 +133,19 @@ int main( int argc, char *argv[] )
 	}
     }
 
+  for ( unsigned int n=0; n<numParticles; n++ )
+    {
+      if ( scale > 0 )
+	{
+	  outPolyData->GetPointData()->GetArray( "scale" )->SetTuple( n, &scale );
+	}
+      else if ( outPolyData->GetPointData()->GetArray( "scale" )->GetTuple(n)[0] <= 0)
+	{
+	  std::cerr << "WARNING: Particle has scale value <= 0" << std::endl;
+	  break;
+	}
+    }
+  
   // Write the poly data
   std::cout << "Writing VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
