@@ -77,6 +77,7 @@ set(CLIS_DIRS
   ExtractFissureBoundaryFromLobeMap
   ExecuteSystemCommand
   AVGraphCut
+  SegmentLungAirways
 )
 
 #Append CLIS that depends on BOOST

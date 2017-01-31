@@ -236,7 +236,7 @@ class LobeParticleLabeling():
       self._out_vtk[tag].GetPointData().AddArray(chest_region_arr)
       self._out_vtk[tag].GetPointData().AddArray(chest_type_arr)
       
-      append.AddInput(self._out_vtk[tag])
+      append.AddInputData(self._out_vtk[tag])
 
     append.Update()
     self._out_vtk['all']=append.GetOutput()
@@ -315,7 +315,7 @@ class LeftRightParticleLabeling():
       self._out_vtk[tag].GetPointData().AddArray(chest_region_arr)
       self._out_vtk[tag].GetPointData().AddArray(chest_type_arr)
       
-      append.AddInput(self._out_vtk[tag])
+      append.AddInputData(self._out_vtk[tag])
     
     append.Update()
     self._out_vtk['all']=append.GetOutput()
@@ -371,14 +371,14 @@ if __name__ == "__main__":
     output = labeler.execute()
     if op.label_flag == True:
       writer=vtk.vtkPolyDataWriter()
-      writer.SetInput(output['all'])
+      writer.SetInputData(output['all'])
       writer.SetFileTypeToBinary()
       writer.SetFileName(op.output_prefix + op.output_suffix)
       writer.Update()
     else:
       for tag in labeler.cluster_tags:
         writer=vtk.vtkPolyDataWriter()
-        writer.SetInput(output[tag])
+        writer.SetInputData(output[tag])
         writer.SetFileName(op.output_prefix + '_%s%s' % (tag,op.output_suffix))
         writer.SetFileTypeToBinary()
         writer.Update()
@@ -389,7 +389,7 @@ if __name__ == "__main__":
     cluster.execute()
     for k in xrange(output_collection.GetNumberOfItems()):
       writer=vtk.vtkPolyDataWriter()
-      writer.SetInput(output_collection.GetItemAsObject(k))
+      writer.SetInputData(output_collection.GetItemAsObject(k))
       writer.SetFileName(op.output_prefix + '_cluster%03d%s' % (k,op.output_suffix) )
       writer.SetFileTypeToBinary()
       writer.Update()

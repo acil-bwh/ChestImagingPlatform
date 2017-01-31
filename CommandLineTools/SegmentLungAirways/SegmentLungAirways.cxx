@@ -550,7 +550,7 @@ std::vector<cip::LabelMapType::IndexType> CarinaFinder(cip::LabelMapType::Pointe
 				if (value == cip::AIRWAY)
 				{
 					double d = sIt.GetIndex()[1] - prevLine;
-					yDist = abs(d);
+                    yDist = std::abs(d);
 					if (prevLine != 0 && yDist <= 5)
 					{
 						if (sIt.GetIndex()[1] > yMaxPos)
@@ -1633,7 +1633,7 @@ int main( int argc, char *argv[] )
                 if( value == cip::AIRWAY )
                 {
 					double d = rightSIt.GetIndex()[1] - prevLine;
-                    yDist = abs(d);
+                    yDist = std::abs(d);
                     if( prevLine != 0 && yDist <= 5 )
                     {
                         if( rightSIt.GetIndex()[1] > yMaxPos )
@@ -1936,7 +1936,7 @@ int main( int argc, char *argv[] )
                 if( value == cip::AIRWAY )
                 {
 		    double d = leftSIt.GetIndex()[1] - prevLine;
-                    yDist = abs(d);
+                    yDist = std::abs(d);
                     if( prevLine != 0 && yDist <= 5 )
                     {
                         if( leftSIt.GetIndex()[1] > yMaxPos )
