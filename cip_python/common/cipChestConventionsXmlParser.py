@@ -124,9 +124,9 @@ replacements = (
 for replacement in replacements:
     for node in xml_root.findall(replacement):
         color = node.find("Color").text.split(";")
-        # replacement_text += "            double* t092 = new double[3]; t092[0] = 0.03; t092[1] = 0.03; t092[2] = 0.04; ChestTypeColors.push_back( t092 );" \
-        replacement_text_cxx += "            double c{0}[] = {{{1},{2},{3}}};  {4}Colors.push_back(c{0});\n" \
-            .format(i, color[0], color[1], color[2], replacement.split("/")[1])
+        # replacement_text += "            double* t092 = new double[3]; t092[0] = 0.03; t092[1] = 0.03; t092[2] = 0.04; ChestTypeColors.push_back( t092 ); " \
+        replacement_text_cxx += "            double* t{0:03} = new double[3]; t{0:03}[0] = {1}; t{0:03}[1] = {2}; t{0:03}[2] = {3}; {4}Colors.push_back( t{0:03} );". \
+            format(i, color[0], color[1], color[2], replacement.split("/")[1])
         i += 1
 
     replacement_text_cxx += "\n"

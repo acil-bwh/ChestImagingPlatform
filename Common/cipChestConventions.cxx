@@ -3,6 +3,19 @@
 
 cip::ChestConventions::ChestConventions() {}
 
+cip::ChestConventions::~ChestConventions()
+{
+    for ( unsigned int i=0; i<this->s_ChestConventions.ChestRegionColors.size(); i++ )
+    {
+        delete[] this->s_ChestConventions.ChestRegionColors[i];
+    }
+
+    for ( unsigned int i=0; i<this->s_ChestConventions.ChestTypeColors.size(); i++ )
+    {
+        delete[] this->s_ChestConventions.ChestTypeColors[i];
+    }
+}
+
 unsigned char cip::ChestConventions::GetNumberOfEnumeratedChestRegions() const {
     //return m_NumberOfEnumeratedChestRegions;
     return s_ChestConventions.ChestRegions.size();

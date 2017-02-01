@@ -36,6 +36,7 @@ class ChestConventions
 {
 public:
   ChestConventions();
+  ~ChestConventions();
 
   unsigned char GetNumberOfEnumeratedChestRegions() const;
   unsigned char GetNumberOfEnumeratedChestTypes() const;
