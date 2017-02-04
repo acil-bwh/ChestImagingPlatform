@@ -10,3 +10,4 @@ from register_tobase_get_closest import *
 # from segment_chest_with_atlas import *
 from slic_segmenter import *
 from nodule_segmenter import *
+from lung_splitter import *
