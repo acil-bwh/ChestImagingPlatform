@@ -29,6 +29,7 @@ int main( int argc, char *argv[] )
   // First make sure that the particles have the 'ChestRegionChestType' array
   cip::AssertChestRegionChestTypeArrayExistence( particlesReader->GetOutput() );
 
+  std::cout << "Extracting..." << std::endl;
   if ( labelMapFileName.compare( "NA" ) != 0 )
     {
       GetOutputParticlesUsingLabelMap( labelMapFileName, cipRegions, particlesReader->GetOutput(), outParticles );
