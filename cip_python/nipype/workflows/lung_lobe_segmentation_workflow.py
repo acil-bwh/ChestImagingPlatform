@@ -362,8 +362,8 @@ if __name__ == "__main__":
 
     parser = ArgumentParser(description=desc)
     parser.add_argument('--in_ct', help='The file name of the CT image (single \
-      file, 3D volume) for which to generate a lung lobe segmentation', 
-      dest='in_ct', metavar='<string>', default=None)
+      file, 3D volume) for which to generate a lung lobe segmentation. Must \
+      be in nrrd format', dest='in_ct', metavar='<string>', default=None)
     parser.add_argument('--out', 
       help='The file name of the output lung lobe label map.', 
       dest='out', metavar='<string>', default=None)
