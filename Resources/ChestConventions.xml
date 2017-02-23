@@ -1017,6 +1017,18 @@
             <Name>Mesothelioma</Name>
             <Color>0.03;0.03;0.04</Color>
         </ChestType>
+        <ChestType>
+            <Id>92</Id>
+            <Code>NORMALINFLAMED</Code>
+            <Name>NormalInflamed</Name>
+            <Color>0.04;0.03;0.04</Color>
+        </ChestType>
+        <ChestType>
+            <Id>93</Id>
+            <Code>NORMALNOTINFLAMED</Code>
+            <Name>NormalNotInflamed</Name>
+            <Color>0.05;0.03;0.04</Color>
+        </ChestType>
     </ChestTypes>
     <ChestRegionHierarchyMap>
         <Hierarchy>

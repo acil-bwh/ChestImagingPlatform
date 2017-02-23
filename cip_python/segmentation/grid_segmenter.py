@@ -75,10 +75,10 @@ class GridSegmenter:
         for k in np.arange(0, np.shape(gridX)[2]-1):
             for j in np.arange(0, np.shape(gridX)[1]-1):
                 for i in np.arange(0, np.shape(gridX)[0]-1): #x,y,z
-                    segmentation[np.floor(gridX[i,j,k]):np.floor( \
-                        gridX[i+1,j+1,k+1]),np.floor(gridY[i,j,k]):np.floor(\
-                        gridY[i+1,j+1,k+1]),np.floor(gridZ[i,j,k]):np.floor(\
-                        gridZ[i+1,j+1,k+1])]= patch_id
+                    segmentation[int(np.floor(gridX[i,j,k])):int(np.floor( \
+                        gridX[i+1,j+1,k+1])),int(np.floor(gridY[i,j,k])):int(np.floor(\
+                        gridY[i+1,j+1,k+1])),int(np.floor(gridZ[i,j,k])):int(np.floor(\
+                        gridZ[i+1,j+1,k+1]))]= patch_id
                     patch_id = patch_id+1
     
         return segmentation
