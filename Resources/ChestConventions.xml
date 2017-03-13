@@ -463,6 +463,12 @@
             <Name>TracheaCarina</Name>
             <Color>0.49;0.49;0.93</Color>
         </ChestRegion>
+        <ChestRegion>
+            <Id>77</Id>
+            <Code>AORTICVALVE</Code>
+            <Name>AorticValve</Name>
+            <Color>0.49;0.9;0.93</Color>
+        </ChestRegion>
     </ChestRegions>
     <ChestTypes>
         <ChestType>
@@ -1028,6 +1034,18 @@
             <Code>NORMALNOTINFLAMED</Code>
             <Name>NormalNotInflamed</Name>
             <Color>0.05;0.03;0.04</Color>
+        </ChestType>
+        <ChestType>
+            <Id>94</Id>
+            <Code>SYSTOLE</Code>
+            <Name>Systole</Name>
+            <Color>0.05;0.03;0.05</Color>
+        </ChestType>
+        <ChestType>
+            <Id>95</Id>
+            <Code>DIASTOLE</Code>
+            <Name>Diastole</Name>
+            <Color>0.05;0.03;0.06</Color>
         </ChestType>
     </ChestTypes>
     <ChestRegionHierarchyMap>
