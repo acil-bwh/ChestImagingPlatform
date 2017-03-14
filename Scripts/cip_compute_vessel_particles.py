@@ -274,7 +274,7 @@ if __name__ == "__main__":
     parser.add_argument("--minscale", dest="min_scale",type=float,default=0.7)
     parser.add_argument("--maxscale", dest="max_scale",type=float,default=4)
     parser.add_argument("--init", dest="init_method",default="Frangi")
-    parser.add_argument("-vmask", dest="vessel_mask", default=None)
+    parser.add_argument("--vmask", dest="vessel_mask", default=None)
     parser.add_argument("--vesselness_th", dest="vesselness_th",type=float,default=0.38)
     parser.add_argument("--resampling", dest="resampling_method",default="Linear",help="Resampling method for CT image: linear, cubic, registration (demons-based approach), hybrid (registration + cubic)")
     parser.add_argument("--multires", dest="multires",action="store_true", default = False)
