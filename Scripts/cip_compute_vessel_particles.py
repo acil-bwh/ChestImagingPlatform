@@ -262,36 +262,37 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Vessel particle extraction pipeline')
     parser.add_argument("-i", dest="ct_file_name",required=True)
-    parser.add_argument("-l",dest="pl_file_name",required=True)
-    parser.add_argument("-o",dest="output_prefix",required=True)
+    parser.add_argument("-l", dest="pl_file_name",required=True)
+    parser.add_argument("-o", dest="output_prefix",required=True)
     parser.add_argument("--tmpDir", dest="tmp_dir",required=True)
-    parser.add_argument("-r",dest="regions",required=True)
-    parser.add_argument("--liveTh",dest="lth",type=float,default=-90)
-    parser.add_argument("--seedTh",dest="sth",type=float,default=-70)
+    parser.add_argument("-r", dest="regions",required=True)
+    parser.add_argument("--liveTh", dest="lth",type=float,default=-90)
+    parser.add_argument("--seedTh", dest="sth",type=float,default=-70)
     parser.add_argument("-s", dest="voxel_size",type=float,default=0)
-    parser.add_argument("--crop",dest="crop",default="0")
-    parser.add_argument("--rate",dest="rate",type=float,default=1)
-    parser.add_argument("--minscale",dest="min_scale",type=float,default=0.7)
-    parser.add_argument("--maxscale",dest="max_scale",type=float,default=4)
-    parser.add_argument("--init",dest="init_method",default="Frangi")
-    parser.add_argument("--vesselness_th",dest="vesselness_th",type=float,default=0.38)
-    parser.add_argument("--resampling",dest="resampling_method",default="Linear",help="Resampling method for CT image: linear, cubic, registration (demons-based approach), hybrid (registration + cubic)")
-    parser.add_argument("--multires",dest="multires",action="store_true", default = False)
-    parser.add_argument("--justparticles",dest="justparticles",action="store_true", default=False)
+    parser.add_argument("--crop", dest="crop",default="0")
+    parser.add_argument("--rate", dest="rate",type=float,default=1)
+    parser.add_argument("--minscale", dest="min_scale",type=float,default=0.7)
+    parser.add_argument("--maxscale", dest="max_scale",type=float,default=4)
+    parser.add_argument("--init", dest="init_method",default="Frangi")
+    parser.add_argument("-vmask", dest="vessel_mask", default=None)
+    parser.add_argument("--vesselness_th", dest="vesselness_th",type=float,default=0.38)
+    parser.add_argument("--resampling", dest="resampling_method",default="Linear",help="Resampling method for CT image: linear, cubic, registration (demons-based approach), hybrid (registration + cubic)")
+    parser.add_argument("--multires", dest="multires",action="store_true", default = False)
+    parser.add_argument("--justparticles", dest="justparticles",action="store_true", default=False)
     parser.add_argument("--cleanCache", action="store_true", dest="clean_cache", default=False)
-    
-    
-    #Check required tools path enviroment variables for tools path
+
+    # Check required tools path enviroment variables for tools path
     toolsPaths = ['CIP_PATH','TEEM_PATH','ITKTOOLS_PATH'];
     path=dict()
     for path_name in toolsPaths:
-        path[path_name]=os.environ.get(path_name,False)
+        path[path_name] = os.environ.get(path_name,False)
         if path[path_name] == False:
             print path_name + " environment variable is not set"
             exit()
     
-    op  = parser.parse_args()
-    assert op.init_method == 'Frangi' or op.init_method == 'Threshold' or op.init_method == 'StrainEnergy'
+    op = parser.parse_args()
+    assert op.init_method == 'Frangi' or op.init_method == 'Threshold' or op.init_method == 'StrainEnergy' or \
+           op.init_method == 'VesselMask'
     
     #region = [2,3]
     #region=[2]
@@ -299,7 +300,8 @@ if __name__ == "__main__":
     crop = [int(kk) for kk in str.split(op.crop,',')]
     regions = [kk for kk in str.split(op.regions,',')]
     
-    vp=VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,op.resampling_method,\
-                               op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,op.vesselness_th,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
+    vp = VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,
+                               op.vessel_mask, op.resampling_method, op.lth,op.sth,op.voxel_size,op.min_scale,
+                               op.max_scale,op.vesselness_th,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
                                
     vp.execute()
