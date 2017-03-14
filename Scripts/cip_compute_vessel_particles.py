@@ -19,10 +19,12 @@ class VesselParticlesPipeline:
         ---------
         
         """
-    def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',resampling_method='Linear',\
-                 lth=-95,sth=-70,voxel_size=0,min_scale=0.7,max_scale=4,vesselness_th=0.38,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
+    def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',
+                 vessel_mask=None,resampling_method='Linear',lth=-95,sth=-70,voxel_size=0,min_scale=0.7,max_scale=4,
+                 vesselness_th=0.38,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
         
-        assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy'
+        assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy' \
+               or init_method == 'VesselMask'
         
         self._ct_file_name=ct_file_name
         self._pl_file_name=pl_file_name
@@ -41,6 +43,7 @@ class VesselParticlesPipeline:
         self._multires=multires
         self._justparticles=justparticles
         self._clean_cache=clean_cache
+        self._vessel_mask=vessel_mask
         
         self._case_id = str.split(os.path.basename(ct_file_name),'.')[0]
         
@@ -158,20 +161,20 @@ class VesselParticlesPipeline:
             if self._justparticles == False:
                 
                 #Create SubVolume Region
-                tmpCommand ="CropLung --cipr %(region)s -m 0 -v -1000 --ict %(ct-in)s --ilm %(lm-in)s --oct %(ct-out)s --olm %(lm-out)s"
+                tmpCommand = "CropLung --cipr %(region)s -m 0 -v -1000 --ict %(ct-in)s --ilm %(lm-in)s --oct %(ct-out)s --olm %(lm-out)s"
                 tmpCommand = tmpCommand % {'region':ii,'ct-in':ct_file_name,'lm-in':pl_file_name,'ct-out':ct_file_nameRegion,'lm-out':pl_file_nameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
                 print tmpCommand
                 subprocess.call( tmpCommand, shell=True )
                 
                 #Extract Lung Region + Distance map to peel lung
-                tmpCommand ="ExtractChestLabelMap -r %(region)s -i %(lm-in)s -o %(lm-out)s"
+                tmpCommand = "ExtractChestLabelMap -r %(region)s -i %(lm-in)s -o %(lm-out)s"
                 tmpCommand = tmpCommand % {'region':ii,'lm-in':pl_file_nameRegion,'lm-out':pl_file_nameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
                 print tmpCommand
                 subprocess.call( tmpCommand, shell=True )
                 
-                tmpCommand ="unu 2op gt %(lm-in)s 0.5 -o %(lm-out)s"
+                tmpCommand = "unu 2op gt %(lm-in)s 0.5 -o %(lm-out)s"
                 tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'lm-out':pl_file_nameRegion}
                 print tmpCommand
                 subprocess.call( tmpCommand, shell=True )
@@ -223,12 +226,18 @@ class VesselParticlesPipeline:
                     tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'mask':pl_file_nameRegion,'intensity_th':self._intensity_th,'out':maskFileNameRegion}
                     print tmpCommand
                     subprocess.call( tmpCommand , shell=True)
+                elif self._init_method == 'VesselMask':
+                    tmpCommand = "CropLung --cipr %(region)s -m 0 -v 0 --ict %(mask-in)s --ilm %(lm-in)s --oct %(mask-out)s --olm %(lm-out)s"
+                    tmpCommand = tmpCommand % {'region': ii, 'mask-in': self._vessel_mask, 'lm-in': pl_file_name,
+                                               'mask-out': maskFileNameRegion, 'lm-out': pl_file_nameRegion}
+                    tmpCommand = os.path.join(path['CIP_PATH'], tmpCommand)
+                    # print tmpCommand
+                    subprocess.call(tmpCommand, shell=True)
                 
                 #Binary Thinning
                 tmpCommand = "GenerateBinaryThinning3D -i %(in)s -o %(out)s"
                 tmpCommand = tmpCommand % {'in':maskFileNameRegion,'out':maskFileNameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
-                print tmpCommand
                 subprocess.call( tmpCommand, shell=True)
             
             # Vessel Particles For the Region
