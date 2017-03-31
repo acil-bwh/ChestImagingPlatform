@@ -34,6 +34,11 @@ endif()
 
 
 if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+  set(CIP_VTK_RENDERING_BACKEND "OpenGL" CACHE STRING "Choose the rendering backend.")
+  set_property(CACHE CIP_VTK_RENDERING_BACKEND PROPERTY STRINGS "OpenGL" "OpenGL2")
+  mark_as_superbuild(CIP_VTK_RENDERING_BACKEND)
+  set(CIP_VTK_RENDERING_USE_${CIP_VTK_RENDERING_BACKEND}_BACKEND 1)
+
 
   set(EXTERNAL_PROJECT_OPTIONAL_ARGS)
 
@@ -53,32 +58,36 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
   endif()
 
   if(${PRIMARY_PROJECT_NAME}_USE_QT)
-	  if(NOT APPLE)
-      list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS
+    list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS
             #-DDESIRED_QT_VERSION:STRING=4 # Unused
             -DVTK_USE_GUISUPPORT:BOOL=ON
             -DVTK_USE_QVTK_QTOPENGL:BOOL=ON
             -DVTK_USE_QT:BOOL=ON
+            -DModule_vtkTestingRendering:BOOL=ON
             -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-		  )
-	  else()
+            )
+    if("${CIP_VTK_RENDERING_BACKEND}" STREQUAL "OpenGL2")
       list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS
-            -DVTK_USE_CARBON:BOOL=OFF
-            -DVTK_USE_COCOA:BOOL=ON # Default to Cocoa, VTK/CMakeLists.txt will enable Carbon and disable cocoa if needed
-            -DVTK_USE_X:BOOL=OFF
-            #-DVTK_USE_RPATH:BOOL=ON # Unused
-            #-DDESIRED_QT_VERSION:STRING=4 # Unused
-            -DVTK_USE_GUISUPPORT:BOOL=ON
-            -DVTK_USE_QVTK_QTOPENGL:BOOL=ON
-            -DVTK_USE_QT:BOOL=ON
-            -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-		  )
-	  endif()
-  else()
-	  list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS
-          -DVTK_USE_GUISUPPORT:BOOL=OFF
-          -DVTK_USE_QT:BOOL=OFF
-    )
+              -DModule_vtkGUISupportQtOpenGL:BOOL=ON
+              )
+    endif()
+    if(APPLE)
+      list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS
+              -DVTK_USE_CARBON:BOOL=OFF
+              -DVTK_USE_COCOA:BOOL=ON # Default to Cocoa, VTK/CMakeLists.txt will enable Carbon and disable cocoa if needed
+              -DVTK_USE_X:BOOL=OFF
+              -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=
+              #-DVTK_USE_RPATH:BOOL=ON # Unused
+              )
+    endif()
+    if(UNIX AND NOT APPLE)
+      find_package(FontConfig QUIET)
+      if(FONTCONFIG_FOUND)
+        list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS
+                -DModule_vtkRenderingFreeTypeFontConfig:BOOL=ON
+                )
+      endif()
+    endif()
   endif()
 
   # Disable Tk when Python wrapping is enabled
@@ -134,11 +143,13 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
       -DVTK_INSTALL_RUNTIME_DIR:PATH=${CIP_INSTALL_BIN_DIR}
       -DVTK_INSTALL_LIB_DIR:PATH=${CIP_INSTALL_LIB_DIR}
       -DVTK_INSTALL_ARCHIVE_DIR:PATH=${CIP_INSTALL_LIB_DIR}
+      -DVTK_Group_Qt:BOOL=ON
       -DVTK_USE_SYSTEM_ZLIB:BOOL=ON
       -DZLIB_ROOT:PATH=${ZLIB_ROOT}
       -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
       -DVTK_ENABLE_KITS:BOOL=${VTK_ENABLE_KITS}
+      -DVTK_RENDERING_BACKEND:STRING=${CIP_VTK_RENDERING_BACKEND}
       -DModule_vtkTestingRendering:BOOL=ON
       -DModule_vtkInfovisBoostGraphAlgorithms:BOOL=${USE_BOOST}
       -DBOOST_ROOT:PATH=${BOOST_DIR}
