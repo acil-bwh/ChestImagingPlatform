@@ -297,6 +297,7 @@ class montage:
         gs=GridSpec(num_rows,num_columns)
                 
         QcColorConventionsManager.buildColorMap(overlay_alpha = overlay_alpha)
+        from matplotlib.colors import LinearSegmentedColormap
         
         for i in range(0, num_rows):
             for j in range(0, num_columns):
@@ -305,30 +306,63 @@ class montage:
                 ax_1.axes.get_yaxis().set_visible(False)
                 
                 num_ct_overlays = len(list_of_cts[i][j])
-                from matplotlib.colors import LinearSegmentedColormap
+                
 
                 for k in range(0, num_ct_overlays):
                     list_of_cts[i][j][k][list_of_cts[i][j][k]<window_level] = window_level
                     list_of_cts[i][j][k][list_of_cts[i][j][k]>(window_level+window_width)] = (window_level+window_width)
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]-np.min(list_of_cts[i][j][k])
-                    list_of_cts[i][j][k] = list_of_cts[i][j][k]/float(np.max(list_of_cts[i][j][k]))      
+                    list_of_cts[i][j][k] = list_of_cts[i][j][k]/float(np.max(list_of_cts[i][j][k]))  
+                       
 
-                    transform=np.array([[0,1],[1,0]]) # Need a 90 degree rotation
-                                                    
-                    if (num_ct_overlays >1):
-                        if (k == 0):
-                            myccmap =  LinearSegmentedColormap.from_list('mycmap', ['black', 'red']) #'Reds'
-                            the_alpha = 1.0
-                        else:
-                            myccmap = LinearSegmentedColormap.from_list('mycmap', ['black', 'blue']) #'Blues'
-                            the_alpha = overlay_alpha
-                    else:
-                          myccmap= 'gray' #cm.gray
-                          the_alpha = 1.0
 
-                    im = plt.imshow(list_of_cts[i][j][k],origin='upper', \
+                if (num_ct_overlays > 1):
+                        im_shape = np.shape(list_of_cts[i][j][0])
+
+                        from PIL import Image
+                        im1 = Image.new("RGB", [im_shape[1],im_shape[0]], "black")
+                        im2 = Image.new("RGB", [im_shape[1],im_shape[0]], "black")
+                        
+                        im1_array = np.array(im1)
+                        im2_array = np.array(im2) # im2_array = np.array(im2)
+                        #rgb_arr2= np.zeros([im_shape[0], im_shape[1], 3]).astype('float')                          
+
+                        im1_array[:,:,0] = list_of_cts[i][j][0]*255.0 
+                        im2_array[:,:,2] = list_of_cts[i][j][1]*255.0 
+                        
+                        print(overlay_alpha)
+                        image_blend = Image.blend(Image.fromarray(im1_array,'RGB'),Image.fromarray(im2_array,'RGB'),alpha=overlay_alpha)
+
+                        
+                        #myccmap =  LinearSegmentedColormap.from_list('mycmap', ['black', 'red']) #'Reds'
+                        #rgb_arr1[...,0] = list_of_cts[i][j][0]*255.0 #np.uint8(
+                        #rgb_arr1[...,1] = list_of_cts[i][j][0]*255.0
+                        #rgb_arr1[...,2] = list_of_cts[i][j][0]*255.0   
+                        #rgb_arr2[:,:,2] = np.uint8(list_of_cts[i][j][1]*255.0)      
+
+                        #rgb_arr1[:,:,0] = list_of_cts[i][j][0].astype('float')/np.max(list_of_cts[i][j][0].astype('float'))*255.0   
+                        #rgb_arr2[:,:,2] = list_of_cts[i][j][1].astype('float')/np.max(list_of_cts[i][j][1].astype('float'))*255.0                          
+
+            
+                        #myccmap = LinearSegmentedColormap.from_list('mycmap', ['black', 'blue']) #'Blues'
+                        #the_alpha = overlay_alpha
+                        
+
+                        
+                        #pdb.set_trace()
+                        im = plt.imshow(np.array(image_blend),origin='upper')
+                        plt.tight_layout()
+
+                else:
+                      print("showing grey map output")  
+                      myccmap= 'gray' #cm.gray
+                      the_alpha = 1.0
+                      #pdb.set_trace()  
+                      im = plt.imshow(list_of_cts[i][j][0],origin='upper', \
                         cmap=plt.get_cmap(myccmap),  clim=(0.0, 1.0), alpha=the_alpha) #0.2,0.8 was too much #vmin=0.2, vmax=0.8)
-                    plt.tight_layout()
+                      plt.tight_layout()
+                    
+                    
         
                 if((len(list_of_labelmaps) >0) and (len(list_of_labelmaps[i]) >0) and (len(list_of_labelmaps[i][j]) >0)):
                     """ append the overlay """
@@ -436,9 +470,7 @@ class CTQC:
         #pdb.set_trace()
         list_cts = []
         list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images))
-        
-        pdb.set_trace()
-        
+                
         # Append the checkerboard image
         list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,is_checkerboard=True))
         
@@ -593,7 +625,7 @@ if __name__ == "__main__":
         ct_array2, ct_header2 = image_io.read_in_numpy(options.in_ct_moving) 
         
         my_ct_qc.execute_registration_qc(ct_array, ct_array2, options.output_file, partial_array, options.num_images_per_region, \
-            overlay_alpha=0.5, window_width=1100, window_level=-1024)
+            overlay_alpha=options.overlay_opacity, window_width=1100, window_level=-1024)
                
         
     list_of_lung_qc = []
