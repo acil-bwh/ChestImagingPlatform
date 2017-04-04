@@ -359,7 +359,7 @@ class montage:
                       the_alpha = 1.0
                       #pdb.set_trace()  
                       im = plt.imshow(list_of_cts[i][j][0],origin='upper', \
-                        cmap=plt.get_cmap(myccmap),  clim=(0.0, 1.0), alpha=the_alpha) #0.2,0.8 was too much #vmin=0.2, vmax=0.8)
+                        cmap=plt.get_cmap(myccmap),  clim=(0.0, 1.0)) #0.2,0.8 was too much #vmin=0.2, vmax=0.8)
                       plt.tight_layout()
                     
                     
@@ -449,11 +449,11 @@ class CTQC:
     
     def execute(self, in_ct, out_file, window_width=1100, window_level=-1024):
 
-        my_projection = ImageOverlay()
+        my_projection = ImageOverlay() 
         
-        x_projection = my_projection.execute(in_ct, axis='sagittal')
-        y_projection = my_projection.execute(in_ct, axis='coronal')
-        z_projection = my_projection.execute(in_ct, axis='axial')
+        x_projection = my_projection.get_ct_projection(in_ct, axis='sagittal')
+        y_projection = my_projection.get_ct_projection(in_ct, axis='coronal')
+        z_projection = my_projection.get_ct_projection(in_ct, axis='axial')
 
         # combine into 1 image
         my_montage = montage()
