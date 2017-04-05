@@ -110,7 +110,6 @@ class ImageOverlay:
 
     def rotate_labelmap_images_for_display(self, image, axis):
         if(axis=='axial'):
-            print("rotating axial")
             rotated_image_temp=np.fliplr(\
                 image)
                 
@@ -182,7 +181,6 @@ class ImageOverlay:
         """ Exract the list of overlays """
         list_of_cts = []
 
-        print(bounds_list)
         for i in range(0,num_overlays):
             ct_patch1 = np.squeeze(in_ct1[bounds_list[i][0]:bounds_list[i][1],bounds_list[i][2]:bounds_list[i][3],\
                 bounds_list[i][4]:bounds_list[i][5]]).astype(float)
@@ -238,9 +236,7 @@ class ImageOverlay:
         list_of_cts = []
         list_of_labelmaps = []
 
-        print(bounds_list)
         for i in range(0,num_overlays):
-            print(bounds_list[i])
             #pdb.set_trace()
             ct_patch = np.squeeze(in_ct[bounds_list[i][0]:bounds_list[i][1],bounds_list[i][2]:bounds_list[i][3],\
                 bounds_list[i][4]:bounds_list[i][5]]).astype(float)
@@ -294,7 +290,6 @@ class montage:
         """
 
         spec_val = np.max([num_rows,num_columns])
-        print(spec_val) 
         fig = plt.figure(figsize = (spec_val,spec_val)) 
         gs=GridSpec(spec_val,spec_val, wspace=0.01, hspace=0.01)
         #gs.update(left=0.05, right=0.2) #, wspace=0.0, hspace=0.0) 
@@ -302,8 +297,6 @@ class montage:
         QcColorConventionsManager.buildColorMap(overlay_alpha = overlay_alpha)
         from matplotlib.colors import LinearSegmentedColormap
         
-        print(num_rows)
-        print(num_columns)
         for i in range(0, num_rows):
             for j in range(0, num_columns):
                 ax_1 = fig.add_subplot(gs[i:(i+1),j:(j+1)])
@@ -340,7 +333,6 @@ class montage:
                         im1_array[:,:,0] = list_of_cts[i][j][0]*255.0 
                         im2_array[:,:,2] = list_of_cts[i][j][1]*255.0 
                         
-                        print(overlay_alpha)
                         image_blend = Image.blend(Image.fromarray(im1_array,'RGB'),Image.fromarray(im2_array,'RGB'),alpha=overlay_alpha)
 
                         
@@ -348,7 +340,6 @@ class montage:
                         #plt.tight_layout()
 
                 else:
-                      print("showing grey map output")  
                       myccmap= 'gray' #cm.gray
                       the_alpha = 1.0
                       #pdb.set_trace()  
@@ -432,7 +423,7 @@ class LabelmapQC:
                 in_regions = self.region_dictionary[list_request_qc_per_labelmap[j][i]]
                 overlay = ImageOverlay()
                 
-                print("about to generate overlay "+ str(num_images_per_region)+" ")
+                print("generating overlay for the following regions: ")
                 print(in_regions)
   
                 #list_of_images[i] = overlay.execute( in_ct, list_of_labelmaps[j],num_images_per_region, in_regions) 
@@ -560,15 +551,14 @@ class body_composition_qc:
                
 
 if __name__ == "__main__":
-    desc = """Generates histogram features given input CT and segmentation \
-    data"""
+    desc = """Generates a montage of slices extracted from volumes for QC purposes."""
     
     parser = OptionParser(description=desc)
     parser.add_option('--in_ct',
                       help='Input ct file name. ', dest='in_ct', metavar='<string>',
                       default=None)          
     parser.add_option('--in_ct_moving',
-                      help='Input moving ct file name. ', dest='in_ct_moving', metavar='<string>',
+                      help='Input moving ct file name (for QCing 2 CT images - for registration for example). ', dest='in_ct_moving', metavar='<string>',
                       default=None)  
     parser.add_option('--in_partial',
                       help='Input lung labelmap file name. If input \
@@ -578,7 +568,8 @@ if __name__ == "__main__":
                       help='Input lung lobes file name', dest='in_lobes', metavar='<string>',
                       default=None)                                                        
     parser.add_option('--num_images_per_region',
-                      help='Number of images .  (optional)',  dest='num_images_per_region', 
+                      help='Number of images to be output per region requested to QC.Images will be extracted \
+                      evenly throughout the region. This does not apply to CT QC, where 1 image per axis is output (optional)',  dest='num_images_per_region', 
                       metavar='<string>', default=3)   
     parser.add_option('--window_width',
                       help='intensity window width .  (optional)',  dest='window_width', 
@@ -606,13 +597,13 @@ if __name__ == "__main__":
                       help='Set to true if want to QC right lung lobe images', 
                       dest="qc_rightlunglobes", action='store_true')  
     parser.add_option('--output_file',
-                      help='Prefix used for output QC images', dest='output_file', metavar='<string>',
+                      help='QC image output file name.', dest='output_file', metavar='<string>',
                       default=None)   
     parser.add_option('--overlay_opacity',
                     help='Opacity of QC overlay (between 0 and 1)',  dest='overlay_opacity', 
                     metavar='<string>', type=float, default=0.85)   	                                                                            
     parser.add_option('--resolution',
-                      help='Output image resolution.  (optional)',  dest='output_image_resolution', 
+                      help='Output image resolution (dpi).  (optional)',  dest='output_image_resolution', 
                       metavar='<string>', type=float,  default=600)   	                                                                            	                                                                            	                                                                            
     (options, args) = parser.parse_args()
     
