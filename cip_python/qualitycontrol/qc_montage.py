@@ -281,7 +281,7 @@ class montage:
  
        
     def execute(self, list_of_cts, list_of_labelmaps, output_filename, overlay_alpha, num_rows, num_columns, 
-        window_width=1100, window_level=-1024):
+        window_width=1100, window_level=-1024, resolution=50):
         """ 
         for each image in list,
             add to montage. If image is empty, create an empty outline.
@@ -292,19 +292,29 @@ class montage:
         
         output_filename: full path to output file to save the montage.
         """
-        
-        fig = plt.figure() 
-        gs=GridSpec(num_rows,num_columns)
-                
+
+        spec_val = np.max([num_rows,num_columns])
+        print(spec_val) 
+        fig = plt.figure(figsize = (spec_val,spec_val)) 
+        gs=GridSpec(spec_val,spec_val, wspace=0.01, hspace=0.01)
+        #gs.update(left=0.05, right=0.2) #, wspace=0.0, hspace=0.0) 
+               
         QcColorConventionsManager.buildColorMap(overlay_alpha = overlay_alpha)
         from matplotlib.colors import LinearSegmentedColormap
         
+        print(num_rows)
+        print(num_columns)
         for i in range(0, num_rows):
             for j in range(0, num_columns):
                 ax_1 = fig.add_subplot(gs[i:(i+1),j:(j+1)])
-                ax_1.axes.get_xaxis().set_visible(False)
-                ax_1.axes.get_yaxis().set_visible(False)
-                
+                #ax_1 = plt.Subplot(fig, gs[i*num_columns+j])
+
+                #ax_1.axes.get_xaxis().set_visible(False)
+                #ax_1.axes.get_yaxis().set_visible(False)
+                ax_1.set_xticks([])
+                ax_1.set_yticks([])
+                ax_1.autoscale_view('tight')
+                fig.add_subplot(ax_1)
                 num_ct_overlays = len(list_of_cts[i][j])
                 
 
@@ -334,24 +344,8 @@ class montage:
                         image_blend = Image.blend(Image.fromarray(im1_array,'RGB'),Image.fromarray(im2_array,'RGB'),alpha=overlay_alpha)
 
                         
-                        #myccmap =  LinearSegmentedColormap.from_list('mycmap', ['black', 'red']) #'Reds'
-                        #rgb_arr1[...,0] = list_of_cts[i][j][0]*255.0 #np.uint8(
-                        #rgb_arr1[...,1] = list_of_cts[i][j][0]*255.0
-                        #rgb_arr1[...,2] = list_of_cts[i][j][0]*255.0   
-                        #rgb_arr2[:,:,2] = np.uint8(list_of_cts[i][j][1]*255.0)      
-
-                        #rgb_arr1[:,:,0] = list_of_cts[i][j][0].astype('float')/np.max(list_of_cts[i][j][0].astype('float'))*255.0   
-                        #rgb_arr2[:,:,2] = list_of_cts[i][j][1].astype('float')/np.max(list_of_cts[i][j][1].astype('float'))*255.0                          
-
-            
-                        #myccmap = LinearSegmentedColormap.from_list('mycmap', ['black', 'blue']) #'Blues'
-                        #the_alpha = overlay_alpha
-                        
-
-                        
-                        #pdb.set_trace()
                         im = plt.imshow(np.array(image_blend),origin='upper')
-                        plt.tight_layout()
+                        #plt.tight_layout()
 
                 else:
                       print("showing grey map output")  
@@ -360,7 +354,7 @@ class montage:
                       #pdb.set_trace()  
                       im = plt.imshow(list_of_cts[i][j][0],origin='upper', \
                         cmap=plt.get_cmap(myccmap),  clim=(0.0, 1.0)) #0.2,0.8 was too much #vmin=0.2, vmax=0.8)
-                      plt.tight_layout()
+                      #plt.tight_layout()
                     
                     
         
@@ -368,20 +362,39 @@ class montage:
                     """ append the overlay """
                     #list_of_labelmaps[i][j][0]=scipy.ndimage.interpolation.rotate(\
                     #list_of_labelmaps[i][j][0], 90.0, prefilter=False,  order=0) #reshape=False,
-                    plt.imshow(list_of_labelmaps[i][j][0],origin='upper', \
+                    im=plt.imshow(list_of_labelmaps[i][j][0],origin='upper', \
                         cmap=QcColorConventionsManager.cmap , norm=QcColorConventionsManager.norm,\
                         vmin=1, vmax=100000) #norm=norm, alpha=0.95,
 
-        gs.tight_layout(fig)        
+        #gs.tight_layout(fig)        
         print("saving to output file "+output_filename)
-        fig1 = plt.gcf()
-        gs.tight_layout(fig1)
-        fig.savefig(output_filename,bbox_inches='tight', dpi=300)
-        fig1.clf() 
-        fig.clf()
-        plt.clf()
+        #
+        all_axes = fig.get_axes()
 
-        plt.close()    
+        #show only the outside spines
+        for ax in all_axes:
+            for sp in ax.spines.values():
+                sp.set_visible(False)
+            #if ax.is_first_row():
+            #    ax.spines['top'].set_visible(True)
+            #if ax.is_last_row():
+            #    ax.spines['bottom'].set_visible(True)
+            #if ax.is_first_col():
+            #    ax.spines['left'].set_visible(True)
+            #if ax.is_last_col():
+            #    ax.spines['right'].set_visible(True)
+
+
+        #fig1 = plt.gcf()
+        #gs.tight_layout(fig1)
+        #fig1.set_tight_layout({'rect': [0, 0, 1, 0.95], 'pad': 0, 'h_pad': 0})
+        plt.show()
+        fig.savefig(output_filename, dpi=resolution,bbox_inches='tight', pad_inches=0.0)
+        #fig1.clf() 
+        #fig.clf()
+        #plt.clf()
+
+        #plt.close()    
  
 
 """
@@ -402,7 +415,7 @@ class LabelmapQC:
         
     
     def get_labelmap_qc(self, in_ct, out_file, list_of_labelmaps, list_request_qc_per_labelmap, num_images_per_region=3, 
-            overlay_alpha=0.85, window_width=1100, window_level=-1024, axis='axial'):   
+            overlay_alpha=0.85, window_width=1100, window_level=-1024, axis='axial', resolution=600):   
 
     
         """ the layout of the images should be set here"""
@@ -436,7 +449,7 @@ class LabelmapQC:
         #pdb.set_trace()
         my_montage = montage() 
         my_montage.execute(list_cts,list_labelmaps, out_file, overlay_alpha, len(list_cts), num_images_per_region, \
-            window_width=window_width, window_level=window_level)                
+            window_width=window_width, window_level=window_level, resolution=resolution)                
 
 class CTQC:
     """
@@ -447,7 +460,7 @@ class CTQC:
         pass
         
     
-    def execute(self, in_ct, out_file, window_width=1100, window_level=-1024):
+    def execute(self, in_ct, out_file, window_width=1100, window_level=-1024, resolution=50):
 
         my_projection = ImageOverlay() 
         
@@ -461,10 +474,11 @@ class CTQC:
         #print(np.shape([[x_projection, y_projection, z_projection]]))
         #pdb.set_trace()
         my_montage.execute([[[x_projection], [y_projection], [z_projection]]],[], \
-            out_file, 0.0, 1, 3, window_width=window_width, window_level=window_level)
+            out_file, 0.0, 1, 3, window_width=window_width, window_level=window_level,\
+            resolution=resolution)
             
     def execute_registration_qc(self, in_ct1, in_ct2, out_file, in_mask, num_images, 
-        overlay_alpha=0.85, window_width=1100, window_level=-1024):
+        overlay_alpha=0.85, window_width=1100, window_level=-1024, resolution=600):
         
         my_overlay = ImageOverlay()
         #pdb.set_trace()
@@ -474,10 +488,9 @@ class CTQC:
         # Append the checkerboard image
         list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,is_checkerboard=True))
         
-        pdb.set_trace()
         my_montage = montage() 
         my_montage.execute(list_cts,[], out_file, overlay_alpha, len(list_cts), num_images, \
-            window_width=window_width, window_level=window_level)  
+            window_width=window_width, window_level=window_level, resolution=resolution)  
             
                                                                                 
 class LungQC(LabelmapQC):
@@ -512,7 +525,8 @@ class LungQC(LabelmapQC):
      
         LabelmapQC.__init__(self)  
                              
-    def execute(self, in_ct, out_file, qc_requested, num_images_per_region=3, in_partial=None, in_lobe=None, overlay_alpha=0.85, window_width=1100, window_level=-1024):   
+    def execute(self, in_ct, out_file, qc_requested, num_images_per_region=3, in_partial=None, in_lobe=None, \
+            overlay_alpha=0.85, window_width=1100, window_level=-1024, resolution=600):   
         
         list_of_labelmaps=[] 
         list_request_qc_per_labelmap=[]
@@ -531,8 +545,10 @@ class LungQC(LabelmapQC):
                 list_request_qc_per_labelmap.append(list(labelmap_qc_requested))       
                 
         
-        self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps, list_request_qc_per_labelmap, num_images_per_region=num_images_per_region, \
-            overlay_alpha=overlay_alpha, window_width=window_width, window_level=window_level,axis='sagittal')
+        self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps, list_request_qc_per_labelmap, \
+            num_images_per_region=num_images_per_region, \
+            overlay_alpha=overlay_alpha, window_width=window_width, window_level=window_level,\
+            axis='sagittal', resolution=resolution)
 
     
 class body_composition_qc:
@@ -595,7 +611,9 @@ if __name__ == "__main__":
     parser.add_option('--overlay_opacity',
                     help='Opacity of QC overlay (between 0 and 1)',  dest='overlay_opacity', 
                     metavar='<string>', type=float, default=0.85)   	                                                                            
-	                                                                            	                                                                            	                                                                            
+    parser.add_option('--resolution',
+                      help='Output image resolution.  (optional)',  dest='output_image_resolution', 
+                      metavar='<string>', type=float,  default=600)   	                                                                            	                                                                            	                                                                            
     (options, args) = parser.parse_args()
     
     image_io = ImageReaderWriter()
@@ -616,7 +634,7 @@ if __name__ == "__main__":
     if(options.qc_ct):
         my_ct_qc = CTQC()
         my_ct_qc.execute(ct_array, options.output_file,  \
-            window_width=options.window_width, window_level=options.window_level)
+            window_width=options.window_width, window_level=options.window_level, resolution=options.output_image_resolution)
     
     """ Registration QC"""
     if(options.qc_registeredct):
@@ -625,7 +643,8 @@ if __name__ == "__main__":
         ct_array2, ct_header2 = image_io.read_in_numpy(options.in_ct_moving) 
         
         my_ct_qc.execute_registration_qc(ct_array, ct_array2, options.output_file, partial_array, options.num_images_per_region, \
-            overlay_alpha=options.overlay_opacity, window_width=1100, window_level=-1024)
+            overlay_alpha=options.overlay_opacity, window_width=options.window_width, window_level=options.window_level, \
+            resolution=options.output_image_resolution)
                
         
     list_of_lung_qc = []
@@ -645,5 +664,5 @@ if __name__ == "__main__":
         my_lung_qc.execute(ct_array, options.output_file, qc_requested=list_of_lung_qc, \
             num_images_per_region=options.num_images_per_region, in_partial=partial_array, \
             in_lobe=lobe_array, overlay_alpha=options.overlay_opacity, window_width=options.window_width, \
-            window_level=options.window_level)
+            window_level=options.window_level, resolution=options.output_image_resolution)
 
