@@ -138,8 +138,8 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract slices and masks from structures encoded in a GeometryTopologyData xml file')
-    parser.add_argument('--input', dest='input', help="Input volume path", type=str, required=True)
-    parser.add_argument('--xml_input', dest='xml_input', help="Xml input path for the GeometryTopologyData object", type=str, required=True)
+    parser.add_argument('--input', dest='input', help="Input volume path", type=str, required=False)
+    parser.add_argument('--xml_input', dest='xml_input', help="Xml input path for the GeometryTopologyData object", type=str, required=False)
     parser.add_argument('--output_dir', dest='output_dir', help="Path of the output directory", type=str, required=False)
     parser.add_argument('--cid', dest='cid', help="Base name for the results", type=str, required=False)
     parser.add_argument('--num_extra_slices', dest='num_extra_slices', help="Number of extra slices surrounding each structure (it will be padded if necessary)", type=int, default=0)
