@@ -1,9 +1,9 @@
 import argparse
 import SimpleITK as sitk
 
-from input_output.image_reader_writer import ImageReaderWriter
-from common.geometry_topology_data import *
-from common import ChestConventions
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
+from cip_python.common.geometry_topology_data import *
+from cip_python.common import ChestConventions
 
 def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
                    filtered_chest_regions=None, filtered_chest_types=None, num_extra_slices=0):
@@ -132,9 +132,7 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
         # Save the labelmap (Volume_cid_chestRegionType_plane_sliceNumber_labelmap.nrrd)
         mask_output_path = os.path.join(output_dir, "{}_{}_{}_{}_labelmap.nrrd".format(cid, chest_value, plane, slice))
         sitk.WriteImage(mask, mask_output_path)
-        print("All results saved in {}".format(os.path.realpath(output_dir)))
-
-
+    print("All results saved in {}".format(os.path.realpath(output_dir)))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract slices and masks from structures encoded in a GeometryTopologyData xml file')
