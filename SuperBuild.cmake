@@ -237,6 +237,14 @@ set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the
 # ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
+
+if (DEFINED ITK_CLUSTER_OS_COMPATIBILITY)
+  set(ITK_CLUSTER_OS_COMPATIBILITY $ITK_CLUSTER_OS_COMPATIBILITY CACHE BOOL "ITK compatibility in some old Operating Systems (typically clusters)")
+else()
+  set(ITK_CLUSTER_OS_COMPATIBILITY OFF CACHE BOOL "ITK compatibility in some old Operating Systems (typically clusters)")
+endif()
+mark_as_superbuild(ITK_CLUSTER_OS_COMPATIBILITY)
+
 set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 #if (WIN32) # libxml2 is a prerequisite for other platforms
 #  set(LIBXML2_EXTERNAL_NAME LibXml2)
