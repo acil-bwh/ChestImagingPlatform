@@ -239,7 +239,7 @@ set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 
 if (DEFINED ITK_CLUSTER_OS_COMPATIBILITY)
-  set(ITK_CLUSTER_OS_COMPATIBILITY $ITK_CLUSTER_OS_COMPATIBILITY CACHE BOOL "ITK compatibility in some old Operating Systems (typically clusters)")
+  set(ITK_CLUSTER_OS_COMPATIBILITY ${ITK_CLUSTER_OS_COMPATIBILITY} CACHE BOOL "ITK compatibility in some old Operating Systems (typically clusters)")
 else()
   set(ITK_CLUSTER_OS_COMPATIBILITY OFF CACHE BOOL "ITK compatibility in some old Operating Systems (typically clusters)")
 endif()

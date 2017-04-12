@@ -6,6 +6,8 @@ set(${proj}_DEPENDENCIES "zlib")
 
 set(CIP_USE_PYTHONQT OFF)
 
+list(APPEND ${proj}_DEPENDENCIES CIPPython)
+
 if (CIP_USE_PYTHONQT)
   list(APPEND ${proj}_DEPENDENCIES python)
 endif()
@@ -153,6 +155,8 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
       -DModule_vtkTestingRendering:BOOL=ON
       -DModule_vtkInfovisBoostGraphAlgorithms:BOOL=${USE_BOOST}
       -DBOOST_ROOT:PATH=${BOOST_DIR}
+      -DQT_QMAKE_EXECUTABLE:PATH=${CIP_PYTHON_DIR}/bin/qmake
+      -DQT_RCC_EXECUTABLE:PATH=${CIP_PYTHON_DIR}/bin/rcc
       ${EXTERNAL_PROJECT_OPTIONAL_ARGS}
     INSTALL_COMMAND ""
     DEPENDS
