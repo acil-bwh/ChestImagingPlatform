@@ -15,14 +15,18 @@ class CTQC:
         pass
         
     
-    def execute(self, in_ct, out_file, window_width=1100, window_level=-1024, resolution=50):
+    def execute(self, in_ct, out_file, window_width=1100, window_level=-1024, resolution=50,
+        spacing=None):
 
         my_projection = ImageOverlay() 
         
         x_projection = my_projection.get_ct_projection(in_ct, axis='sagittal')
         y_projection = my_projection.get_ct_projection(in_ct, axis='coronal')
         z_projection = my_projection.get_ct_projection(in_ct, axis='axial')
-
+        list_of_voxel_spacing=[]
+        list_of_voxel_spacing.append([spacing[1],spacing[2]])
+        list_of_voxel_spacing.append([spacing[0],spacing[2]])
+        list_of_voxel_spacing.append([spacing[0],spacing[1]])
         # combine into 1 image
         my_montage = Montage()
         
@@ -30,7 +34,7 @@ class CTQC:
         #pdb.set_trace()
         my_montage.execute([[[x_projection], [y_projection], [z_projection]]],[], \
             out_file, 0.0, 1, 3, window_width=window_width, window_level=window_level,\
-            resolution=resolution)
+            resolution=resolution, list_of_voxel_spacing=[list_of_voxel_spacing])
             
 
             
@@ -59,10 +63,11 @@ if __name__ == "__main__":
     image_io = ImageReaderWriter()
     print "Reading CT..."
     ct_array, ct_header = image_io.read_in_numpy(options.in_ct) 
-    
+    spacing=ct_header['spacing']
     my_ct_qc = CTQC()
     my_ct_qc.execute(ct_array, options.output_file,  \
-        window_width=options.window_width, window_level=options.window_level, resolution=options.output_image_resolution)
+        window_width=options.window_width, window_level=options.window_level, \
+        resolution=options.output_image_resolution, spacing=spacing)
     
 
                

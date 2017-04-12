@@ -13,18 +13,38 @@ class CTRegistrationQC:
         
             
     def execute(self, in_ct1, in_ct2, out_file, in_mask, num_images, 
-        overlay_alpha=0.5, window_width=1100, window_level=-1024, resolution=600):
+        overlay_alpha=0.5, window_width=1100, window_level=-1024, resolution=600,
+        spacing=None,is_axial=True, is_sagittal=False, is_coronal=False):
         
+        if (is_axial==False and is_sagittal==False and is_coronal==False):
+            raise ValueError("No axes specified.")
         my_overlay = ImageOverlay()
         list_cts = []
-        list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images))
-                
-        # Append the checkerboard image
-        list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,is_checkerboard=True))
-        
+        list_of_voxel_spacing=[]
+        if(is_axial):
+            list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='axial')) 
+            list_of_voxel_spacing.append([[spacing[0],spacing[1]]]*num_images)       
+            # Append the checkerboard image
+            list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,axis='axial', is_checkerboard=True))
+            list_of_voxel_spacing.append([[spacing[0],spacing[1]]]*num_images)  
+        if(is_sagittal):
+            #list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='sagittal'))        
+            list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='sagittal'))   
+            list_of_voxel_spacing.append([[spacing[1],spacing[2]]]*num_images)     
+            # Append the checkerboard image
+            list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,axis='sagittal', is_checkerboard=True))
+            list_of_voxel_spacing.append([[spacing[1],spacing[2]]]*num_images) 
+        if(is_coronal):
+            list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='coronal'))        
+            list_of_voxel_spacing.append([[spacing[0],spacing[2]]]*num_images)
+            # Append the checkerboard image
+            list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,axis='coronal', is_checkerboard=True))
+            list_of_voxel_spacing.append([[spacing[0],spacing[2]]]*num_images) 
+                      
         my_montage = Montage() 
         my_montage.execute(list_cts,[], out_file, overlay_alpha, len(list_cts), num_images, \
-            window_width=window_width, window_level=window_level, resolution=resolution)  
+            window_width=window_width, window_level=window_level, resolution=resolution, \
+            list_of_voxel_spacing=list_of_voxel_spacing)  
 
 if __name__ == "__main__":
     desc = """Generates a montage of slices extracted from 2 registered CT volumes for QC purposes."""
@@ -59,7 +79,16 @@ if __name__ == "__main__":
                     metavar='<string>', type=float, default=0.5)   	                                                                            
     parser.add_option('--resolution',
                       help='Output image resolution (dpi).  (optional)',  dest='output_image_resolution', 
-                      metavar='<string>', type=float,  default=600)   	                                                                            	                                                                            	                                                                            
+                      metavar='<string>', type=float,  default=600)   
+    parser.add_option("--axial", 
+                      help='Set if want to QC CT images in the axial plane', dest="axial", 
+                      action='store_true')   	                                                                            	                                                                            	                                                                            
+    parser.add_option("--sagittal", 
+                      help='Set if want to QC CT images in the sagittal plane', dest="sagittal", 
+                      action='store_true')  
+    parser.add_option("--coronal", 
+                      help='Set if want to QC CT images in the coronal plane', dest="coronal", 
+                      action='store_true')  
     (options, args) = parser.parse_args()
     
     image_io = ImageReaderWriter()
@@ -67,8 +96,10 @@ if __name__ == "__main__":
     ct_array_fixed, ct_header = image_io.read_in_numpy(options.in_ct_fixed) 
     ct_array_moving, ct_header = image_io.read_in_numpy(options.in_ct_moving) 
     partial_array, partial_header = image_io.read_in_numpy(options.in_partial) 
-    
+    spacing=ct_header['spacing']
+
     my_ct_qc = CTRegistrationQC()        
     my_ct_qc.execute(ct_array_fixed, ct_array_moving, options.output_file, partial_array, options.num_images_per_region, \
         overlay_alpha=options.overlay_opacity, window_width=options.window_width, window_level=options.window_level, \
-        resolution=options.output_image_resolution)
+        resolution=options.output_image_resolution, spacing=spacing,is_axial=options.axial, is_sagittal=options.sagittal, \
+        is_coronal=options.coronal)

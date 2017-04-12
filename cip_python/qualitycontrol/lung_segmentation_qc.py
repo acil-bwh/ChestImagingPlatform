@@ -32,11 +32,10 @@ class LungSegmentationQC(LabelmapQC):
         LabelmapQC.__init__(self)  
                              
     def execute(self, in_ct, out_file, qc_requested, num_images_per_region=3, in_partial=None, in_lobe=None, \
-            overlay_alpha=0.85, window_width=1100, window_level=-1024, resolution=600):   
+            overlay_alpha=0.85, window_width=1100, window_level=-1024, resolution=600, spacing=None):   
         
         list_of_labelmaps=[] 
         list_request_qc_per_labelmap=[]
-        
         
         """ add the labelmaps needed"""
         for labelmaptype in self.labelmap_qc_dictionary.keys():
@@ -54,7 +53,7 @@ class LungSegmentationQC(LabelmapQC):
         self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps, list_request_qc_per_labelmap, \
             num_images_per_region=num_images_per_region, \
             overlay_alpha=overlay_alpha, window_width=window_width, window_level=window_level,\
-            axis='sagittal', resolution=resolution)
+            axis='sagittal', resolution=resolution,spacing=spacing )
 
 
 
@@ -132,9 +131,10 @@ if __name__ == "__main__":
     if(len(list_of_lung_qc) > 0):              
         print("generating lung qc for: ")
         print(list_of_lung_qc)
+        spacing=ct_header['spacing']
         my_lung_qc = LungSegmentationQC()
         my_lung_qc.execute(ct_array, options.output_file, qc_requested=list_of_lung_qc, \
             num_images_per_region=options.num_images_per_region, in_partial=partial_array, \
             in_lobe=lobe_array, overlay_alpha=options.overlay_opacity, window_width=options.window_width, \
-            window_level=options.window_level, resolution=options.output_image_resolution)
+            window_level=options.window_level, resolution=options.output_image_resolution, spacing=spacing)
 

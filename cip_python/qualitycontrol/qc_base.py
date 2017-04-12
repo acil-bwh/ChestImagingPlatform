@@ -270,7 +270,7 @@ class Montage:
  
        
     def execute(self, list_of_cts, list_of_labelmaps, output_filename, overlay_alpha, num_rows, num_columns, 
-        window_width=1100, window_level=-1024, resolution=50):
+        window_width=1100, window_level=-1024, resolution=50, list_of_voxel_spacing=None):
         """ 
         for each image in list,
             add to montage. If image is empty, create an empty outline.
@@ -306,14 +306,19 @@ class Montage:
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]-np.min(list_of_cts[i][j][k])
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]/float(np.max(list_of_cts[i][j][k]))  
                        
-
+                import pdb
+                #pdb.set_trace()
+                im_shape = np.shape(list_of_cts[i][j][0])        
+                if(list_of_voxel_spacing is None):
+                    the_extent=None
+                else:
+                    the_extent = (0, list_of_voxel_spacing[i][j][1]*im_shape[0], list_of_voxel_spacing[i][j][0]*im_shape[1] ,0)                         
 
                 if (num_ct_overlays > 1):
-                        im_shape = np.shape(list_of_cts[i][j][0])
-
                         from PIL import Image
                         im1 = Image.new("RGB", [im_shape[1],im_shape[0]], "black")
                         im2 = Image.new("RGB", [im_shape[1],im_shape[0]], "black")
+                        
                         
                         im1_array = np.array(im1)
                         im2_array = np.array(im2) 
@@ -322,16 +327,13 @@ class Montage:
                         im2_array[:,:,2] = list_of_cts[i][j][1]*255.0 
                         
                         image_blend = Image.blend(Image.fromarray(im1_array,'RGB'),Image.fromarray(im2_array,'RGB'),alpha=overlay_alpha)
-
-                        
-                        im = plt.imshow(np.array(image_blend),origin='upper')
+                        im = plt.imshow(np.array(image_blend),origin='upper', extent = the_extent)
 
                 else:
                       myccmap= 'gray' 
                       the_alpha = 1.0
-
                       im = plt.imshow(list_of_cts[i][j][0],origin='upper', \
-                        cmap=plt.get_cmap(myccmap),  clim=(0.0, 1.0)) #0.2,0.8 was too much #vmin=0.2, vmax=0.8)
+                        cmap=plt.get_cmap(myccmap),  clim=(0.0, 1.0), extent = the_extent) #0.2,0.8 was too much #vmin=0.2, vmax=0.8)
                      
         
                 if((len(list_of_labelmaps) >0) and (len(list_of_labelmaps[i]) >0) and (len(list_of_labelmaps[i][j]) >0)):
@@ -339,7 +341,7 @@ class Montage:
 
                     im=plt.imshow(list_of_labelmaps[i][j][0],origin='upper', \
                         cmap=QcColorConventionsManager.cmap , norm=QcColorConventionsManager.norm,\
-                        vmin=1, vmax=100000) #norm=norm, alpha=0.95,
+                        vmin=1, vmax=100000, extent = the_extent) #norm=norm, alpha=0.95,
 
         print("saving to output file "+output_filename)
 
@@ -373,7 +375,8 @@ class LabelmapQC:
         
     
     def get_labelmap_qc(self, in_ct, out_file, list_of_labelmaps, list_request_qc_per_labelmap, num_images_per_region=3, 
-            overlay_alpha=0.85, window_width=1100, window_level=-1024, axis='axial', resolution=600):   
+            overlay_alpha=0.85, window_width=1100, window_level=-1024, axis='axial', resolution=600, 
+            spacing=None):   
 
     
         """ the layout of the images should be set here"""
@@ -382,6 +385,7 @@ class LabelmapQC:
         list_of_images = []
         list_cts = []
         list_labelmaps = []
+        list_of_voxel_spacing=[]
         
         """ partial lung labelmap images"""
         for j in range (0, len(list_of_labelmaps)):
@@ -398,7 +402,16 @@ class LabelmapQC:
 
                 list_cts.append(temp_list_cts)
                 list_labelmaps.append(temp_list_labelmaps)
-                #list_of_images.append(overlay.execute( in_ct, list_of_labelmaps[j],num_images_per_region, in_regions, axis=axis)) 
+                
+                #im_shape = np.shape(temp_list_labelmaps[0]) 
+                if(spacing):    
+                    if (axis=='axial'): 
+                        list_of_voxel_spacing.append([[spacing[0],spacing[1]]]*num_images_per_region) 
+                    elif(axis=='sagittal'): 
+                        list_of_voxel_spacing.append([[spacing[1],spacing[2]]]*num_images_per_region) 
+                    elif(axis=='coronal'): 
+                        list_of_voxel_spacing.append([[spacing[0],spacing[2]]]*num_images_per_region) 
+                    #list_of_images.append(overlay.execute( in_ct, list_of_labelmaps[j],num_images_per_region, in_regions, axis=axis)) 
 
             if (num_images_per_region==1):
                 append_horizontally = True
@@ -407,4 +420,4 @@ class LabelmapQC:
         #pdb.set_trace()
         my_montage = Montage() 
         my_montage.execute(list_cts,list_labelmaps, out_file, overlay_alpha, len(list_cts), num_images_per_region, \
-            window_width=window_width, window_level=window_level, resolution=resolution)      
+            window_width=window_width, window_level=window_level, resolution=resolution, list_of_voxel_spacing=list_of_voxel_spacing)      
