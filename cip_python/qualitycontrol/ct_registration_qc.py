@@ -63,14 +63,14 @@ if __name__ == "__main__":
     parser.add_option('--num_images_per_region',
                       help='Number of images to be output per region requested to QC.Images will be extracted \
                       evenly throughout the region. This does not apply to CT QC, where 1 image per axis is output (optional)',  dest='num_images_per_region', 
-                      metavar='<string>', default=3)   
+                      metavar='<string>', type=int, default=3)   
     parser.add_option('--window_width',
                       help='intensity window width .  (optional)',  dest='window_width', 
-                      metavar='<string>', default=1100)                         
+                      metavar='<string>', type=int, default=1100)                         
                                            
     parser.add_option('--window_level',
                       help='intensity window level .  (optional)',  dest='window_level', 
-                      metavar='<string>', default=-1024)                                                                 
+                      metavar='<string>', type=int, default=-1024)                                                                 
     parser.add_option('--output_file',
                       help='QC image output file name.', dest='output_file', metavar='<string>',
                       default=None)   
