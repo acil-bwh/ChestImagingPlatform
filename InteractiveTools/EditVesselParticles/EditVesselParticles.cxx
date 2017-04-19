@@ -435,6 +435,8 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
                                 std::map< unsigned short, std::string >* componentLabelToNameMap, double particleSize,
 				double distThresh, double scaleThresh )  
 {
+  cip::ChestConventions conventions;
+  
   unsigned int numberParticles         = particles->GetNumberOfPoints();
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
