@@ -8,7 +8,7 @@ from cip_python.common import ChestConventions
 import scipy
 import matplotlib.pyplot as plt
 from matplotlib import colors
-
+import pdb
         
 """
 Class for displaying color maps
@@ -139,7 +139,7 @@ class ImageOverlay:
             for i in range(0,np.shape(slice_numbers)[0]):
                 bounds_list.append([bounds_ct[0], bounds_ct[1],int(slice_numbers[i]),\
                     int((slice_numbers[i]+1)), bounds_ct[4],bounds_ct[5]])  
-                        
+                  
         return bounds_list
         
            
@@ -306,14 +306,13 @@ class Montage:
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]-np.min(list_of_cts[i][j][k])
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]/float(np.max(list_of_cts[i][j][k]))  
                        
-                import pdb
+
                 #pdb.set_trace()
                 im_shape = np.shape(list_of_cts[i][j][0])        
                 if(list_of_voxel_spacing is None):
                     the_extent=None
                 else:
-                    the_extent = (0, list_of_voxel_spacing[i][j][1]*im_shape[0], list_of_voxel_spacing[i][j][0]*im_shape[1] ,0)                         
-
+                    the_extent = (0, list_of_voxel_spacing[i][j][1]*im_shape[1], list_of_voxel_spacing[i][j][0]*im_shape[0] ,0)                         
                 if (num_ct_overlays > 1):
                         from PIL import Image
                         im1 = Image.new("RGB", [im_shape[1],im_shape[0]], "black")
@@ -406,11 +405,11 @@ class LabelmapQC:
                 #im_shape = np.shape(temp_list_labelmaps[0]) 
                 if(spacing):    
                     if (axis=='axial'): 
-                        list_of_voxel_spacing.append([[spacing[0],spacing[1]]]*num_images_per_region) 
+                        list_of_voxel_spacing.append([[spacing[1],spacing[0]]]*num_images_per_region) 
                     elif(axis=='sagittal'): 
-                        list_of_voxel_spacing.append([[spacing[1],spacing[2]]]*num_images_per_region) 
+                        list_of_voxel_spacing.append([[spacing[2],spacing[1]]]*num_images_per_region) 
                     elif(axis=='coronal'): 
-                        list_of_voxel_spacing.append([[spacing[0],spacing[2]]]*num_images_per_region) 
+                        list_of_voxel_spacing.append([[spacing[2],spacing[0]]]*num_images_per_region) 
                     #list_of_images.append(overlay.execute( in_ct, list_of_labelmaps[j],num_images_per_region, in_regions, axis=axis)) 
 
             if (num_images_per_region==1):

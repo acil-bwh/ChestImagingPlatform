@@ -23,23 +23,23 @@ class CTRegistrationQC:
         list_of_voxel_spacing=[]
         if(is_axial):
             list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='axial')) 
-            list_of_voxel_spacing.append([[spacing[0],spacing[1]]]*num_images)       
+            list_of_voxel_spacing.append([[spacing[1],spacing[0]]]*num_images)       
             # Append the checkerboard image
             list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,axis='axial', is_checkerboard=True))
-            list_of_voxel_spacing.append([[spacing[0],spacing[1]]]*num_images)  
+            list_of_voxel_spacing.append([[spacing[1],spacing[0]]]*num_images)  
         if(is_sagittal):
             #list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='sagittal'))        
             list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='sagittal'))   
-            list_of_voxel_spacing.append([[spacing[1],spacing[2]]]*num_images)     
+            list_of_voxel_spacing.append([[spacing[2],spacing[1]]]*num_images)     
             # Append the checkerboard image
             list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,axis='sagittal', is_checkerboard=True))
-            list_of_voxel_spacing.append([[spacing[1],spacing[2]]]*num_images) 
+            list_of_voxel_spacing.append([[spacing[2],spacing[1]]]*num_images) 
         if(is_coronal):
             list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images, axis='coronal'))        
-            list_of_voxel_spacing.append([[spacing[0],spacing[2]]]*num_images)
+            list_of_voxel_spacing.append([[spacing[2],spacing[0]]]*num_images)
             # Append the checkerboard image
             list_cts.append(my_overlay.get_ct_overlay( in_ct1, in_ct2, in_mask, num_images,axis='coronal', is_checkerboard=True))
-            list_of_voxel_spacing.append([[spacing[0],spacing[2]]]*num_images) 
+            list_of_voxel_spacing.append([[spacing[2],spacing[0]]]*num_images) 
                       
         my_montage = Montage() 
         my_montage.execute(list_cts,[], out_file, overlay_alpha, len(list_cts), num_images, \

@@ -24,14 +24,15 @@ class CTQC:
         y_projection = my_projection.get_ct_projection(in_ct, axis='coronal')
         z_projection = my_projection.get_ct_projection(in_ct, axis='axial')
         list_of_voxel_spacing=[]
-        list_of_voxel_spacing.append([spacing[1],spacing[2]])
-        list_of_voxel_spacing.append([spacing[0],spacing[2]])
-        list_of_voxel_spacing.append([spacing[0],spacing[1]])
-        # combine into 1 image
+        list_of_voxel_spacing.append([spacing[2],spacing[1]])
+        list_of_voxel_spacing.append([spacing[2],spacing[0]])
+        list_of_voxel_spacing.append([spacing[1],spacing[0]])
+
+        # combine into 1 image, note: the images have already been rotated by 90 degrees for 
+        # display purposes
         my_montage = Montage()
-        
-        #print(np.shape([[x_projection, y_projection, z_projection]]))
-        #pdb.set_trace()
+        import numpy as np
+
         my_montage.execute([[[x_projection], [y_projection], [z_projection]]],[], \
             out_file, 0.0, 1, 3, window_width=window_width, window_level=window_level,\
             resolution=resolution, list_of_voxel_spacing=[list_of_voxel_spacing])
