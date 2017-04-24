@@ -32,19 +32,19 @@ class QcColorConventionsManager:
 
     @staticmethod
     def buildColorMap(overlay_alpha = 0.85):    
-        
+        my_colors = colors.ColorConverter()
         QcColorConventionsManager.qc_color_mapping = {
-        'LEFTSUPERIORLOBE':  colors.ColorConverter.to_rgba('red', alpha=overlay_alpha),
-        'LEFTINFERIORLOBE': colors.ColorConverter.to_rgba('green', alpha=overlay_alpha),
-        'RIGHTSUPERIORLOBE': colors.ColorConverter.to_rgba('cyan', alpha=overlay_alpha),
-        'RIGHTMIDDLELOBE': colors.ColorConverter.to_rgba('purple', alpha=overlay_alpha),
-        'RIGHTINFERIORLOBE': colors.ColorConverter.to_rgba('blue', alpha=overlay_alpha), # these above are like cip montage
-        'LEFTUPPERTHIRD': colors.ColorConverter.to_rgba('cyan', alpha=overlay_alpha),
-        'LEFTMIDDLETHIRD': colors.ColorConverter.to_rgba('purple', alpha=overlay_alpha),
-        'LEFTLOWERTHIRD':colors.ColorConverter.to_rgba('green', alpha=overlay_alpha),
-        'RIGHTMIDDLETHIRD': colors.ColorConverter.to_rgba('yellow', alpha=overlay_alpha),
-        'RIGHTLOWERTHIRD': colors.ColorConverter.to_rgba('blue', alpha=overlay_alpha),
-        'RIGHTUPPERTHIRD': colors.ColorConverter.to_rgba('red', alpha=overlay_alpha),
+        'LEFTSUPERIORLOBE':  my_colors.to_rgba('red', alpha=overlay_alpha),
+        'LEFTINFERIORLOBE': my_colors.to_rgba('green', alpha=overlay_alpha),
+        'RIGHTSUPERIORLOBE': my_colors.to_rgba('cyan', alpha=overlay_alpha),
+        'RIGHTMIDDLELOBE': my_colors.to_rgba('purple', alpha=overlay_alpha),
+        'RIGHTINFERIORLOBE': my_colors.to_rgba('blue', alpha=overlay_alpha), # these above are like cip montage
+        'LEFTUPPERTHIRD': my_colors.to_rgba('cyan', alpha=overlay_alpha),
+        'LEFTMIDDLETHIRD': my_colors.to_rgba('purple', alpha=overlay_alpha),
+        'LEFTLOWERTHIRD': my_colors.to_rgba('green', alpha=overlay_alpha),
+        'RIGHTMIDDLETHIRD': my_colors.to_rgba('yellow', alpha=overlay_alpha),
+        'RIGHTLOWERTHIRD': my_colors.to_rgba('blue', alpha=overlay_alpha),
+        'RIGHTUPPERTHIRD': my_colors.to_rgba('red', alpha=overlay_alpha),
         }    
                   
         color_bound_list = [[QcColorConventionsManager.qc_background, 0 ]]
