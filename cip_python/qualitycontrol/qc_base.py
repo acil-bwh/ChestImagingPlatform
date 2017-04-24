@@ -15,7 +15,8 @@ Class for displaying color maps
 """                        
 class QcColorConventionsManager:
             
-    qc_background = colors.ColorConverter.to_rgba('black', alpha=0.0) 
+    my_colors = colors.ColorConverter()        
+    qc_background = my_colors.to_rgba('black', alpha=0.0) 
     
     cmap = None
     norm = None
