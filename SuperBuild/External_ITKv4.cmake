@@ -33,7 +33,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(ITKv4_REPOSITORY ${git_protocol}://github.com/Slicer/ITK.git)
 
   if (USE_ITK_4.10)
-    message(WARNING "Enabling ITK old OS compatibility")
+    message(WARNING "Enabling ITK 4.10 compatibility")
     set(ITKv4_GIT_TAG 16df9b689856cd4a8dd22a2cef92f5ee7222da0c)    # last known tag working in the cluster
   else()
     set(ITKv4_GIT_TAG 1619816e48b327c4c486b76aef0c229af65b92b2)   # slicer-v4.11.0-2017-01-22

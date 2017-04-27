@@ -11,6 +11,8 @@ import xml.etree.ElementTree as et
 import os
 import platform
 import time
+import numpy as np
+
 
 class GeometryTopologyData(object):
     # Coordinate System Constants
@@ -41,7 +43,6 @@ class GeometryTopologyData(object):
         if self.lps_to_ijk_transformation_matrix is None:
             return None
         if self.__lps_to_ijk_transformation_matrix_array__ is None:
-            import numpy as np
             self.__lps_to_ijk_transformation_matrix_array__ = np.array(self.lps_to_ijk_transformation_matrix, dtype=np.float)
         return self.__lps_to_ijk_transformation_matrix_array__
 
