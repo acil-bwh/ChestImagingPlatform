@@ -358,6 +358,8 @@ class Structure(object):
         return '<Id>%i</Id><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s%s%s%s' % \
             (self.__id__, self.chest_region, self.chest_type, self.feature_type, description, timestamp, user_name, machine_name)
 
+    def __str__(self):
+        return self.to_xml()
 
 class Point(Structure):
     def __init__(self, chest_region, chest_type, feature_type, coordinate, description=None,
