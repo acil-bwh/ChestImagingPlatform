@@ -3,6 +3,7 @@ from optparse import OptionParser
 import warnings
 from cip_python.input_output import ImageReaderWriter
 from  cip_python.qualitycontrol.qc_base import LabelmapQC
+from  cip_python.qualitycontrol.qc_base import Montage
 
 class LungSegmentationQC(LabelmapQC):
     """
@@ -21,40 +22,127 @@ class LungSegmentationQC(LabelmapQC):
         'leftLung': ['LEFTUPPERTHIRD','LEFTMIDDLETHIRD','LEFTLOWERTHIRD'],\
         'rightLung': ['RIGHTUPPERTHIRD','RIGHTMIDDLETHIRD','RIGHTLOWERTHIRD'],\
         'leftLungLobes': ['LEFTSUPERIORLOBE','LEFTINFERIORLOBE'],\
-        'rightLungLobes' : ['RIGHTSUPERIORLOBE', 'RIGHTMIDDLELOBE',\
-                'RIGHTINFERIORLOBE'] 
-                }   
+        'rightLungLobes' : ['RIGHTSUPERIORLOBE', 'RIGHTMIDDLELOBE','RIGHTINFERIORLOBE'],
+        'all_regions' : ['WildCard'],
+        'all_types' : None,
+        'airways' : None}   
+
+        self.type_dictionary  = {\
+        'leftLung': None,\
+        'rightLung': None,\
+        'leftLungLobes': None,\
+        'rightLungLobes' : None, 
+        'airways' : 'airways',
+        'all_regions' : None ,
+        'all_types' : ['WildCard']
+                }    
                 
-        self.labelmap_qc_dictionary={'partialLungLabelmap':['leftLung','rightLung'],\
+        self.axes_dictionary = {\
+        'leftLung': 'sagittal',\
+        'rightLung': 'sagittal',\
+        'leftLungLobes': 'sagittal',
+        'rightLungLobes' : 'sagittal',
+        'airways' : 'coronal',\
+        'all_regions' : 'coronal',\
+        'all_types' :'coronal'
+        }            
+                                                
+        self.labelmap_qc_dictionary={'partialLungLabelmap':['leftLung','rightLung','airways','all_regions','all_types'], #,'all_regions','all_types'
             'lungLobeLabelmap':['leftLungLobes','rightLungLobes']}
         
+        self.overlay_qc = {'leftLung','rightLung','leftLungLobes','rightLungLobes'}
+        
+        self.projection_qc = {'airways','all_regions','all_types'}
      
         LabelmapQC.__init__(self)  
                              
     def execute(self, in_ct, out_file, qc_requested, num_images_per_region=3, in_partial=None, in_lobe=None, \
-            overlay_alpha=0.85, window_width=1100, window_level=-1024, resolution=600, spacing=None):   
+            in_overlay_alpha=0.85, window_width=1100, window_level=-1024, resolution=600, spacing=None):   
         
-        list_of_labelmaps=[] 
-        list_request_qc_per_labelmap=[]
-        
-        """ add the labelmaps needed"""
+        list_of_labelmaps_overlay=[] 
+        list_request_qc_per_labelmap_overlay=[]
+        list_axes_overlay=[]
+        list_of_labelmaps_projection=[]
+        list_request_qc_per_labelmap_projection=[]
+        list_axes_projection=[]
+                
+        """ add the labelmaps needed and perform labelmap QC"""                                                          
         for labelmaptype in self.labelmap_qc_dictionary.keys():
             labelmap_qc_requested = set(self.labelmap_qc_dictionary[labelmaptype]).intersection(set(qc_requested)) 
-            if len(labelmap_qc_requested)>0:
+            labelmap_qc_requested_overlay = labelmap_qc_requested.intersection(set(self.overlay_qc)) 
+            labelmap_qc_requested_projection = labelmap_qc_requested.intersection(set(self.projection_qc)) 
+
+            if len(labelmap_qc_requested_overlay)>0:
                 """ the labelmap tye is needed for some requested QC, thus add it to list"""
                 if (labelmaptype=='partialLungLabelmap'):
-                    list_of_labelmaps.append(in_partial)
+                    list_of_labelmaps_overlay.append(in_partial)
                 if (labelmaptype=='lungLobeLabelmap'):
-                    list_of_labelmaps.append(in_lobe)
+                    list_of_labelmaps_overlay.append(in_lobe)
                    
-                list_request_qc_per_labelmap.append(list(labelmap_qc_requested))       
-                
-        
-        self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps, list_request_qc_per_labelmap, \
-            num_images_per_region=num_images_per_region, \
-            overlay_alpha=overlay_alpha, window_width=window_width, window_level=window_level,\
-            axis='sagittal', resolution=resolution,spacing=spacing )
+                list_request_qc_per_labelmap_overlay.append(list(labelmap_qc_requested_overlay))       
+                axes_temp=[]
+                for qc in labelmap_qc_requested_overlay:
+                    axes_temp.append(self.axes_dictionary[qc])
+                list_axes_overlay.append(axes_temp)
+ 
+            if len(labelmap_qc_requested_projection)>0:
+                """ the labelmap tye is needed for some requested QC, thus add it to list"""
+                if (labelmaptype=='partialLungLabelmap'):
+                    list_of_labelmaps_projection.append(in_partial)
+                if (labelmaptype=='lungLobeLabelmap'):
+                    list_of_labelmaps_projection.append(in_lobe)
+                   
+                list_request_qc_per_labelmap_projection.append(list(labelmap_qc_requested_projection))       
+                axes_temp=[]
+                for qc in labelmap_qc_requested_projection:
+                    axes_temp.append(self.axes_dictionary[qc])
+                list_axes_projection.append(axes_temp)       
+                      
+        [list_cts,list_labelmaps, list_of_voxel_spacing] = self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps_overlay, \
+            list_request_qc_per_labelmap_overlay, list_axes_overlay, num_images_per_region=num_images_per_region, \
+            overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
+            resolution=resolution,spacing=spacing, is_overlay=True )
+            
+        #""" if QC with labelmap and projection, get 1 projection and 1 overlay"""       
+        #[list_cts2,list_labelmaps2, list_of_voxel_spacing2] = self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps_projection, \
+        #    list_request_qc_per_labelmap_projection, list_axes_projection, num_images_per_region=1, \
+        #    overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
+        #    resolution=resolution,spacing=spacing, is_projection=True, is_overlay=True )            
 
+
+        #""" get all the required projections in 1 shot"""  
+        [list_cts2,list_labelmaps2, list_of_voxel_spacing2] = self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps_projection, \
+            list_request_qc_per_labelmap_projection, list_axes_projection, num_images_per_region=1, \
+            overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
+            resolution=resolution,spacing=spacing, is_projection=True, is_overlay=False )             
+        
+        """ Now arrange the layout."""
+        """ if QC with qc_regionstypes then append to the first 2 rows."""     
+        """ append the 2 depending on how many rows. if 1 row, add as row, if 2+ rows, add as column"""
+
+        """
+        list_of_cts shape is (2, 3, 1, 501, 468) for num_rows, num_cols, num_overlays, overay_shape
+        """
+        if(len(list_cts2)>0):
+            list_cts[0].extend([list_cts2[0][0]]) # append a new col to col1
+            list_labelmaps[0].extend([list_labelmaps2[0][0]])
+            list_of_voxel_spacing[0].extend([list_of_voxel_spacing2[0][0]])
+
+            list_cts[1].extend([list_cts2[1][0]]) # append a new col to row 2
+            list_labelmaps[1].extend([list_labelmaps2[1][0]])
+            list_of_voxel_spacing[1].extend([list_of_voxel_spacing2[1][0]])        
+        #
+        #pdb.set_trace()
+        #k=0
+        #j=3
+        #num_ct_overlays502
+        
+        if (num_images_per_region==1):
+            append_horizontally = True
+        print("generating montage")
+        my_montage = Montage() 
+        my_montage.execute(list_cts,list_labelmaps, out_file, in_overlay_alpha, len(list_cts), len(list_cts[0]), \
+            window_width=window_width, window_level=window_level, resolution=resolution, list_of_voxel_spacing=list_of_voxel_spacing)      
 
 
 if __name__ == "__main__":
@@ -93,6 +181,9 @@ if __name__ == "__main__":
     parser.add_option("--qc_rightlunglobes", 
                       help='Set to true if want to QC right lung lobe images', 
                       dest="qc_rightlunglobes", action='store_true')  
+    parser.add_option("--qc_regionstypes", 
+                      help='Set to true if want to QC all the types and regions in a projection', 
+                      dest="qc_regionstypes", action='store_true')  
     parser.add_option('--output_file',
                       help='QC image output file name.', dest='output_file', metavar='<string>',
                       default=None)   
@@ -127,7 +218,10 @@ if __name__ == "__main__":
        list_of_lung_qc.append('leftLungLobes') 
     if(options.qc_rightlunglobes):
        list_of_lung_qc.append('rightLungLobes') 
-
+    if(options.qc_regionstypes):
+       list_of_lung_qc.append('all_regions') 
+       list_of_lung_qc.append('all_types') 
+              
     if(len(list_of_lung_qc) > 0):              
         print("generating lung qc for: ")
         print(list_of_lung_qc)
@@ -135,6 +229,6 @@ if __name__ == "__main__":
         my_lung_qc = LungSegmentationQC()
         my_lung_qc.execute(ct_array, options.output_file, qc_requested=list_of_lung_qc, \
             num_images_per_region=options.num_images_per_region, in_partial=partial_array, \
-            in_lobe=lobe_array, overlay_alpha=options.overlay_opacity, window_width=options.window_width, \
+            in_lobe=lobe_array, in_overlay_alpha=options.overlay_opacity, window_width=options.window_width, \
             window_level=options.window_level, resolution=options.output_image_resolution, spacing=spacing)
 
