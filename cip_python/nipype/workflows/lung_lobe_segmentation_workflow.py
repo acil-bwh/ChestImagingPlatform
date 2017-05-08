@@ -96,11 +96,11 @@ class LungLobeSegmentationWorkflow(Workflow):
       fissure_particles parameter. Allow mask and CT volumes to have different 
       shapes or meta data      .
     """
-    def __init__(self, ct_file_name, lobe_seg_file_name, tmp_dir, reg=50, 
+    def __init__(self, ct_file_name, lobe_seg_file_name, tmp_dir, reg=50,
         ilap=None, irap=None, ilvp=None, irvp=None, ilm=None, ifp=None, 
         pre_dist=3.0, post_dist=3.0, pre_size=110, dist_thresh=1000, 
         post_size=110, iters=200, scale=0.9, lth=-15, sth=-45, 
-        perm=False):
+        perm=False, cid='cid'):
 
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
@@ -112,8 +112,7 @@ class LungLobeSegmentationWorkflow(Workflow):
         self._referenceLabelMap = os.path.join(self._resourcesDir, 
             '10002K_INSP_STD_BWH_COPD_leftLungRightLung.nrrd')
         
-        cid = 'cid'
-        self._partialLungLabelMap = os.path.join(tmp_dir, cid + 
+        self._partialLungLabelMap = os.path.join(tmp_dir, cid +
             '_partialLungLabelMap.nrrd')
         self._rightLungLobesShapeModel = os.path.join(tmp_dir, cid + 
             '_rightLungLobesShapeModel.csv')
@@ -449,7 +448,11 @@ if __name__ == "__main__":
       dest='sth', metavar='<float>', default=-45)
     parser.add_argument("--perm", 
       help='fissure_particles parameter. Allow mask and CT volumes to have \
-      different shapes or meta data', dest="perm", action='store_true')    
+      different shapes or meta data', dest="perm", action='store_true')
+    parser.add_argument("--cid",
+      help='Case ID string to name output files before suffix',
+      dest='cid', metavar='<string>', default=None)
+    
 
     op = parser.parse_args()
 
@@ -465,7 +468,7 @@ if __name__ == "__main__":
         post_dist=float(op.post_dist), pre_size=int(op.pre_size),
         dist_thresh=float(op.dist_thresh), post_size=int(op.post_size),
         iters=int(op.iters), scale=float(op.scale), lth=float(op.lth),
-        sth=float(op.sth), perm=op.perm)
+        sth=float(op.sth), perm=op.perm, cid=op.cid)
 
     wf.run()
     shutil.rmtree(tmp_dir)

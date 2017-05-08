@@ -24,6 +24,17 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
     # Read the volume
     reader = ImageReaderWriter()
     vol = reader.read(input_volume_path)
+    arr = sitk.GetArrayFromImage(vol)
+    if len(arr.shape) > 3:
+        # Reduce one dimension because the schema color has 3 channels and we have to keep just the first (luminance)
+        # The only way to do it is create another image from an array
+        arr = arr[:,:,:,0]
+        vol_gray = sitk.GetImageFromArray(arr)
+        vol_gray.CopyInformation(vol)
+    else:
+        # Regular grayscale volume
+        vol_gray = vol
+
     if output_dir is None:
         output_dir = os.path.join(os.path.curdir, "slice_extract")
     if not os.path.isdir(output_dir):
@@ -52,24 +63,24 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
             # Sagittal
             plane = 'S'
             slice = int(bb.start[0])    # Number of slice to extract
-            total_size = vol.GetSize()[0]   # Total number of slices in this plane
+            total_size = vol_gray.GetSize()[0]   # Total number of slices in this plane
             start = slice - num_extra_slices    # Cropping 'start' images "from the left" (lowerbounds)
             end = total_size - slice - num_extra_slices - 1     # Cropping 'end' images "from the right" (upperbounds)
             if end < 0:
                 # Upperbounds padding needed
                 # Crop the original image
-                cropped_image = crop_filter.Execute(vol, [start, 0, 0], [0, 0, 0])
+                cropped_image = crop_filter.Execute(vol_gray, [start, 0, 0], [0, 0, 0])
                 # Add upperbounds padding (0s)
                 cropped_image = pad_filter.Execute(cropped_image, [0,0,0], [abs(end), 0, 0], 0)
             elif start < 0:
                 # Lowerbounds padding needed
                 # Crop the original image
-                cropped_image = crop_filter.Execute(vol, [0, 0, 0], [end, 0, 0])
+                cropped_image = crop_filter.Execute(vol_gray, [0, 0, 0], [end, 0, 0])
                 # Add lowerbounds padding (0s)
                 cropped_image = pad_filter.Execute(cropped_image, [abs(start), 0, 0], [0, 0, 0], 0)
             else:
                 # No padding
-                cropped_image = crop_filter.Execute(vol, [start, 0, 0], [end, 0, 0])
+                cropped_image = crop_filter.Execute(vol_gray, [start, 0, 0], [end, 0, 0])
             # Create a mask using the cropped image as a reference to keep origin, etc.
             mask = sitk.Image(cropped_image)
             mask_array = reader.sitkImage_to_numpy(mask)
@@ -83,17 +94,17 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
             # Coronal
             plane = 'C'
             slice = int(bb.start[1])
-            total_size = vol.GetSize()[1]
+            total_size = vol_gray.GetSize()[1]
             start = slice - num_extra_slices
             end = total_size - slice - num_extra_slices - 1
             if end < 0:
-                cropped_image = crop_filter.Execute(vol, [0, start, 0], [0, 0, 0])
+                cropped_image = crop_filter.Execute(vol_gray, [0, start, 0], [0, 0, 0])
                 cropped_image = pad_filter.Execute(cropped_image, [0,0,0], [0, abs(end), 0], 0)
             elif start < 0:
-                cropped_image = crop_filter.Execute(vol, [0, 0, 0], [0, end, 0])
+                cropped_image = crop_filter.Execute(vol_gray, [0, 0, 0], [0, end, 0])
                 cropped_image = pad_filter.Execute(cropped_image, [0, abs(start), 0], [0, 0, 0], 0)
             else:
-                cropped_image = crop_filter.Execute(vol, [0, start, 0], [0, end, 0])
+                cropped_image = crop_filter.Execute(vol_gray, [0, start, 0], [0, end, 0])
             mask = sitk.Image(cropped_image)
             mask_array = reader.sitkImage_to_numpy(mask)
             mask_array[:] = 0
@@ -105,17 +116,17 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
             # Axial
             plane = 'A'
             slice = int(bb.start[2])
-            total_size = vol.GetSize()[2]
+            total_size = vol_gray.GetSize()[2]
             start = slice - num_extra_slices
             end = total_size - slice - num_extra_slices - 1
             if end < 0:
-                cropped_image = crop_filter.Execute(vol, [0, 0, start], [0, 0, 0])
+                cropped_image = crop_filter.Execute(vol_gray, [0, 0, start], [0, 0, 0])
                 cropped_image = pad_filter.Execute(cropped_image, [0,0,0], [0, 0, abs(end)], 0)
             elif start < 0:
-                cropped_image = crop_filter.Execute(vol, [0, 0, 0], [0, 0, end])
+                cropped_image = crop_filter.Execute(vol_gray, [0, 0, 0], [0, 0, end])
                 cropped_image = pad_filter.Execute(cropped_image, [0, 0, abs(start)], [0, 0, 0], 0)
             else:
-                cropped_image = crop_filter.Execute(vol, [0, 0, start], [0, 0, end])
+                cropped_image = crop_filter.Execute(vol_gray, [0, 0, start], [0, 0, end])
             mask = sitk.Image(cropped_image)
             mask_array = reader.sitkImage_to_numpy(mask)
             mask_array[:] = 0
@@ -140,14 +151,14 @@ if __name__ == "__main__":
     parser.add_argument('--xml_input', dest='xml_input', help="Xml input path for the GeometryTopologyData object", type=str, required=False)
     parser.add_argument('--output_dir', dest='output_dir', help="Path of the output directory", type=str, required=False)
     parser.add_argument('--cid', dest='cid', help="Base name for the results", type=str, required=False)
-    parser.add_argument('--num_extra_slices', dest='num_extra_slices', help="Number of extra slices surrounding each structure (it will be padded if necessary)", type=int, default=0)
-    parser.add_argument('--filtered_chest_regions', dest='filtered_chest_regions', help="Comma-separated list with chest regions to filter (the rest will be ignored). If blank, all the regions will be extracted"
-                        , type=str, required=False)
-    parser.add_argument('--filtered_chest_types', dest='filtered_chest_types',
-                        help="Comma-separated list with chest types to filter (the rest will be ignored). If blank, all the types will be extracted"
-                        , type=str, required=False)
-    parser.add_argument('--caselist', dest='caselist', help="Path to a caselist. The results will be saved relatively for each case",
-                        type=str, required=False)
+    parser.add_argument('--num_extra_slices', dest='num_extra_slices', type=int, default=0,
+                        help="Number of extra slices surrounding each structure (it will be padded if necessary)")
+    parser.add_argument('--filtered_chest_regions', dest='filtered_chest_regions', type=str, required=False,
+                        help="Comma-separated list with chest regions to filter (the rest will be ignored). If blank, all the regions will be extracted")
+    parser.add_argument('--filtered_chest_types', dest='filtered_chest_types', type=str, required=False,
+                        help="Comma-separated list with chest types to filter (the rest will be ignored). If blank, all the types will be extracted")
+    parser.add_argument('--caselist', dest='caselist', type=str, required=False,
+                        help="Path to a caselist. The results will be saved relatively for each case")
 
     args = parser.parse_args()
     filtered_chest_regions = map(int, args.filtered_chest_regions.split(",")) if args.filtered_chest_regions else None

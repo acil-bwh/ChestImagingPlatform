@@ -394,8 +394,8 @@ class Montage:
                 num_ct_overlays = len(list_of_cts[i][j])
                 
                 for k in range(0, num_ct_overlays):
-                    list_of_cts[i][j][k][list_of_cts[i][j][k]<window_level] = window_level
-                    list_of_cts[i][j][k][list_of_cts[i][j][k]>(window_level+window_width)] = (window_level+window_width)
+                    list_of_cts[i][j][k][list_of_cts[i][j][k]<(int(window_level)-int(window_width)/2)] = (int(window_level)-int(window_width)/2)
+                    list_of_cts[i][j][k][list_of_cts[i][j][k]>(int(window_level)+int(window_width)/2)] = (int(window_level)+int(window_width)/2)
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]-np.min(list_of_cts[i][j][k])
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]/float(np.max(list_of_cts[i][j][k])+0.1)  
                        
@@ -538,5 +538,4 @@ class LabelmapQC:
                     
         return [list_cts, list_labelmaps, list_of_voxel_spacing]
 
-       
        

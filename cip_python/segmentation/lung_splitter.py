@@ -238,4 +238,4 @@ if __name__ == '__main__':
     splitter = LungSplitter(options.thirds_split)
     out_lm = splitter.execute(in_lm)
 
-    sitk.WriteImage(out_lm, options.out_lm)
+    sitk.WriteImage(out_lm, options.out_lm, True)
