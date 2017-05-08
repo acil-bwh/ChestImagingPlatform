@@ -165,7 +165,7 @@ if __name__ == "__main__":
                       metavar='<string>', type=int, default=3)   
     parser.add_option('--window_width',
                       help='intensity window width .  (optional)',  dest='window_width', 
-                      metavar='<string>',type=int, default=1100)                                                                    
+                      metavar='<string>',type=int, default=900)                                                                    
     parser.add_option('--window_level',
                       help='intensity window level .  (optional)',  dest='window_level', 
                       metavar='<string>', type=int,default=-1024)                                                                 
@@ -218,7 +218,7 @@ if __name__ == "__main__":
        list_of_lung_qc.append('leftLungLobes') 
     if(options.qc_rightlunglobes):
        list_of_lung_qc.append('rightLungLobes') 
-    if(options.qc_regionstypes):
+    if(options.qc_leftlung and options.qc_rightlung and options.qc_regionstypes):
        list_of_lung_qc.append('all_regions') 
        list_of_lung_qc.append('all_types') 
               
