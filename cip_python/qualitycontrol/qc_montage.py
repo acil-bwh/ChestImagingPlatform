@@ -312,8 +312,8 @@ class montage:
                 
 
                 for k in range(0, num_ct_overlays):
-                    list_of_cts[i][j][k][list_of_cts[i][j][k]<window_level] = window_level
-                    list_of_cts[i][j][k][list_of_cts[i][j][k]>(window_level+window_width)] = (window_level+window_width)
+                    list_of_cts[i][j][k][list_of_cts[i][j][k]<(int(window_level)-int(window_width)/2)] = (int(window_level)-int(window_width)/2)
+                    list_of_cts[i][j][k][list_of_cts[i][j][k]>(int(window_level)+int(window_width)/2)] = (int(window_level)+int(window_width)/2)
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]-np.min(list_of_cts[i][j][k])
                     list_of_cts[i][j][k] = list_of_cts[i][j][k]/float(np.max(list_of_cts[i][j][k]))  
                        
