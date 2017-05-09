@@ -41,6 +41,11 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   else() # Windows
       SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_DIR}/Scripts)
   endif()
+  
+  ExternalProject_Add_Step(${proj} installcython
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet cython  
+	DEPENDEES install
+  )
 
   ExternalProject_Add_Step(${proj} installnumpy
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet numpy

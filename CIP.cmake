@@ -275,6 +275,11 @@ include(cipMacroBuildCLI)
 # to create package registry (under .cmake directory) for some reason...
 SET( CIP_DIR ${CIP_BINARY_DIR} )
 
+# Option to disable GCO wrapping when cip python is not going to be needed.
+SET(USE_CYTHON ON CACHE BOOL "Wrap GraphCutsOptimization for Python")
+mark_as_advanced(FORCE USE_CYTHON)
+message("-- USE CYTHON: ${USE_CYTHON}")
+
 # The "use" file.
 SET( CIP_USE_FILE ${CIP_CMAKE_DIR}/UseFile.cmake )
 
