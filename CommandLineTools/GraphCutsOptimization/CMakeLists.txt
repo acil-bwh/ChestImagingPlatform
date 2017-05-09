@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-PROJECT( AVGraphCut )
+PROJECT( GraphCutsOptimization)
 
-SET ( MODULE_NAME AVGraphCut)
-SET ( MODULE_SRCS AVGraphCut.cxx )
+SET ( MODULE_NAME GraphCutsOptimization)
+SET ( MODULE_SRCS GraphCutsOptimization.cxx )
 
 cipMacroBuildCLI(
     NAME ${MODULE_NAME}

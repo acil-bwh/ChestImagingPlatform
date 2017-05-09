@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Processing</category>
-  <title>AVGraphCut</title>
-  <description><![CDATA[Compute GraphCut for AV segmentation.]]>
+  <title>GraphCutsOptimization</title>
+  <description><![CDATA[Compute GraphCut Optimization.]]>
   </description>
   <version>0.0.1</version>
   <license>Slicer</license>
@@ -28,7 +28,7 @@ and does not necessarily represent the official views of the National Institutes
   
   <parameters>
     <label> GC Params </label>
-    <description>Parameters for AVGraphCut computation</description>
+    <description>Parameters for GraphCutsOptimization computation</description>
 
     <string>
       <name>adjMat</name>

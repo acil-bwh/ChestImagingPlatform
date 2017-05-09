@@ -13,11 +13,11 @@
 #include <fstream>
 #include "GCoptimization.h"
 
-#include "AVGraphCutCLP.h"
+#include "GraphCutsOptimizationCLP.h"
 
 using namespace std;
 
-std::vector<int> AVGraphCut(int num_els, int num_labels, vector<int> source, vector<int> sink, 
+std::vector<int> GraphCutsOptimization(int num_els, int num_labels, vector<int> source, vector<int> sink, 
 							vector< vector<int> > adj, int method)
 {
 	std::vector<int> result;   // stores result of optimization
@@ -150,7 +150,7 @@ int main( int argc, char *argv[] )
 	  w_sink.push_back(sinkNum);
   }
 
-  std::vector<int> GCResult = AVGraphCut(w_source.size(), num_labels, w_source, w_sink, adjMatrix, m);
+  std::vector<int> GCResult = GraphCutsOptimization(w_source.size(), num_labels, w_source, w_sink, adjMatrix, m);
   
   SaveData(GCResult, OutputFileName, Method);
   std::cout << "    DONE" << std::endl;

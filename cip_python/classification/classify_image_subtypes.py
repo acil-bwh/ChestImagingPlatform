@@ -131,6 +131,9 @@ class ParenchymaSubtypeClassifier:
             contains all the features and associated classes for training data
             Only the first 600 entries of the HU hitogram are taken       
         """
+        
+        import pdb
+        pdb.set_trace()
         training_histograms = np.array(training_df.filter(regex='hu'))[:,0:600] 
         training_distances = np.squeeze(np.array(training_df.filter(\
             regex='Distance'))[:,:])
@@ -213,6 +216,10 @@ class ParenchymaSubtypeClassifier:
                 the_distance = dist_extractor.dist_
                         
                 predicted_value_tmp = self.knn_classifier.predict(the_histogram, the_distance)
+
+                if (np.median(patch_ct) > (-250)):
+                    predicted_value_tmp = 1 # Normal parenchyma
+                                    
                 predicted_values[inc] = \
                     [mychestConvenstion.GetValueFromChestRegionAndType(0, predicted_value_tmp)]
 

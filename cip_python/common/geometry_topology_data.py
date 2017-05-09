@@ -11,6 +11,8 @@ import xml.etree.ElementTree as et
 import os
 import platform
 import time
+import numpy as np
+
 
 class GeometryTopologyData(object):
     # Coordinate System Constants
@@ -41,7 +43,6 @@ class GeometryTopologyData(object):
         if self.lps_to_ijk_transformation_matrix is None:
             return None
         if self.__lps_to_ijk_transformation_matrix_array__ is None:
-            import numpy as np
             self.__lps_to_ijk_transformation_matrix_array__ = np.array(self.lps_to_ijk_transformation_matrix, dtype=np.float)
         return self.__lps_to_ijk_transformation_matrix_array__
 
@@ -357,6 +358,8 @@ class Structure(object):
         return '<Id>%i</Id><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s%s%s%s' % \
             (self.__id__, self.chest_region, self.chest_type, self.feature_type, description, timestamp, user_name, machine_name)
 
+    def __str__(self):
+        return self.to_xml()
 
 class Point(Structure):
     def __init__(self, chest_region, chest_type, feature_type, coordinate, description=None,

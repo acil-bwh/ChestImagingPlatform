@@ -76,7 +76,7 @@ set(CLIS_DIRS
   RegionTypeLocationsToROIVolume
   ExtractFissureBoundaryFromLobeMap
   ExecuteSystemCommand
-  AVGraphCut
+  GraphCutsOptimization
   SegmentLungAirways
 )
 

@@ -4,6 +4,9 @@ set(proj CIPPython)
 SET(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "INSTALL_CIP_PYTHON_DISTRIBUTION")
 mark_as_superbuild(INSTALL_CIP_PYTHON_DISTRIBUTION)
 
+SET(CIP_PYTHON_USE_QT4 OFF CACHE BOOL "Use Qt4 in CIP Python (it can be used in case of VTK errors)")
+mark_as_superbuild(CIP_PYTHON_USE_QT4)
+
 if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   # At the moment, all the binaries will be downloaded, but just one will be installed
   if (UNIX)
@@ -74,7 +77,7 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
 
   ExternalProject_Add_Step(${proj} installsphinx
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet sphinx
-    DEPENDEES install
+    DEPENDEES installnose
   )
 
   ExternalProject_Add_Step(${proj} installsimpleitk
@@ -97,14 +100,15 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     DEPENDEES installscikit-learn
   )
 
-  ExternalProject_Add_Step(${proj} matplotlib
+  ExternalProject_Add_Step(${proj} installmatplotlib
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet matplotlib
     DEPENDEES installscikit-image
+#          DEPENDEES installnumpy
   )
 
   ExternalProject_Add_Step(${proj} installnetworkx
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet networkx
-    DEPENDEES matplotlib
+    DEPENDEES installmatplotlib
   )
 
   ExternalProject_Add_Step(${proj} installpynrrd
@@ -119,11 +123,11 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
 
   ExternalProject_Add_Step(${proj} installnibabel
     COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel
-    DEPENDEES installnetworkx
+    DEPENDEES installpydicom
   )
 
   #Nipype is not supported in Win32
-  IF ( NOT WIN32 )
+  if ( NOT WIN32 )
     # configparser should be imported directly from nipype, but as of today it doesn't
     ExternalProject_Add_Step(${proj} installconfigparser
             COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet configparser
@@ -133,7 +137,16 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
       COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nipype
       DEPENDEES installconfigparser
     )
-  ENDIF( )
+  endif( )
+
+  if (CIP_PYTHON_USE_QT4)
+    # Force qt 4.8.7 (to reuse for VTK build)
+    ExternalProject_Add_Step(${proj} installqt4
+            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
+            DEPENDEES installnibabel
+            )
+  endif()
+
 
   if (UNIX)
     #Set Python variables that can be referenced by other modules

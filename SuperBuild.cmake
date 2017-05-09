@@ -237,6 +237,14 @@ set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the
 # ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
+
+if (DEFINED USE_ITK_4.10)
+  set(USE_ITK_4.10 ${USE_ITK_4.10} CACHE BOOL "Build using ITK 4.10 version. It may be needed in some environments because of HDF5 library incompatibilities")
+else()
+  set(USE_ITK_4.10 OFF CACHE BOOL "Build using ITK 4.10 version. It may be needed in some environments because of HDF5 library incompatibilities")
+endif()
+mark_as_superbuild(USE_ITK_4.10)
+
 set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 #if (WIN32) # libxml2 is a prerequisite for other platforms
 #  set(LIBXML2_EXTERNAL_NAME LibXml2)
