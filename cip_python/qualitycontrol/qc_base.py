@@ -17,6 +17,7 @@ class QcColorConventionsManager:
             
     my_colors = colors.ColorConverter()        
     qc_background = my_colors.to_rgba('black', alpha=0.0) 
+    qc_allregionstypes = my_colors.to_rgba('brown', alpha=0.0) 
     
     cmap = None
     norm = None
@@ -34,7 +35,8 @@ class QcColorConventionsManager:
     def buildColorMap(overlay_alpha = 0.85):    
         
         my_colors = colors.ColorConverter()
-        
+        qc_allregionstypes = my_colors.to_rgba('brown', alpha=overlay_alpha) 
+
         QcColorConventionsManager.qc_color_mapping = {
         'LEFTSUPERIORLOBE':  my_colors.to_rgba('red', alpha=overlay_alpha),
         'LEFTINFERIORLOBE': my_colors.to_rgba('green', alpha=overlay_alpha),
@@ -52,8 +54,11 @@ class QcColorConventionsManager:
         QcColorConventionsManager.qc_type_color_mapping = {
         'Airway': my_colors.to_rgba('fuchsia', alpha=overlay_alpha),
         'Vessel': my_colors.to_rgba('limegreen', alpha=overlay_alpha),
+        'ObliqueFissure': my_colors.to_rgba('salmon', alpha=overlay_alpha),
+        'HorizontalFissure': my_colors.to_rgba('lightslategray', alpha=overlay_alpha),
+
         }                  
-        color_bound_list = [[QcColorConventionsManager.qc_background, 0 ]]
+        color_bound_list = [[QcColorConventionsManager.qc_background, 0 ]] #, [qc_allregionstypes, 1 ]
         
         """ append label value with region and type to color bounds list. (for now, either region or type)"""
         mychestConvenstion =ChestConventions()
@@ -88,12 +93,12 @@ class QcColorConventionsManager:
         color_bound_list[1]=list(color_bound_list[1])
         """ Go through list sequentially and add bounds if non-existent"""
         for i,x in enumerate(color_bound_list[1][:-1]):
-            if ((color_bound_list[1][i+1] != color_bound_list[1][i]+1) and (color_bound_list[0][i] != QcColorConventionsManager.qc_background)):
-                color_bound_list[0].insert(i+1, QcColorConventionsManager.qc_background)
+            if ((color_bound_list[1][i+1] != color_bound_list[1][i]+1)):# and (color_bound_list[0][i] != QcColorConventionsManager.qc_background)):
+                color_bound_list[0].insert(i+1, qc_allregionstypes)#QcColorConventionsManager.qc_background)
                 color_bound_list[1].insert(i+1, color_bound_list[1][i]+1)
-        color_bound_list[0].append(QcColorConventionsManager.qc_background)
+        color_bound_list[0].append(qc_allregionstypes)#QcColorConventionsManager.qc_background)
         color_bound_list[1].append(color_bound_list[1][-1]+1)              
-        color_bound_list[0].append(QcColorConventionsManager.qc_background)
+        color_bound_list[0].append(qc_allregionstypes)#QcColorConventionsManager.qc_background)
         color_bound_list[1].append(color_bound_list[1][-1]+1)
         QcColorConventionsManager.cmap = colors.ListedColormap(color_bound_list[0]) 
         QcColorConventionsManager.norm = colors.BoundaryNorm(color_bound_list[1], QcColorConventionsManager.cmap.N)
@@ -195,7 +200,6 @@ class ImageOverlay:
             axis_val=1              
         if (axis=='axial'):  
             axis_val=2    
-        
         parser = RegionTypeParser(in_lm)
 
         mychestConvenstion =ChestConventions()
@@ -228,7 +232,7 @@ class ImageOverlay:
             lm_masked = mychestConvenstion.GetValueFromChestRegionAndType(np.zeros_like(lm_masked), lm_masked)
         if(types is None):
             lm_masked = mychestConvenstion.GetChestRegionFromValue(lm_masked)
-            
+        
         """  maximum intensity projection  """               
         projection = np.max(lm_masked, axis=axis_val)
         projection = self.rotate_labelmap_images_for_display(projection, axis)

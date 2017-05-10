@@ -1,7 +1,8 @@
 import numpy as np
+import pdb
+import copy
 import scipy.ndimage.morphology as scimorph
 from cip_python.segmentation.chest_partition import ChestPartition
-import pdb
 from cip_python.segmentation.chest_partition import ChestPartitionRegionConventions
 
 
@@ -58,11 +59,13 @@ class RindVsCorePartition(ChestPartition):
         cp = ChestPartitionRegionConventions()
         
         # Compute the distance map associated with lung_labelmap
-        lung_labelmap[lung_labelmap > 0] = 1
+        binary_labelmap = copy.copy(lung_labelmap)
+        binary_labelmap[binary_labelmap > 0] = 1
+        
         # distance_transform_edt returns 0 whele labelmap is 0 and +ve
         # distance everywhere else 
         lung_distance_map = \
-            scimorph.distance_transform_edt(lung_labelmap)
+            scimorph.distance_transform_edt(binary_labelmap)
             
         if self.rind_width_ is not None:
             rind_width = self.rind_width_

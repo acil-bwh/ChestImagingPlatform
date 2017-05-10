@@ -47,12 +47,12 @@ class LungSegmentationQC(LabelmapQC):
         'all_types' :'coronal'
         }            
                                                 
-        self.labelmap_qc_dictionary={'partialLungLabelmap':['leftLung','rightLung','airways','all_regions','all_types'], #,'all_regions','all_types'
-            'lungLobeLabelmap':['leftLungLobes','rightLungLobes']}
+        self.labelmap_qc_dictionary={'partialLungLabelmap':['leftLung','rightLung','all_regions','all_types'], #,'all_regions','all_types'
+            'lungLobeLabelmap':['leftLungLobes','rightLungLobes','all_regions','all_types']}
         
         self.overlay_qc = {'leftLung','rightLung','leftLungLobes','rightLungLobes'}
         
-        self.projection_qc = {'airways','all_regions','all_types'}
+        self.projection_qc = {'all_regions','all_types'}
      
         LabelmapQC.__init__(self)  
                              
@@ -65,9 +65,16 @@ class LungSegmentationQC(LabelmapQC):
         list_of_labelmaps_projection=[]
         list_request_qc_per_labelmap_projection=[]
         list_axes_projection=[]
-                
+        
+        """ first check which labelmaps are available """
+        available_labelmaps = []
+        if(in_partial != None):
+            available_labelmaps.append('partialLungLabelmap')
+        if(in_lobe != None):
+            available_labelmaps.append('lungLobeLabelmap')
+                                                          
         """ add the labelmaps needed and perform labelmap QC"""                                                          
-        for labelmaptype in self.labelmap_qc_dictionary.keys():
+        for labelmaptype in available_labelmaps: #self.labelmap_qc_dictionary.keys():
             labelmap_qc_requested = set(self.labelmap_qc_dictionary[labelmaptype]).intersection(set(qc_requested)) 
             labelmap_qc_requested_overlay = labelmap_qc_requested.intersection(set(self.overlay_qc)) 
             labelmap_qc_requested_projection = labelmap_qc_requested.intersection(set(self.projection_qc)) 
@@ -102,15 +109,10 @@ class LungSegmentationQC(LabelmapQC):
             list_request_qc_per_labelmap_overlay, list_axes_overlay, num_images_per_region=num_images_per_region, \
             overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
             resolution=resolution,spacing=spacing, is_overlay=True )
-            
-        #""" if QC with labelmap and projection, get 1 projection and 1 overlay"""       
-        #[list_cts2,list_labelmaps2, list_of_voxel_spacing2] = self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps_projection, \
-        #    list_request_qc_per_labelmap_projection, list_axes_projection, num_images_per_region=1, \
-        #    overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
-        #    resolution=resolution,spacing=spacing, is_projection=True, is_overlay=True )            
-
+                  
 
         #""" get all the required projections in 1 shot"""  
+
         [list_cts2,list_labelmaps2, list_of_voxel_spacing2] = self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps_projection, \
             list_request_qc_per_labelmap_projection, list_axes_projection, num_images_per_region=1, \
             overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
@@ -169,18 +171,12 @@ if __name__ == "__main__":
     parser.add_option('--window_level',
                       help='intensity window level .  (optional)',  dest='window_level', 
                       metavar='<string>', type=int,default=-1024)                                                                 
-    parser.add_option("--qc_leftlung", 
-                      help='Set to true if want to QC left partial lung labelmap images', 
-                      dest="qc_leftlung", action='store_true')  
-    parser.add_option("--qc_rightlung", 
-                      help='Set to true if want to QC right partial lung labelmap images', 
-                      dest="qc_rightlung", action='store_true')  
-    parser.add_option("--qc_leftlunglobes", 
-                      help='Set to true if want to QC left lung lobe images', 
-                      dest="qc_leftlunglobes", action='store_true')  
-    parser.add_option("--qc_rightlunglobes", 
-                      help='Set to true if want to QC right lung lobe images', 
-                      dest="qc_rightlunglobes", action='store_true')  
+    parser.add_option("--qc_partiallung", 
+                      help='Set to true if want to QC partial lung labelmap images', 
+                      dest="qc_partiallung", action='store_true')  
+    parser.add_option("--qc_lunglobes", 
+                      help='Set to true if want to QC  lung lobe images', 
+                      dest="qc_lunglobes", action='store_true')  
     parser.add_option("--qc_regionstypes", 
                       help='Set to true if want to QC all the types and regions in a projection', 
                       dest="qc_regionstypes", action='store_true')  
@@ -210,15 +206,14 @@ if __name__ == "__main__":
         lobe_array, lobe_header = image_io.read_in_numpy(options.in_lobes)               
         
     list_of_lung_qc = []
-    if(options.qc_leftlung):
+    if(options.qc_partiallung):
        list_of_lung_qc.append('leftLung') 
-    if(options.qc_rightlung):
-       list_of_lung_qc.append('rightLung') 
-    if(options.qc_leftlunglobes):
+       list_of_lung_qc.append('rightLung')        
+    if(options.qc_lunglobes):
        list_of_lung_qc.append('leftLungLobes') 
-    if(options.qc_rightlunglobes):
        list_of_lung_qc.append('rightLungLobes') 
-    if(options.qc_leftlung and options.qc_rightlung and options.qc_regionstypes):
+
+    if(options.qc_regionstypes):
        list_of_lung_qc.append('all_regions') 
        list_of_lung_qc.append('all_types') 
               
