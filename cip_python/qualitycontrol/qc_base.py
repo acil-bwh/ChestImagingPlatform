@@ -17,7 +17,6 @@ class QcColorConventionsManager:
             
     my_colors = colors.ColorConverter()        
     qc_background = my_colors.to_rgba('black', alpha=0.0) 
-    qc_allregionstypes = my_colors.to_rgba('brown', alpha=0.0) 
     
     cmap = None
     norm = None
@@ -38,6 +37,8 @@ class QcColorConventionsManager:
         qc_allregionstypes = my_colors.to_rgba('brown', alpha=overlay_alpha) 
 
         QcColorConventionsManager.qc_color_mapping = {
+        #'UNDEFINEDREGION':(0.00,0.00,0.00,0.0),
+
         'LEFTSUPERIORLOBE':  my_colors.to_rgba('red', alpha=overlay_alpha),
         'LEFTINFERIORLOBE': my_colors.to_rgba('green', alpha=overlay_alpha),
         'RIGHTSUPERIORLOBE': my_colors.to_rgba('cyan', alpha=overlay_alpha),
@@ -49,14 +50,174 @@ class QcColorConventionsManager:
         'RIGHTMIDDLETHIRD': my_colors.to_rgba('yellow', alpha=overlay_alpha),
         'RIGHTLOWERTHIRD': my_colors.to_rgba('blue', alpha=overlay_alpha),
         'RIGHTUPPERTHIRD': my_colors.to_rgba('red', alpha=overlay_alpha),
+
+        # copied over from chest conventions
+        'WHOLELUNG':(0.42,0.38,0.75,overlay_alpha),
+        'RIGHTLUNG':(.26,0.64,0.10,overlay_alpha),
+        'LEFTLUNG':(0.80,0.11,0.36,overlay_alpha),
+        'MEDIASTINUM':(0.00,0.06,0.00,overlay_alpha),
+        'WHOLEHEART':(0.00,0.07,0.00,overlay_alpha),
+        'AORTA':(0.00,0.08,0.00,overlay_alpha),
+        'PULMONARYARTERY':(0.00,0.09,0.00,overlay_alpha),
+        'PULMONARYVEIN':(0.00,0.00,0.01,overlay_alpha),
+        'UPPERTHIRD':(0.00,0.00,0.02,overlay_alpha),
+        'MIDDLETHIRD':(0.00,0.00,0.03,overlay_alpha),
+        'LOWERTHIRD':(0.00,0.00,0.04,overlay_alpha),
+        'LEFT':(0.99,0.00,0.00,overlay_alpha),
+        'RIGHT':(0.00,0.99,0.00,overlay_alpha),
+        'LIVER':(0.66,0.36,0.40,overlay_alpha),
+        'SPLEEN':(1.00,1.00,0.01,overlay_alpha),
+        'ABDOMEN':(1.00,0.50,0.01,overlay_alpha),
+        'PARAVERTEBRAL':(1.00,0.51,0.01,overlay_alpha),
+        'OUTSIDELUNG':(0.49,0.49,0.49,overlay_alpha),
+        'OUTSIDEBODY':(0.49,0.49,0.50,overlay_alpha),
+        'SKELETON':(0.49,0.49,0.51,overlay_alpha),
+        'STERNUM':(0.49,0.49,0.52,overlay_alpha),
+        'HUMERI':(0.49,0.49,0.53,overlay_alpha),
+        'LEFTHUMERUS':(0.49,0.49,0.54,overlay_alpha),
+        'RIGHTHUMERUS':(0.49,0.49,0.55,overlay_alpha),
+        'SCAPULAE':(0.49,0.49,0.56,overlay_alpha),
+        'LEFTSCAPULA':(0.49,0.49,0.57,overlay_alpha),
+        'RIGHTSCAPULA':(0.49,0.49,0.58,overlay_alpha),
+        'HILA':(0.49,0.49,0.59,overlay_alpha),
+        'LEFTHILUM':(0.49,0.49,0.60,overlay_alpha),
+        'RightHilum':(0.49,0.49,0.61,overlay_alpha),
+        'KIDNEYS':(0.49,0.49,0.62,overlay_alpha),
+        'LEFTKIDNEY':(0.49,0.49,0.63,overlay_alpha),
+        'RIGHTKIDNEY':(0.49,0.49,0.64,overlay_alpha),
+        'ASCENDINGAORTA':(0.49,0.49,0.65,overlay_alpha),
+        'TRANSVERSALAORTA':(0.49,0.49,0.66,overlay_alpha),
+        'DESCENDINGAORTA':(0.49,0.49,0.68,overlay_alpha),
+        'LEFTSUBCLAVIAN':(00.49,0.49,0.69,overlay_alpha),
+        'RIGHTSUBCLAVIAN':(00.49,0.49,0.70,overlay_alpha),
+        'LEFTCORONARYARTERY':(00.49,0.49,0.71,overlay_alpha),
+        'SPINE':(00.49,0.49,0.72,overlay_alpha),
+        'LEFTVENTRICLE':(00.49,0.49,0.73,overlay_alpha),
+        'RIGHTVENTRICLE':(00.49,0.49,0.74,overlay_alpha),
+        'LEFTATRIUM':(00.49,0.49,0.75,overlay_alpha),
+        'RIGHTATRIUM':(00.49,0.49,0.76,overlay_alpha),
+        'LEFTPECTORALIS':(00.49,0.49,0.77,overlay_alpha),
+        'RIGHTPECTORALIS':(00.49,0.49,0.78,overlay_alpha),
+        'TRACHEA2':(00.49,0.49,0.79,overlay_alpha),
+        'LEFTMAINBRONCHUS':(00.49,0.49,0.80,overlay_alpha),
+        'RIGHTMAINBRONCHUS':(00.49,0.49,0.81,overlay_alpha),
+        'ESOPHAGUS':(00.49,0.49,0.82,overlay_alpha),
+        'LEFTCHESTWALL':(00.49,0.49,0.83,overlay_alpha),
+        'RIGHTCHESTWALL':(00.49,0.49,0.84,overlay_alpha),
+        'LEFTDIAPHRAGM':(00.49,0.49,0.85,overlay_alpha),
+        'RIGHTDIAPHRAGM':(0>0.49,0.49,0.86,overlay_alpha),
+        'HIATUS':(00.49,0.49,0.87,overlay_alpha),
+        'PECTORALIS':(00.49,0.49,0.88,overlay_alpha),
+        'SPINALCORD':(00.49,0.49,0.89,overlay_alpha),
+        'SUPERIORMESENTERICARTERY':(00.49,0.49,0.9,overlay_alpha),
+        'PANCREAS':(00.49,0.49,0.91,overlay_alpha),
+        #'PANCREASHEAD':(00.49,0.49,0.92,overlay_alpha),
+        'LEFTANTERIORCHESTWALL':(00.49,0.49,0.835,overlay_alpha),
+        'RIGHTANTERIORCHESTWALL':(00.49,0.49,0.845,overlay_alpha),
+        'LEFTPOSTERIORCHESTWALL':(00.49,0.49,0.8355,overlay_alpha),
+        'RIGHTPOSTERIORCHESTWALL':(00.49,0.49,0.8455,overlay_alpha),
+        'TRACHEACARINA':(00.49,0.49,0.93,overlay_alpha),
+        'AORTICVALVE':(00.49,0.9,0.93,overlay_alpha),
         }  
           
         QcColorConventionsManager.qc_type_color_mapping = {
+        #'UNDEFINEDTYPE':(0.00,0.00,0.00,0.0),
+
         'Airway': my_colors.to_rgba('fuchsia', alpha=overlay_alpha),
         'Vessel': my_colors.to_rgba('limegreen', alpha=overlay_alpha),
-        'ObliqueFissure': my_colors.to_rgba('salmon', alpha=overlay_alpha),
-        'HorizontalFissure': my_colors.to_rgba('lightslategray', alpha=overlay_alpha),
-
+        'OBLIQUEFISSURE': my_colors.to_rgba('salmon', alpha=overlay_alpha),
+        'HORIZONTALFISSURE': my_colors.to_rgba('lightslategray', alpha=overlay_alpha),
+        'NORMALPARENCHYMA':(0.99,0.99,0.99,overlay_alpha),
+        'EMPHYSEMATOUS':(0.96,0.96,0.96,overlay_alpha),
+        'GROUNDGLASS':(0.95,0.95,0.95,overlay_alpha),
+        'RETICULAR':(0.94,0.94,0.94,overlay_alpha),
+        'NODULAR':(0.93,0.93,0.93,overlay_alpha),
+        'MILDPARASEPTALEMPHYSEMA':(0.90,0.90,0.90,overlay_alpha),
+        'MODERATEPARASEPTALEMPHYSEMA':(0.89,0.89,0.89,overlay_alpha),
+        'SEVEREPARASEPTALEMPHYSEMA':(0.88,0.88,0.88,overlay_alpha),
+        'MILDBULLA':(0.87,0.87,0.87,overlay_alpha),
+        'MODERATEBULLA':(0.86,0.86,0.86,overlay_alpha),
+        'SEVEREBULLA':(0.85,0.85,0.85,overlay_alpha),
+        'MILDCENTRILOBULAREMPHYSEMA':(0.84,0.84,0.84,overlay_alpha),
+        'MODERATECENTRILOBULAREMPHYSEMA':(0.83,0.83,0.83,overlay_alpha),
+        'SEVERECENTRILOBULAREMPHYSEMA':(0.82,0.82,0.82,overlay_alpha),
+        'MILDPANLOBULAREMPHYSEMA':(0.81,0.81,0.81,overlay_alpha),
+        'MODERATEPANLOBULAREMPHYSEMA':(0.80,0.70,0.80,overlay_alpha),
+        'SEVEREPANLOBULAREMPHYSEMA':(0.79,0.79,0.79,overlay_alpha),
+        'AIRWAYWALLTHICKENING':(0.78,0.78,0.78,overlay_alpha),
+        'AIRWAYCYLINDRICALDILATION':(0.77,0.77,0.77,overlay_alpha),
+        'VARICOSEBRONCHIECTASIS':(0.76,0.76,0.76,overlay_alpha),
+        'CYSTICBRONCHIECTASIS':(0.75,0.75,0.75,overlay_alpha),
+        'CENTRILOBULARNODULE':(0.74,0.74,0.74,overlay_alpha),
+        'MOSAICING':(0.73,0.73,0.73,overlay_alpha),
+        'EXPIRATORYMALACIA':(0.72,0.72,0.72,overlay_alpha),
+        'SABERSHEATH':(0.71,0.71,0.71,overlay_alpha),
+        'OUTPOUCHING':(0.70,0.70,0.70,overlay_alpha),
+        'MUCOIDMATERIAL':(0.69,0.69,0.69,overlay_alpha),
+        'PATCHYGASTRAPPING':(0.68,0.68,0.68,overlay_alpha),
+        'DIFFUSEGASTRAPPING':(0.67,0.67,0.67,overlay_alpha),
+        'LINEARSCAR':(0.66,0.66,0.66,overlay_alpha),
+        'CYST':(0.65,0.65,0.65,overlay_alpha),
+        'ATELECTASIS':(0.64,0.64,0.64,overlay_alpha),
+        'HONEYCOMBING':(0.63,0.63,0.63,overlay_alpha),
+        'TRACHEA':(0.51,0.50,0.50,overlay_alpha),
+        'MAINBRONCHUS':(0.55,0.27,0.07,overlay_alpha),
+        'UPPERLOBEBRONCHUS':(1.00,0.65,0.00,overlay_alpha),
+        'AIRWAYGENERATION3':(1.00,1.00,0.01,overlay_alpha),
+        'AIRWAYGENERATION4':(1.00,0.01,1.00,overlay_alpha),
+        'AIRWAYGENERATION5':(0.51,1.00,0.00,overlay_alpha),
+        'AIRWAYGENERATION6':(0.01,0.50,1.00,overlay_alpha),
+        'AIRWAYGENERATION7':(0.51,0.00,0.50,overlay_alpha),
+        'AIRWAYGENERATION8':(0.51,0.50,0.00,overlay_alpha),
+        'AIRWAYGENERATION9':(0.01,0.50,0.50,overlay_alpha),
+        'AIRWAYGENERATION10':(0.45,0.44,0.44,overlay_alpha),
+        'CALCIFICATION':(0.51,0.51,0.51,overlay_alpha),
+        'ARTERY':(0.00,0.00,0.99,overlay_alpha),
+        'VEIN':(0.99,0.00,0.00,overlay_alpha),
+        'PECTORALISMINOR':(0.00,0.99,0.00,overlay_alpha),
+        'PECTORALISMAJOR':(0.99,0.01,0.00,overlay_alpha),
+        'ANTERIORSCALENE':(0.46,0.46,0.46,overlay_alpha),
+        'FISSURE':(0.93,0.01,0.10,overlay_alpha),
+        'VESSELGENERATION0':(0.00,0.00,0.00,overlay_alpha),
+        'VESSELGENERATION1':(0.00,1.00,0.00,overlay_alpha),
+        'VESSELGENERATION2':(0.00,1.00,1.00,overlay_alpha),
+        'VESSELGENERATION3':(1.00,1.00,0.00,overlay_alpha),
+        'VESSELGENERATION4':(1.00,0.00,1.00,overlay_alpha),
+        'VESSELGENERATION5':(0.50,1.00,0.00,overlay_alpha),
+        'VESSELGENERATION6':(0.00,0.50,1.00,overlay_alpha),
+        'VESSELGENERATION7':(0.50,0.00,0.50,overlay_alpha),
+        'VESSELGENERATION8':(0.50,0.50,0.00,overlay_alpha),
+        'VESSELGENERATION9':(0.00,0.50,0.50,overlay_alpha),
+        'VESSELGENERATION10':(0.44,0.44,0.44,overlay_alpha),
+        'PARASEPTALEMPHYSEMA':(0.00,0.68,0.00,overlay_alpha),
+        'CENTRILOBULAREMPHYSEMA':(0.00,0.69,0.69,overlay_alpha),
+        'PANLOBULAREMPHYSEMA':(0.00,0.00,0.70,overlay_alpha),
+        'SUBCUTANEOUSFAT':(0.99,0.01,0.99,overlay_alpha),
+        'VISCERALFAT':(0.58,0.65,0.20,overlay_alpha),
+        'INTERMEDIATEBRONCHUS':(0.85,0.75,0.85,overlay_alpha),
+        'LOWERLOBEBRONCHUS':(1.00,0.02,0.00,overlay_alpha),
+        'SUPERIORDIVISIONBRONCHUS':(0.98,0.50,0.45,overlay_alpha),
+        'LINGULARBRONCHUS':(0.00,0.03,1.00,overlay_alpha),
+        'MIDDLELOBEBRONCHUS':(0.25,0.88,0.82,overlay_alpha),
+        'BRONCHIECTATICAIRWAY':(0.25,0.88,0.81,overlay_alpha),
+        'NONBRONCHIECTATICAIRWAY':(0.25,0.87,0.81,overlay_alpha),
+        'AMBIGUOUSBRONCHIECTATICAIRWAY':(0.25,0.86,0.81,overlay_alpha),
+        'MUSCLE':(0.90,0.00,0.00,overlay_alpha),
+        'HERNIA':(0.91,0.00,0.00,overlay_alpha),
+        'BONEMARROW':(0.92,0.00,0.00,overlay_alpha),
+        'BONE':(0.93,0.00,0.00,overlay_alpha),
+        'INTERSTITIALLUNGDISEASE':(0.94,0.00,0.00,overlay_alpha),
+        'SUBPLEURALLINE':(0.01,0.02,0.01,overlay_alpha),
+        'NODULE':(0.01,0.02,0.02,overlay_alpha),
+        'BENIGNNODULE':(0.01,0.02,0.03,overlay_alpha),
+        'MALIGNANTNODULE':(0.01,0.02,0.04,overlay_alpha),
+        'SEPTUM':(0.01,0.03,0.04,overlay_alpha),
+        'FIBRONODULAR':(0.02,0.03,0.04,overlay_alpha),
+        'MESOTHELIOMA':(0.03,0.03,0.04,overlay_alpha),
+        'NORMALINFLAMED':(0.04,0.03,0.04,overlay_alpha),
+        'NORMALNOTINFLAMED':(0.05,0.03,0.04,overlay_alpha),
+        'SYSTOLE':(0.05,0.03,0.05,overlay_alpha),
+        'DIASTOLE':(0.05,0.03,0.06,overlay_alpha),
         }                  
         color_bound_list = [[QcColorConventionsManager.qc_background, 0 ]] #, [qc_allregionstypes, 1 ]
         
@@ -76,12 +237,18 @@ class QcColorConventionsManager:
             regtypeval = mychestConvenstion.GetValueFromChestRegionAndType(0, type_val) 
             color_bound_list.append([QcColorConventionsManager.qc_type_color_mapping[the_type], regtypeval])  
 
-        """ This is not the ideal way to have region/type colors"""
+        # hmmm, why is this messing with the region only/type only colors?
+        #""" This is not the ideal way to have region/type colors"""
         for region in QcColorConventionsManager.qc_color_mapping.keys():
             reg_val =  mychestConvenstion.GetChestRegionValueFromName(region)
             for the_type in QcColorConventionsManager.qc_type_color_mapping.keys():
                 type_val =  mychestConvenstion.GetChestTypeValueFromName(the_type) 
                 regtypeval = mychestConvenstion.GetValueFromChestRegionAndType(reg_val, type_val)
+                if(reg_val==0 or type_val==0 or regtypeval==0):
+                    print("regval="+str(reg_val)+"type_val="+str(type_val)+"regtypeval="+str(regtypeval))
+                    print("zero!")
+                    print(the_type)
+                    print(region)
                 the_colortemp= (np.array(QcColorConventionsManager.qc_color_mapping[region])+np.array(QcColorConventionsManager.qc_type_color_mapping[the_type]))/2
                 the_color = np.ndarray.tolist(the_colortemp)
                 color_bound_list.append([the_color, regtypeval])  
@@ -102,7 +269,6 @@ class QcColorConventionsManager:
         color_bound_list[1].append(color_bound_list[1][-1]+1)
         QcColorConventionsManager.cmap = colors.ListedColormap(color_bound_list[0]) 
         QcColorConventionsManager.norm = colors.BoundaryNorm(color_bound_list[1], QcColorConventionsManager.cmap.N)
-        
                 
                                 
             
@@ -232,7 +398,7 @@ class ImageOverlay:
             lm_masked = mychestConvenstion.GetValueFromChestRegionAndType(np.zeros_like(lm_masked), lm_masked)
         if(types is None):
             lm_masked = mychestConvenstion.GetChestRegionFromValue(lm_masked)
-        
+            lm_masked = mychestConvenstion.GetValueFromChestRegionAndType(lm_masked, np.zeros_like(lm_masked))
         """  maximum intensity projection  """               
         projection = np.max(lm_masked, axis=axis_val)
         projection = self.rotate_labelmap_images_for_display(projection, axis)
@@ -382,7 +548,6 @@ class Montage:
         spec_val = np.max([num_rows,num_columns])
         fig = plt.figure(figsize = (spec_val,spec_val)) 
         gs=GridSpec(spec_val,spec_val, wspace=0.01, hspace=0.01)
-               
         QcColorConventionsManager.buildColorMap(overlay_alpha = overlay_alpha)
         for i in range(0, num_rows):
             num_columns=len(list_of_cts[i])

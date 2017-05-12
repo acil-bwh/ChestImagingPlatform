@@ -30,12 +30,12 @@ class LungSegmentationQC(LabelmapQC):
         self.type_dictionary  = {\
         'leftLung': None,\
         'rightLung': None,\
-        'leftLungLobes': None,\
+        'leftLungLobes': None, 
         'rightLungLobes' : None, 
         'airways' : 'airways',
         'all_regions' : None ,
         'all_types' : ['WildCard']
-                }    
+                }    #['HORIZONTALFISSURE','OBLIQUEFISSURE'],\
                 
         self.axes_dictionary = {\
         'leftLung': 'sagittal',\
@@ -91,8 +91,8 @@ class LungSegmentationQC(LabelmapQC):
                 for qc in labelmap_qc_requested_overlay:
                     axes_temp.append(self.axes_dictionary[qc])
                 list_axes_overlay.append(axes_temp)
- 
-            if len(labelmap_qc_requested_projection)>0:
+
+            if ((len(labelmap_qc_requested_projection)>0) and (len(labelmap_qc_requested_overlay)>0)):
                 """ the labelmap tye is needed for some requested QC, thus add it to list"""
                 if (labelmaptype=='partialLungLabelmap'):
                     list_of_labelmaps_projection.append(in_partial)
@@ -104,7 +104,7 @@ class LungSegmentationQC(LabelmapQC):
                 for qc in labelmap_qc_requested_projection:
                     axes_temp.append(self.axes_dictionary[qc])
                 list_axes_projection.append(axes_temp)       
-                      
+
         [list_cts,list_labelmaps, list_of_voxel_spacing] = self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps_overlay, \
             list_request_qc_per_labelmap_overlay, list_axes_overlay, num_images_per_region=num_images_per_region, \
             overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
@@ -126,22 +126,17 @@ class LungSegmentationQC(LabelmapQC):
         list_of_cts shape is (2, 3, 1, 501, 468) for num_rows, num_cols, num_overlays, overay_shape
         """
         if(len(list_cts2)>0):
-            list_cts[0].extend([list_cts2[0][0]]) # append a new col to col1
-            list_labelmaps[0].extend([list_labelmaps2[0][0]])
-            list_of_voxel_spacing[0].extend([list_of_voxel_spacing2[0][0]])
+            for i in range(0,len(list_cts2)):
+                """ loop through each row and append a column"""
+                list_cts[i].extend([list_cts2[i][0]]) # append a new col to row1
+                list_labelmaps[i].extend([list_labelmaps2[i][0]])
+                list_of_voxel_spacing[i].extend([list_of_voxel_spacing2[i][0]])
 
-            list_cts[1].extend([list_cts2[1][0]]) # append a new col to row 2
-            list_labelmaps[1].extend([list_labelmaps2[1][0]])
-            list_of_voxel_spacing[1].extend([list_of_voxel_spacing2[1][0]])        
-        #
-        #pdb.set_trace()
-        #k=0
-        #j=3
-        #num_ct_overlays502
         
         if (num_images_per_region==1):
             append_horizontally = True
         print("generating montage")
+
         my_montage = Montage() 
         my_montage.execute(list_cts,list_labelmaps, out_file, in_overlay_alpha, len(list_cts), len(list_cts[0]), \
             window_width=window_width, window_level=window_level, resolution=resolution, list_of_voxel_spacing=list_of_voxel_spacing)      
