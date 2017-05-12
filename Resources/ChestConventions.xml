@@ -430,7 +430,7 @@
         <ChestRegion>
             <Id>71</Id>
             <Code>PANCREASHEAD</Code>
-            <Name>Pancreas</Name>
+            <Name>PancreasHead</Name>
             <Color>0.49;0.49;0.92</Color>
         </ChestRegion>
         <ChestRegion>
