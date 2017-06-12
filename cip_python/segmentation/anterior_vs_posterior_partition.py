@@ -55,6 +55,7 @@ class AnteriorPosteriorPartition(ChestPartition):
         """ find number of location along AP (Y) axis """
         slice_numbers = np.linspace( ymin,ymax,4, endpoint=False)[1:,]
         
+        print(slice_numbers)
         partition_labelmaps=dict()
         """ return 1 labelmap per requested partition. These should be boolean"""   
         for partition_name in chest_partitions:
@@ -68,19 +69,19 @@ class AnteriorPosteriorPartition(ChestPartition):
 
                 if partition_name == 'AP_1_of_4':                                    
                     partition_labelmaps['AP_1_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_1_of_4'][:,slice_numbers[0]:slice_numbers[1],:]=1 
+                    partition_labelmaps['AP_1_of_4'][:,0:int(slice_numbers[0]),:]=1 
                     partition_labelmaps['AP_1_of_4'][lung_labelmap==0]=0 
                 elif partition_name == 'AP_2_of_4':
                     partition_labelmaps['AP_2_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_2_of_4'][:,slice_numbers[1]:slice_numbers[2],:]=1 
+                    partition_labelmaps['AP_2_of_4'][:,int(slice_numbers[0]):int(slice_numbers[1]),:]=1 
                     partition_labelmaps['AP_2_of_4'][lung_labelmap==0]=0               
                 elif partition_name == 'AP_3_of_4':
                     partition_labelmaps['AP_3_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_3_of_4'][:,slice_numbers[2]:slice_numbers[3],:]=1 
+                    partition_labelmaps['AP_3_of_4'][:,int(slice_numbers[1]):int(slice_numbers[2]),:]=1 
                     partition_labelmaps['AP_3_of_4'][lung_labelmap==0]=0  
                 elif partition_name == 'AP_4_of_4':
                     partition_labelmaps['AP_4_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_4_of_4'][:,slice_numbers[3]:slice_numbers[4],:]=1 
+                    partition_labelmaps['AP_4_of_4'][:,int(slice_numbers[2]):,:]=1  
                     partition_labelmaps['AP_4_of_4'][lung_labelmap==0]=0  
    
             
