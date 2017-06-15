@@ -15,7 +15,7 @@ class AnteriorPosteriorPartition(ChestPartition):
         ChestPartition.__init__(self) 
         
     def declare_partition_regions(self):
-        partition_regions = ['AP_1_of_4','AP_2_of_4','AP_3_of_4','AP_4_of_4']
+        partition_regions = ['AP1of4','AP2of4','AP3of4','AP4of4']
         
         return partition_regions
        
@@ -67,22 +67,22 @@ class AnteriorPosteriorPartition(ChestPartition):
                 assert partition_name in self.partition_regions_, \
                   "Invalid partition name " + partition_name
 
-                if partition_name == 'AP_1_of_4':                                    
-                    partition_labelmaps['AP_1_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_1_of_4'][:,0:int(slice_numbers[0]),:]=1 
-                    partition_labelmaps['AP_1_of_4'][lung_labelmap==0]=0 
-                elif partition_name == 'AP_2_of_4':
-                    partition_labelmaps['AP_2_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_2_of_4'][:,int(slice_numbers[0]):int(slice_numbers[1]),:]=1 
-                    partition_labelmaps['AP_2_of_4'][lung_labelmap==0]=0               
-                elif partition_name == 'AP_3_of_4':
-                    partition_labelmaps['AP_3_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_3_of_4'][:,int(slice_numbers[1]):int(slice_numbers[2]),:]=1 
-                    partition_labelmaps['AP_3_of_4'][lung_labelmap==0]=0  
-                elif partition_name == 'AP_4_of_4':
-                    partition_labelmaps['AP_4_of_4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
-                    partition_labelmaps['AP_4_of_4'][:,int(slice_numbers[2]):,:]=1  
-                    partition_labelmaps['AP_4_of_4'][lung_labelmap==0]=0  
+                if partition_name == 'AP1of4':                                    
+                    partition_labelmaps['AP1of4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
+                    partition_labelmaps['AP1of4'][:,0:int(slice_numbers[0]),:]=1 
+                    partition_labelmaps['AP1of4'][lung_labelmap==0]=0 
+                elif partition_name == 'AP2of4':
+                    partition_labelmaps['AP2of4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
+                    partition_labelmaps['AP2of4'][:,int(slice_numbers[0]):int(slice_numbers[1]),:]=1 
+                    partition_labelmaps['AP2of4'][lung_labelmap==0]=0               
+                elif partition_name == 'AP3of4':
+                    partition_labelmaps['AP3of4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
+                    partition_labelmaps['AP3of4'][:,int(slice_numbers[1]):int(slice_numbers[2]),:]=1 
+                    partition_labelmaps['AP3of4'][lung_labelmap==0]=0  
+                elif partition_name == 'AP4of4':
+                    partition_labelmaps['AP4of4']= np.zeros(np.shape(lung_labelmap), dtype=bool)
+                    partition_labelmaps['AP4of4'][:,int(slice_numbers[2]):,:]=1  
+                    partition_labelmaps['AP4of4'][lung_labelmap==0]=0  
    
             
         return partition_labelmaps
