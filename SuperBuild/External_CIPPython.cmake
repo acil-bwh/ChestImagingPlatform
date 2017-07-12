@@ -126,18 +126,10 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     DEPENDEES installpydicom
   )
 
-  #Nipype is not supported in Win32
-  #if ( NOT WIN32 )
-    # configparser should be imported directly from nipype, but as of today it doesn't
-    #ExternalProject_Add_Step(${proj} installconfigparser
-     #       COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet configparser
-      #      DEPENDEES installnibabel
-       #     )
-    ExternalProject_Add_Step(${proj} installnipype
-      COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge nipype
-      DEPENDEES installconfigparser
-   # )
-  #endif( )
+  ExternalProject_Add_Step(${proj} installnipype
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge nipype
+    DEPENDEES installconfigparser
+   )
 
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
