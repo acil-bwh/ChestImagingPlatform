@@ -4,9 +4,9 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-cip_source_dir = 'C:/Projects/CIP-Source'
-cip_library_dir = 'C:/Projects/CIP-Build/lib/Release'
-cip_python_dir = 'C:/Projects/CIP-Source/cip_python'
+cip_source_dir = '/home/pn964/Projects/ChestImagingPlatform'
+cip_library_dir = '/home/pn964/Projects/ChestImagingPlatform-build/lib'
+cip_python_dir = '/home/pn964/Projects/ChestImagingPlatform/cip_python'
 
 os.environ["CC"] = "/usr/bin/cc"
 os.environ["CXX"] = "/usr/bin/c++"

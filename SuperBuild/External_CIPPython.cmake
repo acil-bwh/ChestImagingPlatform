@@ -128,7 +128,7 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
 
   ExternalProject_Add_Step(${proj} installnipype
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge nipype
-    DEPENDEES installconfigparser
+    DEPENDEES installnibabel
    )
 
   if (CIP_PYTHON_USE_QT4)
