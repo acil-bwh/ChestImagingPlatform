@@ -36,7 +36,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     message(WARNING "Enabling ITK 4.10 compatibility")
     set(ITKv4_GIT_TAG 16df9b689856cd4a8dd22a2cef92f5ee7222da0c)    # last known tag working in the cluster
   else()
-    set(ITKv4_GIT_TAG 1619816e48b327c4c486b76aef0c229af65b92b2)   # slicer-v4.11.0-2017-01-22
+    set(ITKv4_GIT_TAG 59e07acdf300d4b3c386f5da45a0b38ef713100f)   # slicer-v4.12.0-2017-05-09-2d63918
   endif()
 
   set(CIP_ITKV3_COMPATIBILITY OFF) # to match the default setting of Slicer
@@ -72,6 +72,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DModule_ITKReview:BOOL=ON
       -DModule_MGHIO:BOOL=ON
+      -DModule_Strain:BOOL=ON
       -DBUILD_SHARED_LIBS:BOOL=ON
       -DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
