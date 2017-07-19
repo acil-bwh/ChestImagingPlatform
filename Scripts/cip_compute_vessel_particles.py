@@ -234,7 +234,7 @@ class VesselParticlesPipeline:
                     # print tmpCommand
                     subprocess.call(tmpCommand, shell=True)
                 
-                #Binary Thinning
+                # Binary Thinning
                 tmpCommand = "GenerateBinaryThinning3D -i %(in)s -o %(out)s"
                 tmpCommand = tmpCommand % {'in':maskFileNameRegion,'out':maskFileNameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
@@ -294,9 +294,9 @@ if __name__ == "__main__":
     assert op.init_method == 'Frangi' or op.init_method == 'Threshold' or op.init_method == 'StrainEnergy' or \
            op.init_method == 'VesselMask'
     
-    #region = [2,3]
-    #region=[2]
-    #regionTag = ['right','left']
+    # region = [2,3]
+    # region=[2]
+    # regionTag = ['right','left']
     crop = [int(kk) for kk in str.split(op.crop,',')]
     regions = [kk for kk in str.split(op.regions,',')]
     

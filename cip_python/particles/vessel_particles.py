@@ -69,8 +69,8 @@ class VesselParticles(ChestParticles):
         self._max_scale = max_scale
         self._scale_samples = scale_samples
         self._down_sample_rate = down_sample_rate      
-        self._live_thresh= live_thresh
-        self._seed_thresh= seed_thresh
+        self._live_thresh = live_thresh
+        self._seed_thresh = seed_thresh
         self._mode_thresh = -0.3
         self._population_control_period = 3
         self._phase_iterations = [100, 10, 75]

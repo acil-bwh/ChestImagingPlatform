@@ -104,8 +104,7 @@ class kdeHistExtractorFromROI:
             # obtain kde histogram from features
             self.hist_ = self._perform_kde_botev(intensity_vector)[\
                 0:np.shape(self.bin_values)[0]]
-        
-            if(np.sum(self.hist_)<0.01):
-                print(self.hist_)
-                self.hist_=self.hist_/np.sum(self.hist_)
 
+
+        if(np.sum(self.hist_)<0.01 and np.sum(self.hist_)>0):
+            self.hist_=self.hist_/np.sum(self.hist_)
