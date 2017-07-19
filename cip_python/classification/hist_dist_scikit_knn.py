@@ -136,11 +136,10 @@ class HistDistScikitKNN():
         #    classification_data[0,hist.shape[0]] = dist               
         
 
-        print(hist.shape)
-        print(np.shape(hist.shape))
+        #print(hist.shape)
+        #print(np.shape(hist.shape))
         
         if (np.shape(hist.shape)[0] > 1):
-            print("using hist")
             subset_indeces = self.scikit_knn.kneighbors(hist, return_distance=False)[0]
         else:
             subset_indeces = self.scikit_knn.kneighbors([hist], return_distance=False)[0]
@@ -151,8 +150,11 @@ class HistDistScikitKNN():
         my_knn_classifier2 = HistDistKNN(n_neighbors = self.n_neighbors_ , beta = self.beta_) #HistDistKNN
         my_knn_classifier2.fit(subset_training_histogram, subset_training_distance, subset_training_class)
         class_label = my_knn_classifier2.predict(hist, dist)
-            
-                                                
+        #print("subset indeces")
+        #print(subset_indeces)
+        #print("subset training class")
+        #print(subset_training_class)    
+        #print("hist dist class labels"+str(class_label))
         return class_label
         
 
