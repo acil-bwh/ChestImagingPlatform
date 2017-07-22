@@ -115,7 +115,7 @@ class LungSegmentationQC(LabelmapQC):
 
         [list_cts2,list_labelmaps2, list_of_voxel_spacing2] = self.get_labelmap_qc(in_ct, out_file, list_of_labelmaps_projection, \
             list_request_qc_per_labelmap_projection, list_axes_projection, num_images_per_region=1, \
-            overlay_alpha=in_overlay_alpha, window_width=window_width, window_level=window_level,\
+            overlay_alpha=1.0, window_width=window_width, window_level=window_level,\
             resolution=resolution,spacing=spacing, is_projection=True, is_overlay=False )             
         
         """ Now arrange the layout."""
