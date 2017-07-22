@@ -11,6 +11,8 @@
 #include "vtkPointData.h"
 #include "vtkFieldData.h"
 #include "vtkPolyData.h"
+#include "vtkCellArray.h"
+#include "vtkVertex.h"
 #include "UpdateParticlesDataCLP.h"
 
 int main(int argc, char *argv[])
@@ -183,7 +185,21 @@ int main(int argc, char *argv[])
 	  break;
 	}
     }
-  
+
+  // If not present, add Vertices to the polydata file
+  if ( outPolyData->GetNumberOfVerts() == 0 )
+    {
+  	vtkSmartPointer< vtkCellArray > cellArray = vtkSmartPointer< vtkCellArray >::New();
+   	for ( unsigned int pid = 0; pid < outPolyData->GetNumberOfPoints(); pid++ )
+   	   	{
+	   		vtkSmartPointer< vtkVertex > Vertex = vtkSmartPointer< vtkVertex >::New();
+	   		Vertex->GetPointIds()->SetId(0, pid);
+	   		cellArray->InsertNextCell(Vertex);
+	   	}
+	outPolyData->SetVerts(cellArray);
+	}
+
+
   // Write the poly data
   std::cout << "Writing VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
