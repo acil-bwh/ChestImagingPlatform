@@ -1485,6 +1485,28 @@
             <Code>SEGMENTATIONFAILURE</Code>
         </ReturnCode>
     </ReturnCodes>
+    <Planes>
+        <Plane>
+            <Id>0</Id>
+            <Code>UNDEFINEDPLANE</Code>
+            <Name>UndefinedPlane</Name>
+        </Plane>
+        <Plane>
+            <Id>1</Id>
+            <Code>AXIAL</Code>
+            <Name>Axial</Name>
+        </Plane>
+        <Plane>
+            <Id>2</Id>
+            <Code>CORONAL</Code>
+            <Name>Coronal</Name>
+        </Plane>
+        <Plane>
+            <Id>3</Id>
+            <Code>SAGITTAL</Code>
+            <Name>Sagittal</Name>
+        </Plane>
+    </Planes>
     <BodyCompositionPhenotypeNames>
         <Name>AxialCSA</Name>
         <Name>CoronalCSA</Name>

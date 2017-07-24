@@ -11,6 +11,7 @@ class ChestConventionsInitializer(object):
     __chest_regions__ = None
     __chest_types__ = None
     __image_features__ = None
+    __planes__ = None
     __chest_regions_hierarchy__ = None
     __preconfigured_colors__ = None
     __body_composition_phenotype_names__ = None
@@ -113,7 +114,7 @@ class ChestConventionsInitializer(object):
             root = ChestConventionsInitializer.xml_root_conventions()
             ChestConventionsInitializer.__image_features__ = OrderedDict()
             parent = root.find("ImageFeatures")
-            image_features_enum = ChestType.elems_as_dictionary()
+            image_features_enum = ImageFeature.elems_as_dictionary()
             for xml_type in parent.findall("ImageFeature"):
                 elem_id = int(xml_type.find("Id").text)
                 if not image_features_enum.has_key(elem_id):
@@ -124,6 +125,24 @@ class ChestConventionsInitializer(object):
                     xml_type.find("Name").text
                 )
         return ChestConventionsInitializer.__image_features__
+
+    @staticmethod
+    def planes():
+        if ChestConventionsInitializer.__planes__ is None:
+            root = ChestConventionsInitializer.xml_root_conventions()
+            ChestConventionsInitializer.__planes__ = OrderedDict()
+            parent = root.find("Planes")
+            enum = Plane.elems_as_dictionary()
+            for xml_type in parent.findall("Plane"):
+                elem_id = int(xml_type.find("Id").text)
+                if not enum.has_key(elem_id):
+                    raise AttributeError("The key {0} in Planes does not belong to the enumeration"
+                                         .format(elem_id))
+                ChestConventionsInitializer.__planes__[elem_id] = (
+                    xml_type.find("Code").text,
+                    xml_type.find("Name").text
+                )
+        return ChestConventionsInitializer.__planes__
 
     @staticmethod
     def preconfigured_colors():
@@ -184,7 +203,8 @@ class ChestConventions(object):
     ChestRegionsCollection = ChestConventionsInitializer.chest_regions()      # 1: "WHOLELUNG", "WholeLung", [0.42, 0.38, 0.75]
     ChestRegionsHierarchyCollection = ChestConventionsInitializer.chest_regions_hierarchy()     # LEFTSUPERIORLOBE, LEFTLUNG
     ChestTypesCollection = ChestConventionsInitializer.chest_types()          # 1:, "NORMALPARENCHYMA", "NormalParenchyma", [0.99, 0.99, 0.99]
-    ImageFeaturesCollection = ChestConventionsInitializer.image_features()    # 1: "CTARTIFACT", "CTArtifact"
+    ImageFeaturesCollection = ChestConventionsInitializer.image_features()  # 1: "CTARTIFACT", "CTArtifact"
+    PlanesCollection = ChestConventionsInitializer.planes()  # 1: "AXIAL", "Axial"
     PreconfiguredColors = ChestConventionsInitializer.preconfigured_colors()
     #
     BodyCompositionPhenotypeNames = ChestConventionsInitializer.body_composition_phenotype_names()   # List of strings
@@ -203,6 +223,10 @@ class ChestConventions(object):
     @staticmethod
     def GetNumberOfEnumeratedImageFeatures():
         return len(ChestConventions.ImageFeaturesCollection)
+
+    @staticmethod
+    def GetNumberOfEnumeratedPlanes():
+        return len(ChestConventions.PlanesCollection)
 
     @staticmethod
     def CheckSubordinateSuperiorChestRegionRelationship(subordinate, superior):
@@ -486,6 +510,19 @@ class ChestConventions(object):
             # C++ compatibility:
             return ChestConventions.GetImageFeatureName(ImageFeature.UNDEFINEDFEATURE)
         return ChestConventions.ImageFeaturesCollection[whichFeature][1]
+
+    @staticmethod
+    def GetPlaneName(whichPlane):
+        """
+         Given an int value corresponding to a Plane, this method will return the string name equivalent
+        :param whichPlane: int
+        :return: descriptive string
+        """
+        if not ChestConventions.PlanesCollection.has_key(whichPlane):
+            raise IndexError("Key '{0}' is not a valid Plane".format(whichPlane))
+            # C++ compatibility:
+            # return ChestConventions.GetImageFeatureName(ImageFeature.UNDEFINEDFEATURE)
+        return ChestConventions.PlanesCollection[whichPlane][1]
 
     @staticmethod
     def IsBodyCompositionPhenotypeName(phenotypeName):

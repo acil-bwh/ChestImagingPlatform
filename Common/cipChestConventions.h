@@ -41,6 +41,7 @@ public:
   unsigned char GetNumberOfEnumeratedChestRegions() const;
   unsigned char GetNumberOfEnumeratedChestTypes() const;
   unsigned char GetNumberOfEnumeratedImageFeatures() const;
+  unsigned char GetNumberOfEnumeratedPlanes() const;
 
   /** This method checks if the chest region 'subordinate' is within
    *  the chest region 'superior'. It assumes that all chest regions are
@@ -123,12 +124,19 @@ public:
   /** Get the ith chest type */
   unsigned char GetChestType( unsigned int i ) const;
   
-  /** Get the ith chest type */
+  /** Get the ith image feature */
   unsigned char GetImageFeature( unsigned int i ) const;
+
+  /** Get the ith plane */
+  unsigned char GetPlane( unsigned int i ) const;
   
-  /** Given an unsigned char value corresponding to a image type, this
+  /** Given an unsigned char value corresponding to a image feature, this
    *  method will return the string name equivalent. */
   std::string GetImageFeatureName( unsigned char whichFeature ) const;
+
+  /** Given an unsigned char value corresponding to a plane, this
+   *  method will return the string name equivalent. */
+  std::string GetPlaneName( unsigned char whichPlane ) const;
 
   /** Returns true if the passed string name is among the allowed body composition
    *  phenotype names and returns false otherwise */
