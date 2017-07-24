@@ -12,6 +12,8 @@
 #include "vtkPolyDataWriter.h"
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
+#include "vtkCellArray.h"
+#include "vtkVertex.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "cipChestConventions.h"
@@ -345,6 +347,19 @@ int main( int argc, char *argv[] )
     {
       polyData->GetPointData()->GetArray("ChestRegionChestType")->SetTuple( i, &chestRegionChestTypeValue );
     }
+
+  // If not present, add Vertices to the polydata file
+  if ( polyData->GetNumberOfVerts() == 0 )
+    {
+    vtkSmartPointer< vtkCellArray > cellArray = vtkSmartPointer< vtkCellArray >::New();
+    for ( unsigned int pid = 0; pid < polyData->GetNumberOfPoints(); pid++ )
+        {
+        vtkSmartPointer< vtkVertex > Vertex = vtkSmartPointer< vtkVertex >::New();
+        Vertex->GetPointIds()->SetId(0, pid);
+        cellArray->InsertNextCell(Vertex);
+      }
+  polyData->SetVerts(cellArray);
+  }
   
   std::cout << "Writing poly data..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
