@@ -222,13 +222,13 @@ class QcColorConventionsManager:
         }                  
         
         QcColorConventionsManager.qc_region_type_color_mapping = {
-        ('LEFT','PECTORALISMINOR'):(100.0/255.0,0.00,0.00,overlay_alpha),
+        ('LEFT','PECTORALISMINOR'):(50.0/255.0,200.0/255.0,220.00/255.0,overlay_alpha),
         ('LEFT','PECTORALISMAJOR'):(200.0/255.0,0.00,0.00,overlay_alpha),
-        ('LEFT','SUBCUTANEOUSFAT'):(230.0/255.0,220.0/255.0,70.0/255.0,overlay_alpha),
+        ('LEFT','SUBCUTANEOUSFAT'):(230.0/255.0,220.0/255.0,0.0/255.0,overlay_alpha),
  
-        ('RIGHT','PECTORALISMINOR'):(70.0/255.70,0.00,overlay_alpha),
-        ('RIGHT','PECTORALISMAJOR'):(180.0/255.180,0.0,0.00,overlay_alpha),
-        ('RIGHT','SUBCUTANEOUSFAT'):(230.0/255.0,168.0/255.0, 67.0/255.0, overlay_alpha),       
+        ('RIGHT','PECTORALISMINOR'):(0.0/255,50.00/255.0,250.00/255, overlay_alpha),
+        ('RIGHT','PECTORALISMAJOR'):(200.0/255.0,0.0/255.0,200.00/255.0,overlay_alpha),
+        ('RIGHT','SUBCUTANEOUSFAT'):(100.0/255.0,80.0/255.0, 50.0/255.0, overlay_alpha),       
         }
         
         color_bound_list = [[QcColorConventionsManager.qc_background, 0 ]] #, [qc_allregionstypes, 1 ]
@@ -488,7 +488,6 @@ class ImageOverlay:
                 for i in range(0,np.shape(regions)[0]):             
                     reg_val =  mychestConvenstion.GetChestRegionValueFromName(regions[i])
                     mask = np.logical_or(mask, parser.get_mask(chest_region=reg_val) ) 
-
 
         if(types):
             if mychestConvenstion.GetChestWildCardName() in types:
