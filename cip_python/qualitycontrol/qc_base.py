@@ -36,6 +36,7 @@ class QcColorConventionsManager:
         my_colors = colors.ColorConverter()
         qc_allregionstypes = my_colors.to_rgba('brown', alpha=overlay_alpha) 
 
+    
         QcColorConventionsManager.qc_color_mapping = {
         #'UNDEFINEDREGION':(0.00,0.00,0.00,0.0),
 
@@ -50,7 +51,8 @@ class QcColorConventionsManager:
         'RIGHTMIDDLETHIRD': my_colors.to_rgba('yellow', alpha=overlay_alpha),
         'RIGHTLOWERTHIRD': my_colors.to_rgba('blue', alpha=overlay_alpha),
         'RIGHTUPPERTHIRD': my_colors.to_rgba('red', alpha=overlay_alpha),
-
+        'LEFT':(0.45,0.00,0.00,overlay_alpha),
+        'RIGHT':(0.00,0.45,0.00,overlay_alpha),       
         # copied over from chest conventions
         'WHOLELUNG':(0.42,0.38,0.75,overlay_alpha),
         'RIGHTLUNG':(.26,0.64,0.10,overlay_alpha),
@@ -63,8 +65,6 @@ class QcColorConventionsManager:
         'UPPERTHIRD':(0.00,0.00,0.02,overlay_alpha),
         'MIDDLETHIRD':(0.00,0.00,0.03,overlay_alpha),
         'LOWERTHIRD':(0.00,0.00,0.04,overlay_alpha),
-        'LEFT':(0.99,0.00,0.00,overlay_alpha),
-        'RIGHT':(0.00,0.99,0.00,overlay_alpha),
         'LIVER':(0.66,0.36,0.40,overlay_alpha),
         'SPLEEN':(1.00,1.00,0.01,overlay_alpha),
         'ABDOMEN':(1.00,0.50,0.01,overlay_alpha),
@@ -125,8 +125,12 @@ class QcColorConventionsManager:
 
         'Airway': my_colors.to_rgba('fuchsia', alpha=overlay_alpha),
         'Vessel': my_colors.to_rgba('limegreen', alpha=overlay_alpha),
-        'OBLIQUEFISSURE': my_colors.to_rgba('salmon', alpha=overlay_alpha),
+        'OBLIQUEFISSURE': my_colors.to_rgba('salmon', alpha=overlay_alpha),        
         'HORIZONTALFISSURE': my_colors.to_rgba('lightslategray', alpha=overlay_alpha),
+
+        'PECTORALISMINOR':(0.00,0.99,0.00,overlay_alpha),
+        'PECTORALISMAJOR':(0.99,0.01,0.00,overlay_alpha),
+        'SUBCUTANEOUSFAT':(0.99,0.01,0.99,overlay_alpha),
         'NORMALPARENCHYMA':(0.99,0.99,0.99,overlay_alpha),
         'EMPHYSEMATOUS':(0.96,0.96,0.96,overlay_alpha),
         'GROUNDGLASS':(0.95,0.95,0.95,overlay_alpha),
@@ -174,8 +178,6 @@ class QcColorConventionsManager:
         'CALCIFICATION':(0.51,0.51,0.51,overlay_alpha),
         'ARTERY':(0.00,0.00,0.99,overlay_alpha),
         'VEIN':(0.99,0.00,0.00,overlay_alpha),
-        'PECTORALISMINOR':(0.00,0.99,0.00,overlay_alpha),
-        'PECTORALISMAJOR':(0.99,0.01,0.00,overlay_alpha),
         'ANTERIORSCALENE':(0.46,0.46,0.46,overlay_alpha),
         'FISSURE':(0.93,0.01,0.10,overlay_alpha),
         'VESSELGENERATION0':(0.00,0.00,0.00,overlay_alpha),
@@ -192,7 +194,6 @@ class QcColorConventionsManager:
         'PARASEPTALEMPHYSEMA':(0.00,0.68,0.00,overlay_alpha),
         'CENTRILOBULAREMPHYSEMA':(0.00,0.69,0.69,overlay_alpha),
         'PANLOBULAREMPHYSEMA':(0.00,0.00,0.70,overlay_alpha),
-        'SUBCUTANEOUSFAT':(0.99,0.01,0.99,overlay_alpha),
         'VISCERALFAT':(0.58,0.65,0.20,overlay_alpha),
         'INTERMEDIATEBRONCHUS':(0.85,0.75,0.85,overlay_alpha),
         'LOWERLOBEBRONCHUS':(1.00,0.02,0.00,overlay_alpha),
@@ -219,6 +220,17 @@ class QcColorConventionsManager:
         'SYSTOLE':(0.05,0.03,0.05,overlay_alpha),
         'DIASTOLE':(0.05,0.03,0.06,overlay_alpha),
         }                  
+        
+        QcColorConventionsManager.qc_region_type_color_mapping = {
+        ('LEFT','PECTORALISMINOR'):(100.0/255.0,0.00,0.00,overlay_alpha),
+        ('LEFT','PECTORALISMAJOR'):(200.0/255.0,0.00,0.00,overlay_alpha),
+        ('LEFT','SUBCUTANEOUSFAT'):(230.0/255.0,220.0/255.0,70.0/255.0,overlay_alpha),
+ 
+        ('RIGHT','PECTORALISMINOR'):(70.0/255.70,0.00,overlay_alpha),
+        ('RIGHT','PECTORALISMAJOR'):(180.0/255.180,0.0,0.00,overlay_alpha),
+        ('RIGHT','SUBCUTANEOUSFAT'):(230.0/255.0,168.0/255.0, 67.0/255.0, overlay_alpha),       
+        }
+        
         color_bound_list = [[QcColorConventionsManager.qc_background, 0 ]] #, [qc_allregionstypes, 1 ]
         
         """ append label value with region and type to color bounds list. (for now, either region or type)"""
@@ -246,10 +258,14 @@ class QcColorConventionsManager:
                 regtypeval = mychestConvenstion.GetValueFromChestRegionAndType(reg_val, type_val)
                 if(reg_val==0 or type_val==0 or regtypeval==0):
                     print("regval="+str(reg_val)+"type_val="+str(type_val)+"regtypeval="+str(regtypeval))
-                    print("zero!")
                     print(the_type)
                     print(region)
-                the_colortemp= (np.array(QcColorConventionsManager.qc_color_mapping[region])+np.array(QcColorConventionsManager.qc_type_color_mapping[the_type]))/2
+                if((region,the_type) in QcColorConventionsManager.qc_region_type_color_mapping.keys()):
+                    #import pdb
+                    #pdb.set_trace()
+                    the_colortemp= np.array(QcColorConventionsManager.qc_region_type_color_mapping[(region,the_type)])  
+                else:
+                    the_colortemp= (np.array(QcColorConventionsManager.qc_color_mapping[region])+np.array(QcColorConventionsManager.qc_type_color_mapping[the_type]))/2
                 the_color = np.ndarray.tolist(the_colortemp)
                 color_bound_list.append([the_color, regtypeval])  
                                                    
@@ -270,6 +286,8 @@ class QcColorConventionsManager:
         QcColorConventionsManager.cmap = colors.ListedColormap(color_bound_list[0]) 
         QcColorConventionsManager.norm = colors.BoundaryNorm(color_bound_list[1], QcColorConventionsManager.cmap.N)
                 
+        import pdb
+        #pdb.set_trace()
                                 
             
 class ImageOverlay:
@@ -418,9 +436,14 @@ class ImageOverlay:
         
         bounds_list = self.get_overlay_bounds_from_volume_bounds(bounds_ct, bounds_lm, num_overlays, axis=axis)                                    
 
+        #""" **** for testing purposes"""
+        #in_ct1[in_mask==0]=np.min(in_ct1)
+        #in_ct2[in_mask==0]=np.min(in_ct2)
+        
         """ Exract the list of overlays """
         list_of_cts = []
-
+        import pdb
+        #pdb.set_trace()
         for i in range(0,num_overlays):
             ct_patch1 = np.squeeze(in_ct1[bounds_list[i][0]:bounds_list[i][1],bounds_list[i][2]:bounds_list[i][3],\
                 bounds_list[i][4]:bounds_list[i][5]]).astype(float)
@@ -444,13 +467,19 @@ class ImageOverlay:
         return list_of_cts #overlay_images
         
                                              
-    def get_segmentation_overlay(self, in_ct, in_lm, num_overlays, regions, types, axis='axial'):
+    def get_segmentation_overlay(self, in_ct, in_lm, num_overlays, regions, types, region_type_pairs=None, axis='axial'):
 
         parser = RegionTypeParser(in_lm)
         mychestConvenstion =ChestConventions()       
         
         """ TODO: Add wildcard"""
         mask = np.zeros_like(in_lm)
+
+        if(region_type_pairs):
+            for i in range(0,np.shape(region_type_pairs)[0]): 
+                reg_val =  mychestConvenstion.GetChestRegionValueFromName(region_type_pairs[i][0])
+                type_val =  mychestConvenstion.GetChestTypeValueFromName(region_type_pairs[i][1]) 
+                mask = np.logical_or(mask, parser.get_mask(chest_region=reg_val, chest_type=type_val) )
         if(regions):
             if mychestConvenstion.GetChestWildCardName() in regions:
                 #extract a labelmap with only chest types
@@ -459,6 +488,7 @@ class ImageOverlay:
                 for i in range(0,np.shape(regions)[0]):             
                     reg_val =  mychestConvenstion.GetChestRegionValueFromName(regions[i])
                     mask = np.logical_or(mask, parser.get_mask(chest_region=reg_val) ) 
+
 
         if(types):
             if mychestConvenstion.GetChestWildCardName() in types:
@@ -473,11 +503,11 @@ class ImageOverlay:
         
         """ if types=None then extract only regions, if regions=None then extract only types.
         Else leave as is... Need to have color mapping for regions and types combined"""
-        if(regions is None):
+        if((region_type_pairs is None) and (regions is None)):
             """ extract only types"""
             lm_masked = mychestConvenstion.GetChestTypeFromValue(lm_masked)
             lm_masked = mychestConvenstion.GetValueFromChestRegionAndType(np.zeros_like(lm_masked), lm_masked)
-        if(types is None):
+        if((region_type_pairs is None) and (types is None)):
             lm_masked = mychestConvenstion.GetChestRegionFromValue(lm_masked)
             
         xmax, ymax,zmax = np.max(np.where(lm_masked>0), 1)
@@ -488,9 +518,10 @@ class ImageOverlay:
 
         bounds_lm = [xmin,xmax, ymin,ymax, zmin,zmax] 
         bounds_ct = [xminct, xmaxct, yminct,ymaxct, zminct,zmaxct ]
-
+    
         bounds_list = self.get_overlay_bounds_from_volume_bounds(bounds_ct, bounds_lm, num_overlays, axis)                                    
 
+        #pdb.set_trace()
         """ Exract the list of overlays """
         list_of_cts = []
         list_of_labelmaps = []
@@ -551,7 +582,6 @@ class Montage:
         QcColorConventionsManager.buildColorMap(overlay_alpha = overlay_alpha)
         for i in range(0, num_rows):
             num_columns=len(list_of_cts[i])
-            print(str(num_columns)+" num columns")
             for j in range(0, num_columns):
                 ax_1 = fig.add_subplot(gs[i:(i+1),j:(j+1)])
 
@@ -577,17 +607,40 @@ class Montage:
                         from PIL import Image
                         im1 = Image.new("RGB", [im_shape[1],im_shape[0]], "black")
                         im2 = Image.new("RGB", [im_shape[1],im_shape[0]], "black")
-                        
-                        
+                        import pdb
+                        #pdb.set_trace()
+                        #im1 = Image.fromarray(np.uint8(cm.Blues_r(list_of_cts[i][j][1])*255))
+                        #im2 = Image.fromarray(np.uint8(cm.YlOrBr_r(list_of_cts[i][j][1])*255))
+
                         im1_array = np.array(im1)
                         im2_array = np.array(im2) 
-
-                        im1_array[:,:,0] = list_of_cts[i][j][0]*255.0 
-                        im2_array[:,:,2] = list_of_cts[i][j][1]*255.0 
+                        #im1_array[:,:,0] = (list_of_cts[i][j][0]*255)
+                        #import pdb
+                        #pdb.set_trace()
+                        ct1_prop=(list_of_cts[i][j][0])/(list_of_cts[i][j][0]+list_of_cts[i][j][1])
+                        ct2_prop=(list_of_cts[i][j][1])/(list_of_cts[i][j][0]+list_of_cts[i][j][1])
                         
-                        image_blend = Image.blend(Image.fromarray(im1_array,'RGB'),Image.fromarray(im2_array,'RGB'),alpha=overlay_alpha)
-                        im = plt.imshow(np.array(image_blend),origin='upper', extent = the_extent)
+                        im1_array[:,:,0] = (list_of_cts[i][j][0]*43.0)#*ct1_prop
+                        im1_array[:,:,1] = (list_of_cts[i][j][0]*80)#*ct1_prop
+                        im1_array[:,:,2] = (list_of_cts[i][j][0]*200)#*ct1_prop
+##
+                        im2_array[:,:,0] = (list_of_cts[i][j][1]*212.0)#*ct2_prop
+                        im2_array[:,:,1] = (list_of_cts[i][j][1]*175.0)#*ct2_prop
+                        im2_array[:,:,2] = (list_of_cts[i][j][1]*55.0)#*ct2_prop
 
+
+                        #im1_array[:,:,0] = (list_of_cts[i][j][0]*28.0+list_of_cts[i][j][1]*254.0)/2.0# 130#
+                        #im1_array[:,:,1] = (list_of_cts[i][j][0]*164+list_of_cts[i][j][1]*247.0)/2.0
+                        #im2_array[:,:,2] = (list_of_cts[i][j][0]*252.0+list_of_cts[i][j][1]*55.0)/2.0
+                        # the blend should be ct1_intensity/(ct1i+ct2i)*ct1_r_value+ct2...
+
+
+                        #im1_array[:,:,0] = (ct1_prop*25.0+ct2_prop*230.0)# 130#
+                        #im1_array[:,:,1] = (ct1_prop*102+ct2_prop*153.0)
+                        #im2_array[:,:,2] = (ct1_prop*210.0+ct2_prop*45.0)                                                                       
+                        image_blend=(im1_array+im2_array)
+                        #image_blend = Image.blend(Image.fromarray(im1_array,'RGB'),Image.fromarray(im2_array,'RGB'),alpha=overlay_alpha)
+                        im = plt.imshow(np.array(image_blend),origin='upper', extent = the_extent, vmin=0, vmax=0.8) 
                 else:
                       myccmap= 'gray' 
                       the_alpha = 1.0
@@ -659,7 +712,11 @@ class LabelmapQC:
                     in_types = self.type_dictionary[list_request_qc_per_labelmap[j][i]]
                 else:
                     in_types = None
-                    
+                if self.region_type_dictionary[list_request_qc_per_labelmap[j][i]]:
+                    in_regions_types = self.region_type_dictionary[list_request_qc_per_labelmap[j][i]]
+                else:
+                    in_regions_types = None
+                                        
                 overlay = ImageOverlay()
                 if ((is_overlay) and (list_request_qc_per_labelmap[j][i] in self.overlay_qc)):
                                     
@@ -669,7 +726,7 @@ class LabelmapQC:
   
                     """ get overlay QC"""
                     temp_list_cts,temp_list_labelmaps = overlay.get_segmentation_overlay( in_ct, list_of_labelmaps[j],\
-                        num_images_per_region, in_regions, in_types, axis=list_of_axes[j][i])
+                        num_images_per_region, in_regions, in_types, region_type_pairs=in_regions_types, axis=list_of_axes[j][i])
 
                     list_cts.append(temp_list_cts)
                     list_labelmaps.append(temp_list_labelmaps)
