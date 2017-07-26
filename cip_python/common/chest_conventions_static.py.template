@@ -74,3 +74,8 @@ class ImageFeature(Enum):
 class ReturnCode(Enum):
     """Populated automatically from /Resources/ChestConventions.xml file"""
 //##RETURN_CODE_ENUM##
+
+
+class Plane(Enum):
+    """Populated automatically from /Resources/ChestConventions.xml file"""
+//##PLANE_ENUM##

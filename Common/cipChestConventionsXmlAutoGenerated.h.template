@@ -31,6 +31,10 @@ namespace cip {
 //##RETURN_CODE_ENUM##
     };
 
+    enum Plane {
+//##PLANE_ENUM##
+    };
+
     typedef std::pair<unsigned char, unsigned char> Region_Pair;
 
     class ChestConventionsStatic
@@ -44,9 +48,11 @@ namespace cip {
         std::vector< unsigned char >              ChestRegions;
         std::vector< unsigned char >              ChestTypes;
         std::vector< unsigned char >              ImageFeatures;
+        std::vector< unsigned char >              Planes;
         std::vector< std::string >                ChestRegionNames;
         std::vector< std::string >                ChestTypeNames;
         std::vector< std::string >                ImageFeatureNames;
+        std::vector< std::string >                PlaneNames;
         std::vector< double* >                    ChestRegionColors;
         std::vector< double* >                    ChestTypeColors;
 

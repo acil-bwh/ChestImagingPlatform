@@ -1047,6 +1047,12 @@
             <Name>Diastole</Name>
             <Color>0.05;0.03;0.06</Color>
         </ChestType>
+        <ChestType>
+            <Id>96</Id>
+            <Code>INJUREDPARENCHYMA</Code>
+            <Name>InjuredParenchyma</Name>
+            <Color>0.05;0.03;0.07</Color>
+        </ChestType>
     </ChestTypes>
     <ChestRegionHierarchyMap>
         <Hierarchy>
@@ -1485,6 +1491,28 @@
             <Code>SEGMENTATIONFAILURE</Code>
         </ReturnCode>
     </ReturnCodes>
+    <Planes>
+        <Plane>
+            <Id>0</Id>
+            <Code>UNDEFINEDPLANE</Code>
+            <Name>UndefinedPlane</Name>
+        </Plane>
+        <Plane>
+            <Id>1</Id>
+            <Code>AXIAL</Code>
+            <Name>Axial</Name>
+        </Plane>
+        <Plane>
+            <Id>2</Id>
+            <Code>CORONAL</Code>
+            <Name>Coronal</Name>
+        </Plane>
+        <Plane>
+            <Id>3</Id>
+            <Code>SAGITTAL</Code>
+            <Name>Sagittal</Name>
+        </Plane>
+    </Planes>
     <BodyCompositionPhenotypeNames>
         <Name>AxialCSA</Name>
         <Name>CoronalCSA</Name>

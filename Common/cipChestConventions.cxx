@@ -31,6 +31,10 @@ unsigned char cip::ChestConventions::GetNumberOfEnumeratedImageFeatures() const 
     return s_ChestConventions.ImageFeatures.size();
 }
 
+unsigned char cip::ChestConventions::GetNumberOfEnumeratedPlanes() const {
+    return s_ChestConventions.Planes.size();
+}
+
 /** This method checks if the chest region 'subordinate' is within
  *  the chest region 'superior'. */
 bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship(unsigned char subordinate,
@@ -262,7 +266,12 @@ unsigned char cip::ChestConventions::GetImageFeature(unsigned int i) const {
     return (unsigned char) (s_ChestConventions.ImageFeatures[i]);
 }
 
-/** Given an unsigned char value corresponding to a chest type, this
+/** Get the ith plane */
+unsigned char cip::ChestConventions::GetPlane(unsigned int i) const {
+    return (unsigned char) (s_ChestConventions.Planes[i]);
+}
+
+/** Given an unsigned char value corresponding to an ImageFeature, this
  *  method will return the string name equivalent. */
 std::string cip::ChestConventions::GetImageFeatureName(unsigned char whichFeature) const {
     if (int(whichFeature) > GetNumberOfEnumeratedImageFeatures() - 1) {
@@ -270,6 +279,15 @@ std::string cip::ChestConventions::GetImageFeatureName(unsigned char whichFeatur
     }
 
     return s_ChestConventions.ImageFeatureNames[int(whichFeature)];
+}
+
+/** Given an unsigned char value corresponding to Plane, this
+ *  method will return the string name equivalent. */
+std::string cip::ChestConventions::GetPlaneName(unsigned char whichPlane) const {
+//    if (int(whichFeature) > GetNumberOfEnumeratedImageFeatures() - 1) {
+//        return "UNDEFINEDFEATURE";
+//    }
+    return s_ChestConventions.PlaneNames[int(whichPlane)];
 }
 
 /** Returns true if the passed string name is among the allowed body composition

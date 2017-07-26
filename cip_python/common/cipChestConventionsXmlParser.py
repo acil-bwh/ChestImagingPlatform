@@ -46,7 +46,8 @@ replacements = (
     ("ChestTypes/ChestType", "//##CHEST_TYPE_ENUM##"),
     ("ChestRegions/ChestRegion", "//##CHEST_REGION_ENUM##"),
     ("ImageFeatures/ImageFeature", "//##IMAGE_FEATURE_ENUM##"),
-    ("ReturnCodes/ReturnCode", "//##RETURN_CODE_ENUM##")
+    ("ReturnCodes/ReturnCode", "//##RETURN_CODE_ENUM##"),
+    ("Planes/Plane", "//##PLANE_ENUM##")
 )
 for replacement in replacements:
     replacement_text_cxx = ""
@@ -66,6 +67,7 @@ replacements = (
     "ChestTypes/ChestType",
     "ChestRegions/ChestRegion",
     "ImageFeatures/ImageFeature",
+    "Planes/Plane"
 )
 for replacement in replacements:
     for node in xml_root.findall(replacement):
