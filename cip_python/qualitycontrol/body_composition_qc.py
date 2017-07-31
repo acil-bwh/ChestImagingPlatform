@@ -52,7 +52,7 @@ class BodyCompositionQC(LabelmapQC):
         
         """ first check which labelmaps are available """
         available_labelmaps = []
-        if(in_body_composition != None):
+        if in_body_composition is not None:
             available_labelmaps.append('bodyComposition')
                                                           
         """ add the labelmaps needed and perform labelmap QC"""                                                          
