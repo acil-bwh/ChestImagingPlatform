@@ -53,6 +53,11 @@ class LungSegmentationQC(LabelmapQC):
         self.overlay_qc = {'leftLung','rightLung','leftLungLobes','rightLungLobes'}
         
         self.projection_qc = {'all_regions','all_types'}
+
+        self.region_type_dictionary = {'leftLung': None, 'rightLung': None, 'all_regions': None, 'all_types': None}
+
+
+    
      
         LabelmapQC.__init__(self)  
                              
@@ -68,9 +73,9 @@ class LungSegmentationQC(LabelmapQC):
         
         """ first check which labelmaps are available """
         available_labelmaps = []
-        if(in_partial != None):
+        if in_partial is not None:
             available_labelmaps.append('partialLungLabelmap')
-        if(in_lobe != None):
+        if in_lobe is not None:
             available_labelmaps.append('lungLobeLabelmap')
                                                           
         """ add the labelmaps needed and perform labelmap QC"""                                                          
