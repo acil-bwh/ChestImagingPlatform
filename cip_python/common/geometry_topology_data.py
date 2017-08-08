@@ -8,6 +8,7 @@ Created on Apr 6, 2015
 """
 
 import xml.etree.ElementTree as et
+
 import os
 import platform
 import time
@@ -58,6 +59,12 @@ class GeometryTopologyData(object):
 
         self.id_seed = 0    # Seed. The structures added with "add_point", etc. will have an id = id_seed + 1
 
+    def __str__(self):
+        """
+        Print a nicely formatted XML with the current content of the object
+        """
+        return self.to_xml(pretty_print=True)
+
     def add_point(self, point, fill_auto_fields=True, timestamp=None):
         """ Add a new Point to the structure
         :param point: Point object
@@ -104,9 +111,15 @@ class GeometryTopologyData(object):
         """
         return time.strftime('%Y-%m-%d %H:%M:%S')
 
-    def to_xml(self):
-        """ Generate the XML string representation of this object.
-        It doesn't use any special python module to keep compatibility with Slicer """
+    def to_xml(self, pretty_print=False):
+        """
+        Generate the XML string representation of this object.
+        It doesn't use any special python module by default to keep compatibility with Slicer
+        Args:
+            pretty_print: when True and lxml is available, print the xml in a nice format
+        Returns:
+            XML string representation of the object
+        """
         output = '<?xml version="1.0" encoding="utf8"?><GeometryTopologyData>'
         if self.num_dimensions != 0:
             output += ('<NumDimensions>%i</NumDimensions>' % self.num_dimensions)
@@ -122,13 +135,24 @@ class GeometryTopologyData(object):
         # Concatenate bounding boxes
         bounding_boxes = "".join(map(lambda i:i.to_xml(), self.bounding_boxes))
 
-        return output + points + bounding_boxes + "</GeometryTopologyData>"
+        s = output + points + bounding_boxes + "</GeometryTopologyData>"
+        if pretty_print:
+            try:
+                import lxml.etree as etree
+                x = etree.fromstring(s)
+                s = etree.tostring(x, pretty_print=True)
+            except:
+                print ("lxml not found. Nice print not available")
+        return s
 
-    def to_xml_file(self, xml_file_path):
-        """ Save this object to an xml file
-        :param: xml_file_path: file path
+    def to_xml_file(self, xml_file_path, pretty_print=True):
         """
-        s = self.to_xml()
+        Save this object to an xml file
+        Args:
+            xml_file_path: file path
+            pretty_print: write the xml in a nice format (requires lxml)
+        """
+        s = self.to_xml(pretty_print=pretty_print)
         with open(xml_file_path, "w+b") as f:
             f.write(s)
 
@@ -182,6 +206,7 @@ class GeometryTopologyData(object):
         # Set the new seed so that every point (or bounding box) added with "add_point" has a bigger id
         geometry_topology.id_seed = seed
 
+        # Pretty parsing
         return geometry_topology
 
 
