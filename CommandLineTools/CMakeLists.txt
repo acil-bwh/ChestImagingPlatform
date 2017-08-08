@@ -78,6 +78,7 @@ set(CLIS_DIRS
   ExecuteSystemCommand
   GraphCutsOptimization
   SegmentLungAirways
+  ComputeStrainFromDeformationField
 )
 
 #Append CLIS that depends on BOOST
