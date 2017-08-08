@@ -182,12 +182,14 @@ set( CIP_INCLUDE_DIRECTORIES
   "${CIP_SOURCE_DIR}/Utilities/VTK"
   "${CIP_SOURCE_DIR}/Utilities/LesionSizingToolkit"
   "${CIP_SOURCE_DIR}/Utilities/GraphCutsOptimization"
+  "${CIP_SOURCE_DIR}/Utilities/ITKStrain"
   "${CIP_SOURCE_DIR}/IO"
   "${CIP_BINARY_DIR}/Common"
   "${CIP_BINARY_DIR}/Utilities/VTK"
   "${CIP_BINARY_DIR}/Utilities/ITK"
   "${CIP_BINARY_DIR}/Utilities/LesionSizingToolkit"
   "${CIP_BINARY_DIR}/Utilities/GraphCutsOptimization"
+  "${CIP_BINARY_DIR}/Utilities/ITKStrain"
   "${CIP_BINARY_DIR}/IO"
 )
 
