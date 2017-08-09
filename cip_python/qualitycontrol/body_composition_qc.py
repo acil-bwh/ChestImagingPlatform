@@ -29,8 +29,16 @@ class BodyCompositionQC(LabelmapQC):
         self.region_type_dictionary={\
             'pecsSubcutaneousFat': [['Left','PectoralisMinor'],['Right','PectoralisMinor'],\
             ['Left','PectoralisMajor'],['Right','PectoralisMajor'],\
-            ['Left','SubcutaneousFat'],['Right','SubcutaneousFat']]\
+            ['Left','SubcutaneousFat'],['Right','SubcutaneousFat']],\
+            
+            'visceralFat': [['Paravertebral','SubcutaneousFat'], ['Abdomen','VisceralFat'],\
+            ['Paravertebral','Muscle'] ],\
         }        
+        
+        
+
+
+        
         self.axes_dictionary = {\
         'pecsSubcutaneousFat': 'axial',\
         'visceralFat': 'axial',\
@@ -137,7 +145,7 @@ if __name__ == "__main__":
     if(options.qc_pecs_subcutaneousfat):
        list_of_bosycomposition_qc.append('pecsSubcutaneousFat') 
     if(options.qc_visceral_fat):
-       list_of_bosycomposition_qc.append('visceralsFat') 
+       list_of_bosycomposition_qc.append('visceralFat') 
     if(options.qc_regionstypes):
        list_of_bosycomposition_qc.append('all_regions') 
        list_of_bosycomposition_qc.append('all_types') 
