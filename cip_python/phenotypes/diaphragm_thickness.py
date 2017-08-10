@@ -8,10 +8,6 @@ from scipy.stats import scoreatpercentile
 from optparse import OptionParser
 import os.path
 
-import matplotlib
-#Use Agg backend to allow non-interactive rendering 
-#without relying on X-windows. Other options are: PDF, Cairo..
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
