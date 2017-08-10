@@ -11,7 +11,7 @@ from cip_python.common import *
 from cip_python.input_output import ImageReaderWriter
 
 class AnatomicStructuresManager(object):
-    def get_2D_numpy_from_single_slice_3D_volume(self, sitk_volume):
+    def get_2D_numpy_from_single_slice_3D_volume(self, case_path_or_sitk_volume):
         """
         Take a 3D sitk volume that only contains data in 1 slice.
         Based on the dimension of the slice (plane), convert it to a 2D numpy array and apply one of the plane transformations
@@ -23,6 +23,12 @@ class AnatomicStructuresManager(object):
             2D numpy array in a "natural anatomic" view.
         """
         reader = ImageReaderWriter()
+
+        if isinstance(case_path_or_sitk_volume, sitk.Image):
+            sitk_volume = case_path_or_sitk_volume
+        else:
+            sitk_volume = reader.read(case_path_or_sitk_volume)
+
         arr = reader.sitkImage_to_numpy(sitk_volume).squeeze()
 
         if sitk_volume.GetSize()[0] == 1:
@@ -97,13 +103,18 @@ class AnatomicStructuresManager(object):
 
         return x, y, width, height
 
-    def get_full_slices(self, sitk_volume, output_folder, plane):
+    def get_full_slices(self, case_path_or_sitk_volume, output_folder, plane):
        """ Generate and save all the slices of a 3D volume (SimpleITK image) in a particular plane
        Args:
-           sitk_volume: SimpleITK volume
+           case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
            output_folder: output folder where the images will be stored. Every slice will have 3 digits.
            plane: code for the planes. It will have to be in CIP ChestConventions.
        """
+       if isinstance(case_path_or_sitk_volume, sitk.Image):
+           sitk_volume = case_path_or_sitk_volume
+       else:
+           sitk_volume = ImageReaderWriter().read(case_path_or_sitk_volume)
+
        if plane == Plane.AXIAL:
            for i in range(sitk_volume.GetSize()[2]):
                sitk.WriteImage(sitk_volume[:, :, i:i + 1], os.path.join(output_folder, "{:03}.nrrd".format(i)))
@@ -306,3 +317,5 @@ if __name__ == "__main__":
             file_name = os.path.join(args.output_folder, "{}-{}_{}.nrrd".format(case_id, structure[0], structure[1]))
             writer.write(sitk_image, os.path.join(args.output_folder, file_name))
             print ("{} generated".format(file_name))
+    elif args.operation == 'generate_all_slices_for_case':
+        gen.get_full_slices()
