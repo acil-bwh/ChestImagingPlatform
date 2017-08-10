@@ -16,6 +16,25 @@ cip::ChestConventions::~ChestConventions()
     }
 }
 
+unsigned char cip::ChestConventions::GetCollectionValueFromName(std::vector<unsigned char> collectionValues,
+                                                                std::vector<std::string> collectionNames,
+                                                                std::string key) const {
+
+    std::string upperKeyString(key);
+    std::transform(upperKeyString.begin(), upperKeyString.end(), upperKeyString.begin(), ::toupper);
+
+    for (int i = 0; i < collectionValues.size(); i++) {
+        std::string currentKey(collectionNames[i]);
+        std::transform(currentKey.begin(), currentKey.end(), currentKey.begin(), ::toupper);
+
+        if (!upperKeyString.compare(currentKey)) {
+            return collectionValues[i];
+        }
+    }
+    std::cout << "Key not found: " << key << std::endl;
+    throw ("Key not found: " + key);
+}
+
 unsigned char cip::ChestConventions::GetNumberOfEnumeratedChestRegions() const {
     //return m_NumberOfEnumeratedChestRegions;
     return s_ChestConventions.ChestRegions.size();
@@ -122,10 +141,6 @@ unsigned char cip::ChestConventions::GetChestTypeFromValue(unsigned short value)
 /** Given an unsigned char value corresponding to a chest type, this
  *  method will return the string name equivalent. */
 std::string cip::ChestConventions::GetChestTypeName(unsigned char whichType) const {
-    if (int(whichType) > GetNumberOfEnumeratedChestTypes() - 1) {
-        return "UNDEFINEDTYPE";
-    }
-
     return s_ChestConventions.ChestTypeNames[int(whichType)];
 }
 
@@ -176,10 +191,6 @@ void cip::ChestConventions::GetColorFromChestRegionChestType(unsigned char which
 /** Given an unsigned char value corresponding to a chest region, this
  *  method will return the string name equivalent. */
 std::string cip::ChestConventions::GetChestRegionName(unsigned char whichRegion) const {
-    if (int(whichRegion) > GetNumberOfEnumeratedChestRegions() - 1) {
-        return "UNDEFINEDREGION";
-    }
-
     return s_ChestConventions.ChestRegionNames[int(whichRegion)];
 }
 
@@ -211,43 +222,16 @@ unsigned short cip::ChestConventions::GetValueFromChestRegionAndType(unsigned ch
     return combinedValue;
 }
 
-/** Given a string identifying one of the enumerated chest regions,
- * this method will return the unsigned char equivalent. If no match
- * is found, the method will retune UNDEFINEDREGION */
 unsigned char cip::ChestConventions::GetChestRegionValueFromName(std::string regionString) const {
-    std::string upperRegionString(regionString);
-    std::transform(upperRegionString.begin(), upperRegionString.end(), upperRegionString.begin(), ::toupper);
-
-    for (int i = 0; i < GetNumberOfEnumeratedChestRegions(); i++) {
-        std::string upperChestRegionName(s_ChestConventions.ChestRegionNames[i]);
-        std::transform(upperChestRegionName.begin(), upperChestRegionName.end(), upperChestRegionName.begin(),
-                       ::toupper);
-
-        if (!upperRegionString.compare(upperChestRegionName)) {
-            return s_ChestConventions.ChestRegions[i];
-        }
-    }
-
-    return (unsigned char) (UNDEFINEDREGION);
+    return this->GetCollectionValueFromName(s_ChestConventions.ChestRegions, s_ChestConventions.ChestRegionNames, regionString);
 }
 
-/** Given a string identifying one of the enumerated chest types,
- * this method will return the unsigned char equivalent. If no match
- * is found, the method will retune UNDEFINEDTYPE */
 unsigned char cip::ChestConventions::GetChestTypeValueFromName(std::string typeString) const {
-    std::string upperTypeString(typeString);
-    std::transform(upperTypeString.begin(), upperTypeString.end(), upperTypeString.begin(), ::toupper);
+    return this->GetCollectionValueFromName(s_ChestConventions.ChestTypes, s_ChestConventions.ChestTypeNames, typeString);
+}
 
-    for (int i = 0; i < GetNumberOfEnumeratedChestTypes(); i++) {
-        std::string upperChestTypeName(s_ChestConventions.ChestTypeNames[i]);
-        std::transform(upperChestTypeName.begin(), upperChestTypeName.end(), upperChestTypeName.begin(), ::toupper);
-
-        if (!upperTypeString.compare(upperChestTypeName)) {
-            return s_ChestConventions.ChestTypes[i];
-        }
-    }
-
-    return (unsigned char) (UNDEFINEDTYPE);
+unsigned char cip::ChestConventions::GetPlaneValueFromName(std::string key) const {
+   return this->GetCollectionValueFromName(s_ChestConventions.Planes, s_ChestConventions.PlaneNames, key);
 }
 
 /** Get the ith chest region */
@@ -274,19 +258,12 @@ unsigned char cip::ChestConventions::GetPlane(unsigned int i) const {
 /** Given an unsigned char value corresponding to an ImageFeature, this
  *  method will return the string name equivalent. */
 std::string cip::ChestConventions::GetImageFeatureName(unsigned char whichFeature) const {
-    if (int(whichFeature) > GetNumberOfEnumeratedImageFeatures() - 1) {
-        return "UNDEFINEDFEATURE";
-    }
-
     return s_ChestConventions.ImageFeatureNames[int(whichFeature)];
 }
 
 /** Given an unsigned char value corresponding to Plane, this
  *  method will return the string name equivalent. */
 std::string cip::ChestConventions::GetPlaneName(unsigned char whichPlane) const {
-//    if (int(whichFeature) > GetNumberOfEnumeratedImageFeatures() - 1) {
-//        return "UNDEFINEDFEATURE";
-//    }
     return s_ChestConventions.PlaneNames[int(whichPlane)];
 }
 
@@ -392,4 +369,5 @@ bool cip::ChestConventions::IsChestRegion(std::string chestRegion) const {
 
     return false;
 }
+
 

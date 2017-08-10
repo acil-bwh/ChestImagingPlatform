@@ -77,11 +77,6 @@ for replacement in replacements:
 
 # Replace collections (string names)
 replacement_text_cxx += "\n"
-replacements = (
-    "ChestTypes/ChestType",
-    "ChestRegions/ChestRegion",
-    "ImageFeatures/ImageFeature",
-)
 for replacement in replacements:
     for node in xml_root.findall(replacement):
         replacement_text_cxx += "            {}Names.push_back( \"{}\" );\n".format(replacement.split("/")[1],

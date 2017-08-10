@@ -1499,8 +1499,8 @@
         </Plane>
         <Plane>
             <Id>1</Id>
-            <Code>AXIAL</Code>
-            <Name>Axial</Name>
+            <Code>SAGITTAL</Code>
+            <Name>Sagittal</Name>
         </Plane>
         <Plane>
             <Id>2</Id>
@@ -1509,8 +1509,8 @@
         </Plane>
         <Plane>
             <Id>3</Id>
-            <Code>SAGITTAL</Code>
-            <Name>Sagittal</Name>
+            <Code>AXIAL</Code>
+            <Name>Axial</Name>
         </Plane>
     </Planes>
     <BodyCompositionPhenotypeNames>
