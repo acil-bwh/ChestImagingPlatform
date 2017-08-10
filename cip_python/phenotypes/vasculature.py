@@ -8,10 +8,6 @@ from scipy.stats import kde
 from scipy.integrate import quadrature
 import os.path
 
-import matplotlib
-#Use Agg backend to allow non-interactive rendering 
-#without relying on X-windows. Other options are: PDF, Cairo..
-#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from cip_python.phenotypes import Phenotypes
