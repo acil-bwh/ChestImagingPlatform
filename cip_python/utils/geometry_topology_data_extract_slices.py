@@ -24,9 +24,9 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
     # Read the volume
     reader = ImageReaderWriter()
     vol = reader.read(input_volume_path)
-    arr = sitk.GetArrayFromImage(vol)
     if len(arr.shape) > 3:
         # Reduce one dimension because the schema color has 3 channels and we have to keep just the first (luminance)
+        arr = sitk.GetArrayFromImage(vol)
         # The only way to do it is create another image from an array
         arr = arr[:,:,:,0]
         vol_gray = sitk.GetImageFromArray(arr)

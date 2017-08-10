@@ -470,6 +470,11 @@ class BoundingBox(Structure):
         self.start = start
         self.size = size
 
+    @property
+    def coord2(self):
+        """start + size coordinate"""
+        return [self.start[0] + self.size[0], self.start[1] + self.size[1], self.start[2] + self.size[2]]
+
     def get_hash(self):
         """ Get a unique identifier for this structure (string encoding all the fields)
         @return:
