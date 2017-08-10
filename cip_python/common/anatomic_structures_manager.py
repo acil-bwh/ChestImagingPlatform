@@ -11,16 +11,18 @@ from cip_python.common import *
 from cip_python.input_output import ImageReaderWriter
 
 class AnatomicStructuresManager(object):
-    def get_2D_numpy_from_single_slice_3D_volume(self, case_path_or_sitk_volume):
+    def get_2D_numpy_from_single_slice_3D_volume(self, case_path_or_sitk_volume, plane=None):
         """
-        Take a 3D sitk volume that only contains data in 1 slice.
-        Based on the dimension of the slice (plane), convert it to a 2D numpy array and apply one of the plane transformations
-        to see the array in a "natural anatomic" way.
+        Take a 3D sitk volume and get a numpy array in "anatomical" shape.
+        If the volume is 2D, the numpy array will have only 2 dimensions and the plane will be automatically deducted.
+        Otherwise, the volume will have 3 dimensions but the "anatomical" view in IJK will be specified by
+        the 'plane' parameter.
         Args:
-            sitk_volume: 3D simpleITK volume
+            sitk_volume: simpleITK volume
+            plane: anatomical plane (declared in CIP ChestConventions)
 
         Returns:
-            2D numpy array in a "natural anatomic" view.
+            2D/3D numpy array in a "natural anatomic" view.
         """
         reader = ImageReaderWriter()
 
@@ -29,19 +31,36 @@ class AnatomicStructuresManager(object):
         else:
             sitk_volume = reader.read(case_path_or_sitk_volume)
 
-        arr = reader.sitkImage_to_numpy(sitk_volume).squeeze()
+        is_3D = True
+        if plane is None:
+            # Deduce the plane (the volume should be 2D)
+            if sitk_volume.GetSize()[0] == 1:
+                plane = Plane.SAGITTAL
+            elif sitk_volume.GetSize()[1] == 1:
+                plane = Plane.CORONAL
+            elif sitk_volume.GetSize()[2] == 1:
+                plane = Plane.AXIAL
+            else:
+                raise Exception("The volume has more than 2 dimensions and the plane has not been specified")
+            is_3D = False
 
-        if sitk_volume.GetSize()[0] == 1:
-            # SAGGITAL
-            arr = np.rot90(arr)
-        elif sitk_volume.GetSize()[1] == 1:
-            # CORONAL
-            arr = np.rot90(arr)
-        elif sitk_volume.GetSize()[2] == 1:
+        arr = reader.sitkImage_to_numpy(sitk_volume)
+
+        # Do the transformations to see the array in anatomical view
+        if plane == Plane.SAGITTAL:
+            arr = np.rot90(arr, axes=(1,2))
+        elif plane == Plane.CORONAL:
+            arr = np.rot90(arr, axes=(0, 2))
+        elif plane == Plane.AXIAL:
             # AXIAL
-            arr = np.flipud(np.rot90(arr))
+            arr = np.flipud(np.rot90(arr, axes=(0, 1)))
         else:
-            raise Exception("The volume has not 2 dimensions")
+            raise Exception("Wrong plane: {}".format(plane))
+
+        if not is_3D:
+            # Return an array that has only 2 dimensions
+            arr = arr.squeeze()
+
         return arr
 
     def lps_to_xywh(self, lps_coords, size, plane, lps_transformation_matrix):
@@ -103,7 +122,7 @@ class AnatomicStructuresManager(object):
 
         return x, y, width, height
 
-    def get_full_slices(self, case_path_or_sitk_volume, output_folder, plane):
+    def generate_all_slices(self, case_path_or_sitk_volume, output_folder, plane):
        """ Generate and save all the slices of a 3D volume (SimpleITK image) in a particular plane
        Args:
            case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
@@ -138,7 +157,8 @@ class AnatomicStructuresManager(object):
             plane: CIP Plane value
             extra_margin: 3-tuple that contains the extra margin (in pixels) for each dimension where the user wants
                            to expand the bounding box. Note that we are using ITK convention, which means:
-                           0=sagittal, 1=coronal, 2=axial
+                           0=sagittal, 1=coronal, 2=axial.
+                           When -1 is used, all the slices in that plane will be used
             padding_constant_value: value used in case the result volume has to be padded because of the position of
                                     the structure and the provided spacing
 
@@ -161,17 +181,23 @@ class AnatomicStructuresManager(object):
                 padding_in = [0, 0, 0]
                 padding_out = [0, 0, 0]
                 for i in range(3):
-                    start[i] = int(bb.start[i]) - extra_margin[i]
-                    if start[i] < 0:
-                        padding_in[i] = abs(start[i])
+                    # If margin == -1 we will take the full slice
+                    if extra_margin[i] == -1:
+                        # Take full slice
                         start[i] = 0
-
-                    end[i] = int(bb.start[i] + bb.size[i]) + extra_margin[i] + 1
-                    if end[i] >= sitk_volume.GetSize()[i]:
-                        padding_out[i] = end[i] - sitk_volume.GetSize()[i]
-                        end[i] = sitk_volume.GetSize()[i] - 1
-                    if start[i] == end[i]:
-                        end[i] += 1
+                        end[i] = sitk_volume.GetSize()[i]
+                    else:
+                        # Crop the structure
+                        start[i] = int(bb.start[i]) - extra_margin[i]
+                        end[i] = int(bb.start[i] + bb.size[i]) + extra_margin[i] + 1
+                        if start[i] < 0:
+                            padding_in[i] = abs(start[i])
+                            start[i] = 0
+                        if end[i] >= sitk_volume.GetSize()[i]:
+                            padding_out[i] = end[i] - sitk_volume.GetSize()[i]
+                            end[i] = sitk_volume.GetSize()[i] - 1
+                        if start[i] == end[i]:
+                            end[i] += 1
 
                 # Crop the image
                 im = sitk_volume[start[0]:end[0], start[1]:end[1], start[2]:end[2]]
@@ -318,4 +344,4 @@ if __name__ == "__main__":
             writer.write(sitk_image, os.path.join(args.output_folder, file_name))
             print ("{} generated".format(file_name))
     elif args.operation == 'generate_all_slices_for_case':
-        gen.get_full_slices()
+        gen.generate_all_slices()
