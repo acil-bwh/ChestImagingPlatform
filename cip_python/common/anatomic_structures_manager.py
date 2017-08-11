@@ -11,7 +11,7 @@ from cip_python.common import *
 from cip_python.input_output import ImageReaderWriter
 
 class AnatomicStructuresManager(object):
-    def get_2D_numpy_from_single_slice_3D_volume(self, case_path_or_sitk_volume, plane=None):
+    def get_2D_numpy_from_sitk_image(self, case_path_or_sitk_volume, plane=None):
         """
         Take a 3D sitk volume and get a numpy array in "anatomical" shape.
         If the volume is 2D, the numpy array will have only 2 dimensions and the plane will be automatically deducted.
@@ -209,46 +209,23 @@ class AnatomicStructuresManager(object):
 
     def get_full_slice(self, case_path_or_sitk_volume, xml_file_path, region, plane):
         """
-        Extract a full slice in anatomical view (numpy array) that contains the structure provided
+        Extract a sitk 3D volume that contains the structure provided
         Args:
             case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
             xml_file_path: Full path to a GeometryTopologyObject XML file
             region: CIP ChestRegion
             plane: CIP Plane
         Returns:
-            Numpy array in anatomical view
+            Simple ITK image. It will be a 3D volume but one dimension will have a size=1
         """
-        gtd = GeometryTopologyData.from_xml_file(xml_file_path)
-        if isinstance(case_path_or_sitk_volume, sitk.Image):
-            sitk_volume = case_path_or_sitk_volume
-        else:
-            sitk_volume = ImageReaderWriter().read(case_path_or_sitk_volume)
+        if plane == Plane.SAGITTAL:
+            margin = [0, -1, -1]
+        elif plane == Plane.CORONAL:
+            margin = [-1, 0, -1]
+        elif plane == Plane.AXIAL:
+            margin = [-1, -1, 0]
 
-        structure_code = ChestConventions.GetChestRegionName(region) + ChestConventions.GetPlaneName(plane)
-        for bb in gtd.bounding_boxes:
-            if bb.description.upper() == structure_code.upper():
-                # Get the cropped image
-                if bb.size[0] == 0:
-                    # Sagittal
-                    cropped_image = sitk_volume[int(bb.start[0]):int(bb.start[0] + 1),
-                                    int(bb.start[1]):int(bb.start[1] + bb.size[1]),
-                                    int(bb.start[2]):int(bb.start[2] + bb.size[2])]
-                elif bb.size[1] == 0:
-                    # Coronal
-                    cropped_image = sitk_volume[int(bb.start[0]):int(bb.start[0] + bb.size[0]),
-                                    int(bb.start[1]):int(bb.start[1] + 1),
-                                    int(bb.start[2]):int(bb.start[2] + bb.size[2])]
-                else:
-                    # Axial
-                    cropped_image = sitk_volume[int(bb.start[0]):int(bb.start[0] + bb.size[0]),
-                                    int(bb.start[1]):int(bb.start[1] + bb.size[1]),
-                                    int(bb.start[2]):int(bb.start[2] + 1)]
-
-                # Create a numpy array in the format that a user would see the structure
-                cropped_image = self.get_2D_numpy_from_single_slice_3D_volume(cropped_image)
-                return cropped_image
-        # If the execution reaches this line, the structure was not found
-        raise Exception("Structure {} not found in {}".format(structure_code, xml_file_path))
+        return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path, region, plane, extra_margin=margin)
 
     def generate_all_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, rectangle_color='r',
                                line_width=3):
@@ -279,7 +256,7 @@ class AnatomicStructuresManager(object):
             else:
                 raise Exception("Wrong structure: {}-{}".format(bb.id, bb.description))
 
-            slice_np = self.get_2D_numpy_from_single_slice_3D_volume(slice_sitk)
+            slice_np = self.get_2D_numpy_from_sitk_image(slice_sitk)
             x, y, width, height = self.ijk_to_xywh(bb.start, bb.coord2, sitk_vol.GetSize())
 
             # Draw rectangle
