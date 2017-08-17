@@ -122,29 +122,37 @@ class AnatomicStructuresManager(object):
 
         return x, y, width, height
 
-    def generate_all_slices(self, case_path_or_sitk_volume, output_folder, plane):
-       """ Generate and save all the slices of a 3D volume (SimpleITK image) in a particular plane
-       Args:
-           case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
+    def generate_all_slices(self, case_path, output_folder):
+        """ Generate and save all the slices of a 3D volume (SimpleITK image) in a particular plane
+        Args:
+           case_path: path to the CT volume
            output_folder: output folder where the images will be stored. Every slice will have 3 digits.
-           plane: code for the planes. It will have to be in CIP ChestConventions.
-       """
-       if isinstance(case_path_or_sitk_volume, sitk.Image):
-           sitk_volume = case_path_or_sitk_volume
-       else:
-           sitk_volume = ImageReaderWriter().read(case_path_or_sitk_volume)
+        """
 
-       if plane == Plane.AXIAL:
-           for i in range(sitk_volume.GetSize()[2]):
-               sitk.WriteImage(sitk_volume[:, :, i:i + 1], os.path.join(output_folder, "{:03}.nrrd".format(i)))
-       elif plane == Plane.CORONAL:
-           for i in range(sitk_volume.GetSize()[1]):
-               sitk.WriteImage(sitk_volume[:, i:i + 1, :], os.path.join(output_folder, "{:03}.nrrd".format(i)))
-       elif plane == Plane.SAGITTAL:
-           for i in range(sitk_volume.GetSize()[0]):
-               sitk.WriteImage(sitk_volume[i:i + 1, :, :], os.path.join(output_folder, "{:03}.nrrd".format(i)))
-       else:
-           raise Exception("Wrong plane: {}".format(plane))
+        sitk_volume = ImageReaderWriter().read(case_path)
+        case = os.path.basename(case_path).replace(".nrrd","")
+
+        # Sagittal
+        p = "{}/{}/{}".format(output_folder, case, ChestConventions.GetPlaneName(Plane.SAGITTAL))
+        if not os.path.isdir(p):
+            os.makedirs(p)
+        for i in range(sitk_volume.GetSize()[0]):
+            sitk.WriteImage(sitk_volume[i:i + 1, :, :], "{}/{:03}.nrrd".format(p, i))
+
+        # Coronal
+        p = "{}/{}/{}".format(output_folder, case, ChestConventions.GetPlaneName(Plane.CORONAL))
+        if not os.path.isdir(p):
+            os.makedirs(p)
+        for i in range(sitk_volume.GetSize()[1]):
+            sitk.WriteImage(sitk_volume[:, i:i + 1, :], "{}/{:03}.nrrd".format(p, i))
+
+        # Axial
+        p = "{}/{}/{}".format(output_folder, case, ChestConventions.GetPlaneName(Plane.AXIAL))
+        if not os.path.isdir(p):
+            os.makedirs(p)
+        for i in range(sitk_volume.GetSize()[2]):
+            sitk.WriteImage(sitk_volume[:, :, i:i + 1], "{}/{:03}.nrrd".format(p, i))
+
 
     def get_cropped_structure(self, case_path_or_sitk_volume, xml_file_path, region, plane,
                               extra_margin=None, padding_constant_value=0):
@@ -294,7 +302,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate QC images from GeometryTopologyData XML files')
 
     parser.add_argument('operation', help="Operation", type=str,
-                        choices=['generate_qc_images', 'extract_slices'])
+                        choices=['generate_qc_images', 'extract_slices', 'generate_all_slices_case'])
     parser.add_argument('--case_path',  help="Case file (full path)", type=str, required=True)
     parser.add_argument('--xml_path', help="GeometryTopologyData XML file (full path)", type=str)
     parser.add_argument('--output_folder', '-o', help="Output figures folder", type=str, required=True)
@@ -320,5 +328,5 @@ if __name__ == "__main__":
             file_name = os.path.join(args.output_folder, "{}-{}_{}.nrrd".format(case_id, structure[0], structure[1]))
             writer.write(sitk_image, os.path.join(args.output_folder, file_name))
             print ("{} generated".format(file_name))
-    elif args.operation == 'generate_all_slices_for_case':
-        gen.generate_all_slices()
+    elif args.operation == 'generate_all_slices_case':
+        gen.generate_all_slices(args.case_path, args.output_folder)
