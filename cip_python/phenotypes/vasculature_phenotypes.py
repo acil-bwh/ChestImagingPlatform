@@ -184,7 +184,11 @@ class VasculaturePhenotypes(Phenotypes):
 
 
         #Get unique value of spacing as the norm 3D vector
-        spacing = vtk_to_numpy(vessel.GetFieldData().GetArray("spacing"))
+        if vessel.GetFieldData().GetArray("spacing") == None:
+            spacing=0.625
+        else:
+            spacing = vtk_to_numpy(vessel.GetFieldData().GetArray("spacing"))
+
         self._spacing=np.sqrt(np.sum(spacing*spacing))
 
 
@@ -192,13 +196,13 @@ class VasculaturePhenotypes(Phenotypes):
         #Check that ChestType contains a relevant vessel type
         type_arr=c.GetChestTypeFromValue((array_v['ChestRegionChestType']))
 
-        vessel_type = c.GetChestTypeValueFromName('Vessel')
-
-        vessel_mask = (type_arr==vessel_type)
-
-        if np.sum(vessel_mask==True)==0:
-            raise ValueError(\
-                'ChestType does not contain vessels.')
+#        vessel_type = c.GetChestTypeValueFromName('Vessel')
+#
+#        vessel_mask = (type_arr==vessel_type)
+#
+#        if np.sum(vessel_mask==True)==0:
+#            raise ValueError(\
+#                'ChestType does not contain vessels.')
 
         #Setting up computation arrays
         csa = np.arange(self.min_csa,self.max_csa,0.05)
@@ -288,6 +292,9 @@ class VasculaturePhenotypes(Phenotypes):
 
         #region_vessel_mask = np.logical_and(mask_region, mask_vessel)
         region_vessel_mask=mask
+        
+        if mask_sum == 0:
+            return None
 
         p_csa = self.compute_bv_profile_from_scale(array_v['scale'][region_vessel_mask])
         n_points = np.sum(region_vessel_mask == True)
