@@ -110,13 +110,18 @@ public:
 
   /** Given a string identifying one of the enumerated chest regions,
    * this method will return the unsigned char equivalent. If no match
-   * is found, the method will retune UNDEFINEDREGION */
+   * is found, the method will raise an exception */
   unsigned char GetChestRegionValueFromName( std::string regionString ) const;
 
   /** Given a string identifying one of the enumerated chest types,
    * this method will return the unsigned char equivalent. If no match
-   * is found, the method will retune UNDEFINEDTYPE */
+   * is found, the method will raise an exception */
   unsigned char GetChestTypeValueFromName( std::string typeString ) const;
+
+  /** Given a string identifying one of the enumerated chest types,
+  * this method will return the unsigned char equivalent. If no match
+  * is found, the method will raise an exception */
+  unsigned char GetPlaneValueFromName( std::string key ) const;
 
   /** Get the ith chest region */
   unsigned char GetChestRegion( unsigned int i ) const;
@@ -166,26 +171,19 @@ public:
    *  regions and returns false otherwise */
   bool IsChestRegion( std::string ) const;
 
-//public:
-//  std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;
-//  std::vector< unsigned char >              ChestRegions;
-//  std::vector< unsigned char >              ChestTypes;
-//  std::vector< unsigned char >              ImageFeatures;
-//  std::vector< std::string >                ChestRegionNames;
-//  std::vector< std::string >                ChestTypeNames;
-//  std::vector< std::string >                ImageFeatureNames;
-//  std::vector< double* >                    ChestRegionColors;
-//  std::vector< double* >                    ChestTypeColors;
-
-//  std::vector< std::string >  BodyCompositionPhenotypeNames;
-//  std::vector< std::string >  ParenchymaPhenotypeNames;
-//  std::vector< std::string >  HistogramPhenotypeNames;
-//  std::vector< std::string >  PulmonaryVasculaturePhenotypeNames;
 private:
     ChestConventionsStatic s_ChestConventions;
-//  unsigned char m_NumberOfEnumeratedChestRegions;
-//  unsigned char m_NumberOfEnumeratedChestTypes;
-//  unsigned char m_NumberOfEnumeratedImageFeatures;
+
+    /**
+     * Extract the value from a collection given a name
+     * @param collectionValues. Collection that contains the values. Ex: ChestRegions
+     * @param collectionNames. Collection that contains the names. Ex: ChestRegionNames
+     * @param key. Name to search for
+     * @return value of the element
+     * @throws Key Not Found exception
+     */
+    unsigned char GetCollectionValueFromName(std::vector<unsigned char> collectionValues, std::vector<std::string> collectionNames,
+                                             std::string key) const;
 };
 
 } // namespace cip

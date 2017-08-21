@@ -228,7 +228,14 @@ class QcColorConventionsManager:
  
         ('RIGHT','PECTORALISMINOR'):(0.0/255,50.00/255.0,250.00/255, overlay_alpha),
         ('RIGHT','PECTORALISMAJOR'):(200.0/255.0,0.0/255.0,200.00/255.0,overlay_alpha),
-        ('RIGHT','SUBCUTANEOUSFAT'):(100.0/255.0,80.0/255.0, 50.0/255.0, overlay_alpha),       
+        ('RIGHT','SUBCUTANEOUSFAT'):(100.0/255.0,80.0/255.0, 50.0/255.0, overlay_alpha), 
+        
+        ('PARAVERTEBRAL','SUBCUTANEOUSFAT'):(200.0/255.0,0.0/255.0, 0.0/255.0, overlay_alpha), 
+        #('ABDOMEN','VISCERALFAT'):(225.0/255.0,225.0/255.0, 10.0/255.0, overlay_alpha), 
+        ('ABDOMEN','VISCERALFAT'):(235.0/255.0,235.0/255.0, 10.0/255.0, overlay_alpha), 
+
+        ('PARAVERTEBRAL','MUSCLE'):(0.0/255.0,200.0/255.0, 200.0/255.0, overlay_alpha), 
+                                     
         }
         
         color_bound_list = [[QcColorConventionsManager.qc_background, 0 ]] #, [qc_allregionstypes, 1 ]
@@ -286,8 +293,6 @@ class QcColorConventionsManager:
         QcColorConventionsManager.cmap = colors.ListedColormap(color_bound_list[0]) 
         QcColorConventionsManager.norm = colors.BoundaryNorm(color_bound_list[1], QcColorConventionsManager.cmap.N)
                 
-        import pdb
-        #pdb.set_trace()
                                 
             
 class ImageOverlay:

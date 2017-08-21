@@ -77,11 +77,6 @@ for replacement in replacements:
 
 # Replace collections (string names)
 replacement_text_cxx += "\n"
-replacements = (
-    "ChestTypes/ChestType",
-    "ChestRegions/ChestRegion",
-    "ImageFeatures/ImageFeature",
-)
 for replacement in replacements:
     for node in xml_root.findall(replacement):
         replacement_text_cxx += "            {}Names.push_back( \"{}\" );\n".format(replacement.split("/")[1],
@@ -154,3 +149,15 @@ if op.out_python_source:
 if op.out_python_bin:
     print("Python dest binary folder path: %s" % op.out_python_bin)
 
+
+def generate_colortable_file():
+    import cip_python.common as common
+    output = ""
+    for rkey, rvalue in common.ChestConventions.ChestRegionsCollection.iteritems():
+        for tkey, tvalue in common.ChestConventions.ChestTypesCollection.iteritems():
+            code = common.ChestConventions.GetValueFromChestRegionAndType(rkey, tkey)
+            description = "{}-{}".format(rvalue[1], tvalue[1])
+            color = common.ChestConventions.GetColorFromChestRegionChestType(rkey, tkey)
+            output += "{} {}-{} {} {} {} 255\n".format(code, rvalue[1], tvalue[1], int(color[0] * 255), int(color[1] * 255),
+                                          int(color[2] * 255))
+    print output

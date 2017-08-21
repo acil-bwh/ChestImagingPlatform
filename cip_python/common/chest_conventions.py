@@ -464,9 +464,7 @@ class ChestConventions(object):
         for key,value in ChestConventions.ChestRegionsCollection.iteritems():
             if value[1].lower() == regionString.lower():
                 return key
-        #raise KeyError("Region not found: " + regionString)
-        # C++ Compatibility:
-        return ChestRegion.UNDEFINEDREGION
+        raise KeyError("Region not found: " + regionString)
 
     @staticmethod
     def GetChestTypeValueFromName(typeString):
@@ -479,9 +477,20 @@ class ChestConventions(object):
         for key, value in ChestConventions.ChestTypesCollection.iteritems():
             if value[1].lower() == typeString.lower():
                 return key
-       # raise KeyError("Type not found: " + typeString)
-        # C++ Compatibility:
-        return ChestType.UNDEFINEDTYPE
+        raise KeyError("Type not found: " + typeString)
+
+    @staticmethod
+    def GetPlaneValueFromName(planeString):
+        """
+        Given a string identifying one of the enumerated planes, this method will return the int code equivalent.
+         If no match is found, the method will return UNDEFINEDPLANE
+        :param planeString: string (case-insensitve, but compare with string descriptive names (ex: WholeLung))
+        :return: int
+        """
+        for key, value in ChestConventions.PlanesCollection.iteritems():
+            if value[1].lower() == planeString.lower():
+                return key
+        raise KeyError("Plane not found: {}".format(planeString))
 
     @staticmethod
     def GetChestRegion(i):
