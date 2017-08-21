@@ -503,34 +503,34 @@ class ParenchymaPhenotypes(Phenotypes):
                         pheno_val += np.sum((m*HU_tmp + b)*\
                             np.prod(self._spacing)*0.001)
         
-                        # Now compute the mass contribution in the interval 
-                        # [-98, 18] HU. Note the in the original paper, the
-                        # interval is defined from -98HU to 14HU, but we
-                        # extend in slightly here so there are no gaps in
-                        # coverage. The values we report in the interval
-                        # [14, 23] should be viewed as approximate.
-                        HU_tmp = \
-                          ct[np.logical_and(np.logical_and(mask, ct >= -98),
-                                ct <= 18)]
-                        if HU_tmp.shape[0] > 0:
-                            pheno_val += \
-                              np.sum((1.018 + 0.893*HU_tmp/1000.0)*\
-                                np.prod(self._spacing)*0.001)
+                    # Now compute the mass contribution in the interval
+                    # [-98, 18] HU. Note the in the original paper, the
+                    # interval is defined from -98HU to 14HU, but we
+                    # extend in slightly here so there are no gaps in
+                    # coverage. The values we report in the interval
+                    # [14, 23] should be viewed as approximate.
+                    HU_tmp = \
+                      ct[np.logical_and(np.logical_and(mask, ct >= -98),
+                            ct <= 18)]
+                    if HU_tmp.shape[0] > 0:
+                        pheno_val += \
+                          np.sum((1.018 + 0.893*HU_tmp/1000.0)*\
+                            np.prod(self._spacing)*0.001)
         
-                        # Compute the mass contribution in the interval
-                        # (18, 100]
-                        HU_tmp = \
-                          ct[np.logical_and(np.logical_and(mask, ct > 18),
-                                                   ct <= 100)]
-                        if HU_tmp.shape[0] > 0:
-                            pheno_val += np.sum((1.003 + 1.169*HU_tmp/1000.0)*\
-                                np.prod(self._spacing)*0.001)
+                    # Compute the mass contribution in the interval
+                    # (18, 100]
+                    HU_tmp = \
+                      ct[np.logical_and(np.logical_and(mask, ct > 18),
+                                               ct <= 100)]
+                    if HU_tmp.shape[0] > 0:
+                        pheno_val += np.sum((1.003 + 1.169*HU_tmp/1000.0)*\
+                            np.prod(self._spacing)*0.001)
         
-                        # Compute the mass contribution in the interval > 100
-                        HU_tmp = ct[np.logical_and(mask, ct > 100)]
-                        if HU_tmp.shape[0] > 0:
-                            pheno_val += np.sum((1.017 + 0.592*HU_tmp/1000.0)*\
-                                np.prod(self._spacing)*0.001)
+                    # Compute the mass contribution in the interval > 100
+                    HU_tmp = ct[np.logical_and(mask, ct > 100)]
+                    if HU_tmp.shape[0] > 0:
+                        pheno_val += np.sum((1.017 + 0.592*HU_tmp/1000.0)*\
+                            np.prod(self._spacing)*0.001)
                 if pheno_val is not None:
                     self.add_pheno([chest_region, chest_type],
                                    pheno_name, pheno_val)
