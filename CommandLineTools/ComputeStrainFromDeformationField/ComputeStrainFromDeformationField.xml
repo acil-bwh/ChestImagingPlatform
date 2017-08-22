@@ -62,7 +62,7 @@ and does not necessarily represent the official views of the National Institutes
         <element>Lagrangian</element>
         <element>Almansi</element>
         <element>Infinitesimal</element>
-        <default>Almansi</default>
+        <default>Lagrangian</default>
         <description><![CDATA[Type of strain tensor (symmetric second order tensor)     \
             Lagrangian   - Green-Lagrangian definition that \
                            tracks a material point \
