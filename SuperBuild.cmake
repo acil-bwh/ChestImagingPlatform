@@ -22,7 +22,7 @@ set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to b
 set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
 
 set(VTK_VERSION_MAJOR 7 CACHE STRING "Choose the expected VTK major version to build. Version 7 is strongly recommended.")
-set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "6" "7")
+set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "7" "6")
 
 
 #-----------------------------------------------------------------------------
