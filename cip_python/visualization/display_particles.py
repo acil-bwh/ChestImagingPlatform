@@ -51,6 +51,10 @@ class DisplayParticles:
         self.strength_map['ridge_surface'] = "h2"
         self.strength_map['valley_surface'] = "h0"
         
+        self.color_by_array_name = None #By default we color by the particle radius that is computed from scale
+        
+        self.glyph_output = None
+        
         self.coordinate_system = "LPS"
         
         self.lung_opacity = 0.6
@@ -63,6 +67,7 @@ class DisplayParticles:
             self.radius = irad
   
         self.min_rad = 0.5
+        self.min_rad = 0
         self.max_rad = 6
         self.glyph_scale_factor = glyph_scale_factor
 
@@ -87,19 +92,20 @@ class DisplayParticles:
             strength = poly.GetFieldData().GetArray(self.strength_map[feature_type])
             val = poly.GetFieldData().GetArray('val')
 
-        np = poly.GetNumberOfPoints()
-        print np
+        numpoints  = poly.GetNumberOfPoints()
+        print numpoints
         radiusA=vtk.vtkDoubleArray()
-        radiusA.SetNumberOfTuples(np)
-        si=0.2
+        radiusA.SetNumberOfTuples(numpoints)
+        si=float(0.2)
+        s0=float(0.2)
               
         arr = vtk_to_numpy(strength)
         print arr[0]
-        for kk in range(np):
+        for kk in range(numpoints):
             ss=float(scale.GetValue(kk))
-          
-            #rad=math.sqrt(2.0) * ( math.sqrt(spacing**2.0 (ss**2.0 + si**2.0)) - 1.0*spacing*s0 )
-            rad=math.sqrt(2)*spacing*ss
+            #rad=np.sqrt(2.0) * ( np.sqrt( spacing**2 * (ss**2 + si**2) ) - 1.0*spacing*s0 )
+            rad=np.sqrt(2.0)*spacing*ss
+            #rad=np.sqrt(2.0)*np.sqrt(spacing**2 * (ss**2 + si**2) )
             if h_th != None:
               if feature_type == 'ridge_line':
                 test= arr[kk] > h_th
@@ -150,13 +156,21 @@ class DisplayParticles:
         glypher.SetScaleFactor(self.glyph_scale_factor)
         glypher.Update()
 
+        if self.color_by_array_name is not None:
+            glypher.GetOutput().GetPointData().SetScalars(glypher.GetOutput().GetPointData().GetArray(self.color_by_array_name))
+
         return glypher
 
     def create_actor (self, glyph , opacity=1,color=[0.1,0.1,0.1]):
         mapper=vtk.vtkPolyDataMapper()
         mapper.SetInputConnection(glyph.GetOutputPort())
         mapper.SetColorModeToMapScalars()
-        mapper.SetScalarRange(self.min_rad,self.max_rad)
+        if self.color_by_array_name is not None:
+            aa=glyph.GetOutput().GetPointData().GetArray(self.color_by_array_name)
+            range=aa.GetRange()
+            mapper.SetScalarRange(range[0],range[1])
+        else:
+            mapper.SetScalarRange(self.min_rad,self.max_rad)
         if len(color) > 0:
             mapper.ScalarVisibilityOff()
         #mapper.SetScalarRange(self.min_rad,self.max_rad)
@@ -235,6 +249,25 @@ class DisplayParticles:
             else:
                 opacity=self.opacity_list[kk]
             self.create_actor(glypher,color=color,opacity=opacity)
+    
+            if self.glyph_output is not None:
+                tt=vtk.vtkTransform()
+                tt.Identity()
+                if self.coordinate_system == "RAS":
+                    print "Transforming to RAS"
+                tt.GetMatrix().SetElement(0,0,-1)
+                tt.GetMatrix().SetElement(1,1,-1)
+
+                tf=vtk.vtkTransformPolyDataFilter()
+                tf.SetTransform(tt)
+                tf.SetInputData(glypher.GetOutput())
+                tf.SetTransform(tt)
+                tf.Update()
+                writer=vtk.vtkPolyDataWriter()
+                writer.SetInputData(tf.GetOutput())
+                writer.SetFileName(self.glyph_output)
+                writer.Write()
+            
         
         if len(self.lung)>0:
             reader=vtk.vtkPolyDataReader()
@@ -278,23 +311,28 @@ class DisplayParticles:
 
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option("-i", help='TODO', dest="file_name")
-    parser.add_option("-s", help='TODO', dest="spacing")
-    parser.add_option("--feature", help='TODO', dest="feature_type", \
+    parser.add_option("-i", help='Input particle files to render', dest="file_name")
+    parser.add_option("-s", help='Input spacing', dest="spacing")
+    parser.add_option("--feature", help='Feature type for each particle point', dest="feature_type", \
                       default="vessel")
-    parser.add_option("--irad", help='interparticle distance', dest="irad", \
+    parser.add_option("--irad", help='Interparticle distance', dest="irad", \
                       default=1.2)
-    parser.add_option("--hth", help='TODO', dest="hth", default="")
-    parser.add_option("--color", help='TODO', dest="color_list", default="")
-    parser.add_option("--opacity", help='TODO', dest="opacity_list", \
+    parser.add_option("--hth", help='Threshold on particle strength', dest="hth", default="")
+    parser.add_option("--color", help='RGB color', dest="color_list", default="")
+    parser.add_option("--opacity", help='Opacity values', dest="opacity_list", \
                       default="")
-    parser.add_option("-l", help='TODO', dest="lung_filename", default="")
-    parser.add_option("--useFieldData", help='TODO', dest="use_field_data", \
+    parser.add_option("-l", help='Lung mesh', dest="lung_filename", default="")
+    parser.add_option("--useFieldData", help='Enable if particle features are stored in Field data instead of Point Data', dest="use_field_data", \
                       action="store_true", default=False)
   
-    parser.add_option("--glpyhScale", help='TODO', dest="glyph_scale_factor", \
+    parser.add_option("--glpyhScale", help='Scaling factor for glyph', dest="glyph_scale_factor", \
                         default=1)
-  
+    parser.add_option("--colorBy", help='Array name to color by', dest="color_by", \
+                        default=None)
+    parser.add_option("--ras", help='Set output for RAS', dest="ras_coordinate_system", \
+                        default=False,action="store_true")
+    parser.add_option("--glyphOutput", help='Output vtk with glpyh poly data', dest='glyph_output', \
+                        default=None)
     parser.add_option("--capturePrefix", help='Prefix filename to save screenshots. This options enables screen capture. Press the "s" key to capture a screenshot.', \
                       dest="capture_prefix", default="")
 
@@ -333,5 +371,12 @@ if __name__ == "__main__":
 
     dv = DisplayParticles(file_list, spacing_list,feature_type_list,float(options.irad),hth_list, \
         'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lung_filename)
+    if options.color_by is not None:
+        dv.color_by_array_name=options.color_by
+    if options.glyph_output is not None:
+        dv.glyph_output=options.glyph_output
+    if options.ras_coordinate_system:
+        dv.coordinate_system="RAS"
+
     dv.capture_prefix = options.capture_prefix
     dv.execute()
