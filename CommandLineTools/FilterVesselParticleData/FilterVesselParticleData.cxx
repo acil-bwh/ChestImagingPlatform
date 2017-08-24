@@ -37,11 +37,8 @@ int main( int argc, char *argv[] )
   std::cout << "Asserting chest-region chest-type existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( reader->GetOutput() );
 
-  double irad = reader->GetOutput()->GetFieldData()->GetArray( "irad" )->GetTuple( 0 )[0];
-
   std::cout << "Filtering particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
-    filter->SetInterParticleSpacing( irad );
     filter->SetComponentSizeThreshold( componentSizeThreshold );
     filter->SetParticleDistanceThreshold( maxAllowableDistance );
     filter->SetParticleAngleThreshold( particleAngleThreshold );

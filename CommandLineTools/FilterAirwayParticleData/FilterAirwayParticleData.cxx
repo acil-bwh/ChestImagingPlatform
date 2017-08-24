@@ -22,12 +22,8 @@ int main( int argc, char *argv[] )
     reader->SetFileName( inParticlesFileName.c_str() );
     reader->Update();
 
-  float interParticleSpacing =
-    reader->GetOutput()->GetFieldData()->GetArray( "irad" )->GetTuple( 0 )[0];
-
   std::cout << "Filtering particles..." << std::endl;
   cipAirwayParticleConnectedComponentFilter filter;
-    filter.SetInterParticleSpacing( interParticleSpacing );
     filter.SetComponentSizeThreshold( componentSizeThreshold );
     filter.SetParticleDistanceThreshold( maxAllowableDistance );
     filter.SetParticleAngleThreshold( particleAngleThreshold );

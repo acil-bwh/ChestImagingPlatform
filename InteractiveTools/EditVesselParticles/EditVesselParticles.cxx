@@ -372,7 +372,6 @@ will be retained in the output";
   // Optionally filter particles
   std::cout << "Filtering particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
-    filter->SetInterParticleSpacing( interParticleSpacing );
     filter->SetComponentSizeThreshold( componentSizeThreshold );
     filter->SetParticleDistanceThreshold( maxAllowableDistance );
     filter->SetParticleAngleThreshold( particleAngleThreshold );

@@ -19,12 +19,8 @@ int main( int argc, char *argv[] )
     reader->SetFileName( inParticlesFileName.c_str() );
     reader->Update();
 
-  float interParticleSpacing = 
-    reader->GetOutput()->GetFieldData()->GetArray( "irad" )->GetTuple( 0 )[0];
-
   std::cout << "Filtering particles using connectedness..."  << std::endl;
   cipFissureParticleConnectedComponentFilter particleFilter;
-    particleFilter.SetInterParticleSpacing( interParticleSpacing );
     particleFilter.SetParticleDistanceThreshold( distanceThreshold );
     particleFilter.SetInput( reader->GetOutput() );
     particleFilter.SetMaximumComponentSize( maxComponentSize );	
