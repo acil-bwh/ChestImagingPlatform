@@ -5,3 +5,5 @@ ADD_TEST( NAME test_fissure_particles COMMAND nosetests ${CMAKE_CURRENT_BINARY_D
 ADD_TEST( NAME test_vessel_particles COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_vessel_particles.py)
 
 ADD_TEST( NAME test_particle_metrics COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_particle_metrics.py)
+
+ADD_TEST( NAME test_transfer_region_type_values COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_transfer_region_type_values.py)
