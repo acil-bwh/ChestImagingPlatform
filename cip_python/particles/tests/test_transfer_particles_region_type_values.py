@@ -1,8 +1,8 @@
 import vtk
 import numpy as np
-from cip_python.particles.transfer_region_type_values import *
+from cip_python.particles.transfer_particles_region_type_values import *
 
-def test_transfer_region_type_values():
+def test_transfer_particles_region_type_values():
     # Create labeled poly data
     labeled_points  = vtk.vtkPoints()
     labeled_points.InsertPoint(0, (0., 0., 0.))
@@ -92,8 +92,8 @@ def test_transfer_region_type_values():
     unlabeled_poly.GetPointData().AddArray(unlabeled_hevec2_arr)
     unlabeled_poly.GetPointData().AddArray(unlabeled_scale_arr)            
 
-    out_poly = transfer_region_type_values(unlabeled_poly, labeled_poly,
-        v_angle_thresh=15, dist_thresh=1, num_candidates=2)
+    out_poly = transfer_particles_region_type_values(unlabeled_poly,
+        labeled_poly, v_angle_thresh=15, dist_thresh=1, num_candidates=2)
 
     assert out_poly.GetPointData().GetArray('ChestRegionChestType').\
       GetTuple(0)[0] == 771 and out_poly.GetPointData().\

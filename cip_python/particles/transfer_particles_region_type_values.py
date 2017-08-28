@@ -13,7 +13,7 @@ def angle_between(v1, v2):
     
     return (180./np.pi)*np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
-def transfer_region_type_values(unlabeled_particles, labeled_particles,
+def transfer_particles_region_type_values(unlabeled_particles, labeled_particles,
     num_candidates=5, dist_thresh=1., v_angle_thresh=None, a_angle_thresh=None,
     f_angle_thresh=None, scale_thresh=None):
     """
@@ -176,10 +176,10 @@ if __name__ == "__main__":
     labeled_reader.Update()
 
     print "Transferring chest-region chest-type values..."
-    out_particles = transfer_region_type_values(unlabeled_reader.GetOutput(),
-        labeled_reader.GetOutput(), op.num_candidates, op.dist_thresh,
-        op.v_angle_thresh, op.a_angle_thresh, op.f_angle_thresh,
-        op.scale_thresh)
+    out_particles = transfer_particles_region_type_values(\
+        unlabeled_reader.GetOutput(), labeled_reader.GetOutput(),
+        op.num_candidates, op.dist_thresh, op.v_angle_thresh,
+        op.a_angle_thresh, op.f_angle_thresh, op.scale_thresh)
 
     print "Writing particles..."
     writer = vtk.vtkPolyDataWriter()
