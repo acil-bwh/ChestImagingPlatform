@@ -50,9 +50,9 @@ int main( int argc, char * argv[] )
 
     typedef itk::Image< PixelType, Dimension >         ImageType;
     typedef itk::ImageFileReader<ImageType> ReaderType;
-    typedef typename itk::Transform<PixelType, Dimension, Dimension> TransformType;
-    typedef typename itk::CompositeTransform<PixelType, Dimension> CompositeTransformType;
-    typename TransformType::Pointer transform;
+    typedef itk::Transform<PixelType, Dimension, Dimension> TransformType;
+    typedef itk::CompositeTransform<PixelType, Dimension> CompositeTransformType;
+    typedef TransformType::Pointer transform;
 
     //Read deformation field
     typedef itk::Vector< PixelType, Dimension >          VectorPixelType;
