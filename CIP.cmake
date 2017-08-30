@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.5.0)
 
 ##################### RPath stuff start ################
 # use, i.e. don't skip the full RPATH for the build tree
