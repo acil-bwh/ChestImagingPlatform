@@ -54,12 +54,12 @@ class LungSegmentationQC(LabelmapQC):
         
         self.projection_qc = {'all_regions','all_types'}
 
-        self.region_type_dictionary = {'leftLung': None, 'rightLung': None, 'all_regions': None, 'all_types': None}
+        self.region_type_dictionary = {'leftLung': None, 'rightLung': None, 'leftLungLobes': None, \
+                                       'rightLungLobes': None, 'airways': 'airways', 'all_regions': None, \
+                                       'all_types': ['WildCard']}
 
 
-    
-     
-        LabelmapQC.__init__(self)  
+    LabelmapQC.__init__(self)
                              
     def execute(self, in_ct, out_file, qc_requested, num_images_per_region=3, in_partial=None, in_lobe=None, \
             in_overlay_alpha=0.85, window_width=1100, window_level=-1024, resolution=600, spacing=None):   
