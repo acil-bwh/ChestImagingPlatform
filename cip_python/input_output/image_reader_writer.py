@@ -72,13 +72,13 @@ class ImageReaderWriter:
 
         sitk.WriteImage(sitk_image,file_name,True)
 
-    def numpy_to_sitkImage(self,npy_array,metainfo=None,sitk_image_tempate=None):
+    def numpy_to_sitkImage(self, npy_array, metainfo=None, sitk_image_template=None):
     
       sitk_image=sitk.GetImageFromArray(npy_array.transpose(self._np_axes_order))
-      if sitk_image_tempate == None and metainfo == None:
+      if sitk_image_template == None and metainfo == None:
           pass
       elif metainfo == None:
-          sitk_image.CopyInformation(sitk_image_tempate)
+          sitk_image.CopyInformation(sitk_image_template)
       else:
           sitk_image.SetSpacing(metainfo['spacing'])
           sitk_image.SetOrigin(metainfo['space origin'])

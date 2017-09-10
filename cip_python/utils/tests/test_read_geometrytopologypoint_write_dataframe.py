@@ -3,6 +3,8 @@ from pandas.util.testing import assert_frame_equal
 
 from cip_python.utils import ReadGeometryTopologyPointWriteDataFrame
 from cip_python.common import Paths
+from cip_python.common import Point
+
 
 def test_execute():
     # convert to csv (we get a pandas dataframe)

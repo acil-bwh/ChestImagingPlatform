@@ -136,7 +136,7 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
         else:
             raise Exception("Unknown plane for structure {}. Size: {}".format(bb.id), bb.size)
         # Convert the mask in a SimpleITK image back
-        mask = reader.numpy_to_sitkImage(mask_array, metainfo=None, sitk_image_tempate=mask)
+        mask = reader.numpy_to_sitkImage(mask_array, metainfo=None, sitk_image_template=mask)
         # Save the file (Volume_cid_chestRegionType_plane_sliceNumber.nrrd)
         output_path = os.path.join(output_dir, "{}_{}_{}_{}.nrrd".format(cid, chest_value, plane, slice))
         sitk.WriteImage(cropped_image, output_path)

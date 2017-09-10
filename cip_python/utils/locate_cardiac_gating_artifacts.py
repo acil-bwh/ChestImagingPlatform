@@ -59,7 +59,7 @@ if __name__ == "__main__":
     if options.invert == True:
         artifacts_lm = 1 - artifacts_lm
 
-    output_lm = image_read_write.numpy_to_sitkImage(artifacts_lm, sitk_image_tempate=input_ct)
+    output_lm = image_read_write.numpy_to_sitkImage(artifacts_lm, sitk_image_template=input_ct)
     image_read_write.write(output_lm, options.o_lm)
 
 
