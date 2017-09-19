@@ -1539,7 +1539,11 @@
     </BodyCompositionPhenotypeNames>
     <ParenchymaPhenotypeNames>
         <Name>LAA950</Name>
+        <Name>LAA925</Name>
         <Name>LAA910</Name>
+        <Name>LAA905</Name>
+        <Name>LAA900</Name>
+        <Name>LAA875</Name>
         <Name>LAA856</Name>
         <Name>HAA700</Name>
         <Name>HAA600</Name>
@@ -1555,6 +1559,14 @@
         <Name>HUMedian</Name>
         <Name>HUMin</Name>
         <Name>HUMax</Name>
+        <Name>HUMean950</Name>
+        <Name>HUStd950</Name>
+        <Name>HUKurtosis950</Name>
+        <Name>HUSkewness950</Name>
+        <Name>HUMode950</Name>
+        <Name>HUMedian950</Name>
+        <Name>HUMin950</Name>
+        <Name>HUMax950</Name>
         <Name>HUMean500</Name>
         <Name>HUStd500</Name>
         <Name>HUKurtosis500</Name>
@@ -1566,13 +1578,6 @@
         <Name>Volume</Name>
         <Name>Mass</Name>
         <Name>TypeFrac</Name>
-        <Name>NormalParenchyma</Name>
-        <Name>PanlobularEmphysema</Name>
-        <Name>ParaseptalEmphysema</Name>
-        <Name>MildCentrilobularEmphysema</Name>
-        <Name>ModerateCentrilobularEmphysema</Name>
-        <Name>SevereCentrilobularEmphysema</Name>
-        <Name>MildParaseptalEmphysema</Name>
     </ParenchymaPhenotypeNames>
     <PulmonaryVasculaturePhenotypeNames>
         <Name>BV5</Name>
