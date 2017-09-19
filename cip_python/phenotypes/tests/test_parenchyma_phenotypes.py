@@ -35,18 +35,30 @@ def test_execute():
             assert val_950 == wc, 'Phenotype not as expected'
             assert val_910 == wc, 'Phenotype not as expected'
             assert val_856 == wc, 'Phenotype not as expected'
+            assert val_perc10 == wc, 'Phenotype not as expected'
+            assert val_perc15 == wc, 'Phenotype not as expected'
         elif (r == 'WholeLung' and t == wc) or \
             (r == 'RightLung' and t == wc) or \
             (r == 'LeftLung' and t == wc):
-            assert np.isclose(val_950, 0.1111111), 'Phenotype not as expected'
+            test_val_950=dict()
+            test_val_950['WholeLung']=0.0555555
+            test_val_950['RightLung']=0
+            test_val_950['LeftLung']=0.1111111
+            assert np.isclose(val_950, test_val_950[r]), 'Phenotype not as expected'
             assert np.isclose(val_910, 0.1111111), 'Phenotype not as expected'
             assert np.isclose(val_856, 0.1111111), 'Phenotype not as expected'
         elif (r == wc and t == 'Airway') or \
-            (r == 'UndefinedRegion' and t == 'AIRWAY') or \
+            (r == 'UndefinedRegion' and t == 'Airway') or \
             (r == 'WholeLung' and t == 'Airway') or \
             (r == 'RightLung' and t == 'Airway') or \
             (r == 'LeftLung' and t == 'Airway'):
-            assert np.isclose(val_950, 1.0), 'Phenotype not as expected'
+            test_val_950=dict()
+            test_val_950[wc,'Airway']=0.75
+            test_val_950['UndefinedRegion','Airway']=1.
+            test_val_950['WholeLung','Airway']=0.5
+            test_val_950['RightLung','Airway']=0
+            test_val_950['LeftLung','Airway']=1.
+            assert np.isclose(val_950, test_val_950[r,t]), 'Phenotype not as expected'
             assert np.isclose(val_910, 1.0), 'Phenotype not as expected'
             assert np.isclose(val_856, 1.0), 'Phenotype not as expected'
         elif (r == 'WholeLung' and t == 'UndefinedType') or \
