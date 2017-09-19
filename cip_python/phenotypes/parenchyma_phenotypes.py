@@ -14,13 +14,17 @@ class ParenchymaPhenotypes(Phenotypes):
     which to compute the phenotypes. Otherwise, the phenotypes will be computed
     over all structures in the specified labelmap. The following phenotypes are
     computed using the 'execute' method:
-    'LAA950': fraction of the structure's region with CT HU values <= -950
-    'LAA910': fraction of the structure's region with CT HU values <= -910
-    'LAA856': fraction of the structure's region with CT HU values <= -856
-    'HAA700': fraction of the structure's region with CT HU values >= -700
-    'HAA600': fraction of the structure's region with CT HU values >= -600
-    'HAA500': fraction of the structure's region with CT HU values >= -500
-    'HAA250': fraction of the structure's region with CT HU values >= -250
+    'LAA950': fraction of the structure's region with CT HU values < -950
+    'LAA925': fraction of the structure's region with CT HU values < -925
+    'LAA910': fraction of the structure's region with CT HU values < -910
+    'LAA905': fraction of the structure's region with CT HU values < -905
+    'LAA900': fraction of the structure's region with CT HU values < -900
+    'LAA875': fraction of the structure's region with CT HU values < -875
+    'LAA856': fraction of the structure's region with CT HU values < -856
+    'HAA700': fraction of the structure's region with CT HU values > -700
+    'HAA600': fraction of the structure's region with CT HU values > -600
+    'HAA500': fraction of the structure's region with CT HU values > -500
+    'HAA250': fraction of the structure's region with CT HU values > -250
     'Perc10': HU value at the 10th percentile of the structure's HU histogram
     'Perc15': HU value at the 15th percentile of the structure's HU histogram
     'HUMean': Mean value of the structure's HU values
@@ -35,46 +39,41 @@ class ParenchymaPhenotypes(Phenotypes):
     'HUMin': Min HU value for the structure
     'HUMax': Max HU value for the structure
     'HUMean500': Mean CT value of the structure, but only considering CT
-    values that are <= -500 HU
+    values that are < -500 HU
     'HUStd500': Standard deviation of the structure's CT values, but only
-    considering CT values that are <= -500 HU
+    considering CT values that are < -500 HU
     'HUKurtosis500': Kurtosis of the structure's HU values, but only
-    considering CT values that are <= -500 HU
+    considering CT values that are < -500 HU
     'HUSkewness500': Skewness of the structure's HU values, but only
-    considering CT values that are <= -500 HU
+    considering CT values that are < -500 HU
     'HUMode500': Mode of the structure's HU values, but only
-    considering CT values that are <= -500 HU
+    considering CT values that are < -500 HU
     'HUMedian500': Median of the structure's HU values, but only
-    considering CT values that are <= -500 HU
+    considering CT values that are < -500 HU
     'HUMin500': Min HU value for the structure, but only considering CT values
-    that are <= -500 HU
+    that are < -500 HU
     'HUMax500': Max HU value for the structure, but only considering CT values
-    that are <= -500 HU
+    that are < -500 HU
+    'HUMean950': Mean CT value of the structure, but only considering CT
+    values that are < -950 HU
+    'HUStd950': Standard deviation of the structure's CT values, but only
+    considering CT values that are < -950 HU
+    'HUKurtosis950': Kurtosis of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUSkewness950': Skewness of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUMode950': Mode of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUMedian950': Median of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUMin950': Min HU value for the structure, but only considering CT values
+    that are < -950 HU
+    'HUMax950': Max HU value for the structure, but only considering CT values
+    that are < -950 HU
     'Volume': Volume of the structure, measured in liters
     'Mass': Mass of the structure measure in grams    
     'TypeFrac': The fraction of a type in a specified chest-region chest-type
     pair within the chest region of that pair.
-    'NormalParenchyma': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
-    "chest-type-based" phenotype. It is the percentage of a given region 
-    occupied by the 'NormalParenchyma' chest-type
-    'PanlobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
-    "chest-type-based" phenotype. It is the percentage of a given region 
-    occupied by the 'PanlobularEmphysema' chest-type
-    'ParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
-    "chest-type-based" phenotype. It is the percentage of a given region 
-    occupied by the 'ParaseptalEmphysema' chest-type
-    'MildCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
-    Previously: A "chest-type-based" phenotype. It is the percentage of a given 
-    region occupied by the 'MildCentrilobularEmphysema' chest-type
-    'ModerateCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
-    Previously: A "chest-type-based" phenotype. It is the percentage of a given 
-    region occupied by the 'ModerateCentrilobularEmphysema' chest-type
-    'SevereCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
-    Previously: A "chest-type-based" phenotype. It is the percentage of a given 
-    region occupied by the 'SevereCentrilobularEmphysema' chest-type
-    'MildParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A
-    "chest-type-based" phenotype. It is the percentage of a given region 
-    occupied by the 'MildParaseptalEmphysema' chest-type
     
     Parameters
     ----------
@@ -166,13 +165,17 @@ class ParenchymaPhenotypes(Phenotypes):
         specified threshold values.
 
         The following values are computed for the specified structures.
-        'LAA950': fraction of the structure's region with CT HU values <= -950
-        'LAA910': fraction of the structure's region with CT HU values <= -910
-        'LAA856': fraction of the structure's region with CT HU values <= -856
-        'HAA700': fraction of the structure's region with CT HU values >= -700
-        'HAA600': fraction of the structure's region with CT HU values >= -600
-        'HAA500': fraction of the structure's region with CT HU values >= -500
-        'HAA250': fraction of the structure's region with CT HU values >= -250
+        'LAA950': fraction of the structure's region with CT HU values < -950
+        'LAA925': fraction of the structure's region with CT HU values < -925
+        'LAA910': fraction of the structure's region with CT HU values < -910
+        'LAA905': fraction of the structure's region with CT HU values < -905
+        'LAA900': fraction of the structure's region with CT HU values < -900
+        'LAA875': fraction of the structure's region with CT HU values < -875
+        'LAA856': fraction of the structure's region with CT HU values < -856
+        'HAA700': fraction of the structure's region with CT HU values > -700
+        'HAA600': fraction of the structure's region with CT HU values > -600
+        'HAA500': fraction of the structure's region with CT HU values > -500
+        'HAA250': fraction of the structure's region with CT HU values > -250
         'Perc10': HU value at the 10th percentile of the structure's HU
         histogram
         'Perc15': HU value at the 15th percentile of the structure's HU
@@ -188,47 +191,42 @@ class ParenchymaPhenotypes(Phenotypes):
         'HUMedian': Median of the structure's HU values
         'HUMin': Min HU value for the structure
         'HUMax': Max HU value for the structure
+        'HUMean950': Mean CT value of the structure, but only considering CT
+        values that are < -950 HU
+        'HUStd950': Standard deviation of the structure's CT values, but only
+        considering CT values that are < -950 HU
+        'HUKurtosis950': Kurtosis of the structure's HU values, but only
+        considering CT values that are < -950 HU
+        'HUSkewness950': Skewness of the structure's HU values, but only
+        considering CT values that are < -950 HU
+        'HUMode950': Mode of the structure's HU values, but only
+        considering CT values that are < -950 HU
+        'HUMedian950': Median of the structure's HU values, but only
+        considering CT values that are < -950 HU
+        'HUMin950': Min HU value for the structure, but only considering CT values
+        that are < -950 HU
+        'HUMax950': Max HU value for the structure, but only considering CT values
+        that are < -950 HU
         'HUMean500': Mean CT value of the structure, but only considering CT
-        values that are <= -500 HU
+        values that are < -500 HU
         'HUStd500': Standard deviation of the structure's CT values, but only
-        considering CT values that are <= -500 HU
+        considering CT values that are < -500 HU
         'HUKurtosis500': Kurtosis of the structure's HU values, but only
-        considering CT values that are <= -500 HU
+        considering CT values that are < -500 HU
         'HUSkewness500': Skewness of the structure's HU values, but only
-        considering CT values that are <= -500 HU
+        considering CT values that are < -500 HU
         'HUMode500': Mode of the structure's HU values, but only
-        considering CT values that are <= -500 HU
+        considering CT values that are < -500 HU
         'HUMedian500': Median of the structure's HU values, but only
-        considering CT values that are <= -500 HU
+        considering CT values that are < -500 HU
         'HUMin500': Min HU value for the structure, but only considering CT
-        values that are <= -500 HU
+        values that are < -500 HU
         'HUMax500': Max HU value for the structure, but only considering CT
-        values that are <= -500 HU
+        values that are < -500 HU
         'Volume': Volume of the structure, measured in liters
         'Mass': Mass of the structure measure in grams
         'TypeFrac': The fraction of a type in a specified chest-region 
         chest-type pair within the chest region of that pair.
-        'NormalParenchyma': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
-        "chest-type-based" phenotype. It is the percentage of a given region 
-        occupied by the 'NormalParenchyma' chest-type
-        'PanlobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A
-        "chest-type-based" phenotype. It is the percentage of a given region 
-        occupied by the 'PanlobularEmphysema' chest-type
-        'ParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. Previously: A 
-        "chest-type-based" phenotype. It is the percentage of a given region 
-        occupied by the 'ParaseptalEmphysema' chest-type
-        'MildCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
-        Previously: A "chest-type-based" phenotype. It is the percentage of a 
-        given region occupied by the 'MildCentrilobularEmphysema' chest-type
-        'ModerateCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
-        Previously: A "chest-type-based" phenotype. It is the percentage of a 
-        given region occupied by the 'ModerateCentrilobularEmphysema' chest-type
-        'SevereCentrilobularEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
-        Previously: A "chest-type-based" phenotype. It is the percentage of a 
-        given region occupied by the 'SevereCentrilobularEmphysema' chest-type
-        'MildParaseptalEmphysema': DEPRECATED. Use 'TypeFrac' instead. 
-        Previously: A "chest-type-based" phenotype. It is the percentage of a 
-        given region occupied by the 'MildParaseptalEmphysema' chest-type        
         
         Parameters
         ----------
@@ -414,30 +412,39 @@ class ParenchymaPhenotypes(Phenotypes):
         distributions'
         """
         mask_sum = np.sum(mask)
-        print mask_sum
+        print "Computing phenos for region %s and type %s"%(chest_region,chest_type)
         if ct is not None:
             ct_mask=ct[mask]
-            hus=ct[np.logical_and(mask, ct <= -500)]
+            hus=dict()
+            hus[500] = ct[np.logical_and(mask, ct < -500)]
+            hus[950] = ct[np.logical_and(mask, ct < -950)]
 
             for pheno_name in phenos_to_compute:
                 assert pheno_name in self.pheno_names_, \
                   "Invalid phenotype name " + pheno_name
                 pheno_val = None
-                print pheno_name
                 if pheno_name == 'LAA950' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask <= -950.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask < -950.))/mask_sum
+                elif pheno_name == 'LAA925' and mask_sum > 0:
+                    pheno_val = float(np.sum(ct_mask < -925.))/mask_sum
                 elif pheno_name == 'LAA910' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask <= -910.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask < -910.))/mask_sum
+                elif pheno_name == 'LAA905' and mask_sum > 0:
+                    pheno_val = float(np.sum(ct_mask < -905.)) / mask_sum
+                elif pheno_name == 'LAA900' and mask_sum > 0:
+                    pheno_val = float(np.sum(ct_mask < -900.))/mask_sum
+                elif pheno_name == 'LAA875'and mask_sum > 0:
+                    pheno_val = float(np.sum(ct_mask < -875.))/mask_sum
                 elif pheno_name == 'LAA856'and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask <= -856.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask < -856.))/mask_sum
                 elif pheno_name == 'HAA700' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask >= -700.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -700.))/mask_sum
                 elif pheno_name == 'HAA600' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask >= -600))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -600))/mask_sum
                 elif pheno_name == 'HAA500' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask >= -500))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -500))/mask_sum
                 elif pheno_name == 'HAA250' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask >= -250))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -250))/mask_sum
                 elif pheno_name == 'Perc15' and mask_sum > 0:
                     pheno_val = np.percentile(ct_mask, 15)
                 elif pheno_name == 'Perc10' and mask_sum > 0:
@@ -461,34 +468,59 @@ class ParenchymaPhenotypes(Phenotypes):
                 elif pheno_name == 'HUMax' and mask_sum > 0:
                     pheno_val = np.max(ct_mask)
                 elif pheno_name == 'HUMean500' and mask_sum > 0:
-                    hus = ct[np.logical_and(mask, ct <= -500)]
-                    if hus.shape[0] > 0:
-                        pheno_val = np.mean(hus)
+                    if hus[500].shape[0] > 0:
+                        pheno_val = np.mean(hus[500])
                 elif pheno_name == 'HUStd500' and mask_sum > 0:
-                    if hus.shape[0] > 0:
-                        pheno_val = np.std(hus)
+                    if hus[500].shape[0] > 0:
+                        pheno_val = np.std(hus[500])
                 elif pheno_name == 'HUKurtosis500' and mask_sum > 0:
-                    if hus.shape[0]:
-                        pheno_val = kurtosis(hus, bias=False, fisher=True)
+                    if hus[500].shape[0]:
+                        pheno_val = kurtosis(hus[500], bias=False, fisher=True)
                 elif pheno_name == 'HUSkewness500' and mask_sum > 0:
-                    if hus.shape[0] > 0:
-                        pheno_val = skew(hus, bias=False)
+                    if hus[500].shape[0] > 0:
+                        pheno_val = skew(hus[500], bias=False)
                 elif pheno_name == 'HUMode500' and mask_sum > 0:
-                    if hus.shape[0] > 0:
-                        min_val = np.min(hus)
-                        pheno_val = np.argmax(np.bincount(hus +\
+                    if hus[500].shape[0] > 0:
+                        min_val = np.min(hus[500])
+                        pheno_val = np.argmax(np.bincount(hus[500] +\
                             np.abs(min_val))) - np.abs(min_val)                
                 elif pheno_name == 'HUMedian500' and mask_sum > 0:
-                    if hus.shape[0] > 0:
-                        pheno_val = np.median(hus)
+                    if hus[500].shape[0] > 0:
+                        pheno_val = np.median(hus[500])
                 elif pheno_name == 'HUMin500' and mask_sum > 0:
-                    if hus.shape[0] > 0:
-                        pheno_val = np.min(hus)
+                    if hus[500].shape[0] > 0:
+                        pheno_val = np.min(hus[500])
                 elif pheno_name == 'HUMax500' and mask_sum > 0:
-                    hus = ct[np.logical_and(mask, ct <= -500)]
-                    if hus.shape[0] > 0:
-                        pheno_val = np.max(hus)
+                    if hus[500].shape[0] > 0:
+                        pheno_val = np.max(hus[500])
+                elif pheno_name == 'HUMean950' and mask_sum > 0:
+                    if hus[950].shape[0] > 0:
+                        pheno_val = np.mean(hus[950])
+                elif pheno_name == 'HUStd950' and mask_sum > 0:
+                    if hus[950].shape[0] > 0:
+                        pheno_val = np.std(hus[950])
+                elif pheno_name == 'HUKurtosis950' and mask_sum > 0:
+                    if hus[950].shape[0]:
+                        pheno_val = kurtosis(hus[950], bias=False, fisher=True)
+                elif pheno_name == 'HUSkewness950' and mask_sum > 0:
+                    if hus[950].shape[0] > 0:
+                        pheno_val = skew(hus[950], bias=False)
+                elif pheno_name == 'HUMode950' and mask_sum > 0:
+                    if hus[950].shape[0] > 0:
+                        min_val = np.min(hus[950])
+                        pheno_val = np.argmax(np.bincount(hus[950] +\
+                            np.abs(min_val))) - np.abs(min_val)
+                elif pheno_name == 'HUMedian950' and mask_sum > 0:
+                    if hus[950].shape[0] > 0:
+                        pheno_val = np.median(hus[950])
+                elif pheno_name == 'HUMin950' and mask_sum > 0:
+                    if hus[950].shape[0] > 0:
+                        pheno_val = np.min(hus[950])
+                elif pheno_name == 'HUMax950' and mask_sum > 0:
+                    if hus[950].shape[0] > 0:
+                        pheno_val = np.max(hus[950])
                 elif pheno_name == 'Volume':
+                    #Value in liters
                     pheno_val = np.prod(self._spacing)*float(mask_sum)/1e6
                 elif pheno_name == 'Mass' and mask_sum > 0:
                     # This quantity is computed in a piecewise linear form
@@ -594,10 +626,6 @@ if __name__ == "__main__":
                       compute the fraction of the chest type within the \
                       chest region.',
                       dest='pairs', metavar='<string>', default=None)
-    parser.add_option('--pheno_names',
-                      help='Comma separated list of phenotype value names to \
-                      compute.', dest='pheno_names', metavar='<string>',
-                      default=None)    
 
     (options, args) = parser.parse_args()
 
@@ -628,22 +656,12 @@ if __name__ == "__main__":
         pairs = []
         for i in xrange(0, len(tmp)/2):
             pairs.append([tmp[2*i], tmp[2*i+1]])
-    pheno_names = None
-    if options.pheno_names is not None:
-        pheno_names = options.pheno_names.split(',')
 
     paren_pheno = ParenchymaPhenotypes(chest_regions=regions,
-            chest_types=types, pairs=pairs, pheno_names=pheno_names)
+            chest_types=types, pairs=pairs)
 
     df = paren_pheno.execute(lm, options.cid, spacing, ct=ct)
 
     if options.out_csv is not None:
-        if pheno_names is None:
-            df.to_csv(options.out_csv, index=False)            
-        else:
-            cols = paren_pheno.static_names_handler_.keys()
-            for p in pheno_names:
-                cols.append(p)
-            for k in paren_pheno.key_names_:
-                cols.append(k)            
-            df[cols].to_csv(options.out_csv, index=False)
+        df.to_csv(options.out_csv, index=False)
+
