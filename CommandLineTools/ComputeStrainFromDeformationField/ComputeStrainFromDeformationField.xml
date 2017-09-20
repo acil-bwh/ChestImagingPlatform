@@ -72,6 +72,12 @@ and does not necessarily represent the official views of the National Institutes
                             paper (only for line-like structures)]]>
         </description>
     </string-enumeration>
+    <boolean>
+      <name>DeformationTensor</name>
+      <longflag>deformationTensor</longflag>
+      <description>Computes the deformation tensor instead of strain.</description>
+      <label>Deformation Tensor</label>
+    </boolean>
     
   </parameters>
 </executable>

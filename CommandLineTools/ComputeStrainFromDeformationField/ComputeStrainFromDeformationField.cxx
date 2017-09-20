@@ -41,8 +41,7 @@ private:
 int main( int argc, char * argv[] )
 {
     PARSE_ARGS;
-    
-    
+  
     //Read deformation field
     
     const unsigned int Dimension = 3;
@@ -58,17 +57,31 @@ int main( int argc, char * argv[] )
     typedef itk::Vector< PixelType, Dimension >          VectorPixelType;
     typedef itk::Image< VectorPixelType, Dimension > DisplacementFieldImageType;
     typedef itk::ImageFileReader<DisplacementFieldImageType> DFReaderType;
-
+  
     DFReaderType::Pointer dfreader = DFReaderType::New();
     dfreader->SetFileName(deformationFileName);
-    dfreader->Update();
 
+  
+    try
+    {
+      dfreader->Update();
+      
+    }
+    catch( itk::ExceptionObject & excp )
+    {
+
+      std::cerr << "Error while reading deformation field" << std::endl;
+      std::cerr << excp << std::endl;
+      return EXIT_FAILURE;
+    }
+
+  
     // Generate a strain field image from a displacement field image. ------------------------------------------------------
     // Strain is a symmetric second rank tensor
     // Green Lagrangian: tracking a material point
     // Eulerian-Almansi: tracking a spatial point
     // The output image is defined as a symmetric second rank tensor image
-    
+
     typedef itk::Vector< PixelType, Dimension > DisplacementVectorType;
     typedef itk::Image< DisplacementVectorType, Dimension > InputImageType;
     typedef itk::StrainImageFilter< InputImageType, PixelType, PixelType > StrainFilterType;
@@ -92,16 +105,21 @@ int main( int argc, char * argv[] )
         
         return cip::EXITFAILURE;
     }
+  
+    if (DeformationTensor) {
+      strainFilter->SetDeformationTensor(true);
+    } else {
+      strainFilter->SetDeformationTensor(false);
+    }
     
    
     strainFilter->Update();
-    
     itk::Image<itk::SymmetricSecondRankTensor<PixelType, Dimension>, Dimension> * strainTensor;
     strainTensor = strainFilter->GetOutput();
-    
+  
     //Once the strainTensor is calculated we delete the reader of the displacement field to deallocate memory
     dfreader = NULL;
-    
+  
     //Write the strain tensor
     //typedef itk::ImageFileWriter< StrainFilterType::OutputImageType >  tensorWriterType;
     //tensorWriterType::Pointer tensorWriter = tensorWriterType::New();
