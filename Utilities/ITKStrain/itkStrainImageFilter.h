@@ -117,6 +117,18 @@ public:
 
   itkSetMacro( StrainForm, StrainFormType );
   itkGetConstMacro( StrainForm, StrainFormType );
+    
+  /** Set On/Off whether to compute the Deformation tensor instead of the Strain tensor
+    * The StrainFormType selection allows for the computation of the different Deformation Tensors
+    * Green-Lagrangian corresponds to the right Cauchy-Green Deformation tensor
+    * Eulerian-Almansi corresponds ot the left Cauchy-Green or Finger deformation tensor
+  */
+  //
+  itkSetMacro(DeformationTensor, bool);
+  
+  itkGetConstReferenceMacro(DeformationTensor, bool);
+  
+  itkBooleanMacro(DeformationTensor);
 
 protected:
   typedef typename OutputImageType::RegionType OutputRegionType;
@@ -142,6 +154,7 @@ private:
   typename VectorGradientFilterType::Pointer m_VectorGradientFilter;
 
   StrainFormType m_StrainForm;
+  bool m_DeformationTensor;
 };
 
 } // end namespace itk

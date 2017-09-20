@@ -30,6 +30,7 @@ TransformToStrainFilter< TTransform, TOperatorValue, TOutputValue >
 ::TransformToStrainFilter():
   m_StrainForm( INFINITESIMAL )
 {
+  m_DeformationTensor = false;
 }
 
 template < typename TTransform, typename TOperatorValue,
@@ -101,6 +102,23 @@ TransformToStrainFilter< TTransform, TOperatorValue, TOutputValue >
   switch( m_StrainForm )
     {
   case INFINITESIMAL:
+      if (m_DeformationTensor)
+        {
+        for( outputIt.GoToBegin(); !outputIt.IsAtEnd(); ++outputIt )
+        {
+          typename OutputImageType::PixelType outputPixel = outputIt.Get();
+          for( unsigned int i = 0; i < ImageDimension; ++i )
+          {
+            for( unsigned int j = 0; j < i ; ++j )
+            {
+              outputPixel(i,j)=static_cast< TOutputValue >( 2 )*outputPixel( i, j );
+            }
+            // j == i
+            outputPixel(i,i)=static_cast< TOutputValue >( 2 )*outputPixel (i, i ) + static_cast< TOutputValue >( 1 );
+          }
+          outputIt.Set( outputPixel );
+        }
+      }
       break;
   // e_ij += 1/2 du_m/du_i du_m/du_j
   case GREENLAGRANGIAN:
@@ -123,6 +141,22 @@ TransformToStrainFilter< TTransform, TOperatorValue, TOutputValue >
             }
           }
         }
+        
+      //Adjust result if we want to compute the deformation tensor
+      if ( m_DeformationTensor)
+        {
+          for( unsigned int i = 0; i < ImageDimension; ++i )
+          {
+            for( unsigned int j = 0; j < i ; ++j )
+            {
+              outputPixel(i,j)=static_cast< TOutputValue >( 2 )*outputPixel( i, j );
+            }
+            // j == i
+            outputPixel(i,i)=static_cast< TOutputValue >( 2 )*outputPixel (i, i ) + static_cast< TOutputValue >( 1 );
+          }
+
+        }
+        
       outputIt.Set( outputPixel );
       }
       break;
@@ -147,6 +181,20 @@ TransformToStrainFilter< TTransform, TOperatorValue, TOutputValue >
             }
           }
         }
+      //Adjust result if we want to compute the deformation tensor
+      if ( m_DeformationTensor)
+      {
+        for( unsigned int i = 0; i < ImageDimension; ++i )
+        {
+          for( unsigned int j = 0; j < i ; ++j )
+          {
+            outputPixel(i,j)=static_cast< TOutputValue >( 2 )*outputPixel( i, j );
+          }
+          // j == i
+          outputPixel(i,i)=static_cast< TOutputValue >( 2 )*outputPixel (i, i ) + static_cast< TOutputValue >( 1 );
+        }
+        
+      }
       outputIt.Set( outputPixel );
       }
       break;

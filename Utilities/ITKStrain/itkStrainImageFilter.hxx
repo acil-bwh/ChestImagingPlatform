@@ -45,6 +45,9 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
   typedef GradientImageFilter< OperatorImageType, TOperatorValueType, TOperatorValueType >
     GradientImageFilterType;
   this->m_GradientFilter = GradientImageFilterType::New().GetPointer();
+  
+  m_DeformationTensor = false;
+
 }
 
 template< typename TInputImage, typename TOperatorValueType, typename TOutputValueType >
@@ -134,6 +137,24 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
   switch( m_StrainForm )
     {
   case INFINITESIMAL:
+    if (m_DeformationTensor)
+      {
+      for( outputIt.GoToBegin(); !outputIt.IsAtEnd(); ++outputIt )
+        {
+          typename OutputImageType::PixelType outputPixel = outputIt.Get();
+          for( unsigned int i = 0; i < ImageDimension; ++i )
+            {
+            for( unsigned int j = 0; j < i ; ++j )
+              {
+              outputPixel(i,j)=static_cast< TOutputValueType >( 2 )*outputPixel( i, j );
+              }
+            // j == i
+            outputPixel(i,i)=static_cast< TOutputValueType >( 2 )*outputPixel (i, i ) + static_cast< TOutputValueType >( 1 );
+            }
+        outputIt.Set( outputPixel );
+        }
+      }
+      
       break;
   // e_ij += 1/2 du_m/du_i du_m/du_j
   case GREENLAGRANGIAN:
@@ -156,6 +177,21 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
             outputPixel( j, k ) += gradientPixel[j] * gradientPixel[k] / static_cast< TOutputValueType >( 2 );
             }
           }
+        
+        //Adjust result if we want to compute the deformation tensor
+        if ( m_DeformationTensor)
+        {
+          for( unsigned int i = 0; i < ImageDimension; ++i )
+          {
+            for( unsigned int j = 0; j < i ; ++j )
+            {
+              outputPixel(i,j)=static_cast< TOutputValueType >( 2 )*outputPixel( i, j );
+            }
+            // j == i
+            outputPixel(i,i)=static_cast< TOutputValueType >( 2 )*outputPixel (i, i ) + static_cast< TOutputValueType >( 1 );
+          }
+          
+        }
         outputIt.Set( outputPixel );
         }
       }
@@ -182,6 +218,21 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
             outputPixel( j, k ) -= gradientPixel[j] * gradientPixel[k] / static_cast< TOutputValueType >( 2 );
             }
           }
+          
+        //Adjust result if we want to compute the deformation tensor
+        if ( m_DeformationTensor)
+        {
+          for( unsigned int i = 0; i < ImageDimension; ++i )
+          {
+            for( unsigned int j = 0; j < i ; ++j )
+            {
+              outputPixel(i,j)=static_cast< TOutputValueType >( 2 )*outputPixel( i, j );
+            }
+            // j == i
+            outputPixel(i,i)=static_cast< TOutputValueType >( 2 )*outputPixel (i, i ) + static_cast< TOutputValueType >( 1 );
+          }
+          
+        }
         outputIt.Set( outputPixel );
         }
       }
