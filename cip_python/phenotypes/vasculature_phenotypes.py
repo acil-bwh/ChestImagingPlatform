@@ -181,13 +181,14 @@ class VasculaturePhenotypes(Phenotypes):
 
         #Get unique value of spacing as the norm 3D vector
         if vessel.GetFieldData().GetArray("spacing") == None:
+            print "Spacing information missing in particle vtk file. Setting spacing to 0.625 mm"
             spacing=np.array([0.625,0.625,0.625])
         else:
             spacing = vtk_to_numpy(vessel.GetFieldData().GetArray("spacing"))
+            print "Using spacing in particle file: (%f,%f,%f)" % (spacing[0,0],spacing[0,1],spacing[0,2])
 
         #Compute single spacing value as the geometric mean of the three spacing values
         self._spacing=np.prod(spacing)**(1/3.0)
-
 
         array_v['ChestRegionChestType']=array_v['ChestRegionChestType'].astype('uint16')
         #Check that ChestType contains a relevant vessel type
