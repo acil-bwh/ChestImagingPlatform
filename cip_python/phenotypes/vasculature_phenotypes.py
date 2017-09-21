@@ -37,9 +37,9 @@ class VasculaturePhenotypes(Phenotypes):
         self.max_csa = 90
         self.csa_th=np.arange(5,self.max_csa+0.001,5)
         self._spacing = None
-        self._sigma0 = 1/np.sqrt(2)/2;
+        self._sigma0 = 1/np.sqrt(2.)/2.
         #Sigma due to the limited pixel resolution (half of 1 pixel)
-        self._sigmap = 1/np.sqrt(2)/2
+        self._sigmap = 1/np.sqrt(2.)/2.
         self._dx = None
         self._number_test_points=1000
         self.factor=0.16
@@ -181,11 +181,12 @@ class VasculaturePhenotypes(Phenotypes):
 
         #Get unique value of spacing as the norm 3D vector
         if vessel.GetFieldData().GetArray("spacing") == None:
-            spacing=0.625
+            spacing=np.array([0.625,0.625,0.625])
         else:
             spacing = vtk_to_numpy(vessel.GetFieldData().GetArray("spacing"))
 
-        self._spacing=np.sqrt(np.sum(spacing*spacing))
+        #Compute single spacing value as the geometric mean of the three spacing values
+        self._spacing=np.prod(spacing)**(1/3.0)
 
 
         array_v['ChestRegionChestType']=array_v['ChestRegionChestType'].astype('uint16')
@@ -350,16 +351,16 @@ class VasculaturePhenotypes(Phenotypes):
           norm1=LA.norm(np.array(v_p)-np.array(vessel.GetPoint(idList.GetId(1))))
           norm2=LA.norm(np.array(v_p)-np.array(vessel.GetPoint(idList.GetId(2))))
           if (norm1-norm2)/(norm1+norm2) < 0.2:
-            distance[pos]=(norm1+norm2)/2
+            distance[pos]=(norm1+norm2)/2.
 
         return np.median(distance[distance>0])
 
     def vessel_radius_from_sigma(self,scale):
         #return self.spacing*math.sqrt(2)*sigma
-        mask = scale< (2/np.sqrt(2)*self._sigma0)
+        mask = scale< (2./np.sqrt(2)*self._sigma0)
         rad=np.zeros(mask.shape)
-        rad[mask]=np.sqrt(2)*(np.sqrt((scale[mask]*self._spacing)**2 + (self._sigma0*self._spacing)**2) -0.5*self._sigma0*self._spacing)
-        rad[~mask]=np.sqrt(2)*(np.sqrt((scale[~mask]*self._spacing)**2 + (self._sigmap*self._spacing)**2) -0.5*self._sigmap*self._spacing)
+        rad[mask]=np.sqrt(2.)*(np.sqrt((scale[mask]*self._spacing)**2.0 + (self._sigma0*self._spacing)**2.0) -0.5*self._sigma0*self._spacing)
+        rad[~mask]=np.sqrt(2.)*(np.sqrt((scale[~mask]*self._spacing)**2.0 + (self._sigmap*self._spacing)**2.0) -0.5*self._sigmap*self._spacing)
         return rad
 
 
