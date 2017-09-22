@@ -177,10 +177,16 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
             outputPixel( j, k ) += gradientPixel[j] * gradientPixel[k] / static_cast< TOutputValueType >( 2 );
             }
           }
+        outputIt.Set( outputPixel );
+        }
+      }
         
-        //Adjust result if we want to compute the deformation tensor
-        if ( m_DeformationTensor)
+      //Adjust result if we want to compute the deformation tensor
+      if ( m_DeformationTensor)
+      {
+        for( outputIt.GoToBegin(); !outputIt.IsAtEnd(); ++outputIt )
         {
+          typename OutputImageType::PixelType outputPixel = outputIt.Get();
           for( unsigned int i = 0; i < ImageDimension; ++i )
           {
             for( unsigned int j = 0; j < i ; ++j )
@@ -190,9 +196,7 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
             // j == i
             outputPixel(i,i)=static_cast< TOutputValueType >( 2 )*outputPixel (i, i ) + static_cast< TOutputValueType >( 1 );
           }
-          
-        }
-        outputIt.Set( outputPixel );
+          outputIt.Set( outputPixel );
         }
       }
       break;
@@ -218,10 +222,16 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
             outputPixel( j, k ) -= gradientPixel[j] * gradientPixel[k] / static_cast< TOutputValueType >( 2 );
             }
           }
-          
-        //Adjust result if we want to compute the deformation tensor
-        if ( m_DeformationTensor)
+        outputIt.Set( outputPixel );
+        }
+      }
+      
+      //Adjust result if we want to compute the deformation tensor
+      if ( m_DeformationTensor)
+      {
+        for( outputIt.GoToBegin(); !outputIt.IsAtEnd(); ++outputIt )
         {
+          typename OutputImageType::PixelType outputPixel = outputIt.Get();
           for( unsigned int i = 0; i < ImageDimension; ++i )
           {
             for( unsigned int j = 0; j < i ; ++j )
@@ -231,9 +241,7 @@ StrainImageFilter< TInputImage, TOperatorValueType, TOutputValueType >
             // j == i
             outputPixel(i,i)=static_cast< TOutputValueType >( 2 )*outputPixel (i, i ) + static_cast< TOutputValueType >( 1 );
           }
-          
-        }
-        outputIt.Set( outputPixel );
+          outputIt.Set( outputPixel );
         }
       }
       break;
