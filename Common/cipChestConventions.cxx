@@ -316,6 +316,30 @@ bool cip::ChestConventions::IsPulmonaryVasculaturePhenotypeName(std::string phen
 }
 
 
+/** Returns true if the passed string name is among the allowed pulmonary vasculature
+ *  phenotype names and returns false otherwise */
+bool cip::ChestConventions::IsAirwayPhenotypeName(std::string pheno) const {
+    for (int i = 0; i < s_ChestConventions.AirwayPhenotypeNames.size(); i++) {
+        if (!s_ChestConventions.AirwayPhenotypeNames[i].compare(pheno)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/** Returns true if the passed string name is among the allowed pulmonary vasculature
+ *  phenotype names and returns false otherwise */
+bool cip::ChestConventions::IsBiomechanicalPhenotypeName(std::string pheno) const {
+    for (int i = 0; i < s_ChestConventions.BiomechanicalPhenotypeNames.size(); i++) {
+        if (!s_ChestConventions.BiomechanicalPhenotypeNames[i].compare(pheno)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /** Returns true if the passed string name is among the allowed
  *  phenotype names and returns false otherwise */
 bool cip::ChestConventions::IsPhenotypeName(std::string pheno) const {
@@ -339,6 +363,18 @@ bool cip::ChestConventions::IsPhenotypeName(std::string pheno) const {
 
     for (int i = 0; i < s_ChestConventions.PulmonaryVasculaturePhenotypeNames.size(); i++) {
         if (!s_ChestConventions.PulmonaryVasculaturePhenotypeNames[i].compare(pheno)) {
+            return true;
+        }
+    }
+
+    for (int i = 0; i < s_ChestConventions.AirwayPhenotypeNames.size(); i++) {
+        if (!s_ChestConventions.AirwayPhenotypeNames[i].compare(pheno)) {
+            return true;
+        }
+    }
+
+    for (int i = 0; i < s_ChestConventions.BiomechanicalPhenotypeNames.size(); i++) {
+        if (!s_ChestConventions.BiomechanicalPhenotypeNames[i].compare(pheno)) {
             return true;
         }
     }

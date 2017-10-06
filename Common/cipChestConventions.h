@@ -158,8 +158,16 @@ public:
   /** Returns true if the passed string name is among the allowed pulmonary vasculature
    *  phenotype names and returns false otherwise */
   bool IsPulmonaryVasculaturePhenotypeName( std::string ) const;
-  
-  /** Returns true if the passed string name is among the allowed
+
+  /** Returns true if the passed string name is among the allowed pulmonary vasculature
+  *  phenotype names and returns false otherwise */
+  bool IsAirwayPhenotypeName( std::string ) const;
+
+  /** Returns true if the passed string name is among the allowed pulmonary vasculature
+  *  phenotype names and returns false otherwise */
+  bool IsBiomechanicalPhenotypeName( std::string ) const;
+
+    /** Returns true if the passed string name is among the allowed
    *  phenotype names and returns false otherwise */
   bool IsPhenotypeName( std::string ) const;
 

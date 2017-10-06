@@ -70,6 +70,9 @@ namespace cip {
         std::vector< std::string >  ParenchymaPhenotypeNames;
         std::vector< std::string >  HistogramPhenotypeNames;
         std::vector< std::string >  PulmonaryVasculaturePhenotypeNames;
+        std::vector< std::string >  AirwayPhenotypeNames;
+        std::vector< std::string >  BiomechanicalPhenotypeNames;
+
     private:
         void BuildStructures() {
             // All the static structures will be automatically generated here
