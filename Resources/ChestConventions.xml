@@ -1619,4 +1619,32 @@
         <Name>numPointsTotal</Name>
         <Name>numPointsAfterExclusion</Name>
     </AirwayPhenotypeNames>
+    <BiomechanicalPhenotypeNames>
+	<Name>JMean</Name>
+	<Name>JMean_Minus1</Name>
+	<Name>JMean_Major1</Name>
+        <Name>JStd</Name>
+        <Name>JKurtosis</Name>
+        <Name>JSkewness</Name>
+        <Name>JMode</Name>
+        <Name>JMedian</Name>
+        <Name>JMin</Name>
+        <Name>JMax</Name>
+	<Name>ADIMean</Name>
+        <Name>ADIStd</Name>
+        <Name>ADIKurtosis</Name>
+        <Name>ADISkewness</Name>
+        <Name>ADIMode</Name>
+        <Name>ADIMedian</Name>
+        <Name>ADIMin</Name>
+        <Name>ADIMax</Name>
+	<Name>SRIMean</Name>
+        <Name>SRIStd</Name>
+        <Name>SRIKurtosis</Name>
+        <Name>SRISkewness</Name>
+        <Name>SRIMode</Name>
+        <Name>SRIMedian</Name>
+        <Name>SRIMin</Name>
+        <Name>SRIMax</Name>
+    </BiomechanicalPhenotypeNames>
 </ChestConventions>

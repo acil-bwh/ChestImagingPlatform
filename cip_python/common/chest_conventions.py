@@ -18,6 +18,8 @@ class ChestConventionsInitializer(object):
     __parenchyma_phenotype_names__ = None
     __pulmonary_vasculature_phenotype_names__ = None
     __airway_phenotype_names__ = None
+    __biomechanical_phenotype_names__ = None
+
 
     @staticmethod
     def xml_root_conventions():
@@ -196,6 +198,17 @@ class ChestConventionsInitializer(object):
                 parent.findall("Name"))
         return ChestConventionsInitializer.__airway_phenotype_names__
 
+    @staticmethod
+    def biomechanical_phenotype_names():
+        if ChestConventionsInitializer.__biomechanical_phenotype_names__ is None:
+            root = ChestConventionsInitializer.xml_root_conventions()
+            ChestConventionsInitializer.__biomechanical_phenotype_names__ = list()
+            parent = root.find("BiomechanicalPhenotypeNames")
+            map(lambda n: ChestConventionsInitializer.__biomechanical_phenotype_names__.append(n.text),
+                parent.findall("Name"))
+        return ChestConventionsInitializer.__biomechanical_phenotype_names__
+
+
 #############################
 # CHEST CONVENTIONS
 #############################
@@ -211,6 +224,10 @@ class ChestConventions(object):
     ParenchymaPhenotypeNames = ChestConventionsInitializer.parenchyma_phenotype_names()   # List of strings
     PulmonaryVasculaturePhenotypeNames = ChestConventionsInitializer.pulmonary_vasculature_phenotype_names()   # List of strings
     AirwayPhenotypeNames = ChestConventionsInitializer.airway_phenotype_names()   # List of strings
+    BiomechanicalPhenotypeNames = ChestConventionsInitializer.biomechanical_phenotype_names() #List of strings
+
+
+
 
     @staticmethod
     def GetNumberOfEnumeratedChestRegions():
@@ -552,6 +569,17 @@ class ChestConventions(object):
         return phenotypeName in ChestConventions.ParenchymaPhenotypeNames
 
     @staticmethod
+    def IsBiomechanicalPhenotypeName(phenotypeName):
+        """
+        Returns true if the passed phenotype is among the allowed biomechanical phenotype names.
+        :param phenotypeName: str
+        :return: boolean
+        """
+        return phenotypeName in ChestConventions.BiomechanicalPhenotypeNames
+
+
+
+    @staticmethod
     def IsPulmonaryVasculaturePhenotypeName(phenotypeName):
         """
         Returns true if the passed phenotype is among the allowed body composition phenotype names.
@@ -599,7 +627,8 @@ class ChestConventions(object):
         :return: list
         """
         return [ChestConventions.BodyCompositionPhenotypeNames, ChestConventions.ParenchymaPhenotypeNames,
-                ChestConventions.PulmonaryVasculaturePhenotypeNames, ChestConventions.AirwayPhenotypeNames]
+                ChestConventions.PulmonaryVasculaturePhenotypeNames, ChestConventions.AirwayPhenotypeNames,
+		ChestConventions.BiomechanicalPhenotypeNames]
 
 
     @staticmethod
