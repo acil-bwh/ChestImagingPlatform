@@ -121,7 +121,7 @@ class BiomechanicalPhenotypes(Phenotypes):
         
         #Get phenotypes list from ChestConventions
         c=ChestConventions()
-        names = c.ParenchymaPhenotypeNames
+        names = c.BiomechanicalPhenotypeNames
         
         return names
 

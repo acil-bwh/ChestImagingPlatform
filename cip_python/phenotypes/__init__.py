@@ -9,3 +9,4 @@ from parenchyma_phenotypes import *
 from vasculature import *
 from vasculature_phenotypes import *
 from nodule_phenotypes import *
+from biomechanical_phenotypes import *
