@@ -26,7 +26,8 @@ class NoduleSegmenter:
         nodule_segm_image = sitk.GetArrayFromImage(nodule_segm_image)
         nodule_segm_image[nodule_segm_image > self._threshold] = 1
         nodule_segm_image[nodule_segm_image < self._threshold] = 0
+        nodule_segm_image=nodule_segm_image.astype('uint16') #Casting segmentation to unsigned short
         sitkImage = sitk.GetImageFromArray(nodule_segm_image)
         sitkImage.SetSpacing(self._input_ct.GetSpacing())
         sitkImage.SetOrigin(self._input_ct.GetOrigin())
-        sitk.WriteImage(sitkImage, self._output_lm)
+        sitk.WriteImage(sitkImage, self._output_lm,True)
