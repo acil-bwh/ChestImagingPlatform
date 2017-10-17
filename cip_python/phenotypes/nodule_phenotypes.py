@@ -1820,7 +1820,6 @@ def get_nodule_information(xml_file):
     nodules_seed = []
 
     coord_syst = root.find('CoordinateSystem').text
-
     cc = ChestConventions()
     #NoduleChestTypes=[86,87,88]
     NoduleChestTypes=['Nodule','BenignNodule','MalignantNodule']
@@ -2060,7 +2059,6 @@ if __name__ == "__main__":
             seed_point = [float(s) for s in seeds[i]]
             if coord_system == 'RAS':
                 seed_point = ras_to_lps(seed_point)
-            seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
 
             #lesion_type = types[i][2:]
             lesion_type = types[i]
