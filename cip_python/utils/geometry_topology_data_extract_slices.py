@@ -1,9 +1,14 @@
 import argparse
+import os
 import SimpleITK as sitk
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import numpy as np
 
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
-from cip_python.common.geometry_topology_data import *
-from cip_python.common import ChestConventions
+# from cip_python.common.geometry_topology_data import *
+from cip_python.common import *
+
 
 def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
                    filtered_chest_regions=None, filtered_chest_types=None, num_extra_slices=0):
@@ -23,18 +28,18 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
     geom = GeometryTopologyData.from_xml_file(xml_input)
     # Read the volume
     reader = ImageReaderWriter()
-    vol = reader.read(input_volume_path)
-    if len(arr.shape) > 3:
-        # Reduce one dimension because the schema color has 3 channels and we have to keep just the first (luminance)
-        arr = sitk.GetArrayFromImage(vol)
-        # The only way to do it is create another image from an array
-        arr = arr[:,:,:,0]
-        vol_gray = sitk.GetImageFromArray(arr)
-        vol_gray.CopyInformation(vol)
-    else:
-        # Regular grayscale volume
-        vol_gray = vol
-
+    #vol = reader.read(input_volume_path)
+    # if len(vol.GetDimension()) > 3:
+    #     # Reduce one dimension because the schema color has 3 channels and we have to keep just the first (luminance)
+    #     arr = sitk.GetArrayFromImage(vol)
+    #     # The only way to do it is create another image from an array
+    #     arr = arr[:,:,:,0]
+    #     vol_gray = sitk.GetImageFromArray(arr)
+    #     vol_gray.CopyInformation(vol)
+    # else:
+    #     # Regular grayscale volume
+    #     vol_gray = vol
+    vol_gray = reader.read_in_numpy(input_volume_path)
     if output_dir is None:
         output_dir = os.path.join(os.path.curdir, "slice_extract")
     if not os.path.isdir(output_dir):
@@ -134,7 +139,7 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
                         int(bb.start[1] + num_extra_slices):int(bb.start[1] + bb.size[1] + num_extra_slices),
                         num_extra_slices] = 1
         else:
-            raise Exception("Unknown plane for structure {}. Size: {}".format(bb.id), bb.size)
+            raise Exception("Unknown plane for structure {}. Size: {}".format(bb.id, bb.size))
         # Convert the mask in a SimpleITK image back
         mask = reader.numpy_to_sitkImage(mask_array, metainfo=None, sitk_image_template=mask)
         # Save the file (Volume_cid_chestRegionType_plane_sliceNumber.nrrd)
@@ -144,6 +149,76 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
         mask_output_path = os.path.join(output_dir, "{}_{}_{}_{}_labelmap.nrrd".format(cid, chest_value, plane, slice))
         sitk.WriteImage(mask, mask_output_path)
     print("All results saved in {}".format(os.path.realpath(output_dir)))
+
+
+def generate_qc_images(volume_path, xml_input_path, output_folder, structure_codes=None):
+    """
+         Generate QC Images from an XML GeometryTopologyObject file
+    Args:
+        volume_path: Path to the CT
+        xml_input_path: Path to the GeometryTopologyData XML
+        output_folder: folder where the qc images will be stored
+        structure_codes: list of structure codes (default: all)
+
+    Returns:
+
+    """
+    temp_cases_folder = os.path.join(output_folder, 'cases')
+    if not os.path.isdir(temp_cases_folder):
+        # This will create all the hierarchy if necessary
+        os.makedirs(temp_cases_folder)
+
+    gtd = GeometryTopologyData.from_xml_file(xml_input_path)
+    scan_code = os.path.basename(volume_path)[:-5]
+    reader = ImageReaderWriter()
+    case_ct_array = reader.read_in_numpy(volume_path)[0]
+
+    for bb in gtd.bounding_boxes:
+        if structure_codes is None \
+            or bb.description in structure_codes:
+                # Extract the nrrd slice
+                file_name = "{}_{}.png".format(scan_code, bb.description)
+                file_name = os.path.join(output_folder, file_name)
+
+                # Generate a nrrd in the output_folder for this slice
+                if bb.description.endswith("Axial"):
+                    im = case_ct_array[:, :, int(bb.start[2])]
+                    im = np.fliplr(np.rot90(im, 3))
+
+                    xmin = int(bb.start[0])
+                    ymin = int(bb.start[1])
+                    xmax = int(xmin + bb.size[0])
+                    ymax = int(bb.start[1] + bb.size[1])
+                elif bb.description.endswith("Sagittal"):
+                    im = case_ct_array[int(bb.start[0]), :, :]
+                    im = np.rot90(im)
+                    xmin = int(bb.start[1])
+                    ymin = int(bb.start[2])
+                    xmax = int(bb.start[1] + bb.size[1])
+                    ymax = int(bb.start[2] + bb.size[2])
+                elif bb.description.endswith("Coronal"):
+                    im = case_ct_array[:, int(bb.start[1]), :]
+                    im = np.rot90(im)
+                    xmin = int(bb.start[0])
+                    ymin = int(case_ct_array.shape[2] - bb.start[2] - bb.size[2])
+                    xmax = int(bb.start[0] + bb.size[0])
+                    ymax = int(ymin + bb.size[2])
+                else:
+                    raise Exception("Wrong plane for case {}".format(scan_code))
+
+                # Draw the bounding box
+                fig, axis = plt.subplots(nrows=1, sharey=True)
+                axis.imshow(im, cmap='gray')
+                rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=3, edgecolor='r',
+                                         facecolor='none')
+                axis.add_patch(rect)
+                axis.set_title("{}-{}".format(scan_code, bb.description))
+
+
+                fig.savefig(file_name)
+                print (file_name + " saved")
+                # plt.close()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract slices and masks from structures encoded in a GeometryTopologyData xml file')
@@ -169,7 +244,7 @@ if __name__ == "__main__":
         with open(args.caselist, 'rb') as f:
             for case_path in map(str.strip, f.readlines()):
                 xml_path = case_path.replace(".nrrd", "_structures.xml")
-                print "Processing file {} ({})".format(case_path, xml_path)
+                print ("Processing file {} ({})".format(case_path, xml_path))
                 output_dir = args.output_dir if args.output_dir is not None \
                             else os.path.join(os.path.dirname(case_path), "slice_extract")
                 cid = os.path.basename(case_path).replace('.nrrd', '')

@@ -235,14 +235,17 @@ class AnatomicStructuresManager(object):
 
         return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path, region, plane, extra_margin=margin)
 
-    def generate_all_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, rectangle_color='r',
-                               line_width=3):
+    def generate_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, filtered_structures=None,
+                           rectangle_color='r', line_width=3):
         """
         Generate all the png full-slice images and a red rectangle with the structure detection
         Args:
             case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
             xml_file_path: file path to the XML that contains the GeometryTopologyData object
             output_folder: output folder path where all the png images will be saved
+            filtered_structures: when filled, a list with the structure codes that we want to generate
+            rectangle_color: color for matplotlib rectangle
+            line_width: line width for matplotlib rectangle
         """
         gtd = GeometryTopologyData.from_xml_file(xml_file_path)
         if isinstance(case_path_or_sitk_volume, sitk.Image):
@@ -255,31 +258,32 @@ class AnatomicStructuresManager(object):
 
         # Create a png for every structure
         for bb in gtd.bounding_boxes:
-            if bb.size[0] == 0:
-                slice_sitk = sitk_vol[int(bb.start[0]):int(bb.start[0]) + 1, :, :]
-            elif bb.size[1] == 0:
-                slice_sitk = sitk_vol[:, int(bb.start[1]):int(bb.start[1]) + 1, :]
-            elif bb.size[2] == 0:
-                slice_sitk = sitk_vol[:, :, int(bb.start[2]):int(bb.start[2]) + 1]
-            else:
-                raise Exception("Wrong structure: {}-{}".format(bb.id, bb.description))
+            if filtered_structures is None or bb.description in filtered_structures:
+                if bb.size[0] == 0:
+                    slice_sitk = sitk_vol[int(bb.start[0]):int(bb.start[0]) + 1, :, :]
+                elif bb.size[1] == 0:
+                    slice_sitk = sitk_vol[:, int(bb.start[1]):int(bb.start[1]) + 1, :]
+                elif bb.size[2] == 0:
+                    slice_sitk = sitk_vol[:, :, int(bb.start[2]):int(bb.start[2]) + 1]
+                else:
+                    raise Exception("Wrong structure: {}-{}".format(bb.id, bb.description))
 
-            slice_np = self.get_2D_numpy_from_sitk_image(slice_sitk)
-            x, y, width, height = self.ijk_to_xywh(bb.start, bb.coord2, sitk_vol.GetSize())
+                slice_np = self.get_2D_numpy_from_sitk_image(slice_sitk)
+                x, y, width, height = self.ijk_to_xywh(bb.start, bb.coord2, sitk_vol.GetSize())
 
-            # Draw rectangle
-            fig, axes = plt.subplots(nrows=1, ncols=1)
-            axes.imshow(slice_np, cmap='gray')
-            rect = patches.Rectangle((x, y), width, height, linewidth=line_width, edgecolor=rectangle_color,
-                                     facecolor='none')
-            axes.add_patch(rect)
-            axes.axis('off')
+                # Draw rectangle
+                fig, axes = plt.subplots(nrows=1, ncols=1)
+                axes.imshow(slice_np, cmap='gray')
+                rect = patches.Rectangle((x, y), width, height, linewidth=line_width, edgecolor=rectangle_color,
+                                         facecolor='none')
+                axes.add_patch(rect)
+                axes.axis('off')
 
-            # Save the image
-            name = "{}_{}.png".format(osp.basename(xml_file_path), bb.description)
-            fig.savefig(osp.join(output_folder, name), bbox_inches='tight')
-            plt.close()
-            print (name + " generated")
+                # Save the image
+                name = "{}_{}.png".format(osp.basename(xml_file_path), bb.description)
+                fig.savefig(osp.join(output_folder, name), bbox_inches='tight')
+                plt.close()
+                print (name + " generated")
 
         print ("Case {} finished".format(xml_file_path))
 
@@ -314,7 +318,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     gen = AnatomicStructuresManager()
     if args.operation == 'generate_qc_images':
-        gen.generate_all_qc_images(args.case_path, args.xml_path, args.output_folder)
+        gen.generate_qc_images(args.case_path, args.xml_path, args.output_folder)
     elif args.operation == 'extract_slices':
         writer = ImageReaderWriter()
         for pair in args.chest_regions_planes:
