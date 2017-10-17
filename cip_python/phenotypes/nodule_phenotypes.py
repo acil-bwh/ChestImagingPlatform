@@ -12,7 +12,7 @@ import SimpleITK as sitk
 import xml.etree.ElementTree as ET
 from optparse import OptionParser
 from cip_python.segmentation import NoduleSegmenter
-
+from cip_python.common import ChestConventions
 
 class FirstOrderStatistics:
     def __init__(self, parameterValues, bins, grayLevels, allKeys):
@@ -1821,16 +1821,24 @@ def get_nodule_information(xml_file):
 
     coord_syst = root.find('CoordinateSystem').text
 
+    cc = ChestConventions()
+    #NoduleChestTypes=[86,87,88]
+    NoduleChestTypes=['Nodule','BenignNodule','MalignantNodule']
+
     for n in root.findall('Point'):
-        n_id = n.find('Id').text
-        nodules_id.append(n_id)
-        t = n.find('Description').text
-        nodules_type.append(t)
-        coordinate = n.find('Coordinate')
-        seed = []
-        for s in coordinate.findall('value'):
+        chesttype=int(n.find('ChestType').text)
+        chesttype_name=cc.GetChestTypeNameFromValue(chesttype)
+        if chesttype_name in NoduleChestTypes:
+          n_id = n.find('Id').text
+          nodules_id.append(n_id)
+          #t = n.find('Description').text
+          #nodules_type.append(t)
+          nodules_type.append(chesttype_name)
+          coordinate = n.find('Coordinate')
+          seed = []
+          for s in coordinate.findall('value'):
             seed.append(s.text)
-        nodules_seed.append(seed)
+          nodules_seed.append(seed)
 
     return coord_syst, nodules_id, nodules_type, nodules_seed
 
@@ -2054,9 +2062,10 @@ if __name__ == "__main__":
                 seed_point = ras_to_lps(seed_point)
             seed_point = '{},{},{}'.format(seed_point[0], seed_point[1], seed_point[2])
 
-            lesion_type = types[i][2:]
+            #lesion_type = types[i][2:]
+            lesion_type = types[i]
             nodule_id = ids[i]
-            max_radius = max_rad[i]
+            max_radius = max_rad
             if segm_th is not None:
                 segm_threshold = segm_th[i]
             else:
@@ -2097,10 +2106,8 @@ if __name__ == "__main__":
             nodule_coord_list.append(no_xml_coords)
             nodule_th_list.append(segm_th[0])
 
-
 #if not os.path.exists(options.csv_file):
     write_csv_first_row(options.csv_file, all_feature_classes)
-
 
     for i in range(len(nodule_lm_list)):
         
