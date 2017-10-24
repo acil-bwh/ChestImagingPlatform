@@ -1621,8 +1621,8 @@
     </AirwayPhenotypeNames>
     <BiomechanicalPhenotypeNames>
 	<Name>JMean</Name>
-	<Name>JMean_Minus1</Name>
-	<Name>JMean_Major1</Name>
+	<Name>JMean_gtOne</Name>
+	<Name>JMean_ltOne</Name>
         <Name>JStd</Name>
         <Name>JKurtosis</Name>
         <Name>JSkewness</Name>
