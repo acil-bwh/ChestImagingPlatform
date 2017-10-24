@@ -211,9 +211,9 @@ class GeometryTopologyData(object):
 
 
     def get_hashtable(self):
-        """ Return a "hashtable" that will be a dictionary of hash:structure for every point or
+        """
+        Return a "hashtable" that will be a dictionary of hash:structure for every point or
         bounding box present in the structure
-        @return:
         """
         hash = {}
         for p in self.points:
@@ -221,6 +221,17 @@ class GeometryTopologyData(object):
         for bb in self.bounding_boxes:
             hash[bb.get_hash()] = bb
         return hash
+
+    def convert_coordinates_to_array(self, type_=np.float32):
+        """
+        Convert the coordinates of all the Points/Bounding_Boxes to numpy arrays of the specific type (default: float32)
+        Args:
+            type_: type for the conversion (default: float32)
+        """
+        for p in self.points:
+            p.convert_to_array(type_)
+        for bb in self.bounding_boxes:
+            bb.convert_to_array(type_)
 
     @staticmethod
     def __to_xml_vector__(array, format_="%f"):
@@ -322,7 +333,6 @@ class Structure(object):
         """
         return "%03d_%03d_%03d" % (self.chest_region, self.chest_type, self.feature_type)
 
-
     @staticmethod
     def from_xml_node(xml_node):
         """ Return a new instance of a Point object from xml "Point" element
@@ -383,6 +393,14 @@ class Structure(object):
         return '<Id>%i</Id><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s%s%s%s' % \
             (self.__id__, self.chest_region, self.chest_type, self.feature_type, description, timestamp, user_name, machine_name)
 
+    def convert_to_array(self, type_=np.float32):
+        """
+        Convert the coordinates to a numpy array of the specified type (default: float32)
+        Args:
+            type_:
+        """
+        raise NotImplementedError("This method must be implemented by a child class")
+
     def __str__(self):
         return self.to_xml()
 
@@ -394,7 +412,7 @@ class Point(Structure):
         :param chest_region: chestRegion Id
         :param chest_type: chestType Id
         :param feature_type: feature type Id (artifacts and others)
-        :param coordinate: Vector of numeric coordinates
+        :param coordinate: list/tuple of numeric coordinates
         :param description: optional description of the content the element
         :param format_: Default format to print the xml output coordinate values (also acceptable: %i for integers or customized)
         :param timestamp: datetime in format "YYYY/MM/dd HH:mm:ss"
@@ -448,6 +466,14 @@ class Point(Structure):
         #     description_str = '<Description>%s</Description>' % self.description
 
         return '<Point>%s<Coordinate>%s</Coordinate></Point>' % (structure, coords)
+
+    def convert_to_array(self, type_=np.float32):
+        """
+        Convert the coordinates to a numpy array of the specified type (default: float32)
+        Args:
+            type_:
+        """
+        self.coordinate = np.array(self.coordinate, dtype=type_)
 
 
 class BoundingBox(Structure):
@@ -515,3 +541,12 @@ class BoundingBox(Structure):
         structure = super(BoundingBox, self).to_xml()
 
         return '<BoundingBox>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % (structure, start_str, size_str)
+
+    def convert_to_array(self, type_=np.float32):
+        """
+        Convert the coordinates to a numpy array of the specified type (default: float32)
+        Args:
+            type_:
+        """
+        self.start = np.array(self.start, dtype=type_)
+        self.size = np.array(self.size, dtype=type_)

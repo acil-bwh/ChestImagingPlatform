@@ -1,4 +1,5 @@
 import SimpleITK as sitk
+import numpy as np
 
 class ImageReaderWriter:
     """
@@ -105,7 +106,8 @@ class ImageReaderWriter:
         
         """
         sitk_image=sitk.GetImageFromArray(npy_array.transpose(self._np_axes_order))
-        sitk_image.SetSpacing(metainfo['spacing'])
-        sitk_image.SetOrigin(metainfo['space origin'])
-        sitk_image.SetDirection(metainfo['space directions'])
+        # Make sure before setting the properties that the metainfo has the right types for SimpleITK
+        sitk_image.SetSpacing(np.array(metainfo['spacing'], dtype=np.float64))
+        sitk_image.SetOrigin(np.array(metainfo['space origin'], dtype=np.float64))
+        sitk_image.SetDirection(np.array(metainfo['space directions'], dtype=np.float64))
         self.write(sitk_image,file_name)
