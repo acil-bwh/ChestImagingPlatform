@@ -139,6 +139,7 @@ class GeometryTopologyData(object):
         if pretty_print:
             try:
                 import lxml.etree as etree
+                s = str(s)  # Avoid Unicode
                 x = etree.fromstring(s)
                 s = etree.tostring(x, pretty_print=True)
             except:
