@@ -24,7 +24,7 @@ class ChestConventionsInitializer(object):
     @staticmethod
     def xml_root_conventions():
         if ChestConventionsInitializer.__xml_conventions__ is None:
-            with open(ChestConventionsInitializer.root_xml_path, 'r+b') as f:
+            with open(ChestConventionsInitializer.root_xml_path, 'rb') as f:
                 xml = f.read()
                 ChestConventionsInitializer.__xml_conventions__ = et.fromstring(xml)
         return ChestConventionsInitializer.__xml_conventions__
