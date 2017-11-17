@@ -469,6 +469,12 @@
             <Name>AorticValve</Name>
             <Color>0.49;0.9;0.93</Color>
         </ChestRegion>
+        <ChestRegion>
+            <Id>78</Id>
+            <Code>VENACAVA</Code>
+            <Name>VenaCava</Name>
+            <Color>0.49;0.8;0.93</Color>
+        </ChestRegion>
     </ChestRegions>
     <ChestTypes>
         <ChestType>
@@ -1053,6 +1059,18 @@
             <Name>InjuredParenchyma</Name>
             <Color>0.05;0.03;0.07</Color>
         </ChestType>
+        <ChestType>
+            <Id>97</Id>
+            <Code>LUMEN</Code>
+            <Name>Lumen</Name>
+            <Color>0.05;0.03;0.08</Color>
+        </ChestType>
+        <ChestType>
+            <Id>98</Id>
+            <Code>WALL</Code>
+            <Name>Wall</Name>
+            <Color>0.05;0.03;0.09</Color>
+        </ChestType>
     </ChestTypes>
     <ChestRegionHierarchyMap>
         <Hierarchy>
@@ -1113,6 +1131,10 @@
         </Hierarchy>
         <Hierarchy>
             <Child>AORTA</Child>
+            <Parent>MEDIASTINUM</Parent>
+        </Hierarchy>
+        <Hierarchy>
+            <Child>VENACAVA</Child>
             <Parent>MEDIASTINUM</Parent>
         </Hierarchy>
         <Hierarchy>
