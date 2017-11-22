@@ -17,7 +17,7 @@ class AirwayParticlesPipeline:
 
   """
   def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',airway_mask_name=None,\
-                lth=100,sth=80,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True,ct_kernel=None,airway_seed=None):
+                lth=100,sth=80,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True,ct_kernel=None,airway_seed=None,wall_peeling=True):
 
     assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy' or init_method == 'AirwaySegmentation' or init_method == 'AirwayMask'
 
@@ -48,6 +48,7 @@ class AirwayParticlesPipeline:
     self._airway_mask_name=airway_mask_name
     self._ct_kernel=ct_kernel
     self._airway_seed=airway_seed
+    self._wall_peeling=wall_peeling
 
     self._case_id = str.split(os.path.basename(ct_file_name),'.')[0]
 
@@ -153,22 +154,23 @@ class AirwayParticlesPipeline:
 #            print tmpCommand
             subprocess.call( tmpCommand, shell=True )
 
-            #tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s -s 2"
-            #tmpCommand = tmpCommand % {'lm-in':self._pl_file_nameRegion,'distance-map':self._pl_file_nameRegion}
-            #tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
-            #print tmpCommand
-            #subprocess.call( tmpCommand, shell=True )
+            if self._wall_peeling == True:
+                #tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s -s 2"
+                #tmpCommand = tmpCommand % {'lm-in':self._pl_file_nameRegion,'distance-map':self._pl_file_nameRegion}
+                #tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
+                #print tmpCommand
+                #subprocess.call( tmpCommand, shell=True )
 
-            tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
-            tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
-            tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
-#            print tmpCommand
-            subprocess.call( tmpCommand, shell=True )
+                tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
+                tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
+                tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
+                #print tmpCommand
+                subprocess.call( tmpCommand, shell=True )
 
-            tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
-            tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
-#            print tmpCommand
-            subprocess.call( tmpCommand, shell=True )
+                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
+                tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
+                #print tmpCommand
+                subprocess.call( tmpCommand, shell=True )
 #
             # Compute Frangi
             if self._init_method == 'Frangi':
@@ -278,7 +280,7 @@ if __name__ == "__main__":
   parser.add_argument("--cleanCache",action="store_true", dest="clean_cache", default=False)
   parser.add_argument("--ctKernel",dest="ct_kernel", default=None)
   parser.add_argument("--seed", dest="airway_seed",default=None)
-
+  parser.add_argument("--no_wall_peeling", dest="no_wall_peeling",action="store_true",default=False)
   #Check required tools path enviroment variables for tools path
   toolsPaths = ['CIP_PATH','TEEM_PATH','ITKTOOLS_PATH'];
   path=dict()
@@ -298,7 +300,12 @@ if __name__ == "__main__":
   crop = [int(kk) for kk in str.split(op.crop,',')]
   regions = [kk for kk in str.split(op.regions,',')]
 
+  if op.no_wall_peeling == False:
+    wall_peeling = True
+  else:
+    wall_peeling = False
+
   ap=AirwayParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,op.airway_mask_name,\
-                             op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache,op.ct_kernel,op.airway_seed)
+                             op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache,op.ct_kernel,op.airway_seed,wall_peeling)
 
   ap.execute()
