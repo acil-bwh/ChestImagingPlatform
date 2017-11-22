@@ -20,8 +20,6 @@ class Extract2DPatchesFromParticles:
         geom_mean = np.prod(input_spacing) ** (1 / 3.0)
         self._output_spacing[2] = geom_mean
 
-        print self._output_spacing
-
         factor = np.asarray(ct_image.GetSpacing()) / np.asarray(self._output_spacing)
 
         res = vtk.vtkImageResample()
