@@ -111,7 +111,7 @@ class LungLobeSegmentationWorkflow(Workflow):
             'Resources', 'LungLobeAtlasData', '')        
         self._referenceLabelMap = os.path.join(self._resourcesDir, 
             '10002K_INSP_STD_BWH_COPD_leftLungRightLung.nrrd')
-        
+
         self._partialLungLabelMap = os.path.join(tmp_dir, cid +
             '_partialLungLabelMap.nrrd')
         self._rightLungLobesShapeModel = os.path.join(tmp_dir, cid + 
@@ -451,9 +451,8 @@ if __name__ == "__main__":
       different shapes or meta data', dest="perm", action='store_true')
     parser.add_argument("--cid",
       help='Case ID string to name output files before suffix',
-      dest='cid', metavar='<string>', default=None)
+      dest='cid', metavar='<string>', default='cid')
     
-
     op = parser.parse_args()
 
     if op.in_ct is None:
