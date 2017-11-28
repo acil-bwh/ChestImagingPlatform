@@ -350,16 +350,20 @@ if __name__ == "__main__":
     #Get list of modules from directory name in CommandLineTools
     dir='../../../../CommandLineTools/'
     modules_list = [str.split(x[0],'/')[5] for x in os.walk(dir)]
+
     #Remove duplicates and sort list
     modules_list = list(set(modules_list))
     modules_list.sort()
+    print modules_list
     #Remove empty entries
     modules_list.remove('')
     modules_list.remove('Testing')
-    modules_list.remove('GenerateStatisticsForAirwayGenerationLabeling')
-    modules_list.remove('LabelAirwayParticlesByGeneration')
-    modules_list.remove('ReadParticlesWriteConnectedParticles')
-    modules_list.remove('SegmentLungAirways')
+    modules_list.remove('LegacyCLIs')
+    #modules_list.remove('GenerateStatisticsForAirwayGenerationLabeling')
+    #modules_list.remove('LabelAirwayParticlesByGeneration')
+    #modules_list.remove('ReadParticlesWriteConnectedParticles')
+    #modules_list.remove('SegmentLungAirways')
+    modules_list.remove('GenerateRegionHistogramsAndParenchymaPhenotypes')
     print 'Number of modules founds ' + str(len(modules_list))
     
     ## SlicerExecutionModel compliant tools that are usually statically built, and don't need the Slicer3 --launcher
