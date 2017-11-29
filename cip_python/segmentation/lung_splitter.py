@@ -80,8 +80,13 @@ class LungSplitter():
             self.allobjects_majority_voting_label_cut(cut,out_cut)
 
 
-        #Final labeling by region growing
-
+        #Final labeling to isolate largest connected component per lung
+        for label_test in [self.RightLabel,self.LeftLabel]:
+            cc = sitk.ConnectedComponent(sitk.GetImageFromArray((olm_np==label_test).astype('uint8')), fullyConnected=True)
+            cc = sitk.RelabelComponent(cc)
+            cc_np = sitk.GetArrayFromImage(cc)
+            #Get the largest components cc_np=1 by setting the smallest to zero
+            olm_np[cc_np>1]=0
 
         #Splitting in Thrids
         if self.split_thrids == True:
