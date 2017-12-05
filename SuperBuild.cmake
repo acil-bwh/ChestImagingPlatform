@@ -229,8 +229,23 @@ option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 
+
+SET(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "Install Python components of CIP")
 set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
-set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
+
+if (INSTALL_CIP_PYTHON_DISTRIBUTION)
+  set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
+else()
+  message("CIP_PYTHON distribution will not be installed. Searching for previously existing python...")
+  FIND_PACKAGE(PythonLibs REQUIRED)
+  FIND_PACKAGE(PythonInterp REQUIRED)
+  SET(CIP_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter used by CIP")
+  set (CIP_PYTHON_INCLUDE_DIR CACHE PATH ${PYTHON_INCLUDE_DIRS})
+  set (CIP_PYTHON_LIBRARY ${PYTHON_LIBRARIES})
+endif()
+
+
+
 
 
 #------------------------------------------------------------------------------
@@ -267,6 +282,7 @@ set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 mark_as_superbuild(
  VARS
    CIP_PYTHON_DIR:PATH
+   CIP_PYTHON_EXECUTABLE:PATH
    CIP_CMAKE_CXX_FLAGS:STRING
 )
 

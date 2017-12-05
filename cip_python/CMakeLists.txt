@@ -7,10 +7,8 @@ ENDIF()
 
 IF ( WIN32 )
   SET ( CIP_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE} )
-  SET ( CIP_PYTHON_CMD ${CIP_PYTHON_DIR}/python.exe )
 ELSE ( WIN32 )
   SET ( CIP_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} )
-  SET ( CIP_PYTHON_CMD ${CIP_PYTHON_DIR}/bin/python )
 ENDIF ( WIN32 )
 
 if (NOT CIP_PYTHON_INSTALL_FOLDER)
@@ -56,9 +54,13 @@ if (USE_CYTHON)
   #             set(CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6 ${CMAKE_CXX_FLAGS}")
   #endif()
 
-        IF ( NOT CIP_PYTHON_DIR ) # probably built by SlicerCIP
-        SET ( CIP_PYTHON_CMD ${SLICER_PYTHON_CMD} ) # use Slicer Python
+        IF ( SLICER_PYTHON_CMD )
+        	SET ( CIP_PYTHON_CMD ${SLICER_PYTHON_CMD} ) # use Slicer Python
+		ELSE()
+			SET ( CIP_PYTHON_CMD ${CIP_PYTHON_EXECUTABLE})
         ENDIF()
+
+
         MESSAGE("Wrapping GraphCutsOptimization with Python in ${CIP_PYTHON_CMD} and flags ${CMAKE_CXX_FLAGS}")
 
         CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/utils/gco_python/setup.py.in

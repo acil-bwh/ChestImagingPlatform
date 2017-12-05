@@ -253,22 +253,15 @@ if(BUILD_SANDBOX)
   SUBDIRS (Sandbox)
 endif(BUILD_SANDBOX)
 
-SET(INSTALL_CIP_PYTHON_LIBRARY ON CACHE BOOL "Install Python components of CIP")
-if ( INSTALL_CIP_PYTHON_LIBRARY )
-  SUBDIRS ( cip_python )
+SUBDIRS ( cip_python )
   # Option to disable GCO wrapping when cip python is not going to be needed.
-  SET(USE_CYTHON ON CACHE BOOL "Use of Cython, needed to Wrap GraphCutsOptimization for Python")
-  mark_as_advanced(FORCE USE_CYTHON)
-  message("-- Using CYTHON components")
-else()
-  message(WARNING "cip_python components will NOT be installed")
-  SET(USE_CYTHON OFF CACHE BOOL "Use of Cython, needed to Wrap GraphCutsOptimization for Python")
-endif()
+SET(USE_CYTHON ON CACHE BOOL "Use of Cython, needed to Wrap GraphCutsOptimization for Python")
+mark_as_advanced(FORCE USE_CYTHON)
 
 
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
-#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------CIP_PYTHON_EXECUTABLE------
 include(cipMacroBuildCLI)
 
 

@@ -48,7 +48,10 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     BUILD_COMMAND ${CMAKE_COMMAND}
     INSTALL_COMMAND ""
   )
-  set(BOOST_DIR        ${Boost_Install_Dir})
+  set(BOOST_ROOT        ${Boost_Install_Dir})
+  set(BOOST_INCLUDE_DIR ${BOOST_ROOT}/include)
+  set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib )
+  set(Boost_NO_SYSTEM_PATHS ON)
 
 else()
   if(${USE_SYSTEM_${extProjName}})
@@ -61,6 +64,11 @@ else()
 endif()
 
 mark_as_superbuild(
-  VARS BOOST_DIR:PATH
+  VARS
+      BOOST_ROOT:PATH
+      BOOST_INCLUDE_DIR:PATH
+      BOOST_LIBRARYDIR:PATH
+      Boost_NO_SYSTEM_PATHS:BOOL
+
   LABELS "FIND_PACKAGE"
   )
