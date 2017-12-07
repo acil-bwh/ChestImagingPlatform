@@ -53,21 +53,13 @@ if (USE_CYTHON)
      #Due to the change to clang on OS X 1.9, you have to build against the old libs (libstdc++ and not the clang one - libc++).
   #             set(CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6 ${CMAKE_CXX_FLAGS}")
   #endif()
-
-        IF ( SLICER_PYTHON_CMD )
-        	SET ( CIP_PYTHON_CMD ${SLICER_PYTHON_CMD} ) # use Slicer Python
-		ELSE()
-			SET ( CIP_PYTHON_CMD ${PYTHON_EXECUTABLE})
-        ENDIF()
-
-
-        MESSAGE("Wrapping GraphCutsOptimization with Python in ${CIP_PYTHON_CMD} and flags ${CMAKE_CXX_FLAGS}")
+        MESSAGE("Wrapping GraphCutsOptimization with Python in ${CIP_PYTHON_EXECUTABLE} and flags ${CMAKE_CXX_FLAGS}")
 
         CONFIGURE_FILE ( ${CMAKE_CURRENT_SOURCE_DIR}/utils/gco_python/setup.py.in
           ${CMAKE_CURRENT_SOURCE_DIR}/utils/gco_python/setup.py @ONLY )
 
         ADD_CUSTOM_TARGET ( ${PROJECT_NAME} ALL
-          COMMAND ${CIP_PYTHON_CMD} ${CMAKE_CURRENT_SOURCE_DIR}/utils/gco_python/setup.py build_ext -b ${CMAKE_CURRENT_BINARY_DIR}/utils
+          COMMAND ${CIP_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/gco_python/setup.py build_ext -b ${CMAKE_CURRENT_BINARY_DIR}/utils
           #WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
 else()

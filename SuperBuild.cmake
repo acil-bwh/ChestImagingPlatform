@@ -230,36 +230,6 @@ option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 
 
-#----------------
-# PYTHON DISTRIBUTION
-#-------------------
-SET(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "Install Python components of CIP")
-set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
-
-if (INSTALL_CIP_PYTHON_DISTRIBUTION)
-  set(CIP_PYTHON_INSTALL_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
-  if (UNIX)
-    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/python2.7 CACHE FILEPATH "")
-    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include/python2.7 CACHE PATH "")
-    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/lib/python2.7/site-packages CACHE PATH "")
-    if (APPLE)
-      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.dylib CACHE PATH "")
-    else()
-      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.so CACHE PATH "")
-    endif()
-  else()
-    # Windows
-    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/python.exe CACHE FILEPATH "")
-    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include CACHE PATH "")
-    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/Lib/site-packages CACHE PATH "")
-    set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/python27.dll CACHE PATH "")
-  endif()
-elseif(NOT PYTHON_EXECUTABLE)
-  # Python was never searched for. Search in system libraries
-  message("No INSTALL_CIP_PYTHON_DISTRIBUTION. Python will be searched in the system")
-  FIND_PACKAGE(PythonLibs REQUIRED)
-  FIND_PACKAGE(PythonInterp REQUIRED)
-endif()
 
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
@@ -292,23 +262,61 @@ set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 #  endif()
 #endif()
 
+#----------------
+# PYTHON DISTRIBUTION
+#-------------------
+SET(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "Install Python components of CIP")
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
+
+if (INSTALL_CIP_PYTHON_DISTRIBUTION)
+  set(CIP_PYTHON_INSTALL_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
+  if (UNIX)
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/python2.7 CACHE FILEPATH "")
+    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include/python2.7 CACHE PATH "")
+    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/lib/python2.7/site-packages CACHE PATH "")
+    if (APPLE)
+      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.dylib CACHE PATH "")
+    else()
+      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.so CACHE PATH "")
+    endif()
+  else()
+    # Windows
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/python.exe CACHE FILEPATH "")
+    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include CACHE PATH "")
+    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/Lib/site-packages CACHE PATH "")
+    set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/python27.dll CACHE PATH "")
+  endif()
+elseif(NOT PYTHON_EXECUTABLE)
+  # Python was never searched for. Search in system libraries
+  message("No INSTALL_CIP_PYTHON_DISTRIBUTION. Python will be searched in the system")
+  unset (PYTHON_EXECUTABLE)
+  unset (PYTHON_INCLUDE_DIR)
+  unset (PYTHON_PACKAGES_PATH)
+  unset (PYTHON_LIBRARY)
+  FIND_PACKAGE(PythonLibs REQUIRED)
+  FIND_PACKAGE(PythonInterp REQUIRED)
+else()
+  message("Using ${PYTHON_EXECUTABLE} as active Python")
+endif()
+
+
 mark_as_superbuild(
  VARS
    #CIP_PYTHON_INSTALL_DIR:PATH
    #CIP_PYTHON_EXECUTABLE:PATH
    CIP_CMAKE_CXX_FLAGS:STRING
 )
-
-if (NOT DEFINED USE_BOOST)
-  # Boost will be ON by default, except for recent versions of Visual Studio compiler (>= Visual Studio 2013)
-  if (MSVC_VERSION GREATER 1700)
-    # Disable boost
-    set(USE_BOOST OFF CACHE BOOL "Enable Boost in VTK and CIP")
-    message(WARNING "Boost is not supported for Visual Studio >= 2013")
-  else()
+#
+#if (NOT DEFINED USE_BOOST)
+#  # Boost will be ON by default, except for recent versions of Visual Studio compiler (>= Visual Studio 2013)
+#  if (MSVC_VERSION GREATER 1700)
+#    # Disable boost
+#    set(USE_BOOST OFF CACHE BOOL "Enable Boost in VTK and CIP")
+#    message(WARNING "Boost is not supported for Visual Studio >= 2013")
+#  else()
     set(USE_BOOST ON CACHE BOOL "Enable Boost in VTK and CIP")
-  endif()
-endif()
+#  endif()
+#endif()
 mark_as_superbuild(USE_BOOST)
 
 ## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u

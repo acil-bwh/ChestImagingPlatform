@@ -31,6 +31,11 @@ set(CMAKE_MODULE_PATH
   )
 set(CIP_CMAKE_DIR ${CIP_SOURCE_DIR}/CMake)
 
+
+if (NOT CIP_PYTHON_EXECUTABLE)
+  SET (CIP_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
+endif()
+
 #--------------------------------------------------------------------
 # Find ITK.
 
