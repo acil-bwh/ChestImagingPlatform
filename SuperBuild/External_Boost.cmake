@@ -49,9 +49,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     INSTALL_COMMAND ""
   )
   set(BOOST_ROOT        ${Boost_Install_Dir})
-  set(BOOST_INCLUDE_DIR ${BOOST_ROOT}/include)
-  set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib )
-  set(Boost_NO_SYSTEM_PATHS ON)
+ # set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
+ # set(Boost_DIR         ${Boost_INCLUDE_DIR})
+#  set(BOOST_INCLUDEDIR ${BOOST_ROOT}/include)
+  #set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib )
+#  set(Boost_NO_SYSTEM_PATHS ON)
 
 else()
   if(${USE_SYSTEM_${extProjName}})
@@ -66,9 +68,28 @@ endif()
 mark_as_superbuild(
   VARS
       BOOST_ROOT:PATH
-      BOOST_INCLUDE_DIR:PATH
-      BOOST_LIBRARYDIR:PATH
-      Boost_NO_SYSTEM_PATHS:BOOL
+)
+#mark_as_superbuild(
+#        VARS
+#        Boost_DIR:PATH
+#)
+##mark_as_superbuild(
+##        VARS
+##        BOOST_INCLUDEDIR:PATH
+##)
+#mark_as_superbuild(
+#        VARS
+#        Boost_INCLUDE_DIR:PATH
+#)
+#mark_as_superbuild(
+#        VARS
+#        BOOST_LIBRARYDIR:PATH
+#)
+##Boost_INCLUDE_DIR:PATH
+#BOOST_INCLUDEDIR:PATH
+#BOOST_LIBRARYDIR:PATH
+#Boost_NO_SYSTEM_PATHS:BOOL
 
-  LABELS "FIND_PACKAGE"
-  )
+
+#  LABELS "FIND_PACKAGE"
+#  )

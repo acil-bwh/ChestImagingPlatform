@@ -11,16 +11,16 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   # At the moment, all the binaries will be downloaded, but just one will be installed
   if (UNIX)
     if (APPLE)
-      #set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/Miniconda-MacOSX-64.sh -f -b -p ${CIP_PYTHON_DIR})
-      set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/appleScript.sh ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_DIR})
+      #set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/Miniconda-MacOSX-64.sh -f -b -p ${CIP_PYTHON_INSTALL_DIR})
+      set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/appleScript.sh ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_INSTALL_DIR})
     else()
-      #set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/Miniconda-Linux-x86_64.sh -f -b -p ${CIP_PYTHON_DIR})
-      set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/linuxScript.sh ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_DIR})
+      #set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/Miniconda-Linux-x86_64.sh -f -b -p ${CIP_PYTHON_INSTALL_DIR})
+      set (INSTALL_COMMAND bash ${CIP_PYTHON_SOURCE_DIR}/linuxScript.sh ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_INSTALL_DIR})
     endif()
   else()
       # Windows
-      file (TO_NATIVE_PATH ${CIP_PYTHON_DIR} CIP_PYTHON_DIR_NATIVE) # install fails without native path
-    set (INSTALL_COMMAND ${CIP_PYTHON_SOURCE_DIR}/winScript.bat ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_DIR_NATIVE})
+      file (TO_NATIVE_PATH ${CIP_PYTHON_INSTALL_DIR} CIP_PYTHON_INSTALL_DIR_NATIVE) # install fails without native path
+    set (INSTALL_COMMAND ${CIP_PYTHON_SOURCE_DIR}/winScript.bat ${CIP_PYTHON_SOURCE_DIR} ${CIP_PYTHON_INSTALL_DIR_NATIVE})
   endif()
 
   # Select the master branch by default
@@ -40,9 +40,9 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   # Every package depends on the previous one to allow multi-threading in cmake. Otherwise conda will make trouble when installing packages in parallel
 
   if (UNIX)
-    SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_DIR}/bin)
+    SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_INSTALL_DIR}/bin)
   else() # Windows
-      SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_DIR}/Scripts)
+      SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_INSTALL_DIR}/Scripts)
   endif()
   
   ExternalProject_Add_Step(${proj} installcython
@@ -138,25 +138,6 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
             COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
             DEPENDEES installnibabel
             )
-  endif()
-
-
-  if (UNIX)
-    #Set Python variables that can be referenced by other modules
-    set (CIP_PYTHON_EXECUTABLE ${CIP_PYTHON_DIR}/bin/python2.7)
-    set (CIP_PYTHON_INCLUDE_DIR ${CIP_PYTHON_DIR}/include/python2.7)
-    set (CIP_PYTHON_PACKAGES_PATH ${CIP_PYTHON_DIR}/lib/python2.7/site-packages)
-    if (APPLE)
-      set (CIP_PYTHON_LIBRARY ${CIP_PYTHON_DIR}/lib/libpython2.7.dylib)
-    else()
-      set (CIP_PYTHON_LIBRARY ${CIP_PYTHON_DIR}/lib/libpython2.7.so)
-    endif()
-  else() # Windows
-    #Set Python variables that can be referenced by other modules
-    set (CIP_PYTHON_EXECUTABLE ${CIP_PYTHON_DIR}/python)
-    set (CIP_PYTHON_INCLUDE_DIR ${CIP_PYTHON_DIR}/include)
-    set (CIP_PYTHON_PACKAGES_PATH ${CIP_PYTHON_DIR}/Lib/site-packages)
-    set (CIP_PYTHON_LIBRARY ${CIP_PYTHON_DIR}/python27.dll)
   endif()
 else()
   # Ignore CIPPython

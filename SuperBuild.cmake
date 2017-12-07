@@ -230,23 +230,36 @@ option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 
 
+#----------------
+# PYTHON DISTRIBUTION
+#-------------------
 SET(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "Install Python components of CIP")
-set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
 
 if (INSTALL_CIP_PYTHON_DISTRIBUTION)
-  set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
-else()
-  message("CIP_PYTHON distribution will not be installed. Searching for previously existing python...")
+  set(CIP_PYTHON_INSTALL_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
+  if (UNIX)
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/python2.7 CACHE FILEPATH "")
+    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include/python2.7 CACHE PATH "")
+    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/lib/python2.7/site-packages CACHE PATH "")
+    if (APPLE)
+      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.dylib CACHE PATH "")
+    else()
+      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.so CACHE PATH "")
+    endif()
+  else()
+    # Windows
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/python.exe CACHE FILEPATH "")
+    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include CACHE PATH "")
+    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/Lib/site-packages CACHE PATH "")
+    set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/python27.dll CACHE PATH "")
+  endif()
+elseif(NOT PYTHON_EXECUTABLE)
+  # Python was never searched for. Search in system libraries
+  message("No INSTALL_CIP_PYTHON_DISTRIBUTION. Python will be searched in the system")
   FIND_PACKAGE(PythonLibs REQUIRED)
   FIND_PACKAGE(PythonInterp REQUIRED)
-  SET(CIP_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter used by CIP")
-  set (CIP_PYTHON_INCLUDE_DIR CACHE PATH ${PYTHON_INCLUDE_DIRS})
-  set (CIP_PYTHON_LIBRARY ${PYTHON_LIBRARIES})
 endif()
-
-
-
-
 
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
@@ -272,17 +285,17 @@ set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 #    if (NOT LIBXML2_INCLUDE_DIR)
 #      # Try to use CIPPython libraries
 #      message("LIBXML libraries NOT found. Use CIPPython ones")
-#      SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_DIR}/include/libxml2 CACHE PATH "")
-#      SET (LIBXML2_LIBRARIES ${CIP_PYTHON_DIR}/lib/libxml2.dylib CACHE PATH "")
-#      SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_DIR}/bin/xmllint CACHE FILEPATH "")
+#      SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_INSTALL_DIR}/include/libxml2 CACHE PATH "")
+#      SET (LIBXML2_LIBRARIES ${CIP_PYTHON_INSTALL_DIR}/lib/libxml2.dylib CACHE PATH "")
+#      SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/xmllint CACHE FILEPATH "")
 #    endif()
 #  endif()
 #endif()
 
 mark_as_superbuild(
  VARS
-   CIP_PYTHON_DIR:PATH
-   CIP_PYTHON_EXECUTABLE:PATH
+   #CIP_PYTHON_INSTALL_DIR:PATH
+   #CIP_PYTHON_EXECUTABLE:PATH
    CIP_CMAKE_CXX_FLAGS:STRING
 )
 
@@ -310,6 +323,7 @@ if (USE_BOOST)
     #OpenCV
   #  ${LIBXML2_EXTERNAL_NAME}
     )
+
 else()
   set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
           CIPPython
