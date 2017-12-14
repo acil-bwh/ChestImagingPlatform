@@ -193,8 +193,8 @@ if __name__ == "__main__":
     with open(options.in_xml, 'r+b') as f:
         xml_data = f.read()
     print "Compute histogram features..."
-    kde_feature_extractor = kdeHistExtractorFromXML(kde_lower_limit=np.int16(options.lower_limit), \
-        kde_upper_limit=np.int16(options.upper_limit), x_extent = np.int16(options.x_extent), \
+    kde_feature_extractor = kdeHistExtractorFromXML(lower_limit=np.int16(options.lower_limit), \
+        upper_limit=np.int16(options.upper_limit), x_extent = np.int16(options.x_extent), \
         y_extent=np.int16(options.y_extent), z_extent=np.int16(options.z_extent))
 
     kde_feature_extractor.fit(ct, ct_header, lm, xml_data)    

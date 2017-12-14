@@ -5,10 +5,14 @@ import multiprocessing
 from multiprocessing import Pool
 import ctypes
 import copy_reg
-import types 
+import types
+import pdb
  
 from scipy import ndimage
 import pandas as pd
+
+from cip_python.classification.localHistogramModel import LocalHistogramModel
+from cip_python.classification.localHistogramMapper import LocalHistogramModelMapper
 
 from cip_python.common import ChestConventions
 from cip_python.input_output import ImageReaderWriter
@@ -17,7 +21,7 @@ from cip_python.classification import kdeHistExtractorFromROI
 from cip_python.classification import DistExtractorFromROI
 from cip_python.classification import Patcher
 from cip_python.segmentation.grid_segmenter import GridSegmenter
-global ct
+global ct, lm, distance_image
       
 def _pickle_method(m):
     if m.im_self is None:
@@ -104,6 +108,9 @@ class ParenchymaSubtypeClassifier:
         
         self.knn_classifier = None
         self.hist_comparison = hist_comparison
+
+        self.min_hu = -1024
+        self.max_hu = - 1024+600
         
         """ compute patches so that they can be used for obtaining centers"""
         mypatch_array = np.zeros(np.shape(lm)).astype(int)
@@ -132,21 +139,25 @@ class ParenchymaSubtypeClassifier:
             Only the first 600 entries of the HU hitogram are taken       
         """
         
-        import pdb
-        pdb.set_trace()
+        # import pdb
+        # pdb.set_trace()
+        # hu_cols=list()
+        # for col_num in xrange(self.min_hu,self.max_hu):
+        #     hu_cols.append('hu'+str(col_num))
         training_histograms = np.array(training_df.filter(regex='hu'))[:,0:600] 
         training_distances = np.squeeze(np.array(training_df.filter(\
             regex='Distance'))[:,:])
-        
+
+
         training_classes = np.zeros(np.shape(training_df)[0], dtype = 'int')
         training_text_classes = training_df["ChestType"][:].values
-        mychestConvenstion =ChestConventions()
+        mychestConvention =ChestConventions()
 
         """ define a region type class number for each type value"""
         
         for i in xrange (0, np.shape(training_df)[0]):
             training_classes[i] = \
-                mychestConvenstion.GetChestTypeValueFromName(\
+                mychestConvention.GetChestTypeValueFromName(\
                     training_text_classes[i])
                         
         """ train"""
@@ -180,7 +191,7 @@ class ParenchymaSubtypeClassifier:
         predicted_values = [None]*(patch_end_index-patch_begin_index)
         patch_to_label_bounds = [None]*(patch_end_index-patch_begin_index)
 
-        mychestConvenstion =ChestConventions()
+        mychestConvention =ChestConventions()
         
         inc = 0
         global ct
@@ -221,7 +232,7 @@ class ParenchymaSubtypeClassifier:
                     predicted_value_tmp = 1 # Normal parenchyma
                                     
                 predicted_values[inc] = \
-                    [mychestConvenstion.GetValueFromChestRegionAndType(0, predicted_value_tmp)]
+                    [mychestConvention.GetValueFromChestRegionAndType(0, predicted_value_tmp)]
 
                 patch_to_label_bounds[inc] = \
                     Patcher.get_bounds_from_center(ct,patch_center,  self.patch_size)
@@ -354,8 +365,8 @@ if __name__ == "__main__":
                       metavar='<string>', default=None)                                         
     parser.add_option('--training_file',
                       help='File containing the feature vectors for the \
-                        training data and associated labels.', 
-                      dest='in_training', metavar='<string>', default=None)    
+                        training data and associated labels. (HDF5)',
+                      dest='in_training', metavar='<string>', action='append', default=None)
     parser.add_option('--n_neighbors',
                       help='Number of nearest neighbours.  (optional)',  
                       dest='n_neighbors', metavar='<string>', type=int, 
@@ -395,9 +406,12 @@ if __name__ == "__main__":
     parser.add_option('--hist_comparison',
                       help='distance metric for comparing histograms. \
                       (optional)',  dest='hist_comparison', 
-                      metavar='<string>', default='l1_minkowski')   
+                      metavar='<string>', default='l1_minkowski')
 
-
+    parser.add_option('--config_file',
+                      help='Json file with configuration to drop classes. \
+                      (optional)',  dest='config_file',
+                      metavar='<string>', default=None)
 
     (options, args) = parser.parse_args()                                                                   
 
@@ -418,11 +432,25 @@ if __name__ == "__main__":
          
        
     """
-    load training dataframe
+    Load training dataframe
     """ 
-    print("loading training data")       
-                                              
-    training_df = pd.read_csv(options.in_training)          
+    print("Loading training data...")
+
+    model_list=list()
+    model_list = options.in_training
+
+    training_model = LocalHistogramModel(model_list)
+
+    if options.config_file is not None:
+        mapper = LocalHistogramModelMapper()
+        mapper.read_config_json(options.config_file)
+        training_df = training_model.get_training_df_from_model()
+        training_df = mapper.map_model(training_df)
+
+    else:
+        training_df = training_model.get_training_df_from_model()
+
+
     print("classifying ..") 
     my_classifier = ParenchymaSubtypeClassifier(lm=lm_array, \
         kde_lower_limit=options.lower_limit, \

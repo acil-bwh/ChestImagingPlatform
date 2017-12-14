@@ -173,7 +173,7 @@ if __name__ == "__main__":
                       dest='in_csv', metavar='<string>', default=None)  
     (options, args) = parser.parse_args()
     
-    #image_io = ImageReaderWriter()
+    image_io = ImageReaderWriter()
     if options.in_dist is None:
         raise ValueError("Must specify as distance map")
 
