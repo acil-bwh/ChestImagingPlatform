@@ -201,6 +201,10 @@ class ParenchymaSubtypeClassifier:
         for patch_index in range(patch_begin_index, patch_end_index): 
             # unique_patch_labels_positive:
             """ Extract ROI """            
+            """ classify and get patch bounds to store in output"""
+            if (np.mod(patch_index,400) ==0):
+                print("classifying patch"+str(patch_index))
+                        
             patch_center = map(int, self.patch_centers[patch_index])
             patch_bounds = Patcher.get_bounds_from_center(ct,patch_center, self.feature_extent)
             patch_ct = Patcher.get_patch_given_bounds(ct,patch_bounds)
@@ -208,21 +212,20 @@ class ParenchymaSubtypeClassifier:
             patch_distance = Patcher.get_patch_given_bounds(distance_image,\
                 patch_bounds)
 
-            if (np.sum(patch_lm) > 2):
+            if (np.sum(patch_lm > 0) > 2):
+                
                 """ get  features from ROI"""
                 my_hist_extractor = kdeHistExtractorFromROI(lower_limit=-1024,\
                     upper_limit=0)
+
                 my_hist_extractor.fit( patch_ct, patch_lm)                   
             
                 dist_extractor = DistExtractorFromROI(chest_region="WholeLung")
                 dist_extractor.fit(patch_distance, patch_lm) 
 
                 if (my_hist_extractor.hist_ is None):
-                    pdb.set_trace()
+                    raise ValueError("classify image subtypes:: Empty histogram")
 
-                """ classify and get patch bounds to store in output"""
-                if (np.mod(patch_index,400) ==0):
-                    print("classifying patch"+str(patch_index))
                 the_histogram = my_hist_extractor.hist_[0:600]
                 the_distance = dist_extractor.dist_
                         
@@ -310,7 +313,7 @@ class ParenchymaSubtypeClassifier:
         """
         Run the classifier
         """        
-        print("running classifier")
+        print("running classifier on "+str(num_patches_to_process)+" patches.")
         p = Pool(int(self.num_threads))
         parallel_result=(p.map(self.process_patchset, \
             range(0,num_patches_to_process,self.n_patches_perbatch)))
@@ -386,7 +389,7 @@ if __name__ == "__main__":
     parser.add_option('--patch_size',
                       help='patch size in the x,y,z direction ', 
                       dest='patch_size', metavar='<string>', type=int, 
-                      nargs=3, default=[5,5,5])                                       
+                      nargs=3, default=[10,10,10])
     parser.add_option('--feature_extent',
                       help=' region size in the x direction over which the \
                         features will be estimated. The region will be \
