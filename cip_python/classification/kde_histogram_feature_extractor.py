@@ -189,15 +189,15 @@ class kdeHistExtractor:
             for p_label in unique_patch_labels_positive:
                 patch_center = map(int, patch_center_temp[inc2])
                 inc2 = inc2+1
-                xmin = max(patch_center[0]-self.x_half_length,0)
-                xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(lm)[0])
-                ymin = max(patch_center[1]-self.y_half_length,0)
-                ymax = min(patch_center[1]+\
-                    self.y_half_length+1,np.shape(lm)[1])
-                zmin = max(patch_center[2]-self.z_half_length,0)
-                zmax = min(patch_center[2]+\
-                    self.z_half_length+1,np.shape(lm)[2])
-                               
+                xmin = int(max(patch_center[0]-self.x_half_length,0))
+                xmax =  int(min(patch_center[0]+self.x_half_length+1,np.shape(lm)[0]))
+                ymin = int(max(patch_center[1]-self.y_half_length,0))
+                ymax = int(min(patch_center[1]+\
+                    self.y_half_length+1,np.shape(lm)[1]))
+                zmin = int(max(patch_center[2]-self.z_half_length,0))
+                zmax = int(min(patch_center[2]+\
+                    self.z_half_length+1,np.shape(lm)[2]))
+                    
                 lm_temp = lm[xmin:xmax, ymin:ymax, zmin:zmax]
 
                 if (np.sum(lm_temp>0) > 1):
@@ -224,14 +224,14 @@ class kdeHistExtractor:
                 print("computing histogram for patch "+str(p_label))
             patch_center = map(int, patch_center_temp[inc])
 
-            xmin = max(patch_center[0]-self.x_half_length,0)
-            xmax =  min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0])
-            ymin = max(patch_center[1]-self.y_half_length,0)
-            ymax = min(patch_center[1]+\
-                self.y_half_length+1,np.shape(ct)[1])
-            zmin = max(patch_center[2]-self.z_half_length,0)
-            zmax = min(patch_center[2]+\
-                self.z_half_length+1,np.shape(ct)[2])
+            xmin = int(max(patch_center[0]-self.x_half_length,0))
+            xmax =  int(min(patch_center[0]+self.x_half_length+1,np.shape(ct)[0]))
+            ymin = int(max(patch_center[1]-self.y_half_length,0))
+            ymax = int(min(patch_center[1]+\
+                self.y_half_length+1,np.shape(ct)[1]))
+            zmin = int(max(patch_center[2]-self.z_half_length,0))
+            zmax = int(min(patch_center[2]+\
+                self.z_half_length+1,np.shape(ct)[2]))
                 
             #print("center of mass time: "+str(toc-tic))
             intensities_temp = ct[xmin:xmax, ymin:ymax, zmin:zmax]                    
