@@ -77,12 +77,13 @@ class ChestConventionsInitializer(object):
             ChestConventionsInitializer.__chest_regions_hierarchy__ = {}
             parent = root.find("ChestRegionHierarchyMap")
             for hierarchy_node in parent.findall("Hierarchy"):
-                p = eval("ChestRegion.{}".format(hierarchy_node.find("Parent").text))
                 c = eval("ChestRegion.{}".format(hierarchy_node.find("Child").text))
-                # ChestConventionsInitializer.__chest_regions_hierarchy__.append((c,p))
-                ChestConventionsInitializer.__chest_regions_hierarchy__[c] = p
+                # Collection of parents (a child may have more than one parent)
+                parents = []
+                for parent in hierarchy_node.findall("Parents/Parent"):
+                    parents.append(eval("ChestRegion.{}".format(parent.text)))
+                ChestConventionsInitializer.__chest_regions_hierarchy__[c] = parents
         return ChestConventionsInitializer.__chest_regions_hierarchy__
-
 
 
     @staticmethod
@@ -248,23 +249,35 @@ class ChestConventions(object):
     @staticmethod
     def CheckSubordinateSuperiorChestRegionRelationship(subordinate, superior):
         """
-        This method checks if the chest region 'subordinate' is within the chest region 'superior'.
-        :param subordinate: int
-        :param superior: int
+        This method checks if the chest region 'superior' is a predecessor of 'subordinate' in the whole hierarchy
+        :param subordinate: ChestRegion code (int)
+        :param superior: list of ChestRegion code (int)
         :return: boolean
         """
+        # Base cases
         if subordinate == superior:
             return True
-
         if ChestRegion.UNDEFINEDREGION in (subordinate, superior):
             return False
+        if subordinate not in ChestConventions.ChestRegionsHierarchyCollection:
+            # Bastard node (no parents known, so it's not part of the hierarchy)
+            return False
 
-        while subordinate in ChestConventions.ChestRegionsHierarchyCollection:
-            subordinate = ChestConventions.ChestRegionsHierarchyCollection[subordinate]
-            if subordinate == superior:
+        # Loop over the whole hierarchy
+        # Get parents of the child node (make a copy of the list, as ChestRegionsHierarchyCollection is static)
+        parents = list(ChestConventions.ChestRegionsHierarchyCollection[subordinate])
+        while len(parents) > 0:
+            # Get the last element of the list (Deep breath search)
+            parent = parents.pop()
+            if parent == superior:
+                # We got to a parent of the original child
                 return True
-
+            if parent in ChestConventions.ChestRegionsHierarchyCollection:
+                # Add to the list to inspect the whole set of parents
+                parents.extend(ChestConventions.ChestRegionsHierarchyCollection[parent])
+        # Parent not found
         return False
+
 
     @staticmethod
     def GetChestRegionFromValue(value):

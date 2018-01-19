@@ -98,18 +98,19 @@ for replacement in replacements:
 # Hierarchy map
 replacement_text_cxx += "\n"
 replacement_text_cxx += \
-"""            // For the hierarchical relationships, leftness and rightness
+"""         // For the hierarchical relationships, leftness and rightness
             // are respected before any relationship that transcends
             // leftness or rightness. For example left lower third maps to
             // left lung, not lower third, etc. The exception to this rule
             // is that both left and right lungs are subordinate to
             // WHOLELUNG, not LEFT and RIGHT\n"""
 for hierarchy_node in xml_root.findall("ChestRegionHierarchyMap/Hierarchy"):
-    replacement_text_cxx += \
-"""            ChestRegionHierarchyMap.insert(Region_Pair((unsigned char)({}),
-                                                       (unsigned char)({}) ) );""".format(
-            hierarchy_node.find("Child").text, hierarchy_node.find("Parent").text)
-    replacement_text_cxx += "\n"
+    node_text = "            ChestRegionHierarchyMap.insert(Region_Pair((unsigned char)({}),".format(hierarchy_node.find("Child").text)
+    node_text += " { "
+    for parent in hierarchy_node.findall("Parents/Parent"):
+        node_text += "(unsigned char)({}), ".format(parent.text)
+    node_text = node_text[:-2] + " }));\n"
+    replacement_text_cxx += node_text
 
 # Colors
 i = 0
@@ -122,7 +123,7 @@ for replacement in replacements:
     for node in xml_root.findall(replacement):
         color = node.find("Color").text.split(";")
         # replacement_text += "            double* t092 = new double[3]; t092[0] = 0.03; t092[1] = 0.03; t092[2] = 0.04; ChestTypeColors.push_back( t092 ); " \
-        replacement_text_cxx += "            double* t{0:03} = new double[3]; t{0:03}[0] = {1}; t{0:03}[1] = {2}; t{0:03}[2] = {3}; {4}Colors.push_back( t{0:03} );". \
+        replacement_text_cxx += "            double* t{0:03} = new double[3]; t{0:03}[0] = {1}; t{0:03}[1] = {2}; t{0:03}[2] = {3}; {4}Colors.push_back( t{0:03} );\n". \
             format(i, color[0], color[1], color[2], replacement.split("/")[1])
         i += 1
 
