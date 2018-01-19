@@ -77,18 +77,27 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship(unsi
         return false;
     }
 
-    unsigned char subordinateTemp = subordinate;
-
-    while (s_ChestConventions.ChestRegionHierarchyMap.find(subordinateTemp) !=
-           s_ChestConventions.ChestRegionHierarchyMap.end()) {
-        if (s_ChestConventions.ChestRegionHierarchyMap[subordinateTemp] == superior) {
+    auto p = s_ChestConventions.ChestRegionHierarchyMap.find(subordinate);
+    if (p == s_ChestConventions.ChestRegionHierarchyMap.end())
+        // Bastard child (no known parents)
+        return false;
+    // Initialize a vector as a copy of of the child node parents
+    std::vector<unsigned char> parents(s_ChestConventions.ChestRegionHierarchyMap[subordinate]);
+    while (!parents.empty()) {
+        // Extract last element of the list (Deep breath search)
+        unsigned char parent = parents.back();
+        parents.pop_back();
+        if (parent == superior)
             return true;
+        // Check if we have to keep searching in the hierarchy bottom-up
+        p = s_ChestConventions.ChestRegionHierarchyMap.find(parent);
+        if (p != s_ChestConventions.ChestRegionHierarchyMap.end()){
+            // Add new parents of the current node
+            std::vector<unsigned char> elems = s_ChestConventions.ChestRegionHierarchyMap[parent];
+            for (std::vector<unsigned char>::iterator it=elems.begin(); it!=elems.end(); it++)
+                parents.push_back(*it);
         }
-        else {
-            subordinateTemp = s_ChestConventions.ChestRegionHierarchyMap[subordinateTemp];
-        }
-    }
-
+    };
     return false;
 }
 

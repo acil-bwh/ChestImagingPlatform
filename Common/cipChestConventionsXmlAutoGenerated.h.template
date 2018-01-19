@@ -35,7 +35,8 @@ namespace cip {
 //##PLANE_ENUM##
     };
 
-    typedef std::pair<unsigned char, unsigned char> Region_Pair;
+    typedef std::pair<unsigned char, std::vector<unsigned char>> Region_Pair;
+
 
     class ChestConventionsStatic
     {
@@ -64,7 +65,7 @@ namespace cip {
          *  a mapping between all regions in the 'ChestRegion' enumerated list
          *  and the region directly above it in the hierarchy.
          */
-        std::map< unsigned char, unsigned char >  ChestRegionHierarchyMap;
+        std::map< unsigned char, std::vector<unsigned char> >  ChestRegionHierarchyMap;
 
         std::vector< std::string >  BodyCompositionPhenotypeNames;
         std::vector< std::string >  ParenchymaPhenotypeNames;
@@ -72,6 +73,8 @@ namespace cip {
         std::vector< std::string >  PulmonaryVasculaturePhenotypeNames;
         std::vector< std::string >  AirwayPhenotypeNames;
         std::vector< std::string >  BiomechanicalPhenotypeNames;
+
+
 
     private:
         void BuildStructures() {

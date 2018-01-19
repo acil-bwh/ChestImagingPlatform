@@ -45,7 +45,7 @@ public:
 
   /** This method checks if the chest region 'subordinate' is within
    *  the chest region 'superior'. It assumes that all chest regions are
-   *  within the WHOLELUNG lung region. TODO: extend do deal with
+   *  within the WHOLELUNG lung region. TODO: extend to deal with
    *  chest, not just lung */
   bool CheckSubordinateSuperiorChestRegionRelationship( unsigned char subordinate, unsigned char superior );
 

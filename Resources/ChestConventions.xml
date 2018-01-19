@@ -1118,7 +1118,8 @@
         <Hierarchy>
             <Child>LEFTUPPERTHIRD</Child>
             <Parents>
-              <Parent>LEFTLUNG,UPPERTHIRD</Parent>
+              <Parent>LEFTLUNG</Parent>
+                <Parent>UPPERTHIRD</Parent>
             </Parents>
         </Hierarchy>
         <Hierarchy>
@@ -1434,7 +1435,7 @@
         </Hierarchy>
         <Hierarchy>
             <Child>LEFTVENTRICLE</Child>
-            </Parents>
+            <Parents>
               <Parent>WHOLEHEART</Parent>
             </Parents>
         </Hierarchy>
