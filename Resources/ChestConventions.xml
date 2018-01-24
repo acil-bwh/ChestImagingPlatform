@@ -1071,6 +1071,18 @@
             <Name>Wall</Name>
             <Color>0.05;0.03;0.09</Color>
         </ChestType>
+        <ChestType>
+            <Id>99</Id>
+            <Code>AIRWAYBRANCH</Code>
+            <Name>AirwayBranch</Name>
+            <Color>0.05;0.04;0.1</Color>
+        </ChestType>
+        <ChestType>
+            <Id>100</Id>
+            <Code>VESSELBRANCH</Code>
+            <Name>VesselBranch</Name>
+            <Color>0.05;0.05;0.11</Color>
+        </ChestType>
     </ChestTypes>
     <ChestRegionHierarchyMap>
         <Hierarchy>
