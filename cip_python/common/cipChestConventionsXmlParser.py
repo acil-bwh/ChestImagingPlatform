@@ -104,13 +104,14 @@ replacement_text_cxx += \
             // left lung, not lower third, etc. The exception to this rule
             // is that both left and right lungs are subordinate to
             // WHOLELUNG, not LEFT and RIGHT\n"""
+i = 0
 for hierarchy_node in xml_root.findall("ChestRegionHierarchyMap/Hierarchy"):
-    node_text = "            ChestRegionHierarchyMap.insert(Region_Pair((unsigned char)({}),".format(hierarchy_node.find("Child").text)
-    node_text += " { "
+    node_text = "            std::vector<unsigned char> tmp_{};\n".format(i)
     for parent in hierarchy_node.findall("Parents/Parent"):
-        node_text += "(unsigned char)({}), ".format(parent.text)
-    node_text = node_text[:-2] + " }));\n"
+        node_text += "            tmp_{}.push_back((unsigned char){});\n".format(i, parent.text)
+    node_text += "            ChestRegionHierarchyMap.insert(Region_Pair((unsigned char)({}), tmp_{}));\n".format(hierarchy_node.find("Child").text, i)
     replacement_text_cxx += node_text
+    i += 1
 
 # Colors
 i = 0
