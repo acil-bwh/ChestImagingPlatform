@@ -35,7 +35,7 @@ namespace cip {
 //##PLANE_ENUM##
     };
 
-    typedef std::pair<unsigned char, std::vector<unsigned char>> Region_Pair;
+    typedef std::pair< unsigned char, std::vector<unsigned char> > Region_Pair;
 
 
     class ChestConventionsStatic
