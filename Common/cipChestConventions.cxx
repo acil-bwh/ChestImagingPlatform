@@ -77,8 +77,10 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship(unsi
         return false;
     }
 
-    auto p = s_ChestConventions.ChestRegionHierarchyMap.find(subordinate);
-    if (p == s_ChestConventions.ChestRegionHierarchyMap.end())
+    std::map< unsigned char, std::vector<unsigned char> >::iterator it;
+    it = s_ChestConventions.ChestRegionHierarchyMap.find(subordinate);
+
+    if (it == s_ChestConventions.ChestRegionHierarchyMap.end())
         // Bastard child (no known parents)
         return false;
     // Initialize a vector as a copy of of the child node parents
@@ -90,8 +92,8 @@ bool cip::ChestConventions::CheckSubordinateSuperiorChestRegionRelationship(unsi
         if (parent == superior)
             return true;
         // Check if we have to keep searching in the hierarchy bottom-up
-        p = s_ChestConventions.ChestRegionHierarchyMap.find(parent);
-        if (p != s_ChestConventions.ChestRegionHierarchyMap.end()){
+        it = s_ChestConventions.ChestRegionHierarchyMap.find(parent);
+        if (it != s_ChestConventions.ChestRegionHierarchyMap.end()){
             // Add new parents of the current node
             std::vector<unsigned char> elems = s_ChestConventions.ChestRegionHierarchyMap[parent];
             for (std::vector<unsigned char>::iterator it=elems.begin(); it!=elems.end(); it++)
