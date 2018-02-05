@@ -2,6 +2,7 @@ from optparse import OptionParser
 from cip_python.input_output import ImageReaderWriter
 from  cip_python.qualitycontrol.qc_base import ImageOverlay
 from  cip_python.qualitycontrol.qc_base import Montage
+import numpy as np
 
 class CTRegistrationQC:
     """
@@ -95,7 +96,10 @@ if __name__ == "__main__":
     print "Reading CT..."
     ct_array_fixed, ct_header = image_io.read_in_numpy(options.in_ct_fixed) 
     ct_array_moving, ct_header = image_io.read_in_numpy(options.in_ct_moving) 
-    partial_array, partial_header = image_io.read_in_numpy(options.in_partial) 
+    partial_array=np.ones_like(ct_array_fixed)
+    if(options.in_partial):
+        partial_array, partial_header = image_io.read_in_numpy(options.in_partial) 
+
     spacing=ct_header['spacing']
 
     my_ct_qc = CTRegistrationQC()        
