@@ -265,6 +265,7 @@ class DisplayParticles:
                 tf.Update()
                 writer=vtk.vtkPolyDataWriter()
                 writer.SetInputData(tf.GetOutput())
+                writer.SetFileTypeToBinary()
                 writer.SetFileName(self.glyph_output)
                 writer.Write()
             
