@@ -142,11 +142,6 @@ if __name__ == "__main__":
                       computed in areas where the mask is > 0. If lm is not \
                       included, the histogram will be computed everywhere.', 
                       dest='in_lm', metavar='<string>', default=None)
-    parser.add_option('--in_patches',
-                      help='Input patch labels file. A label is defined for \
-                      each corresponding CT voxel. A histogram will be \
-                      computed for each patch label', dest='in_patches', 
-                      metavar='<string>',default=None)
     parser.add_option('-r',
                       help='Chest region indicating what structure the \
                       distance map corresponds to. Note that either a \
@@ -177,8 +172,6 @@ if __name__ == "__main__":
     if options.in_dist is None:
         raise ValueError("Must specify as distance map")
 
-    if options.in_patches is None:
-        raise ValueError("Must specify a patches segmentation file")
     
     print "Reading distance map..."
     distance_map, dm_header = image_io.read_in_numpy(options.in_dist) 
