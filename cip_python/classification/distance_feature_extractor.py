@@ -60,9 +60,9 @@ class DistanceFeatureExtractor:
         chest_region=None, chest_type=None, pair=None, in_df=None):
         # get the region / type over which distance is computed
 
-        self.x_half_length = np.floor(x_extent/2)
-        self.y_half_length = np.floor(y_extent/2)
-        self.z_half_length = np.floor(z_extent/2)
+        self.x_half_length = int(np.floor(x_extent/2))
+        self.y_half_length = int(np.floor(y_extent/2))
+        self.z_half_length = int(np.floor(z_extent/2))
         c = ChestConventions()
                 
         if chest_region is not None:

@@ -169,11 +169,11 @@ if __name__ == "__main__":
     parser.add_option('--x_extent',
                       help='x extent of each ROI in which the features will be \
                       computed.  (optional)',  dest='x_extent', 
-                      metavar='<string>', default=31)                        
+                      metavar='<string>', default=30)                        
     parser.add_option('--y_extent',
                       help='y extent of each ROI in which the features will be \
                       computed.  (optional)',  dest='y_extent', 
-                      metavar='<string>', default=31)   
+                      metavar='<string>', default=30)   
     parser.add_option('--z_extent',
                       help='z extent of each ROI in which the features will be \
                       computed.  (optional)',  dest='z_extent', 

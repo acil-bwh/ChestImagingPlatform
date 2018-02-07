@@ -7,6 +7,7 @@ import vtk
 
 from cip_python.common import GeometryTopologyData
 from cip_python.classification import DistanceFeatureExtractor
+from cip_python.input_output.image_reader_writer import ImageReaderWriter
 
 
 class DistanceFeatureExtractorFromXML:
@@ -58,14 +59,17 @@ class DistanceFeatureExtractorFromXML:
         computed. The 'chestwall_distance' column contains the physical distance 
         from the center of the patch to the chest wall.        
     """
-    def __init__(self, x_extent = 31, y_extent=31, z_extent=1, \
+    def __init__(self, x_extent = 30, y_extent=30, z_extent=1, \
         chest_region=None, chest_type=None, pair=None, in_df=None):
         # get the region / type over which distance is computed
 
         self.df_ = in_df
-        self.x_extent=x_extent
-        self.y_extent=y_extent
-        self.z_extent=z_extent
+        self.x_extent=int(x_extent)
+        self.y_extent=int(y_extent)
+        self.z_extent=int(z_extent)
+        self.chest_region=chest_region
+        self.chest_type=chest_type
+        self.pair=pair
         
     def fit(self, distance_image, distance_header, lm, xml_object):
         """Compute the histogram of each patch defined in 'patch_labels' beneath
@@ -121,7 +125,7 @@ class DistanceFeatureExtractorFromXML:
             the_patch[int(ijk_val[0])-2:int(ijk_val[0])+3, int(ijk_val[1])- \
                 2:int(ijk_val[1])+3,int(ijk_val[2])] = inc
             inc = inc+1
-        self.dist_extractor = DistanceFeatureExtractor(chest_region="WholeLung", 
+        self.dist_extractor = DistanceFeatureExtractor(chest_region=self.chest_region,
                                     in_df=self.df_,x_extent = self.x_extent, \
                                     y_extent=self.y_extent, z_extent=self.z_extent) 
         self.dist_extractor.fit( distance_image, lm, the_patch) # df will have region / type entries
@@ -161,7 +165,22 @@ if __name__ == "__main__":
                       dest='pair', metavar='<string>', default=None)
     parser.add_option('--out_csv',
                       help='Output csv file with the features', dest='out_csv', 
-                      metavar='<string>', default=None)            
+                      metavar='<string>', default=None)
+    parser.add_option('--in_xml',
+                      help='xml input', dest='in_xml',
+                      metavar='<string>', default=None)
+    parser.add_option('--x_extent',
+                      help='x extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='x_extent',
+                      metavar='<string>', default=30)
+    parser.add_option('--y_extent',
+                      help='y extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='y_extent',
+                      metavar='<string>', default=30)
+    parser.add_option('--z_extent',
+                      help='z extent of each ROI in which the features will be \
+                      computed.  (optional)',  dest='z_extent',
+                      metavar='<string>', default=1)
     parser.add_option('--in_csv',
                       help='Input csv file with the existing features. The \
                       distance features will be appended to this.', 
@@ -203,8 +222,9 @@ if __name__ == "__main__":
         pair = [options.pair.split(',')[0],options.pair.split(',')[1] ]
 
     print "Computing distance features..."
-    dist_extractor = DistanceFeatureExtractorFromXML(options.chest_region, \
-        options.chest_type, pair, init_df)                 
+    dist_extractor = DistanceFeatureExtractorFromXML(chest_region=options.chest_region, \
+        chest_type=options.chest_type, pair=pair, in_df=init_df, x_extent=options.x_extent, \
+                                                     y_extent=options.y_extent, z_extent=options.z_extent)
     dist_extractor.fit(distance_map, dm_header, lm, xml_data)
 
     if options.out_csv is not None:
