@@ -283,11 +283,11 @@ class BodyCompositionPhenotypes(Phenotypes):
                         if 'lean' in n:
                             self.add_pheno_group(ct, lean_mask,
                                 c.GetChestWildCardName(),
-                                c.GetChestTypeName(r), n)
+                                c.GetChestTypeName(t), n)
                         else:
                             self.add_pheno_group(ct, mask,
                                 c.GetChestWildCardName(),
-                                c.GetChestTypeName(r), n)
+                                c.GetChestTypeName(t), n)
         if ps is not None:
             for p in ps:            
                 if not (p[0] == 0 and p[1] == 0):
@@ -400,10 +400,11 @@ if __name__ == "__main__":
     lm, lm_header = image_io.read_in_numpy(options.in_lm)
     ct, ct_header = image_io.read_in_numpy(options.in_ct)
 
-    spacing = np.zeros(3)
-    spacing[0] = ct_header['space directions'][0][0]
-    spacing[1] = ct_header['space directions'][1][1]
-    spacing[2] = ct_header['space directions'][2][2]
+    # spacing = np.zeros(3)
+    # spacing[0] = ct_header['space directions'][0][0]
+    # spacing[1] = ct_header['space directions'][1][1]
+    # spacing[2] = ct_header['space directions'][2][2]
+    spacing = lm_header['spacing']
 
     pheno_names = None
     if options.pheno_names is not None:
