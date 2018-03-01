@@ -187,7 +187,7 @@ class VasculaturePhenotypes(Phenotypes):
         
         if self.rad_arrayname is not None:
             tmp=vessel.GetPointData().GetArray(self.rad_arrayname)
-            array_v[ff]=vtk_to_numpy(tmp)
+            array_v[self.rad_arrayname]=vtk_to_numpy(tmp)
 
         #Get unique value of spacing as the norm 3D vector
         if vessel.GetFieldData().GetArray("spacing") == None:
@@ -309,7 +309,7 @@ class VasculaturePhenotypes(Phenotypes):
         else:
           vessel_radius = array_v[self.rad_arrayname][region_vessel_mask]
 
-        p_csa = self.compute_bv_profile_from_radius(array_v['scale'][region_vessel_mask])
+        p_csa = self.compute_bv_profile_from_radius(vessel_radius)
         n_points = np.sum(region_vessel_mask == True)
 
         #Set out profile set. This output can be used for plotting and additional analysis
