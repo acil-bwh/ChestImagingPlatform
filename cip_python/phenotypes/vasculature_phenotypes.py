@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from cip_python.phenotypes import Phenotypes
 from cip_python.common import ChestConventions
 from cip_python.utils import RegionTypeParser
+from cip_python.classification import kde_bandwidth
 
 class VasculaturePhenotypes(Phenotypes):
     """Compute vasculare spectific phenotypes.
@@ -43,6 +44,12 @@ class VasculaturePhenotypes(Phenotypes):
         self._dx = None
         self._number_test_points=1000
         self.factor=0.16
+        
+        #Method to do KDE of prob(CSA)
+        self.bw_method='scott'  #options are scott,botev,silverman or a value
+        
+        #Array name with radius data (optional)
+        self.rad_arrayname=None
 
         self.plot=plot
 
@@ -177,7 +184,10 @@ class VasculaturePhenotypes(Phenotypes):
                 #tmp=vessel.GetFieldData().GetArray(ff)
             array_v[ff]=vtk_to_numpy(tmp)
         print "Number of Vessel Points "+str(vessel.GetNumberOfPoints())
-
+        
+        if self.rad_arrayname is not None:
+            tmp=vessel.GetPointData().GetArray(self.rad_arrayname)
+            array_v[ff]=vtk_to_numpy(tmp)
 
         #Get unique value of spacing as the norm 3D vector
         if vessel.GetFieldData().GetArray("spacing") == None:
@@ -281,7 +291,7 @@ class VasculaturePhenotypes(Phenotypes):
                 plt.xlabel('CSA (mm^2)')
                 plt.title('Region '+values[0]+' Type '+values[1])
 
-        return self._df,fig
+        return self._df,fig,profiles
 
 
     def add_pheno_group(self,array_v,mask,mask_region,mask_type,chest_region_name,chest_type_name):
@@ -294,13 +304,17 @@ class VasculaturePhenotypes(Phenotypes):
         if mask_sum == 0:
             return None
 
-        p_csa = self.compute_bv_profile_from_scale(array_v['scale'][region_vessel_mask])
+        if self.rad_arrayname == None:
+          vessel_radius = self.vessel_radius_from_sigma(array_v['scale'][region_vessel_mask])
+        else:
+          vessel_radius = array_v[self.rad_arrayname][region_vessel_mask]
+
+        p_csa = self.compute_bv_profile_from_radius(array_v['scale'][region_vessel_mask])
         n_points = np.sum(region_vessel_mask == True)
 
-        if self.plot == True:
-            profile=[chest_region_name, chest_type_name, p_csa, n_points]
-        else:
-            profile = None
+        #Set out profile set. This output can be used for plotting and additional analysis
+        profile=[chest_region_name, chest_type_name, p_csa, n_points, self._dx]
+        
         # Compute blood volume phenotypes integrating along profile
         pheno_name = 'TBV'
         tbv = self.integrate_volume(p_csa, self.min_csa, self.max_csa, n_points, self._dx)
@@ -320,10 +334,19 @@ class VasculaturePhenotypes(Phenotypes):
             self.add_pheno([chest_region_name, chest_type_name], pheno_name, bv[th])
 
         return profile
-                                         
-    def compute_bv_profile_from_scale(self,scale_arr):
+            
+    def botev_kde_bandwidth(self,scale_arr):
+        bb=kde_bandwidth.botev_bandwidth()
+        return bb.run(scale_arr)
+    
+    def compute_bv_profile_from_radius(self,radius_arr):
         #Do some automatic bandwithd estimation
-        p_csa=kde.gaussian_kde(np.pi*self.vessel_radius_from_sigma(scale_arr)**2)
+        if self.bw_method=='botev':
+          bw_value=self.botev_kde_bandwidth(np.pi*radius_arr**2)
+          print "Using botev bw estimation with value=%f"%bw_value
+        else:
+          bw_value=self.bw_method
+        p_csa=kde.gaussian_kde(np.pi*radius_arr**2,bw_method=bw_value)
         return p_csa
 
     def integrate_volume(self,kernel,min_x,max_x,N,dx):
@@ -402,6 +425,10 @@ if __name__ == "__main__":
                       compute the fraction of the chest type within the \
                       chest region.',
                       dest='pairs', metavar='<string>', default=None)
+    parser.add_option('--radius_name',
+                      help='Array name with the radius information (optional).\
+                      If this is not provided the radius will be computed from the scale information.',
+                      dest='radius_array_name',metavar='<string>',default=None)
     parser.add_option('--out_plot',help='Output png file with plots of the blood volume profiles (ex: cid_vascularePhenotypePlot.png)',
                                         dest='out_plot',metavar='<string>',default=None)
 
@@ -433,7 +460,8 @@ if __name__ == "__main__":
         plot=True
 
     vasculature_pheno=VasculaturePhenotypes(chest_regions=regions,chest_types=types,pairs=pairs,plot=plot)
-    v_df,figure=vasculature_pheno.execute(vessel,options.cid)
+    vasculature_pheno.rad_arrayname=options.radius_array_name
+    v_df,figure,profiles=vasculature_pheno.execute(vessel,options.cid)
 
 
     if options.out_csv is not None:
