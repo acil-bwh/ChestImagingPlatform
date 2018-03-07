@@ -79,6 +79,7 @@ set(CLIS_DIRS
   GraphCutsOptimization
   SegmentLungAirways
   ComputeStrainFromDeformationField
+  ComputeAirwayWallFromImages
 )
 
 #Append CLIS that depends on BOOST
@@ -101,7 +102,7 @@ endforeach( )
 
 
 
-set(BUILD_LEGACYCLIS OFF CACHE BOOL "BUILD_LEGACYCLIS")
+set(BUILD_LEGACYCLIS ON CACHE BOOL "BUILD_LEGACYCLIS")
 
 if ( BUILD_LEGACYCLIS )
   SUBDIRS (LegacyCLIs)
