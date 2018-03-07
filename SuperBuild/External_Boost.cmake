@@ -17,7 +17,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG)
 
   ### --- Project specific additions here
-  set(Boost_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install)
+  if (UNIX)
+    set(Boost_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install)
+  else()
+    set(Boost_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/${proj})
+  endif()
   set(Boost_Configure_Script ${CMAKE_CURRENT_LIST_DIR}/External_Boost_configureboost.cmake)
   set(Boost_Build_Script ${CMAKE_CURRENT_LIST_DIR}/External_Boost_buildboost.cmake)
 
@@ -55,6 +59,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     BUILD_COMMAND ${CMAKE_COMMAND}
     INSTALL_COMMAND ""
   )
+
   set(BOOST_ROOT ${Boost_Install_Dir})
 
 else()
