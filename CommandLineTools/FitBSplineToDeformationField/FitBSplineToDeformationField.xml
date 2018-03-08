@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Registration</category>
+  <title>FitBSplineToDeformationField</title>
+  <description><![CDATA[ This module fits a Bspline transformation to a non-linear displacement field.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/registration-0</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <transform type="nonlinear">
+      <name>deformationFileName</name>
+      <label>Input Deformation</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>inputDeformation</longflag>
+      <description><![CDATA[Input Deformation field file name]]></description>
+    </transform>
+
+    <transform type="bspline">
+      <name>bsplineFileName</name>
+      <label>Output Bspline</label>
+      <flag>o</flag>
+      <longflag>outputBSpline</longflag>
+      <channel>output</channel>
+      <description><![CDATA[Output Bspline transfomration (.tfm)]]></description>
+    </transform>
+
+  </parameters>
+  
+  <parameters>
+   <label> Parameters </label>
+   <description> Filter parameters </description>
+    <integer>
+        <name>NumberOfNodes</name>
+        <label>Num. of Nodes</label>
+        <flag>n</flag>
+        <longflag>nnodes</longflag>
+        <channel>input</channel>
+        <description><![CDATA[Number of nodes for the BSpline.]]></description>
+        <constraints>
+          <minimum>3</minimum>
+          <step>1</step>
+        </constraints>
+        <default>50</default>
+    </integer>
+
+  </parameters>
+</executable>
