@@ -5,6 +5,7 @@ class Paths(object):
 
     ResourcesFolder = osp.realpath(osp.join(__this_dir__, '..', '..', 'Resources'))
     TestingDataFolder = osp.realpath(osp.join(__this_dir__, '..', '..', 'Testing', 'Data', 'Input'))
+    TestingOuputFolder = osp.realpath(osp.join(__this_dir__, '..', 'tests_output'))
 
     @staticmethod
     def testing_file_path(_file):
@@ -35,3 +36,16 @@ class Paths(object):
         """
         return osp.join(Paths.ResourcesFolder, _file)
 
+    @staticmethod
+    def testing_output_file_path(_file):
+        """
+        Get the whole path to a data file stored in the Testing Output folder concatenating paths
+        Parameters
+        ----------
+        _file   Name of the file / subpath
+
+        Returns
+        -------
+        Path
+        """
+        return osp.join(Paths.TestingOuputFolder, _file)

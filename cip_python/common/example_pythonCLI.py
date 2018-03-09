@@ -1,10 +1,21 @@
 import argparse
 import SimpleITK as sitk
 
-import cip_python.common as common
+from cip_python.common import ChestConventions
 
-class ExampleCLI(object):
+class ExampleCLIClass(object):
     def execute(self, input_file_name, output_file_name, variance=25.0, max_kernel_width=32):
+        """
+        Execute an ITK Gaussian filter
+        Args:
+            input_file_name: str. Path to the input volume/image
+            output_file_name: str. Path where the ouput will be stored
+            variance: float. Filter variance
+            max_kernel_width: int. Maximum filter kernel width
+
+        Returns:
+            SimpleITK result volume
+        """
         # Read the image
         input = sitk.ReadImage(input_file_name)
         # Apply filter
@@ -15,6 +26,7 @@ class ExampleCLI(object):
         # Write result
         sitk.WriteImage(output, output_file_name)
         print("File saved to: {}".format(output_file_name))
+        return output
 
 
 if __name__ == "__main__":
@@ -29,10 +41,10 @@ if __name__ == "__main__":
     args=parser.parse_args()
 
     print("These are the current Chest Regions available: ")
-    for region in common.ChestConventions.ChestRegionsCollection.keys():
-        print(common.ChestConventions.GetChestRegionName(region))
+    for region in ChestConventions.ChestRegionsCollection.keys():
+        print(ChestConventions.GetChestRegionName(region))
 
-    cli = ExampleCLI()
+    cli = ExampleCLIClass()
     cli.execute(args.inputFileName, args.outputFileName, args.gaussianVariance, args.maxKernelWidth)
 
 
