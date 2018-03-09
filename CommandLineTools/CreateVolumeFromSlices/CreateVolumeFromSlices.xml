@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
+  <title>CreateVoluemFromSlices</title>
+    <description><![CDATA[This simple program takes as an argument a file pattern describing \
+describing image files within a directory, and produces a single volume file as \
+output. This is useful to convert microCT image slices into volume. The pattern follows printf format]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+   </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+      <string>
+          <name>filePattern</name>
+          <flag>p</flag>
+          <longflag>filepattern</longflag>
+          <label>Input file pattern describing directory</label>
+          <channel>input</channel>
+          <description><![CDATA[Input dicom directory]]></description>
+          <default>"%s.%002d"</default>
+      </string>
+    <image>
+      <name>outputImageFileName</name>
+      <label>output Image FileName</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>output</longflag>
+      <description><![CDATA[Output image file name]]></description>
+      <default>NA</default>
+    </image>
+  </parameters>
+  
+  <parameters>
+  <label>Parameters</label>
+    <integer>
+      <name>firstSliceValue</name>
+      <longflag>fslice</longflag>
+      <label>First Slice Value</label>
+      <channel>input</channel>
+      <description><![CDATA[First Slice Value. Default=0]]></description>
+      <constraints>
+        <minimum>0</minimum>
+        <step>1</step>
+      </constraints>
+      <default>0</default>
+    </integer>
+
+    <integer>
+      <name>lastSliceValue</name>
+      <longflag>lslice</longflag>
+      <label>Last Slice Value</label>
+      <channel>input</channel>
+      <description><![CDATA[Last Slice Value. Default=0]]></description>
+      <constraints>
+        <minimum>0</minimum>
+        <step>1</step>
+      </constraints>
+      <default>0</default>
+    </integer>
+  
+    <double-vector>
+      <name>spacing</name>
+      <longflag>spacing</longflag>
+      <label>Spacing</label>
+      <channel>input</channel>
+      <description><![CDATA[Spacing of output volume. 3 values: spx,spy,spz]]></description>
+      <default>1.,1.,1.</default>
+    </double-vector>
+    
+    <double-vector>
+      <name>origin</name>
+      <longflag>origin</longflag>
+      <label>Origin</label>
+      <channel>input</channel>
+      <description><![CDATA[Origin for output volume. 3 values: ox,oy,oz]]></description>
+      <default>0.,0.,0.</default>
+    </double-vector>
+  
+  </parameters>
+
+
+</executable>
