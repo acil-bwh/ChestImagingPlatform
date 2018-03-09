@@ -5,3 +5,5 @@ from .chest_conventions_static import ChestRegion, ChestType, ImageFeature, Plan
 from .geometry_topology_data import GeometryTopologyData, BoundingBox, Point
 from .anatomic_structures_manager import AnatomicStructuresManager
 from .deep_learning_models_manager import *
+
+from .example_pythonCLI import *

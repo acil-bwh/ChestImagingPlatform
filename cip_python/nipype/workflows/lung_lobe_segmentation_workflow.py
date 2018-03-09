@@ -104,6 +104,11 @@ class LungLobeSegmentationWorkflow(Workflow):
 
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
+        ct_file_name = os.path.realpath(ct_file_name)
+        lobe_seg_file_name = os.path.realpath(lobe_seg_file_name)
+        if ilm:
+          ilm = os.path.realpath(ilm)
+
         file_and_path = os.path.abspath(__file__)
         file_path = os.path.dirname(file_and_path)
         
@@ -362,10 +367,10 @@ if __name__ == "__main__":
     parser = ArgumentParser(description=desc)
     parser.add_argument('--in_ct', help='The file name of the CT image (single \
       file, 3D volume) for which to generate a lung lobe segmentation. Must \
-      be in nrrd format', dest='in_ct', metavar='<string>', default=None)
+      be in nrrd format', dest='in_ct', metavar='<string>', required=True)
     parser.add_argument('--out', 
       help='The file name of the output lung lobe label map.', 
-      dest='out', metavar='<string>', default=None)
+      dest='out', metavar='<string>', required=True)
     parser.add_argument('--reg', 
       help='FitLobeSurfaceModelsToParticleData CLI parameter. The higher this \
       value, the more departures from the mean shape are penalized. (Optional)', 
@@ -455,10 +460,10 @@ if __name__ == "__main__":
     
     op = parser.parse_args()
 
-    if op.in_ct is None:
-        raise ValueError('Must specify a file name for the CT input')
-    if op.out is None:
-        raise ValueError('Must specify a file name for the segmentation output')
+    # if op.in_ct is None:
+    #     raise ValueError('Must specify a file name for the CT input')
+    # if op.out is None:
+    #     raise ValueError('Must specify a file name for the segmentation output')
 
     tmp_dir = tempfile.mkdtemp()
     wf = LungLobeSegmentationWorkflow(op.in_ct, op.out, tmp_dir, 
