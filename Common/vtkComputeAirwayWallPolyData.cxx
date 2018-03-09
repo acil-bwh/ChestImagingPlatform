@@ -387,7 +387,7 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   // Loop through each point
   int npts = input->GetNumberOfPoints();
   for (vtkIdType k=0; k<npts; k++) {
-  //for (vtkIdType k=63; k<67; k++) {
+  //for (vtkIdType k=400; k<403; k++) {
     input->GetPoints()->GetPoint(k,p);
     cout<<"Processing point "<<k<<" out of "<<npts<<endl;
     
@@ -439,65 +439,12 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
    vtkComputeAirwayWall *worker = this->WallSolver;
    worker->SetInputData(reslicer->GetOutput());
 
-   //this->WallSolver->SetInputData(reslicer->GetOutput());
-   //Maybe we have to update the threshold depending on the center value.
-   if (worker->GetMethod()==2) {
-     // Use self tune phase congruency
-     vtkComputeAirwayWall *tmp = vtkComputeAirwayWall::New();
-     this->SetWallSolver(worker,tmp);
-     tmp->SetInputData(reslicer->GetOutput());
-     tmp->ActivateSectorOff();
-     tmp->SetBandwidth(1.577154);
-     tmp->SetNumberOfScales(12);
-     tmp->SetMultiplicativeFactor(1.27);
-     tmp->SetMinimumWavelength(2);
-     tmp->UseWeightsOn();
-     vtkDoubleArray *weights = vtkDoubleArray::New();
-     weights->SetNumberOfTuples(12);
-     double tt[12]={1.249966,0.000000,0.000000,0.734692,0.291580,0.048616,0.718651,0.000000,0.620357,0.212188,0.000000,1.094157};
-     for (int i=0;i<12;i++) { 
-       weights->SetValue(i,tt[i]);
-     }
-     tmp->SetWeights(weights);
-     tmp->Update();
-     double wt = tmp->GetStatsMean()->GetComponent(4,0);
-     tmp->Delete();
-     weights->Delete();
-     double ml;
-     double *factors;
-     switch (this->Reconstruction) {
-       case VTK_SMOOTH:
-         factors = this->SelfTuneModelSmooth;
-         break;
-       case VTK_SHARP:
-         factors = this->SelfTuneModelSharp;
-         break;
-     }
-     ml = exp(factors[0]*pow(log(wt*factors[1]),factors[2]));
-     worker->SetMultiplicativeFactor(ml);
-   }
-   
-   //cout<<"Update solver"<<endl;
-   worker->Update();
-   //cout<<"Done solver"<<endl;
-   
    // Fit ellipse model to obtain those parameters ->Move this to compute airway wall
    vtkEllipseFitting *eifit = vtkEllipseFitting::New();
    vtkEllipseFitting *eofit = vtkEllipseFitting::New();
-   //cout<<"Ellipse fitting 1: "<<this->WallSolver->GetInnerContour()->GetNumberOfPoints()<<endl;
-   if (worker->GetInnerContour()->GetNumberOfPoints() >= 3)
-   {
-     eifit->SetInputData(worker->GetInnerContour());
-     eifit->Update();
-   }
-   //cout<<"Ellipse fitting 2: "<<this->WallSolver->GetOuterContour()->GetNumberOfPoints()<<endl;
-    if (worker->GetOuterContour()->GetNumberOfPoints() >= 3)
-    {
-      eofit->SetInputData(worker->GetOuterContour());
-      eofit->Update();
-    }
-   //cout<<"Done ellipse fitting"<<endl;
-   
+    
+   this->ComputeWallFromSolver(worker,eifit,eofit);
+    
    // Collect results and assign them to polydata
    for (int c = 0; c < worker->GetNumberOfQuantities();c++) {
      mean->SetComponent(k,c,worker->GetStatsMean()->GetComponent(c,0));
@@ -513,24 +460,17 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
    ellipse->SetComponent(k,4,eofit->GetMajorAxisLength()*resolution);
    ellipse->SetComponent(k,5,eofit->GetAngle());
    
-   if (this->SaveAirwayImage) {
-     char fileName[10*256];
-     vtkPNGWriter *writer = vtkPNGWriter::New();
-     vtkImageData *airwayImage = vtkImageData::New();
-     this->CreateAirwayImage(reslicer->GetOutput(),eifit,eofit,airwayImage);
-     writer->SetInputData(airwayImage);
-     sprintf(fileName,"%s_airwayWallImage%s-%05lld.png",this->AirwayImagePrefix,methodTag.c_str(),k);
-     writer->SetFileName(fileName);
-     writer->Write();
-     airwayImage->Delete();
-     writer->Delete();
+  if (this->SaveAirwayImage) {
+    char fileName[10*256];
+    sprintf(fileName,"%s_airwayWallImage%s-%05lld.png",this->AirwayImagePrefix,methodTag.c_str(),k);
+    this->SaveQualityControlImage(fileName,reslicer->GetOutput(),eifit,eofit);
+    
   }
-  
+    
     eifit->Delete();
     eofit->Delete();
   }
   
-
   //Compute stats for each line if lines are available
   if (input->GetLines()) {
     this->ComputeCellData();
@@ -538,6 +478,92 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   
   return 1;
 }
+
+void vtkComputeAirwayWallPolyData::SaveQualityControlImage(char *fileName,vtkImageData *reslice_airway,vtkEllipseFitting *eifit, vtkEllipseFitting *eofit)
+{
+  
+  vtkPNGWriter *writer = vtkPNGWriter::New();
+  vtkImageData *airwayImage = vtkImageData::New();
+  this->CreateAirwayImage(reslice_airway,eifit,eofit,airwayImage);
+  writer->SetInputData(airwayImage);
+  writer->SetFileName(fileName);
+  writer->Write();
+  airwayImage->Delete();
+  writer->Delete();
+
+}
+
+void vtkComputeAirwayWallPolyData::ComputeWallFromSolver(vtkComputeAirwayWall *worker,vtkEllipseFitting *eifit, vtkEllipseFitting *eofit)
+{
+  
+  //this->WallSolver->SetInputData(reslicer->GetOutput());
+  //Maybe we have to update the threshold depending on the center value.
+  if (worker->GetMethod()==2) {
+    // Use self tune phase congruency
+    vtkComputeAirwayWall *tmp = vtkComputeAirwayWall::New();
+    this->SetWallSolver(worker,tmp);
+    tmp->SetInputData(worker->GetInput());
+    tmp->ActivateSectorOff();
+    tmp->SetBandwidth(1.577154);
+    tmp->SetNumberOfScales(12);
+    tmp->SetMultiplicativeFactor(1.27);
+    tmp->SetMinimumWavelength(2);
+    tmp->UseWeightsOn();
+    vtkDoubleArray *weights = vtkDoubleArray::New();
+    weights->SetNumberOfTuples(12);
+    double tt[12]={1.249966,0.000000,0.000000,0.734692,0.291580,0.048616,0.718651,0.000000,0.620357,0.212188,0.000000,1.094157};
+    for (int i=0;i<12;i++) {
+      weights->SetValue(i,tt[i]);
+    }
+    tmp->SetWeights(weights);
+    tmp->Update();
+    double wt = tmp->GetStatsMean()->GetComponent(4,0);
+    tmp->Delete();
+    weights->Delete();
+    double ml;
+    double *factors;
+    switch (this->Reconstruction) {
+      case VTK_SMOOTH:
+        factors = this->SelfTuneModelSmooth;
+        break;
+      case VTK_SHARP:
+        factors = this->SelfTuneModelSharp;
+        break;
+    }
+    ml = exp(factors[0]*pow(log(wt*factors[1]),factors[2]));
+    worker->SetMultiplicativeFactor(ml);
+  }
+  
+  //cout<<"Update solver"<<endl;
+  worker->Update();
+  //cout<<"Done solver"<<endl;
+  
+  if (eifit != NULL)
+  {
+    //cout<<"Ellipse fitting 1: "<<worker->GetInnerContour()->GetNumberOfPoints()<<endl;
+    if (worker->GetInnerContour()->GetNumberOfPoints() >= 3)
+    {
+      eifit->SetInputData(worker->GetInnerContour());
+      eifit->Update();
+    }
+
+  }
+  
+  if (eofit !=NULL)
+  {
+    //cout<<"Ellipse fitting 2: "<<worker->GetOuterContour()->GetNumberOfPoints()<<endl;
+    if (worker->GetOuterContour()->GetNumberOfPoints() >= 3)
+    {
+      eofit->SetInputData(worker->GetOuterContour());
+      eofit->Update();
+    }
+  }
+  //cout<<"Done ellipse fitting"<<endl;
+
+}
+
+
+
 
 void vtkComputeAirwayWallPolyData::ComputeCellData()
 {

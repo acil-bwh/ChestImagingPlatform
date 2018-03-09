@@ -110,6 +110,11 @@ public:
   vtkSetStringMacro(AirwayImagePrefix);
   vtkGetStringMacro(AirwayImagePrefix);
   
+  //Helper methods
+  void ComputeWallFromSolver(vtkComputeAirwayWall *worker,vtkEllipseFitting *eifit, vtkEllipseFitting *eofit);
+  void CreateAirwayImage(vtkImageData *resliceCT,vtkEllipseFitting *eifit,vtkEllipseFitting *eofit,vtkImageData *airwayImage);
+  void SaveQualityControlImage(char *fileName,vtkImageData *reslice_airway,vtkEllipseFitting *eifit, vtkEllipseFitting *eofit);
+
 protected:
   vtkComputeAirwayWallPolyData();
   ~vtkComputeAirwayWallPolyData();
@@ -148,7 +153,6 @@ protected:
   
   void SetWallSolver(vtkComputeAirwayWall *ref, vtkComputeAirwayWall *out);
   void ComputeAirwayAxisFromLines();
-  void CreateAirwayImage(vtkImageData *resliceCT,vtkEllipseFitting *eifit,vtkEllipseFitting *eofit,vtkImageData *airwayImage);
   void ComputeCenterFromCentroid(vtkImageData *inputImage,double ijk[3],double ijk_out[3]);
     
   
