@@ -590,17 +590,17 @@ if __name__ == "__main__":
     parser = OptionParser(description=desc)
     parser.add_option('--in_ct',
                       help='Input CT file', dest='in_ct', metavar='<string>',
-                      default=None)
+                      required=True)
     parser.add_option('--in_lm',
                       help='Input label map containing structures of interest',
-                      dest='in_lm', metavar='<string>', default=None)
+                      dest='in_lm', metavar='<string>', required=True)
     parser.add_option('--out_csv',
                       help='Output csv file in which to store the computed \
                       dataframe', dest='out_csv', metavar='<string>',
-                      default=None)
+                      required=True)
     parser.add_option('--cid',
-                      help='The database case ID', dest='cid',
-                      metavar='<string>', default=None)
+                      help='Case id', dest='cid',
+                      metavar='<string>', required=True)
     parser.add_option('-r',
                       help='Chest regions. Should be specified as a \
                       common-separated list of string values indicating the \
