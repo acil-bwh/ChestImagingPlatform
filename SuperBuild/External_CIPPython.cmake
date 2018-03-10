@@ -44,20 +44,55 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   else() # Windows
       SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_INSTALL_DIR}/Scripts)
   endif()
-  
-  ExternalProject_Add_Step(${proj} installcython
-	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet cython  
-	DEPENDEES install
+
+  message("Python bin: ${CIP_PYTHON_BIN_DIR}")
+
+  #### Conda-forge packages
+  ExternalProject_Add_Step(${proj} installnipype
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge nipype==0.12.1
+          DEPENDEES install
+          )
+
+  ExternalProject_Add_Step(${proj} installnetworkx
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge networkx==1.11
+          DEPENDEES installnipype
   )
 
+  ExternalProject_Add_Step(${proj} installscikit-image
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge scikit-image
+          DEPENDEES installnetworkx
+  )
+
+  #### pip packages
+  ExternalProject_Add_Step(${proj} installpynrrd
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd
+          DEPENDEES installscikit-image
+          )
+
+  ExternalProject_Add_Step(${proj} installpydicom
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pydicom==0.9.9
+          DEPENDEES installpynrrd
+          )
+
+  ExternalProject_Add_Step(${proj} installnibabel
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel
+          DEPENDEES installpydicom
+          )
+
+  #### Conda packages
   ExternalProject_Add_Step(${proj} installnumpy
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet numpy
-    DEPENDEES install
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet numpy
+          DEPENDEES installnibabel
+  )
+
+  ExternalProject_Add_Step(${proj} installcython
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet cython
+	DEPENDEES installnumpy
   )
 
   ExternalProject_Add_Step(${proj} installscipy
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scipy
-    DEPENDEES installnumpy
+    DEPENDEES installcython
   )
 
   ExternalProject_Add_Step(${proj} installvtk
@@ -94,43 +129,6 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scikit-learn
     DEPENDEES installlxml
   )
-    
-  ExternalProject_Add_Step(${proj} installmatplotlib
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet matplotlib
-    DEPENDEES installscikit-learn
-  )
-
-  ExternalProject_Add_Step(${proj} installnipype
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge nipype==0.12.1
-          DEPENDEES installmatplotlib
-  )
-
-  ExternalProject_Add_Step(${proj} installnetworkx
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge networkx==1.11
-          DEPENDEES installnipype
-  )
-
-  ExternalProject_Add_Step(${proj} installscikit-image
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge scikit-image
-          DEPENDEES installnetworkx
-  )
-
-  ExternalProject_Add_Step(${proj} installpynrrd
-    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd
-    DEPENDEES installscikit-image
-  )
-
-  ExternalProject_Add_Step(${proj} installpydicom
-    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pydicom
-    DEPENDEES installpynrrd
-  )
-
-  ExternalProject_Add_Step(${proj} installnibabel
-    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel
-    DEPENDEES installpydicom
-  )
-
-
 
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
