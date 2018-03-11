@@ -45,8 +45,6 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
       SET (CIP_PYTHON_BIN_DIR ${CIP_PYTHON_INSTALL_DIR}/Scripts)
   endif()
 
-  message("Python bin: ${CIP_PYTHON_BIN_DIR}")
-
   #### Conda-forge packages
   ExternalProject_Add_Step(${proj} installnipype
           COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge nipype==0.12.1

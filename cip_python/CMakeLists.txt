@@ -79,4 +79,13 @@ FOREACH (PYTHON_MODULE ${PYTHON_MODULES})
 	FILE (INSTALL ${SOURCE_DIR}
 	  DESTINATION ${TARGET_DIR}
 	  FILES_MATCHING PATTERN "*.py")
+
+
+	if (EXISTS ${SOURCE_DIR}/data/baseline)
+		# Include all the files in the baseline
+		FILE(INSTALL ${SOURCE_DIR}/data/baseline
+				DESTINATION ${TARGET_DIR}/${PYTHON_MODULE}/data
+				FILES_MATCHING PATTERN "*.*"
+		)
+	endif()
 ENDFOREACH ( )
