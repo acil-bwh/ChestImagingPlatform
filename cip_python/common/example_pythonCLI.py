@@ -30,7 +30,7 @@ class ExampleCLIClass(object):
 
 
 if __name__ == "__main__":
-    desc = "This is just an example that may ba used as a template to develiop new python CLIs"
+    desc = "This is just an example that may be used as a template to develop new python CLIs"
     parser = argparse.ArgumentParser(description=desc)
 
     parser.add_argument("-i", "--input", dest="inputFileName", type=str, help="Input file name", required=True)
