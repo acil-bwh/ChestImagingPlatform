@@ -7,6 +7,7 @@ if (WIN32)
 endif (WIN32)
 
 set(CLIS_DIRS
+  ExampleCLI
   ConvertDicom
   MergeParticleDataSets
   RemoveParticlesFromParticlesDataSet
