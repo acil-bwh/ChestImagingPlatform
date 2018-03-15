@@ -600,7 +600,7 @@ if __name__ == "__main__":
                       )
     parser.add_option('--cid',
                       help='Case id', dest='cid',
-                      metavar='<string>', required=True)
+                      metavar='<string>')
     parser.add_option('-r',
                       help='Chest regions. Should be specified as a \
                       common-separated list of string values indicating the \
