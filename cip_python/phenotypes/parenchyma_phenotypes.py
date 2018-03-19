@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.stats import mode, kurtosis, skew
-from optparse import OptionParser
+from argparse import ArgumentParser
 import warnings
+
 from cip_python.phenotypes import Phenotypes
 from cip_python.common import ChestConventions
 from cip_python.input_output import ImageReaderWriter
@@ -586,34 +587,32 @@ if __name__ == "__main__":
     the fraction of paraseptal emphysema in the left lung, he/she would \
     specify the TypeFrac phenotype and the LeftLung,ParaseptalEmphysema \
     region-type pair."""
+
+    parser = ArgumentParser(description=desc)
     
-    parser = OptionParser(description=desc)
-    parser.add_option('--in_ct',
-                      help='Input CT file', dest='in_ct', metavar='<string>',
-                      )
-    parser.add_option('--in_lm',
-                      help='Input label map containing structures of interest',
-                      dest='in_lm', metavar='<string>')
-    parser.add_option('--out_csv',
-                      help='Output csv file in which to store the computed \
-                      dataframe', dest='out_csv', metavar='<string>'
-                      )
-    parser.add_option('--cid',
-                      help='Case id', dest='cid',
-                      metavar='<string>')
-    parser.add_option('-r',
+    parser.add_argument('--in_ct', '-in_ct', required=True,
+                      help='Input CT file')
+
+    parser.add_argument('--in_lm', '-in_lm', required=True,
+                      help='Input label map containing structures of interest')
+
+    parser.add_argument('--out_csv', '-out_csv', required=True,
+                      help='Output csv file in which to store the computed dataframe')
+
+    parser.add_argument('--cid', '-cid', required=True, help='Case id')
+
+    parser.add_argument('-r', dest='chest_regions', nargs='+',
                       help='Chest regions. Should be specified as a \
                       common-separated list of string values indicating the \
                       desired regions over which to compute the phenotypes. \
-                      E.g. LeftLung,RightLung would be a valid input.',
-                      dest='chest_regions', metavar='<string>', default=None)
-    parser.add_option('-t',
+                      E.g. LeftLung,RightLung would be a valid input.')
+
+    parser.add_argument('-t', dest='chest_types', nargs='+',
                       help='Chest types. Should be specified as a \
                       common-separated list of string values indicating the \
                       desired types over which to compute the phenotypes. \
-                      E.g.: Vessel,NormalParenchyma would be a valid input.',
-                      dest='chest_types', metavar='<string>', default=None)
-    parser.add_option('-p',
+                      E.g.: Vessel,NormalParenchyma would be a valid input.')
+    parser.add_argument('-p', dest='pairs', nargs='+',
                       help='Chest region-type pairs. Should be \
                       specified as a common-separated list of string values \
                       indicating what region-type pairs over which to compute \
@@ -624,44 +623,28 @@ if __name__ == "__main__":
                       interpreted differently in the case of the TypeFrac \
                       phenotype. In that case, the specified pair is used to \
                       compute the fraction of the chest type within the \
-                      chest region.',
-                      dest='pairs', metavar='<string>', default=None)
+                      chest region.')
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
     image_io = ImageReaderWriter()
     lm, lm_header = image_io.read_in_numpy(options.in_lm)
 
-    ct = None
-    if options.in_ct is not None:
-        ct, ct_header = image_io.read_in_numpy(options.in_ct)    
+    ct, ct_header = image_io.read_in_numpy(args.in_ct)
 
-#    spacing = np.zeros(3)
-#    spacing[0] = lm_header['space directions'][0][0]
-#    spacing[1] = lm_header['space directions'][1][1]
-#    spacing[2] = lm_header['space directions'][2][2]
     spacing = lm_header['spacing']
 
-
-    regions = None
-    if options.chest_regions is not None:
-        regions = options.chest_regions.split(',')
-    types = None
-    if options.chest_types is not None:
-        types = options.chest_types.split(',')
     pairs = None
-    if options.pairs is not None:
-        tmp = options.pairs.split(',')
-        assert len(tmp)%2 == 0, 'Specified pairs not understood'
+    if args.pairs is not None:
+        tmp = args.pairs
+        assert len(tmp) % 2 == 0, 'Specified pairs not understood'
         pairs = []
         for i in xrange(0, len(tmp)/2):
             pairs.append([tmp[2*i], tmp[2*i+1]])
 
-    paren_pheno = ParenchymaPhenotypes(chest_regions=regions,
-            chest_types=types, pairs=pairs)
+    paren_pheno = ParenchymaPhenotypes(chest_regions=args.chest_regions,
+            chest_types=args.chest_types, pairs=pairs)
 
-    df = paren_pheno.execute(lm, options.cid, spacing, ct=ct)
+    df = paren_pheno.execute(lm, args.cid, spacing, ct=ct)
 
-    if options.out_csv is not None:
-        df.to_csv(options.out_csv, index=False)
-
+    df.to_csv(args.out_csv, index=False)
