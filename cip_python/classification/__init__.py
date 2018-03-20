@@ -1,5 +1,4 @@
 from kde_ import *
-from emphysema_classification import *
 from apply_reader_labels import *
 from get_ct_patch_from_center import *
 
@@ -12,5 +11,5 @@ from kde_histogram_feature_extractor import *
 from kde_histogram_feature_extractor_from_ROI import *
 from kde_histogram_feature_extractor_from_xmlpoints import *
 
-from local_histogram import *
+from local_histogram_emphysema import *
 from classify_image_subtypes import *

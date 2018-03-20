@@ -3,7 +3,6 @@ from pandas.util.testing import assert_frame_equal
 
 from cip_python.utils import ReadGeometryTopologyPointWriteDataFrame
 from cip_python.common import Paths
-from cip_python.common import Point
 
 
 def test_execute():
@@ -16,6 +15,7 @@ def test_execute():
     # compare to expected pandas dataframe
     cols = ['Region','Type', 'X point', 'Y point', 'Z point']
     ref_df = pd.DataFrame(columns=cols)
+
     tmp = dict()
     tmp['Region'] = 'RightLung'
     tmp['Type'] = 'GroundGlass'
@@ -27,5 +27,4 @@ def test_execute():
     tmp['Y point'] = 3.0
     tmp['Z point'] = 3
     ref_df= ref_df.append(tmp, ignore_index=True)
-    assert_frame_equal(my_csv_writer.df_, ref_df)   
-        
+    assert_frame_equal(my_csv_writer.df_, ref_df, check_dtype=False)

@@ -22,7 +22,7 @@ class ReadGeometryTopologyPointWriteDataFrame:
     """
     def __init__(self, in_file_name):
         self.in_file_name = in_file_name
-        cols = ['Region','Type', 'X point', 'Y point', 'Z point']
+        cols = ['Region','Type', 'X point', 'Y point', 'Z point'] #, 'FeatureType', 'Description', 'Timestamp', 'UserName', 'MachineName']
         self.df_ = pd.DataFrame(columns=cols)
         
     def execute(self):
@@ -50,6 +50,12 @@ class ReadGeometryTopologyPointWriteDataFrame:
             tmp['X point'] = the_point.coordinate[0]
             tmp['Y point'] = the_point.coordinate[1]
             tmp['Z point'] = the_point.coordinate[2]
+            # tmp['FeatureType'] = c.GetImageFeatureName(the_point.feature_type) if the_point.feature_type else None
+            # tmp['Description'] = the_point.description
+            # tmp['Timestamp'] = the_point.timestamp
+            # tmp['UserName'] = the_point.user_name
+            # tmp['MachineName'] = the_point.machine_name
+
             #feature_type = c.GetImageFeatureName(the_point.feature_type)
             #print(feature_type)
             self.df_ = self.df_.append(tmp, ignore_index=True)
