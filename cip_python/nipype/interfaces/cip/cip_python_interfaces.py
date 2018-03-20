@@ -8,9 +8,29 @@ from nipype.utils.filemanip import split_filename
 from cip_python.phenotypes import ParenchymaPhenotypes
 from cip_python.phenotypes import BodyCompositionPhenotypes
 from cip_python.particles import FissureParticles
-import pdb
+
+import warnings
 
 # example http://nipy.sourceforge.net/nipype/devel/python_interface_devel.html
+
+def realpath(path_):
+    """
+    Return the full path of the specified path, but also check if the path contains special characters and display
+    a warning message, as those paths can make trouble in a niypype workflow
+    Args:
+        path_: string. Path
+    Returns:
+        Full path
+    """
+    path_ = os.path.realpath(path_)
+    special_symbols = (' ', '(', ')')
+    for s in special_symbols:
+        if s in path_:
+            warnings.warn("The path {} contains special characters that can cause trouble in a nipype workflow".
+                          format(path_))
+            break
+    return path_
+
 
 class fissure_particlesInputSpec(BaseInterfaceInputSpec):
     ict = File(exists=True, desc='Input CT file', mandatory=True)

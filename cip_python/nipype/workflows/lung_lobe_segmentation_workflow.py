@@ -1,11 +1,8 @@
-import pdb
-#pdb.set_trace()
 from argparse import ArgumentParser
 import cip_python.nipype.interfaces.cip as cip
 
 import cip_python.nipype.interfaces.unu as unu
-import cip_python.nipype.interfaces.cip.cip_python_interfaces \
-    as cip_python_interfaces
+import cip_python.nipype.interfaces.cip.cip_python_interfaces as cip_python_interfaces
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype.pipeline.engine import Workflow
 import tempfile, shutil, sys, os, pickle, gzip
@@ -104,10 +101,10 @@ class LungLobeSegmentationWorkflow(Workflow):
 
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
-        ct_file_name = os.path.realpath(ct_file_name)
-        lobe_seg_file_name = os.path.realpath(lobe_seg_file_name)
+        ct_file_name = cip_python_interfaces.realpath(ct_file_name)
+        lobe_seg_file_name = cip_python_interfaces.realpath(lobe_seg_file_name)
         if ilm:
-          ilm = os.path.realpath(ilm)
+          ilm = cip_python_interfaces.realpath(ilm)
 
         file_and_path = os.path.abspath(__file__)
         file_path = os.path.dirname(file_and_path)
@@ -359,7 +356,7 @@ class LungLobeSegmentationWorkflow(Workflow):
                      fit_lobe_surface_models_to_particle_data, "ilsm")
         self.connect(generate_lobe_surface_models, "orsm",
                      fit_lobe_surface_models_to_particle_data, "irsm")
-        
+
 if __name__ == "__main__":
     desc = """This workflow produces a lung lobe segmentation given an input
     CT image."""
@@ -459,11 +456,6 @@ if __name__ == "__main__":
       dest='cid', metavar='<string>', default='cid')
     
     op = parser.parse_args()
-
-    # if op.in_ct is None:
-    #     raise ValueError('Must specify a file name for the CT input')
-    # if op.out is None:
-    #     raise ValueError('Must specify a file name for the segmentation output')
 
     tmp_dir = tempfile.mkdtemp()
     wf = LungLobeSegmentationWorkflow(op.in_ct, op.out, tmp_dir, 
