@@ -54,6 +54,9 @@ class GeometryTopologyData(object):
         self.lps_to_ijk_transformation_matrix = None    # Transformation matrix to go from LPS to IJK (in the shape of a 4x4 list)
         self.__lps_to_ijk_transformation_matrix_array__ = None  # Same matrix in a numpy array
 
+        self.origin = None      # Volume origin
+        self.spacing = None     # Volume spacing
+
         self.points = []    # List of Point objects
         self.bounding_boxes = []    # List of BoundingBox objects
 
@@ -129,6 +132,11 @@ class GeometryTopologyData(object):
         if self.lps_to_ijk_transformation_matrix is not None:
             output += self.__write_transformation_matrix__(self.lps_to_ijk_transformation_matrix)
 
+        if self.spacing is not None:
+            output += "<Spacing>{}</Spacing>".format(GeometryTopologyData.__to_xml_vector__(self.spacing))
+        if self.origin is not None:
+            output += "<Origin>{}</Origin>".format(GeometryTopologyData.__to_xml_vector__(self.origin))
+
         # Concatenate points (sort first)
         self.points.sort(key=lambda p: p.__id__)
         points = "".join(map(lambda i:i.to_xml(), self.points))
@@ -179,16 +187,31 @@ class GeometryTopologyData(object):
         geometry_topology = GeometryTopologyData()
 
         # NumDimensions
-        s = root.find("NumDimensions")
-        if s is not None:
-            geometry_topology.__num_dimensions__ = int(s.text)
+        node = root.find("NumDimensions")
+        if node is not None:
+            geometry_topology.__num_dimensions__ = int(node.text)
 
         # Coordinate System
-        s = root.find("CoordinateSystem")
-        if s is not None:
-            geometry_topology.coordinate_system = geometry_topology.__coordinate_system_from_str__(s.text)
+        node = root.find("CoordinateSystem")
+        if node is not None:
+            geometry_topology.coordinate_system = geometry_topology.__coordinate_system_from_str__(node.text)
 
         geometry_topology.lps_to_ijk_transformation_matrix = geometry_topology.__read_transformation_matrix__(root)
+
+        node = root.find("Spacing")
+        if node is not None:
+            val = []
+            for node_val in node.findall("value"):
+                val.append(float(node_val.text))
+            geometry_topology.spacing = np.array(val)
+
+        node = root.find("Origin")
+        if node is not None:
+            val = []
+            for node_val in node.findall("value"):
+                val.append(float(node_val.text))
+            geometry_topology.origin = np.array(val)
+
         seed = 0
         # Points
         for xml_point_node in root.findall("Point"):
@@ -207,9 +230,7 @@ class GeometryTopologyData(object):
         # Set the new seed so that every point (or bounding box) added with "add_point" has a bigger id
         geometry_topology.id_seed = seed
 
-        # Pretty parsing
         return geometry_topology
-
 
     def get_hashtable(self):
         """
@@ -233,6 +254,69 @@ class GeometryTopologyData(object):
             p.convert_to_array(type_)
         for bb in self.bounding_boxes:
             bb.convert_to_array(type_)
+
+    def coordinate_system_str(self):
+        """
+        Return the coordinate system in text ("LPS", "RAS", "IJK", "UNKNOWN")
+        Returns: string
+        """
+        if self.coordinate_system == self.IJK:
+            return "IJK"
+        if self.coordinate_system == self.RAS:
+            return "RAS"
+        if self.coordinate_system == self.LPS:
+            return "LPS"
+        return "UNKNOWN"
+
+
+    def export_to_dataframe(self):
+        import pandas as pd
+        from cip_python.common import ChestConventions
+        if len(self.points) > 0 and len(self.bounding_boxes) > 0:
+            raise NotImplementedError("This function can be used only for points or bounding boxes. This object contains both")
+
+        columns = ['chest_type_id', 'chest_type_name',
+                   'chest_region_id', 'chest_region_name',
+                   'feature_type_id', 'feature_type_name',
+                   'description', 'timestamp', 'user_name', 'machine_name',
+                   'coordinate_system', 'lps_to_ijk_transformation_matrix',
+                   'spacing', 'origin'
+                   ]
+
+        if len(self.points) > 0:
+            # Export points
+            columns = ['c1', 'c2', 'c3'] + columns
+            df = pd.DataFrame(columns=columns)
+
+            for s in self.points:
+                df.loc[s.id] = [s.coordinate[0], s.coordinate[1], s.coordinate[2],
+                                s.chest_type, ChestConventions.GetChestTypeName(s.chest_type),
+                                s.chest_region, ChestConventions.GetChestRegionName(s.chest_region),
+                                s.feature_type, ChestConventions.GetImageFeatureName(s.feature_type),
+                                s.description, s.timestamp, s.user_name, s.machine_name,
+                                # Common properties
+                                self.coordinate_system_str(), self.lps_to_ijk_transformation_matrix_array,
+                                self.spacing, self.origin]
+
+        elif len(self.points) > 0:
+            # Export bounding boxes
+            columns = ['start1', 'start2', 'start3', 'size1', 'size2', 'size3'] + columns
+            df = pd.DataFrame(columns=columns)
+
+            for s in self.bounding_boxes:
+                df.loc[s.id] = [s.start[0], s.start[1], s.start[2],
+                                s.size[0], s.size[1], s.size[2],
+                                s.chest_type, ChestConventions.GetChestTypeName(s.chest_type),
+                                s.chest_region, ChestConventions.GetChestRegionName(s.chest_region),
+                                s.feature_type, ChestConventions.GetImageFeatureName(s.feature_type),
+                                s.description, s.timestamp, s.user_name, s.machine_name,
+                                # Common properties
+                                self.coordinate_system_str(), self.lps_to_ijk_transformation_matrix_array,
+                                self.spacing, self.origin]
+
+        df.index.name = 'id'
+        return df
+
 
     @staticmethod
     def __to_xml_vector__(array, format_="%f"):
@@ -404,6 +488,8 @@ class Structure(object):
 
     def __str__(self):
         return self.to_xml()
+
+
 
 class Point(Structure):
     def __init__(self, chest_region, chest_type, feature_type, coordinate, description=None,

@@ -20,6 +20,20 @@
               </xs:choice>
             </xs:complexType>
           </xs:element>
+        <xs:element name="Spacing" minOccurs="0">
+            <xs:complexType>
+              <xs:choice maxOccurs="unbounded">
+                <xs:element type="xs:float" name="value"/>
+              </xs:choice>
+            </xs:complexType>
+          </xs:element>
+        <xs:element name="Origin" minOccurs="0">
+            <xs:complexType>
+              <xs:choice maxOccurs="unbounded">
+                <xs:element type="xs:float" name="value"/>
+              </xs:choice>
+            </xs:complexType>
+          </xs:element>
         <xs:element name="Point" minOccurs="0" maxOccurs="unbounded">
           <xs:complexType>
             <xs:sequence>

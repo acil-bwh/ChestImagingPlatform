@@ -28,6 +28,8 @@ def test_geometry_topology_data_write_read():
     g.num_dimensions = 3
     g.coordinate_system = g.RAS
     g.lps_to_ijk_transformation_matrix = [[-1.9, 0, 0, 250], [0, -1.9, 0, 510], [0, 0, 2, 724], [0, 0, 0, 1]]
+    g.spacing = (0.7, 0.7, 0.5)
+    g.origin = (180.0, 180.0, -700.5)
 
     p1 = Point(2, 5, 1, [2, 3.5, 3], description="My desc", format_="%f")
     p1.__id__ = 1
