@@ -34,6 +34,13 @@
               </xs:choice>
             </xs:complexType>
           </xs:element>
+        <xs:element name="Dimensions" minOccurs="0">
+            <xs:complexType>
+              <xs:choice maxOccurs="unbounded">
+                <xs:element type="xs:int" name="value"/>
+              </xs:choice>
+            </xs:complexType>
+          </xs:element>
         <xs:element name="Point" minOccurs="0" maxOccurs="unbounded">
           <xs:complexType>
             <xs:sequence>

@@ -22,7 +22,21 @@ class GeometryTopologyData(object):
     RAS = 2
     LPS = 3
 
-    __num_dimensions__ = 0
+    def __init__(self):
+        self.__num_dimensions__ = 0
+        self.coordinate_system = self.UNKNOWN
+        self.lps_to_ijk_transformation_matrix = None    # Transformation matrix to go from LPS to IJK (in the shape of a 4x4 list)
+        self.__lps_to_ijk_transformation_matrix_array__ = None  # Same matrix in a numpy array
+
+        self.origin = None      # Volume origin
+        self.spacing = None     # Volume spacing
+        self.dimensions = None  # Volume Dimensions
+
+        self.points = []    # List of Point objects
+        self.bounding_boxes = []    # List of BoundingBox objects
+
+        self.id_seed = 0    # Seed. The structures added with "add_point", etc. will have an id = id_seed + 1
+
     @property
     def num_dimensions(self):
         """ Number of dimensions (generally 3)"""
@@ -33,6 +47,7 @@ class GeometryTopologyData(object):
             elif len(self.bounding_boxes) > 0:
                 self.__num_dimensions__ = len(self.bounding_boxes[0].start)
         return self.__num_dimensions__
+
     @num_dimensions.setter
     def num_dimensions(self, value):
         self.__num_dimensions__ = value
@@ -44,23 +59,9 @@ class GeometryTopologyData(object):
         if self.lps_to_ijk_transformation_matrix is None:
             return None
         if self.__lps_to_ijk_transformation_matrix_array__ is None:
-            self.__lps_to_ijk_transformation_matrix_array__ = np.array(self.lps_to_ijk_transformation_matrix, dtype=np.float)
+            self.__lps_to_ijk_transformation_matrix_array__ = np.array(self.lps_to_ijk_transformation_matrix,
+                                                                       dtype=np.float)
         return self.__lps_to_ijk_transformation_matrix_array__
-
-
-    def __init__(self):
-        self.__num_dimensions__ = 0
-        self.coordinate_system = self.UNKNOWN
-        self.lps_to_ijk_transformation_matrix = None    # Transformation matrix to go from LPS to IJK (in the shape of a 4x4 list)
-        self.__lps_to_ijk_transformation_matrix_array__ = None  # Same matrix in a numpy array
-
-        self.origin = None      # Volume origin
-        self.spacing = None     # Volume spacing
-
-        self.points = []    # List of Point objects
-        self.bounding_boxes = []    # List of BoundingBox objects
-
-        self.id_seed = 0    # Seed. The structures added with "add_point", etc. will have an id = id_seed + 1
 
     def __str__(self):
         """
@@ -136,6 +137,8 @@ class GeometryTopologyData(object):
             output += "<Spacing>{}</Spacing>".format(GeometryTopologyData.__to_xml_vector__(self.spacing))
         if self.origin is not None:
             output += "<Origin>{}</Origin>".format(GeometryTopologyData.__to_xml_vector__(self.origin))
+        if self.dimensions is not None:
+            output += "<Dimensions>{}</Dimensions>".format(GeometryTopologyData.__to_xml_vector__(self.dimensions, format_='%i'))
 
         # Concatenate points (sort first)
         self.points.sort(key=lambda p: p.__id__)
@@ -212,6 +215,13 @@ class GeometryTopologyData(object):
                 val.append(float(node_val.text))
             geometry_topology.origin = np.array(val)
 
+        node = root.find("Dimensions")
+        if node is not None:
+            val = []
+            for node_val in node.findall("value"):
+                val.append(float(node_val.text))
+            geometry_topology.origin = np.array(val)
+
         seed = 0
         # Points
         for xml_point_node in root.findall("Point"):
@@ -280,7 +290,7 @@ class GeometryTopologyData(object):
                    'feature_type_id', 'feature_type_name',
                    'description', 'timestamp', 'user_name', 'machine_name',
                    'coordinate_system', 'lps_to_ijk_transformation_matrix',
-                   'spacing', 'origin'
+                   'spacing', 'origin', 'dimensions'
                    ]
 
         if len(self.points) > 0:
@@ -296,7 +306,7 @@ class GeometryTopologyData(object):
                                 s.description, s.timestamp, s.user_name, s.machine_name,
                                 # Common properties
                                 self.coordinate_system_str(), self.lps_to_ijk_transformation_matrix_array,
-                                self.spacing, self.origin]
+                                self.spacing, self.origin, self.dimensions]
 
         elif len(self.points) > 0:
             # Export bounding boxes
@@ -312,7 +322,7 @@ class GeometryTopologyData(object):
                                 s.description, s.timestamp, s.user_name, s.machine_name,
                                 # Common properties
                                 self.coordinate_system_str(), self.lps_to_ijk_transformation_matrix_array,
-                                self.spacing, self.origin]
+                                self.spacing, self.origin, self.dimensions]
 
         df.index.name = 'id'
         return df
