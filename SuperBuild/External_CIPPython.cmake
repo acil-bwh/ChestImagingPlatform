@@ -113,10 +113,18 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     DEPENDEES installnose
   )
 
-  ExternalProject_Add_Step(${proj} installsimpleitk
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c SimpleITK SimpleITK
-    DEPENDEES installsphinx
-  )
+  if (UNIX)
+    ExternalProject_Add_Step(${proj} installsimpleitk
+      COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c SimpleITK SimpleITK
+      DEPENDEES installsphinx
+    )
+  else()
+    # Unknown conflict with SimpleITK 1.1.0. For the time being, force 0.9.1
+    ExternalProject_Add_Step(${proj} installsimpleitk
+            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c SimpleITK SimpleITK=0.9.1
+            DEPENDEES installsphinx
+            )
+  endif()
 
   ExternalProject_Add_Step(${proj} installlxml
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet lxml
