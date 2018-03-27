@@ -23,8 +23,10 @@ def test_execute():
     tmp['Y point'] = 3.5
     tmp['Z point'] = 3
     ref_df= ref_df.append(tmp, ignore_index=True)
+    tmp['Region'] = 'LeftLung'
+    tmp['Type'] = 'Airway'
     tmp['X point'] = 2
-    tmp['Y point'] = 3.0
-    tmp['Z point'] = 3
+    tmp['Y point'] = 1.5
+    tmp['Z point'] = 3.75
     ref_df= ref_df.append(tmp, ignore_index=True)
     assert_frame_equal(my_csv_writer.df_, ref_df, check_dtype=False)

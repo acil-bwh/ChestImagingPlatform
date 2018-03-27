@@ -74,6 +74,3 @@ def test_geometry_topology_data_write_read():
     # Make sure that the seed is set to a right value
     g.update_seed()
     assert g.seed_id == 5, "Seed in the object should be 5, while the current value is {}".format(g.seed_id)
-
-
-test_geometry_topology_data_write_read()
