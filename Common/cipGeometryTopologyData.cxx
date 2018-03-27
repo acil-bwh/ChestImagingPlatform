@@ -1,8 +1,14 @@
 #include "cipGeometryTopologyData.h"
 #include "cipExceptionObject.h"
 #include <string.h>
-#include <unistd.h>
+
 #include <time.h>
+#ifdef _WIN32
+  #include <windows.h>
+  #include <Lmcons.h>
+#else
+  #include <unistd.h>
+#endif
 
 cip::GeometryTopologyData::GeometryTopologyData()
 {
@@ -134,10 +140,16 @@ cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundin
 }
 
 void cip::GeometryTopologyData::FillMetaFieldsBoundingBox(BOUNDINGBOX* bb){
-  char hostname[255];
-  gethostname(hostname, 255);
-  char userName[255];
-  getlogin_r(userName, 255);
+  char hostname[256];
+  char userName[256];
+#ifdef _WIN32
+  DWORD size = 256;
+  GetUserName( userName, &size ));
+  GetComputerName(hostname, 256);
+#else
+  gethostname(hostname, 256);
+  getlogin_r(userName, 256);
+#endif
 
   time_t     now = time(0);
   struct tm  tstruct;
@@ -149,7 +161,6 @@ void cip::GeometryTopologyData::FillMetaFieldsBoundingBox(BOUNDINGBOX* bb){
   bb->userName = userName;
   bb->timestamp = buf;
 }
-
 
 cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( CoordinateType coordinate,
 					     unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
@@ -187,10 +198,16 @@ cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( Coordi
 }
 
 void cip::GeometryTopologyData::FillMetaFieldsPoint(POINT* p){
-  char hostname[255];
-  gethostname(hostname, 255);
-  char userName[255];
-  getlogin_r(userName, 255);
+  char hostname[256];
+  char userName[256];
+#ifdef _WIN32
+  DWORD size = 256;
+  GetUserName( userName, &size ));
+  GetComputerName(hostname, 256);
+#else
+  gethostname(hostname, 256);
+  getlogin_r(userName, 256);
+#endif
 
   time_t     now = time(0);
   struct tm  tstruct;
