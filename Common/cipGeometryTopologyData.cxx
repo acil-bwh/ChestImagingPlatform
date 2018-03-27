@@ -32,6 +32,11 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
 
   // Do the copy
   m_seedId = geometryTopology.m_seedId;
+  CoordinateSystem = geometryTopology.CoordinateSystem;
+  for ( unsigned int j=0; j<geometryTopology.LPS_to_IJK_TransformationMatrix.size(); j++ ) {
+    LPS_to_IJK_TransformationMatrix.push_back(geometryTopology.LPS_to_IJK_TransformationMatrix[j]);
+  }
+
   for ( unsigned int j=0; j<geometryTopology.m_Spacing.size(); j++ ) {
     m_Spacing.push_back(geometryTopology.m_Spacing[j]);
   }
@@ -89,12 +94,12 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
   return *this;
 }
 
-cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundingBox( StartType start, SizeType size,
-                                                                                      unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION),
-                                                                                      unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
-                                                                                      unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
-                                                                                      std::string description = "",
-                                                                                      bool fillAutoFields = true)
+cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundingBox( unsigned char cipRegion,
+                                                                                      unsigned char cipType,
+                                                                                      unsigned char cipImageFeature,
+                                                                                      StartType start,
+                                                                                      SizeType size,
+                                                                                      std::string description)
 {
   BOUNDINGBOX bb;
   bb.id = this->m_seedId++;
@@ -131,13 +136,67 @@ cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundin
 
   bb.description = description;
 
-  if (fillAutoFields)
-    this->FillMetaFieldsBoundingBox(&bb);
+  this->FillMetaFieldsBoundingBox(&bb);
 
   this->m_BoundingBoxes.push_back( bb );
 
   return &bb;
 }
+
+cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundingBox( int id,
+                                                                                      unsigned char cipRegion,
+                                                                                      unsigned char cipType,
+                                                                                      unsigned char cipImageFeature,
+                                                                                      StartType start,
+                                                                                      SizeType size,
+                                                                                      std::string description,
+                                                                                      std::string timestamp,
+                                                                                      std::string userName,
+                                                                                      std::string machineName)
+{
+  BOUNDINGBOX bb;
+  bb.id = id;
+  bb.cipRegion = cipRegion;
+  bb.cipType = cipType;
+  bb.cipImageFeature = cipImageFeature;
+
+  if ( start.size() != size.size() )
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertBoundingBox",
+                                "start dimension does not equal size dimension" );
+  }
+
+  if ( size.size() != 2 && size.size() != 3  )
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertBoundingBox",
+                                "Unexpected bounding box size dimension" );
+  }
+
+  if ( start.size() != 2 && start.size() != 3  )
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertBoundingBox",
+                                "Unexpected bounding box start dimension" );
+  }
+
+  for ( unsigned int i=0; i<start.size(); i++ )
+  {
+    bb.start.push_back( start[i] );
+    bb.size.push_back( size[i] );
+  }
+
+  bb.description = description;
+  bb.timestamp = timestamp;
+  bb.userName = userName;
+  bb.machineName = machineName;
+
+  this->m_BoundingBoxes.push_back( bb );
+
+  return &bb;
+}
+
 
 void cip::GeometryTopologyData::FillMetaFieldsBoundingBox(BOUNDINGBOX* bb){
   char hostname[256];
@@ -162,16 +221,15 @@ void cip::GeometryTopologyData::FillMetaFieldsBoundingBox(BOUNDINGBOX* bb){
   bb->timestamp = buf;
 }
 
-cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( CoordinateType coordinate,
-                                                                          unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION),
-                                                                          unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
-                                                                          unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
-                                                                          std::string description = "",
-                                                                          bool fillAutoFields = true)
+cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( unsigned char cipRegion,
+                                                                          unsigned char cipType,
+                                                                          unsigned char cipImageFeature,
+                                                                          CoordinateType coordinate,
+                                                                          std::string description
+                                                                          )
 {
   POINT p;
-  p.id = this->m_seedId;
-  this->m_seedId++;
+  p.id = this->m_seedId++;
   p.cipRegion = cipRegion;
   p.cipType = cipType;
   p.cipImageFeature = cipImageFeature;
@@ -190,9 +248,44 @@ cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( Coordi
 
   p.description = description;
 
-  if (fillAutoFields)
-    this->FillMetaFieldsPoint(&p);
+  this->FillMetaFieldsPoint(&p);
 
+  this->m_Points.push_back( p );
+  return &p;
+}
+
+cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( int id,
+                                              unsigned char cipRegion,
+                                              unsigned char cipType,
+                                              unsigned char cipImageFeature,
+                                              CoordinateType coordinate,
+                                              std::string description,
+                                              std::string timestamp,
+                                              std::string userName,
+                                              std::string machineName)
+{
+  POINT p;
+  p.id = id;
+  p.cipRegion = cipRegion;
+  p.cipType = cipType;
+  p.cipImageFeature = cipImageFeature;
+
+  if ( coordinate.size() != 2 && coordinate.size() != 3 )
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertPoint",
+                                "Unexpected coordinate dimension" );
+  }
+
+  for ( unsigned int i=0; i<coordinate.size(); i++ )
+  {
+    p.coordinate.push_back( coordinate[i] );
+  }
+
+  p.description = description;
+  p.timestamp = timestamp;
+  p.userName = userName;
+  p.machineName = machineName;
   this->m_Points.push_back( p );
   return &p;
 }
@@ -518,4 +611,15 @@ bool cip::GeometryTopologyData::operator== (const GeometryTopologyData &geometry
 bool cip::GeometryTopologyData::operator!= (const GeometryTopologyData &geometryTopology) const
 {
   return !(*this == geometryTopology);
+}
+
+void cip::GeometryTopologyData::UpdateSeed(){
+  int id = 0;
+  for (int i=0; i<this->m_Points.size(); i++)
+    if (m_Points[i].id > id)
+      id = m_Points[i].id;
+  for (int i=0; i<this->m_BoundingBoxes.size(); i++)
+    if (m_BoundingBoxes[i].id > id)
+      id = m_BoundingBoxes[i].id;
+  this->m_seedId = id + 1;
 }

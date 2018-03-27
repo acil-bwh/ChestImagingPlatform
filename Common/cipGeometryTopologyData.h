@@ -28,14 +28,18 @@ namespace cip {
     bool operator!= (const GeometryTopologyData &geometryTopology) const;
     ~GeometryTopologyData();
 
-    unsigned int m_seedId;
+    /** Coordinate system: UNKNOWN, IJK, RAS, LPS **/
+    std::string CoordinateSystem;
+    /** Transformation matrix to go from LPS coordinates to IJK **/
+    std::vector<double> LPS_to_IJK_TransformationMatrix;
+
     typedef std::vector< double > SpacingType;
     typedef std::vector< double > OriginType;
     typedef std::vector< unsigned int > DimensionsType;
 
-    SpacingType m_Spacing;
-    OriginType m_Origin;
-    DimensionsType m_Dimensions;
+    SpacingType m_Spacing;          // Spacing of the volume
+    OriginType m_Origin;            // Origin of the volume
+    DimensionsType m_Dimensions;    // Dimensions (int size) of the volume
 
     typedef std::vector< double > CoordinateType;
     typedef std::vector< double > StartType;
@@ -71,12 +75,25 @@ namespace cip {
     typedef std::vector< BOUNDINGBOX > BoundingBoxVectorType;
     typedef std::vector< POINT > PointVectorType;
 
-    /** Insert a new bounding box. 'start' is the 3d physical coordinate of the
-     *  bounding box's start coordinate. 'size' indicates the extent of the bounding box
-     *  in the x, y, and z direction, respectively (in physical units). 'cipRegion' and
-     *  'cipType' are UNDEFINEDREGION and UNDEFINEDTYPE by default. */
-    cip::GeometryTopologyData::BOUNDINGBOX* InsertBoundingBox( StartType start, SizeType size, unsigned char cipRegion,
-			    unsigned char cipType, unsigned char cipImageFeature, std::string, bool );
+    /** Insert a bounding box where the id, username, etc. will be calculated automatically **/
+    cip::GeometryTopologyData::BOUNDINGBOX* InsertBoundingBox( unsigned char cipRegion,
+                                                               unsigned char cipType,
+                                                               unsigned char cipImageFeature,
+                                                               StartType start,
+                                                               SizeType size,
+                                                               std::string description);
+
+    /** Insert a bounding box filling all the fileds (used when parsing a XML file **/
+    cip::GeometryTopologyData::BOUNDINGBOX* InsertBoundingBox( int id,
+                                                               unsigned char cipRegion,
+                                                               unsigned char cipType,
+                                                               unsigned char cipImageFeature,
+                                                               StartType start,
+                                                               SizeType size,
+                                                               std::string description,
+                                                               std::string timestamp,
+                                                               std::string userName,
+                                                               std::string machineName);
 
     BoundingBoxVectorType::size_type GetNumberOfBoundingBoxes() const
     {
@@ -113,10 +130,23 @@ namespace cip {
      *	bounding boxes. */
     std::string GetBoundingBoxDescription( unsigned int ) const;
 
-    /** Insert a new point. 'coordinate' is the 3d physical coordinate of the point. 
-     *  'cipRegion' and 'cipType' are UNDEFINEDREGION and UNDEFINEDTYPE by default. */
-    cip::GeometryTopologyData::POINT* InsertPoint( CoordinateType coordinate, unsigned char cipRegion,
-		      unsigned char cipType, unsigned char cipImageFeature, std::string, bool );
+    /** Insert a point where the id, username, etc. will be calculated automatically **/
+    cip::GeometryTopologyData::POINT* InsertPoint( unsigned char cipRegion,
+                                                   unsigned char cipType,
+                                                   unsigned char cipImageFeature,
+                                                   CoordinateType coordinate,
+                                                   std::string description);
+
+    /** Insert a point filling all the fileds (used when parsing a XML file **/
+    cip::GeometryTopologyData::POINT* InsertPoint(  int id,
+                                                    unsigned char cipRegion,
+                                                    unsigned char cipType,
+                                                    unsigned char cipImageFeature,
+                                                    CoordinateType coordinate,
+                                                    std::string description,
+                                                    std::string timestamp,
+                                                    std::string userName,
+                                                    std::string machineName);
 
 
     /** Get an instance of the i-th Point */
@@ -149,8 +179,10 @@ namespace cip {
     /** Get the spatial coordinate of the point indicated with the specified index */
     CoordinateType GetPointCoordinate( unsigned int ) const;
 
+    /** Refresh the seed id that will be used when adding new points/bounding boxes */
+    void UpdateSeed();
   private:
-    
+    unsigned int m_seedId;
     BoundingBoxVectorType m_BoundingBoxes;
     PointVectorType m_Points;
     void FillMetaFieldsPoint(POINT*);

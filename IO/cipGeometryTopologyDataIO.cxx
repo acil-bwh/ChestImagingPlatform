@@ -1,5 +1,7 @@
 #include "cipGeometryTopologyDataIO.h"
 #include "cipExceptionObject.h"
+#include "cipChestConventions.h"
+
 #include <string>
 #include <sstream>
 #include <cstdlib>
@@ -33,6 +35,21 @@ void GeometryTopologyDataIO::Write() const
 	xmlNodePtr root_node = xmlNewNode(NULL, BAD_CAST "GeometryTopologyData");
 	xmlDocSetRootElement(doc, root_node);
 
+  // GENERAL INFO
+  xmlNewChild( root_node, NULL, BAD_CAST "CoordinateSystem",
+          BAD_CAST this->m_GeometryTopologyData->CoordinateSystem.c_str() );
+
+  if (this->m_GeometryTopologyData->LPS_to_IJK_TransformationMatrix.size() > 0) {
+    xmlNodePtr node = xmlNewChild(root_node, NULL, BAD_CAST "LPStoIJKTransformationMatrix", NULL );
+    for ( unsigned int j=0; j<this->m_GeometryTopologyData->LPS_to_IJK_TransformationMatrix.size(); j++ )
+    {
+      std::stringstream coordinateStream;
+      coordinateStream << this->m_GeometryTopologyData->LPS_to_IJK_TransformationMatrix[j];
+      std::string coordinateString = coordinateStream.str();
+      xmlNewChild( node, NULL, BAD_CAST "value", BAD_CAST coordinateString.c_str() );
+    }
+  }
+
 	if (this->m_GeometryTopologyData->m_Spacing.size() > 0) {
 		xmlNodePtr node = xmlNewChild(root_node, NULL, BAD_CAST "Spacing", NULL );
 		for ( unsigned int j=0; j<this->m_GeometryTopologyData->m_Spacing.size(); j++ )
@@ -64,6 +81,7 @@ void GeometryTopologyDataIO::Write() const
 		}
 	}
 
+  // POINTS
 	for ( unsigned int i=0; i<this->m_GeometryTopologyData->GetNumberOfPoints(); i++ )
 	{
 		xmlNodePtr point_node = xmlNewChild(root_node, NULL, BAD_CAST "Point", NULL );
@@ -88,30 +106,40 @@ void GeometryTopologyDataIO::Write() const
 		std::string imageFeatureString = imageFeatureStream.str();
 		xmlNewChild( point_node, NULL, BAD_CAST "ImageFeature", BAD_CAST imageFeatureString.c_str() );
 
-		xmlNewChild( point_node, NULL, BAD_CAST "Description",
-						BAD_CAST this->m_GeometryTopologyData->GetPointDescription(i).c_str() );
+    if (this->m_GeometryTopologyData->GetPointDescription(i).size() > 0) {
+      xmlNewChild(point_node, NULL, BAD_CAST "Description",
+                  BAD_CAST this->m_GeometryTopologyData->GetPointDescription(i).c_str());
+    }
 
-		xmlNodePtr coordinate_node = xmlNewChild(point_node, NULL, BAD_CAST "Coordinate", NULL );
+    if (this->m_GeometryTopologyData->GetPoint(i).timestamp.size() > 0) {
+      xmlNewChild(point_node, NULL, BAD_CAST "Timestamp",
+                  BAD_CAST this->m_GeometryTopologyData->GetPoint(i).timestamp.c_str());
+    }
+    if (this->m_GeometryTopologyData->GetPoint(i).userName.size() > 0) {
+      xmlNewChild(point_node, NULL, BAD_CAST "UserName",
+                  BAD_CAST this->m_GeometryTopologyData->GetPoint(i).userName.c_str());
+    }
 
-		cip::GeometryTopologyData::CoordinateType coordinate =
-						this->m_GeometryTopologyData->GetPointCoordinate(i);
+    if (this->m_GeometryTopologyData->GetPoint(i).machineName.size() > 0) {
+      xmlNewChild(point_node, NULL, BAD_CAST "MachineName",
+                  BAD_CAST this->m_GeometryTopologyData->GetPoint(i).machineName.c_str());
+    }
 
-		for ( unsigned int j=0; j<coordinate.size(); j++ )
-		{
-			std::stringstream coordinateStream;
-			coordinateStream << coordinate[j];
-			std::string coordinateString = coordinateStream.str();
-			xmlNewChild( coordinate_node, NULL, BAD_CAST "value", BAD_CAST coordinateString.c_str() );
-		}
+    xmlNodePtr coordinate_node = xmlNewChild(point_node, NULL, BAD_CAST "Coordinate", NULL );
 
-		xmlNewChild( point_node, NULL, BAD_CAST "UserName",
-						BAD_CAST this->m_GeometryTopologyData->GetPoint(i).userName.c_str() );
-    xmlNewChild( point_node, NULL, BAD_CAST "MachineName",
-            BAD_CAST this->m_GeometryTopologyData->GetPoint(i).machineName.c_str() );
-    xmlNewChild( point_node, NULL, BAD_CAST "Timestamp",
-            BAD_CAST this->m_GeometryTopologyData->GetPoint(i).timestamp.c_str() );
+    cip::GeometryTopologyData::CoordinateType coordinate =
+            this->m_GeometryTopologyData->GetPointCoordinate(i);
+
+    for ( unsigned int j=0; j<coordinate.size(); j++ )
+    {
+      std::stringstream coordinateStream;
+      coordinateStream << coordinate[j];
+      std::string coordinateString = coordinateStream.str();
+      xmlNewChild( coordinate_node, NULL, BAD_CAST "value", BAD_CAST coordinateString.c_str() );
+    }
 	}
 
+  // BOUNDING BOXES
 	for ( unsigned int i=0; i<this->m_GeometryTopologyData->GetNumberOfBoundingBoxes(); i++ )
 	{
 		xmlNodePtr bb_node = xmlNewChild(root_node, NULL, BAD_CAST "BoundingBox", NULL );
@@ -132,12 +160,28 @@ void GeometryTopologyDataIO::Write() const
 		xmlNewChild( bb_node, NULL, BAD_CAST "ChestType", BAD_CAST chestTypeString.c_str() );
 
 		std::stringstream imageFeatureStream;
-		imageFeatureStream << int(this->m_GeometryTopologyData->GetBoundingBoxChestType(i));
+		imageFeatureStream << int(this->m_GeometryTopologyData->GetBoundingBoxImageFeature(i));
 		std::string imageFeatureString = imageFeatureStream.str();
 		xmlNewChild( bb_node, NULL, BAD_CAST "ImageFeature", BAD_CAST imageFeatureString.c_str() );
 
-		xmlNewChild( bb_node, NULL, BAD_CAST "Description",
-						BAD_CAST this->m_GeometryTopologyData->GetBoundingBoxDescription(i).c_str() );
+    if (this->m_GeometryTopologyData->GetBoundingBoxDescription(i).size() > 0) {
+      xmlNewChild(bb_node, NULL, BAD_CAST "Description",
+              BAD_CAST this->m_GeometryTopologyData->GetBoundingBoxDescription(i).c_str());
+    }
+
+    if (this->m_GeometryTopologyData->GetBoundingBox(i).timestamp.size() > 0) {
+      xmlNewChild(bb_node, NULL, BAD_CAST "Timestamp",
+              BAD_CAST this->m_GeometryTopologyData->GetBoundingBox(i).timestamp.c_str());
+    }
+    if (this->m_GeometryTopologyData->GetBoundingBox(i).userName.size() > 0) {
+      xmlNewChild(bb_node, NULL, BAD_CAST "UserName",
+              BAD_CAST this->m_GeometryTopologyData->GetBoundingBox(i).userName.c_str());
+    }
+
+    if (this->m_GeometryTopologyData->GetBoundingBox(i).machineName.size() > 0) {
+      xmlNewChild(bb_node, NULL, BAD_CAST "MachineName",
+              BAD_CAST this->m_GeometryTopologyData->GetBoundingBox(i).machineName.c_str());
+    }
 
 		xmlNodePtr start_node = xmlNewChild(bb_node, NULL, BAD_CAST "Start", NULL );
 
@@ -207,7 +251,23 @@ void GeometryTopologyDataIO::Read()
 				cur = cur->xmlChildrenNode;
 				while ( cur != NULL )
 				{
-					if ( !xmlStrcmp(cur->name, (const xmlChar *)"Spacing") )
+          if( !xmlStrcmp(cur->name, (const xmlChar *)"CoordinateSystem") )
+          {
+            this->m_GeometryTopologyData->CoordinateSystem = std::string((const char*)xmlNodeGetContent(cur));
+          }
+          else if ( !xmlStrcmp(cur->name, (const xmlChar *)"LPStoIJKTransformationMatrix") )
+          {
+            xmlNodePtr co = cur->xmlChildrenNode;
+            while ( co != NULL )
+            {
+              if ( !xmlStrcmp(co->name, (const xmlChar *)"value") )
+              {
+                this->m_GeometryTopologyData->LPS_to_IJK_TransformationMatrix.push_back(std::atof((const char*)xmlNodeGetContent(co)));
+              }
+              co = co->next;
+            }
+          }
+					else if ( !xmlStrcmp(cur->name, (const xmlChar *)"Spacing") )
 					{
 						xmlNodePtr co = cur->xmlChildrenNode;
 						while ( co != NULL )
@@ -258,6 +318,7 @@ void GeometryTopologyDataIO::Read()
 		}
 	}
 	xmlFreeDoc( doc );
+  this->m_GeometryTopologyData->UpdateSeed();
 }
 
 void GeometryTopologyDataIO::ParsePoint( xmlNodePtr ptNode )
@@ -307,6 +368,10 @@ void GeometryTopologyDataIO::ParsePoint( xmlNodePtr ptNode )
 		{
 			description = std::string((const char*)xmlNodeGetContent(cur));
 		}
+    else if ( !xmlStrcmp(cur->name, (const xmlChar *)"Timestamp") )
+    {
+      timestamp = std::string((const char*)xmlNodeGetContent(cur));
+    }
     else if ( !xmlStrcmp(cur->name, (const xmlChar *)"UserName") )
     {
       userName = std::string((const char*)xmlNodeGetContent(cur));
@@ -315,24 +380,13 @@ void GeometryTopologyDataIO::ParsePoint( xmlNodePtr ptNode )
     {
       machineName = std::string((const char*)xmlNodeGetContent(cur));
     }
-    else if ( !xmlStrcmp(cur->name, (const xmlChar *)"Timestamp") )
-    {
-      timestamp = std::string((const char*)xmlNodeGetContent(cur));
-    }
 
 		cur = cur->next;
 	}
 
-	cip::GeometryTopologyData::POINT* p = this->m_GeometryTopologyData->InsertPoint( coordinate, cipRegion, cipType, cipImageFeature, description, false );
-	// Read the parameters that are not used when creating new points (only when reading from xml)
-	p->id = id;
-	p->userName = userName;
-	p->machineName = machineName;
-	p->timestamp = timestamp;
-
-	// Make sure that the seed always contains the biggest id in the file
-	if (id >= this->m_GeometryTopologyData->m_seedId)
-		this->m_GeometryTopologyData->m_seedId = id+1;
+	cip::GeometryTopologyData::POINT* p = this->m_GeometryTopologyData->InsertPoint( id, cipRegion, cipType, cipImageFeature,
+                                                                                   coordinate, description,
+                                                                                   timestamp, userName, machineName);
 }
 
 void GeometryTopologyDataIO::ParseBoundingBox( xmlNodePtr bbNode )
@@ -395,6 +449,10 @@ void GeometryTopologyDataIO::ParseBoundingBox( xmlNodePtr bbNode )
 		{
 			description = std::string((const char*)xmlNodeGetContent(cur));
 		}
+    else if ( !xmlStrcmp(cur->name, (const xmlChar *)"Timestamp") )
+    {
+      timestamp = std::string((const char*)xmlNodeGetContent(cur));
+    }
 		else if ( !xmlStrcmp(cur->name, (const xmlChar *)"UserName") )
 		{
 			userName = std::string((const char*)xmlNodeGetContent(cur));
@@ -403,26 +461,13 @@ void GeometryTopologyDataIO::ParseBoundingBox( xmlNodePtr bbNode )
 		{
 			machineName = std::string((const char*)xmlNodeGetContent(cur));
 		}
-		else if ( !xmlStrcmp(cur->name, (const xmlChar *)"Timestamp") )
-		{
-			timestamp = std::string((const char*)xmlNodeGetContent(cur));
-		}
-
-
 		cur = cur->next;
 	}
 
-	cip::GeometryTopologyData::BOUNDINGBOX* bb =this->m_GeometryTopologyData->InsertBoundingBox( start, size, cipRegion, cipType, cipImageFeature, description, false );
-
-	// Read the parameters that are not used when creating new bounding boxes (only when reading from xml)
-	bb->id = id;
-	bb->userName = userName;
-	bb->machineName = machineName;
-	bb->timestamp = timestamp;
-
-	// Make sure that the seed always contains the biggest id in the file
-	if (id >= this->m_GeometryTopologyData->m_seedId)
-		this->m_GeometryTopologyData->m_seedId = id+1;
+	cip::GeometryTopologyData::BOUNDINGBOX* bb = this->m_GeometryTopologyData->InsertBoundingBox( id,
+                                                                                               cipRegion, cipType, cipImageFeature,
+                                                                                               start, size, description,
+                                                                                               timestamp, userName, machineName);
 }
 
 cip::GeometryTopologyData* GeometryTopologyDataIO::GetOutput()
