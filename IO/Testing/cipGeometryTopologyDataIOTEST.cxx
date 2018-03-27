@@ -32,10 +32,10 @@ int main( int argc, char* argv[] )
 //    size2D[0] = 13;
 //    size2D[1] = 14;
 //
-//  cip::GeometryTopologyData geomTop;
-//  geomTop.m_Spacing.push_back(0.5);
-//  geomTop.m_Spacing.push_back(0.6);
-//  geomTop.m_Spacing.push_back(0.7);
+  cip::GeometryTopologyData geomTop;
+  geomTop.m_Spacing.push_back(0.5);
+  geomTop.m_Spacing.push_back(0.6);
+  geomTop.m_Spacing.push_back(0.7);
   geomTop.InsertPoint( coordinate3D, (unsigned char)(cip::WHOLELUNG),
 			 (unsigned char)(cip::AIRWAY), (unsigned char)(cip::UNDEFINEDFEATURE), "hola", true );
 //

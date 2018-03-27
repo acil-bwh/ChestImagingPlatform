@@ -4,10 +4,10 @@
 
 #include <time.h>
 #ifdef _WIN32
-  #include <windows.h>
+#include <windows.h>
   #include <Lmcons.h>
 #else
-  #include <unistd.h>
+#include <unistd.h>
 #endif
 
 cip::GeometryTopologyData::GeometryTopologyData()
@@ -26,10 +26,10 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
   // Check for self-assignment by comparing the address of the
   // implicit object and the parameter
   if (this == &geometryTopology)
-    {
-      return *this;
-    }
-  
+  {
+    return *this;
+  }
+
   // Do the copy
   m_seedId = geometryTopology.m_seedId;
   for ( unsigned int j=0; j<geometryTopology.m_Spacing.size(); j++ ) {
@@ -43,58 +43,58 @@ cip::GeometryTopologyData& cip::GeometryTopologyData::operator= (const cip::Geom
   }
 
   for ( unsigned int i=0; i<geometryTopology.GetNumberOfBoundingBoxes(); i++ )
-    {
-      BOUNDINGBOX bb;
-      bb.id = geometryTopology.GetBoundingBoxId(i);
-      bb.cipRegion = geometryTopology.GetBoundingBoxChestRegion(i);
-      bb.cipType = geometryTopology.GetBoundingBoxChestType(i);
-      bb.cipImageFeature = geometryTopology.GetBoundingBoxImageFeature(i);
-      bb.description = geometryTopology.GetBoundingBoxDescription(i);
-      bb.userName = geometryTopology.GetBoundingBox(i).userName;
-      bb.machineName = geometryTopology.GetBoundingBox(i).machineName;
-      bb.timestamp = geometryTopology.GetBoundingBox(i).timestamp;
+  {
+    BOUNDINGBOX bb;
+    bb.id = geometryTopology.GetBoundingBoxId(i);
+    bb.cipRegion = geometryTopology.GetBoundingBoxChestRegion(i);
+    bb.cipType = geometryTopology.GetBoundingBoxChestType(i);
+    bb.cipImageFeature = geometryTopology.GetBoundingBoxImageFeature(i);
+    bb.description = geometryTopology.GetBoundingBoxDescription(i);
+    bb.userName = geometryTopology.GetBoundingBox(i).userName;
+    bb.machineName = geometryTopology.GetBoundingBox(i).machineName;
+    bb.timestamp = geometryTopology.GetBoundingBox(i).timestamp;
 
-      for ( unsigned int j=0; j<geometryTopology.GetBoundingBoxStart(i).size(); j++ )
-      	{
-      	  bb.start.push_back(geometryTopology.GetBoundingBoxStart(i)[j]);
-      	}
-      for ( unsigned int j=0; j<geometryTopology.GetBoundingBoxSize(i).size(); j++ )
-      	{
-      	  bb.size.push_back(geometryTopology.GetBoundingBoxSize(i)[j]);
-      	}
-      m_BoundingBoxes.push_back( bb );
+    for ( unsigned int j=0; j<geometryTopology.GetBoundingBoxStart(i).size(); j++ )
+    {
+      bb.start.push_back(geometryTopology.GetBoundingBoxStart(i)[j]);
     }
+    for ( unsigned int j=0; j<geometryTopology.GetBoundingBoxSize(i).size(); j++ )
+    {
+      bb.size.push_back(geometryTopology.GetBoundingBoxSize(i)[j]);
+    }
+    m_BoundingBoxes.push_back( bb );
+  }
 
   for ( unsigned int i=0; i<geometryTopology.GetNumberOfPoints(); i++ )
+  {
+    POINT p;
+    p.id = geometryTopology.GetPointId(i);
+    p.cipRegion = geometryTopology.GetPointChestRegion(i);
+    p.cipType = geometryTopology.GetPointChestType(i);
+    p.cipImageFeature = geometryTopology.GetPointImageFeature(i);
+    p.description = geometryTopology.GetPointDescription(i);
+    p.userName = geometryTopology.GetPoint(i).userName;
+    p.machineName = geometryTopology.GetPoint(i).machineName;
+    p.timestamp = geometryTopology.GetPoint(i).timestamp;
+
+    for ( unsigned int j=0; j<geometryTopology.GetPointCoordinate(i).size(); j++ )
     {
-      POINT p;
-      p.id = geometryTopology.GetPointId(i);
-      p.cipRegion = geometryTopology.GetPointChestRegion(i);
-      p.cipType = geometryTopology.GetPointChestType(i);
-      p.cipImageFeature = geometryTopology.GetPointImageFeature(i);
-      p.description = geometryTopology.GetPointDescription(i);
-      p.userName = geometryTopology.GetPoint(i).userName;
-      p.machineName = geometryTopology.GetPoint(i).machineName;
-      p.timestamp = geometryTopology.GetPoint(i).timestamp;
-
-      for ( unsigned int j=0; j<geometryTopology.GetPointCoordinate(i).size(); j++ )
-  	{
-  	  p.coordinate.push_back(geometryTopology.GetPointCoordinate(i)[j]);
-  	}
-
-      m_Points.push_back( p );
+      p.coordinate.push_back(geometryTopology.GetPointCoordinate(i)[j]);
     }
-  
+
+    m_Points.push_back( p );
+  }
+
   // Return the existing object
   return *this;
 }
 
 cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundingBox( StartType start, SizeType size,
-						   unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
-						   unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
-						   unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
-						   std::string description = "",
-               bool fillAutoFields = true)
+                                                                                      unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION),
+                                                                                      unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
+                                                                                      unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
+                                                                                      std::string description = "",
+                                                                                      bool fillAutoFields = true)
 {
   BOUNDINGBOX bb;
   bb.id = this->m_seedId++;
@@ -103,31 +103,31 @@ cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundin
   bb.cipImageFeature = cipImageFeature;
 
   if ( start.size() != size.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::InsertBoundingBox", 
-				  "start dimension does not equal size dimension" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertBoundingBox",
+                                "start dimension does not equal size dimension" );
+  }
 
   if ( size.size() != 2 && size.size() != 3  )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::InsertBoundingBox", 
-				  "Unexpected bounding box size dimension" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertBoundingBox",
+                                "Unexpected bounding box size dimension" );
+  }
 
   if ( start.size() != 2 && start.size() != 3  )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::InsertBoundingBox", 
-				  "Unexpected bounding box start dimension" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertBoundingBox",
+                                "Unexpected bounding box start dimension" );
+  }
 
   for ( unsigned int i=0; i<start.size(); i++ )
-    {
-      bb.start.push_back( start[i] );
-      bb.size.push_back( size[i] );
-    }
+  {
+    bb.start.push_back( start[i] );
+    bb.size.push_back( size[i] );
+  }
 
   bb.description = description;
 
@@ -144,8 +144,8 @@ void cip::GeometryTopologyData::FillMetaFieldsBoundingBox(BOUNDINGBOX* bb){
   char userName[256];
 #ifdef _WIN32
   DWORD size = 256;
-  GetUserName( userName, &size ));
-  GetComputerName(hostname, 256);
+  GetUserName( userName, &size );
+  GetComputerName(hostname, &size);
 #else
   gethostname(hostname, 256);
   getlogin_r(userName, 256);
@@ -163,11 +163,11 @@ void cip::GeometryTopologyData::FillMetaFieldsBoundingBox(BOUNDINGBOX* bb){
 }
 
 cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( CoordinateType coordinate,
-					     unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
-					     unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
-					     unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
-					     std::string description = "",
-               bool fillAutoFields = true)
+                                                                          unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION),
+                                                                          unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE),
+                                                                          unsigned char cipImageFeature = (unsigned char)(cip::UNDEFINEDFEATURE),
+                                                                          std::string description = "",
+                                                                          bool fillAutoFields = true)
 {
   POINT p;
   p.id = this->m_seedId;
@@ -177,16 +177,16 @@ cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( Coordi
   p.cipImageFeature = cipImageFeature;
 
   if ( coordinate.size() != 2 && coordinate.size() != 3 )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::InsertPoint", 
-				  "Unexpected coordinate dimension" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::InsertPoint",
+                                "Unexpected coordinate dimension" );
+  }
 
   for ( unsigned int i=0; i<coordinate.size(); i++ )
-    {
-      p.coordinate.push_back( coordinate[i] );
-    }
+  {
+    p.coordinate.push_back( coordinate[i] );
+  }
 
   p.description = description;
 
@@ -202,8 +202,8 @@ void cip::GeometryTopologyData::FillMetaFieldsPoint(POINT* p){
   char userName[256];
 #ifdef _WIN32
   DWORD size = 256;
-  GetUserName( userName, &size ));
-  GetComputerName(hostname, 256);
+  GetUserName( userName, &size );
+  GetComputerName(hostname, &size);
 #else
   gethostname(hostname, 256);
   getlogin_r(userName, 256);
@@ -249,11 +249,11 @@ unsigned int cip::GeometryTopologyData::GetBoundingBoxId(unsigned int index) con
 unsigned char cip::GeometryTopologyData::GetBoundingBoxChestRegion( unsigned int index ) const
 {
   if ( index > this->m_BoundingBoxes.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetBoundingBoxChestRegion", 
-				  "Index of range for m_BoundingBoxes" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetBoundingBoxChestRegion",
+                                "Index of range for m_BoundingBoxes" );
+  }
 
   return this->m_BoundingBoxes[index].cipRegion;
 }
@@ -261,11 +261,11 @@ unsigned char cip::GeometryTopologyData::GetBoundingBoxChestRegion( unsigned int
 unsigned char cip::GeometryTopologyData::GetBoundingBoxChestType( unsigned int index ) const
 {
   if ( index > this->m_BoundingBoxes.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetBoundingBoxChestType", 
-				  "Index of range for m_BoundingBoxes" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetBoundingBoxChestType",
+                                "Index of range for m_BoundingBoxes" );
+  }
 
   return this->m_BoundingBoxes[index].cipType;
 }
@@ -273,11 +273,11 @@ unsigned char cip::GeometryTopologyData::GetBoundingBoxChestType( unsigned int i
 unsigned char cip::GeometryTopologyData::GetBoundingBoxImageFeature( unsigned int index ) const
 {
   if ( index > this->m_BoundingBoxes.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__,
-				  "cip::GeometryTopologyData::GetBoundingBoxChestType",
-				  "Index of range for m_BoundingBoxes" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetBoundingBoxChestType",
+                                "Index of range for m_BoundingBoxes" );
+  }
 
   return this->m_BoundingBoxes[index].cipImageFeature;
 }
@@ -296,11 +296,11 @@ cip::GeometryTopologyData::POINT cip::GeometryTopologyData::GetPoint(unsigned in
 unsigned char cip::GeometryTopologyData::GetPointChestRegion( unsigned int index ) const
 {
   if ( index > this->m_Points.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetPointChestRegion", 
-				  "Index of range for m_Points" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetPointChestRegion",
+                                "Index of range for m_Points" );
+  }
 
   return this->m_Points[index].cipRegion;
 }
@@ -308,11 +308,11 @@ unsigned char cip::GeometryTopologyData::GetPointChestRegion( unsigned int index
 unsigned char cip::GeometryTopologyData::GetPointChestType( unsigned int index ) const
 {
   if ( index > this->m_Points.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetPointChestType", 
-				  "Index of range for m_Points" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetPointChestType",
+                                "Index of range for m_Points" );
+  }
 
   return this->m_Points[index].cipType;
 }
@@ -320,11 +320,11 @@ unsigned char cip::GeometryTopologyData::GetPointChestType( unsigned int index )
 unsigned char cip::GeometryTopologyData::GetPointImageFeature( unsigned int index ) const
 {
   if ( index > this->m_Points.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__,
-				  "cip::GeometryTopologyData::GetPointChestType",
-				  "Index of range for m_Points" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetPointChestType",
+                                "Index of range for m_Points" );
+  }
 
   return this->m_Points[index].cipImageFeature;
 }
@@ -332,11 +332,11 @@ unsigned char cip::GeometryTopologyData::GetPointImageFeature( unsigned int inde
 std::string cip::GeometryTopologyData::GetBoundingBoxDescription( unsigned int index ) const
 {
   if ( index > this->m_BoundingBoxes.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetBoundingBoxDescription", 
-				  "Index of range for m_Points" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetBoundingBoxDescription",
+                                "Index of range for m_Points" );
+  }
 
   return this->m_BoundingBoxes[index].description;
 }
@@ -356,11 +356,11 @@ unsigned int cip::GeometryTopologyData::GetPointId( unsigned int index ) const
 std::string cip::GeometryTopologyData::GetPointDescription( unsigned int index ) const
 {
   if ( index > this->m_Points.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetPointDescription", 
-				  "Index of range for m_Points" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetPointDescription",
+                                "Index of range for m_Points" );
+  }
 
   return this->m_Points[index].description;
 }
@@ -369,11 +369,11 @@ std::string cip::GeometryTopologyData::GetPointDescription( unsigned int index )
 cip::GeometryTopologyData::StartType cip::GeometryTopologyData::GetBoundingBoxStart( unsigned int index ) const
 {
   if ( index > this->m_BoundingBoxes.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetBoundingBoxStart", 
-				  "Index of range for m_Points" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetBoundingBoxStart",
+                                "Index of range for m_Points" );
+  }
 
   return this->m_BoundingBoxes[index].start;
 }
@@ -381,11 +381,11 @@ cip::GeometryTopologyData::StartType cip::GeometryTopologyData::GetBoundingBoxSt
 cip::GeometryTopologyData::SizeType cip::GeometryTopologyData::GetBoundingBoxSize( unsigned int index ) const
 {
   if ( index > this->m_BoundingBoxes.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetBoundingBoxSize", 
-				  "Index of range for m_BoundingBoxes" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetBoundingBoxSize",
+                                "Index of range for m_BoundingBoxes" );
+  }
 
   return this->m_BoundingBoxes[index].size;
 }
@@ -393,11 +393,11 @@ cip::GeometryTopologyData::SizeType cip::GeometryTopologyData::GetBoundingBoxSiz
 cip::GeometryTopologyData::CoordinateType cip::GeometryTopologyData::GetPointCoordinate( unsigned int index ) const
 {
   if ( index > this->m_Points.size() )
-    {
-      throw cip::ExceptionObject( __FILE__, __LINE__, 
-				  "cip::GeometryTopologyData::GetPointCoordinate", 
-				  "Index of range for m_Points" );
-    }
+  {
+    throw cip::ExceptionObject( __FILE__, __LINE__,
+                                "cip::GeometryTopologyData::GetPointCoordinate",
+                                "Index of range for m_Points" );
+  }
 
   return this->m_Points[index].coordinate;
 }
