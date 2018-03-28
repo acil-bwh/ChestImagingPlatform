@@ -69,6 +69,10 @@ def test_geometry_topology_data_write_read():
     with open(output_file, 'r+b') as f:
         generated_output = f.read()
 
+    # Remove \r to avoid platform compatibility issues
+    expected_output = expected_output.replace('\r', '')
+    generated_output = generated_output.replace('\r', '')
+
     assert generated_output == expected_output
 
     # Remove temp file
