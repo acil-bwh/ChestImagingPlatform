@@ -57,11 +57,12 @@ def test_geometry_topology_data_write_read():
     g.add_bounding_box(bb2, fill_auto_fields=False)
 
     # Get xml representation for the object
-    xml = g.to_xml(pretty_print=True)
+    xml = g.to_xml()
 
     # Compare XML output with the example file
     with open(xml_file, 'r+b') as f:
         expectedOutput = f.read()
+
     assert xml == expectedOutput, "XML generated: " + xml
 
     # Validate schema with lxml
@@ -74,3 +75,4 @@ def test_geometry_topology_data_write_read():
     # Make sure that the seed is set to a right value
     g.update_seed()
     assert g.seed_id == 5, "Seed in the object should be 5, while the current value is {}".format(g.seed_id)
+
