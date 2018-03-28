@@ -1,5 +1,6 @@
-from cip_python.common import *
+import tempfile
 from lxml import etree
+from cip_python.common import *
 
 xml_file = Paths.testing_file_path('geometryTopologyData.xml')
 xsd_file = Paths.resources_file_path('Schemas/GeometryTopologyData.xsd')
@@ -56,21 +57,29 @@ def test_geometry_topology_data_write_read():
     bb2.machine_name = p1.machine_name
     g.add_bounding_box(bb2, fill_auto_fields=False)
 
-    # Get xml representation for the object
-    xml = g.to_xml()
+    # Write the object to a xml file
+    output_file = os.path.join(tempfile.gettempdir(), "geom.xml")
+    g.to_xml_file(output_file)
+    print ("Temp file created: {}".format(output_file))
 
     # Compare XML output with the example file
     with open(xml_file, 'r+b') as f:
-        expectedOutput = f.read()
+        expected_output = f.read()
 
-    assert xml == expectedOutput, "XML generated: " + xml
+    with open(output_file, 'r+b') as f:
+        generated_output = f.read()
+
+    assert generated_output == expected_output
+
+    # Remove temp file
+    os.remove(output_file)
 
     # Validate schema with lxml
     with open(xsd_file, 'r+b') as f:
         xsd = f.read()
     schema = etree.XMLSchema(etree.XML(xsd))
     xmlparser = etree.XMLParser(schema=schema)
-    etree.fromstring(xml, xmlparser)
+    etree.fromstring(generated_output, xmlparser)
 
     # Make sure that the seed is set to a right value
     g.update_seed()

@@ -494,9 +494,6 @@ class Structure(object):
                 description + timestamp + user_name + machine_name).format(separator * level,
                                                                            self.__id__, self.chest_region,
                                                                            self.chest_type, self.feature_type)
-        # return '<Id>%i</Id><ChestRegion>%i</ChestRegion><ChestType>%i</ChestType><ImageFeature>%i</ImageFeature>%s%s%s%s' % \
-        #     (self.__id__, self.chest_region, self.chest_type, self.feature_type, description, timestamp, user_name, machine_name)
-
     def convert_to_array(self, type_=np.float32):
         """
         Convert the coordinates to a numpy array of the specified type (default: float32)
@@ -649,7 +646,6 @@ class BoundingBox(Structure):
              "{2}<Start>\r\n{3}{2}</Start>\r\n" +
              "{2}<Size>\r\n{4}{2}</Size>\r\n" +
              "{0}</BoundingBox>\r\n").format(separator * level, structure, separator * (level + 1), start_str, size_str)
-        # return '<BoundingBox>%s<Start>%s</Start><Size>%s</Size></BoundingBox>' % (structure, start_str, size_str)
 
     def convert_to_array(self, type_=np.float32):
         """
