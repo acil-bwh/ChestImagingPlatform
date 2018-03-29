@@ -89,12 +89,15 @@ class GeometryTopologyData(object):
 
     def fill_auto_fields(self, structure):
         """ Fill "auto" fields like timestamp, username, etc, unless there is already a specified value
-        The id will be id_seed + 1
+        The id will be the current seed_id
         @param structure: object whose fields will be filled
         """
         if structure.__id__ == 0:
+            # Use the current seed to set the structure id
             structure.__id__ = self.__seed_id__
+            # Update the seed
             self.__seed_id__ += 1
+
         if not structure.timestamp:
             structure.timestamp = GeometryTopologyData.get_timestamp()
         if not structure.user_name:
@@ -104,7 +107,7 @@ class GeometryTopologyData(object):
 
     def update_seed(self):
         """
-        Update the id_seed field to the maximum id found + 1
+        Update the seed_id field to the maximum id found + 1
         """
         id = 0
         for p in self.points:
@@ -229,7 +232,7 @@ class GeometryTopologyData(object):
             val = []
             for node_val in node.findall("value"):
                 val.append(float(node_val.text))
-            geometry_topology.origin = np.array(val)
+            geometry_topology.dimensions = np.array(val)
 
         # Points
         for xml_point_node in root.findall("Point"):
