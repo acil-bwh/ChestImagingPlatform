@@ -32,18 +32,18 @@ ADD_TEST( cipLobeSurfaceModelIOTEST cipLobeSurfaceModelIOTEST ${CMAKE_SOURCE_DIR
 #-----------------------------------
 # cipGeometryTopologyDataIOTEST
 #-----------------------------------
-#PROJECT ( cipGeometryTopologyDataIOTEST )
+PROJECT ( cipGeometryTopologyDataIOTEST )
 
-#INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
-#INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/IO )
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/Common )
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/IO )
 
-#ADD_EXECUTABLE( cipGeometryTopologyDataIOTEST cipGeometryTopologyDataIOTEST.cxx)
-#TARGET_LINK_LIBRARIES( cipGeometryTopologyDataIOTEST CIPIO )
+ADD_EXECUTABLE( cipGeometryTopologyDataIOTEST cipGeometryTopologyDataIOTEST.cxx)
+TARGET_LINK_LIBRARIES( cipGeometryTopologyDataIOTEST CIPIO )
 
-#SET_TARGET_PROPERTIES ( cipGeometryTopologyDataIOTEST
-#    PROPERTIES
-#    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/IO/Testing"
-#)
+SET_TARGET_PROPERTIES ( cipGeometryTopologyDataIOTEST
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/IO/Testing"
+)
 
-#ADD_TEST( cipGeometryTopologyDataIOTEST cipGeometryTopologyDataIOTEST ${CIP_BINARY_DIR}/IO/Testing/cipGeometryTopologyDataIOTEST_out.xml 
-#	  ${CMAKE_SOURCE_DIR}/Testing/Data/Input/geometryTopologyData.xml )
+ADD_TEST( cipGeometryTopologyDataIOTEST cipGeometryTopologyDataIOTEST
+	  ${CMAKE_SOURCE_DIR}/Testing/Data/Input/geometryTopologyData.xml ${CIP_BINARY_DIR}/IO/Testing/cipGeometryTopologyDataIOTEST_out.xml)
