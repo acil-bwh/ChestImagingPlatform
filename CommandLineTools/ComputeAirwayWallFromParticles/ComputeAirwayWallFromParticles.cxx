@@ -112,7 +112,7 @@ int main( int argc, char *argv[] )
       solver->SetMethod(2);
     }
     
-  solver->SetDelta(1);
+  solver->SetDelta(0.5);
   solver->SetNumberOfThetaSamples(numberOfRays);
     
   // Outlier rejection parameter
@@ -143,7 +143,7 @@ int main( int argc, char *argv[] )
   solver->SetWallThreshold(wallThreshold);
   solver->SetPCThreshold(pcThreshold);
   
-  if ( largeAirways == true)
+  if ( largeAirways == true )
     {
       solver->SetRMax(25);
       filter->SetResolution(0.2);

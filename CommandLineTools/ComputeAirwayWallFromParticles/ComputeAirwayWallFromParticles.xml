@@ -82,11 +82,11 @@ and does not necessarily represent the official views of the National Institutes
     <description>Wall constrast threshold at the candidate edge point to qualify (positive value).</description>
     <longflag>wth</longflag>
     <constraints>
-      <minimum>250</minimum>
+      <minimum>50</minimum>
       <maximum>500</maximum>
       <step>1</step>
     </constraints>
-    <default>300</default>
+    <default>150</default>
   </integer>
     
   <double>
