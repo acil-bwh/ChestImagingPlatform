@@ -121,7 +121,7 @@ int main( int argc, char * argv[] ){
   std::cout<<"Lung mask extraction..."<<std::endl;
   vtkSimpleLungMask *lungMask = vtkSimpleLungMask::New();
     lungMask->SetInputData( vol );
-    lungMask->SetTracheaLabel(1);
+    lungMask->SetTracheaLabel(512);
     lungMask->SetRasToVtk(rasTovtk);
     lungMask->Update();
 
