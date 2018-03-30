@@ -1518,5 +1518,5 @@ int main( int argc, char *argv[] )
 
   std::cout << "DONE." << std::endl;
 
-  return 0;
+  return cip::EXITSUCCESS;
 }

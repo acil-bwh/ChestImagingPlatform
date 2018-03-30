@@ -4,7 +4,7 @@
   <title>GenerateParenchymaPhenotypes</title>
     <description><![CDATA[This program is used to compute regional histograms and typical parenchyma phenotypes for emphysema assessment and other parenchymal abnormalities.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateParenchymaPhenotypes</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/quantification</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
