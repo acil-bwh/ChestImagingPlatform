@@ -139,7 +139,7 @@ int DoItCT( std::string dicomDir, std::string outputImageFileName )
     }
   catch ( itk::ExceptionObject &excp )
     {
-    std::cerr << "Exception caught writing imag:";
+    std::cerr << "Exception caught writing image:";
     std::cerr << excp << std::endl;
     return cip::NRRDWRITEFAILURE;
     }
@@ -186,7 +186,7 @@ int DoItUS( std::string dicomDir, std::string outputImageFileName )
     }
     catch ( itk::ExceptionObject &excp )
     {
-        std::cerr << "Exception caught writing imag:";
+        std::cerr << "Exception caught writing image";
         std::cerr << excp << std::endl;
         return cip::NRRDWRITEFAILURE;
     }
