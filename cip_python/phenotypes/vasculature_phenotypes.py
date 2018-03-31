@@ -42,7 +42,7 @@ class VasculaturePhenotypes(Phenotypes):
         #Sigma due to the limited pixel resolution (half of 1 pixel)
         self._sigmap = 1/np.sqrt(2.)/2.
         self._dx = None
-        self._number_test_points=1000
+        self._number_test_points=5000
         self.factor=0.16
         
         #Method to do KDE of prob(CSA)
