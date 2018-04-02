@@ -32,7 +32,7 @@ def _pickle_method(m):
 copy_reg.pickle(types.MethodType, _pickle_method)
 
 
-class LocalHistogram():
+class LocalHistogramEmphysema():
   
     def __init__(self,frames,mask,ws=(31,31),ss=(5,5),off=5,num_threads=1,z=2,database=None):
       #Image and mask files 
@@ -232,9 +232,17 @@ class LocalHistogram():
       
         lh.train()
         output_image=np.zeros((self.frames.shape[0],self.frames.shape[1],self.frames.shape[2]),dtype='short')
-        p = Pool(int(self.num_threads))
-        pp=(p.map(self.process_slice, range(0,self.frames.shape[2],self.z)))
-        pp = np.asarray(pp)
+        
+        if self.num_threads > 1:
+          p = Pool(int(self.num_threads))
+          pp=(p.map(self.process_slice, range(0,self.frames.shape[2],self.z)))
+          pp = np.asarray(pp)
+        else:
+          pp = list()
+          for kk in range(0,self.frames.shape[2],self.z):
+            pp.append(self.process_slice(kk))
+          pp = np.asarray(pp)
+        
         pp=pp.transpose([1,2,0])
         ff=interpolate.interp1d(range(0,self.frames.shape[2],self.z),pp,kind='nearest',fill_value=0,axis=2)
         ppn=ff(range(0,self.frames.shape[2]-self.z))
@@ -362,7 +370,7 @@ if __name__ == "__main__":
     print '## Offset along Z axis: '+str(z)
     print '## Number of threads in multiprocessing: '+str(num_threads)
 
-    lh = LocalHistogram(frames,mask,ws,ss,options.offset,num_threads,z,database=DB)
+    lh = LocalHistogramEmphysema(frames,mask,ws,ss,options.offset,num_threads,z,database=DB)
 
     lh_image = lh.execute()
     
