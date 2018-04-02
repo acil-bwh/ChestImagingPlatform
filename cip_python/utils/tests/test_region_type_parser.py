@@ -108,7 +108,8 @@ class ArrayTest(BaseTestMethods):
 
         self.gt_labels = np.array([0,9,10,11,12,13,14], dtype=int)
         self.gt_regions = np.array([0,9,10,11,12,13,14], dtype=int)
-        self.gt_all_regions = np.array([0,1,2,3,9,10,11,12,13,14], dtype=int)
+        self.gt_all_regions = np.array([0,1,2,3,9,10,11,12,13,14,20,21,22], dtype=int)
         self.gt_types = np.array([0], dtype=int)
-        self.gt_all_pairs = np.array([[0, 0], [1, 0], [3, 0], [9, 0], [10, 0],
-                               [11, 0], [2, 0], [12, 0], [13, 0], [14, 0]])
+        self.gt_all_pairs = np.array([[0, 0], [1, 0], [3, 0], [9, 0], [20,0], [10, 0],
+                               [21,0], [11, 0], [22,0], [2, 0],
+                              [12, 0], [13, 0], [14, 0]])
