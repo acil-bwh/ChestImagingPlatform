@@ -2,12 +2,7 @@ from __future__ import division, absolute_import, print_function
 import numpy as np
 from scipy import fftpack, optimize
 
-if hasattr(np, 'float128'):
-    large_float = np.float128
-elif hasattr(np, 'float96'):
-    large_float = np.float96
-else:
-    large_float = np.float64
+
     
 def variance_bandwidth(factor, xdata):
     """
@@ -51,23 +46,6 @@ def scotts_covariance(xdata, model=None):
     return variance_bandwidth(np.power(n, -1. / (d + 4.)), xdata)
 
 
-def _botev_fixed_point(t, M, I, a2):
-    l = 7
-    I = large_float(I)
-    M = large_float(M)
-    a2 = large_float(a2)
-    f = 2 * np.pi ** (2 * l) * np.sum(I ** l * a2 *
-                                      np.exp(-I * np.pi ** 2 * t))
-    for s in xrange(l, 1, -1):
-        K0 = np.prod(np.arange(1, 2 * s, 2)) / np.sqrt(2 * np.pi)
-        const = (1 + (1 / 2) ** (s + 1 / 2)) / 3
-        time = (2 * const * K0 / M / f) ** (2 / (3 + 2 * s))
-        f = 2 * np.pi ** (2 * s) * \
-            np.sum(I ** s * a2 * np.exp(-I * np.pi ** 2 * time))
-    return t - (2 * M * np.sqrt(np.pi) * f) ** (-2 / 5)
-
-
-
 class botev_bandwidth(object):
     """
     Implementation of the KDE bandwidth selection method outline in:
@@ -84,6 +62,13 @@ class botev_bandwidth(object):
             print("Warning, using 'lower' and 'upper' for botev bandwidth is "
                   "deprecated. Argument is ignored")
         self.N = N
+
+        if hasattr(np, 'float128'):
+            self.large_float = np.float128
+        elif hasattr(np, 'float96'):
+            self.large_float = np.float96
+        else:
+            self.large_float = np.float64
 
     def run(self, data):
         """
@@ -110,12 +95,29 @@ class botev_bandwidth(object):
         guess = 0.1
 
         try:
-            t_star = optimize.brentq(_botev_fixed_point, 0, guess,
+            t_star = optimize.brentq(self._botev_fixed_point, 0, guess,
                                      args=(M, I, SqDCTData))
         except ValueError:
             t_star = .28 * N ** (-.4)
             
         #pdb.set_trace()
         return np.sqrt(t_star) * span
+
+    def _botev_fixed_point(self,t, M, I, a2):
+        l = 7
+        I = self.large_float(I)
+        M = self.large_float(M)
+        a2 = self.large_float(a2)
+        f = 2 * np.pi ** (2 * l) * np.sum(I ** l * a2 * \
+                                        np.exp(-I * np.pi ** 2 * t))
+        for s in xrange(l, 1, -1):
+            K0 = np.prod(np.arange(1, 2 * s, 2)) / np.sqrt(2 * np.pi)
+            const = (1 + (1 / 2) ** (s + 1 / 2)) / 3
+            time = (2 * const * K0 / M / f) ** (2 / (3 + 2 * s))
+            f = 2 * np.pi ** (2 * s) * \
+                  np.sum(I ** s * a2 * np.exp(-I * np.pi ** 2 * time))
+        return t - (2 * M * np.sqrt(np.pi) * f) ** (-2 / 5)
+
+
 
 
