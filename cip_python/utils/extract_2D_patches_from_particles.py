@@ -1,25 +1,21 @@
 import numpy as np
 import vtk
-from vtk.util.numpy_support import vtk_to_numpy
+import SimpleITK as sitk
+from vtk.util.numpy_support import vtk_to_numpy,numpy_to_vtk
 import nrrd
-
+from vtk.util.vtkImageImportFromArray import  vtkImageImportFromArray
 
 class Extract2DPatchesFromParticles:
-    def __init__(self, patch_size, output_spacing=[0.5, 0.5, 0.5], structure_type='airway'):
+    def __init__(self, patch_size, output_spacing=[0.5, 0.5,0.5], structure_type='airway'):
         self._patch_size = patch_size
         self._output_spacing = output_spacing
         self._structure_type = structure_type
 
-    def execute(self, ct_image, pp_file, output_filepath):
-        vtk_reader = vtk.vtkNrrdReader()
-        vtk_reader.SetFileName(ct_image)
-        vtk_reader.Update()
-        ct_image = vtk_reader.GetOutput()
+    def execute(self, ct_image, pp, output_filepath):
 
         input_spacing = np.asarray(ct_image.GetSpacing())
         geom_mean = np.prod(input_spacing) ** (1 / 3.0)
         self._output_spacing[2] = geom_mean
-
         factor = np.asarray(ct_image.GetSpacing()) / np.asarray(self._output_spacing)
 
         res = vtk.vtkImageResample()
@@ -29,12 +25,8 @@ class Extract2DPatchesFromParticles:
         res.SetAxisMagnificationFactor(2, factor[2])
         res.SetInputData(ct_image)
         res.Update()
+        print "resampling"
         resampled_ct_image = res.GetOutput()
-
-        rr = vtk.vtkPolyDataReader()
-        rr.SetFileName(pp_file)
-        rr.Update()
-        pp = rr.GetOutput()
 
         patches_ = list()
 
@@ -56,7 +48,8 @@ class Extract2DPatchesFromParticles:
             else:
                 raise Exception("airway and vessel are the only types allowed. {} specified".format(op.type))
 
-            img = self.reslice_image_2D(resampled_ct_image, XAxis, YAxis, ZAxis, center, self._patch_size)
+            #img = self.reslice_image_2D(resampled_ct_image, XAxis, YAxis, ZAxis, center, self._patch_size)
+            img = self.reslice_image_2D(ct_image, XAxis, YAxis, ZAxis, center, self._patch_size)
 
             img_patch = vtk_to_numpy(img)
             img_patch = img_patch.reshape(self._patch_size[0], self._patch_size[1], 1)
@@ -79,6 +72,7 @@ class Extract2DPatchesFromParticles:
 
         reslice.SetInterpolationMode(vtk.VTK_RESLICE_CUBIC)
         reslice.SetOutputSpacing(self._output_spacing)
+        reslice.SetOutputScalarType(vtk.VTK_SHORT)
         reslice.SetOutputExtent(0, size[0] - 1, 0, size[1] - 1, 0, 1)
         reslice.SetOutputOrigin(-(size[0] * 0.5 - 0.5) * self._output_spacing[0],
                                 -(size[1] * 0.5 - 0.5) * self._output_spacing[1],
@@ -86,6 +80,99 @@ class Extract2DPatchesFromParticles:
         # reslice.SetNumberOfThreads(4)
         reslice.Update()
         return reslice.GetOutput().GetPointData().GetScalars()
+
+    def sitk2vtk2(self,img):
+
+        i2 = sitk.GetArrayFromImage(img)
+        ii = vtkImageImportFromArray()
+
+        size     = list(img.GetSize())
+        origin   = list(img.GetOrigin())
+        spacing  = list(img.GetSpacing())
+        extent=[0, size[0]-1, 0, size[1]-1, 0, size[2]-1]
+        ii.SetDataExtent(extent)
+        ii.SetDataSpacing(spacing)
+        ii.SetDataOrigin(origin)
+        i2=np.copy(i2)
+
+        ii.SetArray(i2)
+
+        ii.Update()
+        im_vtk=ii.GetOutput()
+        return im_vtk
+
+
+    def sitk2vtk(self,img):
+
+        size     = list(img.GetSize())
+        origin   = list(img.GetOrigin())
+        spacing  = list(img.GetSpacing())
+
+        pixelmap=dict()
+        pixelmap[sitk.sitkInt8]=vtk.VTK_CHAR
+        pixelmap[sitk.sitkUInt8]=vtk.VTK_UNSIGNED_CHAR
+        pixelmap[sitk.sitkInt16]=vtk.VTK_SHORT
+        pixelmap[sitk.sitkUInt16]=vtk.VTK_UNSIGNED_SHORT
+        pixelmap[sitk.sitkInt32]=vtk.VTK_INT
+        pixelmap[sitk.sitkUInt32]=vtk.VTK_UNSIGNED_INT
+        pixelmap[sitk.sitkFloat32]=vtk.VTK_FLOAT
+        pixelmap[sitk.sitkFloat64]=vtk.VTK_DOUBLE
+
+        sitktype = img.GetPixelID()
+        vtktype  = pixelmap[sitktype]
+        print size
+        print origin
+        print spacing
+        ncomp    = img.GetNumberOfComponentsPerPixel()
+        print ncomp
+
+        # there doesn't seem to be a way to specify the image orientation in VTK
+
+        # convert the SimpleITK image to a numpy array
+        i2 = sitk.GetArrayFromImage(img)
+
+
+        #i2=i2.transpose([2,1,0])
+        #import pylab
+        #i2 = reshape(i2, size)
+
+        i2_string = i2.tostring()
+
+        print len(i2_string)
+        # send the numpy array to VTK with a vtkImageImport object
+        dataImporter = vtk.vtkImageImport()
+        dataImporter.SetDataScalarType(vtktype)
+
+        dataImporter.SetNumberOfScalarComponents(ncomp)
+        dataImporter.SetDataExtent (0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+        dataImporter.SetWholeExtent(0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+
+        dataImporter.SetDataOrigin(origin)
+        dataImporter.SetDataSpacing(spacing)
+
+        #dataImporter.CopyImportVoidPointer( i2_string, len(i2_string) )
+        dataImporter.SetImportVoidPointer(i2_string)
+
+        # VTK expects 3-dimensional parameters
+        if len(size) == 2:
+            size.append(1)
+
+        if len(origin) == 2:
+            origin.append(0.0)
+
+        if len(spacing) == 2:
+            spacing.append(spacing[0])
+
+        # Set the new VTK image's parameters
+        #
+
+
+        print "Updating importer"
+        dataImporter.Update()
+        print "Done importer"
+
+        vtk_image = dataImporter.GetOutput()
+        return vtk_image
 
 
 if __name__ == "__main__":
@@ -115,8 +202,26 @@ if __name__ == "__main__":
     pp_file = op.in_pp
     output_file = op.output_file
 
+    ct_img_sitk=sitk.ReadImage(op.in_ct)
+    vtk_reader = vtk.vtkNrrdReader()
+    vtk_reader.SetFileName(op.in_ct)
+    vtk_reader.Update()
+    ct_image_vtk = vtk_reader.GetOutput()
+
+    particle_reader = vtk.vtkPolyDataReader()
+    particle_reader.SetFileName(op.in_pp)
+    particle_reader.Update()
+    particles_vtk = particle_reader.GetOutput()
+
     ep = Extract2DPatchesFromParticles(patch_sz, output_spacing=out_spacing, structure_type=op.type)
-    ep.execute(op.in_ct, op.in_pp, op.output_file)
+
+    #ct_image_vtk=ep.sitk2vtk2(ct_img_sitk)
+
+    #print ct_image_vtk
+
+    #print ct_image_vtk.GetPointData().GetArray('scalars').GetComponent(10,0)
+
+    ep.execute(ct_image_vtk,particles_vtk, op.output_file)
 
 
 
