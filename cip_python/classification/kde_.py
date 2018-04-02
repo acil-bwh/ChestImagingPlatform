@@ -9,7 +9,7 @@ import scipy.io
 import scipy.optimize
 
 
-class botev_bandwidth():
+class botev_bandwidth2():
   """
     Implementation of the KDE bandwidth selection method outline in:
     Z. I. Botev, J. F. Grotowski, and D. P. Kroese. Kernel density
