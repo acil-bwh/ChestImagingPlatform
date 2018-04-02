@@ -8,7 +8,7 @@ np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
 image_io = ImageReaderWriter()
 lm_name = ct_name = common.Paths.testing_file_path('simple_lm.nrrd')
 lm, lm_header = image_io.read_in_numpy(lm_name)
-ct_name = common.Paths.testing_file_path('simple_lm.nrrd')
+ct_name = common.Paths.testing_file_path('simple_ct.nrrd')
 ct, ct_header=image_io.read_in_numpy(ct_name)
 
 def test_execute():
@@ -36,7 +36,7 @@ def test_execute():
                               9*spacing[1]*spacing[2]), \
                 'Phenotype not as expected'            
         if (r == 'WholeLung' and t == wc):
-            assert df['HUMedian'].iloc[i] == -825, 'Phenotype not as expected'            
+            assert df['HUMedian'].iloc[i] == -825, 'Phenotype not as expected'
             assert np.isclose(df['HUStd'].iloc[i], 256.9695), \
                 'Phenotype not as expected'
             assert np.isclose(df['AxialCSA'].iloc[i], \
