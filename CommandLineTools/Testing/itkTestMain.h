@@ -137,7 +137,7 @@ int main(int ac, char *av[])
   double       intensityTolerance  = 2.0;
   unsigned int numberOfPixelsTolerance = 0;
   unsigned int radiusTolerance = 0;
-  double       pointTolerance = 0.005;
+  double       pointTolerance = 0.001;
   double       diceTolerance = 1.0;
   //typedef std::pair<char *, char *> ComparePairType;
   //std::vector<ComparePairType> compareList;
