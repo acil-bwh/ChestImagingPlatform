@@ -1,11 +1,8 @@
-import os
-import os.path as osp
-import numpy as np
-import argparse
 import SimpleITK as sitk
-
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import scipy.ndimage.interpolation as scipy_interpolation
 
 from cip_python.common import *
 from cip_python.input_output import ImageReaderWriter
@@ -14,12 +11,13 @@ class AnatomicStructuresManager(object):
     def get_2D_numpy_from_sitk_image(self, case_path_or_sitk_volume, plane=None):
         """
         Take a 3D sitk volume and get a numpy array in "anatomical" shape.
-        If the volume is 2D, the numpy array will have only 2 dimensions and the plane will be automatically deducted.
+        If the volume is 2D, the numpy array will have only 2 dimensions and the plane will be automatically deduced.
         Otherwise, the volume will have 3 dimensions but the "anatomical" view in IJK will be specified by
         the 'plane' parameter.
         Args:
-            sitk_volume: simpleITK volume
+            case_path_or_sitk_volume: simpleITK image or path to a file
             plane: anatomical plane (declared in CIP ChestConventions)
+            new_size: 2-tuple with the width and height of the returned images
 
         Returns:
             2D/3D numpy array in a "natural anatomic" view.
@@ -52,7 +50,6 @@ class AnatomicStructuresManager(object):
         elif plane == Plane.CORONAL:
             arr = np.rot90(arr, axes=(0, 2))
         elif plane == Plane.AXIAL:
-            # AXIAL
             arr = np.flipud(np.rot90(arr, axes=(0, 1)))
         else:
             raise Exception("Wrong plane: {}".format(plane))
@@ -62,6 +59,51 @@ class AnatomicStructuresManager(object):
             arr = arr.squeeze()
 
         return arr
+
+    def get_stacked_slices_from_3D_volume(self, case_path_or_sitk_volume, plane, new_size=None):
+        """
+        Read a volume, and perform the required operations to get a 3D array in "anatomical view" where the FIRST
+        dimension contains the slices.
+        Optionally, width and height of each slice can be specified
+        Args:
+            case_path_or_sit
+            k_volume: case_path_or_sitk_volume: simpleITK image or path to a file
+            plane: Plane.AXIAL, Plane.CORONAL or Plane.SAGITTAL
+            new_size: width and height of each one of the 2-D images (optional)
+
+        Returns:
+            3D numpy array. First dimension would contain the slices
+        """
+        reader = ImageReaderWriter()
+
+        if isinstance(case_path_or_sitk_volume, sitk.Image):
+            sitk_volume = case_path_or_sitk_volume
+        else:
+            sitk_volume = reader.read(case_path_or_sitk_volume)
+        arr = reader.sitkImage_to_numpy(sitk_volume)
+
+        # Do the transformations to see the array in anatomical view
+        if plane == Plane.SAGITTAL:
+            # Perform operations
+            arr = np.rot90(arr, axes=(1, 2))
+        elif plane == Plane.CORONAL:
+            # Move the slices to the last dimension
+            arr = np.transpose(arr, (1, 0, 2))
+            # Perform operations
+            arr = np.rot90(arr, k=1, axes=(1, 2))
+        elif plane == Plane.AXIAL:
+            # Move the slices to the first dimension
+            arr = np.transpose(arr, (2, 0, 1))
+            # Perform operations
+            #arr = np.flip(np.rot90(arr, k=3, axes=(1, 2)), axis=2)
+        else:
+            raise Exception("Wrong plane: {}".format(plane))
+        if new_size is not None:
+            # Resize (the first dimension remains intact)
+            factors = [1.0, float(new_size[1]) / arr.shape[2], float(new_size[0]) / arr.shape[1]]
+            arr = scipy_interpolation.zoom(arr, factors)
+        return arr
+
 
     def lps_to_xywh(self, lps_coords, size, plane, lps_transformation_matrix):
         """
@@ -75,8 +117,7 @@ class AnatomicStructuresManager(object):
         Returns:
             list with X, Y, W, H coordinates in anatomic view
         """
-        # First convert LPS to IJK, then call ijk_to_xywh
-        raise NotImplementedError()
+        raise NotImplementedError("Suggested: First convert LPS to IJK, then call ijk_to_xywh")
 
     def ijk_to_xywh(self, coords1, coords2, vol_size):
         """
@@ -123,7 +164,8 @@ class AnatomicStructuresManager(object):
         return x, y, width, height
 
     def generate_all_slices(self, case_path, output_folder):
-        """ Generate and save all the slices of a 3D volume (SimpleITK image) in a particular plane
+        """ DEPRECATED.
+        Generate and save all the slices of a 3D volume (SimpleITK image) in a particular plane
         Args:
            case_path: path to the CT volume
            output_folder: output folder where the images will be stored. Every slice will have 3 digits.
