@@ -137,7 +137,7 @@ int main(int ac, char *av[])
   double       intensityTolerance  = 2.0;
   unsigned int numberOfPixelsTolerance = 0;
   unsigned int radiusTolerance = 0;
-  double       pointTolerance = 0.001;
+  double       pointTolerance = 0.005;
   double       diceTolerance = 1.0;
   //typedef std::pair<char *, char *> ComparePairType;
   //std::vector<ComparePairType> compareList;
@@ -513,7 +513,7 @@ int RegressionTestVTKPolyData( const char *testVtkFilename,
     }
   else
     {
-      std::cerr << "Test and baseline have different point values" <<std::endl;
+      std::cerr << "Test and baseline have different point values (vtk CompareAverageOfL2Norm failed)."  <<std::endl;
       return 1;
     }
   
