@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
   <title>LabelParticlesByChestRegionChestType</title>
     <description><![CDATA[This program is used to label particles datasets by chest region and chest type. The user must \
 specify the type of the input particles, but the chest region can either be determined by an input label map or be \
 specified at the command line.]]></description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/particles</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
 Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
 and does not necessarily represent the official views of the National Institutes of Health.

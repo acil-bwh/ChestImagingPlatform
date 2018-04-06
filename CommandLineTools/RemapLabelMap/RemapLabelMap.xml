@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>RemapLabelMap</title>
     <description><![CDATA[This program is used to map label map values \
-in an input image to designated values in the output image.]]></description>
+in an input volume to designated values in the output volume.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
 Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
 and does not necessarily represent the official views of the National Institutes of Health.

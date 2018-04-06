@@ -3,9 +3,10 @@
   <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>TransferRegionAndTypeIndicesToFromPoints</title>
   <description><![CDATA[This program converts region and type indices files to region and type \
-points files and vice versa.]]>
+points files and vice-versa.]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

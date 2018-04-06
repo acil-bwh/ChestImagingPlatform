@@ -7,8 +7,9 @@
   label maps, and a transformation file, and appends the values of the similarity metric to an \
   existing xml file if one is provided.]]></description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/quantification</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
         Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
         and does not necessarily represent the official views of the National Institutes of Health.

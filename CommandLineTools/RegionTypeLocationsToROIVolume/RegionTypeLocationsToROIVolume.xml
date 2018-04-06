@@ -10,6 +10,7 @@ ROIs will have values corresponding to the chest-region chest-type values. If th
 be a segmentation, the ROIs will be assigned unique numbers at random.]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

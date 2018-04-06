@@ -4,9 +4,9 @@
   <title>ResampleLabelMap</title>
   <description><![CDATA[This program rescales (either upsamples or downsamples) a label map by a specified amount]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
   Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
   and does not necessarily represent the official views of the National Institutes of Health.

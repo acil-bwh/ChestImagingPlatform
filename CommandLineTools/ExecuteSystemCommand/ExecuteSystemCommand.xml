@@ -4,7 +4,7 @@
   <title>ExecuteSystemCommand</title>
     <description><![CDATA[This program just executes a system command. The purpose is to run backgraound operations from Python modules or another sources]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

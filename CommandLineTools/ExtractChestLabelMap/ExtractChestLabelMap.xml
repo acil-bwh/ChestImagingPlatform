@@ -18,7 +18,8 @@ in the output. If the user additionally requests the Airway, LeftLung \
 pair, then the entire voxel will be preserved.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
 Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
 and does not necessarily represent the official views of the National Institutes of Health.</acknowledgements>

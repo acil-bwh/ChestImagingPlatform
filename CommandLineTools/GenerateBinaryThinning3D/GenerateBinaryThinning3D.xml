@@ -5,6 +5,7 @@
     <description><![CDATA[This program generates a skeleton from a binary mask]]>
     </description>
     <version>0.0.1</version>
+    <documentation-url>https://chestimagingplatform.org/segmentation</documentation-url>
     <license>Slicer</license>
     <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

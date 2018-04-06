@@ -6,12 +6,13 @@
   vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \
   topology on the particles points. The output polydata is equivalent to the input polydata \
   but with polylines defined indicating the edges between particle points found by the min \
-  spanning tree algorithm. The connected dataset is rendered and then optionally written to \
+  spanning tree algorithm. The connected dataset is written to \
   file.]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/particles</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.

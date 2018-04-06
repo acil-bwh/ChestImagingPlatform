@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Processing</category>
-  <title>GenerateNLMFilteredImage</title>
+  <category>Chest Imaging Platform.Toolkit.Registration</category>
+  <title>ComputeStrainFromDeformationField</title>
   <description><![CDATA[ This module computes a the strain tensor eigenvalues from a deformation field.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/registration-0</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

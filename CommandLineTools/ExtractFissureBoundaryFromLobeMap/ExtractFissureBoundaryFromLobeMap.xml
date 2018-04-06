@@ -4,7 +4,7 @@
   <title>Extract Fissures from Lobes</title>
   <description><![CDATA[Label fissures from a lobe segmentantion following the CIP Chest conventions. The output labelmap contains the input labelmap with the fissure information encoded as a chest type.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
