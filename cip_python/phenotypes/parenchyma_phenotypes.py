@@ -628,7 +628,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     image_io = ImageReaderWriter()
-    lm, lm_header = image_io.read_in_numpy(options.in_lm)
+    lm, lm_header = image_io.read_in_numpy(args.in_lm)
 
     ct, ct_header = image_io.read_in_numpy(args.in_ct)
 
