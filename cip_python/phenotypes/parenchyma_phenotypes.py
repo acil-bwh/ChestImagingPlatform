@@ -601,18 +601,19 @@ if __name__ == "__main__":
 
     parser.add_argument('--cid', '-cid', required=True, help='Case id')
 
-    parser.add_argument('-r', dest='chest_regions', nargs='+',
+    # Keep these arguments as strings for compatibility purposes
+    parser.add_argument('-r', dest='chest_regions',
                       help='Chest regions. Should be specified as a \
                       common-separated list of string values indicating the \
                       desired regions over which to compute the phenotypes. \
                       E.g. LeftLung,RightLung would be a valid input.')
 
-    parser.add_argument('-t', dest='chest_types', nargs='+',
-                      help='Chest types. Should be specified as a \
+    parser.add_argument('-t', dest='chest_types',
+                      help='Chest types. Scd phhould be specified as a \
                       common-separated list of string values indicating the \
                       desired types over which to compute the phenotypes. \
                       E.g.: Vessel,NormalParenchyma would be a valid input.')
-    parser.add_argument('-p', dest='pairs', nargs='+',
+    parser.add_argument('-p', dest='pairs',
                       help='Chest region-type pairs. Should be \
                       specified as a common-separated list of string values \
                       indicating what region-type pairs over which to compute \
@@ -628,6 +629,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     image_io = ImageReaderWriter()
+
+    regions = None
+    if args.chest_regions is not None:
+        regions = args.chest_regions.split(',')
+    types = None
+    if args.chest_types is not None:
+        types = args.chest_types.split(',')
+
     lm, lm_header = image_io.read_in_numpy(args.in_lm)
 
     ct, ct_header = image_io.read_in_numpy(args.in_ct)
@@ -636,14 +645,13 @@ if __name__ == "__main__":
 
     pairs = None
     if args.pairs is not None:
-        tmp = args.pairs
+        tmp = args.pairs.split(',')
         assert len(tmp) % 2 == 0, 'Specified pairs not understood'
         pairs = []
-        for i in xrange(0, len(tmp)/2):
+        for i in range(0, len(tmp)/2):
             pairs.append([tmp[2*i], tmp[2*i+1]])
 
-    paren_pheno = ParenchymaPhenotypes(chest_regions=args.chest_regions,
-            chest_types=args.chest_types, pairs=pairs)
+    paren_pheno = ParenchymaPhenotypes(chest_regions=regions, chest_types=types, pairs=pairs)
 
     df = paren_pheno.execute(lm, args.cid, spacing, ct=ct)
 
