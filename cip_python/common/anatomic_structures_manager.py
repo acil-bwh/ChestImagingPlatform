@@ -95,7 +95,7 @@ class AnatomicStructuresManager(object):
             # Move the slices to the first dimension
             arr = np.transpose(arr, (2, 0, 1))
             # Perform operations
-            #arr = np.flip(np.rot90(arr, k=3, axes=(1, 2)), axis=2)
+            arr = np.flip(np.rot90(arr, k=3, axes=(1, 2)), axis=2)
         else:
             raise Exception("Wrong plane: {}".format(plane))
         if new_size is not None:
@@ -119,17 +119,18 @@ class AnatomicStructuresManager(object):
         """
         raise NotImplementedError("Suggested: First convert LPS to IJK, then call ijk_to_xywh")
 
-    def ijk_to_xywh(self, coords1, coords2, vol_size):
+    def ijk_to_xywh(self, coords1, coords2, vol_size, normalize=False):
         """
         Given coordinates and region size in IJK THAT FOLLOW ITK CONVENTION, transform the coordinates to
         x,y,w,h that follow anatomical convention (the way an user would see the 2D images).
+        If normalize==True, all the coordinates will be normalized to a 0-1 range
         Args:
             coords1: first coords in IJK
             coords2: second coords
             vol_size: tuple with volume size
 
         Returns:
-            tuple with X,Y,W,H coordinates in an anatomical format
+            tuple with X,Y,W,H coordinates in an anatomical format, where X and Y represent the top-left coordinates
 
         """
         if coords1[0] == coords2[0]:
@@ -161,6 +162,11 @@ class AnatomicStructuresManager(object):
         else:
             raise Exception("The structure is not 2D")
 
+        if normalize:
+            x /= float(vol_size[xp])
+            width /= float(vol_size[xp])
+            y /= float(vol_size[yp])
+            height /= float(vol_size[yp])
         return x, y, width, height
 
     def generate_all_slices(self, case_path, output_folder):
