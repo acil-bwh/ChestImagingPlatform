@@ -98,10 +98,12 @@ class AnatomicStructuresManager(object):
             arr = np.flip(np.rot90(arr, k=3, axes=(1, 2)), axis=2)
         else:
             raise Exception("Wrong plane: {}".format(plane))
+
         if new_size is not None:
             # Resize (the first dimension remains intact)
-            factors = [1.0, float(new_size[1]) / arr.shape[2], float(new_size[0]) / arr.shape[1]]
+            factors = [1.0, float(new_size[0]) / arr.shape[1], float(new_size[1]) / arr.shape[2]]
             arr = scipy_interpolation.zoom(arr, factors)
+
         return arr
 
 
@@ -200,7 +202,6 @@ class AnatomicStructuresManager(object):
             os.makedirs(p)
         for i in range(sitk_volume.GetSize()[2]):
             sitk.WriteImage(sitk_volume[:, :, i:i + 1], "{}/{:03}.nrrd".format(p, i))
-
 
     def get_cropped_structure(self, case_path_or_sitk_volume, xml_file_path, region, plane,
                               extra_margin=None, padding_constant_value=0):
