@@ -481,10 +481,10 @@ class ChestParticles:
     def preprocessing(self):
         if self._down_sample_rate > 1:
             downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
-            self.down_sample(self._in_file_name,downsampled_vol,'cubic:0,0.5',self.down_sample_rate)
+            self.down_sample(self._in_file_name,downsampled_vol,'cubic:0,0.5',self._down_sample_rate)
             if self._use_mask == True:
                 downsampled_mask = os.path.join(self._tmp_dir, "mask-down.nrrd")
-                self.down_sample(self._mask_file_name,downsampled_mask,'cheap',self.down_sample_rate)
+                self.down_sample(self._mask_file_name,downsampled_mask,'cheap',self._down_sample_rate)
                 self._sp_mask_file_name = downsampled_mask
         else:
             downsampled_vol = self._in_file_name

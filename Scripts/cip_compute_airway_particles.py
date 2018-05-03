@@ -17,7 +17,7 @@ class AirwayParticlesPipeline:
 
   """
   def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',airway_mask_name=None,\
-                lth=100,sth=80,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True,ct_kernel=None,airway_seed=None,wall_peeling=True):
+                lth=100,sth=80,voxel_size=0,min_scale=0.7,max_scale=4,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True,ct_kernel=None,airway_seed=None,wall_peeling=True,down_sample_rate_particles=1):
 
     assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy' or init_method == 'AirwaySegmentation' or init_method == 'AirwayMask'
 
@@ -49,6 +49,7 @@ class AirwayParticlesPipeline:
     self._ct_kernel=ct_kernel
     self._airway_seed=airway_seed
     self._wall_peeling=wall_peeling
+    self._down_sample_rate_particles=down_sample_rate_particles
 
     self._case_id = str.split(os.path.basename(ct_file_name),'.')[0]
 
@@ -84,8 +85,8 @@ class AirwayParticlesPipeline:
     if self._justparticles == False:
       
       #Crop volume if flag is set
-      ct_file_name_crop = os.path.join(self._tmp_dir,self._case_id + "_crop.nhdr")
-      pl_file_name_crop = os.path.join(self._tmp_dir,self._case_id + "_croppartialLungLabelMap.nhdr")
+      ct_file_name_crop = os.path.join(self._tmp_dir,self._case_id + "_crop.nrrd")
+      pl_file_name_crop = os.path.join(self._tmp_dir,self._case_id + "_croppartialLungLabelMap.nrrd")
       if crop_flag == True:
         if self._rate == 1:
           ratestr = "="
@@ -104,8 +105,8 @@ class AirwayParticlesPipeline:
         pl_file_name = pl_file_name_crop
 
       #Do resampling to isotropic voxel size to compute accurate scale measurements
-      ct_file_name_resample = os.path.join(self._tmp_dir,self._case_id + "_resample.nhdr")
-      pl_file_name_resample = os.path.join(self._tmp_dir,self._case_id + "_resamplepartialLungLabelMap.nhdr")
+      ct_file_name_resample = os.path.join(self._tmp_dir,self._case_id + "_resample.nrrd")
+      pl_file_name_resample = os.path.join(self._tmp_dir,self._case_id + "_resamplepartialLungLabelMap.nrrd")
 
       if self._voxel_size>0:
         tmpCommand = "unu resample -k %(kernel)s -s x%(f1)f x%(f2)f x%(f3)f -i %(in)s -o %(out)s"
@@ -127,10 +128,10 @@ class AirwayParticlesPipeline:
             os.mkdir(tmpDir)
 
         # Define FileNames that will be used
-        pl_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + "_partialLungLabelMap.nhdr")
-        ct_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + ".nhdr")
-        featureMapFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_featureMap.nhdr")
-        maskFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_mask.nhdr")
+        pl_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + "_partialLungLabelMap.nrrd")
+        ct_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + ".nrrd")
+        featureMapFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_featureMap.nrrd")
+        maskFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_mask.nrrd")
         particlesFileNameRegion = os.path.join(self._output_prefix+ "_" + rtag + "AirwayParticles.vtk")
 
         if self._justparticles == False:
@@ -155,17 +156,17 @@ class AirwayParticlesPipeline:
             subprocess.call( tmpCommand, shell=True )
 
             if self._wall_peeling == True:
-                #tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s -s 2"
-                #tmpCommand = tmpCommand % {'lm-in':self._pl_file_nameRegion,'distance-map':self._pl_file_nameRegion}
-                #tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
-                #print tmpCommand
-                #subprocess.call( tmpCommand, shell=True )
-
-                tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
+                tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s"
                 tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
-                tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
-                #print tmpCommand
+                tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
+                print tmpCommand
                 subprocess.call( tmpCommand, shell=True )
+
+                # tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
+                # tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
+                # tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
+                # #print tmpCommand
+                # subprocess.call( tmpCommand, shell=True )
 
                 tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
                 tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
@@ -204,7 +205,7 @@ class AirwayParticlesPipeline:
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'AirwaySegmentation':
                 #Segment airways from original image 
-                airwaysFileName = os.path.join(tmpDir,self._case_id + "_" + rtag + "_airways.nhdr")
+                airwaysFileName = os.path.join(tmpDir,self._case_id + "_" + rtag + "_airways.nrrd")
                 tmpCommand ="SegmentLungAirways --i %(in)s --o %(out)s --k %(kernel)s --s %(seed)s --r WholeAirway"
                 tmpCommand = tmpCommand % {'in':ct_file_name,'out':airwaysFileName,'kernel':self._ct_kernel,'seed':self._airway_seed}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
@@ -243,7 +244,7 @@ class AirwayParticlesPipeline:
 
         # Airway Particles For the Region
         if self._multires==False:
-            particlesGenerator = AirwayParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth,min_intensity=-1100,max_intensity=-500)
+            particlesGenerator = AirwayParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth,min_intensity=-1100,max_intensity=-500,max_scale=self._max_scale,down_sample_rate=self._down_sample_rate_particles)
             particlesGenerator._clean_tmp_dir=self._clean_cache
             particlesGenerator._interations_phase3 = 70
             particlesGenerator._irad_phase3 = 0.9
@@ -253,7 +254,7 @@ class AirwayParticlesPipeline:
                 particlesGenerator._permissive = True
             particlesGenerator.execute()
         else:
-            particlesGenerator = MultiResAirwayParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
+            particlesGenerator = MultiResAirwayParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth,max_scale=self._max_scale)
             particlesGenerator._clean_tmp_dir=self._clean_cache
             particlesGenerator.execute()
 
@@ -270,7 +271,8 @@ if __name__ == "__main__":
   parser.add_argument("--seedTh",dest="sth",type=float,default=80)
   parser.add_argument("-s", dest="voxel_size",type=float,default=0)
   parser.add_argument("--crop",dest="crop",default="0")
-  parser.add_argument("--rate",dest="rate",type=float,default=1)
+  parser.add_argument("--rate",dest="rate",type=float,default=1,help='Downsampling of original CT volume along z-direction')
+  parser.add_argument("--downsamplerate",dest="down_sample_rate",type=float,default=1,help='Downsampling to perform during particles extraction. Recommended if structures are large')
   parser.add_argument("--minscale",dest="min_scale",type=float,default=0.7)
   parser.add_argument("--maxscale",dest="max_scale",type=float,default=4)
   parser.add_argument("--init",dest="init_method",default="Frangi")
@@ -306,6 +308,6 @@ if __name__ == "__main__":
     wall_peeling = False
 
   ap=AirwayParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,op.airway_mask_name,\
-                             op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache,op.ct_kernel,op.airway_seed,wall_peeling)
+                             op.lth,op.sth,op.voxel_size,op.min_scale,op.max_scale,crop,op.rate,op.multires,op.justparticles,op.clean_cache,op.ct_kernel,op.airway_seed,wall_peeling,op.down_sample_rate)
 
   ap.execute()
