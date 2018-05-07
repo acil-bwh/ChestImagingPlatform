@@ -1,6 +1,8 @@
 import os.path as path
 from collections import OrderedDict
 import xml.etree.ElementTree as et
+from future.utils import iteritems, itervalues
+
 from cip_python.common.chest_conventions_static import *
 
 class ChestConventionsInitializer(object):
@@ -59,13 +61,13 @@ class ChestConventionsInitializer(object):
             chest_regions_enum = ChestRegion.elems_as_dictionary()
             for xml_region in parent.findall("ChestRegion"):
                 elem_id = int(xml_region.find("Id").text)
-                if not chest_regions_enum.has_key(elem_id):
+                if elem_id not in chest_regions_enum:
                     raise AttributeError("The key {0} in ChestRegions does not belong to the enumeration"
                                          .format(elem_id))
                 ChestConventionsInitializer.__chest_regions__[elem_id] = (
                     xml_region.find("Code").text,
                     xml_region.find("Name").text,
-                    map(lambda s: float(s), xml_region.find("Color").text.split(";"))
+                    list(map(lambda s: float(s), xml_region.find("Color").text.split(";")))
                 )
 
         return ChestConventionsInitializer.__chest_regions__
@@ -95,18 +97,17 @@ class ChestConventionsInitializer(object):
             chest_types_enum = ChestType.elems_as_dictionary()
             for xml_type in parent.findall("ChestType"):
                 elem_id = int(xml_type.find("Id").text)
-                if not chest_types_enum.has_key(elem_id):
+                if elem_id not in chest_types_enum:
                     raise AttributeError("The key {0} in ChestTypes does not belong to the enumeration"
                                          .format(elem_id))
                 try:
                     ChestConventionsInitializer.__chest_types__[elem_id] = (
                         xml_type.find("Code").text,
                         xml_type.find("Name").text,
-                        map(lambda s: float(s), xml_type.find("Color").text.split(";"))
-
+                        list(map(lambda s: float(s), xml_type.find("Color").text.split(";")))
                     )
                 except Exception as ex:
-                    print "Error in {}".format(elem_id)
+                    print ("Error in {}".format(elem_id))
                     raise ex
 
         return ChestConventionsInitializer.__chest_types__
@@ -120,7 +121,7 @@ class ChestConventionsInitializer(object):
             image_features_enum = ImageFeature.elems_as_dictionary()
             for xml_type in parent.findall("ImageFeature"):
                 elem_id = int(xml_type.find("Id").text)
-                if not image_features_enum.has_key(elem_id):
+                if elem_id not in image_features_enum:
                     raise AttributeError("The key {0} in ImageFeatures does not belong to the enumeration"
                                          .format(elem_id))
                 ChestConventionsInitializer.__image_features__[elem_id] = (
@@ -138,7 +139,7 @@ class ChestConventionsInitializer(object):
             enum = Plane.elems_as_dictionary()
             for xml_type in parent.findall("Plane"):
                 elem_id = int(xml_type.find("Id").text)
-                if not enum.has_key(elem_id):
+                if elem_id not in enum:
                     raise AttributeError("The key {0} in Planes does not belong to the enumeration"
                                          .format(elem_id))
                 ChestConventionsInitializer.__planes__[elem_id] = (
@@ -165,8 +166,8 @@ class ChestConventionsInitializer(object):
                 root = ChestConventionsInitializer.xml_root_conventions()
                 ChestConventionsInitializer.__body_composition_phenotype_names__ = list()
                 parent = root.find("BodyCompositionPhenotypeNames")
-                map(lambda n: ChestConventionsInitializer.__body_composition_phenotype_names__.append(n.text),
-                    parent.findall("Name"))
+                list(map(lambda n: ChestConventionsInitializer.__body_composition_phenotype_names__.append(n.text),
+                    parent.findall("Name")))
         return ChestConventionsInitializer.__body_composition_phenotype_names__
 
     @staticmethod
@@ -175,8 +176,8 @@ class ChestConventionsInitializer(object):
             root = ChestConventionsInitializer.xml_root_conventions()
             ChestConventionsInitializer.__parenchyma_phenotype_names__ = list()
             parent = root.find("ParenchymaPhenotypeNames")
-            map(lambda n: ChestConventionsInitializer.__parenchyma_phenotype_names__.append(n.text),
-                parent.findall("Name"))
+            list(map(lambda n: ChestConventionsInitializer.__parenchyma_phenotype_names__.append(n.text),
+                parent.findall("Name")))
         return ChestConventionsInitializer.__parenchyma_phenotype_names__
 
     @staticmethod
@@ -185,8 +186,8 @@ class ChestConventionsInitializer(object):
             root = ChestConventionsInitializer.xml_root_conventions()
             ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__ = list()
             parent = root.find("PulmonaryVasculaturePhenotypeNames")
-            map(lambda n: ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__.append(n.text),
-                parent.findall("Name"))
+            list(map(lambda n: ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__.append(n.text),
+                parent.findall("Name")))
         return ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__
 
     @staticmethod
@@ -195,8 +196,8 @@ class ChestConventionsInitializer(object):
             root = ChestConventionsInitializer.xml_root_conventions()
             ChestConventionsInitializer.__airway_phenotype_names__ = list()
             parent = root.find("AirwayPhenotypeNames")
-            map(lambda n: ChestConventionsInitializer.__airway_phenotype_names__.append(n.text),
-                parent.findall("Name"))
+            list(map(lambda n: ChestConventionsInitializer.__airway_phenotype_names__.append(n.text),
+                parent.findall("Name")))
         return ChestConventionsInitializer.__airway_phenotype_names__
 
     @staticmethod
@@ -205,8 +206,8 @@ class ChestConventionsInitializer(object):
             root = ChestConventionsInitializer.xml_root_conventions()
             ChestConventionsInitializer.__biomechanical_phenotype_names__ = list()
             parent = root.find("BiomechanicalPhenotypeNames")
-            map(lambda n: ChestConventionsInitializer.__biomechanical_phenotype_names__.append(n.text),
-                parent.findall("Name"))
+            list(map(lambda n: ChestConventionsInitializer.__biomechanical_phenotype_names__.append(n.text),
+                parent.findall("Name")))
         return ChestConventionsInitializer.__biomechanical_phenotype_names__
 
 
@@ -298,7 +299,7 @@ class ChestConventions(object):
         :param color: tuple/array of 3 components
         :return: int
         """
-        for key, value in ChestConventions.ChestTypesCollection.iteritems():
+        for key, value in iteritems(ChestConventions.ChestTypesCollection):
             if value[1] == color[0] and value[2] == color[1] and value[3] == color[2]:
                 return key
         # Not found
@@ -314,7 +315,7 @@ class ChestConventions(object):
         :param color: tuple/array of 3 components
         :return: int
         """
-        for key, value in ChestConventions.ChestRegionsCollection.iteritems():
+        for key, value in iteritems(ChestConventions.ChestRegionsCollection):
             if value[1] == color[0] and value[2] == color[1] and value[3] == color[2]:
                 return key
         # Not found
@@ -341,7 +342,7 @@ class ChestConventions(object):
         :param whichType: int
         :return: string code (descriptive, ex: WholeLung")
         """
-        if not ChestConventions.ChestTypesCollection.has_key(whichType):
+        if whichType not in ChestConventions.ChestTypesCollection:
             #raise IndexError("Key {0} is not a valid ChestType".format(whichType))
             # C++ compatibility:
             return ChestConventions.GetChestTypeName(ChestType.UNDEFINEDTYPE)
@@ -360,7 +361,7 @@ class ChestConventions(object):
         if type(whichType) == str:
             whichType = ChestConventions.GetChestTypeValueFromName(whichType)
 
-        if not ChestConventions.ChestTypesCollection.has_key(whichType):
+        if whichType not in ChestConventions.ChestTypesCollection:
             raise IndexError("Key {0} is not a valid ChestType".format(whichType))
         col = ChestConventions.ChestTypesCollection[whichType][2]
         if color is not None:
@@ -390,7 +391,7 @@ class ChestConventions(object):
         -------
         3-Tuple with the color
         """
-        if not ChestConventions.ChestRegionsCollection.has_key(whichRegion):
+        if whichRegion not in ChestConventions.ChestRegionsCollection:
             raise IndexError("Key {0} is not a valid ChestRegion".format(whichRegion))
         col = ChestConventions.ChestRegionsCollection[whichRegion][2]
         if color is not None:
@@ -416,7 +417,7 @@ class ChestConventions(object):
         3-Tuple with the color
         """
         # Check first if the combination is preconfigured
-        if ChestConventions.PreconfiguredColors.has_key((whichRegion, whichType)):
+        if (whichRegion, whichType) not in ChestConventions.PreconfiguredColors:
             col = ChestConventions.PreconfiguredColors[(whichRegion, whichType)]
         elif whichRegion == ChestRegion.UNDEFINEDREGION:
             col = ChestConventions.GetChestTypeColor(whichType)
@@ -446,7 +447,7 @@ class ChestConventions(object):
         :param whichRegion: int
         :return:
         """
-        if not ChestConventions.ChestRegionsCollection.has_key(whichRegion):
+        if whichRegion not in ChestConventions.ChestRegionsCollection:
             #raise IndexError("Key {0} is not a valid ChestRegion".format(whichRegion))
             # C++ compatibility:
             return ChestConventions.GetChestRegionName(ChestRegion.UNDEFINEDREGION)
@@ -491,7 +492,7 @@ class ChestConventions(object):
         :param regionString: string (case-insensitve, but compare with string descriptive names (ex: WholeLung))
         :return: int
         """
-        for key,value in ChestConventions.ChestRegionsCollection.iteritems():
+        for key,value in iteritems(ChestConventions.ChestRegionsCollection):
             if value[1].lower() == regionString.lower():
                 return key
         raise KeyError("Region not found: " + regionString)
@@ -504,7 +505,7 @@ class ChestConventions(object):
         :param regionString: string (case-insensitve, but compare with string descriptive names (ex: WholeLung))
         :return: int
         """
-        for key, value in ChestConventions.ChestTypesCollection.iteritems():
+        for key, value in iteritems(ChestConventions.ChestTypesCollection):
             if value[1].lower() == typeString.lower():
                 return key
         raise KeyError("Type not found: " + typeString)
@@ -517,7 +518,7 @@ class ChestConventions(object):
         :param planeString: string (case-insensitve, but compare with string descriptive names (ex: WholeLung))
         :return: int
         """
-        for key, value in ChestConventions.PlanesCollection.iteritems():
+        for key, value in iteritems(ChestConventions.PlanesCollection):
             if value[1].lower() == planeString.lower():
                 return key
         raise KeyError("Plane not found: {}".format(planeString))
@@ -544,7 +545,7 @@ class ChestConventions(object):
         :param whichFeature: int
         :return: descriptive string
         """
-        if not ChestConventions.ImageFeaturesCollection.has_key(whichFeature):
+        if whichFeature not in ChestConventions.ImageFeaturesCollection:
             #raise IndexError("Key {0} is not a valid Image Feature".format(whichFeature))
             # C++ compatibility:
             return ChestConventions.GetImageFeatureName(ImageFeature.UNDEFINEDFEATURE)
@@ -557,7 +558,7 @@ class ChestConventions(object):
         :param whichPlane: int
         :return: descriptive string
         """
-        if not ChestConventions.PlanesCollection.has_key(whichPlane):
+        if whichPlane not in ChestConventions.PlanesCollection:
             raise IndexError("Key '{0}' is not a valid Plane".format(whichPlane))
             # C++ compatibility:
             # return ChestConventions.GetImageFeatureName(ImageFeature.UNDEFINEDFEATURE)
@@ -654,7 +655,7 @@ class ChestConventions(object):
         """
         if type(chestType) == str:
             # Loop over the exact Chest Types description names (C++ compatibility)
-            for t in ChestConventions.ChestTypesCollection.itervalues():
+            for t in itervalues(ChestConventions.ChestTypesCollection):
                 if chestType == t[1]:
                     return True
             return False
@@ -673,7 +674,7 @@ class ChestConventions(object):
         """
         if type(chestRegion) == str:
             # Loop over the exact Chest Region description names (C++ compatibility)
-            for r in ChestConventions.ChestRegionsCollection.itervalues():
+            for r in itervalues(ChestConventions.ChestRegionsCollection):
                 if chestRegion == r[1]:
                     return True
             return False
@@ -706,7 +707,7 @@ class ChestConventions(object):
 #     for elem in c_enum:
 #         name = elem['name']
 #         int_value = elem['value']
-#         if not p_enum.has_key(int_value):
+#         if int_value not in p_enum:
 #             raise Exception("Error in {0}: Key {1} was found in C++ object but not in Python".format(enum_name, int_value))
 #         if p_enum[int_value] != name:
 #             raise Exception("Error in {0}: {0}[{1}] (C++) = {2}, but {0}[{1}] (Python) = {3}".format(

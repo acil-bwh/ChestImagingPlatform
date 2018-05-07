@@ -236,8 +236,8 @@ if __name__ == "__main__":
                         help="Path to a caselist. The results will be saved relatively for each case")
 
     args = parser.parse_args()
-    filtered_chest_regions = map(int, args.filtered_chest_regions.split(",")) if args.filtered_chest_regions else None
-    filtered_chest_types = map(int, args.filtered_chest_types.split(",")) if args.filtered_chest_types else None
+    filtered_chest_regions = list(map(int, args.filtered_chest_regions.split(","))) if args.filtered_chest_regions else None
+    filtered_chest_types = list(map(int, args.filtered_chest_types.split(","))) if args.filtered_chest_types else None
 
     if args.caselist:
         # Open the caselist file

@@ -5,8 +5,8 @@ to generate the static chest conventions
 import os
 import os.path as osp
 import xml.etree.ElementTree as et
-
 import argparse
+from future.utils import iteritems
 
 xml_conventions_default = os.path.join(os.path.dirname(__file__), "..", "..", "Resources", "ChestConventions.xml")
 
@@ -155,8 +155,8 @@ if op.out_python_bin:
 def generate_colortable_file():
     import cip_python.common as common
     output = ""
-    for rkey, rvalue in common.ChestConventions.ChestRegionsCollection.iteritems():
-        for tkey, tvalue in common.ChestConventions.ChestTypesCollection.iteritems():
+    for rkey, rvalue in iteritems(common.ChestConventions.ChestRegionsCollection):
+        for tkey, tvalue in iteritems(common.ChestConventions.ChestTypesCollection):
             code = common.ChestConventions.GetValueFromChestRegionAndType(rkey, tkey)
             description = "{}-{}".format(rvalue[1], tvalue[1])
             color = common.ChestConventions.GetColorFromChestRegionChestType(rkey, tkey)

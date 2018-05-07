@@ -1,1 +1,3 @@
-from image_reader_writer import *
+from __future__ import absolute_import  # Prevent implicit relative imports (not allowed in Python3)
+
+from .image_reader_writer import *
