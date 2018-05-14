@@ -111,7 +111,7 @@ class VasculaturePhenotypes(Phenotypes):
         """
         return self.cid_
   
-    def execute(self,vessel,cid,chest_regions=None,chest_types=None,pairs=None):
+    def execute(self,vessel,cid,chest_regions=None,chest_types=None,pairs=None,spacing=np.array([0.625,0.625,0.625])):
         """Compute the phenotypes for the specified structures for the
           specified threshold values.
           
@@ -153,6 +153,10 @@ class VasculaturePhenotypes(Phenotypes):
           then the complete set of entities found in the label map will be
           used.
           
+          spacing: array, shape (3, ), optional
+          Spacing of the volume that generated the particle files. This value is used 
+          if the VTK does not contain a FieldData array with spacing information.
+          
           Returns
           -------
           df : pandas dataframe
@@ -191,8 +195,8 @@ class VasculaturePhenotypes(Phenotypes):
 
         #Get unique value of spacing as the norm 3D vector
         if vessel.GetFieldData().GetArray("spacing") == None:
-            print "Spacing information missing in particle vtk file. Setting spacing to 0.625 mm"
-            spacing=np.array([0.625,0.625,0.625])
+            print "Spacing information missing in particle vtk file. Setting spacing to (%f,%f,%f)" % (spacing[0],spacing[1],spacing[2])
+            spacing=spacing
         else:
             spacing = vtk_to_numpy(vessel.GetFieldData().GetArray("spacing"))
             print "Using spacing in particle file: (%f,%f,%f)" % (spacing[0,0],spacing[0,1],spacing[0,2])
@@ -428,7 +432,11 @@ if __name__ == "__main__":
     parser.add_option('--radius_name',
                       help='Array name with the radius information (optional).\
                       If this is not provided the radius will be computed from the scale information.',
-                      dest='radius_array_name',metavar='<string>',default=None)
+                      dest='radius_array_name',metavar='<float>',default=None)
+    parser.add_option('-s',
+                        help='Spacing of the volume that was used to generate the particles (optional).\
+                        This informatino is used if the spacing field of the particle\'s FieldData is not present.',
+                        dest='spacing',metavar='<string>',default=None)
     parser.add_option('--out_plot',help='Output png file with plots of the blood volume profiles (ex: cid_vascularePhenotypePlot.png)',
                                         dest='out_plot',metavar='<string>',default=None)
 
@@ -459,9 +467,12 @@ if __name__ == "__main__":
     else:
         plot=True
 
+    if options.spacing is not None:
+        spacing=np.array([float(options.spacing),float(options.spacing),float(options.spacing)])
+
     vasculature_pheno=VasculaturePhenotypes(chest_regions=regions,chest_types=types,pairs=pairs,plot=plot)
     vasculature_pheno.rad_arrayname=options.radius_array_name
-    v_df,figure,profiles=vasculature_pheno.execute(vessel,options.cid)
+    v_df,figure,profiles=vasculature_pheno.execute(vessel,options.cid,spacing=spacing)
 
 
     if options.out_csv is not None:
