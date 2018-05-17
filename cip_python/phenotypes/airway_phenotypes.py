@@ -84,9 +84,11 @@ class AirwayPhenotypes(Phenotypes):
         self.deprecated_phenos_ = []
         
         self.methods_ = ['FWHM','ZC','PC']
+
+        self.dnn_ = True  #Two choices: EdgeDetection or DNN
         
-        self.pi_lowerlimit_=2.0
-        self.pi_upperlimit_=50.0
+        self.pi_lowerlimit_=7.5
+        self.pi_upperlimit_=25.0
         
         Phenotypes.__init__(self)    
 
@@ -278,98 +280,257 @@ class AirwayPhenotypes(Phenotypes):
             Names of the phenotype used to populate the dataframe
 
         """
-        num_points_total = np.sum(mask)
 
         if a_pd is not None:
             #Get arrays to do measurements
-            for mm in self.methods_:
-                #Check method is avail
-                arrEllipseName='airwaymetrics-%s-ellipse'%mm
-                arrMeanName='airwaymetrics-%s-mean'%mm
-                if a_pd.GetPointData().GetArray(arrEllipseName) == None or \
-                    a_pd.GetPointData().GetArray(arrMeanName) == None:
-                    continue
-        
-                ellip_metrics=vtk_to_numpy(a_pd.GetPointData().GetArray(arrEllipseName))
-                mean_metrics=vtk_to_numpy(a_pd.GetPointData().GetArray(arrMeanName))
+            if self.dnn_ == True:
+                self.add_pheno_group_dnn(a_pd,mask, keep_mask, chest_region,
+                        chest_type, phenos_to_compute)
+            else:
+                self.add_pheno_group_ellipse(a_pd,mask, keep_mask, chest_region,
+                        chest_type, phenos_to_compute)
 
-                #Select region/type requested based on mask
-                ellip_metrics=ellip_metrics[(mask & keep_mask),:]
-                mean_metrics=mean_metrics[(mask & keep_mask),:]
 
-                #Define additional points of exclusion based on internal metrics
-                metrics_mask=self.mask_from_metrics(mean_metrics,ellip_metrics)
+    def add_pheno_group_ellipse(self,a_pd, mask, keep_mask, chest_region,
+                        chest_type, phenos_to_compute):
+        """This function computes airway phenotypes using point data array corresponding
+           to traditional edge detection methods with ellipse fitting. The particle dataset relies
+            in two point data arrays: airwaymetrics-[method]-ellipse and airwaymetrics-[method]-mean.
 
-                #Refine pheno arrays with mask from metrics
-                ellip_metrics=ellip_metrics[metrics_mask,:]
-                mean_metrics=mean_metrics[metrics_mask,:]
-                mask_sum = np.sum((metrics_mask))
-                
-                if mask_sum==0:
-                    continue
-        
-                ai = ellip_metrics[:,1]
-                bi = ellip_metrics[:,0]
-                ao = ellip_metrics[:,4]
-                bo = ellip_metrics[:,3]
-                
-                #Setting up regressor for Pi10 and Pi15 metrics
-                sqrtwa = np.sqrt(np.pi *( ao * bo - ai * bi))
-                peri = self.ellipse_perimeter(ai,bi)
-                #limit pi for pi15
-                mask_peri = ((peri>=self.pi_lowerlimit_) & (peri<=self.pi_upperlimit_))
-                regr = skl.linear_model.LinearRegression()
-                peri=peri.reshape(-1,1)
-                regr.fit(peri[mask_peri], sqrtwa[mask_peri])
-                
-                for pheno_name in phenos_to_compute:
-                    assert pheno_name in self.pheno_names_, \
-                      "Invalid phenotype name " + pheno_name
-                    pheno_val = None
-                    if pheno_name == 'innerRadius':
-                        pheno_val = np.mean(np.sqrt(ai*bi))
-                    elif pheno_name == 'outerRadius':
-                        pheno_val = np.mean(np.sqrt(ao*bo))
-                    elif pheno_name == 'wallThickness':
-                        #Wall thickness from two concentric ellipses can be computed
-                        # wt = (ao*bo - ai*bi)/(sqrt(ao*bo)+sqrt(ai*bi))
-                        pheno_val = np.mean((ao*bo-ai*bi)/(np.sqrt(ai*bi)+np.sqrt(ao*bo)))
-                    elif pheno_name == 'innerPerimeter':
-                        pheno_val = np.mean(self.ellipse_perimeter(ai,bi))
-                    elif pheno_name == 'outerPerimeter':
-                        pheno_val = np.mean(self.ellipse_perimeter(ao,bo))
-                    elif pheno_name == 'innerArea':
-                        pheno_val = np.mean( np.pi * ai * bi)
-                    elif pheno_name == 'outerArea':
-                        pheno_val = np.mean( np.pi * ao * bo)
-                    elif pheno_name == 'wallArea':
-                        pheno_val = np.mean(np.pi *( ao * bo - ai * bi) )
-                    elif pheno_name == 'wallAreaPerc':
-                        pheno_val = np.mean(100.0*(ao * bo -  ai * bi)/(ao*bo))
-                    elif pheno_name == 'Pi10':
-                        pheno_val = regr.predict([[10]])
-                    elif pheno_name == 'Pi15':
-                        pheno_val = regr.predict([[15]])
-                    elif pheno_name == 'wallIntensity':
-                        pheno_val = np.mean(mean_metrics[:,3])
-                    elif pheno_name == 'peakWallIntensity':
-                        pheno_val = np.mean(mean_metrics[:,9])
-                    elif pheno_name == 'innerWallIntensity':
-                        pheno_val = np.mean(mean_metrics[:,10])
-                    elif pheno_name == 'outerWallIntensity':
-                        pheno_val = np.mean(mean_metrics[:,11])
-                    elif pheno_name == 'power':
-                        pheno_val = np.mean(mean_metrics[:,20])
-                    elif pheno_name == 'numPointsTotal':
-                        pheno_val = num_points_total
-                    elif pheno_name == 'numPointsAfterExclusion':
-                        pheno_val = mask_sum
-                    
-                    if pheno_val is not None:
-                        #self.add_pheno([chest_region, chest_type, mm],
-                        #               pheno_name, pheno_val)
-                        self.add_pheno([chest_region, chest_type],
-                                           pheno_name, pheno_val)
+           Parameters
+           ----------
+           a_pd : airway vtkPolyData with measurements
+               vtkPolyData
+
+           mask : boolean array, shape ( X, Y, Z ), optional
+               Boolean mask where True values indicate presence of the structure
+               of interest
+
+           keep_mask: boolean array, shape ( X, Y, Z ), optional
+               Boolean mask for points that passed QC (provided by an external list)
+
+           chest_region : string
+               Name of the chest region in the (region, type) key used to populate
+               the dataframe
+
+           chest_type : string
+               Name of the chest region in the (region, type) key used to populate
+               the dataframe
+
+           phenos_to_compute : list of strings
+               Names of the phenotype used to populate the dataframe
+
+           """
+
+        num_points_total = np.sum(mask)
+
+        for mm in self.methods_:
+            #Check method is avail
+            arrEllipseName='airwaymetrics-%s-ellipse'%mm
+            arrMeanName='airwaymetrics-%s-mean'%mm
+            if a_pd.GetPointData().GetArray(arrEllipseName) == None or \
+                a_pd.GetPointData().GetArray(arrMeanName) == None:
+                continue
+
+            ellip_metrics=vtk_to_numpy(a_pd.GetPointData().GetArray(arrEllipseName))
+            mean_metrics=vtk_to_numpy(a_pd.GetPointData().GetArray(arrMeanName))
+
+            #Select region/type requested based on mask
+            ellip_metrics=ellip_metrics[(mask & keep_mask),:]
+            mean_metrics=mean_metrics[(mask & keep_mask),:]
+
+            #Define additional points of exclusion based on internal metrics
+            metrics_mask=self.mask_from_metrics(mean_metrics,ellip_metrics)
+
+            #Refine pheno arrays with mask from metrics
+            ellip_metrics=ellip_metrics[metrics_mask,:]
+            mean_metrics=mean_metrics[metrics_mask,:]
+            mask_sum = np.sum((metrics_mask))
+
+            if mask_sum==0:
+                continue
+
+            ai = ellip_metrics[:,1]
+            bi = ellip_metrics[:,0]
+            ao = ellip_metrics[:,4]
+            bo = ellip_metrics[:,3]
+
+            #Setting up regressor for Pi10 and Pi15 metrics
+            sqrtwa = np.sqrt(np.pi *( ao * bo - ai * bi))
+            peri = self.ellipse_perimeter(ai,bi)
+            #limit pi for pi15
+            mask_peri = ((peri>=self.pi_lowerlimit_) & (peri<=self.pi_upperlimit_))
+            regr = skl.linear_model.LinearRegression()
+            peri=peri.reshape(-1,1)
+            regr.fit(peri[mask_peri], sqrtwa[mask_peri])
+
+            for pheno_name in phenos_to_compute:
+                assert pheno_name in self.pheno_names_, \
+                "Invalid phenotype name " + pheno_name
+                pheno_val = None
+                if pheno_name == 'innerRadius':
+                    pheno_val = np.mean(np.sqrt(ai*bi))
+                elif pheno_name == 'outerRadius':
+                    pheno_val = np.mean(np.sqrt(ao*bo))
+                elif pheno_name == 'wallThickness':
+                    #Wall thickness from two concentric ellipses can be computed
+                    # wt = (ao*bo - ai*bi)/(sqrt(ao*bo)+sqrt(ai*bi))
+                    pheno_val = np.mean((ao*bo-ai*bi)/(np.sqrt(ai*bi)+np.sqrt(ao*bo)))
+                elif pheno_name == 'innerPerimeter':
+                    pheno_val = np.mean(self.ellipse_perimeter(ai,bi))
+                elif pheno_name == 'outerPerimeter':
+                    pheno_val = np.mean(self.ellipse_perimeter(ao,bo))
+                elif pheno_name == 'innerArea':
+                    pheno_val = np.mean( np.pi * ai * bi)
+                elif pheno_name == 'outerArea':
+                    pheno_val = np.mean( np.pi * ao * bo)
+                elif pheno_name == 'wallArea':
+                    pheno_val = np.mean(np.pi *( ao * bo - ai * bi) )
+                elif pheno_name == 'wallAreaPerc':
+                    pheno_val = np.mean(100.0*(ao * bo -  ai * bi)/(ao*bo))
+                elif pheno_name == 'Pi10':
+                    pheno_val = regr.predict([[10]])
+                elif pheno_name == 'Pi15':
+                    pheno_val = regr.predict([[15]])
+                elif pheno_name == 'wallIntensity':
+                    pheno_val = np.mean(mean_metrics[:,3])
+                elif pheno_name == 'peakWallIntensity':
+                    pheno_val = np.mean(mean_metrics[:,9])
+                elif pheno_name == 'innerWallIntensity':
+                    pheno_val = np.mean(mean_metrics[:,10])
+                elif pheno_name == 'outerWallIntensity':
+                    pheno_val = np.mean(mean_metrics[:,11])
+                elif pheno_name == 'power':
+                    pheno_val = np.mean(mean_metrics[:,20])
+                elif pheno_name == 'numPointsTotal':
+                    pheno_val = num_points_total
+                elif pheno_name == 'numPointsAfterExclusion':
+                    pheno_val = mask_sum
+
+                if pheno_val is not None:
+                    # self.add_pheno([chest_region, chest_type, mm],
+                    #               pheno_name, pheno_val)
+                    self.add_pheno([chest_region, chest_type],
+                                   pheno_name, pheno_val)
+
+
+    def add_pheno_group_dnn(self, a_pd, mask, keep_mask, chest_region,
+                        chest_type, phenos_to_compute):
+        """This function computes airway phenotypes using point data array corresponding
+              to a dnn sizing method. The particle dataset relies
+               in two point data arrays: dnn_lumen_radius and dnn_wall_thickness.
+
+              Parameters
+              ----------
+              a_pd : airway vtkPolyData with measurements
+                  vtkPolyData
+
+              mask : boolean array, shape ( X, Y, Z ), optional
+                  Boolean mask where True values indicate presence of the structure
+                  of interest
+
+              keep_mask: boolean array, shape ( X, Y, Z ), optional
+                  Boolean mask for points that passed QC (provided by an external list)
+
+              chest_region : string
+                  Name of the chest region in the (region, type) key used to populate
+                  the dataframe
+
+              chest_type : string
+                  Name of the chest region in the (region, type) key used to populate
+                  the dataframe
+
+              phenos_to_compute : list of strings
+                  Names of the phenotype used to populate the dataframe
+
+              """
+        num_points_total = np.sum(mask)
+
+        # Check method is avail
+        arrLumenRadiusName = 'dnn_lumen_radius'
+        arrWallName = 'dnn_wall_thickness'
+        if a_pd.GetPointData().GetArray(arrLumenRadiusName) == None or \
+                a_pd.GetPointData().GetArray(arrWallName) == None:
+            return
+
+        lr_metrics = vtk_to_numpy(a_pd.GetPointData().GetArray(arrLumenRadiusName))
+        wt_metrics = vtk_to_numpy(a_pd.GetPointData().GetArray(arrWallName))
+
+        print lr_metrics.shape
+        # Select region/type requested based on mask
+        lr_metrics = lr_metrics[(mask & keep_mask)]
+        wt_metrics = wt_metrics[(mask & keep_mask)]
+
+        # Define additional points of exclusion based on internal metrics
+        #metrics_mask = self.mask_from_metrics(mean_metrics, ellip_metrics)
+
+        # Refine pheno arrays with mask from metrics
+        #lr_metrics = lr_metrics[metrics_mask, :]
+        #wt_metrics = wt_metrics[metrics_mask, :]
+
+        mask_sum = np.sum(mask)
+
+        if mask_sum == 0:
+            return
+
+        # Setting up regressor for Pi10 and Pi15 metrics
+        sqrtwa = np.sqrt(np.pi * ( (lr_metrics+wt_metrics)**2 - (lr_metrics**2) ))
+        peri = 2.0*np.pi*lr_metrics
+
+        # limit pi for pi15
+        mask_peri = ((peri >= self.pi_lowerlimit_) & (peri <= self.pi_upperlimit_))
+        regr = skl.linear_model.LinearRegression()
+        peri = peri.reshape(-1, 1)
+        regr.fit(peri[mask_peri], sqrtwa[mask_peri])
+
+        for pheno_name in phenos_to_compute:
+            assert pheno_name in self.pheno_names_, \
+                "Invalid phenotype name " + pheno_name
+            pheno_val = None
+            if pheno_name == 'innerRadius':
+                pheno_val = np.mean(lr_metrics)
+            elif pheno_name == 'outerRadius':
+                pheno_val = np.mean(lr_metrics+wt_metrics)
+            elif pheno_name == 'wallThickness':
+                # Wall thickness from two concentric ellipses can be computed
+                # wt = (ao*bo - ai*bi)/(sqrt(ao*bo)+sqrt(ai*bi))
+                pheno_val = np.mean(wt_metrics)
+            elif pheno_name == 'innerPerimeter':
+                pheno_val = np.mean(peri)
+            elif pheno_name == 'outerPerimeter':
+                pheno_val = np.mean(2.0*np.pi*(lr_metrics+wt_metrics))
+            elif pheno_name == 'innerArea':
+                pheno_val = np.mean(np.pi * lr_metrics**2)
+            elif pheno_name == 'outerArea':
+                pheno_val = np.mean(np.pi * (lr_metrics+wt_metrics)**2)
+            elif pheno_name == 'wallArea':
+                pheno_val = np.mean(np.pi * ( (lr_metrics+wt_metrics)**2 - (lr_metrics**2) ))
+            elif pheno_name == 'wallAreaPerc':
+                pheno_val = np.mean(100.0 * ((lr_metrics+wt_metrics)**2 - (lr_metrics**2)) / (lr_metrics+wt_metrics)**2)
+            elif pheno_name == 'Pi10':
+                pheno_val = regr.predict([[10]])
+            elif pheno_name == 'Pi15':
+                pheno_val = regr.predict([[15]])
+            elif pheno_name == 'wallIntensity':
+                pheno_val = None
+            elif pheno_name == 'peakWallIntensity':
+                pheno_val = None
+            elif pheno_name == 'innerWallIntensity':
+                pheno_val = None
+            elif pheno_name == 'outerWallIntensity':
+                pheno_val = None
+            elif pheno_name == 'power':
+                pheno_val = None
+            elif pheno_name == 'numPointsTotal':
+                pheno_val = num_points_total
+            elif pheno_name == 'numPointsAfterExclusion':
+                pheno_val = mask_sum
+
+            if pheno_val is not None:
+                # self.add_pheno([chest_region, chest_type, mm],
+                #               pheno_name, pheno_val)
+                self.add_pheno([chest_region, chest_type],
+                               pheno_name, pheno_val)
 
 
 if __name__ == "__main__" and __package__ is None:
@@ -383,11 +544,11 @@ if __name__ == "__main__" and __package__ is None:
     
     parser = OptionParser(description=desc)
     parser.add_option('--in_pd',
-                      help='Input airway particles', dest='in_pd', metavar='<string>',
+                      help='Input airway particles', dest='in_pd', metavar='FILE',
                       default=None)
     parser.add_option('--out_csv',
                       help='Output csv file in which to store the computed \
-                      dataframe', dest='out_csv', metavar='<string>',
+                      dataframe', dest='out_csv', metavar='FILE',
                       default=None)
     parser.add_option('--cid',
                       help='The database case ID', dest='cid',
@@ -423,6 +584,18 @@ if __name__ == "__main__" and __package__ is None:
                       considered for computation. The supported format is a text file with point ids',
                       dest='exclusion_list', metavar='<string>',default=None)
 
+    parser.add_option('--pi_ll',
+                      help='Lower limit of the internal airway perimeter to compute Pi-related measurements',
+                           dest='pi_ll',type='float',metavar='<float>',default=7.5)
+    parser.add_option('--pi_ul',
+                      help='Upper limit of the internal airway perimeter to compute Pi-related measurments',
+                           dest='pi_ul',type='float',metavar='<float>',default=25)
+
+    parser.add_option('--dnn',
+                      help='Use dnn measurements',
+                      action="store_true", dest="dnn",
+                      )
+
     (options, args) = parser.parse_args()
     
     reader = vtk.vtkPolyDataReader()
@@ -453,6 +626,11 @@ if __name__ == "__main__" and __package__ is None:
 
     airway_pheno = AirwayPhenotypes(chest_regions=regions,
             chest_types=types, pairs=pairs)
+
+    airway_pheno.pi_lowerlimit_=float(options.pi_ll)
+    airway_pheno.pi_upperlimit_=float(options.pi_ul)
+
+    airway_pheno.dnn_=options.dnn
 
     df = airway_pheno.execute(airway_particles, options.cid,point_id_exclusion=exclusion_list)
 
