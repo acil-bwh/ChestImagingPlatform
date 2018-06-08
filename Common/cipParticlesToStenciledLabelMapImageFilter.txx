@@ -91,7 +91,10 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 
   // TODO: Can the following be multithreaded? By what mechanism?
   for ( unsigned int i=0; i<this->ParticlesData->GetNumberOfPoints(); i++ ) 
-    {   
+    {
+      unsigned short typeValue = conventions.GetChestTypeFromValue(ParticlesData->GetPointData()->GetArray("ChestRegionChestType")->GetTuple(i)[0]);
+      unsigned short foregroundLabel = conventions.GetValueFromChestRegionAndType( static_cast< unsigned char >( cip::UNDEFINEDREGION ),
+                                                                                   static_cast< unsigned char >( typeValue ) );
     //
     // Get the bounding box for the particle. We will create an ITK region
     // based on the extent of this bounding box.
