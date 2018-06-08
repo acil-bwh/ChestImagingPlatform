@@ -18,6 +18,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
   this->SelectedParticleType               = VALLEYLINE; // Corresponds to airway
   this->ParticlesData                      = vtkSmartPointer< vtkPolyData >::New();
   this->ScaleStencilPatternByParticleScale = false;
+  this->ScaleStencilPatternByParticleDNNRadius = false;
   this->CTPointSpreadFunctionSigma         = 0.0;
 }
 
@@ -155,8 +156,14 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 
         this->Stencil->SetRadius( tempRadius );
         }
-      }
+      if ( this->ScaleStencilPatternByParticleDNNRadius )
+        {
+          double radius = this->ParticlesData->GetPointData()->GetArray("dnn_radius")->GetTuple(i)[0];
+          double tempRadius = vcl_sqrt(2.0)*vcl_sqrt( pow( radius, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
 
+          this->Stencil->SetRadius( tempRadius );
+        }
+      }
     //
     // Must be AFTER we set the center, orientation, and radius
     //

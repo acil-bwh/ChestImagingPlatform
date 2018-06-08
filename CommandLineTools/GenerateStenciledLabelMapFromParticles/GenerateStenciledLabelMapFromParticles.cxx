@@ -68,6 +68,7 @@ int main( int argc, char *argv[] )
     particlesToLabelMap->SetParticlesData( particlesReader->GetOutput() );
     particlesToLabelMap->SetInput( labelMapReader->GetOutput() );
     particlesToLabelMap->SetScaleStencilPatternByParticleScale( scaleStencil );
+    particlesToLabelMap->SetScaleStencilPatternByParticleDNNRadius( dnnRadiusStencil );
   if ( areAirways )
     {
     particlesToLabelMap->SetChestParticleType( cip::AIRWAY );

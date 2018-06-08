@@ -4,7 +4,6 @@
   <title>GenerateStenciledLabelMapFromParticles</title>
     <description><![CDATA[This program reads a particles dataset and creates a stenciled label map corresponding to them. An input label map is used simply to get spacing, origin, and dimensions of the output label map. Particles can correspond to vessels, airways, or fissures. Currently, sphere and cylinder stencils are supported. The user has the option of scaling the stencil pattern using the particle scale. Scaling in this case means scaling the radius for both the sphere and cylinder stencils. The height of the cylinder stencil remains fixed.]]></description>
   <version>0.0.1</version>
-  <documentation-url>https://chestimagingplatform.org/particles</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes \
@@ -134,6 +133,15 @@ inter-particle distance.</description>
           <description><![CDATA[Setting this flag will cause the stencil pattern to be scaled according to particle \
 scale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \
 equations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).]]></description>
+      </boolean>
+      <boolean>
+          <name>dnnRadiusStencil</name>
+          <label>dnnRadiusStencil</label>
+          <channel>input</channel>
+          <longflag>dnn_radius</longflag>
+          <description><![CDATA[Setting this flag will cause the stencil pattern to be scaled according to particle \
+dnn radius. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \
+equations relating particle dnn_radius and CT point spread function sigma (set using the -ctSigma flag).]]></description>
       </boolean>
     </parameters>
 
