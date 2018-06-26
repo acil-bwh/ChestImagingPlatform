@@ -6,7 +6,15 @@ import os
 import os.path as osp
 import xml.etree.ElementTree as et
 import argparse
-from future.utils import iteritems
+
+# Force the installation of future package if no present (for instance in SlicerCIP)
+try:
+    from future.utils import iteritems
+except Exception as ex:
+    print("Future python package not present. Attempting automatic installation...")
+    import pip
+    pip.main(['install', 'future'])
+    print("Future package installed")
 
 xml_conventions_default = os.path.join(os.path.dirname(__file__), "..", "..", "Resources", "ChestConventions.xml")
 
