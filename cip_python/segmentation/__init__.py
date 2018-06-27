@@ -11,3 +11,4 @@ from register_tobase_get_closest import *
 from slic_segmenter import *
 from nodule_segmenter import *
 from lung_splitter import *
+from lung_segmenter_dcnn import *

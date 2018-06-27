@@ -22,7 +22,7 @@ class DeepLearningModelsManager(object):
         """
         self._ROOT_URL_ = root_url
 
-    def get_model(self, key):
+    def get_model_path(self, key):
         """
         Get a model local path. Download the model if it has not been already downloaded
         Parameters
@@ -55,7 +55,7 @@ class DeepLearningModelsManager(object):
         -------
 
         """
-        real_path = osp.realpath(osp.join(osp.dirname(__file__), "dcnn_models_tmp"))
+        real_path = osp.realpath(osp.join(osp.dirname(__file__), "dcnn_models_cache"))
         if not osp.isdir(real_path):
             try:
                 os.makedirs(real_path)

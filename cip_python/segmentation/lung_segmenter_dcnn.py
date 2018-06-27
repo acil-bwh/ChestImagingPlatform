@@ -14,9 +14,9 @@ from keras.models import load_model
 import keras.backend as K
 
 class LungSegmenterDCNN:
-    def __init__(self, input_ct, output_lm):
-        self.input_ct = input_ct
-        self.output_lm = output_lm
+    def __init__(self):
+        self.input_ct = None
+        self.output_lm = None
 
     @staticmethod
     def load_network_model(model_path):
@@ -114,7 +114,11 @@ class LungSegmenterDCNN:
 
         return combined_pp
 
-    def execute(self, axial_model_path, coronal_model_path, segmentation_type='combined'):
+    def execute(self, input_ct, output_lm,
+                axial_model_path, coronal_model_path, segmentation_type='combined'):
+        self.input_ct = input_ct
+        self.output_lm = output_lm
+
         image_sitk = sitk.ReadImage(self.input_ct)
         image_np = sitk.GetArrayFromImage(image_sitk).transpose([2, 1, 0])
 
@@ -191,7 +195,7 @@ if __name__ == "__main__":
         else:
             # Load with model manager
             manager = DeepLearningModelsManager()
-            axial_model = manager.get_model('LUNG_SEGMENTATION_AXIAL')
+            axial_model = manager.get_model_path('LUNG_SEGMENTATION_AXIAL')
     else:
         axial_model = None
 
@@ -201,10 +205,10 @@ if __name__ == "__main__":
         else:
             # Load with model manager
             manager = DeepLearningModelsManager()
-            coronal_model = manager.get_model('LUNG_SEGMENTATION_CORONAL')
+            coronal_model = manager.get_model_path('LUNG_SEGMENTATION_CORONAL')
     else:
         coronal_model = None
 
-    lung_segmenter = LungSegmenterDCNN(op.in_ct, op.out_lm)
-    lung_segmenter.execute(axial_model, coronal_model, segmentation_type=op.segmentation_type)
+    lung_segmenter = LungSegmenterDCNN()
+    lung_segmenter.execute(op.in_ct, op.out_lm, axial_model, coronal_model, segmentation_type=op.segmentation_type)
 

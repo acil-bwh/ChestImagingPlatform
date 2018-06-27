@@ -56,7 +56,7 @@ class Paths(object):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 1)
         caller_full_path = calframe[1][1]
-        caller_baseline_data_dir = osp.realpath(osp.join(osp.dirname(caller_full_path), "..", "data", "baseline"))
+        caller_baseline_data_dir = osp.realpath(osp.join(osp.dirname(caller_full_path), "baseline"))
         if not osp.isdir(caller_baseline_data_dir):
             os.makedirs(caller_baseline_data_dir)
             print ("Folder {} was created".format(caller_baseline_data_dir))
