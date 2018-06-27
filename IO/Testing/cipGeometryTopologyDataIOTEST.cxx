@@ -8,6 +8,28 @@
 #include "cipExceptionObject.h"
 #include "cipChestConventions.h"
 
+std::string& trim_right_inplace(
+  std::string&       s,
+  const std::string& delimiters = " \f\n\r\t\v" )
+{
+  return s.erase( s.find_last_not_of( delimiters ) + 1 );
+}
+
+std::string& trim_left_inplace(
+  std::string&       s,
+  const std::string& delimiters = " \f\n\r\t\v" )
+{
+  return s.erase( 0, s.find_first_not_of( delimiters ) );
+}
+
+std::string& trim_inplace(
+  std::string&       s,
+  const std::string& delimiters = " \f\n\r\t\v" )
+{
+  return trim_left_inplace( trim_right_inplace( s, delimiters ), delimiters );
+}
+
+
 int main( int argc, char* argv[] ) {
   // Read the baseline file
   char *baseLineFilePath = argv[1];
@@ -48,7 +70,7 @@ int main( int argc, char* argv[] ) {
   }
 
   for (int i = 0; i < v1.size(); i++) {
-    if (v1[i] != v2[i]) {
+    if (trim_inplace(v1[i]) != trim_inplace(v2[i])) {
       std::cout << "Expected: " << v1[i] << std::endl;
       std::cout << "Found: " << v2[i] << std::endl;
       return cip::EXITFAILURE;
