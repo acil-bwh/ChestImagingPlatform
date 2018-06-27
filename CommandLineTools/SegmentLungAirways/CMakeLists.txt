@@ -21,5 +21,5 @@ cipMacroBuildCLI(
 SET (TEST_NAME ${MODULE_NAME}_Test_Interactive)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
     ModuleEntryPoint
-      --i ${INPUT_DATA_DIR}/TestInput.nrrd --o ${OUTPUT_DATA_DIR}/${TEST_NAME}_airwayLabelMap.nrrd  --k STANDARD --seed 10.883,173.758,-350.00 --r WholeAirway
+      --i ${INPUT_DATA_DIR}/TestInput.nrrd --o ${OUTPUT_DATA_DIR}/${TEST_NAME}_airwayLabelMap.nrrd  --k STANDARD --s 15.249,162.482,-360.00 --r WholeAirway
 )
