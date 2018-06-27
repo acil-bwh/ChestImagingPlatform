@@ -4,14 +4,11 @@ import requests
 import sys
 
 class DeepLearningModelsManager(object):
-    # Model keys
-    LUNG_SEGMENTATION_AXIAL = 'LungSegmentationAxial'
-    LUNG_SEGMENTATION_CORONAL = 'LungSegmentationCoronal'
-
     # Model URLs
     _MODELS_ = {
-          LUNG_SEGMENTATION_AXIAL: 'lung_segmentation/axial.h5',
-          LUNG_SEGMENTATION_CORONAL: 'lung_segmentation/coronal.h5'
+          'LUNG_SEGMENTATION_AXIAL': 'lung_segmentation/lung_segmentation_axial.hdf5',
+          'LUNG_SEGMENTATION_CORONAL': 'lung_segmentation/lung_segmentation_coronal.hdf5',
+          #'STRUCTURES_DETECTION_SLICE_AXIAL': 'structures_detection/structures_detection_slice_axial.hdf5',
     }
 
     def __init__(self, root_url="https://s3.amazonaws.com/acil-deep-learning-data/models/"):
@@ -30,11 +27,12 @@ class DeepLearningModelsManager(object):
         Get a model local path. Download the model if it has not been already downloaded
         Parameters
         ----------
-        key: model key
+        key: str. Model key (it should be one of the values of _MODELS_ dict
 
         Returns
         -------
-        Path to a local file that contains a model that may have been downloaded from a remote location
+        Path to a local file that contains a model that may have been downloaded from a remote location (if it was
+        not saved locally yet)
         """
         if key not in self._MODELS_:
             raise Exception("Model '{}' is not one of the allowed values. Allowed values: {}".format(key,
@@ -43,10 +41,10 @@ class DeepLearningModelsManager(object):
         url = self._ROOT_URL_ + self._MODELS_[key]
         if not osp.isfile(local_model_path):
             # Download the model
-            print ("Downloading the model to {}...".format(local_model_path))
+            print ("Model not found in {}. Downloading...".format(local_model_path))
             if not self._download_model_(url, local_model_path):
                 raise Exception("Model file could not be retrieved")
-            print ("Model {} downloaded".format(key))
+            print ("Model saved!")
         return local_model_path
 
     def _get_models_root_local_folder_(self):

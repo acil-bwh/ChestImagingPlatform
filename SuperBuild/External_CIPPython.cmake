@@ -126,23 +126,36 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
             )
   endif()
 
-  ExternalProject_Add_Step(${proj} installlxml
+  ExternalProject_Add_Step(${proj} installxml
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet lxml
     DEPENDEES installsimpleitk
   )
 
   ExternalProject_Add_Step(${proj} installscikit-learn
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scikit-learn
-    DEPENDEES installlxml
+    DEPENDEES installxml
+  )
+
+
+  # Deep learning tools
+  ExternalProject_Add_Step(${proj} tensorflow
+    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet tensorflow==1.2.1
+    DEPENDEES installscikit-learn
+  )
+
+  ExternalProject_Add_Step(${proj} keras
+    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet keras==2.0.8
+    DEPENDEES tensorflow
   )
 
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
     ExternalProject_Add_Step(${proj} installqt4
             COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
-            DEPENDEES installnibabel
+            DEPENDEES keras
             )
   endif()
+
 else()
   # Ignore CIPPython
   ExternalProject_Add_Empty(${proj})
