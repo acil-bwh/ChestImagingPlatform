@@ -437,6 +437,42 @@ int RegressionTestCSV( const char* testCSVFilename,
   return 0;
 }
 
+
+int CompareArrays(vtkDataArray *a1, vtkDataArray *a2)
+{
+  
+  unsigned int nt1=a1->GetNumberOfTuples();
+  unsigned int nc1=a1->GetNumberOfComponents();
+  unsigned int nt2=a2->GetNumberOfTuples();
+  unsigned int nc2=a2->GetNumberOfComponents();
+  
+  if ((nt1 != nt2) || (nc1 != nc2) )
+  {
+    return 1;
+  }
+  
+  for (unsigned int ii =0; ii<nt1; ii++)
+  {
+    
+    for (unsigned int cc=0; cc<nc1; cc++)
+    
+    {
+      if (a1->GetComponent(ii,cc) != a2->GetComponent(ii,cc))
+          {
+            std::cerr << "Values not matching: " <<a1->GetComponent(ii,cc)<<" "<<a2->GetComponent(ii,cc)<<std::endl;
+            return 1;
+            
+          }
+    }
+    
+    
+  }
+          
+  return 0;
+  
+}
+
+
 int CompareFieldData(vtkFieldData *test,vtkFieldData *baseline,double tolerance)
 {
   
@@ -464,13 +500,15 @@ int CompareFieldData(vtkFieldData *test,vtkFieldData *baseline,double tolerance)
       
       int res=testing->CompareAverageOfL2Norm(testArray,baselineArray,tolerance);
       
+      //int res=CompareArrays(testArray,baselineArray);
+      
       if (res == vtkTesting::PASSED)
-	{
-	  //Do nothing
-	} else {
+      {
+        //Do nothing
+      } else {
 	
-	std::cerr<< "Array "<< arrayName<< " does not match"<<std::endl;
-	return 1;
+        std::cerr<< "Array "<< arrayName<< " does not match"<<std::endl;
+        return 1;
       }
     }
   
