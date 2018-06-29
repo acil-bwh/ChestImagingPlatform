@@ -61,10 +61,13 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
           DEPENDEES installnetworkx
   )
 
-  ExternalProject_Add_Step(${proj} tensorflow
+  if (UNIX)
+    # Tensorflow 1.2.1 not available in Windows for Python 2
+    ExternalProject_Add_Step(${proj} installtensorflow
           COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge tensorflow==1.2.1
-          DEPENDEES installscikit-learn
-          )
+          DEPENDEES installscikit-image
+    )
+  endif()
 
   #### pip packages
   ExternalProject_Add_Step(${proj} installpynrrd
@@ -141,13 +144,13 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     DEPENDEES installxml
   )
 
-
-
-
-  ExternalProject_Add_Step(${proj} keras
-    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet keras==2.0.8
-    DEPENDEES tensorflow
-  )
+  if (UNIX)
+    # Tensorflow 1.2.1 not available in Windows for Python 2
+    ExternalProject_Add_Step(${proj} keras
+      COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet keras==2.0.8
+      DEPENDEES tensorflow
+    )
+  endif()
 
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)

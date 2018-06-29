@@ -1,8 +1,9 @@
 """
 Different metrics used in deep learning algorithms
 """
-
-import keras.backend as K
+import os
+if os.name != "nt":
+    import keras.backend as K
 
 def dice_coef(y_true, y_pred):
     smooth = 1.0
