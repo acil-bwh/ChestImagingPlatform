@@ -19,7 +19,8 @@
     <point multiple="true" coordinateSystem="ras">
       <name>seed</name>
       <label>Seeds</label>
-      <longflag>s</longflag>
+      <flag>s</flag>
+      <longflag>seed</longflag>
       <description><![CDATA[One seed point (trachea) has to be specified for the region growing algorithm]]></description>
       <default>0,0,0</default>
     </point>
@@ -34,7 +35,8 @@
       <name>inputVolume</name>
       <label>Input Volume</label>
       <channel>input</channel>
-      <longflag>i</longflag>
+      <flag>i</flag>
+      <longflag>input</longflag>
       <description><![CDATA[Input volume to be filtered]]></description>
     </image>
     
@@ -42,20 +44,23 @@
       <name>airwayLabel</name>
       <label>Airway Label</label>
       <channel>output</channel>
-      <longflag>o</longflag>
+      <flag>o</flag>
+      <longflag>output</longflag>
       <description><![CDATA[Airway Label]]></description>
     </image>
     
     <string>
       <name>reconstructionKernelType</name>
       <label>Kernel Type</label>
-      <longflag>k</longflag>
+      <flag>k</flag>
+      <longflag>kernel</longflag>
       <description><![CDATA[Reconstruction kernel type used to reconstruct the input dataset]]></description>
     </string>
 
     <string-enumeration>
       <name>regionSegmentation</name>
-      <longflag>r</longflag>
+      <flag>r</flag>
+      <longflag>region</longflag>
       <element>WholeAirway</element>
       <element>Trachea</element>
       <element>RightAirway</element>
