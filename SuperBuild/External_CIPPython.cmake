@@ -61,6 +61,11 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
           DEPENDEES installnetworkx
   )
 
+  ExternalProject_Add_Step(${proj} tensorflow
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge tensorflow==1.2.1
+          DEPENDEES installscikit-learn
+          )
+
   #### pip packages
   ExternalProject_Add_Step(${proj} installpynrrd
           COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd
@@ -137,11 +142,7 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   )
 
 
-  # Deep learning tools
-  ExternalProject_Add_Step(${proj} tensorflow
-    COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet tensorflow==1.2.1
-    DEPENDEES installscikit-learn
-  )
+
 
   ExternalProject_Add_Step(${proj} keras
     COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet keras==2.0.8
