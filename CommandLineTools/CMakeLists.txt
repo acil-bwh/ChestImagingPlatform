@@ -82,6 +82,7 @@ set(CLIS_DIRS
   ComputeStrainFromDeformationField
   ComputeAirwayWallFromImages
   FitBSplineToDeformationField
+  CreateVolumeFromSlices
 )
 
 #Append CLIS that depends on BOOST
