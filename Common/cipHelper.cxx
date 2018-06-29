@@ -37,6 +37,7 @@
 #include "vtkGlyphSource2D.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
+#include "vtkUnsignedShortArray.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 
@@ -722,18 +723,19 @@ void cip::AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData
     {
       vtkSmartPointer< vtkFloatArray > chestRegionChestTypeArray = vtkSmartPointer< vtkFloatArray >::New();
         chestRegionChestTypeArray->SetNumberOfComponents( 1 );
+      chestRegionChestTypeArray->SetNumberOfTuples(numberParticles);
 	chestRegionChestTypeArray->SetName( "ChestRegionChestType" );
       
       particles->GetPointData()->AddArray( chestRegionChestTypeArray );
     }
 
-  float value = float(conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::UNDEFINEDREGION), 
+  float value = static_cast<float>( conventions.GetValueFromChestRegionAndType( (unsigned char)(cip::UNDEFINEDREGION),
 								  (unsigned char)(cip::UNDEFINEDTYPE) ));
   if ( !foundArray )
     {
       for ( unsigned int i=0; i<numberParticles; i++ )
 	{
-	  particles->GetPointData()->GetArray( "ChestRegionChestType" )->InsertTuple( i, &value );
+         particles->GetPointData()->GetArray( "ChestRegionChestType" )->InsertTuple( i, &value );
 	}
     }
 }
@@ -1017,7 +1019,7 @@ void cip::TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData > inPol
       fieldDataArrayNames.push_back(name);
     }
 
-  // Transfer the field data to point data if requested
+  // Transfer the field data to point data if requested and there is a matching in the number of points and tuples
   if ( fieldToPoint )
     {
       bool alreadyPresent;
@@ -1033,7 +1035,7 @@ void cip::TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData > inPol
 		  break;
 		}
 	    }
-
+    
 	  if ( !alreadyPresent )
 	    {
 	      // The number of array tuples must be the same as the number of points
