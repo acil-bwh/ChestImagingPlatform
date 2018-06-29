@@ -96,6 +96,7 @@ def print_dicom_tags():
    print 'ModalitiesInStudy'
    print 'ImageComments'
    print 'SliceThickness'
+   print 'SpacingBetweenSlices'
    print 'ExposureTime'
    print 'XRayTubeCurrent'
    print 'KVP'
