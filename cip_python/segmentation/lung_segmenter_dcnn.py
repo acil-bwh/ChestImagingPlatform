@@ -7,8 +7,7 @@ import numpy as np
 import SimpleITK as sitk
 from scipy import signal
 
-from cip_python.utils import dcnn_metrics
-from cip_python.utils import dcnn_utils
+from cip_python.dcnn import metrics, utils
 
 from keras.models import load_model
 import keras.backend as K
@@ -28,8 +27,8 @@ class LungSegmenterDCNN:
         if not os.path.exists(model_path):
             raise Exception("{} not found".format(model_path))
 
-        network_model = load_model(model_path, custom_objects={'dice_coef': dcnn_metrics.dice_coef,
-                                                               'dice_coef_loss': dcnn_metrics.dice_coef_loss})
+        network_model = load_model(model_path, custom_objects={'dice_coef': metrics.dice_coef,
+                                                               'dice_coef_loss': metrics.dice_coef_loss})
         return network_model
 
     def lung_segmentation(self, network_model, patch_size, image_np):
@@ -40,14 +39,14 @@ class LungSegmenterDCNN:
             cnn_images = np.zeros((patch_size[0], patch_size[1], image_np.shape[2]), dtype=np.float32)
             for ii in range(image_np.shape[2]):
                 slice_sitk = sitk.GetImageFromArray(image_np[:, :, ii].transpose())
-                resampled_sitk = dcnn_utils.resample_image(slice_sitk, patch_size, sitk.sitkFloat32,
+                resampled_sitk = utils.resample_image(slice_sitk, patch_size, sitk.sitkFloat32,
                                                       interpolator=sitk.sitkBSpline)
                 cnn_images[:, :, ii] = sitk.GetArrayFromImage(resampled_sitk).transpose()
         else:
             cnn_images = image_np
 
         for ii in range(cnn_images.shape[2]):
-            cnn_images[:, :, ii] = dcnn_utils.standardization(cnn_images[:, :, ii])
+            cnn_images[:, :, ii] = utils.standardization(cnn_images[:, :, ii])
             # cnn_images[:, :, ii] = utils.range_normalization(cnn_images[:, :, ii])
 
         cnn_images = cnn_images.transpose([2, 0, 1])
@@ -63,7 +62,7 @@ class LungSegmenterDCNN:
                 for jj in range(predictions.shape[1]):
                     label_sitk = sitk.GetImageFromArray(predictions[ii, jj, :, :, 0].transpose())
                     output_shape = np.asarray([image_np.shape[0], image_np.shape[1]])
-                    resampled_label_sitk = dcnn_utils.resample_image(label_sitk, output_shape, sitk.sitkFloat32,
+                    resampled_label_sitk = utils.resample_image(label_sitk, output_shape, sitk.sitkFloat32,
                                                                 interpolator=sitk.sitkBSpline)
                     final_predictions[ii, jj, :, :] = sitk.GetArrayFromImage(resampled_label_sitk).transpose()
         else:

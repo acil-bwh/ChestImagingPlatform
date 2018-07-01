@@ -16,32 +16,34 @@ if (NOT CIP_PYTHON_INSTALL_FOLDER)
 endif()
 
 IF ( WIN32 )
-  #NIPYPE is not supported on Windows
+  # nipype / tensorflow are not supported on Windows
   SET(PYTHON_MODULES
     common
-	classification
-	input_output
-	particles
-	phenotypes
-	qualitycontrol
-	registration
-	segmentation
-	utils
-	visualization
+    classification
+    #dcnn
+    input_output
+    particles
+    phenotypes
+    qualitycontrol
+    registration
+    segmentation
+    utils
+    visualization
   )
 ELSE ( )
   SET(PYTHON_MODULES
     common
-	classification
-	input_output
-	nipype
-	particles
-	phenotypes
-	qualitycontrol
-	registration
-	segmentation
-	utils
-	visualization
+    classification
+    input_output
+    dcnn
+    nipype
+    particles
+    phenotypes
+    qualitycontrol
+    registration
+    segmentation
+    utils
+    visualization
   )
 ENDIF ( )
 FILE (INSTALL ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py

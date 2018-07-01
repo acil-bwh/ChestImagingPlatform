@@ -47,108 +47,108 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
 
   #### Conda-forge packages
   ExternalProject_Add_Step(${proj} installnipype
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge nipype==0.12.1
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge nipype==0.12.1
           DEPENDEES install
           )
 
   ExternalProject_Add_Step(${proj} installnetworkx
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge networkx==1.11
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge networkx==1.11
           DEPENDEES installnipype
   )
 
   ExternalProject_Add_Step(${proj} installscikit-image
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge scikit-image
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge scikit-image
           DEPENDEES installnetworkx
   )
 
   if (UNIX)
     # Tensorflow 1.2.1 not available in Windows for Python 2
     ExternalProject_Add_Step(${proj} installtensorflow
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c conda-forge tensorflow==1.2.1
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge tensorflow==1.2.1
           DEPENDEES installscikit-image
     )
   endif()
 
   #### pip packages
   ExternalProject_Add_Step(${proj} installpynrrd
-          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pynrrd
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pynrrd
           DEPENDEES installscikit-image
           )
 
   ExternalProject_Add_Step(${proj} installpydicom
-          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet pydicom==0.9.9
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pydicom==0.9.9
           DEPENDEES installpynrrd
           )
 
   ExternalProject_Add_Step(${proj} installnibabel
-          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet nibabel
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install nibabel
           DEPENDEES installpydicom
           )
 
   #### Conda packages
   ExternalProject_Add_Step(${proj} installnumpy
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet numpy
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes numpy
           DEPENDEES installnibabel
   )
 
   ExternalProject_Add_Step(${proj} installcython
-	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet cython
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes cython
 	DEPENDEES installnumpy
   )
 
   ExternalProject_Add_Step(${proj} installscipy
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scipy
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes scipy
     DEPENDEES installcython
   )
 
   ExternalProject_Add_Step(${proj} installvtk
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet vtk
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes vtk
     DEPENDEES installscipy
   )
 
   ExternalProject_Add_Step(${proj} installpandas
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet pandas
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes pandas
     DEPENDEES installvtk
   )
 
   ExternalProject_Add_Step(${proj} installnose
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet nose
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes nose
     DEPENDEES installpandas
   )
 
   ExternalProject_Add_Step(${proj} installsphinx
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet sphinx
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes sphinx
     DEPENDEES installnose
   )
 
   if (UNIX)
     ExternalProject_Add_Step(${proj} installsimpleitk
-      COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c SimpleITK SimpleITK
+      COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c SimpleITK SimpleITK
       DEPENDEES installsphinx
     )
   else()
     # Unknown conflict with SimpleITK 1.1.0. For the time being, force 0.9.1
     ExternalProject_Add_Step(${proj} installsimpleitk
-            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet -c SimpleITK SimpleITK=0.9.1
+            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c SimpleITK SimpleITK=0.9.1
             DEPENDEES installsphinx
             )
   endif()
 
   ExternalProject_Add_Step(${proj} installxml
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet lxml
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes lxml
     DEPENDEES installsimpleitk
   )
 
   ExternalProject_Add_Step(${proj} installscikit-learn
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes --quiet scikit-learn
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes scikit-learn
     DEPENDEES installxml
   )
 
   if (UNIX)
     # Tensorflow 1.2.1 not available in Windows for Python 2
-    ExternalProject_Add_Step(${proj} keras
-      COMMAND ${CIP_PYTHON_BIN_DIR}/pip install --quiet keras==2.0.8
-      DEPENDEES tensorflow
+    ExternalProject_Add_Step(${proj} installkeras
+      COMMAND ${CIP_PYTHON_BIN_DIR}/pip install keras==2.0.8
+      DEPENDEES installtensorflow
     )
   endif()
 
@@ -156,7 +156,7 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     # Force qt 4.8.7 (to reuse for VTK build)
     ExternalProject_Add_Step(${proj} installqt4
             COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
-            DEPENDEES keras
+            DEPENDEES installkeras
             )
   endif()
 
