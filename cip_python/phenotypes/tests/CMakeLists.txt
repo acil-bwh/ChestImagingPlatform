@@ -3,3 +3,8 @@ ADD_TEST( NAME test_parenchyma_phenotypes COMMAND nosetests ${CMAKE_CURRENT_BINA
 ADD_TEST( NAME test_laa_phenotypes COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_laa_phenotypes.py)
 
 ADD_TEST( NAME test_body_composition_phenotypes COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_body_composition_phenotypes.py)
+
+ADD_TEST( NAME test_vasculature_phenotypes COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_vasculature_phenotypes.py)
+
+ADD_TEST( NAME test_emphysema_severity COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_emphysema_severity)
+
