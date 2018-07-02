@@ -1,0 +1,9 @@
+# Include all the files in the baseline folder
+FILE(INSTALL ${CMAKE_CURRENT_SOURCE_DIR}/baseline
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+if (UNIX)
+    # Deep learning tools not available in Windows at the moment
+    ADD_TEST( NAME test_lung_segmentation_dcnn COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_lung_segmentation_dcnn.py )
+endif()

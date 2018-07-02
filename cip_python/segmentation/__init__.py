@@ -12,7 +12,3 @@ from slic_segmenter import *
 from nodule_segmenter import *
 from lung_splitter import *
 
-import os
-if os.name != "nt":
-  # Not windows
-  from lung_segmenter_dcnn import *
