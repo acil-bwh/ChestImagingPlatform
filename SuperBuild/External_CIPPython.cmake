@@ -46,9 +46,25 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   endif()
 
   #### Conda-forge packages
+  if (UNIX)
+    # Tensorflow 1.2.1 not available in Windows for Python 2
+    ExternalProject_Add_Step(${proj} installtensorflow
+        COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge tensorflow==1.2.1
+        #DEPENDEES installscikit-image
+        DEPENDEES install
+    )
+    ExternalProject_Add_Step(${proj} installkeras
+        COMMAND ${CIP_PYTHON_BIN_DIR}/pip install keras==2.0.8
+        DEPENDEES installtensorflow
+    )
+    SET (last_dep installkeras)
+  else()
+    SET (last_dep install)
+  endif()
+
   ExternalProject_Add_Step(${proj} installnipype
           COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge nipype==0.12.1
-          DEPENDEES install
+          DEPENDEES ${last_dep}
           )
 
   ExternalProject_Add_Step(${proj} installnetworkx
@@ -61,25 +77,11 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
           DEPENDEES installnetworkx
   )
 
-  if (UNIX)
-    # Tensorflow 1.2.1 not available in Windows for Python 2
-    ExternalProject_Add_Step(${proj} installtensorflow
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge tensorflow==1.2.1
-          DEPENDEES installscikit-image
-    )
-    ExternalProject_Add_Step(${proj} installkeras
-            COMMAND ${CIP_PYTHON_BIN_DIR}/pip install keras==2.0.8
-            DEPENDEES installtensorflow
-            )
-    SET (last_dep installkeras)
-  else()
-    SET (last_dep installscikit-image)
-  endif()
 
   #### pip packages
   ExternalProject_Add_Step(${proj} installpynrrd
           COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pynrrd
-          DEPENDEES ${last_dep}
+          DEPENDEES installscikit-image
           )
 
   ExternalProject_Add_Step(${proj} installpydicom
