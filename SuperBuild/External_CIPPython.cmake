@@ -67,12 +67,19 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
           COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge tensorflow==1.2.1
           DEPENDEES installscikit-image
     )
+    ExternalProject_Add_Step(${proj} installkeras
+            COMMAND ${CIP_PYTHON_BIN_DIR}/pip install keras==2.0.8
+            DEPENDEES installtensorflow
+            )
+    SET (last_dep installkeras)
+  else()
+    SET (last_dep installscikit-image)
   endif()
 
   #### pip packages
   ExternalProject_Add_Step(${proj} installpynrrd
           COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pynrrd
-          DEPENDEES installscikit-image
+          DEPENDEES ${last_dep}
           )
 
   ExternalProject_Add_Step(${proj} installpydicom
@@ -144,19 +151,11 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     DEPENDEES installxml
   )
 
-  if (UNIX)
-    # Tensorflow 1.2.1 not available in Windows for Python 2
-    ExternalProject_Add_Step(${proj} installkeras
-      COMMAND ${CIP_PYTHON_BIN_DIR}/pip install keras==2.0.8
-      DEPENDEES installtensorflow
-    )
-  endif()
-
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
     ExternalProject_Add_Step(${proj} installqt4
             COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
-            DEPENDEES installkeras
+            DEPENDEES installscikit-learn
             )
   endif()
 
