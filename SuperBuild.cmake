@@ -265,7 +265,13 @@ set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 #----------------
 # PYTHON DISTRIBUTION
 #-------------------
-SET(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "Install Python components of CIP")
+set(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "Install Python components of CIP")
+if (UNIX)
+  set(INSTALL_CIP_PYTHON_DL_TOOLS ON CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)")
+else()
+  set(INSTALL_CIP_PYTHON_DL_TOOLS OFF CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)")
+endif()
+
 set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
 
 if (INSTALL_CIP_PYTHON_DISTRIBUTION)

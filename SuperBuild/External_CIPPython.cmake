@@ -1,9 +1,6 @@
 # Project that will add all the possible binaries to CIP
 set(proj CIPPython)
 
-SET(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "INSTALL_CIP_PYTHON_DISTRIBUTION")
-mark_as_superbuild(INSTALL_CIP_PYTHON_DISTRIBUTION)
-
 SET(CIP_PYTHON_USE_QT4 OFF CACHE BOOL "Use Qt4 in CIP Python (it can be used in case of VTK errors)")
 mark_as_superbuild(CIP_PYTHON_USE_QT4)
 
@@ -46,11 +43,11 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
   endif()
 
   #### Conda-forge packages
-  if (UNIX)
+  if (INSTALL_CIP_PYTHON_DL_TOOLS)
+    message("Python Deep Learning modules (keras, tensorflow) will be installed")
     # Tensorflow 1.2.1 not available in Windows for Python 2
     ExternalProject_Add_Step(${proj} installtensorflow
         COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge tensorflow==1.2.1
-        #DEPENDEES installscikit-image
         DEPENDEES install
     )
     ExternalProject_Add_Step(${proj} installkeras
@@ -59,6 +56,7 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
     )
     SET (last_dep installkeras)
   else()
+    message("Python Deep Learning modules will NOT be installed")
     SET (last_dep install)
   endif()
 
