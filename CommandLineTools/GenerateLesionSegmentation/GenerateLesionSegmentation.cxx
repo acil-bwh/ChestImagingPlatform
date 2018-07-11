@@ -7,14 +7,12 @@
 #include "itkFixedArray.h"
 #include "itkPasteImageFilter.h"
 #include "itkResampleImageFilter.h"
-
 // This needs to come after the other includes to prevent the global definitions
 // of PixelType to be shadowed by other declarations.
 #include "itkLesionSegmentationImageFilter8.h"
-
+#include "itkNearestNeighborExtrapolateImageFunction.h"
 
 #include <GenerateLesionSegmentationCLP.h>
-
 
 typedef short PixelType;
 const static unsigned int ImageDimension = 3;
@@ -33,6 +31,7 @@ typedef itk::LesionSegmentationImageFilter8< InputImageType, RealImageType > Seg
 typedef itk::PasteImageFilter<RealImageType,RealImageType> PasteImageFilterType;
 typedef itk::ResampleImageFilter<RealImageType,RealImageType> ResampleImageFilterType;
 typedef itk::IdentityTransform<double, ImageDimension> TransformType;
+typedef itk::NearestNeighborExtrapolateImageFunction<RealImageType,double> ExtrapolatorType;
 
 PointListType GetSeeds(std::vector<std::vector<float> > seeds,InputImageType *image)
 {
@@ -241,8 +240,9 @@ int main( int argc, char * argv[] )
       resample->SetOutputOrigin(seg->GetOutput()->GetOrigin());
       resample->SetTransform(TransformType::New());
       resample->UpdateLargestPossibleRegion();
+      resample->SetExtrapolator(ExtrapolatorType::New());
       resample->Update();
-     
+
       // Paste the image back into the full image
       PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
       pasteFilter->SetSourceImage ( resample->GetOutput() );
