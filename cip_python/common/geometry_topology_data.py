@@ -10,6 +10,7 @@ Created on Apr 6, 2015
 import xml.etree.ElementTree as et
 
 import os
+import sys
 import platform
 import time
 import numpy as np
@@ -177,7 +178,7 @@ class GeometryTopologyData(object):
             pretty_print: write the xml in a nice format (requires lxml)
         """
         s = self.to_xml()
-        with open(xml_file_path, "w+b") as f:
+        with open(xml_file_path, "w") as f:
             f.write(s)
 
     @staticmethod
@@ -186,7 +187,7 @@ class GeometryTopologyData(object):
         @param xml_file_path: file path
         @return: GeometryTopologyData object
         """
-        with open(xml_file_path, 'r+b') as f:
+        with open(xml_file_path, 'r') as f:
             xml = f.read()
             return GeometryTopologyData.from_xml(xml)
 
@@ -525,7 +526,11 @@ class Point(Structure):
         :param machine_name: name of the current machine
         :return:
         """
-        super(Point, self).__init__(chest_region, chest_type, feature_type, description=description,
+        if sys.version_info > (3, 0):
+            super().__init__(chest_region, chest_type, feature_type, description=description,
+                                        timestamp=timestamp, user_name=user_name, machine_name=machine_name)
+        else:
+            super(Point, self).__init__(chest_region, chest_type, feature_type, description=description,
                                 timestamp=timestamp, user_name=user_name, machine_name=machine_name)
 
         self.coordinate = coordinate
@@ -534,7 +539,11 @@ class Point(Structure):
         """ Get a unique identifier for this structure (string encoding all the fields)
         @return:
         """
-        s = super(Point, self).get_hash()
+        if sys.version_info > (3, 0):
+            s = super().get_hash()
+        else:
+            s = super(Point, self).get_hash()
+
         for c in self.coordinate:
             s += "_%f" % c
         return s
@@ -562,7 +571,11 @@ class Point(Structure):
         :return: xml string representation of the point
         """
         # lines = super(FileCatNoEmpty, self).cat(filepath)
-        structure = super(Point, self).to_xml(separator=separator, level=level+1)
+        if sys.version_info > (3, 0):
+            structure = super().to_xml(separator=separator, level=level + 1)
+        else:
+            structure = super(Point, self).to_xml(separator=separator, level=level+1)
+
         coords = GeometryTopologyData.to_xml_vector(self.coordinate, separator=separator, level=level+2)
 
         return \
@@ -594,7 +607,11 @@ class BoundingBox(Structure):
         :param user_name: logged username
         :param machine_name: name of the current machine
         """
-        super(BoundingBox, self).__init__(chest_region, chest_type, feature_type, description=description,
+        if sys.version_info > (3, 0):
+            super().__init__(chest_region, chest_type, feature_type, description=description,
+                                              timestamp=timestamp, user_name=user_name, machine_name=machine_name)
+        else:
+            super(BoundingBox, self).__init__(chest_region, chest_type, feature_type, description=description,
                                 timestamp=timestamp, user_name=user_name, machine_name=machine_name)
         self.start = start
         self.size = size
@@ -608,7 +625,11 @@ class BoundingBox(Structure):
         """ Get a unique identifier for this structure (string encoding all the fields)
         @return:
         """
-        s = super(BoundingBox, self).get_hash()
+        if sys.version_info > (3, 0):
+            s = super().get_hash()
+        else:
+            s = super(BoundingBox, self).get_hash()
+
         for c in self.start:
             s += "_%f" % c
         for c in self.size:
@@ -641,7 +662,10 @@ class BoundingBox(Structure):
         """
         start_str = GeometryTopologyData.to_xml_vector(self.start, separator=separator, level=level + 2)
         size_str = GeometryTopologyData.to_xml_vector(self.size, separator=separator, level=level + 2)
-        structure = super(BoundingBox, self).to_xml(separator=separator, level=level+1)
+        if sys.version_info > (3, 0):
+            structure = super().to_xml(separator=separator, level=level + 1)
+        else:
+            structure = super(BoundingBox, self).to_xml(separator=separator, level=level + 1)
 
         return \
             ("{0}<BoundingBox>\r\n" +
