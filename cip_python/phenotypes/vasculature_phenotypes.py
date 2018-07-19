@@ -435,7 +435,7 @@ if __name__ == "__main__":
                       dest='radius_array_name',metavar='<float>',default=None)
     parser.add_option('-s',
                         help='Spacing of the volume that was used to generate the particles (optional).\
-                        This informatino is used if the spacing field of the particle\'s FieldData is not present.',
+                        This information is used if the spacing field of the particle\'s FieldData is not present.',
                         dest='spacing',metavar='<string>',default=None)
     parser.add_option('--out_plot',help='Output png file with plots of the blood volume profiles (ex: cid_vascularePhenotypePlot.png)',
                                         dest='out_plot',metavar='<string>',default=None)
@@ -469,6 +469,8 @@ if __name__ == "__main__":
 
     if options.spacing is not None:
         spacing=np.array([float(options.spacing),float(options.spacing),float(options.spacing)])
+    else:
+        spacing = np.array([0.625, 0.625, 0.625])
 
     vasculature_pheno=VasculaturePhenotypes(chest_regions=regions,chest_types=types,pairs=pairs,plot=plot)
     vasculature_pheno.rad_arrayname=options.radius_array_name
