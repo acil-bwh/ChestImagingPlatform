@@ -288,6 +288,18 @@ class GeometryTopologyData(object):
 
 
     def export_to_dataframe(self):
+        """
+        Export the content to a Dataframe with the following columns:
+            'chest_type_id', 'chest_type_name',
+           'chest_region_id', 'chest_region_name',
+           'feature_type_id', 'feature_type_name',
+           'description', 'timestamp', 'user_name', 'machine_name',
+           'coordinate_system', 'lps_to_ijk_transformation_matrix', 'spacing', 'origin', 'dimensions' --> (common to all the rows)
+           'c1', 'c2', 'c3' --> coords (only for objects that contain points)
+           'start1', 'start2', 'start3', 'size1', 'size2', 'size3' --> only for objects that contain bounding boxses
+        Returns:
+            Pandas Dataframe or None if the object does not contain any points or bounding boxes
+        """
         import pandas as pd
         from cip_python.common import ChestConventions
         if len(self.points) > 0 and len(self.bounding_boxes) > 0:
@@ -316,7 +328,7 @@ class GeometryTopologyData(object):
                                 self.coordinate_system_str(), self.lps_to_ijk_transformation_matrix_array,
                                 self.spacing, self.origin, self.dimensions]
 
-        elif len(self.points) > 0:
+        elif len(self.bounding_boxes) > 0:
             # Export bounding boxes
             columns = ['start1', 'start2', 'start3', 'size1', 'size2', 'size3'] + columns
             df = pd.DataFrame(columns=columns)
@@ -331,6 +343,8 @@ class GeometryTopologyData(object):
                                 # Common properties
                                 self.coordinate_system_str(), self.lps_to_ijk_transformation_matrix_array,
                                 self.spacing, self.origin, self.dimensions]
+        else:
+            return None
 
         df.index.name = 'id'
         return df
