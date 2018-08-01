@@ -4,7 +4,8 @@ from ..common import ChestConventions
 import nrrd
 import pandas as pd
 #from cip_python.io.image_reader_writer import ImageReaderWriter
-          
+
+
 def apply_label_from_classification(segmentation, lm, classified_features_df):
         """Given a patch segmentation file, a label map file, and a 
         classification csv file, apply the classification labels to each of 
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     assert(options.in_csv is not None), "csv input missing"
     assert(options.in_lm is not None), "lm input missing"       
 
-    print "Reading mask..." 
+    print ("Reading mask...")
     lm_array, lm_header = nrrd.read(options.in_lm) 
     patch_array, patch_header = nrrd.read(options.in_patch) 
 
@@ -120,6 +121,6 @@ if __name__ == "__main__":
     assert(options.out_label is not None), \
         " outputs missing"   
         
-    print "Writing output labels "
+    print ("Writing output labels ")
     nrrd.write(options.out_label, labels_array, lm_header , True, True)
                                

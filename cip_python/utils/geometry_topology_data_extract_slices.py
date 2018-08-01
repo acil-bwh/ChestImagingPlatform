@@ -163,15 +163,16 @@ def generate_qc_images(volume_path, xml_input_path, output_folder, structure_cod
     Returns:
 
     """
-    temp_cases_folder = os.path.join(output_folder, 'cases')
-    if not os.path.isdir(temp_cases_folder):
+    #temp_cases_folder = os.path.join(output_folder, 'cases')
+    if not os.path.isdir(output_folder):
         # This will create all the hierarchy if necessary
-        os.makedirs(temp_cases_folder)
+        os.makedirs(output_folder)
 
     gtd = GeometryTopologyData.from_xml_file(xml_input_path)
     scan_code = os.path.basename(volume_path)[:-5]
     reader = ImageReaderWriter()
     case_ct_array = reader.read_in_numpy(volume_path)[0]
+    original_size = np.array(case_ct_array.shape)
 
     for bb in gtd.bounding_boxes:
         if structure_codes is None \
@@ -193,9 +194,11 @@ def generate_qc_images(volume_path, xml_input_path, output_folder, structure_cod
                     im = case_ct_array[int(bb.start[0]), :, :]
                     im = np.rot90(im)
                     xmin = int(bb.start[1])
-                    ymin = int(bb.start[2])
+                    #ymin = int(bb.start[2])
+                    ymin = original_size[2] - int(bb.start[2] + bb.size[2])
                     xmax = int(bb.start[1] + bb.size[1])
-                    ymax = int(bb.start[2] + bb.size[2])
+                    # ymax = int(bb.start[2] + bb.size[2])
+                    ymax = ymin + int(bb.size[2])
                 elif bb.description.endswith("Coronal"):
                     im = case_ct_array[:, int(bb.start[1]), :]
                     im = np.rot90(im)
