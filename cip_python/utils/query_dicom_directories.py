@@ -1,6 +1,6 @@
 import sys, math, os
 from optparse import OptionParser
-import dicom
+import pydicom
 import csv
 from os import listdir
 from os.path import isfile, join
