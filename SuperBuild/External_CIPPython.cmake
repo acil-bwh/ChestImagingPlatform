@@ -83,7 +83,7 @@ if (INSTALL_CIP_PYTHON_DISTRIBUTION)
           )
 
   ExternalProject_Add_Step(${proj} installpydicom
-          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pydicom==0.9.9
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pydicom==1.1.0
           DEPENDEES installpynrrd
           )
 
