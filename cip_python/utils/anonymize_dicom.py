@@ -1,7 +1,7 @@
 from os import listdir
 from os.path import isfile, join, isdir
 from optparse import OptionParser
-import dicom
+import pydicom
 from dicom.tag import Tag
 
 def anonymize_dicom(ds):
