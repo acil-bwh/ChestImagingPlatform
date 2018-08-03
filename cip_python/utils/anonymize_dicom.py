@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isfile, join, isdir
 from optparse import OptionParser
 import pydicom
-from dicom.tag import Tag
+from pydicom.tag import Tag
 
 def anonymize_dicom(ds):
     """Anonymizes a dicom dataset. A value of 'Anonymized' is set for all tags
