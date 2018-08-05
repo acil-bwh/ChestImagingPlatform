@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Processing</category>
-  <title>ResampleLabelMap</title>
+  <title>RescaleLabelMap</title>
   <description><![CDATA[This program rescales (either upsamples or downsamples) a label map by a specified amount]]></description>
   <version>0.0.1</version>
   <documentation-url>https://chestimagingplatform.org/processing</documentation-url>

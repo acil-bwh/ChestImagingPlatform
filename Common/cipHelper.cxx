@@ -152,6 +152,7 @@ template<typename ImageType, typename InterpolatorType, unsigned int D> typename
     resizeFilter->SetInterpolator( imageInterpolator );
     resizeFilter->SetOutputOrigin( inputImage->GetOrigin() );
     resizeFilter->SetOutputSpacing( outputSpacing );
+    resizeFilter->SetOutputDirection( inputImage->GetDirection() );
     resizeFilter->SetSize( outputSize );
     resizeFilter->SetInput( inputImage );
     resizeFilter->Update();
@@ -179,7 +180,7 @@ cip::LabelMapType::Pointer cip::UpsampleLabelMap(unsigned short samplingAmount, 
 
   typedef itk::NearestNeighborInterpolateImageFunction<cip::LabelMapType, double>  InterpolatorType;
   return cip::UpsampleImage<cip::LabelMapType,InterpolatorType,3>(samplingAmount,inputLabelMap);
-  
+
 }
 
 cip::LabelMapSliceType::Pointer cip::UpsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap)
@@ -226,10 +227,11 @@ template<typename ImageType, typename InterpolatorType, unsigned int D> typename
 
 
   typename ResampleType::Pointer resizeFilter = ResampleType::New();
-    resizeFilter->SetTransform( idTransform );
+//    resizeFilter->SetTransform( idTransform );
     resizeFilter->SetInterpolator( imageInterpolator );
     resizeFilter->SetOutputOrigin( inputImage->GetOrigin() );
     resizeFilter->SetOutputSpacing( outputSpacing );
+    resizeFilter->SetOutputDirection( inputImage->GetDirection() );
     resizeFilter->SetSize( outputSize );
     resizeFilter->SetInput( inputImage );
     resizeFilter->Update();
