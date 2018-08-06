@@ -151,7 +151,7 @@ def extract_slices(input_volume_path, xml_input, output_dir=None, cid=None,
     print("All results saved in {}".format(os.path.realpath(output_dir)))
 
 
-def generate_qc_images(volume_path, xml_input_path, output_folder, structure_codes=None):
+def generate_qc_images(volume_path, xml_input_path, output_folder, structure_codes=None, display_figures_inline=False):
     """
          Generate QC Images from an XML GeometryTopologyObject file
     Args:
@@ -159,8 +159,8 @@ def generate_qc_images(volume_path, xml_input_path, output_folder, structure_cod
         xml_input_path: Path to the GeometryTopologyData XML
         output_folder: folder where the qc images will be stored
         structure_codes: list of structure codes (default: all)
-
-    Returns:
+        display_figures_inline: when True, the figures will not be closed (this may be useful for example to see the
+                        figures in a notebook in inline mode). Use with caution!
 
     """
     #temp_cases_folder = os.path.join(output_folder, 'cases')
@@ -217,10 +217,10 @@ def generate_qc_images(volume_path, xml_input_path, output_folder, structure_cod
                 axis.add_patch(rect)
                 axis.set_title("{}-{}".format(scan_code, bb.description))
 
-
                 fig.savefig(file_name)
                 print (file_name + " saved")
-                # plt.close()
+                if not display_figures_inline:
+                    plt.close()
 
 
 if __name__ == "__main__":

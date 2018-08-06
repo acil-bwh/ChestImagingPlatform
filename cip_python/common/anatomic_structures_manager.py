@@ -121,46 +121,46 @@ class AnatomicStructuresManager(object):
         """
         raise NotImplementedError("Suggested: First convert LPS to IJK, then call ijk_to_xywh")
 
-    def ijk_to_xywh(self, coords1, coords2, vol_size, normalize=False):
+    def ijk_to_xywh(self, coord1, coord2, vol_size, normalize=False):
         """
-        Given coordinates and region size in IJK THAT FOLLOW ITK CONVENTION, transform the coordinates to
+        Given coordinates and region size in IJK THAT FOLLOWS ITK CONVENTION, transform the coordinates to
         x,y,w,h that follow anatomical convention (the way an user would see the 2D images).
         If normalize==True, all the coordinates will be normalized to a 0-1 range
         Args:
-            coords1: first coords in IJK
-            coords2: second coords
+            coord1: first coord in IJK
+            coord2: second coord in IJK
             vol_size: tuple with volume size
 
         Returns:
             tuple with X,Y,W,H coordinates in an anatomical format, where X and Y represent the top-left coordinates
 
         """
-        if coords1[0] == coords2[0]:
+        if coord1[0] == coord2[0]:
             # Sagittal
             xp = 1
             yp = 2
-            x = int(coords1[xp])
-            y = int(coords1[yp])
-            width = int(abs(coords2[xp] - coords1[xp]))
-            height = int(abs(coords2[yp] - coords1[yp]))
+            x = int(coord1[xp])
+            y = int(coord1[yp])
+            width = int(abs(coord2[xp] - coord1[xp]))
+            height = int(abs(coord2[yp] - coord1[yp]))
             y = vol_size[yp] - y - height
-        elif coords1[1] == coords2[1]:
+        elif coord1[1] == coord2[1]:
             # Coronal
             xp = 0
             yp = 2
-            x = int(coords1[xp])
-            y = int(coords1[yp])
-            width = int(abs(coords2[xp] - coords1[xp]))
-            height = int(abs(coords2[yp] - coords1[yp]))
+            x = int(coord1[xp])
+            y = int(coord1[yp])
+            width = int(abs(coord2[xp] - coord1[xp]))
+            height = int(abs(coord2[yp] - coord1[yp]))
             y = vol_size[yp] - y - height
-        elif coords1[2] == coords2[2]:
+        elif coord1[2] == coord2[2]:
             # Axial
             xp = 0
             yp = 1
-            x = int(coords1[xp])
-            y = int(coords1[yp])
-            width = int(abs(coords2[xp] - coords1[xp]))
-            height = int(abs(coords2[yp] - coords1[yp]))
+            x = int(coord1[xp])
+            y = int(coord1[yp])
+            width = int(abs(coord2[xp] - coord1[xp]))
+            height = int(abs(coord2[yp] - coord1[yp]))
         else:
             raise Exception("The structure is not 2D")
 
@@ -170,6 +170,58 @@ class AnatomicStructuresManager(object):
             y /= float(vol_size[yp])
             height /= float(vol_size[yp])
         return x, y, width, height
+
+    def xywh_to_3D_ijk(self, coords, num_slice, plane, volume_shape):
+        """
+        Convert coords xywh (where x and y are the coordinates of the CENTER of the structure) to a 3D IJK format
+        that can be transferred to a GeometryTopologyData object
+        Args:
+            coords: np array with 4 coordinates in [0-1] range
+            num_slice: int. number of slice (following the format given by "get_stacked_slices_from_3D_volume")
+            plane: ChestConventions Plane object
+            volume_shape: 3-tuple int with the original volume shape (in IJK, as returned by sitk_img.GetDimensions())
+
+        Returns:
+            Tuple with 2 numpy arrays (start, size) that can be copied to a GeometryTopologyData object
+
+        """
+        cs = np.copy(coords)
+        if plane == Plane.AXIAL:
+            cs[:2] *= volume_shape[:2]
+            cs[2:] *= volume_shape[:2]
+            xmin = max(int(cs[0] - (cs[2] / 2)), 0)
+            ymin = max(int(cs[1] - (cs[3] / 2)), 0)
+            start = np.array([xmin, ymin, num_slice])
+            size = np.array([int(cs[2]), int(cs[3]), 0])
+        elif plane == Plane.SAGITTAL:
+            cx = 1
+            cy = 2
+            cs = np.clip(cs, 0, 0.999)
+            cs[0] *= volume_shape[cx]
+            cs[1] *= volume_shape[cy]
+            cs[2] *= volume_shape[cx]
+            cs[3] *= volume_shape[cy]
+            xmin = max(int(cs[0] - (cs[2] / 2)), 0)
+            ymin = max(volume_shape[cy] - int(cs[1] + (cs[3] / 2)), 0)
+            start = np.array([num_slice, xmin, ymin])
+            size = np.array([0, int(cs[1]), int(cs[3])])
+        elif plane == Plane.CORONAL:
+            cx = 0
+            cy = 2
+            cs = np.clip(cs, 0, 0.999)
+            cs[0] *= volume_shape[cx]
+            cs[1] *= volume_shape[cy]
+            cs[2] *= volume_shape[cx]
+            cs[3] *= volume_shape[cy]
+
+            xmin = max(int(cs[0] - (cs[2] / 2)), 0)
+            ymin = max(volume_shape[cy] - int(cs[1] + (cs[3] / 2)), 0)
+            start = np.array([xmin, num_slice, ymin])
+            size = np.array([int(cs[2]), 0, int(cs[3])])
+        else:
+            raise Exception("Wrong plane: {}".format(plane))
+
+        return start, size
 
     def generate_all_slices(self, case_path, output_folder):
         """ DEPRECATED.
