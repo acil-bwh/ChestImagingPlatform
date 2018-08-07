@@ -51,7 +51,7 @@ class FissureParticles(ChestParticles):
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, scale=0.9, live_thresh=-15,
                  seed_thresh=-45, down_sample_rate=1,
-                 min_intensity=-920, max_intensity=-400, iterations=200, 
+                 min_intensity=-920, max_intensity=-400, iterations=100, 
                  perm=False):
         ChestParticles.__init__(self, feature_type="ridge_surface",
             in_file_name=in_file_name, 
@@ -107,7 +107,7 @@ class FissureParticles(ChestParticles):
         self._use_strength = False
         self._inter_particle_energy_type = "justr"
         self._init_mode = "Random"
-        self._number_init_particles = 12000
+        self._number_init_particles = 10000
         
         self._beta  = 0 # Irrelevant for pass 1
         self._alpha = 0.5
@@ -156,7 +156,7 @@ if __name__ == "__main__":
       to enhance the fissure features within the range [min_int, max_int]', 
       dest="max_int", default=-400)
     parser.add_argument("--iters", help='Number of algorithm iterations \
-      (default 200)', dest="iters", default=200)    
+      (default 100)', dest="iters", default=100)    
     parser.add_argument("--perm", help='Allow mask and CT volumes to have \
       different shapes or meta data', dest="perm", action='store_true')          
 
