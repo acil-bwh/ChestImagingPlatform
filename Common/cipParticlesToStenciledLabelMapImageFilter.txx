@@ -282,7 +282,7 @@ unsigned int
 cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 ::GetChestParticleType()
 {  
-  if ( this->ParticleType == RIDGESURFACE )
+  if ( this->SelectedParticleType == RIDGESURFACE )
     {
     //
     // Our current scheme doesn't allow disambiguation of fissure
@@ -291,7 +291,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
     //
     return cip::FISSURE;
     }
-  if ( this->ParticleType == RIDGELINE )
+  if ( this->SelectedParticleType == RIDGELINE )
     {
     return cip::VESSEL;
     }
