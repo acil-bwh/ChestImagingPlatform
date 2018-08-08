@@ -8,6 +8,7 @@ import SimpleITK as sitk
 from scipy import signal
 
 from cip_python.dcnn import metrics, utils
+from cip_python.common import ChestConventions
 
 from keras.models import load_model
 import keras.backend as K
@@ -16,6 +17,12 @@ class LungSegmenterDCNN:
     def __init__(self):
         self.input_ct = None
         self.output_lm = None
+
+        self.prob_eps = 1e-7
+        c = ChestConventions()
+        self.RightLabel = c.GetChestRegionValueFromName('RightLung')
+        self.LeftLabel = c.GetChestRegionValueFromName('LeftLung')
+        self.AirwayLabel = c.GetValueFromChestRegionAndType(0, 2)
 
     @staticmethod
     def load_network_model(model_path):
@@ -31,44 +38,86 @@ class LungSegmenterDCNN:
                                                                'dice_coef_loss': metrics.dice_coef_loss})
         return network_model
 
-    def lung_segmentation(self, network_model, patch_size, image_np):
-        if patch_size[0] != patch_size[1]:  # Coronal orientation
+    def normalized_convolution_lp(self, signal, certainty, filter_func, *args):
+
+        numerator = filter_func(signal * certainty, *args)
+        denominator = filter_func(certainty)
+        index = denominator > self.prob_eps
+
+        output = numerator
+        output[index] = numerator[index] / denominator[index]
+
+        return output
+
+    def filtra3D(self, im, window=[1,1,1], spacing=[1,1,1], method=2):
+        im_sitk = sitk.GetImageFromArray(im)
+        if method == 1:
+            # Calculate the sigma parameters for each dimensionssf
+            spacing_sitk = (spacing[2], spacing[1], spacing[0])
+            im_sitk.SetSpacing(spacing_sitk)
+            sigma_filter = np.mean(window) * 0.78 * min(spacing_sitk)  # Order of sitk spacing
+
+            ff = sitk.DiscreteGaussianImageFilter()
+            ff.SetUseImageSpacing = True
+            ff.SetVariance(sigma_filter**2)
+
+            out_im = ff.Execute(im_sitk)
+            return sitk.GetArrayFromImage(out_im)
+        else:
+            ff = sitk.MeanImageFilter()
+            out_im = ff.Execute(im_sitk,window)
+            return sitk.GetArrayFromImage(out_im)
+
+    def lung_segmentation(self, network_model, patch_size, image_sitk, N_subsampling=10, orientation='axial'):
+        image_spacing = image_sitk.GetSpacing()
+        image_np = sitk.GetArrayFromImage(image_sitk).transpose([2, 1, 0])
+
+        if orientation == 'coronal':  # Transpose image
             image_np = image_np.transpose([0, 2, 1])
+            image_spacing = np.asarray([image_spacing[0], image_spacing[2], image_spacing[1]])
 
+        img_sitk = sitk.GetImageFromArray(image_np.transpose([2, 1, 0]))
+        img_sitk.SetSpacing([image_spacing[0], image_spacing[1], image_spacing[2]])
+
+        z_shape = image_np.shape[2]
         if patch_size[0] != image_np.shape[0] or patch_size[1] != image_np.shape[1]:
-            cnn_images = np.zeros((patch_size[0], patch_size[1], image_np.shape[2]), dtype=np.float32)
-            for ii in range(image_np.shape[2]):
-                slice_sitk = sitk.GetImageFromArray(image_np[:, :, ii].transpose())
-                resampled_sitk = utils.resample_image(slice_sitk, patch_size, sitk.sitkFloat32,
-                                                      interpolator=sitk.sitkBSpline)
-                cnn_images[:, :, ii] = sitk.GetArrayFromImage(resampled_sitk).transpose()
+            if orientation == 'coronal':
+                z_shape /= 2
+            output_size = np.asarray([patch_size[0], patch_size[1], z_shape])
+
+            resampled_sitk = utils.resample_image(img_sitk, output_size, sitk.sitkInt16,
+                                                  interpolator=sitk.sitkBSpline)
+            cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
+            cnn_img = cnn_img.astype(np.float32)
         else:
-            cnn_images = image_np
+            cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0])
 
-        for ii in range(cnn_images.shape[2]):
-            cnn_images[:, :, ii] = utils.standardization(cnn_images[:, :, ii])
-            # cnn_images[:, :, ii] = utils.range_normalization(cnn_images[:, :, ii])
+        z_samples = range(0, cnn_img.shape[2], N_subsampling)
+        if not cnn_img.shape[2] - 1 in z_samples:
+            z_samples.append(cnn_img.shape[2] - 1)
 
-        cnn_images = cnn_images.transpose([2, 0, 1])
-        cnn_images = np.expand_dims(cnn_images, axis=3)
+        predictions = np.zeros((4, z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
+        certainty_map = np.zeros((z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
 
-        predictions = network_model.predict(cnn_images, batch_size=10, verbose=1)
-        predictions = np.asarray(predictions)
+        for ii in xrange(cnn_img.shape[2]):
+            cnn_img[:, :, ii] = utils.standardization(cnn_img[:, :, ii])
 
-        if patch_size[0] != image_np.shape[0] or patch_size[1] != image_np.shape[1]:
-            final_predictions = np.zeros((predictions.shape[0], predictions.shape[1], image_np.shape[0],
-                                          image_np.shape[1]))
-            for ii in range(predictions.shape[0]):
-                for jj in range(predictions.shape[1]):
-                    label_sitk = sitk.GetImageFromArray(predictions[ii, jj, :, :, 0].transpose())
-                    output_shape = np.asarray([image_np.shape[0], image_np.shape[1]])
-                    resampled_label_sitk = utils.resample_image(label_sitk, output_shape, sitk.sitkFloat32,
-                                                                interpolator=sitk.sitkBSpline)
-                    final_predictions[ii, jj, :, :] = sitk.GetArrayFromImage(resampled_label_sitk).transpose()
-        else:
-            final_predictions = predictions.squeeze()
+        for ii in z_samples:
+            print 'Segmenting slice {} of {}'.format(ii, cnn_img.shape[2])
 
-        return final_predictions
+            pred_img = cnn_img[:, :, ii]
+
+            pred_img = np.expand_dims(pred_img, axis=0)
+            pred_img = np.expand_dims(pred_img, axis=-1)
+            cnn_predictions = np.squeeze(network_model.predict(pred_img, batch_size=N_subsampling))
+            predictions[:, ii, :, :] = cnn_predictions
+            certainty_map[ii, :, :] = np.ones([patch_size[0], patch_size[1]])
+
+        if N_subsampling > 1:
+            for cc in xrange(4):
+                predictions[cc] = self.normalized_convolution_lp(predictions[cc], certainty_map, self.filtra3D,
+                                                                 [1, 1, N_subsampling], [1, 1, 1])
+        return predictions
 
     @staticmethod
     def sum_up_to_one(prob):
@@ -81,26 +130,26 @@ class LungSegmenterDCNN:
     def compute_map(prob):  # Maximum a posteriori probability
         map_id = np.argmax(prob, axis=0)
 
-        return map_id.astype(np.int32)
+        return map_id.astype(np.uint16)
 
     def combine_planes(self, axial_prob, coronal_prob):
-        ss_a = int((int(axial_prob.shape[3] / 2.0) - 10) / 3.0)
-        la_z = signal.gaussian(axial_prob.shape[3], std=ss_a)
+        ss_a = int((int(axial_prob.shape[2] / 2.0) - 5) / 3.0)
+        la_z = signal.gaussian(axial_prob.shape[2], std=ss_a)
 
-        ss_c = int((int(coronal_prob.shape[2] / 2.0) - 10) / 3.0)
-        lc_y = signal.gaussian(coronal_prob.shape[2], std=ss_c)
+        ss_c = int((int(coronal_prob.shape[3] / 2.0) - 5) / 3.0)
+        lc_y = signal.gaussian(coronal_prob.shape[3], std=ss_c)
 
         axial_prob_gauss = np.zeros(axial_prob.shape, dtype=np.float32)
         for ii in range(axial_prob_gauss.shape[0]):
-            for aa in range(axial_prob_gauss.shape[2]):
+            for aa in range(axial_prob_gauss.shape[3]):
                 for bb in range(axial_prob_gauss.shape[1]):
-                    axial_prob_gauss[ii, bb, aa, :] = axial_prob[ii, bb, aa, :] * la_z
+                    axial_prob_gauss[ii, bb, :, aa] = axial_prob[ii, bb, :, aa] * la_z
 
         coronal_prob_gauss = np.zeros(coronal_prob.shape, dtype=np.float32)
         for ii in range(coronal_prob_gauss.shape[0]):
-            for aa in range(coronal_prob_gauss.shape[3]):
+            for aa in range(coronal_prob_gauss.shape[2]):
                 for bb in range(coronal_prob_gauss.shape[1]):
-                    coronal_prob_gauss[ii, bb, :, aa] = coronal_prob[ii, bb, :, aa] * lc_y
+                    coronal_prob_gauss[ii, bb, aa, :] = coronal_prob[ii, bb, aa, :] * lc_y
 
         combined_pp = np.zeros(axial_prob.shape, dtype=np.float32)
         for nn in range(combined_pp.shape[0]):
@@ -113,17 +162,26 @@ class LungSegmenterDCNN:
 
         return combined_pp
 
-    def execute(self, input_ct, output_lm,
-                axial_model_path, coronal_model_path, segmentation_type='combined'):
-        self.input_ct = input_ct
-        self.output_lm = output_lm
+    def resample_predictions(self, predictions_image, output_size):
+        out_predictions = np.zeros((4, output_size[0], output_size[1], output_size[2]))
 
-        image_sitk = sitk.ReadImage(self.input_ct)
-        image_np = sitk.GetArrayFromImage(image_sitk).transpose([2, 1, 0])
+        output_size = np.asarray(output_size)
+
+        for ii in range(predictions_image.shape[0]):
+            pp_sitk = sitk.GetImageFromArray(predictions_image[ii].transpose([2, 1, 0]))
+            resampled_sitk = utils.resample_image(pp_sitk, output_size, sitk.sitkFloat32,
+                                                  interpolator=sitk.sitkLinear)
+            out_predictions[ii] = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
+
+        return out_predictions
+
+    def execute(self, input_ct, axial_model_path, coronal_model_path, segmentation_type='combined', N_subsampling=10):
+        image_sitk = sitk.ReadImage(input_ct)
+        img_size = image_sitk.GetSize()
 
         if segmentation_type == 'combined' or segmentation_type == 'axial':
             # Axial Lung Segmentation
-            print ('    Predicting axial probabilities...')
+            print '    Predicting axial probabilities...'
             axial_model = self.load_network_model(axial_model_path)
 
             a_batch_input_shape = axial_model.layers[0].get_config()['batch_input_shape']
@@ -133,13 +191,14 @@ class LungSegmenterDCNN:
             else:
                 a_patch_size = np.asarray([a_batch_input_shape[2], a_batch_input_shape[3]])
 
-            axial_predictions = self.lung_segmentation(axial_model, a_patch_size, image_np)
+            axial_predictions = self.lung_segmentation(axial_model, a_patch_size, image_sitk, N_subsampling,
+                                                       orientation='axial')
             axial_predictions = axial_predictions.transpose([0, 2, 3, 1])
             axial_predictions = self.sum_up_to_one(axial_predictions)
 
         if segmentation_type == 'combined' or segmentation_type == 'coronal':
             # Coronal Lung Segmentation
-            print ('    Predicting coronal probabilities...')
+            print '    Predicting coronal probabilities...'
             coronal_model = self.load_network_model(coronal_model_path)
 
             c_batch_input_shape = coronal_model.layers[0].get_config()['batch_input_shape']
@@ -149,40 +208,164 @@ class LungSegmenterDCNN:
             else:
                 c_patch_size = np.asarray([c_batch_input_shape[2], c_batch_input_shape[3]])
 
-            coronal_predictions = self.lung_segmentation(coronal_model, c_patch_size, image_np)
+            if N_subsampling > 1:
+                N_subsampling_coronal = 2
+            else:
+                N_subsampling_coronal = 1
+
+            coronal_predictions = self.lung_segmentation(coronal_model, c_patch_size, image_sitk, N_subsampling_coronal,
+                                                         orientation='coronal')
             coronal_predictions = coronal_predictions.transpose([0, 2, 1, 3])
             coronal_predictions = self.sum_up_to_one(coronal_predictions)
 
         if segmentation_type == 'combined':
-            print ('    Combining axial and coronal probabilities...')
+            print '    Combining axial and coronal probabilities...'
+            if axial_predictions.shape[3] != coronal_predictions.shape[3]:
+                coronal_predictions = self.resample_predictions(coronal_predictions, np.asarray(axial_predictions.shape[1:]))
+
             combined_predictions = self.combine_planes(axial_predictions, coronal_predictions)
-            output_labels = self.compute_map(combined_predictions)
+            if combined_predictions.shape[0] != img_size[0] or combined_predictions[1] != img_size[1]:
+                output_size = np.asarray(img_size)
+                out_predictions = self.resample_predictions(combined_predictions, output_size)
+            else:
+                out_predictions = combined_predictions
+            output_labels = self.compute_map(out_predictions)
         elif segmentation_type == 'axial':
-            output_labels = self.compute_map(axial_predictions)
+            if a_patch_size[0] != img_size[0] or a_patch_size[1] != img_size[1]:
+                output_size = np.asarray(img_size)
+                out_predictions = self.resample_predictions(axial_predictions, output_size)
+            else:
+                out_predictions = axial_predictions
+
+            output_labels = self.compute_map(out_predictions)
         else:
-            output_labels = self.compute_map(coronal_predictions)
+            if c_patch_size[0] != img_size[0] or c_patch_size[1] != img_size[1]:
+                output_size = np.asarray(img_size)
+                out_predictions = self.resample_predictions(coronal_predictions, output_size)
+            else:
+                out_predictions = coronal_predictions
 
-        output_labels[output_labels == 3] = 512
-        output_labels[output_labels == 1] = 3
+            output_labels = self.compute_map(out_predictions)
 
-        print ('    Writing lung segmentation file...')
+        output_labels = output_labels.astype(np.uint16)
+        output_labels[output_labels == 3] = self.AirwayLabel
+        output_labels[output_labels == 1] = self.LeftLabel
+        output_labels[output_labels == 2] = self.RightLabel
+
         output_labels_sitk = sitk.GetImageFromArray(output_labels.transpose([2, 1, 0]))
-        output_labels_sitk.CopyInformation(image_sitk)
+        output_labels_sitk.SetSpacing(image_sitk.GetSpacing())
+        output_labels_sitk.SetDirection(image_sitk.GetDirection())
+        output_labels_sitk.SetOrigin(image_sitk.GetOrigin())
 
-        sitk.WriteImage(output_labels_sitk, self.output_lm, True)
+        return output_labels_sitk
+
+
+class LungThirdSplitter():
+    def __init__(self):
+        self.size_th = 0.05
+        self.coordinate_system = 'lps'
+        c = ChestConventions()
+        self.RightLabel = c.GetChestRegionValueFromName('RightLung')
+        self.LeftLabel = c.GetChestRegionValueFromName('LeftLung')
+        self.WholeLung = c.GetChestRegionValueFromName('WholeLung')
+        self.UpperThird = c.GetChestRegionValueFromName('UpperThird')
+        self.MiddleThrid = c.GetChestRegionValueFromName('MiddleThird')
+        self.LowerThird = c.GetChestRegionValueFromName('LowerThird')
+        self.LeftUpperThird = c.GetChestRegionValueFromName('LeftUpperThird')
+        self.LeftMiddleThird = c.GetChestRegionValueFromName('LeftMiddleThird')
+        self.LeftLowerThrid = c.GetChestRegionValueFromName('LeftLowerThird')
+        self.RightUpperThird = c.GetChestRegionValueFromName('RightUpperThird')
+        self.RightMiddleThrid = c.GetChestRegionValueFromName('RightMiddleThird')
+        self.RightLowerThrid = c.GetChestRegionValueFromName('RightLowerThird')
+
+        self.cc_f = sitk.ConnectedComponentImageFilter()
+        self.r_f = sitk.RelabelComponentImageFilter()
+        self.ls = sitk.LabelShapeStatisticsImageFilter()
+
+    def execute(self, lm):
+        # Get Region/Type Information
+        lm_np = sitk.GetArrayFromImage(lm)
+        lm_np = lm_np.astype(np.uint16)
+
+        # Output holder copy
+        olm_tmp = sitk.Image(lm)
+        olm_np = sitk.GetArrayFromImage(olm_tmp)
+        olm_np = olm_np.astype(np.uint16)
+
+        present_labels = np.unique(lm_np)
+
+        for ll in present_labels:
+            lm_target_np = np.zeros(lm_np.shape, dtype=lm_np.dtype)
+            lm_target_np[lm_np == ll] = 1
+
+            tmp_itk = sitk.GetImageFromArray(lm_target_np)
+            tmp_cc = self.cc_f.Execute(tmp_itk)
+            tmp_rl = self.r_f.Execute(tmp_cc)
+
+            tmp_rl_np = sitk.GetArrayFromImage(tmp_rl)
+            olm_np[tmp_rl_np > 1] = 0
+
+        lm_type_np = olm_np >> 8
+        lm_region_np = olm_np & 255
+
+        # Splitting in Thirds
+        size = lm.GetSize()
+        vol_right = np.sum(olm_np == self.RightLabel)
+        vol_left = np.sum(olm_np == self.LeftLabel)
+        target_vol_right = 0
+        target_vol_left = 0
+        for zz in xrange(size[2]):
+            cut = olm_np[zz, :, :]
+            right_mask = (cut == self.RightLabel)
+            left_mask = (cut == self.LeftLabel)
+
+            slice_vol_right = np.sum(right_mask)
+            slice_vol_left = np.sum(left_mask)
+            if target_vol_right <= vol_right / 3:
+                cut[right_mask] = self.RightLowerThrid
+            elif target_vol_right > vol_right / 3 and target_vol_right <= 2 * vol_right / 3:
+                cut[right_mask] = self.RightMiddleThrid
+            else:
+                cut[right_mask] = self.RightUpperThird
+
+            target_vol_right = target_vol_right + slice_vol_right
+
+            if target_vol_left <= vol_left / 3:
+                cut[left_mask] = self.LeftLowerThrid
+            elif target_vol_left > vol_left / 3 and target_vol_left <= 2 * vol_left / 3:
+                cut[left_mask] = self.LeftMiddleThird
+            else:
+                cut[left_mask] = self.LeftUpperThird
+
+            target_vol_left = target_vol_left + slice_vol_left
+
+        # Transfer type labels to output LM
+        wl_mask = (lm_region_np == self.WholeLung) | (lm_region_np == self.RightLabel) | \
+                  (lm_region_np == self.LeftLabel)
+
+        olm_np[np.logical_not(wl_mask)] = lm_region_np[np.logical_not(wl_mask)]
+        pp = olm_np + (lm_type_np << 8)
+
+        olm = sitk.GetImageFromArray(pp)
+        olm.CopyInformation(lm)
+        return olm
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='CNN method (2D) for lung segmentation (unet)')
+    parser = argparse.ArgumentParser(description='CNN method (2D) for lung segmentation (modified unet)')
     parser.add_argument('--i', dest='in_ct', help="Input CT file (.nrrd)", type=str, required=True)
     parser.add_argument('--t', dest='segmentation_type', choices=['axial','coronal','combined'],
-                        help='Options: axial, coronal, combined', type=str, default='combined')
-    parser.add_argument('--am', dest='axial_model', help='CNN model for axial lung segmentation (.hdf5).', required=False,
+                        help='Options: [axial|coronal|combined]', type=str, default='combined')
+    parser.add_argument('--am', dest='axial_model', help='CNN model for axial lung segmentation (.hdf5)', required=False,
                         type=str, default=None)
-    parser.add_argument('--cm', dest='coronal_model', help='CNN model for coronal lung segmentation (.hdf5).', required=False,
+    parser.add_argument('--cm', dest='coronal_model', help='CNN model for coronal lung segmentation (.hdf5)',
+                        required=False,
                         type=str, default=None)
-
-    parser.add_argument('--o', dest='out_lm', help='Output labelmap file (.nrrd).', required=True, type=str,
+    parser.add_argument('--n', dest='n_subsampling', help='Number of slices to use for segmentation',
+                        required=False, type=int, default=1)
+    parser.add_argument('--o', dest='out_lm', help='Output labelmap file (.nrrd)', required=True, type=str,
                         default=None)
+    parser.add_argument('-thirds', dest='thirds', help='Flag to split lung segmentation into thirds',
+                        action='store_true')
     op = parser.parse_args()
 
     axial = op.segmentation_type in ('axial', 'combined')
@@ -209,5 +392,13 @@ if __name__ == "__main__":
         coronal_model = None
 
     lung_segmenter = LungSegmenterDCNN()
-    lung_segmenter.execute(op.in_ct, op.out_lm, axial_model, coronal_model, segmentation_type=op.segmentation_type)
+    lung_segmentation = lung_segmenter.execute(op.in_ct, axial_model, coronal_model,
+                                               segmentation_type=op.segmentation_type,
+                                               N_subsampling = int(op.n_subsampling))
 
+    if op.thirds:
+        print ('    Splitting Segmentation in Thirds...')
+        lung_splitter = LungThirdSplitter()
+        lung_segmentation = lung_splitter.execute(lung_segmentation)
+
+    sitk.WriteImage(lung_segmentation, op.out_lm, True)

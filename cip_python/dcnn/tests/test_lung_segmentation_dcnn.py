@@ -22,7 +22,9 @@ def test_lung_segmentation_dcnn():
     model_manager = common.DeepLearningModelsManager()
     axial_model_path = model_manager.get_model_path('LUNG_SEGMENTATION_AXIAL')
 
-    segmenter.execute(input_file_path, output_file_path, axial_model_path, None, segmentation_type='axial')
+    segmentation = segmenter.execute(input_file_path, axial_model_path, None, segmentation_type='axial',
+                                     N_subsampling=1)
+    sitk.WriteImage(segmentation, output_file_path)
 
     baseline_image = sitk.GetArrayFromImage(sitk.ReadImage(baseline_image_path))
     output_image = sitk.GetArrayFromImage(sitk.ReadImage(output_file_path))
