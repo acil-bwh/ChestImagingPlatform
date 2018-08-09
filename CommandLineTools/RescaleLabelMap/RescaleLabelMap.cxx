@@ -26,7 +26,7 @@ namespace
     typedef itk::CastImageFilter< LabelMapType, cip::LabelMapSliceType > CasterTempTo2dType;
     typedef itk::CastImageFilter< cip::LabelMapSliceType, LabelMapType > Caster2dToTempType;
 
-    typename CasterTempTo2dType::Pointer caster = CasterTempTo2dType::New();
+    CasterTempTo2dType::Pointer caster = CasterTempTo2dType::New();
 	  caster->SetInput( inputImage );
 	  caster->Update();
 
@@ -42,7 +42,7 @@ namespace
 	    tmp = cip::UpsampleLabelMapSlice( upScale, tmp );
 	  }
 
-	  typename Caster2dToTempType::Pointer tmpCaster = Caster2dToTempType::New();
+	  Caster2dToTempType::Pointer tmpCaster = Caster2dToTempType::New();
 	  tmpCaster->SetInput( tmp );
 	  tmpCaster->Update();
 	
@@ -58,7 +58,7 @@ namespace
     typedef itk::CastImageFilter< LabelMapType, cip::LabelMapType >      CasterTempTo3dType;
     typedef itk::CastImageFilter< cip::LabelMapType, LabelMapType >      Caster3dToTempType;
 
-    typename CasterTempTo3dType::Pointer caster = CasterTempTo3dType::New();
+    CasterTempTo3dType::Pointer caster = CasterTempTo3dType::New();
 	  caster->SetInput( inputImage );
 	  caster->Update();
 
@@ -74,7 +74,7 @@ namespace
 	    tmp = cip::UpsampleLabelMap( upScale, tmp );
 	  } 
     
-	  typename Caster3dToTempType::Pointer tmpCaster = Caster3dToTempType::New();
+	  Caster3dToTempType::Pointer tmpCaster = Caster3dToTempType::New();
 	  tmpCaster->SetInput( tmp );
 	  tmpCaster->Update();
 	
