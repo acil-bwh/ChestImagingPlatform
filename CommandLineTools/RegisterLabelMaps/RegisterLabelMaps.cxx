@@ -160,14 +160,14 @@ namespace
     typedef itk::CastImageFilter< cip::LabelMapSliceType, LabelMapType >                   CasterCIPToTempType;
 
     // First down-sample the fixed label map
-	  typename CasterTempToCIPType::Pointer tempToCIPCaster = CasterTempToCIPType::New();
+	  CasterTempToCIPType::Pointer tempToCIPCaster = CasterTempToCIPType::New();
 	  tempToCIPCaster->SetInput( labelMap );
 	  tempToCIPCaster->Update();
 
-	  typename cip::LabelMapSliceType::Pointer tmp = cip::LabelMapSliceType::New();
+	  cip::LabelMapSliceType::Pointer tmp = cip::LabelMapSliceType::New();
 	  tmp = cip::DownsampleLabelMapSlice( downsampleFactor, tempToCIPCaster->GetOutput() );
 
-	  typename CasterCIPToTempType::Pointer CIPToTempCaster = CasterCIPToTempType::New();
+	  CasterCIPToTempType::Pointer CIPToTempCaster = CasterCIPToTempType::New();
 	  CIPToTempCaster->SetInput( tmp );
 	  CIPToTempCaster->Update();
 	
@@ -183,14 +183,14 @@ namespace
     typedef itk::CastImageFilter< LabelMapType, cip::LabelMapType >                        CasterTempToCIPType;
     typedef itk::CastImageFilter< cip::LabelMapType, LabelMapType >                        CasterCIPToTempType;
 
-  	typename CasterTempToCIPType::Pointer tempToCIPCaster = CasterTempToCIPType::New();
+  	CasterTempToCIPType::Pointer tempToCIPCaster = CasterTempToCIPType::New();
 	  tempToCIPCaster->SetInput( labelMap );
 	  tempToCIPCaster->Update();
 
 	  cip::LabelMapType::Pointer tmp = cip::LabelMapType::New();
 		tmp = cip::DownsampleLabelMap( downsampleFactor, tempToCIPCaster->GetOutput() );
 
-	  typename CasterCIPToTempType::Pointer CIPToTempCaster = CasterCIPToTempType::New();
+	  CasterCIPToTempType::Pointer CIPToTempCaster = CasterCIPToTempType::New();
 	  CIPToTempCaster->SetInput( tmp );
 	  CIPToTempCaster->Update();
 	
