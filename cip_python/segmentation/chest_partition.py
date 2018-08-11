@@ -95,7 +95,7 @@ class ChestPartition:
     Attributes
     ----------
     partition_regions_ : list of strings
-                          Name of the regions that come with a partition  
+                          Name of the partitions
 
     Notes
     -----
@@ -203,7 +203,7 @@ class ChestPartition:
         All partition region label names         
         """
         
-        return self.partition_regions
+        return self.partition_regions_
         
         
         #cp = ChestPartitionRegionConventions()

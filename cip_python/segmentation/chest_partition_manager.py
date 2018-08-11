@@ -1,7 +1,7 @@
 import numpy as np
 import pdb
 import scipy.ndimage.morphology as scimorph
-from cip_python.segmentation comput_image_similarity import *
+
 class ChestPartitionRegionConventions:
     """ Class defining chest partition conventions. For now a simple class where a list
         defines the relationship between the partition_region name and the partition_region 

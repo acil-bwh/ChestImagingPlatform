@@ -1,7 +1,7 @@
 import os.path
 import pandas as pd
 import nrrd
-from cip_python.segmentation.rind_vs_core_partition import RindVsCorePartition
+from cip_python.segmentation.rind_core_partition import RindCorePartition
 import numpy as np
 import pdb
 from cip_python.input_output.image_reader_writer import ImageReaderWriter
@@ -26,10 +26,12 @@ def test_execute():
     spacing[1] = lm_header['spacing'][1]
     spacing[2] = lm_header['spacing'][2]
     
-    rind_core_partitioner = RindVsCorePartition(rind_width=10.0)
-    rind_core_partitioner.execute(lm_array, spacing)
+    rind_core_partitioner = RindCorePartition()
+    plm=rind_core_partitioner.execute(lm_array, spacing)
+    #rind_lm = rind_core_partitioner.get_partition_region_mask('Rind')
     
-    rind_lm = rind_core_partitioner.get_partition_region_mask('Rind')
+    rind_lm=plm['Rind10']
+    
     assert np.sum(np.abs(partition_ref_array-rind_lm))==0, 'rind not as \
         expected'
 
@@ -38,7 +40,7 @@ def test_execute():
     cp = ChestPartitionRegionConventions()  
     rind_lm = rind_core_partitioner2.get_partition_region_mask(\
         cp.get_partition_region_value_from_name('Rind'), rind_width=10.0, spacing=spacing)
-    
+
     
     assert np.sum(np.abs(partition_ref_array-rind_lm))==0, 'rind 2 not as \
         expected'

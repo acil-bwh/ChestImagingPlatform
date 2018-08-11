@@ -5,7 +5,7 @@ import scipy.ndimage.morphology as scimorph
 from cip_python.segmentation.chest_partition import ChestPartition
 
 
-class RindVsCorePartition(ChestPartition):
+class RindCorePartition(ChestPartition):
     """General class for rind versus core partition generation.
     
     """
@@ -20,7 +20,7 @@ class RindVsCorePartition(ChestPartition):
         
         return partition_regions
        
-    def execute(self, lung_labelmap, spacing, chest_partitions):
+    def execute(self, lung_labelmap, spacing, chest_partitions=None):
 
         """
         compute the labelmap containing the partition regions
@@ -52,6 +52,11 @@ class RindVsCorePartition(ChestPartition):
         # distance everywhere else 
         lung_distance_map = \
             scimorph.distance_transform_edt(binary_labelmap)
+        
+        if chest_partitions is None:
+            chest_partitions = self.get_all_partition_region_names()
+            #chest_partitions = self.partition_regions_
+        
         
         partition_labelmaps=dict()
         """ return 1 labelmap per requested partition. These should be boolean"""   
