@@ -1,6 +1,6 @@
 import numpy as np
 from cip_python.utils.anonymize_dicom import *
-from dicom.dataset import Dataset
+from pydicom.dataset import Dataset
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
