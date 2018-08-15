@@ -51,7 +51,7 @@ class FissureParticles(ChestParticles):
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, scale=0.9, live_thresh=-15,
                  seed_thresh=-45, down_sample_rate=1,
-                 min_intensity=-920, max_intensity=-400, iterations=100, 
+                 min_intensity=-920, max_intensity=-400, iterations=100,init_mode="Random", 
                  perm=False):
         ChestParticles.__init__(self, feature_type="ridge_surface",
             in_file_name=in_file_name, 
@@ -72,6 +72,16 @@ class FissureParticles(ChestParticles):
         self._population_control_period = 10
         self._no_add = 0
         self._cip_type = 'Fissure'
+        #Setting up initialization
+        print(init_mode)
+        self._init_mode = init_mode
+        #Config for PerVoxel init mode
+        self._ppv = 1
+        self._nss = 1
+        #Config for Random init mode
+        self._number_init_particles = 10000
+
+
         self._verbose = 1
         if perm:
             self._permissive = True
@@ -106,9 +116,7 @@ class FissureParticles(ChestParticles):
         #Setting up single scale approach
         self._use_strength = False
         self._inter_particle_energy_type = "justr"
-        self._init_mode = "Random"
-        self._number_init_particles = 10000
-        
+
         self._beta  = 0 # Irrelevant for pass 1
         self._alpha = 0.5
         self._irad = 1.7 
@@ -156,7 +164,9 @@ if __name__ == "__main__":
       to enhance the fissure features within the range [min_int, max_int]', 
       dest="max_int", default=-400)
     parser.add_argument("--iters", help='Number of algorithm iterations \
-      (default 100)', dest="iters", default=100)    
+      (default 100)', dest="iters", default=100) 
+    parser.add_argument("--per_voxel_init", help='Inititalize seeding one particle \
+        per voxel in the input seeding mask', dest="per_voxel_init",action='store_true')   
     parser.add_argument("--perm", help='Allow mask and CT volumes to have \
       different shapes or meta data', dest="perm", action='store_true')          
 
@@ -167,9 +177,14 @@ if __name__ == "__main__":
     else:        
         tmp = tempfile.mkdtemp()
 
+    if op.per_voxel_init:
+       init_mode="PerVoxel"
+    else:
+       init_mode="Random"
+
     dp = FissureParticles(op.ict, op.op, tmp, op.ilm, float(op.scale), 
         float(op.lth), float(op.sth), float(op.rate), float(op.min_int), 
-        float(op.max_int), int(op.iters), op.perm)
+        float(op.max_int), int(op.iters), init_mode, op.perm)
     dp.execute()
     
     if op.tmp is None:
