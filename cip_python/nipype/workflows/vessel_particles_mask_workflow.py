@@ -122,7 +122,7 @@ class VesselParticlesMaskWorkflow(Workflow):
                   name='compute_feature_strength')
         compute_feature_strength.inputs.inFileName = self._ct_file_name
         compute_feature_strength.inputs.outFileName = self._strength_file_name  
-        compute_feature_strength.inputs.ssm = self._sigma_step_method
+        compute_feature_strength.inputs.ssm = str(self._sigma_step_method)
         compute_feature_strength.inputs.rescale = self._rescale
         compute_feature_strength.inputs.threads = self._threads
         compute_feature_strength.inputs.method = self._method
