@@ -33,7 +33,7 @@ endif()
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
    --compareVTKPolyData
       ${BASELINE_DATA_DIR}/${IMAGE_NAME}
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_simple_lm.vtk
+      ${OUTPUT_DATA_DIR}/${IMAGE_NAME}
     ModuleEntryPoint
       -i ${INPUT_DATA_DIR}/simple_lm.nrrd
       -l 2
