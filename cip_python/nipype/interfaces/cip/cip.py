@@ -37,15 +37,15 @@ class RegisterCT(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Registration
 
-description: This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.
+description: This program registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
+documentation-url: https://chestimagingplatform.org/registration
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -80,9 +80,11 @@ description:
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -120,11 +122,13 @@ description: This program computes statistics needed as inputs to the LabelAirwa
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
-acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health \n    under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
 
 """
@@ -161,6 +165,8 @@ category: Chest Imaging Platform.Toolkit.Utils
 description: This program reads a number of NRRD files and collects the data in those files into \na single VTK polydata file for writing. The input data files typically contain particles information.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -205,11 +211,11 @@ description: This program performs morphological operations such as dilation , e
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/PerformMorphological
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
     
@@ -238,6 +244,8 @@ category: Chest Imaging Platform.Toolkit.Utils
 description: This program reads in a label map image and writes to the command line a list of the chest-region chest-type pairs that are present.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -274,6 +282,8 @@ category: Chest Imaging Platform.Toolkit.Processing
 description: This program enhances fissure image features using logistic regression \n  classifiers.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
@@ -323,6 +333,8 @@ description: Compute the feature strength for an image.\n        A feature can b
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -336,6 +348,42 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = ComputeFeatureStrengthOutputSpec
     _cmd = " ComputeFeatureStrength "
     _outputs_filenames = {'outFileName':'outFileName.nii','outScaleFileName':'outScaleFileName.nii'}
+
+
+class FitBSplineToDeformationFieldInputSpec(CommandLineInputSpec):
+    inputDeformation = File(desc="Input Deformation field file name", exists=True, argstr="--inputDeformation %s")
+    outputBSpline = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Bspline transfomration (.tfm)", argstr="--outputBSpline %s")
+    nnodes = traits.Int(desc="Number of nodes for the BSpline.", argstr="--nnodes %d")
+
+
+class FitBSplineToDeformationFieldOutputSpec(TraitedSpec):
+    outputBSpline = File(desc="Output Bspline transfomration (.tfm)", exists=True)
+
+
+class FitBSplineToDeformationField(SEMLikeCommandLine):
+    """title: FitBSplineToDeformationField
+
+category: Chest Imaging Platform.Toolkit.Registration
+
+description:  This module fits a Bspline transformation to a non-linear displacement field.
+
+version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/registration-0
+
+license: Slicer
+
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
+
+"""
+
+    input_spec = FitBSplineToDeformationFieldInputSpec
+    output_spec = FitBSplineToDeformationFieldOutputSpec
+    _cmd = " FitBSplineToDeformationField "
+    _outputs_filenames = {'outputBSpline':'outputBSpline.mat'}
 
 
 class GenerateParenchymaPhenotypesInputSpec(CommandLineInputSpec):
@@ -362,7 +410,7 @@ description: This program is used to compute regional histograms and typical par
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateParenchymaPhenotypes
+documentation-url: https://chestimagingplatform.org/quantification
 
 license: Slicer
 
@@ -409,11 +457,11 @@ description: This program Registers an input label map to a target label map. It
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
+documentation-url: https://chestimagingplatform.org/registration
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -445,11 +493,13 @@ class QualityControlOutputSpec(TraitedSpec):
 class QualityControl(SEMLikeCommandLine):
     """title: QualityControl
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Utils
 
 description: This program can be used to produce quality control projection (2D) images for multiple forms of input label map images. Currently supported use cases include label map images designating lung labelings by thirds, whole lung labelings, airway labelings, and lung lobe labelings.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -484,7 +534,7 @@ description: Label fissures from a lobe segmentantion following the CIP Chest co
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
@@ -514,7 +564,7 @@ class RescaleLabelMapOutputSpec(TraitedSpec):
 
 
 class RescaleLabelMap(SEMLikeCommandLine):
-    """title: ResampleLabelMap
+    """title: RescaleLabelMap
 
 category: Chest Imaging Platform.Toolkit.Processing
 
@@ -522,11 +572,11 @@ description: This program rescales (either upsamples or downsamples) a label map
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n  and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -562,6 +612,8 @@ category: Chest Imaging Platform.Toolkit.Utils
 description: This program reads a chest-region chest-type locations file (and a reference \nCT image) and produces an ROI volume, either a segmentation or a label map. This output volume will \ncontain regions of interest centered at the points in the region and type locations covering an extent \n(ROI) with dimensions speficied by the user. If the output volume is desired to be a label map, then the \nROIs will have values corresponding to the chest-region chest-type values. If the output is desired to \nbe a segmentation, the ROIs will be assigned unique numbers at random.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -600,6 +652,8 @@ description: This program reads fissure particles and filters them \nbased on co
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -636,7 +690,7 @@ description: This program generates a 3D model given an input label map mask usi
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateModel
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -675,9 +729,11 @@ description: This program takes in a lung label map and producs a lung \nlabel m
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
 
@@ -748,9 +804,11 @@ description: This program calculates a similarity measure between 2 CT images in
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/quantification
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -791,9 +849,11 @@ description: This program is used to generate fissure shape models based \non a 
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -832,9 +892,11 @@ description: This program calculates a similarity measure between 2 CT images in
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/quantification
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -869,9 +931,11 @@ description: This program reads a label map and splits the left and\n        rig
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/segmentation
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -906,9 +970,11 @@ description: This program computes a distance map from an \ninput binary map. A 
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
     
@@ -939,7 +1005,7 @@ description: Perform an exhaustive search through an image and identify the \nco
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -976,6 +1042,8 @@ category: Chest Imaging Platform.Toolkit.Utils
 description: This program converts VIDA labelmap information to CIP labelmap following the CIP chest conventions.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -1023,9 +1091,11 @@ description: This program filters out connected components that are smaller than
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1054,15 +1124,15 @@ class ComputeStrainFromDeformationFieldOutputSpec(TraitedSpec):
 
 
 class ComputeStrainFromDeformationField(SEMLikeCommandLine):
-    """title: GenerateNLMFilteredImage
+    """title: ComputeStrainFromDeformationField
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Registration
 
 description:  This module computes a the strain tensor eigenvalues from a deformation field.
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage
+documentation-url: https://chestimagingplatform.org/registration-0
 
 license: Slicer
 
@@ -1099,9 +1169,11 @@ description: This program can used to perturb a particles dataset. This kind of 
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
     
@@ -1131,9 +1203,11 @@ description: This simple program takes an unsigned short label \n        map val
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/utils
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -1163,6 +1237,8 @@ category: Chest Imaging Platform.Toolkit.Segmentation
 description: This program generates a skeleton from a binary mask
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/segmentation
 
 license: Slicer
 
@@ -1237,9 +1313,11 @@ description: Reads a region and types points file and creates a label map of the
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1270,7 +1348,7 @@ description: This program just executes a system command. The purpose is to run 
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -1285,6 +1363,52 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = ExecuteSystemCommandOutputSpec
     _cmd = " ExecuteSystemCommand "
     _outputs_filenames = {}
+
+
+class ComputeAirwayWallFromImagesInputSpec(CommandLineInputSpec):
+    input = File(desc="Input airway image file name", exists=True, argstr="--input %s")
+    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output csv file name", argstr="--output %s")
+    method = traits.Enum("FWHM", "ZC", "PC", desc="Method used for the wall computation. \n             FWHM   - Full Width at a Half Maximum \n             ZC - Zero Crossing of the second order derivative \n             PC - Phase Congruency Phase congruency is the recommended one.", argstr="--method %s")
+    numberOfRays = traits.Int(desc="Number of rays to cast from the airway lumen center to compute the airway wall", argstr="--numberOfRays %d")
+    wth = traits.Int(desc="Wall constrast threshold at the candidate edge point to qualify (positive value).", argstr="--wth %d")
+    gth = traits.Float(desc="Gradient threshold at the candidate edge point to qualify.", argstr="--gth %f")
+    pcth = traits.Float(desc="Phase congruency value threshold at the candidate edge point to qualify.", argstr="--pcth %f")
+    stdFactor = traits.Float(desc="Factor of the std that will be allowed. This factor can be used to reject wall detections that are outlier. Reducing the factor will less variance arond the mean value.", argstr="--stdFactor %f")
+    largeAirways = traits.Bool(desc="Adjust parameters to measure large airways (main bronchi and trachea).", argstr="--largeAirways ")
+    save = traits.Bool(desc="Save airway images (one per particle) for quality control purposes.", argstr="--save ")
+    saveDir = traits.Either(traits.Bool, Directory(), hash_files=False, desc="Directory to save airway images", argstr="--saveDir %s")
+    airwayPrefix = traits.Str(desc="Prefix for airway image file.", argstr="--airwayPrefix %s")
+
+
+class ComputeAirwayWallFromImagesOutputSpec(TraitedSpec):
+    output = File(desc="Output csv file name", exists=True)
+    saveDir = Directory(desc="Directory to save airway images", exists=True)
+
+
+class ComputeAirwayWallFromImages(SEMLikeCommandLine):
+    """title: GenerateModel
+
+category: Chest Imaging Platform.Toolkit.Quantification
+
+description: This program extract the airway wall and computes multiple airway wall metrics from an airway image array  using multiple approaches. The output is csv files with the metrics for each image slice along the z-axis.
+
+version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/quantification
+
+license: Slicer
+
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+  
+
+"""
+
+    input_spec = ComputeAirwayWallFromImagesInputSpec
+    output_spec = ComputeAirwayWallFromImagesOutputSpec
+    _cmd = " ComputeAirwayWallFromImages "
+    _outputs_filenames = {'output':'output','saveDir':'saveDir'}
 
 
 class ReadParticlesWriteConnectedParticlesInputSpec(CommandLineInputSpec):
@@ -1304,13 +1428,15 @@ class ReadParticlesWriteConnectedParticles(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Particles
 
-description: This program reads either an airway particles dataset or a \n  vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \n  topology on the particles points. The output polydata is equivalent to the input polydata \n  but with polylines defined indicating the edges between particle points found by the min \n  spanning tree algorithm. The connected dataset is rendered and then optionally written to \n  file.
+description: This program reads either an airway particles dataset or a \n  vessel particles dataset and uses Kruskall's min-spanning tree algorithm to define a \n  topology on the particles points. The output polydata is equivalent to the input polydata \n  but with polylines defined indicating the edges between particle points found by the min \n  spanning tree algorithm. The connected dataset is written to \n  file.
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1340,6 +1466,8 @@ category: Chest Imaging Platform.Toolkit.Utils
 description: This program converts region and type points between csv and vtk file formats.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -1381,6 +1509,8 @@ description: This program reads vessels particles and filters them \nbased on co
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -1414,7 +1544,7 @@ description: This program can be used to compute cross sectional areas \nof stru
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ComputeCrossSectionalArea
+documentation-url: https://chestimagingplatform.org/quantification
 
 license: Slicer
 
@@ -1449,6 +1579,8 @@ description: This program accepts two inputs: a particles dataset and another pa
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -1482,7 +1614,7 @@ description: This simple program takes as an argument a directory \ncontaining D
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -1537,9 +1669,11 @@ description: This program is used to fit left and right lobe boundary shape mode
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1577,6 +1711,8 @@ description: This program reads airway particles and filters them \nbased on con
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -1590,6 +1726,41 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = FilterAirwayParticleDataOutputSpec
     _cmd = " FilterAirwayParticleData "
     _outputs_filenames = {'oap':'oap.vtk'}
+
+
+class ExampleCLIInputSpec(CommandLineInputSpec):
+    input = File(desc="Input image", exists=True, argstr="--input %s")
+    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output file name", argstr="--output %s")
+    variance = traits.Float(desc="Gaussian variance to apply in the filter", argstr="--variance %f")
+    maxKernelWidth = traits.Int(desc="Maximum kernel width", argstr="--maxKernelWidth %d")
+
+
+class ExampleCLIOutputSpec(TraitedSpec):
+    output = File(desc="Output file name", exists=True)
+
+
+class ExampleCLI(SEMLikeCommandLine):
+    """title: ExampleCLI
+
+category: Chest Imaging Platform.Toolkit.Utils
+
+description: This is just an example CLI that may be used as a template. The CLI just applies a gaussian filter to the image
+
+version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
+
+contributor: Applied Chest Imaging Laboratory, Brigham and Women's Hospital
+
+acknowledgements: 
+  
+
+"""
+
+    input_spec = ExampleCLIInputSpec
+    output_spec = ExampleCLIOutputSpec
+    _cmd = " ExampleCLI "
+    _outputs_filenames = {'output':'output.nii'}
 
 
 class ComputeAirwayWallFromParticlesInputSpec(CommandLineInputSpec):
@@ -1625,7 +1796,7 @@ description: This program extract the airway wall and computes multiple airway w
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateModel
+documentation-url: https://chestimagingplatform.org/particles
 
 license: Slicer
 
@@ -1643,15 +1814,15 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class SegmentLungAirwaysInputSpec(CommandLineInputSpec):
-    s = InputMultiPath(traits.List(traits.Float(), minlen=3, maxlen=3), desc="One seed point (trachea) has to be specified for the region growing algorithm", argstr="--s %s...")
-    i = File(desc="Input volume to be filtered", exists=True, argstr="--i %s")
-    o = traits.Either(traits.Bool, File(), hash_files=False, desc="Airway Label", argstr="--o %s")
-    k = traits.Str(desc="Reconstruction kernel type used to reconstruct the input dataset", argstr="--k %s")
-    r = traits.Enum("WholeAirway", "Trachea", "RightAirway", "LeftAirway", desc=",         ", argstr="--r %s")
+    seed = InputMultiPath(traits.List(traits.Float(), minlen=3, maxlen=3), desc="One seed point (trachea) has to be specified for the region growing algorithm", argstr="--seed %s...")
+    input = File(desc="Input volume to be filtered", exists=True, argstr="--input %s")
+    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Airway Label", argstr="--output %s")
+    kernel = traits.Str(desc="Reconstruction kernel type used to reconstruct the input dataset", argstr="--kernel %s")
+    region = traits.Enum("WholeAirway", "Trachea", "RightAirway", "LeftAirway", desc=",         ", argstr="--region %s")
 
 
 class SegmentLungAirwaysOutputSpec(TraitedSpec):
-    o = File(desc="Airway Label", exists=True)
+    output = File(desc="Airway Label", exists=True)
 
 
 class SegmentLungAirways(SEMLikeCommandLine):
@@ -1676,7 +1847,7 @@ acknowledgements: This work is supported by NA-MIC, the Slicer Community and the
     input_spec = SegmentLungAirwaysInputSpec
     output_spec = SegmentLungAirwaysOutputSpec
     _cmd = " SegmentLungAirways "
-    _outputs_filenames = {'o':'o.nii'}
+    _outputs_filenames = {'output':'output.nii'}
 
 
 class ComputeIntensityStatisticsInputSpec(CommandLineInputSpec):
@@ -1698,11 +1869,11 @@ description: This program is used to compute intensity statistics for chest-regi
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
+documentation-url: https://chestimagingplatform.org/quantification
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -1737,11 +1908,11 @@ description: This program can be used to compute a distance map from an \ninput 
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateDistanceMapFromLabelMap
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
 
@@ -1779,9 +1950,11 @@ description: This program calculates a similarity measure between 2 CT images in
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/quantification
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1808,17 +1981,17 @@ class RemapLabelMapOutputSpec(TraitedSpec):
 class RemapLabelMap(SEMLikeCommandLine):
     """title: RemapLabelMap
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Utils
 
-description: This program is used to map label map values \nin an input image to designated values in the output image.
+description: This program is used to map label map values \nin an input volume to designated values in the output volume.
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/CovertDicom
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1857,9 +2030,11 @@ description: This program will merge an overlay label map into a base label map.
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/utils
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -1936,6 +2111,8 @@ description: Compute GraphCut Optimization.
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
@@ -1966,17 +2143,17 @@ class ReadWriteImageDataOutputSpec(TraitedSpec):
 class ReadWriteImageData(SEMLikeCommandLine):
     """title: ReadWriteImageData
 
-category: Chest Imaging Platform.Toolkit.Quantification
+category: Chest Imaging Platform.Toolkit.Utils
 
-description: This simple program reads and writes images, either label maps or CT images. It is useful for renaming (obviating the need to need to manually modify headers.
+description: This simple program reads and writes images, either label maps or CT images. It is useful for renaming (obviating the need to manually modify headers.
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ReadWriteImageData
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2010,9 +2187,11 @@ description: This program will remove the specified chest structures from the in
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/utils
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2042,6 +2221,8 @@ category: Chest Imaging Platform.Toolkit.Utils
 description: This simple program takes chest-region and chest-type string specifications \n(conforming to CIP standards laid out in cipChestConventions.h) and writes to the command line the \ncorresponding unsigned short encoding the chest region and chest type value.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -2073,15 +2254,17 @@ class LabelParticlesByChestRegionChestTypeOutputSpec(TraitedSpec):
 class LabelParticlesByChestRegionChestType(SEMLikeCommandLine):
     """title: LabelParticlesByChestRegionChestType
 
-category: Chest Imaging Platform.Toolkit.Quantification
+category: Chest Imaging Platform.Toolkit.Particles
 
 description: This program is used to label particles datasets by chest region and chest type. The user must \nspecify the type of the input particles, but the chest region can either be determined by an input label map or be \nspecified at the command line.
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2121,9 +2304,11 @@ description: This program calculates a similarity measure between 2 CT images in
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/quantification
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2158,9 +2343,11 @@ description: This program produces an Otsu lung cast. (Cast is meant\nto refer t
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/segmentation
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2191,9 +2378,11 @@ description: This reads a VTK polydata file containing particles data \nand writ
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/utils
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
     
@@ -2234,9 +2423,11 @@ description: Crop a CT lung volume for a specified region.\n  This tools provide
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2263,11 +2454,13 @@ class RemoveChestTypeFromLabelMapUsingParticlesOutputSpec(TraitedSpec):
 class RemoveChestTypeFromLabelMapUsingParticles(SEMLikeCommandLine):
     """title: RemoveChestTypeFromLabelMapUsingParticles
 
-category: Chest Imaging Platform.Toolkit.Processing
+category: Chest Imaging Platform.Toolkit.Utils
 
-description: This program ...
+description: This program masks out region/types from a input labelmap using the region-type information in a particle file.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -2309,7 +2502,7 @@ description:  This module implements a fast version of the popular Non-Local Mea
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
@@ -2350,6 +2543,8 @@ description: This program takes an input airway particles dataset \n  and assign
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -2388,11 +2583,11 @@ description: his program reads atlas lung images and generates a convex hull ima
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -2427,11 +2622,11 @@ description: This program resamples a label map using an affine transform (read 
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -2457,6 +2652,7 @@ class GenerateStenciledLabelMapFromParticlesInputSpec(CommandLineInputSpec):
     sphere = traits.Bool(desc="Set this flag to indicate that the sphere stencil should be used.", argstr="--sphere ")
     cylinder = traits.Bool(desc="Set this flag to indicate that the cylinder stencil should be used.", argstr="--cylinder ")
     scale = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle \nscale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \nequations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).", argstr="--scale ")
+    dnn_radius = traits.Bool(desc="Setting this flag will cause the stencil pattern to be scaled according to particle \ndnn radius. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \nequations relating particle dnn_radius and CT point spread function sigma (set using the -ctSigma flag).", argstr="--dnn_radius ")
 
 
 class GenerateStenciledLabelMapFromParticlesOutputSpec(TraitedSpec):
@@ -2507,9 +2703,11 @@ description: This program reads a CT (DICOM) image, extracts tags of\n        in
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/utils
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -2545,6 +2743,8 @@ category: Chest Imaging Platform.Toolkit.Processing
 description: This program generates a collection of feature vectors at point locations \n  indicated by an input polydata file.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
@@ -2588,6 +2788,8 @@ description: This program segmenta a nodular lesion for quantiative assesment
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/segmentation
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -2626,9 +2828,11 @@ description: This program accepts as input a CT image and a corresponding label 
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/processing
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2639,6 +2843,42 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     output_spec = GenerateImageSubVolumesOutputSpec
     _cmd = " GenerateImageSubVolumes "
     _outputs_filenames = {}
+
+
+class GenerateSimpleLungMaskInputSpec(CommandLineInputSpec):
+    input = File(desc="Input Chest CT volume", exists=True, argstr="--input %s")
+    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Lung Mask", argstr="--output %s")
+    lowDose = traits.Bool(desc=" Enable if this is a low dose-noisy scan", argstr="--lowDose ")
+
+
+class GenerateSimpleLungMaskOutputSpec(TraitedSpec):
+    output = File(desc="Output Lung Mask", exists=True)
+
+
+class GenerateSimpleLungMask(SEMLikeCommandLine):
+    """title: Generate Simple Lung Mask
+
+category: Chest Imaging Platform.Toolkit.Segmentation
+
+description:  Generate Simple Lung Mask
+
+version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/segmentation
+
+license: Slicer
+
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the author \n    and does not necessarily represent the official views of the National Institutes of Health.
+  
+
+"""
+
+    input_spec = GenerateSimpleLungMaskInputSpec
+    output_spec = GenerateSimpleLungMaskOutputSpec
+    _cmd = " GenerateSimpleLungMask "
+    _outputs_filenames = {'output':'output.nii'}
 
 
 class RegisterLungAtlasInputSpec(CommandLineInputSpec):
@@ -2662,9 +2902,11 @@ description: This program is used to register a lung atlas convex hull mesh to t
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/registration
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2708,6 +2950,8 @@ description: This program reads a label map image (where the labels \ncorrespond
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/segmentation
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
@@ -2723,36 +2967,42 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
     _outputs_filenames = {'olm':'olm.nii'}
 
 
-class GenerateSimpleLungMaskInputSpec(CommandLineInputSpec):
-    input = File(desc="Input Chest CT volume", exists=True, argstr="--input %s")
-    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Lung Mask", argstr="--output %s")
-    lowDose = traits.Bool(desc=" Enable if this is a low dose-noisy scan", argstr="--lowDose ")
+class CreateVolumeFromSlicesInputSpec(CommandLineInputSpec):
+    filepattern = traits.Str(desc="Input dicom directory", argstr="--filepattern %s")
+    output = traits.Either(traits.Bool, File(), hash_files=False, desc="Output image file name", argstr="--output %s")
+    fslice = traits.Int(desc="First Slice Value. Default=0", argstr="--fslice %d")
+    lslice = traits.Int(desc="Last Slice Value. Default=0", argstr="--lslice %d")
+    spacing = InputMultiPath(traits.Float, desc="Spacing of output volume. 3 values: spx,spy,spz", sep=",", argstr="--spacing %s")
+    origin = InputMultiPath(traits.Float, desc="Origin for output volume. 3 values: ox,oy,oz", sep=",", argstr="--origin %s")
 
 
-class GenerateSimpleLungMaskOutputSpec(TraitedSpec):
-    output = File(desc="Output Lung Mask", exists=True)
+class CreateVolumeFromSlicesOutputSpec(TraitedSpec):
+    output = File(desc="Output image file name", exists=True)
 
 
-class GenerateSimpleLungMask(SEMLikeCommandLine):
-    """title: Generate Simple Lung Mask
+class CreateVolumeFromSlices(SEMLikeCommandLine):
+    """title: CreateVoluemFromSlices
 
-category: Chest Imaging Platform.Toolkit.Segmentation
+category: Chest Imaging Platform.Toolkit.Utils
 
-description:  Generate Simple Lung Mask
+description: This simple program takes as an argument a file pattern describing \ndescribing image files within a directory, and produces a single volume file as \noutput. This is useful to convert microCT image slices into volume. The pattern follows printf format
 
-version: 0.1.0.$Revision: 1.1 $(alpha)
+version: 0.0.1
 
-contributor: Applied Chest Imaging Laboratory, Brigham and Women's Hospital
+documentation-url: https://chestimagingplatform.org/utils
 
-acknowledgements: 
-  This work is funded by the National Heart, Lung, And Blood Institute of the National \n  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n  and does not necessarily represent the official views of the National Institutes of Health.
+license: Slicer
 
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
+
+acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
+   
 
 """
 
-    input_spec = GenerateSimpleLungMaskInputSpec
-    output_spec = GenerateSimpleLungMaskOutputSpec
-    _cmd = " GenerateSimpleLungMask "
+    input_spec = CreateVolumeFromSlicesInputSpec
+    output_spec = CreateVolumeFromSlicesOutputSpec
+    _cmd = " CreateVolumeFromSlices "
     _outputs_filenames = {'output':'output.nii'}
 
 
@@ -2776,11 +3026,11 @@ description: Median Filter of a CT volume
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \nInstitutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \nand does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2811,9 +3061,11 @@ class TransferRegionAndTypeIndicesToFromPoints(SEMLikeCommandLine):
 
 category: Chest Imaging Platform.Toolkit.Utils
 
-description: This program converts region and type indices files to region and type \npoints files and vice versa.
+description: This program converts region and type indices files to region and type \npoints files and vice-versa.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/utils
 
 license: Slicer
 
@@ -2860,6 +3112,8 @@ description: This program produces RGB overlay images corresponding to the input
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/utils
+
 license: Slicer
 
 contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
@@ -2893,9 +3147,11 @@ description: This program accepts as input multiple particle data sets and merge
 
 version: 0.0.1
 
+documentation-url: https://chestimagingplatform.org/particles
+
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n    and does not necessarily represent the official views of the National Institutes of Health.
   
@@ -2930,11 +3186,11 @@ description: This program resamples a label map using an affine transform (read 
 
 version: 0.0.1
 
-documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleCT3D
+documentation-url: https://chestimagingplatform.org/processing
 
 license: Slicer
 
-contributor:  Applied Chest Imaging Laboratory, Brigham and women's hospital
+contributor:  Applied Chest Imaging Laboratory, Brigham and Women's Hospital
 
 acknowledgements: This work is funded by the National Heart, Lung, And Blood Institute of the National \n        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \n        and does not necessarily represent the official views of the National Institutes of Health.
     
@@ -2974,6 +3230,8 @@ category: Chest Imaging Platform.Toolkit.Segmentation
 description: Segment a CT image into lung regions with an approximate aiway segmentation.
 
 version: 0.0.1
+
+documentation-url: https://chestimagingplatform.org/segmentation
 
 license: Slicer
 

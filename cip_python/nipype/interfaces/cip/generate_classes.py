@@ -351,23 +351,36 @@ if __name__ == "__main__":
     dir='../../../../CommandLineTools/'
     modules_list = [str.split(x[0],'/')[5] for x in os.walk(dir)]
 
+    #Inclue LegacyCLIs
+    if 'LegacyCLIs'in modules_list:
+      dir='../../../../CommandLineTools/LegacyCLIs'
+      for x in os.walk(dir):
+        tmp_var=str.split(x[0],'/')
+        print len(tmp_var)
+        if len(tmp_var)>=7:
+            modules_list.append(tmp_var[6])
+
     #Remove duplicates and sort list
     modules_list = list(set(modules_list))
     modules_list.sort()
     print modules_list
-    #Remove empty entries
+    #Remove dir names and empty entries
     modules_list.remove('')
     modules_list.remove('Testing')
+    modules_list.remove('LegacyCLIs')
+
     #modules_list.remove('GenerateStatisticsForAirwayGenerationLabeling')
     #modules_list.remove('LabelAirwayParticlesByGeneration')
     #modules_list.remove('ReadParticlesWriteConnectedParticles')
     #modules_list.remove('SegmentLungAirways')
+    #Remove legacy modules
     if 'GenerateRegionHistogramsAndParenchymaPhenotypes' in modules_list:
         modules_list.remove('GenerateRegionHistogramsAndParenchymaPhenotypes')
     if 'CMakeFiles' in modules_list:
         modules_list.remove('CMakeFiles')        
     print 'Number of modules founds ' + str(len(modules_list))
-    
+
+
     ## SlicerExecutionModel compliant tools that are usually statically built, and don't need the Slicer3 --launcher
     generate_all_classes(modules_list=modules_list,launcher=[],module_name='cip')
 
