@@ -1,6 +1,6 @@
 import argparse
 
-from cip_python.common import DeepLearningModelsManager
+from cip_python.dcnn import DeepLearningModelsManager
 
 import os
 import numpy as np

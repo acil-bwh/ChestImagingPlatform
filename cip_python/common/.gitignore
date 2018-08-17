@@ -1,5 +1,0 @@
-# Ignore hidden files and folders
-.*
-!/.gitignore
-
-dcnn_models_cache
