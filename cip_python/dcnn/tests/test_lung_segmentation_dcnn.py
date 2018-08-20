@@ -21,7 +21,7 @@ def test_lung_segmentation_dcnn():
     # Load the model
     model_manager = DeepLearningModelsManager()
     axial_model_path = model_manager.get_model_path('LUNG_SEGMENTATION_AXIAL')
-    print("Model used: {}".format(axial_model_path))
+    print("*** Model used: {}".format(axial_model_path))
 
     segmentation = segmenter.execute(input_file_path, axial_model_path, None, segmentation_type='axial',
                                      N_subsampling=1)
@@ -30,7 +30,12 @@ def test_lung_segmentation_dcnn():
     baseline_image = sitk.GetArrayFromImage(sitk.ReadImage(baseline_image_path))
     output_image = sitk.GetArrayFromImage(sitk.ReadImage(output_file_path))
 
+    print("*** Baseline: {}\nOutput:{}".format(baseline_image_path, output_file_path))
+
     assert np.allclose(output_image, baseline_image), "The baseline image ({}) is different from the algorithm output ({})".format(
         baseline_image_path, output_file_path)
 
-    print("Done!")
+    print("Test Passed!")
+
+if __name__ == "__main__":
+    test_lung_segmentation_dcnn()

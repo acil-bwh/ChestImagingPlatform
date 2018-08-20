@@ -1,3 +1,4 @@
+import os
 import tempfile
 from lxml import etree
 from cip_python.common import *
