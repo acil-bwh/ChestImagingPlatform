@@ -23,13 +23,14 @@ in_testing_features = np.array(in_df_testing)[:,1:7]
 def test_execute():
     """ """  
     reference_data=dict()
+    
     reference_data['LHFeatures'] = \
       np.array([[0.003436, 0.005154, 0, 0.234385, 0.571481, 0.013621],
             [0.355349, 0, 0, 0.484651, 0.092713, 0]])
-                                          
-    reference_data['SN'] = np.array([[16.79109466, -1.75109238],
-            [9.98064803, -3.36696504]])
-                                    
+    
+    reference_data['SN'] = np.array([[16.79392487, -1.76907544],
+                                     [ 9.98989526, -3.40842286]])
+
     esi = EmphysemaSeverityIndex(single_path=True)
 
     esi.fit(in_training_features)
@@ -46,15 +47,15 @@ def test_execute2():
       np.array([[0.003436, 0.005154, 0, 0.234385, 0.571481, 0.013621],
         [0.355349, 0, 0, 0.484651, 0.092713, 0]])
       
-    reference_data['SN'] = np.array([[ 19.41060621,  -0.66621507],
-                                     [ 11.36870741,  -1.68309178]])
+    reference_data['SN'] = np.array([[2.02124626e+01,  2.81663549e-05],
+                                     [ 1.05977163e+01, -3.92402035e-06]])
 
     esi = EmphysemaSeverityIndex(interp_method='spline', single_path=False)
 
     esi.fit(in_training_features)
 
     test = esi.predict(reference_data['LHFeatures'])
-    pdb.set_trace()
+#pdb.set_trace()
     assert np.allclose(test, reference_data['SN']), \
       'Severity metrics in multi path mode not as expected'
 

@@ -281,14 +281,14 @@ class EmphysemaSeverityIndex:
         interp_method=self.interp_method
         modeli = dict()
         modeli['poly'] = [0,0,0]
+
         if (interp_method == 'spline'):
             modeli['poly'][0] = PchipInterpolator(interp_model['Ti'],
                 interp_model['ai'], extrapolate=True)(t_val)[0]
             modeli['poly'][1] = PchipInterpolator(interp_model['Ti'],
                 interp_model['bi'], extrapolate=True)(t_val)[0]
-            
-	    modeli['poly'][2] = PchipInterpolator(interp_model['Ti'],
-            interp_model['ci'], extrapolate=True)(t_val)[0]
+            modeli['poly'][2] = PchipInterpolator(interp_model['Ti'],
+                interp_model['ci'], extrapolate=True)(t_val)[0]
  
         modeli['min']=interp_model['min']
         modeli['max']=interp_model['max']
@@ -298,7 +298,7 @@ class EmphysemaSeverityIndex:
         return modeli
                                                     
     def optimize_interp_model(self,p,interp_model):                    
-        """Perform the potimization in order to obtain the interpolated model
+        """Perform the optimization in order to obtain the interpolated model
         at point p in LDA space.
         
         Parameters
@@ -346,8 +346,10 @@ class EmphysemaSeverityIndex:
         """  
         
         model_ii = self.evalInterpModel(im, t_value)
+
         [Local_S,local_N] = self.computeSTcoordinates(p, model_ii['min'],
             model_ii['poly'][2], model_ii['poly'][1], model_ii['poly'][0])
+
 
         #computeSTcoordinates(self, p,x0,a,b,c)
         local_N=abs(local_N)
@@ -380,7 +382,6 @@ class EmphysemaSeverityIndex:
             t_opt = self.optimize_interp_model(p,interp_model);
 
             model_ii = self.evalInterpModel(interp_model,t_opt);
-
             [ST[kk,0], ST[kk,1]] = self.computeSTcoordinates(p,
                 model_ii['min'], model_ii['poly'][2], model_ii['poly'][1],
                 model_ii['poly'][0])
