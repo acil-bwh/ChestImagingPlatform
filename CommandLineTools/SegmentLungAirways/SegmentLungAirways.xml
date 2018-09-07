@@ -21,7 +21,7 @@
       <label>Seeds</label>
       <flag>s</flag>
       <longflag>seed</longflag>
-      <description><![CDATA[One seed point (trachea) has to be specified for the region growing algorithm]]></description>
+      <description><![CDATA[One single seed point in the trachea has to be specified for the region growing algorithm]]></description>
       <default>0,0,0</default>
     </point>
     
@@ -49,13 +49,20 @@
       <description><![CDATA[Airway Label]]></description>
     </image>
     
-    <string>
+    <string-enumeration>
       <name>reconstructionKernelType</name>
       <label>Kernel Type</label>
       <flag>k</flag>
       <longflag>kernel</longflag>
-      <description><![CDATA[Reconstruction kernel type used to reconstruct the input dataset]]></description>
-    </string>
+      <element>STANDARD</element>
+      <element>LUNG</element>
+      <element>B70f</element>
+      <default>STANDARD</default>
+      <description><![CDATA[Reconstruction kernel type used to reconstruct the input dataset. \
+        STANDARD - compatible with smooth recon kernels like B20f, B30f, B, C, FC10, FC12 and STD depending on the vendor \
+        LUNG     - compatible with sharp recon kernels like B50f, B60f, D, FC50, FC52 and LUNG \
+        B70f     - compatible with ultrasharp recon kernels.]]></description>
+    </string-enumeration>
 
     <string-enumeration>
       <name>regionSegmentation</name>
