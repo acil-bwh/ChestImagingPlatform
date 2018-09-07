@@ -1814,10 +1814,10 @@ acknowledgements: This work is funded by the National Heart, Lung, And Blood Ins
 
 
 class SegmentLungAirwaysInputSpec(CommandLineInputSpec):
-    seed = InputMultiPath(traits.List(traits.Float(), minlen=3, maxlen=3), desc="One seed point (trachea) has to be specified for the region growing algorithm", argstr="--seed %s...")
+    seed = InputMultiPath(traits.List(traits.Float(), minlen=3, maxlen=3), desc="One single seed point in the trachea has to be specified for the region growing algorithm", argstr="--seed %s...")
     input = File(desc="Input volume to be filtered", exists=True, argstr="--input %s")
     output = traits.Either(traits.Bool, File(), hash_files=False, desc="Airway Label", argstr="--output %s")
-    kernel = traits.Str(desc="Reconstruction kernel type used to reconstruct the input dataset", argstr="--kernel %s")
+    kernel = traits.Enum("STANDARD", "LUNG", "B70f", desc="Reconstruction kernel type used to reconstruct the input dataset. \n        STANDARD - compatible with smooth recon kernels like B20f, B30f, B, C, FC10, FC12 and STD depending on the vendor \n        LUNG     - compatible with sharp recon kernels like B50f, B60f, D, FC50, FC52 and LUNG \n        B70f     - compatible with ultrasharp recon kernels.", argstr="--kernel %s")
     region = traits.Enum("WholeAirway", "Trachea", "RightAirway", "LeftAirway", desc=",         ", argstr="--region %s")
 
 
