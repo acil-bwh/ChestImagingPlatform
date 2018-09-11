@@ -103,7 +103,7 @@ class LungSegmenterDCNN:
             cnn_img[:, :, ii] = utils.standardization(cnn_img[:, :, ii])
 
         for ii in z_samples:
-            print 'Segmenting slice {} of {}'.format(ii, cnn_img.shape[2])
+            print ('Segmenting slice {} of {}'.format(ii, cnn_img.shape[2]))
 
             pred_img = cnn_img[:, :, ii]
 
@@ -181,7 +181,7 @@ class LungSegmenterDCNN:
 
         if segmentation_type == 'combined' or segmentation_type == 'axial':
             # Axial Lung Segmentation
-            print '    Predicting axial probabilities...'
+            print ('    Predicting axial probabilities...')
             axial_model = self.load_network_model(axial_model_path)
 
             a_batch_input_shape = axial_model.layers[0].get_config()['batch_input_shape']
@@ -198,7 +198,7 @@ class LungSegmenterDCNN:
 
         if segmentation_type == 'combined' or segmentation_type == 'coronal':
             # Coronal Lung Segmentation
-            print '    Predicting coronal probabilities...'
+            print('    Predicting coronal probabilities...')
             coronal_model = self.load_network_model(coronal_model_path)
 
             c_batch_input_shape = coronal_model.layers[0].get_config()['batch_input_shape']
@@ -219,7 +219,7 @@ class LungSegmenterDCNN:
             coronal_predictions = self.sum_up_to_one(coronal_predictions)
 
         if segmentation_type == 'combined':
-            print '    Combining axial and coronal probabilities...'
+            print('    Combining axial and coronal probabilities...')
             if axial_predictions.shape[3] != coronal_predictions.shape[3]:
                 coronal_predictions = self.resample_predictions(coronal_predictions, np.asarray(axial_predictions.shape[1:]))
 

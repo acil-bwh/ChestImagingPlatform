@@ -13,7 +13,7 @@ def test_lung_segmentation_dcnn():
     baseline_image_path = osp.join(osp.dirname(__file__), "baseline", "crop_ct_2slices_dcnnLungSegmentationLabelmap.nrrd")
     assert osp.isfile(baseline_image_path), "Baseline file not found: {}".format(baseline_image_path)
 
-    temp_folder = tempfile.gettempdir()
+    temp_folder = tempfile.mkdtemp()
     output_file_path = os.path.join(temp_folder, "crop_ct_2slices_dcnnLungSegmentationLabelmap.nrrd")
 
     segmenter = LungSegmenterDCNN()
