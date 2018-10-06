@@ -69,6 +69,7 @@ class LungSegmenterDCNN:
             return sitk.GetArrayFromImage(out_im)
 
     def lung_segmentation(self, network_model, patch_size, image_sitk, N_subsampling=10, orientation='axial'):
+        # import scipy.ndimage.interpolation as inter
         image_spacing = image_sitk.GetSpacing()
         image_np = sitk.GetArrayFromImage(image_sitk).transpose([2, 1, 0])
 
@@ -85,9 +86,10 @@ class LungSegmenterDCNN:
                 z_shape /= 2
             output_size = np.asarray([patch_size[0], patch_size[1], z_shape])
 
-            resampled_sitk = utils.resample_image(img_sitk, output_size, sitk.sitkInt16,
-                                                  interpolator=sitk.sitkBSpline)
+            resampled_sitk, output_spacing = utils.resample_image(img_sitk, output_size, sitk.sitkInt16,
+                                                                  interpolator=sitk.sitkBSpline)
             cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
+            # cnn_img = inter.zoom(image_np, [1.0/1.73046875, 1.0/1.36328125, 1.0])
             cnn_img = cnn_img.astype(np.float32)
         else:
             cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0])
@@ -117,7 +119,7 @@ class LungSegmenterDCNN:
             for cc in xrange(4):
                 predictions[cc] = self.normalized_convolution_lp(predictions[cc], certainty_map, self.filtra3D,
                                                                  [1, 1, N_subsampling], [1, 1, 1])
-        return predictions
+        return predictions, output_spacing
 
     @staticmethod
     def sum_up_to_one(prob):
@@ -162,15 +164,20 @@ class LungSegmenterDCNN:
 
         return combined_pp
 
-    def resample_predictions(self, predictions_image, output_size):
+    def resample_predictions(self, predictions_image, predictions_spacing, output_size):
+        # import scipy.ndimage.interpolation as inter
         out_predictions = np.zeros((4, output_size[0], output_size[1], output_size[2]))
 
         output_size = np.asarray(output_size)
 
         for ii in range(predictions_image.shape[0]):
             pp_sitk = sitk.GetImageFromArray(predictions_image[ii].transpose([2, 1, 0]))
-            resampled_sitk = utils.resample_image(pp_sitk, output_size, sitk.sitkFloat32,
-                                                  interpolator=sitk.sitkLinear)
+            pp_sitk.SetSpacing(predictions_spacing)
+
+            # out_predictions[ii] = inter.zoom(predictions_image[ii], [1.73046875, 1.36328125, 1.0])
+
+            resampled_sitk, _ = utils.resample_image(pp_sitk, output_size, sitk.sitkFloat32,
+                                                     interpolator=sitk.sitkLinear)
             out_predictions[ii] = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
 
         return out_predictions
@@ -191,8 +198,9 @@ class LungSegmenterDCNN:
             else:
                 a_patch_size = np.asarray([a_batch_input_shape[2], a_batch_input_shape[3]])
 
-            axial_predictions = self.lung_segmentation(axial_model, a_patch_size, image_sitk, N_subsampling,
-                                                       orientation='axial')
+            axial_predictions, axial_spacing = self.lung_segmentation(axial_model, a_patch_size, image_sitk,
+                                                                      N_subsampling,
+                                                                      orientation='axial')
             axial_predictions = axial_predictions.transpose([0, 2, 3, 1])
             axial_predictions = self.sum_up_to_one(axial_predictions)
 
@@ -213,15 +221,17 @@ class LungSegmenterDCNN:
             else:
                 N_subsampling_coronal = 1
 
-            coronal_predictions = self.lung_segmentation(coronal_model, c_patch_size, image_sitk, N_subsampling_coronal,
-                                                         orientation='coronal')
+            coronal_predictions, coronal_spacing = self.lung_segmentation(coronal_model, c_patch_size, image_sitk,
+                                                                          N_subsampling_coronal,
+                                                                          orientation='coronal')
             coronal_predictions = coronal_predictions.transpose([0, 2, 1, 3])
             coronal_predictions = self.sum_up_to_one(coronal_predictions)
 
         if segmentation_type == 'combined':
             print('    Combining axial and coronal probabilities...')
             if axial_predictions.shape[3] != coronal_predictions.shape[3]:
-                coronal_predictions = self.resample_predictions(coronal_predictions, np.asarray(axial_predictions.shape[1:]))
+                coronal_predictions = self.resample_predictions(coronal_predictions, coronal_spacing,
+                                                                np.asarray(axial_predictions.shape[1:]))
 
             combined_predictions = self.combine_planes(axial_predictions, coronal_predictions)
             if combined_predictions.shape[0] != img_size[0] or combined_predictions[1] != img_size[1]:
@@ -233,7 +243,7 @@ class LungSegmenterDCNN:
         elif segmentation_type == 'axial':
             if a_patch_size[0] != img_size[0] or a_patch_size[1] != img_size[1]:
                 output_size = np.asarray(img_size)
-                out_predictions = self.resample_predictions(axial_predictions, output_size)
+                out_predictions = self.resample_predictions(axial_predictions, axial_spacing, output_size)
             else:
                 out_predictions = axial_predictions
 
@@ -241,7 +251,7 @@ class LungSegmenterDCNN:
         else:
             if c_patch_size[0] != img_size[0] or c_patch_size[1] != img_size[1]:
                 output_size = np.asarray(img_size)
-                out_predictions = self.resample_predictions(coronal_predictions, output_size)
+                out_predictions = self.resample_predictions(coronal_predictions, coronal_spacing, output_size)
             else:
                 out_predictions = coronal_predictions
 
