@@ -69,7 +69,6 @@ class LungSegmenterDCNN:
             return sitk.GetArrayFromImage(out_im)
 
     def lung_segmentation(self, network_model, patch_size, image_sitk, N_subsampling=10, orientation='axial'):
-        # import scipy.ndimage.interpolation as inter
         image_spacing = image_sitk.GetSpacing()
         image_np = sitk.GetArrayFromImage(image_sitk).transpose([2, 1, 0])
 
@@ -89,7 +88,6 @@ class LungSegmenterDCNN:
             resampled_sitk, output_spacing = utils.resample_image(img_sitk, output_size, sitk.sitkInt16,
                                                                   interpolator=sitk.sitkBSpline)
             cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
-            # cnn_img = inter.zoom(image_np, [1.0/1.73046875, 1.0/1.36328125, 1.0])
             cnn_img = cnn_img.astype(np.float32)
         else:
             cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0])
@@ -165,7 +163,6 @@ class LungSegmenterDCNN:
         return combined_pp
 
     def resample_predictions(self, predictions_image, predictions_spacing, output_size):
-        # import scipy.ndimage.interpolation as inter
         out_predictions = np.zeros((4, output_size[0], output_size[1], output_size[2]))
 
         output_size = np.asarray(output_size)
@@ -173,9 +170,6 @@ class LungSegmenterDCNN:
         for ii in range(predictions_image.shape[0]):
             pp_sitk = sitk.GetImageFromArray(predictions_image[ii].transpose([2, 1, 0]))
             pp_sitk.SetSpacing(predictions_spacing)
-
-            # out_predictions[ii] = inter.zoom(predictions_image[ii], [1.73046875, 1.36328125, 1.0])
-
             resampled_sitk, _ = utils.resample_image(pp_sitk, output_size, sitk.sitkFloat32,
                                                      interpolator=sitk.sitkLinear)
             out_predictions[ii] = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
