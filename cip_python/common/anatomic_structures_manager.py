@@ -1,4 +1,6 @@
 import SimpleITK as sitk
+import os
+import os.path as osp
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -29,7 +31,6 @@ class AnatomicStructuresManager(object):
         else:
             sitk_volume = reader.read(case_path_or_sitk_volume)
 
-        is_3D = True
         if plane is None:
             # Deduce the plane (the volume should be 2D)
             if sitk_volume.GetSize()[0] == 1:
@@ -40,7 +41,6 @@ class AnatomicStructuresManager(object):
                 plane = Plane.AXIAL
             else:
                 raise Exception("The volume has more than 2 dimensions and the plane has not been specified")
-            is_3D = False
 
         arr = reader.sitkImage_to_numpy(sitk_volume)
 
@@ -54,9 +54,8 @@ class AnatomicStructuresManager(object):
         else:
             raise Exception("Wrong plane: {}".format(plane))
 
-        if not is_3D:
-            # Return an array that has only 2 dimensions
-            arr = arr.squeeze()
+        # In 2D, return an array that has only 2 dimensions
+        arr = arr.squeeze()
 
         return arr
 
@@ -360,16 +359,19 @@ class AnatomicStructuresManager(object):
         # Create a png for every structure
         for bb in gtd.bounding_boxes:
             if filtered_structures is None or bb.description in filtered_structures:
-                if bb.size[0] == 0:
+                if bb.description.endswith("Sagittal"):
                     slice_sitk = sitk_vol[int(bb.start[0]):int(bb.start[0]) + 1, :, :]
-                elif bb.size[1] == 0:
+                    plane = Plane.SAGITTAL
+                elif bb.description.endswith("Coronal"):
                     slice_sitk = sitk_vol[:, int(bb.start[1]):int(bb.start[1]) + 1, :]
-                elif bb.size[2] == 0:
+                    plane = Plane.CORONAL
+                elif bb.description.endswith("Axial"):
                     slice_sitk = sitk_vol[:, :, int(bb.start[2]):int(bb.start[2]) + 1]
+                    plane = Plane.AXIAL
                 else:
                     raise Exception("Wrong structure: {}-{}".format(bb.id, bb.description))
 
-                slice_np = self.get_2D_numpy_from_sitk_image(slice_sitk)
+                slice_np = self.get_2D_numpy_from_sitk_image(slice_sitk, plane=plane)
                 x, y, width, height = self.ijk_to_xywh(bb.start, bb.coord2, sitk_vol.GetSize())
 
                 # Draw rectangle
@@ -387,6 +389,88 @@ class AnatomicStructuresManager(object):
                 print (name + " generated")
 
         print ("Case {} finished".format(xml_file_path))
+
+    def qc_structure_with_gt(self, case_path_or_sitk_volume, xml_file_path_pred, xml_file_path_gt, structure, output_file,
+                           rectangle_color_pred='r', rectangle_color_gt='b', line_width=2):
+        """
+        Generate a 2D QC image comparing a structure with the ground truth.
+        The slice will be the predicted one, and the ground truth will be proyected in that slice (in a dashed line)
+        Args:
+            case_path_or_sitk_volume: sitk volume or path to the nrrd file
+            xml_file_path_pred: XML path for the predictions
+            xml_file_path_gt: XML path for the ground truth
+            structure: structure code
+            output_file: path to the output file
+            rectangle_color_pred: color for the prediction bounding box
+            rectangle_color_gt: color for the ground truth bounding box
+            line_width: bounding boxes width
+
+        Returns:
+
+        """
+        if isinstance(case_path_or_sitk_volume, sitk.Image):
+            imsitk = case_path_or_sitk_volume
+        else:
+            imsitk = ImageReaderWriter().read(case_path_or_sitk_volume)
+
+        gtd_pred = GeometryTopologyData.from_xml_file(xml_file_path_pred)
+        gtd_gt = GeometryTopologyData.from_xml_file(xml_file_path_gt)
+
+        start_pred = size_pred = None
+        for bb in gtd_pred.bounding_boxes:
+            if bb.description == structure:
+                start_pred = np.array(bb.start, dtype=int)
+                size_pred = np.array(bb.size, dtype=int)
+                break
+        assert start_pred is not None, "Structure not found"
+
+        start_gt = size_gt = None
+        for bb in gtd_gt.bounding_boxes:
+            if bb.description == structure:
+                start_gt = np.array(bb.start, dtype=int)
+                size_gt = np.array(bb.size, dtype=int)
+                break
+        assert start_gt is not None, "Structure not found"
+
+        if size_gt[0] == 0:
+            plane = Plane.SAGITTAL
+            a = self.get_2D_numpy_from_sitk_image(imsitk, plane=plane)
+            slice_img = a[start_pred[0], :, :]
+        elif size_gt[1] == 0:
+            plane = Plane.CORONAL
+            a = self.get_2D_numpy_from_sitk_image(imsitk, plane=plane)
+            slice_img = a[:, start_pred[1], :]
+        elif size_gt[2] == 0:
+            plane = Plane.AXIAL
+            a = self.get_2D_numpy_from_sitk_image(imsitk, plane=plane)
+            slice_img = a[:, :, start_pred[2]]
+        else:
+            raise Exception("Plane could not be inferred")
+
+        fig, axis = plt.subplots(nrows=1)
+        plt.imshow(slice_img, cmap='gray')
+
+        # Prediction
+        coord1 = start_pred
+        coord2 = coord1 + size_pred
+        coords = self.ijk_to_xywh(coord1, coord2, imsitk.GetSize())
+        rect = patches.Rectangle((coords[0], coords[1]), coords[2], coords[3], linewidth=line_width, edgecolor=rectangle_color_pred,
+                                 facecolor='none')
+        axis.add_patch(rect)
+
+        # Ground truth
+        coord1 = start_gt
+        coord2 = coord1 + size_gt
+        coords = self.ijk_to_xywh(coord1, coord2, imsitk.GetSize())
+        rect = patches.Rectangle((coords[0], coords[1]), coords[2], coords[3], linewidth=line_width, edgecolor=rectangle_color_gt,
+                                 facecolor='none',
+                                 linestyle='dashed')
+        axis.add_patch(rect)
+        plt.axis('off')
+
+        plt.tight_layout()
+        plt.savefig(output_file)
+        print(output_file, " saved")
 
     def numpy_to_sitk(self, array_2D, plane, lps_transformation_matrix):
         """
