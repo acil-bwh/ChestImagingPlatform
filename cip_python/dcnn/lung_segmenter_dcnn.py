@@ -230,7 +230,7 @@ class LungSegmenterDCNN:
             combined_predictions = self.combine_planes(axial_predictions, coronal_predictions)
             if combined_predictions.shape[0] != img_size[0] or combined_predictions[1] != img_size[1]:
                 output_size = np.asarray(img_size)
-                out_predictions = self.resample_predictions(combined_predictions, output_size)
+                out_predictions = self.resample_predictions(combined_predictions, coronal_spacing, output_size)
             else:
                 out_predictions = combined_predictions
             output_labels = self.compute_map(out_predictions)
