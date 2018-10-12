@@ -203,7 +203,7 @@ class AnatomicStructuresManager(object):
             xmin = max(int(cs[0] - (cs[2] / 2)), 0)
             ymin = max(volume_shape[cy] - int(cs[1] + (cs[3] / 2)), 0)
             start = np.array([num_slice, xmin, ymin])
-            size = np.array([0, int(cs[1]), int(cs[3])])
+            size = np.array([0, int(cs[2]), int(cs[3])])
         elif plane == Plane.CORONAL:
             cx = 0
             cy = 2
