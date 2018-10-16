@@ -335,7 +335,7 @@ class AnatomicStructuresManager(object):
 
         return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path, region, plane, extra_margin=margin)
 
-    def generate_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, filtered_structures=None,
+    def generate_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, structures=None,
                            rectangle_color='r', line_width=3):
         """
         Generate all the png full-slice images and a red rectangle with the structure detection
@@ -343,7 +343,7 @@ class AnatomicStructuresManager(object):
             case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
             xml_file_path: file path to the XML that contains the GeometryTopologyData object
             output_folder: output folder path where all the png images will be saved
-            filtered_structures: when filled, a list with the structure codes that we want to generate
+            structures: when filled, a list with the structure codes that we want to generate
             rectangle_color: color for matplotlib rectangle
             line_width: line width for matplotlib rectangle
         """
@@ -358,7 +358,7 @@ class AnatomicStructuresManager(object):
 
         # Create a png for every structure
         for bb in gtd.bounding_boxes:
-            if filtered_structures is None or bb.description in filtered_structures:
+            if structures is None or bb.description in structures:
                 if bb.description.endswith("Sagittal"):
                     slice_sitk = sitk_vol[int(bb.start[0]):int(bb.start[0]) + 1, :, :]
                     plane = Plane.SAGITTAL
