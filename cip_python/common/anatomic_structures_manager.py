@@ -390,8 +390,8 @@ class AnatomicStructuresManager(object):
 
         print ("Case {} finished".format(xml_file_path))
 
-    def qc_structure_with_gt(self, case_path_or_sitk_volume, xml_file_path_pred, xml_file_path_gt, structure, output_file,
-                           rectangle_color_pred='r', rectangle_color_gt='b', line_width=2):
+    def qc_structure_with_gt(self, case_path_or_sitk_volume, xml_file_path_pred, xml_file_path_gt, structure,
+                            output_file=None, rectangle_color_pred='r', rectangle_color_gt='b', line_width=2):
         """
         Generate a 2D QC image comparing a structure with the ground truth.
         The slice will be the predicted one, and the ground truth will be proyected in that slice (in a dashed line)
@@ -469,8 +469,9 @@ class AnatomicStructuresManager(object):
         plt.axis('off')
 
         plt.tight_layout()
-        plt.savefig(output_file)
-        print(output_file, " saved")
+        if output_file is not None:
+            plt.savefig(output_file)
+            print(output_file, " saved")
 
     def numpy_to_sitk(self, array_2D, plane, lps_transformation_matrix):
         """
