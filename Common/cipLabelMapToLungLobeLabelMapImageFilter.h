@@ -71,6 +71,24 @@ public:
   typedef itk::ImageRegionIteratorWithIndex< OutputImageType > OutputIteratorType;
   typedef itk::ImageRegionConstIterator< InputImageType >      InputIteratorType;
 
+  /** Get an estimate of the left oblique completeness. This is a value between 0.
+   *  (totally absent) and 1. (totally complete). Briefly, the computation is 
+   *  performed by assessing the fraction of the TPS surface area covered by fissure
+   *  particles. */
+  double GetLeftObliqueFissureCompleteness();
+  
+  /** Get an estimate of the right oblique completeness. This is a value between 0.
+   *  (totally absent) and 1. (totally complete). Briefly, the computation is 
+   *  performed by assessing the fraction of the TPS surface area covered by fissure
+   *  particles. */
+  double GetRightObliqueFissureCompleteness();
+
+  /** Get an estimate of the right horizontal completeness. This is a value between 0.
+   *  (totally absent) and 1. (totally complete). Briefly, the computation is 
+   *  performed by assessing the fraction of the TPS surface area covered by fissure
+   *  particles. */
+  double GetRightHorizontalFissureCompleteness();
+  
   /** Image indices indicating the locations of points along the left 
    *  oblique fissure (along the boundary separating the left upper lobe
    *  from the left lower lobe). */
@@ -147,6 +165,13 @@ private:
 
   int GetBoundaryHeightIndex( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, BlendMapType::Pointer,
 			      unsigned int, unsigned int );
+
+  /** This function gets an estimate of the TPS surface area over the pixel that 
+   *  extends from (i, j) to (i+1, i+j). It does this by considering the area of the four
+   *  triangles formed by the four corners of the pixel patch and the center of that patch. */
+  double GetLocalSurfaceArea( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, BlendMapType::Pointer,
+			      unsigned int, unsigned int );
+  
   void UpdateBlendMap( cipThinPlateSplineSurface*, BlendMapType::Pointer );
 
   unsigned short FissureSurfaceValue;
