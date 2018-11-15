@@ -1855,4 +1855,9 @@
         <Name>SRIMin</Name>
         <Name>SRIMax</Name>
     </BiomechanicalPhenotypeNames>
+    <FissureCompletenessPhenotypeNames>
+        <Name>LeftObliqueFissureCompleteness</Name>
+        <Name>RightObliqueFissureCompleteness</Name>
+	<Name>RightHorizontalFissureCompleteness</Name>      
+    </FissureCompletenessPhenotypeNames>    
 </ChestConventions>
