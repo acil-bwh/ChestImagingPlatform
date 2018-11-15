@@ -5,13 +5,15 @@ def resample_image(image, output_size, output_type=sitk.sitkFloat32, interpolato
     factor = np.asarray(image.GetSize()) / output_size.astype(np.float32)
     output_spacing = np.asarray(image.GetSpacing()) * factor
 
+    print image.GetSpacing(), output_spacing
+
     resampler = sitk.ResampleImageFilter()
     resampler.SetOutputDirection(image.GetDirection())
     resampler.SetSize(output_size)
     resampler.SetInterpolator(interpolator)
     resampler.SetOutputSpacing(output_spacing)
     resampler.SetOutputPixelType(output_type)
-    return resampler.Execute(image)
+    return resampler.Execute(image), output_spacing
 
 
 def standardization(image_array):

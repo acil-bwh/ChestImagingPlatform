@@ -72,7 +72,7 @@ class VesselParticlesMaskWorkflow(Workflow):
         self._thinned_file_name = \
           os.path.join(self._tmp_dir, self._cid + '_thinned.nhdr')          
         self._sigma_step_method = 1
-        self._rescale = False
+        self._rescaleOff = True
         self._threads = 0
         self._method = 'Frangi'
         self._alpha = 0.63 # In [0, 1]
@@ -123,7 +123,7 @@ class VesselParticlesMaskWorkflow(Workflow):
         compute_feature_strength.inputs.inFileName = self._ct_file_name
         compute_feature_strength.inputs.outFileName = self._strength_file_name  
         compute_feature_strength.inputs.ssm = str(self._sigma_step_method)
-        compute_feature_strength.inputs.rescale = self._rescale
+        compute_feature_strength.inputs.rescaleOff = self._rescaleOff
         compute_feature_strength.inputs.threads = self._threads
         compute_feature_strength.inputs.method = self._method
         compute_feature_strength.inputs.feature = 'RidgeLine'
