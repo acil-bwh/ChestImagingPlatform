@@ -34,6 +34,9 @@
 #include "itkConnectedComponentImageFilter.h"
 #include "cipThinPlateSplineSurface.h"
 
+#include "vtkPolyData.h"
+#include "vtkSmartPointer.h"
+#include "vtkOBBTree.h"
 
 class ITK_EXPORT cipLabelMapToLungLobeLabelMapImageFilter :
   public itk::ImageToImageFilter< itk::Image<unsigned short, 3>, itk::Image<unsigned short, 3> >
@@ -71,23 +74,30 @@ public:
   typedef itk::ImageRegionIteratorWithIndex< OutputImageType > OutputIteratorType;
   typedef itk::ImageRegionConstIterator< InputImageType >      InputIteratorType;
 
-  /** Get an estimate of the left oblique completeness. This is a value between 0.
-   *  (totally absent) and 1. (totally complete). Briefly, the computation is 
-   *  performed by assessing the fraction of the TPS surface area covered by fissure
-   *  particles. */
-  double GetLeftObliqueFissureCompleteness();
-  
-  /** Get an estimate of the right oblique completeness. This is a value between 0.
-   *  (totally absent) and 1. (totally complete). Briefly, the computation is 
-   *  performed by assessing the fraction of the TPS surface area covered by fissure
-   *  particles. */
-  double GetRightObliqueFissureCompleteness();
+  /** Note that fissure particles are only used to evaluate fissure completeness.
+   *  This function should not be used for defining the (thin plate spline)
+   *  boundary between lobes. Instead, use SetLeftObliqueFissurePoints to pass the
+   *  particle point locations to this filter in order to define the TPS boundary */
+  void SetLeftObliqueFissureParticles( vtkPolyData* );
 
-  /** Get an estimate of the right horizontal completeness. This is a value between 0.
-   *  (totally absent) and 1. (totally complete). Briefly, the computation is 
-   *  performed by assessing the fraction of the TPS surface area covered by fissure
-   *  particles. */
-  double GetRightHorizontalFissureCompleteness();
+  /** Note that fissure particles are only used to evaluate fissure completeness.
+   *  This function should not be used for defining the (thin plate spline)
+   *  boundary between lobes. Instead, use SetRightObliqueFissurePoints to pass the
+   *  particle point locations to this filter in order to define the TPS boundary */  
+  void SetRightObliqueFissureParticles( vtkPolyData* );
+
+  /** Note that fissure particles are only used to evaluate fissure completeness.
+   *  This function should not be used for defining the (thin plate spline)
+   *  boundary between lobes. Instead, use SetRightHorizontalFissurePoints to pass the
+   *  particle point locations to this filter in order to define the TPS boundary */  
+  void SetRightHorizontalFissureParticles( vtkPolyData* );  
+  
+  /** Get an estimate fissure completeness. This is a value between 0 (totally absent) 
+   *  and 1 (totally complete). Briefly, the computation is performed by assessing the 
+   *  fraction of the TPS surface area covered by fissure particles. */
+  itkGetMacro( LeftObliqueFissureCompleteness, double );
+  itkGetMacro( RightObliqueFissureCompleteness, double );
+  itkGetMacro( RightHorizontalFissureCompleteness, double );  
   
   /** Image indices indicating the locations of points along the left 
    *  oblique fissure (along the boundary separating the left upper lobe
@@ -174,6 +184,11 @@ private:
   
   void UpdateBlendMap( cipThinPlateSplineSurface*, BlendMapType::Pointer );
 
+  /** Casts a ray along the z direction and returns true if the ray intersects
+   *  with the Delaunay surface formed from the fissure particles and returns
+   *  false otherwise. */
+  bool IsFissure( unsigned int, unsigned int, unsigned char, unsigned char );
+  
   unsigned short FissureSurfaceValue;
 
   double BlendSlope;
@@ -193,6 +208,10 @@ private:
 
   double m_ThinPlateSplineSurfaceFromPointsLambda;
 
+  double m_LeftObliqueFissureCompleteness;
+  double m_RightObliqueFissureCompleteness;
+  double m_RightHorizontalFissureCompleteness;
+  
   cipThinPlateSplineSurface* LeftObliqueThinPlateSplineSurface;
   cipThinPlateSplineSurface* RightObliqueThinPlateSplineSurface;
   cipThinPlateSplineSurface* RightHorizontalThinPlateSplineSurface;
@@ -200,6 +219,10 @@ private:
   cipThinPlateSplineSurface* LeftObliqueThinPlateSplineSurfaceFromPoints;
   cipThinPlateSplineSurface* RightObliqueThinPlateSplineSurfaceFromPoints;
   cipThinPlateSplineSurface* RightHorizontalThinPlateSplineSurfaceFromPoints;
+
+  vtkSmartPointer< vtkOBBTree > LeftObliqueObbTree;
+  vtkSmartPointer< vtkOBBTree > RightObliqueObbTree;
+  vtkSmartPointer< vtkOBBTree > RightHorizontalObbTree;  
 };
   
 #ifndef ITK_MANUAL_INSTANTIATION

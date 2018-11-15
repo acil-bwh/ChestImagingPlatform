@@ -11,6 +11,11 @@
 #include "cipMacro.h"
 #include "cipChestConventions.h"
 
+#include "vtkDelaunay3D.h"
+#include "vtkDataSetSurfaceFilter.h"
+#include "vtkAbstractArray.h"
+#include "vtkIndent.h"
+
 #include <math.h>
 
 cipLabelMapToLungLobeLabelMapImageFilter
@@ -32,32 +37,117 @@ cipLabelMapToLungLobeLabelMapImageFilter
 
   this->BlendSlope     = 1.0/98.9;
   this->BlendIntercept = -1.0/49.0;
+
+  this->LeftObliqueObbTree = vtkSmartPointer< vtkOBBTree >::New();
+  this->RightHorizontalObbTree = vtkSmartPointer< vtkOBBTree >::New();
+  this->RightObliqueObbTree = vtkSmartPointer< vtkOBBTree >::New();  
 }
 
 
-double
+bool
 cipLabelMapToLungLobeLabelMapImageFilter
-::GetLeftObliqueFissureCompleteness()
+::IsFissure(unsigned int i, unsigned int j, unsigned char chestRegion, unsigned char chestType)
 {
+  //cip::OBLIQUEFISSURE
+  //cip::HORIZONTALFISSURE
+
+  InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
+  InputImageType::PointType   origin  = this->GetInput()->GetOrigin();
+  InputImageType::SizeType    size    = this->GetInput()->GetBufferedRegion().GetSize();  
+
+  double source[3];
+    source[0] = double(i)*spacing[0] + origin[0];
+    source[1] = double(j)*spacing[1] + origin[1];
+    source[2] = origin[2];    
   
+  double target[3];
+    target[0] = double(i)*spacing[0] + origin[0];
+    target[1] = double(j)*spacing[1] + origin[1];
+    target[2] = double(size[2])*spacing[2] + origin[2];      
 
-  return 0;
+  vtkSmartPointer< vtkPoints > intersectPoints = vtkSmartPointer<vtkPoints>::New();
+
+  bool intersects;
+  if ( chestRegion == (unsigned char)(cip::LEFTLUNG) )
+    {
+      intersects = this->LeftObliqueObbTree->IntersectWithLine(source, target, intersectPoints, NULL);
+    }
+  else if ( chestRegion == (unsigned char)(cip::RIGHTLUNG) &&
+    chestType == (unsigned char)(cip::OBLIQUEFISSURE) )
+    {
+      intersects = this->RightObliqueObbTree->IntersectWithLine(source, target, intersectPoints, NULL);
+    }
+  else
+    {
+      intersects = this->RightHorizontalObbTree->IntersectWithLine(source, target, intersectPoints, NULL);
+    }    
+
+  return intersects;
 }
 
 
-double
+void
 cipLabelMapToLungLobeLabelMapImageFilter
-::GetRightObliqueFissureCompleteness()
+::SetLeftObliqueFissureParticles( vtkPolyData* particles )
 {
-  return 0;
+  double irad = 0;
+  for ( unsigned int i=0; i<particles->GetFieldData()->GetNumberOfArrays(); i++ )
+    {
+      std::string name = particles->GetFieldData()->GetArray(i)->GetName();
+      if ( name.compare( "irad" ) == 0 )
+        {
+	  irad = particles->GetFieldData()->GetArray(i)->GetTuple(0)[0];
+	  std::cout << "irad:\t" << irad << std::endl;
+        }
+    }
+
+  vtkSmartPointer< vtkDelaunay3D > delaunay3D = vtkSmartPointer< vtkDelaunay3D >::New();
+    delaunay3D->SetInputData( particles );
+    delaunay3D->SetAlpha( 2*irad );
+    delaunay3D->Update();
+
+  vtkSmartPointer< vtkDataSetSurfaceFilter > surfFilter = vtkSmartPointer< vtkDataSetSurfaceFilter >::New();
+    surfFilter->SetInputConnection( delaunay3D->GetOutputPort() );
+    surfFilter->Update();
+
+  this->LeftObliqueObbTree->SetDataSet( surfFilter->GetOutput() );
+  this->LeftObliqueObbTree->BuildLocator();
 }
 
 
-double
+void
 cipLabelMapToLungLobeLabelMapImageFilter
-::GetRightHorizontalFissureCompleteness()
+::SetRightObliqueFissureParticles( vtkPolyData* particles )
 {
-  return 0;
+  vtkSmartPointer< vtkDelaunay3D > delaunay3D = vtkSmartPointer< vtkDelaunay3D >::New();
+    delaunay3D->SetInputData( particles );
+    delaunay3D->SetAlpha( particles->GetFieldData()->GetArray('irad')->GetTuple(0)[0] );
+    delaunay3D->Update();
+
+  vtkSmartPointer< vtkDataSetSurfaceFilter > surfFilter = vtkSmartPointer< vtkDataSetSurfaceFilter >::New();
+    surfFilter->SetInputConnection( delaunay3D->GetOutputPort() );
+    surfFilter->Update();
+
+  this->RightObliqueObbTree->SetDataSet( surfFilter->GetOutput() );
+  this->RightObliqueObbTree->BuildLocator();
+}
+
+
+void
+cipLabelMapToLungLobeLabelMapImageFilter
+::SetRightHorizontalFissureParticles( vtkPolyData* particles )
+{
+  vtkSmartPointer< vtkDelaunay3D > delaunay3D = vtkSmartPointer< vtkDelaunay3D >::New();
+    delaunay3D->SetInputData( particles );
+    delaunay3D->SetAlpha( particles->GetFieldData()->GetArray('irad')->GetTuple(0)[0] );
+    delaunay3D->Update();
+
+  vtkSmartPointer< vtkDataSetSurfaceFilter > surfFilter = vtkSmartPointer< vtkDataSetSurfaceFilter >::New();
+    surfFilter->SetInputConnection( delaunay3D->GetOutputPort() );
+    surfFilter->Update();
+
+  this->RightHorizontalObbTree->SetDataSet( surfFilter->GetOutput() );
+  this->RightHorizontalObbTree->BuildLocator();
 }
 
 
@@ -140,10 +230,13 @@ cipLabelMapToLungLobeLabelMapImageFilter
     }
 
   int loZ, roZ, rhZ;  // The z index values for each of the fissures
-  double loAreaTmp, roAreaTmp, rhAreaTmp; // Temp TPS surface area values for the three fissures
-  double loArea = 0.0;
-  double roArea = 0.0;
-  double lhArea = 0.0;  
+  double loSurfaceArea = 0.0;
+  double roSurfaceArea = 0.0;
+  double rhSurfaceArea = 0.0;
+  double loFissureArea = 0.0;
+  double roFissureArea = 0.0;
+  double rhFissureArea = 0.0;    
+  double area;
 
   unsigned short newValue;
   unsigned char cipRegion, cipType;
@@ -157,10 +250,6 @@ cipLabelMapToLungLobeLabelMapImageFilter
 	      loZ = this->GetBoundaryHeightIndex( this->LeftObliqueThinPlateSplineSurface,
 						  this->LeftObliqueThinPlateSplineSurfaceFromPoints,
 						  this->LeftObliqueBlendMap, i, j );
-
-              loAreaTmp = this->GetLocalSurfaceArea( this->LeftObliqueThinPlateSplineSurface,
-		       				     this->LeftObliqueThinPlateSplineSurfaceFromPoints,
-			                             this->LeftObliqueBlendMap, i, j );							
 	    }
 
 	  if ( segmentRightLobes )
@@ -192,10 +281,18 @@ cipLabelMapToLungLobeLabelMapImageFilter
 		    {
 		      if ( z == loZ )
 		        {
-			  loArea += loAreaTmp;
-			  std::cout << loAreaTmp << std::endl;
-			}
+			  area = this->GetLocalSurfaceArea( this->LeftObliqueThinPlateSplineSurface,
+							    this->LeftObliqueThinPlateSplineSurfaceFromPoints,
+			                             	    this->LeftObliqueBlendMap, i, j);
+                          loSurfaceArea += area;												
+			  if ( this->IsFissure( i, j, (unsigned char)(cip::LEFTLUNG), (unsigned char)(cip::OBLIQUEFISSURE) ) )
+			    {
+			      loFissureArea += area;
 
+			      cipType = (unsigned char)( cip::OBLIQUEFISSURE );
+			    }
+			}
+			
 		      if ( z < loZ )
 			{
 			  cipRegion = (unsigned char)( cip::LEFTINFERIORLOBE );
@@ -212,6 +309,33 @@ cipLabelMapToLungLobeLabelMapImageFilter
 		  else if ( segmentRightLobes && 
 			    conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)( cip::RIGHTLUNG ) ) )
 		    {
+		      if ( z == rhZ && z > roZ )
+		        {
+			  area = this->GetLocalSurfaceArea( this->RightHorizontalThinPlateSplineSurface,
+							    this->RightHorizontalThinPlateSplineSurfaceFromPoints,
+			                             	    this->RightHorizontalBlendMap, i, j );
+			  rhSurfaceArea += area;
+			  if ( this->IsFissure( i, j, (unsigned char)(cip::RIGHTLUNG), (unsigned char)(cip::HORIZONTALFISSURE) ) )
+			    {
+			      rhFissureArea += area;
+
+                              cipType = (unsigned char)( cip::HORIZONTALFISSURE );
+			    }
+			}
+		      if ( z == roZ )
+		        {
+			  area = this->GetLocalSurfaceArea( this->RightObliqueThinPlateSplineSurface,
+							    this->RightObliqueThinPlateSplineSurfaceFromPoints,
+			                             	    this->RightObliqueBlendMap, i, j );
+			  roSurfaceArea += area;
+			  if ( this->IsFissure( i, j, (unsigned char)(cip::RIGHTLUNG), (unsigned char)(cip::OBLIQUEFISSURE) ) )
+			    {
+			      roFissureArea += area;
+
+                              cipType = (unsigned char)( cip::OBLIQUEFISSURE );
+			    }
+			}                                           
+
 		      if ( z <= roZ )
 			{
 			  cipRegion = (unsigned char)( cip::RIGHTINFERIORLOBE );
@@ -232,6 +356,10 @@ cipLabelMapToLungLobeLabelMapImageFilter
 	    }
 	}
     }
+
+  this->m_LeftObliqueFissureCompleteness = loFissureArea/loSurfaceArea;
+  this->m_RightObliqueFissureCompleteness = roFissureArea/roSurfaceArea;
+  this->m_RightHorizontalFissureCompleteness = rhFissureArea/rhSurfaceArea;  
 }
 
 void 
