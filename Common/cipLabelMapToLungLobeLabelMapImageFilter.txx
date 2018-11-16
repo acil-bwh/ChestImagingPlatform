@@ -230,14 +230,6 @@ cipLabelMapToLungLobeLabelMapImageFilter
     }
 
   int loZ, roZ, rhZ;  // The z index values for each of the fissures
-  double loSurfaceArea = 0.0;
-  double roSurfaceArea = 0.0;
-  double rhSurfaceArea = 0.0;
-  double loFissureArea = 0.0;
-  double roFissureArea = 0.0;
-  double rhFissureArea = 0.0;    
-  double area;
-
   unsigned short newValue;
   unsigned char cipRegion, cipType;
 
@@ -281,14 +273,8 @@ cipLabelMapToLungLobeLabelMapImageFilter
 		    {
 		      if ( z == loZ )
 		        {
-			  area = this->GetLocalSurfaceArea( this->LeftObliqueThinPlateSplineSurface,
-							    this->LeftObliqueThinPlateSplineSurfaceFromPoints,
-			                             	    this->LeftObliqueBlendMap, i, j);
-                          loSurfaceArea += area;												
 			  if ( this->IsFissure( i, j, (unsigned char)(cip::LEFTLUNG), (unsigned char)(cip::OBLIQUEFISSURE) ) )
 			    {
-			      loFissureArea += area;
-
 			      cipType = (unsigned char)( cip::OBLIQUEFISSURE );
 			    }
 			}
@@ -311,27 +297,15 @@ cipLabelMapToLungLobeLabelMapImageFilter
 		    {
 		      if ( z == rhZ && z > roZ )
 		        {
-			  area = this->GetLocalSurfaceArea( this->RightHorizontalThinPlateSplineSurface,
-							    this->RightHorizontalThinPlateSplineSurfaceFromPoints,
-			                             	    this->RightHorizontalBlendMap, i, j );
-			  rhSurfaceArea += area;
 			  if ( this->IsFissure( i, j, (unsigned char)(cip::RIGHTLUNG), (unsigned char)(cip::HORIZONTALFISSURE) ) )
 			    {
-			      rhFissureArea += area;
-
                               cipType = (unsigned char)( cip::HORIZONTALFISSURE );
 			    }
 			}
 		      if ( z == roZ )
 		        {
-			  area = this->GetLocalSurfaceArea( this->RightObliqueThinPlateSplineSurface,
-							    this->RightObliqueThinPlateSplineSurfaceFromPoints,
-			                             	    this->RightObliqueBlendMap, i, j );
-			  roSurfaceArea += area;
 			  if ( this->IsFissure( i, j, (unsigned char)(cip::RIGHTLUNG), (unsigned char)(cip::OBLIQUEFISSURE) ) )
 			    {
-			      roFissureArea += area;
-
                               cipType = (unsigned char)( cip::OBLIQUEFISSURE );
 			    }
 			}                                           
@@ -356,10 +330,6 @@ cipLabelMapToLungLobeLabelMapImageFilter
 	    }
 	}
     }
-
-  this->m_LeftObliqueFissureCompleteness = loFissureArea/loSurfaceArea;
-  this->m_RightObliqueFissureCompleteness = roFissureArea/roSurfaceArea;
-  this->m_RightHorizontalFissureCompleteness = rhFissureArea/rhSurfaceArea;  
 }
 
 void 
@@ -438,119 +408,6 @@ cipLabelMapToLungLobeLabelMapImageFilter
 ::SetRightObliqueThinPlateSplineSurface( cipThinPlateSplineSurface* tps )
 {
   this->RightObliqueThinPlateSplineSurface = tps;
-}
-
-
-double
-cipLabelMapToLungLobeLabelMapImageFilter
-::GetLocalSurfaceArea( cipThinPlateSplineSurface* tps, cipThinPlateSplineSurface* tpsFromPoints, 
-			  BlendMapType::Pointer blendMap, unsigned int i, unsigned int j )
-{
-  InputImageType::SpacingType spacing = this->GetInput()->GetSpacing();
-  InputImageType::PointType   origin  = this->GetInput()->GetOrigin();
-
-  double zUL, zUR, zLL, zLR, zM;
-
-  double xUL = double(i)*spacing[0] + origin[0];
-  double yUL = double(j)*spacing[1] + origin[1];
-
-  double xUR = double(i+1)*spacing[0] + origin[0];
-  double yUR = double(j)*spacing[1] + origin[1];
-
-  double xLL = double(i)*spacing[0] + origin[0];
-  double yLL = double(j+1)*spacing[1] + origin[1];
-
-  double xLR = double(i+1)*spacing[0] + origin[0];
-  double yLR = double(j+1)*spacing[1] + origin[1];
-
-  double xM = (xUL + xUR)/2.;
-  double yM = (yUL + yLL)/2.;
-
-  if ( tps->GetNumberSurfacePoints() > 0 &&
-       tpsFromPoints->GetNumberSurfacePoints() == 0 )
-    {
-      zUL = tps->GetSurfaceHeight( xUL, yUL );
-      zUR = tps->GetSurfaceHeight( xUR, yUR );
-      zLL = tps->GetSurfaceHeight( xLL, yLL );
-      zLR = tps->GetSurfaceHeight( xLR, yLR );
-      zM  = tps->GetSurfaceHeight( xM, yM );      
-    }
-  else if ( tps->GetNumberSurfacePoints() == 0 &&
-	    tpsFromPoints->GetNumberSurfacePoints() > 0 )
-    {
-      zUL = tpsFromPoints->GetSurfaceHeight( xUL, yUL );
-      zUR = tpsFromPoints->GetSurfaceHeight( xUR, yUR );
-      zLL = tpsFromPoints->GetSurfaceHeight( xLL, yLL );
-      zLR = tpsFromPoints->GetSurfaceHeight( xLR, yLR );
-      zM  = tpsFromPoints->GetSurfaceHeight( xM, yM );      
-    }
-  else
-    {
-      BlendMapType::IndexType index;
-        index[0] = i;
-	index[1] = j;
-
-      double blendVal = this->BlendSlope*blendMap->GetPixel( index ) + this->BlendIntercept;
-      if ( blendVal <= 0.0 )
-	{
-	  zUL = tpsFromPoints->GetSurfaceHeight( xUL, yUL );
-	  zUR = tpsFromPoints->GetSurfaceHeight( xUR, yUR );
-	  zLL = tpsFromPoints->GetSurfaceHeight( xLL, yLL );
-	  zLR = tpsFromPoints->GetSurfaceHeight( xLR, yLR );
-	  zM  = tpsFromPoints->GetSurfaceHeight( xM, yM );	  
-	}
-      else if ( blendVal >= 1.0 )
-	{
-	  zUL = tps->GetSurfaceHeight( xUL, yUL );
-	  zUR = tps->GetSurfaceHeight( xUR, yUR );
-	  zLL = tps->GetSurfaceHeight( xLL, yLL );
-	  zLR = tps->GetSurfaceHeight( xLR, yLR );
-	  zM  = tps->GetSurfaceHeight( xM, yM );	  
-	}
-      else
-	{
-	  zUL = blendVal*tps->GetSurfaceHeight( xUL, yUL ) + (1.0 - blendVal)*tpsFromPoints->GetSurfaceHeight( xUL, yUL );
-	  zUR = blendVal*tps->GetSurfaceHeight( xUR, yUR ) + (1.0 - blendVal)*tpsFromPoints->GetSurfaceHeight( xUR, yUR );
-	  zLL = blendVal*tps->GetSurfaceHeight( xLL, yLL ) + (1.0 - blendVal)*tpsFromPoints->GetSurfaceHeight( xLL, yLL );
-	  zLR = blendVal*tps->GetSurfaceHeight( xLR, yLR ) + (1.0 - blendVal)*tpsFromPoints->GetSurfaceHeight( xLR, yLR );
-	  zM = blendVal*tps->GetSurfaceHeight( xM, yM ) + (1.0 - blendVal)*tpsFromPoints->GetSurfaceHeight( xM, yM );	  
-	}
-    }
-
-  // Now compute the area of each triangle. Use Heron's Formula:
-  double sideA, sideB, sideC, S;
-  double surfaceArea = 0.;
-  
-  // UL, LL, M
-  sideA = sqrt(pow(xM - xLL, 2) + pow(yM - yLL, 2) + pow(zM - zLL, 2));
-  sideB = sqrt(pow(xM - xUL, 2) + pow(yM - yUL, 2) + pow(zM - zUL, 2));
-  sideC = sqrt(pow(xLL - xUL, 2) + pow(yLL - yUL, 2) + pow(zLL - zUL, 2));
-  S = (sideA + sideB + sideC)/2.;
-  surfaceArea += sqrt(S*(S - sideA)*(S - sideB)*(S - sideC));
-
-  // UL, UR, M
-  sideA = sqrt(pow(xM - xUR, 2) + pow(yM - yUR, 2) + pow(zM - zUR, 2));
-  sideB = sqrt(pow(xM - xUL, 2) + pow(yM - yUL, 2) + pow(zM - zUL, 2));
-  sideC = sqrt(pow(xUR - xUL, 2) + pow(yUR - yUL, 2) + pow(zUR - zUL, 2));
-  S = (sideA + sideB + sideC)/2.;
-  surfaceArea += sqrt(S*(S - sideA)*(S - sideB)*(S - sideC));
-
-  // UR, LR, M
-  sideA = sqrt(pow(xM - xUR, 2) + pow(yM - yUR, 2) + pow(zM - zUR, 2));
-  sideB = sqrt(pow(xM - xLR, 2) + pow(yM - yLR, 2) + pow(zM - zLR, 2));
-  sideC = sqrt(pow(xUR - xLR, 2) + pow(yUR - yLR, 2) + pow(zUR - zLR, 2));
-  S = (sideA + sideB + sideC)/2.;
-  surfaceArea += sqrt(S*(S - sideA)*(S - sideB)*(S - sideC));  
-
-  // LL, LR, M
-  sideA = sqrt(pow(xM - xLL, 2) + pow(yM - yLL, 2) + pow(zM - zLL, 2));
-  sideB = sqrt(pow(xM - xLR, 2) + pow(yM - yLR, 2) + pow(zM - zLR, 2));
-  sideC = sqrt(pow(xLL - xLR, 2) + pow(yLL - yLR, 2) + pow(zLL - zLR, 2));
-  S = (sideA + sideB + sideC)/2.;
-  surfaceArea += sqrt(S*(S - sideA)*(S - sideB)*(S - sideC));  
-
-
-  return surfaceArea;
 }
 
 

@@ -74,31 +74,24 @@ public:
   typedef itk::ImageRegionIteratorWithIndex< OutputImageType > OutputIteratorType;
   typedef itk::ImageRegionConstIterator< InputImageType >      InputIteratorType;
 
-  /** Note that fissure particles are only used to evaluate fissure completeness.
+  /** Note that fissure particles are only used to label fissure voxels.
    *  This function should not be used for defining the (thin plate spline)
    *  boundary between lobes. Instead, use SetLeftObliqueFissurePoints to pass the
    *  particle point locations to this filter in order to define the TPS boundary */
   void SetLeftObliqueFissureParticles( vtkPolyData* );
 
-  /** Note that fissure particles are only used to evaluate fissure completeness.
+  /** Note that fissure particles are only used to label fissure voxels.
    *  This function should not be used for defining the (thin plate spline)
    *  boundary between lobes. Instead, use SetRightObliqueFissurePoints to pass the
    *  particle point locations to this filter in order to define the TPS boundary */  
   void SetRightObliqueFissureParticles( vtkPolyData* );
 
-  /** Note that fissure particles are only used to evaluate fissure completeness.
+  /** Note that fissure particles are only used to label fissure voxels.
    *  This function should not be used for defining the (thin plate spline)
    *  boundary between lobes. Instead, use SetRightHorizontalFissurePoints to pass the
    *  particle point locations to this filter in order to define the TPS boundary */  
   void SetRightHorizontalFissureParticles( vtkPolyData* );  
-  
-  /** Get an estimate fissure completeness. This is a value between 0 (totally absent) 
-   *  and 1 (totally complete). Briefly, the computation is performed by assessing the 
-   *  fraction of the TPS surface area covered by fissure particles. */
-  itkGetMacro( LeftObliqueFissureCompleteness, double );
-  itkGetMacro( RightObliqueFissureCompleteness, double );
-  itkGetMacro( RightHorizontalFissureCompleteness, double );  
-  
+    
   /** Image indices indicating the locations of points along the left 
    *  oblique fissure (along the boundary separating the left upper lobe
    *  from the left lower lobe). */
@@ -176,12 +169,6 @@ private:
   int GetBoundaryHeightIndex( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, BlendMapType::Pointer,
 			      unsigned int, unsigned int );
 
-  /** This function gets an estimate of the TPS surface area over the pixel that 
-   *  extends from (i, j) to (i+1, i+j). It does this by considering the area of the four
-   *  triangles formed by the four corners of the pixel patch and the center of that patch. */
-  double GetLocalSurfaceArea( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, BlendMapType::Pointer,
-			      unsigned int, unsigned int );
-  
   void UpdateBlendMap( cipThinPlateSplineSurface*, BlendMapType::Pointer );
 
   /** Casts a ray along the z direction and returns true if the ray intersects
@@ -207,10 +194,6 @@ private:
   std::vector< cip::PointType >  RightHorizontalFissurePoints;
 
   double m_ThinPlateSplineSurfaceFromPointsLambda;
-
-  double m_LeftObliqueFissureCompleteness;
-  double m_RightObliqueFissureCompleteness;
-  double m_RightHorizontalFissureCompleteness;
   
   cipThinPlateSplineSurface* LeftObliqueThinPlateSplineSurface;
   cipThinPlateSplineSurface* RightObliqueThinPlateSplineSurface;
