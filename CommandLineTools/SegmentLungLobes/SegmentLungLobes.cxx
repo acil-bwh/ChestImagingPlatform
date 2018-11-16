@@ -252,6 +252,9 @@ int main( int argc, char *argv[] )
 
     std::cout << "Appending right horizontal fissure points..." << std::endl;
     AppendFissurePoints( &rhPoints, rhParticlesReader->GetOutput() );
+
+    std::cout << "Setting right horizontal fissure particles..." << std::endl;
+    lobeSegmenter->SetRightHorizontalFissureParticles( rhParticlesReader->GetOutput() );    
     }
   if ( roParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -262,6 +265,9 @@ int main( int argc, char *argv[] )
 
     std::cout << "Appending right oblique fissure points..." << std::endl;
     AppendFissurePoints( &roPoints, roParticlesReader->GetOutput() );
+
+    std::cout << "Setting right oblique fissure particles..." << std::endl;
+    lobeSegmenter->SetRightObliqueFissureParticles( roParticlesReader->GetOutput() );
     }
   if ( loParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -272,6 +278,9 @@ int main( int argc, char *argv[] )
 
     std::cout << "Appending left oblique fissure points..." << std::endl;
     AppendFissurePoints( &loPoints, loParticlesReader->GetOutput() );
+
+    std::cout << "Setting left oblique fissure particles..." << std::endl;
+    lobeSegmenter->SetLeftObliqueFissureParticles( loParticlesReader->GetOutput() );    
     }
   if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     { 
