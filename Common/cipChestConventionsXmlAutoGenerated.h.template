@@ -73,8 +73,7 @@ namespace cip {
         std::vector< std::string >  PulmonaryVasculaturePhenotypeNames;
         std::vector< std::string >  AirwayPhenotypeNames;
         std::vector< std::string >  BiomechanicalPhenotypeNames;
-
-
+        std::vector< std::string >  FissureCompletenessPhenotypeNames;	
 
     private:
         void BuildStructures() {
