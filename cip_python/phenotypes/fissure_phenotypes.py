@@ -7,7 +7,7 @@ from cip_python.phenotypes import Phenotypes
 from cip_python.common import ChestConventions
 from cip_python.input_output import ImageReaderWriter
 
-class FissureCompletenessPhenotypes(Phenotypes):
+class FissurePhenotypes(Phenotypes):
     """Class for computing lung fissure completeness.
     """
     def __init__(self):
@@ -22,7 +22,7 @@ class FissureCompletenessPhenotypes(Phenotypes):
             Phenotype names
         """        
         c = ChestConventions()
-        names = c.FissureCompletenessPhenotypeNames
+        names = c.FissurePhenotypeNames
         
         return names
 
@@ -67,7 +67,8 @@ class FissureCompletenessPhenotypes(Phenotypes):
 
         return area
 
-    def get_fissure_completeness(surface, fissure):
+    def get_fissure_completeness(self, surface, fissure, spacing,
+                                 completeness_type, tps_downsample=1):
         """Compute the completeness of the fissure. A thin-plate spline
         representation of the lobe boundary is constructed from the points in
         'surface'. For each point in the 'surface' list, the surface area of
@@ -84,19 +85,40 @@ class FissureCompletenessPhenotypes(Phenotypes):
         fissure : list of 3D lists
             Each element is a 3D coordinate of a fissure voxel.
 
+        spacing : array, shape (3)
+            Voxel spacing in x, y, and z direction
+
+        completeness_type : string, optional
+            Either 'surface', in which case the surface area of the lobe
+            boundaries and fissure regions will be compared, or 'domain', in
+            which case only the domains (projection onto the axial plane) of
+            the boundary and fissure regions will be compared.
+            
+        tps_downsample : int, optional
+            The amount by which to downsample the surface points before
+            computing the TPS (1 -> no downsampling, 2 -> half the points will
+            be used, etc). This option is irrelevant if 'completeness_type' is
+            set to 'domain'.
+           
         Returns
         -------
-        completeness : double
+        completeness : float
             In the interval [0, 1] with 0 being totally absent and 1 being
             totally complete.
         """
         surface_arr = np.array(surface)
 
+        surface_dom = [[s[0], s[1]] for s in surface]
+        fissure_dom = [[f[0], f[1]] for f in fissure]
+        if completeness_type == 'domain':
+            return float(len(fissure_dom))/float(len(surface_dom))
+        
         # Downsample the number of pooints in the surface list so as not to
         # choke the TPS computation.
-        ids = (surface_arr[:, 0]%2 == 0) & (surface_arr[:, 1]%2 == 0)
-        tps = Rbf(surface_arr[ids, 0], surface_arr[ids, 1],
-            surface_arr[ids, 2], function='thin_plate')
+        ids = np.arange(surface_arr.shape[0])%tps_downsample == 0
+        tps = Rbf(surface_arr[ids, 0]*spacing[0],
+                  surface_arr[ids, 1]*spacing[1],
+                  surface_arr[ids, 2]*spacing[2], function='thin_plate')
 
         surface_area = 0.
         fissure_area = 0.
@@ -104,13 +126,13 @@ class FissureCompletenessPhenotypes(Phenotypes):
         # For each coordinate in i,j,k space, the corresponding TPS surface
         # area is approximate by computing the area of four triangles formed
         # by the index itself, and half-step offsets around the index.
-        nw_delta = np.array([-0.5, -0.5, 0])
-        ne_delta = np.array([0.5, -0.5, 0])
-        sw_delta = np.array([-0.5, 0.5, 0])
-        se_delta = np.array([0.5, 0.5, 0])
+        nw_delta = np.array([-spacing[0]/2., -spacing[1]/2., 0])
+        ne_delta = np.array([spacing[0]/2., -spacing[1]/2., 0])
+        sw_delta = np.array([-spacing[0]/2., spacing[1]/2., 0])
+        se_delta = np.array([spacing[0]/2., spacing[1]/2., 0])
         patch_areas = []
         for i in xrange(0, surface_arr.shape[0]):
-            m = surface_arr[i, :]
+            m = surface_arr[i, :]*spacing
             nw = m + nw_delta
             nw[2] = tps(nw[0], nw[1])
         
@@ -129,15 +151,16 @@ class FissureCompletenessPhenotypes(Phenotypes):
                 self.get_triangle_area(m, sw, se)
             patch_areas.append(patch_area)
             surface_area += patch_area
-                        
-            if list(m) in fissure_list:
+
+            if surface_dom[i] in fissure_dom:
                 fissure_area += patch_area
 
         completeness = fissure_area/surface_area                
 
         return completeness
         
-    def execute(self, lm, cid):
+    def execute(self, lm, spacing, cid, completeness_type='surface',
+                tps_downsample=1):
         """Compute the fissure completeness phenotypes.
         
         Parameters
@@ -147,16 +170,31 @@ class FissureCompletenessPhenotypes(Phenotypes):
             segmentation was produced, fissure particles were set in order to
             define those voxels that correspond to fissures.
 
+        spacing : array, shape (3)
+            Voxel spacing in x, y, and z direction
+        
         cid : string
             Case ID
 
+        completeness_type : string, optional
+            Either 'surface', in which case the surface area of the lobe
+            boundaries and fissure regions will be compared, or 'domain', in
+            which case only the domains (projection onto the axial plane) of
+            the boundary and fissure regions will be compared.
+
+        tps_downsample : int, optional
+            The amount by which to downsample the surface points before
+            computing the TPS (1 -> no downsampling, 2 -> half the points will
+            be used, etc). This option is irrelevant if 'completeness_type' is
+            set to 'domain'.
+        
         Returns
         -------
         df : pandas dataframe
             Dataframe containing info about machine, run time, and fissure
             completeness phenotype values
         """
-        c = ChestConventions()
+        conventions = ChestConventions()
 
         assert type(cid) == str, "cid must be a string"
         self.cid_ = cid
@@ -169,7 +207,7 @@ class FissureCompletenessPhenotypes(Phenotypes):
         
         oblique = conventions.GetChestTypeValueFromName('ObliqueFissure')
         horizontal = conventions.GetChestTypeValueFromName('HorizontalFissure')
-        
+
         nonzero_domain = np.where(np.sum(lm > 0, 2) > 0)
         ro_surface = []
         rh_surface = []
@@ -188,8 +226,10 @@ class FissureCompletenessPhenotypes(Phenotypes):
                     if ks[k] - ks[k-1] > 1:
                         last_region = 0
                     
-                curr_region = conventions.GetChestRegionFromValue(lm[i, j, k])
-                curr_type = conventions.GetChestTypeFromValue(lm[i, j, k])
+                curr_region = conventions.\
+                  GetChestRegionFromValue(int(lm[i, j, k]))
+                curr_type = conventions.\
+                  GetChestTypeFromValue(int(lm[i, j, k]))
                 if curr_type == oblique and (curr_region == RUL or \
                     curr_region == RML or curr_region == RLL):
                     ro_fissure.append([i, j, k]) 
@@ -225,22 +265,25 @@ class FissureCompletenessPhenotypes(Phenotypes):
         rh_completeness = np.nan                
         if len(lo_surface) > 2:
             lo_completeness = \
-            self.get_fissure_completeness(lo_surface, lo_fissure)
+            self.get_fissure_completeness(lo_surface, lo_fissure, spacing,
+                                          completeness_type, tps_downsample)
             
         if len(ro_surface) > 2:
             ro_completeness = \
-            self.get_fissure_completeness(ro_surface, ro_fissure)
+            self.get_fissure_completeness(ro_surface, ro_fissure, spacing,
+                                          completeness_type, tps_downsample)
 
         if len(rh_surface) > 2:
             rh_completeness = \
-            self.get_fissure_completeness(rh_surface, rh_fissure)            
+            self.get_fissure_completeness(rh_surface, rh_fissure, spacing,
+                                          completeness_type, tps_downsample)
                 
-        self.add_pheno(['LEFTLUNG', 'OBLIQUEFISSURE'],
-            'LeftObliqueFissureCompleteness', lo_completeness)
-        self.add_pheno(['RIGHTLUNG', 'OBLIQUEFISSURE'],
-            'RightObliqueFissureCompleteness', ro_completeness)
-        self.add_pheno(['RIGHTLUNG', 'HORIZONTALFISSURE'],
-            'RightHorizontalFissureCompleteness', rh_completeness)    
+        self.add_pheno(['LeftLung', 'ObliqueFissure'],
+                       'Completeness', lo_completeness)
+        self.add_pheno(['RightLung', 'ObliqueFissure'],
+                        'Completeness', ro_completeness)
+        self.add_pheno(['RightLung', 'HorizontalFissure'],
+                        'Completeness', rh_completeness)    
 
         return self._df
 
@@ -256,12 +299,23 @@ if __name__ == "__main__":
     parser.add_argument('--out_csv', '-out_csv', required=True,
         help='Output csv file in which to store the computed dataframe')
     parser.add_argument('--cid', '-cid', required=True, help='Case id')
-
+    parser.add_argument('--down', '-down', required=False, default=1.,
+        help='The amount by which to downsample the surface points before \
+        computing the TPS (1 -> no downsampling, 2 -> half the points will \
+        be used, etc). This option is irrelevant if completeness type is \
+        set to domain.')
+    parser.add_argument('--type', '-type', required=False, default='surface',
+        help='Either surface, in which case the surface area of the lobe \
+        boundaries and fissure regions will be compared, or domain, in which \
+        case only the domains (projection onto the axial plane) of the \
+        boundary and fissure regions will be compared.')
+        
     args = parser.parse_args()
 
     image_io = ImageReaderWriter()
     lm, lm_header = image_io.read_in_numpy(args.in_lm)
 
-    completeness_phenos = FissureCompletenessPhenotypes()
-    df = completeness_phenos.execute(lm, args.cid)
+    completeness_phenos = FissurePhenotypes()
+    df = completeness_phenos.execute(lm, lm_header['spacing'], args.cid,
+                                     args.type, args.down)
     df.to_csv(args.out_csv, index=False)

@@ -21,7 +21,7 @@ class ChestConventionsInitializer(object):
     __pulmonary_vasculature_phenotype_names__ = None
     __airway_phenotype_names__ = None
     __biomechanical_phenotype_names__ = None
-    __fissure_completeness_phenotype_names__ = None
+    __fissure_phenotype_names__ = None
 
     @staticmethod
     def xml_root_conventions():
@@ -211,14 +211,14 @@ class ChestConventionsInitializer(object):
         return ChestConventionsInitializer.__biomechanical_phenotype_names__
 
     @staticmethod    
-    def fissure_completeness_phenotype_names():
-        if ChestConventionsInitializer.__fissure_completeness_phenotype_names__ is None:
+    def fissure_phenotype_names():
+        if ChestConventionsInitializer.__fissure_phenotype_names__ is None:
             root = ChestConventionsInitializer.xml_root_conventions()
-            ChestConventionsInitializer.__fissure_completeness_phenotype_names__ = list()
-            parent = root.find("FissureCompletenessPhenotypeNames")
-            list(map(lambda n: ChestConventionsInitializer.__fissure_completeness_phenotype_names__.append(n.text),
+            ChestConventionsInitializer.__fissure_phenotype_names__ = list()
+            parent = root.find("FissurePhenotypeNames")
+            list(map(lambda n: ChestConventionsInitializer.__fissure_phenotype_names__.append(n.text),
                 parent.findall("Name")))
-        return ChestConventionsInitializer.__fissure_completeness_phenotype_names__
+        return ChestConventionsInitializer.__fissure_phenotype_names__
 
     
 #############################
@@ -237,7 +237,7 @@ class ChestConventions(object):
     PulmonaryVasculaturePhenotypeNames = ChestConventionsInitializer.pulmonary_vasculature_phenotype_names()   # List of strings
     AirwayPhenotypeNames = ChestConventionsInitializer.airway_phenotype_names()   # List of strings
     BiomechanicalPhenotypeNames = ChestConventionsInitializer.biomechanical_phenotype_names() #List of strings
-    FissureCompletenessPhenotypeNames = ChestConventionsInitializer.fissure_completeness_phenotype_names() #List of strings    
+    FissurePhenotypeNames = ChestConventionsInitializer.fissure_phenotype_names() #List of strings    
 
     @staticmethod
     def GetNumberOfEnumeratedChestRegions():
@@ -600,13 +600,13 @@ class ChestConventions(object):
         return phenotypeName in ChestConventions.BiomechanicalPhenotypeNames
 
     @staticmethod
-    def IsFissureCompletenessPhenotypeName(phenotypeName):
+    def IsFissurePhenotypeName(phenotypeName):
         """
-        Returns true if the passed phenotype is among the allowed fissure completeness phenotype names.
+        Returns true if the passed phenotype is among the allowed fissure phenotype names.
         :param phenotypeName: str
         :return: boolean
         """
-        return phenotypeName in ChestConventions.FissureCompletenessPhenotypeNames
+        return phenotypeName in ChestConventions.FissurePhenotypeNames
 
     @staticmethod
     def IsPulmonaryVasculaturePhenotypeName(phenotypeName):
@@ -657,7 +657,7 @@ class ChestConventions(object):
         """
         return [ChestConventions.BodyCompositionPhenotypeNames, ChestConventions.ParenchymaPhenotypeNames,
                 ChestConventions.PulmonaryVasculaturePhenotypeNames, ChestConventions.AirwayPhenotypeNames,
-		ChestConventions.BiomechanicalPhenotypeNames, ChestConventions.FissureCompletenessPhenotypeNames]
+		ChestConventions.BiomechanicalPhenotypeNames, ChestConventions.FissurePhenotypeNames]
 
     @staticmethod
     def IsChestType(chestType):

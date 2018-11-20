@@ -6,3 +6,5 @@ ADD_TEST( NAME test_vasculature_phenotypes COMMAND nosetests ${CMAKE_CURRENT_BIN
 
 ADD_TEST( NAME test_emphysema_severity COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_emphysema_severity.py)
 
+ADD_TEST( NAME test_fissure_completeness_phenotypes COMMAND nosetests ${CMAKE_CURRENT_BINARY_DIR}/test_fissure_phenotypes.py)
+

@@ -351,11 +351,11 @@ bool cip::ChestConventions::IsBiomechanicalPhenotypeName(std::string pheno) cons
     return false;
 }
 
-/** Returns true if the passed string name is among the allowed fissure completeness
+/** Returns true if the passed string name is among the allowed fissure
  *  phenotype names and returns false otherwise */
-bool cip::ChestConventions::IsFissureCompletenessPhenotypeName(std::string pheno) const {
-    for (int i = 0; i < s_ChestConventions.FissureCompletenessPhenotypeNames.size(); i++) {
-        if (!s_ChestConventions.FissureCompletenessPhenotypeNames[i].compare(pheno)) {
+bool cip::ChestConventions::IsFissurePhenotypeName(std::string pheno) const {
+    for (int i = 0; i < s_ChestConventions.FissurePhenotypeNames.size(); i++) {
+        if (!s_ChestConventions.FissurePhenotypeNames[i].compare(pheno)) {
             return true;
         }
     }
@@ -402,8 +402,8 @@ bool cip::ChestConventions::IsPhenotypeName(std::string pheno) const {
         }
     }
 
-    for (int i = 0; i < s_ChestConventions.FissureCompletenessPhenotypeNames.size(); i++) {
-        if (!s_ChestConventions.FissureCompletenessPhenotypeNames[i].compare(pheno)) {
+    for (int i = 0; i < s_ChestConventions.FissurePhenotypeNames.size(); i++) {
+        if (!s_ChestConventions.FissurePhenotypeNames[i].compare(pheno)) {
             return true;
         }
     }

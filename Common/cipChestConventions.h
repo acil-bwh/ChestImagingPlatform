@@ -169,7 +169,7 @@ public:
 
   /** Returns true if the passed string name is among the allowed fissure completeness
   *  phenotype names and returns false otherwise */
-  bool IsFissureCompletenessPhenotypeName( std::string ) const;
+  bool IsFissurePhenotypeName( std::string ) const;
   
     /** Returns true if the passed string name is among the allowed
    *  phenotype names and returns false otherwise */
