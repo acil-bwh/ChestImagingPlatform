@@ -16,6 +16,7 @@
 
 #include "cipChestConventions.h"
 #include "cipExceptionObject.h"
+#include "itkImageRegionIteratorWithIndex.h"
 #include "vtkSmartPointer.h"
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
@@ -42,22 +43,177 @@ struct PARTICLEINFO
 
 void GetParticleDistanceAndAngle( vtkPolyData*, unsigned int, const cipThinPlateSplineSurface&, double*, double* );
 void TallyParticleInfo( vtkPolyData*, std::vector< cipThinPlateSplineSurface >, std::map< unsigned int, PARTICLEINFO >* );
-void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >*, std::vector< cipThinPlateSplineSurface >, double, double, double, double );
+void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >*, double, double, double, double );
 void WriteParticlesToFile( vtkSmartPointer< vtkPolyData >, std::map< unsigned int, PARTICLEINFO >, std::string, unsigned char );
+void GetSurfacePointsFromLabelMap( cip::LabelMapType::Pointer, std::vector< cip::PointType >*, std::vector< cip::PointType >*,
+				   std::vector< cip::PointType >* );
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
+  cipThinPlateSplineSurface loTPS;
+  cipThinPlateSplineSurface roTPS;
+  cipThinPlateSplineSurface rhTPS;  
+  
   // Read complete particle in lung
   std::cout << "Reading lung particles..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > particlesReader = vtkSmartPointer< vtkPolyDataReader >::New();
     particlesReader->SetFileName( particlesFileName.c_str() );
     particlesReader->Update();
+    
+  if ( lungLobeLabelMapFileName.compare( "NA" ) != 0 )
+    {
+      cip::ChestConventions conventions;
+      
+      std::cout << "Reading lung lobe label map..." << std::endl;
+      cip::LabelMapReaderType::Pointer labelMapReader = cip::LabelMapReaderType::New();
+        labelMapReader->SetFileName( lungLobeLabelMapFileName );
+      try
+	{
+	labelMapReader->Update();
+	}
+      catch ( itk::ExceptionObject &excp )
+	{
+	std::cerr << "Exception caught while reading label map:";
+	std::cerr << excp << std::endl;
+	  
+	return cip::LABELMAPREADFAILURE;
+	}
 
-  // Read shape models
+      cip::LabelMapType::IndexType index;
+      cip::LabelMapType::PointType origin = labelMapReader->GetOutput()->GetOrigin();
+      cip::LabelMapType::SpacingType spacing = labelMapReader->GetOutput()->GetSpacing();
+      
+      std::vector< cip::PointType > rightObliqueSurfacePoints;
+      std::vector< cip::PointType > rightHorizontalSurfacePoints;
+      std::vector< cip::PointType > leftObliqueSurfacePoints;
+
+      std::cout << "Getting surface points..." << std::endl;
+      GetSurfacePointsFromLabelMap(labelMapReader->GetOutput(), &rightObliqueSurfacePoints,
+				   &rightHorizontalSurfacePoints, &leftObliqueSurfacePoints);
+
+      std::cout << "Identifying particles region and isolating..." << std::endl;
+      // March through the particles and identify left or right particles
+      std::vector< vtkFloatArray* > leftArrayVec;
+      std::vector< vtkFloatArray* > rightArrayVec;      
+
+      unsigned int numberOfPointDataArrays = particlesReader->GetOutput()->GetPointData()->GetNumberOfArrays();
+      for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
+	{
+	  vtkFloatArray* array = vtkFloatArray::New();
+	    array->SetNumberOfComponents( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+	    array->SetName( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetName() );
+	  
+	  leftArrayVec.push_back( array );
+	  rightArrayVec.push_back( array );	  
+	}
+      
+      vtkPoints* leftPoints  = vtkPoints::New();
+      vtkPoints* rightPoints  = vtkPoints::New();
+      
+      vtkSmartPointer< vtkPolyData > leftParticles = vtkSmartPointer< vtkPolyData >::New();
+      vtkSmartPointer< vtkPolyData > rightParticles = vtkSmartPointer< vtkPolyData >::New();
+
+      cip::TransferFieldData( particlesReader->GetOutput(), leftParticles );
+      cip::TransferFieldData( particlesReader->GetOutput(), rightParticles );      
+
+      unsigned int leftInc = 0;
+      unsigned int rightInc = 0;
+      for ( unsigned int i=0; i<particlesReader->GetOutput()->GetNumberOfPoints(); i++ )
+	{
+	  index[0] = (unsigned int)((particlesReader->GetOutput()->GetPoint(i)[0] - origin[0])/spacing[0]);
+	  index[1] = (unsigned int)((particlesReader->GetOutput()->GetPoint(i)[1] - origin[1])/spacing[1]);
+	  index[2] = (unsigned int)((particlesReader->GetOutput()->GetPoint(i)[2] - origin[2])/spacing[2]);
+
+	  unsigned char cipRegion = conventions.GetChestRegionFromValue( labelMapReader->GetOutput()->GetPixel( index ) );
+	  if ( conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::LEFTLUNG) ) )
+	    {
+	      leftPoints->InsertNextPoint( particlesReader->GetOutput()->GetPoint(i) );
+	      for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
+		{
+		  leftArrayVec[k]->InsertTuple( leftInc, particlesReader->GetOutput()->GetPointData()->GetArray(k)->GetTuple(i) );
+		}
+	      leftInc++;	      
+	    }
+	  else if ( conventions.CheckSubordinateSuperiorChestRegionRelationship( cipRegion, (unsigned char)(cip::RIGHTLUNG) ) )
+	    {
+	      rightPoints->InsertNextPoint( particlesReader->GetOutput()->GetPoint(i) );
+	      for ( unsigned int k=0; k<numberOfPointDataArrays; k++ )
+		{
+		  rightArrayVec[k]->InsertTuple( rightInc, particlesReader->GetOutput()->GetPointData()->GetArray(k)->GetTuple(i) );
+		}
+	      rightInc++;	      	      
+	    }								   								   	 
+	}
+
+      leftParticles->SetPoints( leftPoints );
+      rightParticles->SetPoints( rightPoints );      
+      for ( unsigned int j=0; j<numberOfPointDataArrays; j++ )
+	{
+	  leftParticles->GetPointData()->AddArray( leftArrayVec[j] );
+	  rightParticles->GetPointData()->AddArray( rightArrayVec[j] );	  
+	}
+
+      if ( leftParticles->GetNumberOfPoints() > 0 )
+	{
+	  loTPS.SetSurfacePoints( leftObliqueSurfacePoints );      
+	  std::vector< cipThinPlateSplineSurface > tpsVecLeft;            
+	  tpsVecLeft.push_back( loTPS );
+	  
+	  std::map< unsigned int, PARTICLEINFO >  leftParticleToInfoMap;
+	  std::cout << "Tallying left particles info..." << std::endl;
+	  TallyParticleInfo( leftParticles, tpsVecLeft, &leftParticleToInfoMap );
+	  
+	  std::cout << "Classifying particles..." << std::endl;
+	  ClassifyParticles( &leftParticleToInfoMap, distanceWeight, angleWeight,
+			     fischerThreshold, distanceThreshold );
+	  
+	  if ( loClassifiedFileName.compare( "NA" ) != 0 )
+	    {
+	      std::cout << "Writing left oblique particles to file..." << std::endl;
+	      WriteParticlesToFile( leftParticles, leftParticleToInfoMap,
+				    loClassifiedFileName, (unsigned char)( cip::OBLIQUEFISSURE ) );
+	    }
+	}
+
+      if ( rightParticles->GetNumberOfPoints() > 0 )
+	{      
+	  roTPS.SetSurfacePoints( rightObliqueSurfacePoints );      
+	  rhTPS.SetSurfacePoints( rightHorizontalSurfacePoints );      
+	  std::vector< cipThinPlateSplineSurface > tpsVecRight;
+	  tpsVecRight.push_back( roTPS );
+	  tpsVecRight.push_back( rhTPS );
+
+	  std::map< unsigned int, PARTICLEINFO >  rightParticleToInfoMap;
+	  std::cout << "Tallying right particles info..." << std::endl;	  
+	  TallyParticleInfo( rightParticles, tpsVecRight, &rightParticleToInfoMap );
+
+	  std::cout << "Classifying particles..." << std::endl;
+	  ClassifyParticles( &rightParticleToInfoMap, distanceWeight, angleWeight,
+			     fischerThreshold, distanceThreshold );
+	  
+	  if ( roClassifiedFileName.compare( "NA" ) != 0 )
+	    {
+	      std::cout << "Writing right oblique particles to file..." << std::endl;
+	      WriteParticlesToFile( rightParticles, rightParticleToInfoMap,
+				    roClassifiedFileName, (unsigned char)( cip::OBLIQUEFISSURE ) );
+	    }
+	  if ( rhClassifiedFileName.compare( "NA" ) != 0 )
+	    {
+	      std::cout << "Writing right horizontal particles to file..." << std::endl;
+	      WriteParticlesToFile( rightParticles, rightParticleToInfoMap,
+				    rhClassifiedFileName, (unsigned char)( cip::HORIZONTALFISSURE ) );
+	    }	  	  
+	}
+      std::cout << "DONE." << std::endl;
+
+      return 0;
+    }
+
   std::vector< cipThinPlateSplineSurface > tpsVec;
 
+  // Read shape models
   if ( rightShapeModelFileName.compare( "NA" ) != 0 )
     {
     std::cout << "Reading right lung shape model..." << std::endl;
@@ -74,15 +230,13 @@ int main( int argc, char *argv[] )
       }
       rightShapeModelIO->GetOutput()->SetRightLungSurfaceModel( true );
 
-    cipThinPlateSplineSurface roTPS;
-      roTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
+    roTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightObliqueWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
     // before the RH (assumed when we execute 'TallyParticleInfo')
     tpsVec.push_back( roTPS );
 
-    cipThinPlateSplineSurface rhTPS;
-      rhTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
+    rhTPS.SetSurfacePoints( rightShapeModelIO->GetOutput()->GetRightHorizontalWeightedSurfacePoints() );
 
     // Note ordering is important here. The RO needs to be pushed back
     // before the RH (assumed when we execute 'TallyParticleInfo')
@@ -95,8 +249,7 @@ int main( int argc, char *argv[] )
       leftShapeModelIO->SetFileName( leftShapeModelFileName );
       leftShapeModelIO->Read();
 
-    cipThinPlateSplineSurface loTPS;
-      loTPS.SetSurfacePoints( leftShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
+    loTPS.SetSurfacePoints( leftShapeModelIO->GetOutput()->GetWeightedSurfacePoints() );
 
     tpsVec.push_back( loTPS );
     }
@@ -114,7 +267,7 @@ int main( int argc, char *argv[] )
 
   // Now classify the particles
   std::cout << "Classifying particles..." << std::endl;
-  ClassifyParticles( &particleToInfoMap, tpsVec, distanceWeight, angleWeight, fischerThreshold, distanceThreshold );
+  ClassifyParticles( &particleToInfoMap, distanceWeight, angleWeight, fischerThreshold, distanceThreshold );
 
   // Write the classified (fissure) particles to file
   if ( loClassifiedFileName.compare( "NA" ) != 0 )
@@ -240,7 +393,7 @@ void TallyParticleInfo( vtkPolyData* particles, std::vector< cipThinPlateSplineS
     }
 }
 
-void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMap, std::vector< cipThinPlateSplineSurface > tpsVec, 
+void ClassifyParticles( std::map< unsigned int, PARTICLEINFO >* particleToInfoMap, 
                         double distanceWeight, double angleWeight, double fischerThreshold, double distanceThreshold )
 {
   std::map< unsigned int, PARTICLEINFO >::iterator it = (*particleToInfoMap).begin();
@@ -344,6 +497,108 @@ void WriteParticlesToFile( vtkSmartPointer< vtkPolyData > particles, std::map< u
     writer->SetInputData( outputParticles );
     writer->SetFileName( fileName.c_str() );
     writer->Write();
+}
+
+void GetSurfacePointsFromLabelMap( cip::LabelMapType::Pointer labelMap,
+				   std::vector< cip::PointType >* rightObliqueSurfacePoints,
+				   std::vector< cip::PointType >* rightHorizontalSurfacePoints,
+				   std::vector< cip::PointType >* leftObliqueSurfacePoints )
+{
+  cip::ChestConventions conventions;
+
+  // These point vectors will be used to internally collect the boundary
+  // points. Below, we'll only record a subset of these so as not to swamp
+  // the TPS computations.
+  std::vector< cip::PointType > rightObliqueSurfacePointsInternal;
+  std::vector< cip::PointType > rightHorizontalSurfacePointsInternal;
+  std::vector< cip::PointType > leftObliqueSurfacePointsInternal;
+  
+  cip::LabelMapType::IndexType index;
+  cip::LabelMapType::PointType origin = labelMap->GetOrigin();
+  cip::LabelMapType::SpacingType spacing = labelMap->GetSpacing();
+
+  typedef itk::ImageRegionIteratorWithIndex< cip::LabelMapType > LabelMapIteratorType;
+  LabelMapIteratorType it( labelMap, labelMap->GetBufferedRegion() );
+  it.GoToBegin();
+  while ( !it.IsAtEnd() )
+    {
+      if ( it.Get() != 0 )
+	{
+	  unsigned char chestRegion = conventions.GetChestRegionFromValue( it.Get() );
+	  if ( chestRegion == (unsigned char)(cip::RIGHTINFERIORLOBE) )
+	    {
+	      index[0] = it.GetIndex()[0];
+	      index[1] = it.GetIndex()[1];
+	      index[2] = it.GetIndex()[2] + 1;
+	      
+	      unsigned char chestRegionAbove = conventions.GetChestRegionFromValue( labelMap->GetPixel( index ) );
+	      if ( chestRegionAbove == (unsigned char)(cip::RIGHTMIDDLELOBE) |
+		   chestRegionAbove == (unsigned char)(cip::RIGHTSUPERIORLOBE) )
+		{
+		  cip::PointType point(3);
+		    point[0] = index[0]*spacing[0] + origin[0];
+		    point[1] = index[1]*spacing[1] + origin[1];
+		    point[2] = index[2]*spacing[2] + origin[2];
+
+		  rightObliqueSurfacePointsInternal.push_back( point );
+		}
+	    }
+	  if ( chestRegion == (unsigned char)(cip::RIGHTMIDDLELOBE) )
+	    {
+	      index[0] = it.GetIndex()[0];
+	      index[1] = it.GetIndex()[1];
+	      index[2] = it.GetIndex()[2] + 1;
+
+	      unsigned char chestRegionAbove = conventions.GetChestRegionFromValue( labelMap->GetPixel( index ) );
+	      if ( chestRegionAbove == (unsigned char)(cip::RIGHTSUPERIORLOBE) )
+		{
+		  cip::PointType point(3);
+		    point[0] = index[0]*spacing[0] + origin[0];
+		    point[1] = index[1]*spacing[1] + origin[1];
+		    point[2] = index[2]*spacing[2] + origin[2];
+
+		  rightHorizontalSurfacePointsInternal.push_back( point );
+		}
+	    }
+	  if ( chestRegion == (unsigned char)(cip::LEFTINFERIORLOBE) )
+	    {
+	      index[0] = it.GetIndex()[0];
+	      index[1] = it.GetIndex()[1];
+	      index[2] = it.GetIndex()[2] + 1;
+
+	      unsigned char chestRegionAbove = conventions.GetChestRegionFromValue( labelMap->GetPixel( index ) );
+	      if ( chestRegionAbove == (unsigned char)(cip::LEFTSUPERIORLOBE) )
+		{
+		  cip::PointType point(3);
+		    point[0] = index[0]*spacing[0] + origin[0];
+		    point[1] = index[1]*spacing[1] + origin[1];
+		    point[2] = index[2]*spacing[2] + origin[2];
+
+		  leftObliqueSurfacePointsInternal.push_back( point );
+		}
+	    }	  
+	}
+      
+      ++it;
+    }
+
+  unsigned int incr = (unsigned int)(leftObliqueSurfacePointsInternal.size()/1000);
+  for ( unsigned int i=0; i < leftObliqueSurfacePointsInternal.size(); i += incr )
+    {
+      (*leftObliqueSurfacePoints).push_back( leftObliqueSurfacePointsInternal[i] );
+    }
+
+  incr = (unsigned int)(rightObliqueSurfacePointsInternal.size()/1000);
+  for ( unsigned int i=0; i < rightObliqueSurfacePointsInternal.size(); i += incr )
+    {
+      (*rightObliqueSurfacePoints).push_back( rightObliqueSurfacePointsInternal[i] );
+    }
+
+  incr = (unsigned int)(rightHorizontalSurfacePointsInternal.size()/1000);
+  for ( unsigned int i=0; i < rightHorizontalSurfacePointsInternal.size(); i += incr )
+    {
+      (*rightHorizontalSurfacePoints).push_back( rightHorizontalSurfacePointsInternal[i] );
+    }
 }
 
 #endif

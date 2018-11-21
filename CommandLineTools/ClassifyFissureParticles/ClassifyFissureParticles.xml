@@ -21,6 +21,15 @@ and does not necessarily represent the official views of the National Institutes
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
+    <string>
+      <name>lungLobeLabelMapFileName</name>
+      <label>Lung lobe segmentation label map</label>
+      <channel>input</channel>
+      <longflag>lm</longflag>
+      <description><![CDATA[Lung lobe label map. If specified, surface points along the right oblique, left oblique, and right horizontal boundaries will be extracted from the label map, and they will be used to define the thin plate surfaces that will be used to classify the fissure particles.]]></description>
+      <default>NA</default>
+    </string>
+    
     <geometry type="model">
       <name>particlesFileName</name>
       <label>Particles file name</label>
