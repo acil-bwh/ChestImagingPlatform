@@ -529,11 +529,12 @@ void GetSurfacePointsFromLabelMap( cip::LabelMapType::Pointer labelMap,
 	    {
 	      index[0] = it.GetIndex()[0];
 	      index[1] = it.GetIndex()[1];
-	      index[2] = it.GetIndex()[2] + 1;
-	      
+	      index[2] = it.GetIndex()[2] + 1;	      
 	      unsigned char chestRegionAbove = conventions.GetChestRegionFromValue( labelMap->GetPixel( index ) );
+	      
 	      if ( chestRegionAbove == (unsigned char)(cip::RIGHTMIDDLELOBE) |
-		   chestRegionAbove == (unsigned char)(cip::RIGHTSUPERIORLOBE) )
+		   chestRegionAbove == (unsigned char)(cip::RIGHTSUPERIORLOBE) | 
+		   chestRegionAbove == (unsigned char)(cip::RIGHTLUNG) )
 		{
 		  cip::PointType point(3);
 		    point[0] = index[0]*spacing[0] + origin[0];
@@ -550,7 +551,8 @@ void GetSurfacePointsFromLabelMap( cip::LabelMapType::Pointer labelMap,
 	      index[2] = it.GetIndex()[2] + 1;
 
 	      unsigned char chestRegionAbove = conventions.GetChestRegionFromValue( labelMap->GetPixel( index ) );
-	      if ( chestRegionAbove == (unsigned char)(cip::RIGHTSUPERIORLOBE) )
+	      if ( chestRegionAbove == (unsigned char)(cip::RIGHTSUPERIORLOBE) |
+		   chestRegionAbove == (unsigned char)(cip::RIGHTLUNG) )
 		{
 		  cip::PointType point(3);
 		    point[0] = index[0]*spacing[0] + origin[0];
@@ -567,7 +569,8 @@ void GetSurfacePointsFromLabelMap( cip::LabelMapType::Pointer labelMap,
 	      index[2] = it.GetIndex()[2] + 1;
 
 	      unsigned char chestRegionAbove = conventions.GetChestRegionFromValue( labelMap->GetPixel( index ) );
-	      if ( chestRegionAbove == (unsigned char)(cip::LEFTSUPERIORLOBE) )
+	      if ( chestRegionAbove == (unsigned char)(cip::LEFTSUPERIORLOBE) |
+		   chestRegionAbove == (unsigned char)(cip::LEFTLUNG) )
 		{
 		  cip::PointType point(3);
 		    point[0] = index[0]*spacing[0] + origin[0];
