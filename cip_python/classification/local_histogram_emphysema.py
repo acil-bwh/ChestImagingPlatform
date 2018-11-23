@@ -7,7 +7,8 @@ import math
 import os
 import types
 from multiprocessing import Pool
-import nrrd
+from cip_python.input_output import ImageReaderWriter
+#import nrrd
 import numpy as np
 import scipy.fftpack
 import scipy.io
@@ -173,11 +174,11 @@ class LocalHistogramEmphysema():
         #Predict each patch class
         labels=[]
         sz=(self.frames.shape[0],self.frames.shape[1])
-        image=np.zeros(sz,dtype='short')
+        image=np.zeros(sz,dtype='uint16')
         for i in range(image_patches.shape[0]):
             for j in range(image_patches.shape[1]):
               t, b, l, r = self.get_win_pixel_coords((i,j), self.ss)
-              centerX_p, centerY_p = t+self.ws[0]/2, l+self.ws[1]/2
+              centerX_p, centerY_p = int(np.rint(t+self.ws[0]/2)), int(np.rint(l+self.ws[1]/2))
               if m[centerY_p, centerX_p]==True:
                 image_patch=image_patches[i,j,:,:].ravel()[:, np.newaxis]
                 bw,mesh,dens=self.bb.kde_b(image_patch)
@@ -190,17 +191,23 @@ class LocalHistogramEmphysema():
                 if ((Z != 1) and (dens2>0.2843)):           # Hierarchical classifier. Second step
                   Z = 2
                 labels.append(Z)
-                image[centerX_p-(self.off/2):centerX_p+(self.off/2+1),centerY_p-(self.off/2):centerY_p+(self.off/2+1)]=Z
+                image[int(centerX_p-(self.off/2)):int(centerX_p+(self.off/2+1)),int(centerY_p-(self.off/2)):int(centerY_p+(self.off/2+1))]=Z
+    
         #Convert the output labels to cipChestConventions
         #palette = [0,1,2,3,4,5,6] #orginal labels
-        palette = [0,1,2,3,4,5,6] #orginal labels
+        palette = np.array([0,1,2,3,4,5,6],dtype='uint16') #orginal labels
         #key=np.array([0,1,67,69,16,17,18]) #cipChestConventions labels
-        key=np.array([0,1,67,69,16,17,18]) #cipChestConventions labels
+        key=np.array([0,1,67,69,16,17,18],dtype='uint16') #cipChestTypeConventions labels
+        key=key<<8  #Convert to Region-Type pair with Region=Undefined (0)
 
         index=np.digitize(image.ravel(), palette, right=True)
-        image=key[index].reshape(image.shape)
+        image=key[index].reshape(image.shape).astype(dtype='uint16')
+
         image=np.rot90(np.fliplr(image))
-        image=np.multiply(m*1.0,image)
+
+        #image=image.astype(dtype='uint16')
+        image[~m]=0
+        #image=np.multiply(m*1.0,image)
         return image
 
     def train(self):
@@ -231,7 +238,7 @@ class LocalHistogramEmphysema():
     def execute(self):
       
         lh.train()
-        output_image=np.zeros((self.frames.shape[0],self.frames.shape[1],self.frames.shape[2]),dtype='short')
+        #output_image=np.zeros((self.frames.shape[0],self.frames.shape[1],self.frames.shape[2]),dtype='uint16')
         
         if self.num_threads > 1:
           p = Pool(int(self.num_threads))
@@ -245,7 +252,9 @@ class LocalHistogramEmphysema():
         
         pp=pp.transpose([1,2,0])
         ff=interpolate.interp1d(range(0,self.frames.shape[2],self.z),pp,kind='nearest',fill_value=0,axis=2)
-        ppn=ff(range(0,self.frames.shape[2]-self.z))
+
+        ppn=ff(range(0,self.frames.shape[2]-self.z)).astype('uint16')
+        
         #Adding last slices to match the size
         last_slice=ppn[:,:,-1]
         last_slices=np.repeat(last_slice[:, :, np.newaxis], self.frames.shape[2]-(ppn.shape[2]), axis=2)
@@ -335,8 +344,6 @@ if __name__ == "__main__":
     parser.add_option('-s', help='Offset between patches. Default=5',
                       dest='offset',default=5)
     parser.add_option('-o', help='Output image file', dest='output_image_file',default=None)
-    parser.add_option('-c', help='Output csv file',
-                      dest='output_csv_file',metavar='<string>',default=None)
     parser.add_option('-t', help='Number of threads in multiprocessing. Default=1',
                       dest='num_threads',default=1)
     parser.add_option('-z', help='Offset along z direction. Default=2',
@@ -356,8 +363,16 @@ if __name__ == "__main__":
     ##Processing image##
     print '...Processing Image: '+options.image_file+'...'
     removed=[]
-    frames, frames_header = nrrd.read(options.image_file)
-    mask, mask_header = nrrd.read(options.mask_file)
+
+
+    # Old IO module
+    #frames, frames_header = nrrd.read(options.image_file)
+    #mask, mask_header = nrrd.read(options.mask_file)
+    image_io = ImageReaderWriter()
+
+    frames, frames_header = image_io.read_in_numpy(options.image_file)
+    mask, mask_header = image_io.read_in_numpy(options.mask_file)
+
     masks=[mask>=1, mask!=512]
     mask=reduce(np.logical_and, masks)
 
@@ -376,22 +391,9 @@ if __name__ == "__main__":
     
     ##Writing labeled image##
     print '...Writing labeled image...'
-    nrrd.write(options.output_image_file,lh_image,options=frames_header)
+    #nrrd.write(options.output_image_file,lh_image,options=frames_header)
+    image_io.write_from_numpy(lh_image,frames_header,options.output_image_file)
 
-    ##RCA##
-    if options.output_csv_file is not None:
-      print '...Calculating Relative Class Area...'
-      I=np.reshape(lh_image,(1,frames.shape[0]*frames.shape[1]*frames.shape[2]))
-      H, O=np.histogram(I, bins=[1,2,3,4,5,6,7])
-      sumH=H.sum()
-      sumHH=1./sumH
-      classPercentages=H*sumHH
-      import csv
-      print '...Writing .csv file with RCA...'
-      with open(options.output_csv_file, 'wb') as csvfile:
-          spamwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-          for i in range(classPercentages.shape[0]):
-              spamwriter.writerow([classPercentages[i]])
   
     print ''
     print 'DONE'
