@@ -32,13 +32,8 @@ set(CMAKE_MODULE_PATH
 set(CIP_CMAKE_DIR ${CIP_SOURCE_DIR}/CMake)
 
 
-if (NOT CIP_PYTHON_EXECUTABLE)
-  SET (CIP_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
-endif()
-
 #--------------------------------------------------------------------
 # Find ITK.
-
 FIND_PACKAGE ( ITK )
 if ( ITK_FOUND )
   INCLUDE(${ITK_USE_FILE})
@@ -127,9 +122,10 @@ get_filename_component( CIP_PARENT_DIR ${CMAKE_BINARY_DIR} PATH )
 
 set( CIP_LIBRARY_PATH "${CIP_PARENT_DIR}/lib" )
 set( CIP_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}" )
-
-
-
+get_filename_component(CIP_PYTHON_BIN_FOLDER ${PYTHON_EXECUTABLE} DIRECTORY)
+if (WIN32)
+  set(CIP_PYTHON_BIN_FOLDER ${CIP_PYTHON_BIN_DIR}/Scripts)
+endif()
 #---------------------------------------------------------------------
 # Testing
 
@@ -144,6 +140,10 @@ if ( CIP_BUILD_TESTING )
   ADD_CUSTOM_TARGET(copy-input-files ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Testing/Data/Input ${CMAKE_CURRENT_BINARY_DIR}/Testing/Data/Input
   )
+  if (CIP_BUILD_TESTING_PYTHON)
+    # Set the nosetests executable that will be used for python tests
+    set (CIP_NOSETESTS_EXEC "${CIP_PYTHON_BIN_FOLDER}/nosetests" CACHE FILEPATH "nosetests executable" FORCE)
+  endif()
 else( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "Build large tests that require MIDAS server")
   SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "Build Python tests")
@@ -171,7 +171,7 @@ if ( CIP_BUILD_TESTING_LARGE )
           MIDAS_USER_EMAIL ${MIDAS_USER_EMAIL}
           MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
           RESULT_VARNAME MIDAS_AUTH_TOKEN
-      )    
+    )
   endif()
 
   if (NOT MIDAS_AUTH_TOKEN)

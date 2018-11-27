@@ -3,7 +3,7 @@ from cip_python.utils import PolynomialFeatureMap
 import numpy as np
 #import Capture
 
-#run nosetests --nocapture in utils directory
+#run ${CIP_NOSETESTS_EXEC} --nocapture in utils directory
 
 I1 = np.array([[[1,2,3,4],[5,6,7,8],[1,2,3,4]],[[0,1,0,2],[2,1,1,3],[6,7,4,5]]])
 I2 = np.array([[[3,2,6,2],[4,5,9,100],[10,23,32,2]],[[1,5,2,4],[5,7,2,6],[8,2,3,7]]])

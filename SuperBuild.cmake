@@ -263,54 +263,46 @@ set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 #endif()
 
 #----------------
-# PYTHON DISTRIBUTION
+# CIP PYTHON DISTRIBUTION
 #-------------------
-set(INSTALL_CIP_PYTHON_DISTRIBUTION ON CACHE BOOL "Install Python components of CIP")
-if (UNIX)
-  set(INSTALL_CIP_PYTHON_DL_TOOLS ON CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)")
-else()
-  set(INSTALL_CIP_PYTHON_DL_TOOLS OFF CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)")
-endif()
+set(CIP_PYTHON_INSTALL ON CACHE BOOL "Install Python components of CIP")
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_ROOT_SOURCE_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
 
-set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
-
-if (INSTALL_CIP_PYTHON_DISTRIBUTION)
-  set(CIP_PYTHON_INSTALL_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
+if (CIP_PYTHON_INSTALL)
   if (UNIX)
-    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/python2.7 CACHE FILEPATH "")
-    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include/python2.7 CACHE PATH "")
-    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/lib/python2.7/site-packages CACHE PATH "")
-    if (APPLE)
-      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.dylib CACHE PATH "")
-    else()
-      set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/lib/libpython2.7.so CACHE PATH "")
-    endif()
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_SOURCE_DIR}-install/bin/python2.7 CACHE FILEPATH "Python executable used for building and testing" FORCE)
   else()
-    # Windows
-    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/python.exe CACHE FILEPATH "")
-    set (PYTHON_INCLUDE_DIR ${CIP_PYTHON_INSTALL_DIR}/include CACHE PATH "")
-    set (PYTHON_PACKAGES_PATH ${CIP_PYTHON_INSTALL_DIR}/Lib/site-packages CACHE PATH "")
-    set (PYTHON_LIBRARY ${CIP_PYTHON_INSTALL_DIR}/python27.dll CACHE PATH "")
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_SOURCE_DIR}-install/python.exe CACHE FILEPATH "Python executable used for building and testing" FORCE)
   endif()
-elseif(NOT PYTHON_EXECUTABLE)
-  # Python was never searched for. Search in system libraries
-  message("No INSTALL_CIP_PYTHON_DISTRIBUTION. Python will be searched in the system")
-  unset (PYTHON_EXECUTABLE)
-  unset (PYTHON_INCLUDE_DIR)
-  unset (PYTHON_PACKAGES_PATH)
-  unset (PYTHON_LIBRARY)
-  FIND_PACKAGE(PythonLibs REQUIRED)
-  FIND_PACKAGE(PythonInterp REQUIRED)
 else()
-  message("Using ${PYTHON_EXECUTABLE} as active Python")
+  message(WARNING "CIP PYTHON will NOT be installed")
+  if (NOT DEFINED ${PYTHON_EXECUTABLE})
+    message(WARNING "Python not found. Looking for system Python...")
+    FIND_PACKAGE(PythonInterp REQUIRED)  # Set the PYTHON_EXECUTABLE value
+  endif()
+  if (NOT EXISTS ${PYTHON_EXECUTABLE})
+    message( FATAL_ERROR "Python executable not found (${PYTHON_EXECUTABLE})" )
+  endif()
+  # Save the value in cache for child projects
+  set (PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python executable" )
 endif()
+
+if (UNIX AND CIP_PYTHON_INSTALL)
+  set(CIP_PYTHON_INSTALL_DL_TOOLS ON CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)")
+else()
+  # Deep Learning tools will not be installed in Windows
+  set(CIP_PYTHON_INSTALL_DL_TOOLS OFF CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)" FORCE)
+endif()
+
+message("Using ${PYTHON_EXECUTABLE} as the active Python")
 
 
 mark_as_superbuild(
  VARS
-   #CIP_PYTHON_INSTALL_DIR:PATH
-   #CIP_PYTHON_EXECUTABLE:PATH
-   CIP_CMAKE_CXX_FLAGS:STRING
+    CIP_CMAKE_CXX_FLAGS:STRING
+    PYTHON_EXECUTABLE:FILEPATH
+#    PYTHON_INCLUDE_DIR:PATH
+#    PYTHON_LIBRARY:FILEPATH
 )
 #
 #if (NOT DEFINED USE_BOOST)
@@ -436,9 +428,9 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
   SITE:STRING
   BUILDNAME:STRING
   ${PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL
-  PYTHON_EXECUTABLE:FILEPATH
-  PYTHON_INCLUDE_DIR:PATH
-  PYTHON_LIBRARY:FILEPATH
+#  PYTHON_EXECUTABLE:FILEPATH
+#  PYTHON_INCLUDE_DIR:PATH
+#  PYTHON_LIBRARY:FILEPATH
   BUILD_EXAMPLES:BOOL
   BUILD_TESTING:BOOL
   ITK_VERSION_MAJOR:STRING
