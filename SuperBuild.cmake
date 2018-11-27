@@ -266,17 +266,17 @@ set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
 # CIP PYTHON DISTRIBUTION
 #-------------------
 set(CIP_PYTHON_INSTALL ON CACHE BOOL "Install Python components of CIP")
-set(CIP_PYTHON_SOURCE_DIR ${CMAKE_ROOT_SOURCE_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
-
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
+set(CIP_PYTHON_INSTALL_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version is installed" )
 if (CIP_PYTHON_INSTALL)
   if (UNIX)
-    set (PYTHON_EXECUTABLE ${CIP_PYTHON_SOURCE_DIR}-install/bin/python2.7 CACHE FILEPATH "Python executable used for building and testing" FORCE)
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/python2.7 CACHE FILEPATH "Python executable used for building and testing" FORCE)
   else()
-    set (PYTHON_EXECUTABLE ${CIP_PYTHON_SOURCE_DIR}-install/python.exe CACHE FILEPATH "Python executable used for building and testing" FORCE)
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/python.exe CACHE FILEPATH "Python executable used for building and testing" FORCE)
   endif()
 else()
   message(WARNING "CIP PYTHON will NOT be installed")
-  if (NOT DEFINED ${PYTHON_EXECUTABLE})
+  if (NOT DEFINED PYTHON_EXECUTABLE)
     message(WARNING "Python not found. Looking for system Python...")
     FIND_PACKAGE(PythonInterp REQUIRED)  # Set the PYTHON_EXECUTABLE value
   endif()
