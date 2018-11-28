@@ -1,17 +1,18 @@
 import argparse
 
-from cip_python.dcnn import DeepLearningModelsManager
-
 import os
 import numpy as np
 import SimpleITK as sitk
 from scipy import signal
 
-from cip_python.dcnn import metrics, utils
-from cip_python.common import ChestConventions
-
 from keras.models import load_model
 import keras.backend as K
+
+from cip_python.dcnn import metrics, utils
+from cip_python.common import ChestConventions
+from cip_python.input_output import ImageReaderWriter
+from cip_python.dcnn import DeepLearningModelsManager
+
 
 class LungSegmenterDCNN:
     def __init__(self):
@@ -49,7 +50,8 @@ class LungSegmenterDCNN:
 
         return output
 
-    def filtra3D(self, im, window=[1,1,1], spacing=[1,1,1], method=2):
+    @staticmethod
+    def filtra3D(im, window=[1,1,1], spacing=[1,1,1], method=2):
         im_sitk = sitk.GetImageFromArray(im)
         if method == 1:
             # Calculate the sigma parameters for each dimensionssf
@@ -81,16 +83,25 @@ class LungSegmenterDCNN:
 
         z_shape = image_np.shape[2]
         if patch_size[0] != image_np.shape[0] or patch_size[1] != image_np.shape[1]:
-            if orientation == 'coronal':
+            if orientation == 'coronal' and z_shape >= 4:
                 z_shape /= 2
-            output_size = np.asarray([patch_size[0], patch_size[1], z_shape])
 
-            resampled_sitk, output_spacing = utils.resample_image(img_sitk, output_size, sitk.sitkInt16,
-                                                                  interpolator=sitk.sitkBSpline)
-            cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
-            cnn_img = cnn_img.astype(np.float32)
+            if z_shape <= 3:
+                cnn_img = np.zeros((patch_size[0], patch_size[1], z_shape), dtype=np.float32)
+                for ii in range(z_shape):
+                    output_size = np.asarray(patch_size)
+                    res_sitk, out_sp = utils.resample_image(img_sitk[:, :, ii], output_size, sitk.sitkInt16,
+                                                            interpolator=sitk.sitkBSpline)
+                    cnn_img[:, :, ii] = sitk.GetArrayFromImage(res_sitk).transpose().astype(np.float32)
+                output_spacing = np.asarray([out_sp[0], out_sp[1], img_sitk.GetSpacing()[2]])
+            else:
+                output_size = np.asarray([patch_size[0], patch_size[1], z_shape])
+
+                resampled_sitk, output_spacing = utils.resample_image(img_sitk, output_size, sitk.sitkInt16,
+                                                                      interpolator=sitk.sitkBSpline)
+                cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0]).astype(np.float32)
         else:
-            cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0])
+            cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0]).astype(np.float32)
 
         z_samples = range(0, cnn_img.shape[2], N_subsampling)
         if not cnn_img.shape[2] - 1 in z_samples:
@@ -132,7 +143,8 @@ class LungSegmenterDCNN:
 
         return map_id.astype(np.uint16)
 
-    def combine_planes(self, axial_prob, coronal_prob):
+    @staticmethod
+    def combine_planes(axial_prob, coronal_prob):
         ss_a = int((int(axial_prob.shape[2] / 2.0) - 5) / 3.0)
         la_z = signal.gaussian(axial_prob.shape[2], std=ss_a)
 
@@ -162,7 +174,8 @@ class LungSegmenterDCNN:
 
         return combined_pp
 
-    def resample_predictions(self, predictions_image, predictions_spacing, output_size):
+    @staticmethod
+    def resample_predictions(predictions_image, predictions_spacing, output_size):
         out_predictions = np.zeros((4, output_size[0], output_size[1], output_size[2]))
 
         output_size = np.asarray(output_size)
