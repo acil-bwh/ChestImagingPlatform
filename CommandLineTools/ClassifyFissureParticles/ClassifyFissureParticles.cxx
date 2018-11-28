@@ -101,12 +101,17 @@ int main( int argc, char *argv[] )
       unsigned int numberOfPointDataArrays = particlesReader->GetOutput()->GetPointData()->GetNumberOfArrays();
       for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
 	{
-	  vtkFloatArray* array = vtkFloatArray::New();
-	    array->SetNumberOfComponents( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetNumberOfComponents() );
-	    array->SetName( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetName() );
+	  vtkFloatArray* leftArray = vtkFloatArray::New();
+	    leftArray->SetNumberOfComponents( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+	    leftArray->SetName( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetName() );
 	  
-	  leftArrayVec.push_back( array );
-	  rightArrayVec.push_back( array );	  
+	  leftArrayVec.push_back( leftArray );
+
+	  vtkFloatArray* rightArray = vtkFloatArray::New();
+	    rightArray->SetNumberOfComponents( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetNumberOfComponents() );
+	    rightArray->SetName( particlesReader->GetOutput()->GetPointData()->GetArray(i)->GetName() );
+	  
+	  rightArrayVec.push_back( rightArray );	  
 	}
       
       vtkPoints* leftPoints  = vtkPoints::New();
