@@ -45,11 +45,12 @@ public:
       Rho = contractionFactor;
     }
 
-  /** The optimizer will continue to iterate until the gradient
-   *  magnitude falls below the tolerance specified with this method */ 
-  void SetGradientTolerance( double tolerance )
+  /** The optimizer will continue to iterate until the difference in
+   *  gradient magnitude between consecutive iterations falls below 
+   *  the tolerance specified with this method */ 
+  void SetGradientDifferenceTolerance( double tolerance )
     {
-      GradientTolerance = tolerance;
+      GradientDifferenceTolerance = tolerance;
     }
 
   /** Set the objective function that is to be optimized. The metric
@@ -82,7 +83,7 @@ public:
 private:
   double SufficientDecreaseFactor;  // For evaluation of sufficient decrease condition 
   double Rho; // Contraction factor
-  double GradientTolerance;  // Optimization stopping criterion
+  double GradientDifferenceTolerance;  // Optimization stopping criterion
   double OptimalValue;
   
   cipParticleToThinPlateSplineSurfaceMetric Metric;
