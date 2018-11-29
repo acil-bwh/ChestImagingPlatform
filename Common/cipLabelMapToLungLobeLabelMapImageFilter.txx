@@ -15,6 +15,7 @@
 #include "vtkDataSetSurfaceFilter.h"
 #include "vtkAbstractArray.h"
 #include "vtkIndent.h"
+#include "vtkFieldData.h"
 
 #include <math.h>
 
@@ -97,7 +98,6 @@ cipLabelMapToLungLobeLabelMapImageFilter
       if ( name.compare( "irad" ) == 0 )
         {
 	  irad = particles->GetFieldData()->GetArray(i)->GetTuple(0)[0];
-	  std::cout << "irad:\t" << irad << std::endl;
         }
     }
 
