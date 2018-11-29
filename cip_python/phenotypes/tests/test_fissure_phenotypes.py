@@ -1,6 +1,6 @@
 import numpy as np
 from cip_python.common import ChestConventions
-
+import vtk
 import pandas as pd
 import pdb
 from cip_python.phenotypes.fissure_phenotypes import FissurePhenotypes
@@ -24,17 +24,18 @@ def test_main():
 
     test_im[0, 0, 1] = LLL_F
     test_im[0, 1, 1] = LLL_F
-    test_im[0, 6, 1] = LLL_F
-    test_im[0, 7, 2] = LLL_F
+    test_im[0, 6, 4] = LLL_F
+    test_im[0, 7, 4] = LLL_F
     
     completeness_phenos = FissurePhenotypes()
-    df = completeness_phenos.execute(test_im, np.array([1, 1, 2]), 'foo')
+    df = completeness_phenos.execute(test_im, np.array([0, 0, 0]),
+        np.array([1, 1, 2]), 'foo')
 
     assert df.Completeness.values[0] < 0.5, \
       "Completeness measure should be less than 0.5"
 
-    df = completeness_phenos.execute(test_im, np.array([1, 1, 2]), 'foo',
-                                     completeness_type='domain')
+    df = completeness_phenos.execute(test_im, np.array([0, 0, 0]),
+        np.array([1, 1, 2]), 'foo', completeness_type='domain')
 
     assert df.Completeness.values[0] == 0.5, \
       "Completeness measure should equal 0.5"
@@ -50,17 +51,43 @@ def test_main():
     test_im[0, 7, 5::] = LUL
 
     test_im[0, 2, 1] = LLL_F
-    test_im[0, 3, 1] = LLL_F
-    test_im[0, 4, 1] = LLL_F
-    test_im[0, 5, 2] = LLL_F
+    test_im[0, 3, 2] = LLL_F
+    test_im[0, 4, 3] = LLL_F
+    test_im[0, 5, 4] = LLL_F
 
-    df = completeness_phenos.execute(test_im, np.array([1, 1, 2]), 'foo')
+    df = completeness_phenos.execute(test_im, np.array([0, 0, 0]),
+        np.array([1, 1, 2]), 'foo')
 
     assert df.Completeness.values[0] > 0.5, \
         "Completeness measure should be greater than 0.5"    
 
-    df = completeness_phenos.execute(test_im, np.array([1, 1, 2]), 'foo',
-                                     completeness_type='domain')
+    df = completeness_phenos.execute(test_im, np.array([0, 0, 0]),
+        np.array([1, 1, 2]), 'foo', completeness_type='domain')
 
     assert df.Completeness.values[0] == 0.5, \
       "Completeness measure should equal 0.5"        
+
+    test_im = LLL*np.ones([2, 8, 8])
+    test_im[0, 0, 2::] = LUL; test_im[1, 0, 2::] = LUL
+    test_im[0, 1, 2::] = LUL; test_im[1, 1, 2::] = LUL
+    test_im[0, 2, 2::] = LUL; test_im[1, 2, 2::] = LUL
+    test_im[0, 3, 3::] = LUL; test_im[1, 3, 3::] = LUL
+    test_im[0, 4, 4::] = LUL; test_im[1, 4, 4::] = LUL
+    test_im[0, 5, 5::] = LUL; test_im[1, 5, 5::] = LUL
+    test_im[0, 6, 5::] = LUL; test_im[1, 6, 5::] = LUL
+    test_im[0, 7, 5::] = LUL; test_im[1, 7, 5::] = LUL
+    
+    points = vtk.vtkPoints()
+    points.InsertNextPoint([0, 0, 1])
+    points.InsertNextPoint([0, 1, 1])
+    points.InsertNextPoint([1, 0, 1])
+    points.InsertNextPoint([1, 1, 1.01])
+
+    poly = vtk.vtkPolyData()
+    poly.SetPoints(points)
+    
+    df = completeness_phenos.execute(test_im, np.array([0, 0, 0]),
+        np.array([1, 1, 1]), 'foo', lop_poly=poly, completeness_type='domain')
+
+    assert df.Completeness.values[0] == 0.25, \
+        "Completeness measure should equal 0.25"
