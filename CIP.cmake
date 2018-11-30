@@ -122,9 +122,9 @@ get_filename_component( CIP_PARENT_DIR ${CMAKE_BINARY_DIR} PATH )
 
 set( CIP_LIBRARY_PATH "${CIP_PARENT_DIR}/lib" )
 set( CIP_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}" )
-get_filename_component(CIP_PYTHON_BIN_FOLDER ${PYTHON_EXECUTABLE} DIRECTORY)
+get_filename_component(CIP_PYTHON_BIN_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
 if (WIN32)
-  set(CIP_PYTHON_BIN_FOLDER ${CIP_PYTHON_BIN_DIR}/Scripts)
+  set(CIP_PYTHON_BIN_DIR ${CIP_PYTHON_BIN_DIR}/Scripts)
 endif()
 #---------------------------------------------------------------------
 # Testing
@@ -142,7 +142,7 @@ if ( CIP_BUILD_TESTING )
   )
   if (CIP_BUILD_TESTING_PYTHON)
     # Set the nosetests executable that will be used for python tests
-    set (CIP_NOSETESTS_EXEC "${CIP_PYTHON_BIN_FOLDER}/nosetests" CACHE FILEPATH "nosetests executable" FORCE)
+    set (CIP_NOSETESTS_EXEC "${CIP_PYTHON_BIN_DIR}/nosetests" CACHE FILEPATH "nosetests executable" FORCE)
   endif()
 else( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "Build large tests that require MIDAS server")
