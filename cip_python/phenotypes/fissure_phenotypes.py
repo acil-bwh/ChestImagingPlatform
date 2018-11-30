@@ -207,9 +207,6 @@ class FissurePhenotypes(Phenotypes):
             if self._rh_obb_tree is not None:
                 code = self._rh_obb_tree.IntersectWithLine(ray_from, ray_to,
                     intersection_points, None)
-                if code==0:
-                    print "From: {}, To: {}, code: {}".\
-                      format(ray_from, ray_to, code)                                
                 return code != 0
             elif cip_type == self._horizontal_fissure_value and \
               (cip_region == self._right_upper_lobe_value or \
