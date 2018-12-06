@@ -380,13 +380,43 @@ class FissurePhenotypes(Phenotypes):
 
         dist_tol = 100.0
         
-        # Set up fissure surfaces if specified with polydata
+        # Set up fissure surfaces if specified with polydata. Not that we need
+        # to create new polydata that has some "girth" to it. Otherwise, when
+        # we create the oriented bounding boxes (OBB), we can get errors when
+        # the covariance matrix is computed due to numerical instability.
         if lop_poly is not None:
-            self.init_fissure_surface(lop_poly, 'left_oblique', alpha)
+            lop_pts = lop_poly.GetPoints()
+            for i in xrange(0, lop_poly.GetNumberOfPoints()):
+                pt = np.array(lop_poly.GetPoint(i))
+                pt[2] += spacing[2]
+                lop_pts.InsertNextPoint(pt)
+                
+            new_lop_poly = vtk.vtkPolyData()
+            new_lop_poly.SetPoints(lop_pts)
+            
+            self.init_fissure_surface(new_lop_poly, 'left_oblique', alpha)
         if rop_poly is not None:
-            self.init_fissure_surface(rop_poly, 'right_oblique', alpha)
+            rop_pts = rop_poly.GetPoints()
+            for i in xrange(0, rop_poly.GetNumberOfPoints()):
+                pt = np.array(rop_poly.GetPoint(i))
+                pt[2] += spacing[2]
+                rop_pts.InsertNextPoint(pt)
+                
+            new_rop_poly = vtk.vtkPolyData()
+            new_rop_poly.SetPoints(rop_pts)
+                        
+            self.init_fissure_surface(new_rop_poly, 'right_oblique', alpha)
         if rhp_poly is not None:
-            self.init_fissure_surface(rhp_poly, 'right_horizontal', alpha)            
+            rhp_pts = rhp_poly.GetPoints()
+            for i in xrange(0, rhp_poly.GetNumberOfPoints()):
+                pt = np.array(rhp_poly.GetPoint(i))
+                pt[2] += spacing[2]
+                rhp_pts.InsertNextPoint(pt)
+                
+            new_rhp_poly = vtk.vtkPolyData()
+            new_rhp_poly.SetPoints(rhp_pts)
+            
+            self.init_fissure_surface(new_rhp_poly, 'right_horizontal', alpha)
 
         nonzero_domain = np.where(np.sum(lm > 0, 2) > 0)
         ro_surface = []
