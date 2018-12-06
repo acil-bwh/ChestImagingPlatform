@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 class Bronchiectasis:
 
-    def __init__(self, vascular_file, airway_file, output_prefix,plot=True):
+    def __init__(self, vascular_file, airway_file, output_prefix, plot=True):
         self.vascular_file = vascular_file
         self.airway_file = airway_file
         self.output_prefix = output_prefix
@@ -21,6 +21,8 @@ class Bronchiectasis:
         self.scale_ratio_th = 3.0
         self.distance_decay = 1.0
         self.sigma = 0.18
+
+        self.dnn_ = True
 
     def execute(self):
         readerV=vtk.vtkPolyDataReader()
@@ -34,14 +36,22 @@ class Bronchiectasis:
 
         array_a =dict();
         array_v =dict();
-        for ff in ("scale", "hevec0", "hevec1", "hevec2", "h0", "h1", "h2"):
+
+        if self.dnn_:
+            aa_field_names = ["scale", "dnn_lumen_radius", "hevec0", "hevec1", "hevec2", "h0", "h1", "h2"]
+            vv_field_names = ["scale", "dnn_radius", "hevec0", "hevec1", "hevec2", "h0", "h1", "h2"]
+        else:
+            aa_field_names = ["scale", "hevec0", "hevec1", "hevec2", "h0", "h1", "h2"]
+            vv_field_names = ["scale", "hevec0", "hevec1", "hevec2", "h0", "h1", "h2"]
+
+        for ff in aa_field_names:
             tmp=airway.GetFieldData().GetArray(ff)
             if isinstance(tmp,vtk.vtkDataArray) == False:
                 tmp=airway.GetPointData().GetArray(ff)
             
             array_a[ff]=tmp
                 
-        for ff in ("scale", "hevec0", "hevec1", "hevec2", "h0", "h1", "h2"):
+        for ff in vv_field_names:
             tmp=vessel.GetFieldData().GetArray(ff)
             if isinstance(tmp,vtk.vtkDataArray) == False:
                 tmp=vessel.GetPointData().GetArray(ff)
@@ -66,16 +76,25 @@ class Bronchiectasis:
         for kk in xrange(na):
             a_p=airway.GetPoint(kk)
             pL.FindClosestNPoints(20,a_p,idList)
-            a_s=array_a["scale"].GetValue(kk)
+
+            a_s = array_a["scale"].GetValue(kk)
+            if self.dnn_:
+                a_r = array_a["dnn_lumen_radius"].GetValue(kk)
+            else:
+                a_r = self.airway_radius_from_sigma(a_s)
+
             a_v=array_a["hevec2"].GetTuple3(kk)
-            a_r=self.airway_radius_from_sigma(a_s)
             for kk2 in xrange(idList.GetNumberOfIds()):
                 #Get info about point
                 test_id=idList.GetId(kk2)
                 v_p=vessel.GetPoint(test_id)
-                v_s=array_v["scale"].GetValue(test_id)
+                v_s = array_v["scale"].GetValue(test_id)
+                if self.dnn_:
+                    v_r=array_v["dnn_radius"].GetValue(test_id)
+                else:
+                    v_r = self.vessel_radius_from_sigma(v_s)
+
                 v_v=array_v["hevec0"].GetTuple3(test_id)
-                v_r=self.vessel_radius_from_sigma(v_s)
 
                 distance = LA.norm(np.array(v_p)-np.array(a_p))
                 #print v_v
@@ -197,7 +216,7 @@ class Bronchiectasis:
         df=pd.DataFrame(np.array(ser).reshape([1,len(ser)]),columns=col)
         df.to_csv(self.output_prefix+'_bronchiectasisPhenotypes.csv')
 
-    def reject_outliers_mask(data, m=2.0):
+    def reject_outliers_mask(self, data, m=2.0):
         return (np.abs(data - np.mean(data)) < m * np.std(data))
     
     def airway_radius_from_sigma(self,sigma):
@@ -217,9 +236,10 @@ if __name__ == "__main__":
                     dest='airway_file',metavar='<string>',default=None)
     parser.add_option('-o',help='Output prefix name',
                                     dest='output_prefix',metavar='<string>',default=None)
-    parser.add_option('-p', help='Enable plotting', dest='plot', \
-                  action='store_true')
+    parser.add_option('-p', help='Enable plotting', dest='plot', action='store_true')
+    parser.add_option('--dnn', help='Use dnn measurements', action="store_true", dest="dnn")
 
-    (options,args) =  parser.parse_args()
-    bb=Bronchiectasis(options.vessel_file,options.airway_file,options.output_prefix,options.plot)
+    (options, args) = parser.parse_args()
+    bb = Bronchiectasis(options.vessel_file, options.airway_file, options.output_prefix, options.plot)
+    bb.dnn_ = options.dnn
     bb.execute()
