@@ -91,7 +91,7 @@ class FissurePhenotypes(Phenotypes):
 
         return area
 
-    def init_fissure_surface(self, poly, fissure_type, irad=None):
+    def init_fissure_surface(self, poly, fissure_type, alpha=None):
         """
         
         Parameters
@@ -101,7 +101,7 @@ class FissurePhenotypes(Phenotypes):
         fissure_type : string
             Either 'left_oblique', 'right_oblique', or 'right_horizontal'
 
-        irad : float, optional
+        alpha : float, optional
             Will be retrieved from the input polydata (irad FieldDataArray)
             unless speficied. If the irad array does not exist, and if no
             value is passed, a default value of 5.0 will be used. This value
@@ -114,16 +114,16 @@ class FissurePhenotypes(Phenotypes):
                                 'right_horizontal']:
             raise ValueError('Unrecognized fissure type')
 
-        if irad is None:
+        if alpha is None:
             irad_arr = poly.GetFieldData().GetAbstractArray('irad')
             if irad_arr is not None:
-                irad = 3*irad_arr.GetTuple(0)[0]
+                alpha = 3*irad_arr.GetTuple(0)[0]
             else:
-                irad = 5.0
+                alpha = 5.0
                 
         delaunay = vtk.vtkDelaunay3D()
         delaunay.SetInputData(poly);
-        delaunay.SetAlpha(irad)
+        delaunay.SetAlpha(alpha)
         delaunay.Update()
 
         surf_filter = vtk.vtkDataSetSurfaceFilter()
@@ -320,7 +320,8 @@ class FissurePhenotypes(Phenotypes):
         return completeness
         
     def execute(self, lm, origin, spacing, cid, completeness_type='surface',
-                tps_downsample=1, lop_poly=None, rop_poly=None, rhp_poly=None):
+                tps_downsample=1, lop_poly=None, rop_poly=None, rhp_poly=None,
+                alpha=None):
         """Compute the fissure completeness phenotypes.
         
         Parameters
@@ -363,6 +364,10 @@ class FissurePhenotypes(Phenotypes):
             vtkPolyData containgin points defining the right horiztonal fissure
             surface. If specified, the fissure surface defined by these points
             will override the surface defined in the label map image.
+
+        alpha : double, optional
+            alpha parameter for vtkDelaunay filter. Only relevant if
+            vtkPolyData are passed for fissure definition.
             
         Returns
         -------
@@ -377,11 +382,11 @@ class FissurePhenotypes(Phenotypes):
         
         # Set up fissure surfaces if specified with polydata
         if lop_poly is not None:
-            self.init_fissure_surface(lop_poly, 'left_oblique')
+            self.init_fissure_surface(lop_poly, 'left_oblique', alpha)
         if rop_poly is not None:
-            self.init_fissure_surface(rop_poly, 'right_oblique')
+            self.init_fissure_surface(rop_poly, 'right_oblique', alpha)
         if rhp_poly is not None:
-            self.init_fissure_surface(rhp_poly, 'right_horizontal')            
+            self.init_fissure_surface(rhp_poly, 'right_horizontal', alpha)            
 
         nonzero_domain = np.where(np.sum(lm > 0, 2) > 0)
         ro_surface = []
@@ -394,14 +399,7 @@ class FissurePhenotypes(Phenotypes):
         
         for i, j in zip(nonzero_domain[0], nonzero_domain[1]):
             last_region = 0
-            ks = np.where(lm[i, j, :] > 0)[0]
-        
-            #for k in xrange(0, ks.shape[0]):
-            for k in xrange(0, lm.shape[2]):                
-                #if k > 0:
-                #    if ks[k] - ks[k-1] > 1:
-                #        last_region = 0
-                    
+            for k in xrange(0, lm.shape[2]):                                    
                 curr_region = self._conventions.\
                   GetChestRegionFromValue(int(lm[i, j, k]))
                 curr_type = self._conventions.\
@@ -431,7 +429,6 @@ class FissurePhenotypes(Phenotypes):
                           self.is_fissure([i, j, k-1], lm, 'right_horizontal',
                           origin, spacing, dist_tol):
                             rh_fissure.append([i, j, k])
-                        #break
                         
                     if (last_region == self._left_lower_lobe_value and \
                         curr_region == self._left_upper_lobe_value) or \
@@ -443,7 +440,6 @@ class FissurePhenotypes(Phenotypes):
                           self.is_fissure([i, j, k-1], lm, 'left_oblique',
                           origin, spacing, dist_tol):
                             lo_fissure.append([i, j, k])                        
-                        #break
                     
                 last_region = curr_region
 
@@ -508,7 +504,10 @@ if __name__ == "__main__":
         help='Right horizontal points file (vtk). If specified, the surface \
         defined by these points will override the surface defined in the \
         label map image.')
-        
+    parser.add_argument('--alpha', dest='alpha', required=False, default=None,
+        help='alpha parameter for vtkDelaunay filter. Only relevant if \
+        vtkPolyData are passed for fissure definition.')
+                
     op = parser.parse_args()
 
     image_io = ImageReaderWriter()
@@ -534,9 +533,13 @@ if __name__ == "__main__":
         rhp_reader.SetFileName(op.rhp)
         rhp_reader.Update()
         rhp_poly = rhp_reader.GetOutput()        
+
+    alpha = None
+    if op.alpha is not None:
+        alpha = float(op.alpha)
         
     completeness_phenos = FissurePhenotypes()
     df = completeness_phenos.execute(lm, lm_header['space origin'],
         lm_header['spacing'], op.cid, op.type, int(op.down),
-        lop_poly=lop_poly, rop_poly=rop_poly, rhp_poly=rhp_poly)
+        lop_poly=lop_poly, rop_poly=rop_poly, rhp_poly=rhp_poly, alpha=alpha)
     df.to_csv(op.out_csv, index=False)
