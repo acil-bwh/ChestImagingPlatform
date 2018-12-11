@@ -1,3 +1,1 @@
-IF ( CIP_BUILD_TESTING )
- SUBDIRS ( tests )
-ENDIF( CIP_BUILD_TESTING )
+SUBDIRS ( projects )

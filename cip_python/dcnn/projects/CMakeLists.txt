@@ -1,0 +1,1 @@
+SUBDIRS ( lung_segmenter)

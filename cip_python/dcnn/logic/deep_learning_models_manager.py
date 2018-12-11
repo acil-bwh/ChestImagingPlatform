@@ -55,7 +55,7 @@ class DeepLearningModelsManager(object):
         -------
 
         """
-        real_path = osp.realpath(osp.join(osp.dirname(__file__), "dcnn_models_cache"))
+        real_path = osp.realpath(osp.join(osp.dirname(__file__), "..", "dcnn_models_cache"))
         if not osp.isdir(real_path):
             try:
                 os.makedirs(real_path)

@@ -5,7 +5,8 @@ import SimpleITK as sitk
 import numpy as np
 
 import cip_python.common as common
-from cip_python.dcnn import LungSegmenterDCNN, DeepLearningModelsManager
+from cip_python.dcnn.logic import DeepLearningModelsManager
+from cip_python.dcnn.projects.lung_segmenter import LungSegmenterDCNN
 
 def test_lung_segmentation_dcnn():
     """ Run a simple sample test and compare to a baseline"""

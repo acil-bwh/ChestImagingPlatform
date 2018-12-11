@@ -157,14 +157,18 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installxml
   )
 
+  ExternalProject_Add_Step(${proj} installgitpython
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes gitpython
+    DEPENDEES installscikit-learn
+  )
+
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
     ExternalProject_Add_Step(${proj} installqt4
             COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
-            DEPENDEES installscikit-learn
+            DEPENDEES installgitpython
     )
   endif()
-
 else()
   # Ignore CIPPython
   ExternalProject_Add_Empty(${proj})
