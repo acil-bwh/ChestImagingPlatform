@@ -227,8 +227,14 @@ class VesselParticlesPipeline:
                     print tmpCommand
                     subprocess.call( tmpCommand , shell=True)
                 elif self._init_method == 'VesselMask':
+                    vessel_file=os.path.join(self._tmp_dir,self._vessel_mask)
+                    vessel_file_resampled=os.path.join(self._tmp_dir,self._case_id + "_" + "vesselMaskResampled" + ".nrrd")
+                    tmpCommandUnuResampling = "unu resample -k %(kernel)s -s x%(f1)f x%(f2)f x%(f3)f -i %(in)s -o %(out)s -c cell"
+                    tmpCommandPL = tmpCommandUnuResampling % {'in':vessel_file,'out':vessel_file_resampled,'kernel':"cheap",'f1':spacing[0]/self._voxel_size,'f2':spacing[1]/self._voxel_size,'f3':spacing[2]/self._voxel_size}
+                    print tmpCommandPL
+                    subprocess.call(tmpCommandPL,shell=True)
                     tmpCommand = "CropLung --cipr %(region)s -m 0 -v 0 --ict %(mask-in)s --ilm %(lm-in)s --oct %(mask-out)s --olm %(lm-out)s"
-                    tmpCommand = tmpCommand % {'region': ii, 'mask-in': self._vessel_mask, 'lm-in': pl_file_name,
+                    tmpCommand = tmpCommand % {'region': ii, 'mask-in': vessel_file_resampled, 'lm-in': pl_file_name,
                                                'mask-out': maskFileNameRegion, 'lm-out': pl_file_nameRegion}
                     tmpCommand = os.path.join(path['CIP_PATH'], tmpCommand)
                     # print tmpCommand
