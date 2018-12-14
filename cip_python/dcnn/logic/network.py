@@ -6,7 +6,7 @@ from keras import backend as K
 import keras.optimizers as optimizers
 import keras.models as kmodels
 
-from . import Metrics, Utils
+from . import MetricsManager, Utils
 
 class Network(object):
     def __init__(self, parameters_dict=None):
@@ -21,7 +21,7 @@ class Network(object):
         self._additional_metrics_ = None
 
         self.parameters_dict = parameters_dict
-        self.metrics_manager = Metrics()
+        self.metrics_manager = MetricsManager()
 
     def build_model(self, compile_model, optimizer=None):
         """
@@ -86,6 +86,14 @@ class Network(object):
         Keras model object
         """
         return self._model_
+
+    @property
+    def xs_sizes(self):
+        return self._xs_sizes_
+
+    @property
+    def ys_sizes(self):
+        return self._ys_sizes_
 
     def get_xs_ys_size(self):
         """
@@ -190,7 +198,7 @@ class Network(object):
             - List of strings (for regular Keras functions) or pointers to custom additional metrics
         """
         if self._loss_function_ is not None:
-            # Metrics have been already initialized
+            # MetricsManager have been already initialized
             return self._loss_function_, self._additional_metrics_
 
         if self.parameters_dict is None:
@@ -259,14 +267,5 @@ class Network(object):
         :param inplace: bool. When True, the transformation will be made in place over the inputs/outputs for efficiency
         :return: if inplace==True, return None (the original parameters will be modified).
                  Otherwise, return a tuple of lists with the transformed inputs/outputs
-        """
-        raise NotImplementedError("This method must be implemented in a child class")
-
-    def generate_augmented_data_point(self, input_data, output_data):
-        """
-        Generate n input/output augmented data points from an input/output data point
-        :param input_data: list of numpy arrays (inputs)
-        :param output_data: list of numpy arrays (outputs)
-        :return: tuple with augmented inputs / outputs
         """
         raise NotImplementedError("This method must be implemented in a child class")

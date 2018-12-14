@@ -8,7 +8,6 @@ class DeepLearningModelsManager(object):
     _MODELS_ = {
           'LUNG_SEGMENTATION_AXIAL': 'lung_segmentation/lung_segmentation_axial.hdf5',
           'LUNG_SEGMENTATION_CORONAL': 'lung_segmentation/lung_segmentation_coronal.hdf5',
-          #'STRUCTURES_DETECTION_SLICE_AXIAL': 'structures_detection/structures_detection_slice_axial.hdf5',
     }
 
     def __init__(self, root_url="https://s3.amazonaws.com/acil-deep-learning-data/models/"):
@@ -22,7 +21,7 @@ class DeepLearningModelsManager(object):
         """
         self._ROOT_URL_ = root_url
 
-    def get_model_path(self, key):
+    def get_model(self, key):
         """
         Get a model local path. Download the model if it has not been already downloaded
         Parameters

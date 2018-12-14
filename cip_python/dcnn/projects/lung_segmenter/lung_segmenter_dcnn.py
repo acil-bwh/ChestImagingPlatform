@@ -10,7 +10,7 @@ import keras.backend as K
 
 from cip_python.common import ChestConventions
 from cip_python.input_output import ImageReaderWriter
-from cip_python.dcnn.logic import DeepLearningModelsManager, Metrics, Utils
+from cip_python.dcnn.logic import DeepLearningModelsManager, MetricsManager, Utils
 from cip_python.dcnn.data import DataProcessing
 
 
@@ -35,8 +35,8 @@ class LungSegmenterDCNN:
         if not os.path.exists(model_path):
             raise Exception("{} not found".format(model_path))
 
-        network_model = load_model(model_path, custom_objects={'dice_coef': Metrics.dice_coef,
-                                                               'dice_coef_loss': Metrics.dice_coef_loss})
+        network_model = load_model(model_path, custom_objects={'dice_coef': MetricsManager.dice_coef,
+                                                               'dice_coef_loss': MetricsManager.dice_coef_loss})
         return network_model
 
     def normalized_convolution_lp(self, signal, certainty, filter_func, *args):
@@ -394,7 +394,7 @@ if __name__ == "__main__":
         else:
             # Load with model manager
             manager = DeepLearningModelsManager()
-            axial_model = manager.get_model_path('LUNG_SEGMENTATION_AXIAL')
+            axial_model = manager.get_model('LUNG_SEGMENTATION_AXIAL')
     else:
         axial_model = None
 
@@ -404,7 +404,7 @@ if __name__ == "__main__":
         else:
             # Load with model manager
             manager = DeepLearningModelsManager()
-            coronal_model = manager.get_model_path('LUNG_SEGMENTATION_CORONAL')
+            coronal_model = manager.get_model('LUNG_SEGMENTATION_CORONAL')
     else:
         coronal_model = None
 

@@ -1,3 +1,4 @@
+from __future__ import division
 import warnings
 import time
 import datetime
@@ -81,21 +82,9 @@ class H5Manager(object):
         self._test_ix_pos_ = 0
 
         self._num_epoch_ = 0
-        self.epoch_begin = None
+        self.epoch_begin = None     # Time where the current epoch began
 
         self.lock = threading.Lock()
-
-    @property
-    def xs_sizes(self):
-        if self._xs_sizes_ is None:
-            self._xs_sizes_ = list(map(lambda name: self.h5[name].shape[1:], self.xs_dataset_names))
-        return self._xs_sizes_
-
-    @property
-    def ys_sizes(self):
-        if self._ys_sizes_ is None:
-            self._ys_sizes_ = list(map(lambda name: self.h5[name].shape[1:], self.ys_dataset_names))
-        return self._ys_sizes_
 
     def generate_train_validation_ixs_random(self, total_num_data_points=None, validation_proportion=0.1):
         """
@@ -196,6 +185,66 @@ class H5Manager(object):
         """
         return self._num_epoch_
 
+    @property
+    def xs_sizes(self):
+        """
+        List of sizes for each one of the inputs (xs)
+        :return: list
+        """
+        if self._xs_sizes_ is None:
+            self._xs_sizes_ = list(map(lambda name: self.h5[name].shape[1:], self.xs_dataset_names))
+        return self._xs_sizes_
+
+    @property
+    def ys_sizes(self):
+        """
+        List of sizes for each one of the inputs (xs)
+        :return: list
+        """
+        if self._ys_sizes_ is None:
+            self._ys_sizes_ = list(map(lambda name: self.h5[name].shape[1:], self.ys_dataset_names))
+        return self._ys_sizes_
+
+
+    def _training_sanity_checks_(self):
+        """
+        Make sure that all the required datasets (for training) are found in the h5 file
+        """
+        for ds_name in self.xs_dataset_names:
+            assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
+        for ds_name in self.ys_dataset_names:
+            assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
+        if self.use_pregenerated_augmented_train_data:
+            for ds_name in self.pregenerated_augmented_xs_ds_names:
+                assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
+            for ds_name in self.pregenerated_augmented_ys_ds_names:
+                assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
+            assert len(self.xs_dataset_names) == len(self.pregenerated_augmented_xs_ds_names), \
+                "The original input datasets number and the augmented input datasets number should match"
+            assert len(self.ys_dataset_names) == len(self.pregenerated_augmented_ys_ds_names), \
+                "The original labels datasets number and the augmented labels datasets number match"
+
+    def get_all_train_data(self):
+        """Get all the training data points
+        :return: Tuple  of tuples with xs, ys
+        """
+        assert self.train_ixs is not None, "Train indexes not initialized"
+        return self.get_next_batch(self.num_train_points, self.TRAIN)
+
+    def get_all_validation_data(self):
+        """Get all the validation data points
+        :return: Tuple  of tuples with xs, ys
+        """
+        assert self.validation_ixs is not None, "Validation indexes not initialized"
+        return self.get_next_batch(self.num_validation_points, self.VALIDATION)
+
+    def get_all_test_data(self):
+        """Get all the test data points
+        :return: Tuple  of tuples with xs, ys
+        """
+        assert self.test_ixs is not None, "Test indexes not initialized"
+        return self.get_next_batch(self.num_test_points, self.TEST)
+
     def _new_epoch_(self):
         """
         Beginning of an epoch. Initialize and shuffle indexes if needed
@@ -241,44 +290,46 @@ class H5Manager(object):
             self._pregenerated_augmented_ixs_pos_ = [0] * self.num_train_points
             self._num_epoch_ += 1
 
-    def _training_sanity_checks_(self):
+    def read_data_point(self, main_ix):
         """
-        Make sure that all the required datasets (for training) are found in the h5 file
+        Read xs, ys for a particular index
+        :param main_ix: index in the h5 file (main index)
+        :return: tuple of xs,ys in the dataset format
         """
-        for ds_name in self.xs_dataset_names:
-            assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
-        for ds_name in self.ys_dataset_names:
-            assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
-        if self.use_pregenerated_augmented_train_data:
-            for ds_name in self.pregenerated_augmented_xs_ds_names:
-                assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
-            for ds_name in self.pregenerated_augmented_ys_ds_names:
-                assert ds_name in self.h5, "'{}' dataset not found".format(ds_name)
-            assert len(self.xs_dataset_names) == len(self.pregenerated_augmented_xs_ds_names), \
-                "The original input datasets number and the augmented input datasets number should match"
-            assert len(self.ys_dataset_names) == len(self.pregenerated_augmented_ys_ds_names), \
-                "The original labels datasets number and the augmented labels datasets number match"
+        num_xs = len(self.xs_sizes)
+        num_ys = len(self.ys_sizes)
+        xs = [None] * num_xs
+        ys = [None] * num_ys
+        xs_ds = tuple(map(lambda n: self.h5[n], self.xs_dataset_names))
+        ys_ds = tuple(map(lambda n: self.h5[n], self.ys_dataset_names))
 
-    def get_all_train_data(self):
-        """Get all the training data points, usually ready for a network
-        :return: Tuple  of tuples with xs, ys
-        """
-        assert self.train_ixs is not None, "Train indexes not initialized"
-        return self.get_next_batch(self.num_train_points, self.TRAIN)
+        for i in range(num_xs):
+            xs[i] = xs_ds[i][main_ix]
+        for i in range(num_ys):
+            ys[i] = ys_ds[i][main_ix]
+        return xs, ys
 
-    def get_all_validation_data(self):
-        """Get all the validation data points, usually ready for a network
-        :return: Tuple  of tuples with xs, ys
+    def read_data_point_augmented(self, main_ix, secondary_ix):
         """
-        assert self.validation_ixs is not None, "Validation indexes not initialized"
-        return self.get_next_batch(self.num_validation_points, self.VALIDATION)
+        Read xs, ys for a particular index in the data augmented datasets
+        :param main_ix: int. Index in the h5 file (main index)
+        :secondary_ix: int. Index in the augmented dataset (main_ix - augmented_ix)
+        :return: tuple of xs,ys in the dataset format
+        """
+        num_xs = len(self.xs_sizes)
+        num_ys = len(self.ys_sizes)
+        xs_augmented_ds = tuple(map(lambda n: self.h5[n], self.pregenerated_augmented_xs_ds_names))
+        ys_augmented_ds = tuple(map(lambda n: self.h5[n], self.pregenerated_augmented_ys_ds_names))
 
-    def get_all_test_data(self):
-        """Get all the test data points, usually ready for a network
-        :return: Tuple  of tuples with xs, ys
-        """
-        assert self.test_ixs is not None, "Test indexes not initialized"
-        return self.get_next_batch(self.num_test_points, self.TEST)
+        xs = [None] * num_xs
+        ys = [None] * num_ys
+
+        for i in range(num_xs):
+            xs[i] = xs_augmented_ds[i][main_ix, secondary_ix]
+        for i in range(num_ys):
+            ys[i] = ys_augmented_ds[i][main_ix, secondary_ix]
+
+        return xs, ys
 
     def get_next_batch(self, batch_size, batch_type):
         """
@@ -400,43 +451,4 @@ class H5Manager(object):
         """
         return math.ceil(float(self.num_test_points / self.batch_size))
 
-    def read_data_point(self, main_ix):
-        """
-        Read xs, ys for a particular index
-        :param main_ix: index in the h5 file (main index)
-        :return:
-        """
-        num_xs = len(self.xs_sizes)
-        num_ys = len(self.ys_sizes)
-        xs = [None] * num_xs
-        ys = [None] * num_ys
-        xs_ds = tuple(map(lambda n: self.h5[n], self.xs_dataset_names))
-        ys_ds = tuple(map(lambda n: self.h5[n], self.ys_dataset_names))
-
-        for i in range(num_xs):
-            xs[i] = xs_ds[i][main_ix]
-        for i in range(num_ys):
-            ys[i] = ys_ds[i][main_ix]
-        return xs, ys
-
-    def read_data_point_augmented(self, main_ix, secondary_ix):
-        """
-        Read xs, ys for a particular index
-        :param main_ix: index in the h5 file (main index)
-        :return:
-        """
-        num_xs = len(self.xs_sizes)
-        num_ys = len(self.ys_sizes)
-        xs_augmented_ds = tuple(map(lambda n: self.h5[n], self.pregenerated_augmented_xs_ds_names))
-        ys_augmented_ds = tuple(map(lambda n: self.h5[n], self.pregenerated_augmented_ys_ds_names))
-
-        xs = [None] * num_xs
-        ys = [None] * num_ys
-
-        for i in range(num_xs):
-            xs[i] = xs_augmented_ds[i][main_ix, secondary_ix]
-        for i in range(num_ys):
-            ys[i] = ys_augmented_ds[i][main_ix, secondary_ix]
-
-        return xs, ys
 

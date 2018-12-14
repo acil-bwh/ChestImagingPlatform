@@ -21,7 +21,7 @@ def test_lung_segmentation_dcnn():
 
     # Load the model
     model_manager = DeepLearningModelsManager()
-    axial_model_path = model_manager.get_model_path('LUNG_SEGMENTATION_AXIAL')
+    axial_model_path = model_manager.get_model('LUNG_SEGMENTATION_AXIAL')
     print("*** Model used: {}".format(axial_model_path))
 
     segmentation = segmenter.execute(input_file_path, axial_model_path, None, segmentation_type='axial',
