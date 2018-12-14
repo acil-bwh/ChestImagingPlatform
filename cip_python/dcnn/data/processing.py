@@ -46,6 +46,42 @@ class DataProcessing(object):
         return image_array
 
     @staticmethod
+    def normalize_CT_image_intensity(image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
+                                     inplace=True):
+        """
+        Threshold and adjust contrast range in a CT image.
+        :param image_array: int numpy array (CT or partial CT image)
+        :param min_value: int. Min threshold (everything below that value will be thresholded). If None, ignore
+        :param max_value: int. Max threshold (everything below that value will be thresholded). If None, ignore
+        :param min_output: float. Min output value
+        :param max_output: float. Max output value
+        :return: None if in_place==True. Otherwise, float numpy array with adapted intensity
+        """
+        clip = min_value is not None or max_value is not None
+        if min_value is None:
+            min_value = np.min(image_array)
+        if max_value is None:
+            max_value = np.max(image_array)
+        if clip:
+            np.clip(image_array, min_value, max_value, image_array)
+
+        if inplace and image_array.dtype != np.float32:
+            raise Exception(
+                "The image array must contain float32 elements, because the transformation will be performed in place")
+        if not inplace:
+            # Copy the array!
+            image_array = image_array.astype(np.float32)
+
+        # Change of range
+        image_array -= min_value
+        image_array /= (max_value - min_value)
+        image_array *= (max_output - min_output)
+        image_array += min_output
+        if not inplace:
+            return image_array
+
+
+    @staticmethod
     def elastic_transform(image, alpha, sigma, fill_mode='constant', cval=0.):
         """
         Elastic deformation of images as described in  http://doi.ieeecomputersociety.org/10.1109/ICDAR.2003.1227801

@@ -10,7 +10,7 @@ import pandas as pd
 
 from sklearn.model_selection import train_test_split
 
-class H5Dataset(object):
+class H5Manager(object):
     # Data points status
     UNDEFINED = 0
     TRAIN = 1
@@ -18,14 +18,14 @@ class H5Dataset(object):
     TEST = 3
 
     def __init__(self, h5_file_path, open_mode='r',
-                 network=None, batch_size=None,
+                 batch_size=None,
                  shuffle_training=True,
                  train_ixs=None, validation_ixs=None, test_ixs=None,
-                 num_augmented_train_data_points_per_original_data_point=0,
                  xs_dataset_names=('images',), ys_dataset_names=('labels',),
                  use_pregenerated_augmented_train_data=False,
                  pregenerated_augmented_xs_dataset_names=('images_augmented',),
                  pregenerated_augmented_ys_dataset_names=('labels_augmented',),
+                 num_augmented_train_data_points_per_original_data_point=0,
                  ):
         """
         Constructor
@@ -54,12 +54,7 @@ class H5Dataset(object):
         self.xs_dataset_names = xs_dataset_names
         self.ys_dataset_names = ys_dataset_names
 
-        self.network = network
-        if network is not None:
-            # Get the input/output sizes from the network
-            self.xs_sizes, self.ys_sizes = network.get_xs_ys_size()
-        else:
-            self.xs_sizes = self.ys_sizes = None
+        self._xs_sizes_ = self._ys_sizes_ = None
 
         self.shuffle_training = shuffle_training
         self.batch_size = batch_size
@@ -75,7 +70,7 @@ class H5Dataset(object):
         self._pregenerated_augmented_ixs_pos_ = None  # 1-dimensional array with current positions of the list of indexes for the images generated with data augmentation
         self.pregenerated_augmented_xs_ds_names = pregenerated_augmented_xs_dataset_names
         self.pregenerated_augmented_ys_ds_names = pregenerated_augmented_ys_dataset_names
-        self.pregenerated_num_total_augmented_data_points_per_data_point = None
+        self.pregenerated_num_augmented_data_points_per_data_point = None
 
         # Indexes
         self.train_ixs = train_ixs
@@ -90,7 +85,19 @@ class H5Dataset(object):
 
         self.lock = threading.Lock()
 
-    def generate_random_train_validation_partition(self, total_num_data_points=None, validation_proportion=0.1):
+    @property
+    def xs_sizes(self):
+        if self._xs_sizes_ is None:
+            self._xs_sizes_ = list(map(lambda name: self.h5[name].shape[1:], self.xs_dataset_names))
+        return self._xs_sizes_
+
+    @property
+    def ys_sizes(self):
+        if self._ys_sizes_ is None:
+            self._ys_sizes_ = list(map(lambda name: self.h5[name].shape[1:], self.ys_dataset_names))
+        return self._ys_sizes_
+
+    def generate_train_validation_ixs_random(self, total_num_data_points=None, validation_proportion=0.1):
         """
         Generate a random split of the data point for training/validation and save the indexes.
         The results will be stored in self.train_ixs and self.validation_ixs
@@ -103,8 +110,8 @@ class H5Dataset(object):
         ixs = np.arange(total_num_data_points)
         self.train_ixs, self.validation_ixs = train_test_split(ixs, test_size=validation_proportion)
 
-    def generate_random_train_validation_partition_using_key(self, ds_key_name, validation_proportion=0.1,
-                                                             max_index=None):
+    def generate_train_validation_ixs_random_using_key(self, ds_key_name, validation_proportion=0.1,
+                                                       max_index=None):
         """
         Generate a random split of train/validation data using the dataset 'ds_key_name' as a reference.
         For instance, if ds_key_name='cid' and validation_proportion=0.1, the datapoints that belong to
@@ -127,7 +134,7 @@ class H5Dataset(object):
         self.train_ixs = dfj[dfj['_merge'] != 'both'].index.values
         self.validation_ixs = dfj[dfj['_merge'] == 'both'].index.values
 
-    def read_datapoint_use_ixs_from_dataset(self, dataset_name):
+    def generate_ixs_from_dataset(self, dataset_name):
         """
         Read the use indexes (train, validation, test) from a dataset
         :param dataset_name: str. Name of the dataset that contain the indexes
@@ -189,7 +196,7 @@ class H5Dataset(object):
         """
         return self._num_epoch_
 
-    def new_epoch(self):
+    def _new_epoch_(self):
         """
         Beginning of an epoch. Initialize and shuffle indexes if needed
         """
@@ -221,10 +228,10 @@ class H5Dataset(object):
                     # In order to loop over all the images in the dataset, we need main index
                     # that contains 'num_total_augmented_images' for each main image.
                     # We assume we have the same number of augmented data points for each used data dataset
-                    if self.pregenerated_num_total_augmented_data_points_per_data_point is None:
+                    if self.pregenerated_num_augmented_data_points_per_data_point is None:
                         # Obtain from dataset directly
-                        self.pregenerated_num_total_augmented_data_points_per_data_point = self.h5[self.pregenerated_augmented_xs_ds_names[0]].shape[1]
-                    self._pregenerated_augmented_ixs_ = np.tile(np.arange(self.pregenerated_num_total_augmented_data_points_per_data_point),
+                        self.pregenerated_num_augmented_data_points_per_data_point = self.h5[self.pregenerated_augmented_xs_ds_names[0]].shape[1]
+                    self._pregenerated_augmented_ixs_ = np.tile(np.arange(self.pregenerated_num_augmented_data_points_per_data_point),
                                                                 self.num_train_points).reshape(self.num_train_points, -1)
                 if self.shuffle_training:
                     for i in range(self.num_train_points):
@@ -251,40 +258,6 @@ class H5Dataset(object):
                 "The original input datasets number and the augmented input datasets number should match"
             assert len(self.ys_dataset_names) == len(self.pregenerated_augmented_ys_ds_names), \
                 "The original labels datasets number and the augmented labels datasets number match"
-
-    def _keras_generator_(self, batch_type):
-        """
-        Iterator method to be used as a Keras batch generator
-        :return: Tuple of (batch_size x images, batch_size x labels)
-
-        """
-        if not self.batch_size:
-            raise Exception("Please set batch_size property in the dataset")
-
-        while True:
-            data = self.get_next_batch(self.batch_size, batch_type)
-            yield data
-
-    def keras_generator_train(self):
-        """
-        Iterator method to be used as a Keras batch generator for validation
-        :return: Tuple of (batch_size x images, batch_size x labels)
-        """
-        return self._keras_generator_(self.TRAIN)
-
-    def keras_generator_validation(self):
-        """
-        Iterator method to be used as a Keras batch generator for validation
-        :return: Tuple of (batch_size x images, batch_size x labels)
-        """
-        return self._keras_generator_(self.VALIDATION)
-
-    def keras_generator_test(self):
-        """
-        Iterator method to be used as a Keras batch generator for validation
-        :return: Tuple of (batch_size x images, batch_size x labels)
-        """
-        return self._keras_generator_(self.TEST)
 
     def get_all_train_data(self):
         """Get all the training data points, usually ready for a network
@@ -319,7 +292,7 @@ class H5Dataset(object):
             # remaining_data_points = self.num_train_points - self._train_ix_pos_
             if self.current_epoch == 0:
                 # Initialize indexes
-                self.new_epoch()
+                self._new_epoch_()
             remaining_data_points = batch_size   # We will always return 'batch_size' elements
         # Otherwise we can return less elements than asked in the batch because we reach the end of the validation/test data
         elif batch_type == self.VALIDATION:
@@ -330,12 +303,6 @@ class H5Dataset(object):
             raise Exception("Unknown batch type: {}".format(batch_type))
 
         num_data_points_current_batch = min(batch_size, remaining_data_points)
-
-        if self.xs_sizes is None or self.ys_sizes is None:
-            # Read the input sizes from the designated input/output datasets
-            warnings.warn("Network not specified. Using original H5 sizes")
-            self.xs_sizes = list(map(lambda name: self.h5[name].shape[1:], self.xs_dataset_names))
-            self.ys_sizes = list(map(lambda name: self.h5[name].shape[1:], self.ys_dataset_names))
 
         num_xs = len(self.xs_sizes)
         num_ys = len(self.ys_sizes)
@@ -361,34 +328,30 @@ class H5Dataset(object):
                     batch_ys[i][batch_pos] = ys[i]
                 batch_pos += 1
 
-                # Augmented images
-                aug = 0
-                while batch_pos < num_data_points_current_batch and aug < self.num_augmented_train_data_points_per_data_point:
-                    if self.use_pregenerated_augmented_train_data:
+                if self.use_pregenerated_augmented_train_data:
+                    # Augmented images
+                    aug = 0
+                    while aug < self.num_augmented_train_data_points_per_data_point and batch_pos < num_data_points_current_batch:
                         # Pre-augmented dataset
                         secondary_ix = self._pregenerated_augmented_ixs_[current_main_pos][self._pregenerated_augmented_ixs_pos_[current_main_pos]]
                         self._pregenerated_augmented_ixs_pos_[current_main_pos] += 1
 
-                        if self._pregenerated_augmented_ixs_pos_[current_main_pos] == self.pregenerated_num_total_augmented_data_points_per_data_point:
+                        if self._pregenerated_augmented_ixs_pos_[current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
                             # Start over with the first augmented image for this original image
                             self._pregenerated_augmented_ixs_pos_[current_main_pos] = 0
 
-                        # Read the data from the dataset
-                        augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, secondary_ix,
-                                                                    adjust_to_network_format=self.network is not None)
-                    else:
-                        # Generate on the fly data point
-                        augmented_xs, augmented_ys = self.generate_augmented_data_point(original_xs, original_ys)
+                        # Read the data point from the dataset
+                        augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, secondary_ix)
 
-                    for i in range(num_xs):
-                        batch_xs[i][batch_pos] = augmented_xs[i]
-                    for i in range(num_ys):
-                        batch_ys[i][batch_pos] = augmented_ys[i]
-                    batch_pos += 1
-                    aug += 1
+                        for i in range(num_xs):
+                            batch_xs[i][batch_pos] = augmented_xs[i]
+                        for i in range(num_ys):
+                            batch_ys[i][batch_pos] = augmented_ys[i]
+                        batch_pos += 1
+                        aug += 1
                 if self._train_ix_pos_ == self.num_train_points:
                     # We reached the end of a training dataset. End of epoch
-                    self.new_epoch()
+                    self._new_epoch_()
             else:
                 # Validation or test dataset. Just take X elements sequentially
                 if batch_type == self.VALIDATION:
@@ -405,7 +368,7 @@ class H5Dataset(object):
                         main_ix = self.test_ixs[current_main_pos]
                         self._test_ix_pos_ += 1
 
-                xs, ys = self.read_data_point(main_ix, adjust_to_network_format=self.network is not None)
+                xs, ys = self.read_data_point(main_ix)
                 for i in range(num_xs):
                     batch_xs[i][batch_pos] = xs[i]
                 for i in range(num_ys):
@@ -415,7 +378,7 @@ class H5Dataset(object):
         return batch_xs, batch_ys
 
 
-    def steps_per_epoch_train(self):
+    def get_steps_per_epoch_train(self):
         """
         Get the number of steps that will be needed to see all the original training data points (not having
         in mind the augmented)
@@ -423,21 +386,21 @@ class H5Dataset(object):
         """
         return math.ceil(float(self.num_total_train_data_points_per_epoch / self.batch_size))
 
-    def steps_validation(self):
+    def get_steps_validation(self):
         """
         Get the number of steps that will be needed to see all the validation data points
         :return: int
         """
         return math.ceil(float(self.num_validation_points / self.batch_size))
 
-    def steps_test(self):
+    def get_steps_test(self):
         """
         Get the number of steps that will be needed to see all the test data points
         :return: int
         """
         return math.ceil(float(self.num_test_points / self.batch_size))
 
-    def read_data_point(self, main_ix, adjust_to_network_format=True):
+    def read_data_point(self, main_ix):
         """
         Read xs, ys for a particular index
         :param main_ix: index in the h5 file (main index)
@@ -454,14 +417,9 @@ class H5Dataset(object):
             xs[i] = xs_ds[i][main_ix]
         for i in range(num_ys):
             ys[i] = ys_ds[i][main_ix]
-        if adjust_to_network_format:
-            if self.network is None:
-                warnings.warn("The network is None, so the data cannot be adjusted")
-            else:
-                xs, ys = self.network.format_data_to_network(xs, ys)
         return xs, ys
 
-    def read_data_point_augmented(self, main_ix, secondary_ix, adjust_to_network_format=True):
+    def read_data_point_augmented(self, main_ix, secondary_ix):
         """
         Read xs, ys for a particular index
         :param main_ix: index in the h5 file (main index)
@@ -480,17 +438,5 @@ class H5Dataset(object):
         for i in range(num_ys):
             ys[i] = ys_augmented_ds[i][main_ix, secondary_ix]
 
-        if adjust_to_network_format:
-            if self.network is None:
-                warnings.warn("The network is None, so the data cannot be adjusted")
-            else:
-                xs, ys = self.network.format_data_to_network(xs, ys)
         return xs, ys
-
-    ###################################
-    # METHODS THAT MUST BE OVERRIDEN
-    ###################################
-    def generate_augmented_data_point(self, xs, ys, adjust_to_network_format=True):
-        raise NotImplementedError("This method should be implemented in a child class")
-
 
