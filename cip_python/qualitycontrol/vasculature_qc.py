@@ -22,23 +22,26 @@ class VasculatureQualityControl():
   
   def execute(self):
     vessel=self._vessel
-    array_v =dict();
-            
-    for ff in ["ChestRegion"]:
-      tmp=vessel.GetPointData().GetArray(ff)
-      if isinstance(tmp,vtk.vtkDataArray) == False:
-        tmp=vessel.GetFieldData().GetArray(ff)
-      array_v[ff]=vtk_to_numpy(tmp)
+
 
     xyz_arr=vtk_to_numpy(vessel.GetPoints().GetData())
     
+    array_v =dict();
+    
+    for ff in ["ChestRegionChestType","dnn_radius"]:
+      tmp=vessel.GetPointData().GetArray(ff)
+      if isinstance(tmp,vtk.vtkDataArray) == False:
+        array_v[ff]=np.ones((xyz_arr.shape[0],))
+      else:
+        array_v[ff]=vtk_to_numpy(tmp)
+  
     fig=plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.set_aspect('equal')
     X=xyz_arr[:,0]
     Y=xyz_arr[:,1]
     Z=xyz_arr[:,2]
-    ax.scatter(X,Y,Z,s=1,c=array_v['ChestRegion'],marker='.',cmap=plt.cm.jet,linewidth=0)
+    ax.scatter(X,Y,Z,s=array_v['dnn_radius'],c=array_v['ChestRegionChestType'],marker='.',cmap=plt.cm.jet,linewidth=0)
     ax.grid(True)
     plt.xlabel('x')
     plt.ylabel('y')
