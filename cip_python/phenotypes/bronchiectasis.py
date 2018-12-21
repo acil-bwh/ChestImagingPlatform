@@ -52,27 +52,54 @@ class Bronchiectasis:
             angle2 > self.angle2_th) & (a_r > self.airway_dnn_th) & (v_r > self.vessel_dnn_th)
 
     def extract_artery_polydata(self, vessel_pp):
-        artery_indeces = self.get_artery_indices(vessel_pp)
+        artery_indices = self.get_artery_indices(vessel_pp)
 
         artery_polydata = vtk.vtkPolyData()
         vtk_points = vtk.vtkPoints()
-        artery_points = vtk_to_numpy(vessel_pp.GetPoints().GetData())[artery_indeces]
-        vtk_points.SetData(numpy_to_vtk(artery_points))
+        vtk_points.SetNumberOfPoints(artery_indices.shape[0])
+
+        for ii, vv in enumerate(artery_indices):
+            vtk_points.SetPoint(ii, vessel_pp.GetPoint(vv))
+
         artery_polydata.SetPoints(vtk_points)
 
         for ii in range(vessel_pp.GetPointData().GetNumberOfArrays()):
             array_name = vessel_pp.GetPointData().GetArrayName(ii)
-            artery_array = vtk_to_numpy(vessel_pp.GetPointData().GetArray(array_name))[artery_indeces]
-            artery_array_vtk = numpy_to_vtk(artery_array)
-            artery_array_vtk.SetName(array_name)
-            artery_polydata.GetPointData().AddArray(artery_array_vtk)
+
+            vessel_array_vtk = vessel_pp.GetPointData().GetArray(array_name)
+            vessel_array_np = vtk_to_numpy(vessel_array_vtk)
+
+            vtk_array = vessel_pp.GetPointData().GetArray(array_name)
+            vtk_array.SetNumberOfValues(artery_indices.shape[0])
+            vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
+            vtk_array.SetName(array_name)
+
+            for jj, vv in enumerate(artery_indices):
+                if np.shape([vessel_array_np[vv]])[-1] > 1:
+                    vtk_array.SetTuple(jj, vessel_array_np[vv])
+                else:
+                    vtk_array.SetValue(jj, vessel_array_np[vv])
+
+            artery_polydata.GetPointData().AddArray(vtk_array)
 
         for ii in range(vessel_pp.GetFieldData().GetNumberOfArrays()):
             array_name = vessel_pp.GetFieldData().GetArrayName(ii)
-            artery_array = vtk_to_numpy(vessel_pp.GetFieldData().GetArray(array_name))[artery_indeces]
-            artery_array_vtk = numpy_to_vtk(artery_array)
-            artery_array_vtk.SetName(array_name)
-            artery_polydata.GetFieldData().AddArray(artery_array_vtk)
+
+            vessel_array_vtk = vessel_pp.GetFieldData().GetArray(array_name)
+            vessel_array_np = vtk_to_numpy(vessel_array_vtk)
+
+            vtk_array = vessel_pp.GetFieldData().GetArray(array_name)
+            vtk_array.SetNumberOfValues(artery_indices.shape[0])
+            vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
+            vtk_array.SetName(array_name)
+
+            for jj, vv in enumerate(artery_indices):
+                if np.shape([vessel_array_np[vv]])[-1] > 1:
+                    vtk_array.SetTuple(jj, vessel_array_np[vv])
+                else:
+                    vtk_array.SetValue(jj, vessel_array_np[vv])
+
+            artery_polydata.GetFieldData().AddArray(vtk_array)
 
         return artery_polydata
 
@@ -292,7 +319,7 @@ if __name__ == "__main__":
                     dest='airway_file',metavar='<string>',default=None)
     parser.add_option('-o',help='Output prefix name',
                                     dest='output_prefix',metavar='<string>',default=None)
-    parser.add_option('-p', help='Enable plotting', dest='plot', action='store_true')
+    parser.add_option('--p', help='Flag to enable plotting', dest='plot', action='store_true')
     parser.add_option('--dnn', help='Flag to use dnn measurements', action="store_true", dest="dnn")
     parser.add_option('--artery', help='Flag to use only particles classified as artery', action="store_true",
                       dest="artery")
