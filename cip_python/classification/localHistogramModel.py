@@ -103,7 +103,7 @@ class LocalHistogramModel:
         if len(frames)>1:
 
             self.training_df = pd.concat(frames, axis=1, join='outer')
-            self.training_df.to_csv('prueba.csv', index=False)
+           # self.training_df.to_csv('prueba.csv', index=False)
         else:
             self.training_df = self.model
 

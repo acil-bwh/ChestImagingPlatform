@@ -334,6 +334,11 @@ class ParenchymaSubtypeClassifier:
                         patch_processed_label[0]
         
         ct_labels_array[lm<1] = 0   
+
+        mychestConvention = ChestConventions()
+        chest_type_val_not_imflamed = mychestConvention.GetChestTypeValueFromName('NORMALNOTINFLAMED')
+        ct_labels_array[ct_labels_array == 256] = [mychestConvention.GetValueFromChestRegionAndType(0, chest_type_val_not_imflamed)]
+
         toc = time.clock()
         print("execution time = "+str(toc - tic))                                                              
         return ct_labels_array
