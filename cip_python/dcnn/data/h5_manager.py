@@ -86,31 +86,31 @@ class H5Manager(object):
 
         self.lock = threading.Lock()
 
-    def generate_train_validation_ixs_random(self, total_num_data_points=None, validation_proportion=0.1):
+    def generate_train_validation_ixs_random(self, num_data_points_used=None, validation_proportion=0.1):
         """
         Generate a random split of the data point for training/validation and save the indexes.
         The results will be stored in self.train_ixs and self.validation_ixs
-        :param total_num_data_points: int. Number of data points that will be used (the first elements in the dataset).
+        :param num_data_points_used: int. Number of data points that will be used (the first elements in the dataset).
                                       If None, all the data points in the dataset will be used
         :param validation_proportion: float 0-1. Proportion of cases reserved for training (the rest will be used for validation)
         """
-        if total_num_data_points is None:
-            total_num_data_points = self.num_original_data_points
-        ixs = np.arange(total_num_data_points)
+        if num_data_points_used is None:
+            num_data_points_used = self.num_original_data_points
+        ixs = np.arange(num_data_points_used)
         self.train_ixs, self.validation_ixs = train_test_split(ixs, test_size=validation_proportion)
 
-    def generate_train_validation_ixs_random_using_key(self, ds_key_name, validation_proportion=0.1,
-                                                       max_index=None):
+    def generate_train_validation_ixs_random_using_key(self, ds_key_name, num_data_points_used=None,
+                                                       validation_proportion=0.1):
         """
         Generate a random split of train/validation data using the dataset 'ds_key_name' as a reference.
         For instance, if ds_key_name='cid' and validation_proportion=0.1, the datapoints that belong to
         10% of the cases will be used for validation
         :param ds_key_name: str. Name of the dataset that contains the keys (one entry for each data point)
         :param validation_proportion: float [0-1]. Proportion of the key (cid, sid, etc.) reserverd for validation
-        :param max_index: int. Max index in the dataset that will be searched (excluded).
+        :param num_data_points_used: int. Max index in the dataset that will be searched (excluded).
                                If None, the whole dataset will be used
         """
-        n = self.h5[ds_key_name].shape[0] if max_index is None else max_index
+        n = self.h5[ds_key_name].shape[0] if num_data_points_used is None else num_data_points_used
         all_keys = self.h5[ds_key_name][:n]
         unique_keys = np.unique(all_keys)
         np.random.shuffle(unique_keys)
