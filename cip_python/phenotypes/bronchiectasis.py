@@ -84,22 +84,28 @@ class Bronchiectasis:
 
         for ii in range(vessel_pp.GetFieldData().GetNumberOfArrays()):
             array_name = vessel_pp.GetFieldData().GetArrayName(ii)
+            if array_name == 'AV_classification_dnn_model_name':
+                vessel_array_vtk = vessel_pp.GetFieldData().GetAbstractArray(array_name)
+                artery_polydata.GetFieldData().AddArray(vessel_array_vtk)
+            else:
+                vessel_array_vtk = vessel_pp.GetFieldData().GetArray(array_name)
+                vessel_array_np = vtk_to_numpy(vessel_array_vtk)
 
-            vessel_array_vtk = vessel_pp.GetFieldData().GetArray(array_name)
-            vessel_array_np = vtk_to_numpy(vessel_array_vtk)
+                if vessel_array_np.shape[0] == vessel_pp.GetNumberOfPoints():
+                    vtk_array = vessel_pp.GetFieldData().GetArray(array_name)
+                    vtk_array.SetNumberOfValues(artery_indices.shape[0])
+                    vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
+                    vtk_array.SetName(array_name)
 
-            vtk_array = vessel_pp.GetFieldData().GetArray(array_name)
-            vtk_array.SetNumberOfValues(artery_indices.shape[0])
-            vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
-            vtk_array.SetName(array_name)
+                    for jj, vv in enumerate(artery_indices):
+                        if np.shape([vessel_array_np[vv]])[-1] > 1:
+                            vtk_array.SetTuple(jj, vessel_array_np[vv])
+                        else:
+                            vtk_array.SetValue(jj, vessel_array_np[vv])
 
-            for jj, vv in enumerate(artery_indices):
-                if np.shape([vessel_array_np[vv]])[-1] > 1:
-                    vtk_array.SetTuple(jj, vessel_array_np[vv])
+                    artery_polydata.GetFieldData().AddArray(vtk_array)
                 else:
-                    vtk_array.SetValue(jj, vessel_array_np[vv])
-
-            artery_polydata.GetFieldData().AddArray(vtk_array)
+                    artery_polydata.GetFieldData().AddArray(vessel_array_vtk)
 
         return artery_polydata
 
