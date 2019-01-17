@@ -4,14 +4,15 @@ from keras import backend as K
 import keras.models as kmodels
 
 class Network(object):
-    def __init__(self):
+    def __init__(self, xs_sizes, ys_sizes):
         """
         Constructor
-        :param parameters_dict: dictionary of parameters to build the network
+        :param xs_sizes: tuple of int-tuples. Each position i of the tuple contains the shape for the input i of the network
+        :param ys_sizes: tuple of int-tuples. Each position j of the tuple contains the shape for the output j of the network
         """
-        self._xs_sizes_ = None
-        self._ys_sizes_ = None
-        self._model_ = None
+        self._xs_sizes_ = xs_sizes
+        self._ys_sizes_ = ys_sizes
+        self._model_ = None     # Keras model
 
     def build_model(self, compile_model, optimizer=None, loss_function=None, additional_metrics=None,
                     pretrained_weights_file_path=None):
