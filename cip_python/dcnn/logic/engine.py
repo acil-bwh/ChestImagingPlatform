@@ -26,7 +26,7 @@ class Engine(object):
     Class that controls the global processes of the CNN (training, validating, testing).
     '''
 
-    def __init__(self, output_folder=None):
+    def __init__(self, parameters_dict, output_folder=None):
         '''
         Constructor
         Args:
@@ -42,7 +42,7 @@ class Engine(object):
         logging.info("Results will be stored in " + self.output_folder)
 
         self.model = None
-        self.parameters_dict = None
+        self.parameters_dict = parameters_dict
         self.train_dataset_manager = None
 
 
@@ -249,15 +249,15 @@ class Engine(object):
         """
         raise NotImplementedError("This method should be implemented in a child class")
 
-    def train(self, parameters_dict):
+    def train(self):
         """
         Train the network.
         This method has to be implemented by any child classes, but some source code is provided just as a template
-        :param parameters_dict: dictionary of parameters that controls the whole process
         :param use_tensorboard: use Tensorboard to log training
         """
         raise NotImplementedError("This method should be implemented in a child class!")
         start = time.time()
+        parameters_dict = self.parameters_dict
 
         # MODEL
         self.network = NetworkFactory.build_network(parameters_dict, compile_model=True)
@@ -441,8 +441,8 @@ class Engine(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Lung registration')
     parser.add_argument('--operation', help="TRAIN / TEST, etc.", type=str, required=True, choices=['TRAIN', 'TEST'])
+    parser.add_argument('--params_file', type=str, help="Parameters file", required=True)
     parser.add_argument('--output_folder', type=str, help="Program output logging folder (additional)")
-    parser.add_argument('--params_file', type=str, help="Parameters file")
 
     args = parser.parse_args()
 
@@ -461,19 +461,16 @@ if __name__ == "__main__":
             print ("Creating output folder " + output_folder)
             os.makedirs(output_folder)
 
-    if args.params_file:
-        with open(args.params_file, 'r') as f:
-            parameters_dict = json.loads(f.read())
-        output_folder = os.path.join(output_folder, "{}_{}".format(parameters_dict['network_description'], Utils.now()))
-        os.makedirs(output_folder)
+    pdict = Utils.read_parameters_dict(args.params_file)
+    output_folder = os.path.join(output_folder, "{}_{}".format(pdict['network_description'], Utils.now()))
+    os.makedirs(output_folder)
 
     Utils.configure_loggers(default_level=logging.INFO, log_file=os.path.join(output_folder, "output.log"),
                             file_logging_level=logging.DEBUG)
 
-    e = Engine(output_folder)
+    e = Engine(pdict, output_folder)
 
     if args.operation == 'TRAIN':
-        parameters_dict = Utils.read_parameters_dict(args.params_file)
-        e.train(parameters_dict)
-    elif args.operation == 'TEST':
+        e.train()
+    elif args.operation == 'PREDICT':
         pass
