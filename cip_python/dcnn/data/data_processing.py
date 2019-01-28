@@ -26,24 +26,34 @@ class DataProcessing(object):
         return resampler.Execute(image), output_spacing
 
     @staticmethod
-    def standardization(image_array):
+    def standardization(image_array, mean_value=-600, std_value=1.0, inplace=True):
         """
         Standarize an image substracting mean and dividing by variance
         :param image_array: image array
+        :param mean_value: float. Image mean value. If None, ignore
+        :param std_value: float. Image standard deviation value. If None, ignore
         :return: Standardized image array
         """
-        image_array = image_array.astype(np.float32)
-        MEAN = image_array.mean()
-        STD = image_array.std()
+        if inplace and image_array.dtype != np.float32:
+            raise Exception(
+                "The image array must contain float32 elements, because the transformation will be performed in place")
+        if not inplace:
+            # Copy the array!
+            image_array = image_array.astype(np.float32)
 
-        if STD <= 0.0001:
-            STD = 1.0
+        if mean_value is None:
+            mean_value = image_array.mean()
+        if std_value is None:
+            std_value = image_array.std()
+            if std_value <= 0.0001:
+                std_value = 1.0
 
         # Standardize image
-        image_array -= MEAN
-        image_array /= STD
+        image_array -= mean_value
+        image_array /= std_value
 
-        return image_array
+        if not inplace:
+            return image_array
 
     @staticmethod
     def normalize_CT_image_intensity(image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
