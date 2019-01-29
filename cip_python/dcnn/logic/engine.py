@@ -178,7 +178,7 @@ class Engine(object):
             # Get the data in the original H5 Dataset format
             xs, ys = ds_manager.get_next_batch(batch_size, batch_type)
             # Adapt to the network structure
-            self.format_data_to_network(xs, ys, network)
+            xs, ys = self.format_data_to_network(xs, ys, network)
             yield xs, ys
 
     def keras_generator_dynamic_augmentation(self, ds_manager, network,
@@ -214,7 +214,7 @@ class Engine(object):
                     ys = [a[j] for a in original_ys]
                     augmented_xs, augmented_ys = data_augmentor.generate_augmented_data_points(xs, ys,
                                                                            num_dynamic_augmented_data_per_data_point)
-                    self.format_data_to_network(xs, ys, network)
+                    xs, ys = self.format_data_to_network(xs, ys, network)
 
                     # Insert original data
                     for i in range(num_inputs):
@@ -228,7 +228,7 @@ class Engine(object):
                     while k < num_dynamic_augmented_data_per_data_point and n < batch_size:
                         xs = [a[k] for a in augmented_xs]
                         ys = [a[k] for a in augmented_ys]
-                        self.format_data_to_network(xs, ys, network)
+                        xs, ys = self.format_data_to_network(xs, ys, network)
                         for i in range(num_inputs):
                             batch_xs[i][n] = xs[i]
                         for i in range(num_outputs):
@@ -241,9 +241,9 @@ class Engine(object):
         """
         Get a list of inputs/outputs and scale the sizes (if needed) and intensities to the format
         expected by the network.
-        This method overrides the original data to save memory!
         :param xs: list of numpy arrays. Network inputs
         :param ys: list of numpy arrays. Network outputs
+        :param network: cip_python.dcnn.logic.Network instance. Network to adapt the parameters
         :param intensity_checking: bool. Perform a validation of the intensity levels received (it can be used on predictions)
         :return: None (the method updates the passed data)
         """

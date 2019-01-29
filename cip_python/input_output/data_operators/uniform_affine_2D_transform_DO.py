@@ -58,17 +58,13 @@ class UniformAffineTransform2DDataOperator(DataOperatorInterface):
         self.scale_v = scale_v
         self.shear = shear
 
-    def run(self, data, inplace=False, generate_random_parameters=True):
+    def run(self, data, generate_random_parameters=True):
         """
         Run the operation.
         :param data: Numpy array of float or list of numpy arrays
-        :param inplace: Run the operation in place (overwrite 'data'). NOT SUPPORTED CURRENTLY
         :param generate_random_parameters: use the class policy to generate the parameters randomly.
         :return: numpy array (if 'data' is a single numpy array) or list of numpy arrays
         """
-        if inplace:
-            raise NotImplementedError("This operation is not allowed inplace")
-
         if isinstance(data, np.ndarray):
             image = data
             is_list = False
@@ -104,5 +100,3 @@ class UniformAffineTransform2DDataOperator(DataOperatorInterface):
             return result
         return transform.warp(image, tr, cval=self.padding)
 
-
-            
