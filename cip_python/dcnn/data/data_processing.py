@@ -32,10 +32,10 @@ class DataProcessing(object):
         :param image_array: image array
         :param mean_value: float. Image mean value. If None, ignore
         :param std_value: float. Image standard deviation value. If None, ignore
-        :return: Standardized image array
+        :return: New numpy array unless 'out' parameter is used. If so, reference to that array
         """
         if out is None:
-            # Get a copy of a new image
+            # Build a new array (copy)
             image = image_array.astype(np.float32)
         else:
             # We will return a reference to out parameter
@@ -45,7 +45,7 @@ class DataProcessing(object):
                 # First, copy the source values, as we will apply the operations to image object
                 image[:] = image_array[:]
 
-        assert image.dtype == np.float32, "The out array must contain float32 elements"
+        assert image.dtype == np.float32, "The out array must contain float32 elements, because the transformation will be performed in place"
 
         if mean_value is None:
             mean_value = image.mean()
@@ -60,6 +60,7 @@ class DataProcessing(object):
 
         return image
 
+
     @staticmethod
     def normalize_CT_image_intensity(image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
                                      out=None):
@@ -70,7 +71,8 @@ class DataProcessing(object):
         :param max_value: int. Max threshold (everything below that value will be thresholded). If None, ignore
         :param min_output: float. Min out value
         :param max_output: float. Max out value
-        :return: None if in_place==True. Otherwise, float numpy array with adapted intensity
+        :param out: numpy array. Array that will be used as an output
+        :return: New numpy array unless 'out' parameter is used. If so, reference to that array
         """
         clip = min_value is not None or max_value is not None
         if min_value is None:
@@ -81,7 +83,7 @@ class DataProcessing(object):
             np.clip(image_array, min_value, max_value, image_array)
 
         if out is None:
-            # Get a copy of a new image
+            # Build a new array (copy)
             image = image_array.astype(np.float32)
         else:
             # We will return a reference to out parameter
