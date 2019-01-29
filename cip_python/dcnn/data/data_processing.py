@@ -26,7 +26,7 @@ class DataProcessing(object):
         return resampler.Execute(image), output_spacing
 
     @staticmethod
-    def standardization(image_array, mean_value=-600, std_value=1.0, inplace=True):
+    def standardization(image_array, mean_value=-600, std_value=1.0, out=None):
         """
         Standarize an image substracting mean and dividing by variance
         :param image_array: image array
@@ -34,26 +34,31 @@ class DataProcessing(object):
         :param std_value: float. Image standard deviation value. If None, ignore
         :return: Standardized image array
         """
-        if inplace and image_array.dtype != np.float32:
-            raise Exception(
-                "The image array must contain float32 elements, because the transformation will be performed in place")
-        if not inplace:
-            # Copy the array!
-            image_array = image_array.astype(np.float32)
+        if out is None:
+            # Get a copy of a new image
+            image = image_array.astype(np.float32)
+        else:
+            # We will return a reference to out parameter
+            image = out
+            if id(out) != id(image_array):
+                # The input and output arrays are different.
+                # First, copy the source values, as we will apply the operations to image object
+                image[:] = image_array[:]
+
+        assert image.dtype == np.float32, "The out array must contain float32 elements"
 
         if mean_value is None:
-            mean_value = image_array.mean()
+            mean_value = image.mean()
         if std_value is None:
-            std_value = image_array.std()
+            std_value = image.std()
             if std_value <= 0.0001:
                 std_value = 1.0
 
         # Standardize image
-        image_array -= mean_value
-        image_array /= std_value
+        image -= mean_value
+        image /= std_value
 
-        if not inplace:
-            return image_array
+        return image
 
     @staticmethod
     def normalize_CT_image_intensity(image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
