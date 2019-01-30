@@ -40,32 +40,13 @@ if (CIP_PYTHON_INSTALL)
     set(CIP_PYTHON_BIN_DIR ${CIP_PYTHON_BIN_DIR}/Scripts)
   endif()
 
-  ########################################################################################
-  #### Deep Learning dependencies
-  ########################################################################################
-  if (CIP_PYTHON_INSTALL_DL_TOOLS)
-    message("Python Deep Learning modules (keras, tensorflow) will be installed")
-    # Tensorflow 1.2.1 not available in Windows for Python 2
-    ExternalProject_Add_Step(${proj} installtensorflow
-        COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge tensorflow==1.2.1
-        DEPENDEES install
-    )
-    ExternalProject_Add_Step(${proj} installkeras
-        COMMAND ${CIP_PYTHON_BIN_DIR}/pip install keras==2.0.8
-        DEPENDEES installtensorflow
-    )
-    SET (last_dep installkeras)
-  else()
-    message("Python Deep Learning modules will NOT be installed")
-    SET (last_dep install)
-  endif()
 
   ########################################################################################
   #### Conda-forge packages
   ########################################################################################
   ExternalProject_Add_Step(${proj} installnipype
           COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge nipype==0.12.1
-          DEPENDEES ${last_dep}
+          DEPENDEES install
           )
 
   ExternalProject_Add_Step(${proj} installnetworkx
@@ -162,11 +143,29 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installscikit-learn
   )
 
+
+  ########################################################################################
+  #### Deep Learning dependencies
+  ########################################################################################
+  if (CIP_PYTHON_INSTALL_DL_TOOLS)
+    message("Python Deep Learning modules (tensorflow) will be installed")
+    ExternalProject_Add_Step(${proj} installtensorflow
+            COMMAND ${CIP_PYTHON_BIN_DIR}/pip install tensorflow==1.12.0
+            DEPENDEES installgitpython
+    )
+    SET (last_dep installtensorflow)
+  else()
+    message("Python Deep Learning modules will NOT be installed")
+    SET (last_dep installgitpython)
+  endif()
+
+
+
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
     ExternalProject_Add_Step(${proj} installqt4
             COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
-            DEPENDEES installgitpython
+            DEPENDEES last_dep
     )
   endif()
 else()
