@@ -11,12 +11,12 @@ import time
 import warnings
 import math
 import numpy as np
+import re
 
-import keras
 import tensorflow as tf
-import keras.callbacks as callbacks
-import keras.backend as K
-import keras.optimizers as optimizers
+import tensorflow.keras.callbacks as callbacks
+import tensorflow.keras.backend as K
+import tensorflow.keras.optimizers as optimizers
 
 from cip_python.dcnn.logic.utils import Utils
 from cip_python.dcnn.data import H5Manager
@@ -109,20 +109,36 @@ class Engine(object):
         if Utils.get_param('metrics', parameters_dict):
             metric_names.extend(Utils.get_param('metrics', parameters_dict))
         for metric_str in metric_names:
-            components = metric_str.split(',')
-            metric_name = components[0]
+            expr = r"(?P<operation>.+)*\((?P<params>.*)\)"  # Expression for a function
+            m = re.match(expr, metric_str)
+            params = None
+            if m:
+                # Call in a "function" mode
+                metric_name = m.group('operation')
+                params = m.group('params')
+            else:
+                metric_name = metric_str
+
             if metrics_manager.contains_metric(metric_name):
                 # Custom metric. Parse parameters
                 args = []
                 kwargs = {}
-                for i in range(1, len(components)):
-                    kv = tuple(map(str.strip, components[i].split('=')))
-                    if len(kv) == 1:
-                        # Positional arg
-                        args.append(kv[0])
-                    else:
-                        # Named arg
-                        kwargs[kv[0]] = kv[1]
+                if params:
+                    components = params.split(',')
+                    for i in range(len(components)):
+                        kv = tuple(map(str.strip, components[i].split('=')))
+                        if len(kv) == 1:
+                            # Positional arg
+                            try:
+                                args.append(eval(kv[0]))
+                            except:
+                                args.append(kv[0])
+                        else:
+                            # Named arg
+                            try:
+                                kwargs[kv[0].strip()] = eval(kv[1])
+                            except:
+                                kwargs[kv[0]] = kv[1]
                 # Get the "pointer" to the corresponding function
                 metric = metrics_manager.get_metric(metric_name, *args, **kwargs)
                 metric_functions.append(metric)
@@ -143,27 +159,9 @@ class Engine(object):
         """
         optimizer = Utils.get_param('optimizer', parameters_dict)
         assert optimizer is not None, "'optimizer' param is needed"
-        initial_learning_rate = Utils.get_param('initial_learning_rate', parameters_dict)
-        assert initial_learning_rate is not None, "'initial_learning_rate' param is needed"
 
         with K.name_scope('optimization') as scope:
-            p = {}
-            p['lr'] = initial_learning_rate
-            if optimizer == 'Adam':
-                if Utils.get_param('optim_adam_beta_1', parameters_dict):
-                    p['beta_1'] = Utils.get_param('optim_adam_beta_1', parameters_dict)
-                if Utils.get_param('optim_adam_beta_2', parameters_dict):
-                    p['beta_2'] = Utils.get_param('optim_adam_beta_2', parameters_dict)
-                return optimizers.Adam(**p)
-            elif optimizer == 'SGD':
-                if Utils.get_param('optim_sgd_momentum', parameters_dict):
-                    p['momentum'] = Utils.get_param('optim_sgd_momentum', parameters_dict)
-                if Utils.get_param('optim_sgd_nesterov', parameters_dict):
-                    p['nesterov'] = Utils.get_param('optim_sgd_nesterov', parameters_dict)
-                return optimizers.SGD(**p)
-            else:
-                # Other Keras optimizer
-                return eval("optimizers.{}(lr=initial_learning_rate)".format(optimizer))
+            return eval('optimizers.' + optimizer)
 
     def keras_generator(self, ds_manager, network, batch_size, batch_type):
         """

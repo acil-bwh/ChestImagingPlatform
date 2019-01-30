@@ -1,7 +1,7 @@
 import os
 
-from keras import backend as K
-import keras.models as kmodels
+from tensorflow.keras import backend as K
+import tensorflow.keras.models as kmodels
 
 class Network(object):
     def __init__(self, xs_sizes, ys_sizes):
