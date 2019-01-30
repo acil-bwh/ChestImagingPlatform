@@ -121,7 +121,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
 {
   vtkSmartPointer< vtkDelaunay3D > delaunay3D = vtkSmartPointer< vtkDelaunay3D >::New();
     delaunay3D->SetInputData( particles );
-    delaunay3D->SetAlpha( particles->GetFieldData()->GetArray('irad')->GetTuple(0)[0] );
+    delaunay3D->SetAlpha( particles->GetFieldData()->GetArray("irad")->GetTuple(0)[0] );
     delaunay3D->Update();
 
   vtkSmartPointer< vtkDataSetSurfaceFilter > surfFilter = vtkSmartPointer< vtkDataSetSurfaceFilter >::New();
@@ -139,7 +139,7 @@ cipLabelMapToLungLobeLabelMapImageFilter
 {
   vtkSmartPointer< vtkDelaunay3D > delaunay3D = vtkSmartPointer< vtkDelaunay3D >::New();
     delaunay3D->SetInputData( particles );
-    delaunay3D->SetAlpha( particles->GetFieldData()->GetArray('irad')->GetTuple(0)[0] );
+    delaunay3D->SetAlpha( particles->GetFieldData()->GetArray("irad")->GetTuple(0)[0] );
     delaunay3D->Update();
 
   vtkSmartPointer< vtkDataSetSurfaceFilter > surfFilter = vtkSmartPointer< vtkDataSetSurfaceFilter >::New();

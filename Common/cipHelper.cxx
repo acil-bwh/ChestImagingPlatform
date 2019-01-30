@@ -37,6 +37,7 @@
 #include "vtkGlyphSource2D.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
+#include "vtkDataArray.h"
 #include "vtkUnsignedShortArray.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
@@ -1098,24 +1099,12 @@ void cip::TransferFieldDataToFromPointData( vtkSmartPointer< vtkPolyData > inPol
 /** Transfer the field data from one polydata to another  */
 void cip::TransferFieldData( vtkSmartPointer< vtkPolyData > fromPolyData, vtkSmartPointer< vtkPolyData > toPolyData )
 {
-  // Transfer the field array data 
+  // Transfer the field array data
   for ( unsigned int a=0; a<fromPolyData->GetFieldData()->GetNumberOfArrays(); a++ )
     {
-      unsigned int numComponents = fromPolyData->GetFieldData()->GetArray(a)->GetNumberOfComponents();
-      unsigned int numTuples = fromPolyData->GetFieldData()->GetArray(a)->GetNumberOfTuples();
-      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
-        array->SetNumberOfComponents( numComponents );
-        array->SetNumberOfTuples( numTuples );
-	array->SetName( fromPolyData->GetFieldData()->GetArray(a)->GetName() );
-	for ( unsigned int t=0; t<numTuples; t++ )
-	  {
-	    for ( unsigned int c=0; c<numComponents; c++ )
-	      {
-		array->SetComponent( t, c, fromPolyData->GetFieldData()->GetArray(a)->GetTuple(t)[c] );
-	      }
-	  }
-
-      toPolyData->GetFieldData()->AddArray( array ); 
+      
+      toPolyData->GetFieldData()->AddArray( fromPolyData->GetFieldData()->GetAbstractArray(a) );
+      
     }
 }
 
