@@ -18,3 +18,4 @@ from remap_lm import *
 from weighted_feature_map_densities import *
 from WeightedFeatureMapDensity import *
 from interpolate_volume import *
+from isotropic_dicom_converter import *

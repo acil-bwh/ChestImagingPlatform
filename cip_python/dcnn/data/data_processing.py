@@ -26,36 +26,53 @@ class DataProcessing(object):
         return resampler.Execute(image), output_spacing
 
     @staticmethod
-    def standardization(image_array):
+    def standardization(image_array, mean_value=-600, std_value=1.0, out=None):
         """
         Standarize an image substracting mean and dividing by variance
         :param image_array: image array
-        :return: Standardized image array
+        :param mean_value: float. Image mean value. If None, ignore
+        :param std_value: float. Image standard deviation value. If None, ignore
+        :return: New numpy array unless 'out' parameter is used. If so, reference to that array
         """
-        image_array = image_array.astype(np.float32)
-        MEAN = image_array.mean()
-        STD = image_array.std()
+        if out is None:
+            # Build a new array (copy)
+            image = image_array.astype(np.float32)
+        else:
+            # We will return a reference to out parameter
+            image = out
+            if id(out) != id(image_array):
+                # The input and output arrays are different.
+                # First, copy the source values, as we will apply the operations to image object
+                image[:] = image_array[:]
 
-        if STD <= 0.0001:
-            STD = 1.0
+        assert image.dtype == np.float32, "The out array must contain float32 elements, because the transformation will be performed in place"
+
+        if mean_value is None:
+            mean_value = image.mean()
+        if std_value is None:
+            std_value = image.std()
+            if std_value <= 0.0001:
+                std_value = 1.0
 
         # Standardize image
-        image_array -= MEAN
-        image_array /= STD
+        image -= mean_value
+        image /= std_value
 
-        return image_array
+        return image
+
 
     @staticmethod
     def normalize_CT_image_intensity(image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
-                                     inplace=True):
+                                     out=None):
         """
         Threshold and adjust contrast range in a CT image.
         :param image_array: int numpy array (CT or partial CT image)
         :param min_value: int. Min threshold (everything below that value will be thresholded). If None, ignore
         :param max_value: int. Max threshold (everything below that value will be thresholded). If None, ignore
-        :param min_output: float. Min output value
-        :param max_output: float. Max output value
-        :return: None if in_place==True. Otherwise, float numpy array with adapted intensity
+        :param min_output: float. Min out value
+        :param max_output: float. Max out value
+        :param out: numpy array. Array that will be used as an output
+        :return: New numpy array unless 'out' parameter is used. If so, reference to that array
         """
         clip = min_value is not None or max_value is not None
         if min_value is None:
@@ -65,20 +82,26 @@ class DataProcessing(object):
         if clip:
             np.clip(image_array, min_value, max_value, image_array)
 
-        if inplace and image_array.dtype != np.float32:
-            raise Exception(
-                "The image array must contain float32 elements, because the transformation will be performed in place")
-        if not inplace:
-            # Copy the array!
-            image_array = image_array.astype(np.float32)
+        if out is None:
+            # Build a new array (copy)
+            image = image_array.astype(np.float32)
+        else:
+            # We will return a reference to out parameter
+            image = out
+            if id(out) != id(image_array):
+                # The input and output arrays are different.
+                # First, copy the source values, as we will apply the operations to image object
+                image[:] = image_array[:]
+
+        assert image.dtype == np.float32, "The out array must contain float32 elements, because the transformation will be performed in place"
 
         # Change of range
-        image_array -= min_value
-        image_array /= (max_value - min_value)
-        image_array *= (max_output - min_output)
-        image_array += min_output
-        if not inplace:
-            return image_array
+        image -= min_value
+        image /= (max_value - min_value)
+        image *= (max_output - min_output)
+        image += min_output
+
+        return image
 
 
     @staticmethod

@@ -1,17 +1,24 @@
 import os
 
-from keras import backend as K
-import keras.models as kmodels
+from tensorflow.keras import backend as K
+import tensorflow.keras.models as kmodels
 
 class Network(object):
-    def __init__(self):
+    def __init__(self, xs_sizes, ys_sizes):
         """
         Constructor
-        :param parameters_dict: dictionary of parameters to build the network
+        :param xs_sizes: tuple of int-tuples. Each position i of the tuple contains the shape for the input i of the network
+        :param ys_sizes: tuple of int-tuples. Each position j of the tuple contains the shape for the output j of the network
         """
-        self._xs_sizes_ = None
-        self._ys_sizes_ = None
-        self._model_ = None
+        self._xs_sizes_ = xs_sizes
+        self._ys_sizes_ = ys_sizes
+        self._model_ = None     # Keras model
+        self._expected_input_values_range_ = None
+        # Tuple of min-max expected range for input values (ex: (0, 1))
+
+    @property
+    def expected_input_values_range(self):
+        return self._expected_input_values_range_
 
     def build_model(self, compile_model, optimizer=None, loss_function=None, additional_metrics=None,
                     pretrained_weights_file_path=None):
@@ -112,7 +119,7 @@ class Network(object):
         """
         K.set_value(self.model.optimizer.lr, lr)
 
-    def predict(self, input_data, adjust_to_network_format=True):
+    def predict(self, input_data):
         """
         Predict input data (with the possibility to preprocess the data to adapt them to the current format)
         :param input_data: list of numpy arrays
@@ -120,8 +127,7 @@ class Network(object):
         """
         if self.model is None:
             raise Exception("The model has not been created. Please call 'build_model' function first")
-        if adjust_to_network_format:
-            input_data, _ = self.format_data_to_network(input_data, None)
+
         return self.model.predict(input_data)
 
     def gradients(self, input_data):
@@ -150,15 +156,15 @@ class Network(object):
         """
         raise NotImplementedError("This method should be implemented in a child class")
 
-    def format_data_to_network(self, xs, ys, inplace=True):
-        """
-        Adjust the input/output data to a format that is going to be understood by the network.
-        By default, modify the original data for efficiency (inplace=True)
-        :param xs: numpy array (or list of numpy array) that contains the input data
-        :param ys: numpy array (or list of numpy array) that contains the labels for an image in the original format.
-                       If None, the labels are ignored and only an image is returned
-        :param inplace: bool. When True, the transformation will be made in place over the inputs/outputs for efficiency
-        :return: if inplace==True, return None (the original parameters will be modified).
-                 Otherwise, return a tuple of lists with the transformed inputs/outputs
-        """
-        raise NotImplementedError("This method must be implemented in a child class")
+    # def format_data_to_network(self, xs, ys, inplace=True):
+    #     """
+    #     Adjust the input/output data to a format that is going to be understood by the network.
+    #     By default, modify the original data for efficiency (inplace=True)
+    #     :param xs: numpy array (or list of numpy array) that contains the input data
+    #     :param ys: numpy array (or list of numpy array) that contains the labels for an image in the original format.
+    #                    If None, the labels are ignored and only an image is returned
+    #     :param inplace: bool. When True, the transformation will be made in place over the inputs/outputs for efficiency
+    #     :return: if inplace==True, return None (the original parameters will be modified).
+    #              Otherwise, return a tuple of lists with the transformed inputs/outputs
+    #     """
+    #     raise NotImplementedError("This method must be implemented in a child class")

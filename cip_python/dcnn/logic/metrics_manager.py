@@ -1,11 +1,9 @@
 """
 Different metrics used in deep learning algorithms
 """
-import os
-import warnings
 import inspect
-import keras.backend as K
 import tensorflow as tf
+import tensorflow.keras.backend as K
 
 
 class MetricsManager(object):
@@ -33,16 +31,17 @@ class MetricsManager(object):
             if param_names != ['cls', 'y_true', 'y_pred']:
                 # Parametric metric. Return a call to the function with all the positional and named parameters
                 metric = metrics[metric_name](*args, **kwargs)
-                param_names = metric.func_code.co_varnames
-                internal_function = metric.func_code.co_name
-                if param_names != ('y_true', 'y_pred'):
-                    warnings.warn("The internal function '{0}' in metric '{1}' does not match the expected signature. "
-                                  "Use the signature {0}(y_true, y_pred) in the internal function to remove this warning" \
-                                  .format(internal_function, metric_name))
+                # This code is not compatible with Python 3.6
+                # param_names = metric.__code__.co_varnames
+                # internal_function = metric.__code__.co_name
+                # if param_names != ('y_true', 'y_pred'):
+                #     warnings.warn("The internal function '{0}' in metric '{1}' does not match the expected signature. "
+                #                   "Use the signature {0}(y_true, y_pred) in the internal function to remove this warning" \
+                #                   .format(internal_function, metric_name))
             return metric
         except:
             raise Exception("There is not a valid signature for the metric '{0}'. Please make sure that the metric "
-                           "matches the signature '{0}(y_true, y_pred)'".format(metric_name))
+                           "(or an internal function of it) matches the signature 'my_function(y_true, y_pred)', ".format(metric_name))
 
     @classmethod
     def contains_metric(cls, metric_name):

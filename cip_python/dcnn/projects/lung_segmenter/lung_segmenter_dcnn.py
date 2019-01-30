@@ -5,8 +5,8 @@ import numpy as np
 import SimpleITK as sitk
 from scipy import signal
 
-from keras.models import load_model
-import keras.backend as K
+from tensorflow.keras.models import load_model
+import tensorflow.keras.backend as K
 
 from cip_python.common import ChestConventions
 from cip_python.input_output import ImageReaderWriter
