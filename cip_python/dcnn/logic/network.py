@@ -49,37 +49,38 @@ class Network(object):
             self.model.compile(optimizer=optimizer, loss=loss_function, metrics=additional_metrics)
         return self._model_
 
-    @classmethod
-    def network_from_keras_file(cls, keras_model_file):
-        """
-        Create a Network object using a Keras file.
-        This network CANNOT be used as it is for training purposes (metrics needed for optimization)
-        :param keras_model_file: str. Path to a json model file
-        :return:  Network object with model, input sizes and output sizes initialized (ready for testing but not training!)
-        """
-        assert os.path.isfile(keras_model_file), "Model file not found ({})".format(keras_model_file)
-        try:
-            # Preferred method
-            model = kmodels.load_model(keras_model_file, compile=False)
-        except:
-            # Alternative method. Use hdf5 + json keras files
-            json_file = keras_model_file.replace(os.path.basename(keras_model_file), "kerasModel.json")
-            print ("Model could note be loaded. Reading config from json file {}".format(json_file))
-            if not os.path.exists(json_file):
-                model = None
-            else:
-                with open(json_file, 'rb') as f:
-                    js = f.read()
-                model = kmodels.model_from_json(js)
-                model.load_weights(keras_model_file)
-
-        net = cls()
-        net._model_ = model
-        # Get the inputs/outputs sizes
-        net._xs_sizes_ = list(map(lambda l: l.shape.as_list()[1:], model.inputs))
-        net._ys_sizes_ = list(map(lambda l: l.shape.as_list()[1:], model.outputs))
-
-        return net
+    # @classmethod
+    # def network_from_keras_file(cls, keras_model_file):
+    #     """
+    #     Create a Network object using a Keras file.
+    #     This network CANNOT be used as it is for training purposes (metrics needed for optimization)
+    #     :param keras_model_file: str. Path to a json model file
+    #     :return:  Network object with model
+    #     """
+    #     assert os.path.isfile(keras_model_file), "Model file not found ({})".format(keras_model_file)
+    #
+    #     try:
+    #         # Preferred method
+    #         model = kmodels.load_model(keras_model_file, compile=False)
+    #     except:
+    #         # Alternative method. Use hdf5 + json keras files
+    #         json_file = keras_model_file.replace(os.path.basename(keras_model_file), "kerasModel.json")
+    #         print ("Model could note be loaded. Reading config from json file {}".format(json_file))
+    #         if not os.path.exists(json_file):
+    #             model = None
+    #         else:
+    #             with open(json_file, 'rb') as f:
+    #                 js = f.read()
+    #             model = kmodels.model_from_json(js)
+    #             model.load_weights(keras_model_file)
+    #
+    #     net = cls()
+    #     net._model_ = model
+    #     # Get the inputs/outputs sizes
+    #     net._xs_sizes_ = list(map(lambda l: l.shape.as_list()[1:], model.inputs))
+    #     net._ys_sizes_ = list(map(lambda l: l.shape.as_list()[1:], model.outputs))
+    #
+    #     return net
 
     @property
     def model(self):

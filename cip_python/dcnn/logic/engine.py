@@ -12,6 +12,7 @@ import warnings
 import math
 import numpy as np
 import re
+import h5py
 
 import tensorflow as tf
 import tensorflow.keras.callbacks as callbacks
@@ -30,6 +31,7 @@ class Engine(object):
         '''
         Constructor
         Args:
+            parameters_dict: dictionary of parameters
             output_folder: all the output folder will be created here (log, models, training files, etc.)
         '''
         if not output_folder:
@@ -56,13 +58,13 @@ class Engine(object):
         return os.path.join(self.output_folder, 'parameters_dict.json')
 
     @property
-    def keras_model_file_path(self):
+    def model_file_path(self):
         '''
-        Path to save the architecture of the network (Keras)
+        Path to save the final H5 model
         Returns:
             Path to the file
         '''
-        return os.path.join(self.output_folder, 'kerasModel.json')
+        return os.path.join(self.output_folder, 'model.h5')
 
     @property
     def model_summary_file_path(self):
@@ -85,6 +87,30 @@ class Engine(object):
 
         model.summary(print_fn=print_fn)
         f.close()
+
+    def save_parameters_to_model_h5(self, parameters_dict, h5_file_path):
+        """
+        Save the json representing a dictionary of parameters to the H5 file that contains the Keras model
+        :param parameters_dict: dictionary of parameters.
+        :param h5_file_path: str. Path to the H5 file
+        """
+        json_txt = json.dumps(parameters_dict, indent=4, sort_keys=False)
+        with h5py.File(h5_file_path, 'r+') as h5:
+            h5.attrs['ACIL_parameters'] = json_txt
+
+    def read_parameters_from_model_h5(self, h5_file_path):
+        """
+        Read a dictionary of parameters saved in a json format inside an H5 model file
+        :param h5_file_path: str. Path to the H5 file
+        :return: dictionary of parameters or None if they could not be loaded
+        """
+        with h5py.File(h5_file_path, 'r') as h5:
+            if not 'ACIL_parameters' in h5.attrs:
+                warnings.warn("The file does not seem to contain any parameters")
+                return None
+            json_txt = h5.attrs['ACIL_parameters']
+        d = json.loads(json_txt)
+        return d
 
     def get_loss_and_additional_metrics(self, metrics_manager, parameters_dict):
         """
@@ -235,6 +261,9 @@ class Engine(object):
                         k += 1
             yield batch_xs, batch_ys
 
+    ##########################################################################
+    # METHODS THAT SHOULD BE IMPLEMENTED IN CHILD CLASSES
+    ##########################################################################
     def format_data_to_network(self, xs, ys, network, intensity_checking=False):
         """
         Get a list of inputs/outputs and scale the sizes (if needed) and intensities to the format
@@ -244,6 +273,18 @@ class Engine(object):
         :param network: cip_python.dcnn.logic.Network instance. Network to adapt the parameters
         :param intensity_checking: bool. Perform a validation of the intensity levels received (it can be used on predictions)
         :return: None (the method updates the passed data)
+        """
+        raise NotImplementedError("This method should be implemented in a child class")
+
+    def build_network(self, parameters_dict=None, compile_model=True, h5_file_path=None):
+        """
+        Build a Network object either from scratch or from a previously exisiting H5 file.
+        It will initialize the self.network and self.model variables
+        :param parameters_dict: dictionary of parameters to build the network. When specified, it has priority
+                                over possible parameters that are stored in the H5
+        :param compile_model: bool. Compile the model for training purposes. In this case we will need loss, optimizer, etc.
+        :param h5_file_path: str. Path to an existing model stored in an H5 file
+        :return: Network object
         """
         raise NotImplementedError("This method should be implemented in a child class")
 
