@@ -135,18 +135,15 @@ class Engine(object):
         if Utils.get_param('metrics', parameters_dict):
             metric_names.extend(Utils.get_param('metrics', parameters_dict))
         for metric_str in metric_names:
-            expr = r"(?P<operation>.+)*\((?P<params>.*)\)"  # Expression for a function
-            m = re.match(expr, metric_str)
+            split1 = metric_str.split('(')
+            metric_name = split1[0].strip()
             params = None
-            if m:
-                # Call in a "function" mode
-                metric_name = m.group('operation')
-                params = m.group('params')
-            else:
-                metric_name = metric_str
+            if len(split1) > 1:
+                # Look for parameters
+                params = split1[1].split(')')[0]
 
             if metrics_manager.contains_metric(metric_name):
-                # Custom metric. Parse parameters
+                # Custom metric. Parse parameters (if any)
                 args = []
                 kwargs = {}
                 if params:
