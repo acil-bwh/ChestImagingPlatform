@@ -15,8 +15,6 @@ class DataProcessing(object):
         factor = np.asarray(image.GetSize()) / output_size.astype(np.float32)
         output_spacing = np.asarray(image.GetSpacing()) * factor
 
-        print (image.GetSpacing(), output_spacing)
-
         resampler = sitk.ResampleImageFilter()
         resampler.SetOutputDirection(image.GetDirection())
         resampler.SetSize(output_size.tolist())

@@ -84,7 +84,7 @@ class LungSegmenterDCNN:
         z_shape = image_np.shape[2]
         if patch_size[0] != image_np.shape[0] or patch_size[1] != image_np.shape[1]:
             if orientation == 'coronal' and z_shape >= 4:
-                z_shape /= 2
+                z_shape //= 2
 
             if z_shape <= 3:
                 cnn_img = np.zeros((patch_size[0], patch_size[1], z_shape), dtype=np.float32)
