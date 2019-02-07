@@ -103,7 +103,7 @@ class LungSegmenterDCNN:
         else:
             cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0]).astype(np.float32)
 
-        z_samples = range(0, cnn_img.shape[2], N_subsampling)
+        z_samples = list(range(0, cnn_img.shape[2], N_subsampling))
         if not cnn_img.shape[2] - 1 in z_samples:
             z_samples.append(cnn_img.shape[2] - 1)
 
