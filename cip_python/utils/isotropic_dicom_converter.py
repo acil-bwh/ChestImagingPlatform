@@ -38,7 +38,12 @@ class IsotropicDicomConverter(object):
 
         output_volume = np.zeros((num_slices // 2, sitk_image.GetSize()[0], sitk_image.GetSize()[1]), dtype=np.int16)
         # Read first slice
-        output_volume[0] = pydicom.dcmread(dicom_file_names[0]).pixel_array
+        ds = pydicom.dcmread(dicom_file_names[0])
+        slope = float(ds.RescaleSlope)
+        intercept = float(ds.RescaleIntercept)
+
+        output_volume[0] = (ds.pixel_array * slope) + intercept
+
         prev_pos = pos0
 
         # Read each pair of slices
@@ -51,7 +56,9 @@ class IsotropicDicomConverter(object):
                 )
 
             prev_pos = p
-            output_volume[i // 2] = pydicom.dcmread(dicom_file_names[i]).pixel_array
+            output_volume[i // 2] = (pydicom.dcmread(dicom_file_names[i]).pixel_array * slope) + intercept
+
+
 
         # Convert to nrrd
         output_image = sitk.GetImageFromArray(output_volume)
