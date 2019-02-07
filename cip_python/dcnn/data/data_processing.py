@@ -19,7 +19,7 @@ class DataProcessing(object):
 
         resampler = sitk.ResampleImageFilter()
         resampler.SetOutputDirection(image.GetDirection())
-        resampler.SetSize(output_size)
+        resampler.SetSize(output_size.tolist())
         resampler.SetInterpolator(interpolator)
         resampler.SetOutputSpacing(output_spacing)
         resampler.SetOutputPixelType(output_type)

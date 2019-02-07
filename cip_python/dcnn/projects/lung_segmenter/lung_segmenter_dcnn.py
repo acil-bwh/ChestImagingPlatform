@@ -110,7 +110,7 @@ class LungSegmenterDCNN:
         predictions = np.zeros((4, z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
         certainty_map = np.zeros((z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
 
-        for ii in xrange(cnn_img.shape[2]):
+        for ii in range(cnn_img.shape[2]):
             cnn_img[:, :, ii] = DataProcessing.standardization(cnn_img[:, :, ii])
 
         for ii in z_samples:
@@ -125,7 +125,7 @@ class LungSegmenterDCNN:
             certainty_map[ii, :, :] = np.ones([patch_size[0], patch_size[1]])
 
         if N_subsampling > 1:
-            for cc in xrange(4):
+            for cc in range(4):
                 predictions[cc] = self.normalized_convolution_lp(predictions[cc], certainty_map, self.filtra3D,
                                                                  [1, 1, N_subsampling], [1, 1, 1])
         return predictions, output_spacing
@@ -331,7 +331,7 @@ class LungThirdSplitter():
         vol_left = np.sum(olm_np == self.LeftLabel)
         target_vol_right = 0
         target_vol_left = 0
-        for zz in xrange(size[2]):
+        for zz in range(size[2]):
             cut = olm_np[zz, :, :]
             right_mask = (cut == self.RightLabel)
             left_mask = (cut == self.LeftLabel)
