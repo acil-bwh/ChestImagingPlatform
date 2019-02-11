@@ -129,14 +129,14 @@ if __name__ == "__main__":
     if options.ilocs is None and options.plocs is None:
         raise ValueError("Must specify a chest-region chest-type file")    
     
-    print "Reading segmentation..."
+    print ("Reading segmentation...")
     image_io = ImageReaderWriter()
     seg, seg_header = image_io.read_in_numpy(options.in_seg) 
 
-    print "Reading features file..."
+    print ("Reading features file...")
     features_df = pd.read_csv(options.features)
 
-    print "Reading labels..."
+    print ("Reading labels...")
     plocs_df = None
     ilocs_df = None
     if options.ilocs is not None:
@@ -144,10 +144,10 @@ if __name__ == "__main__":
     else:
         plocs_df = pd.read_csv(options.ilocs)
 
-    print "Applying reader labels..."
+    print ("Applying reader labels...")
     reader = LabelsReader()
     reader.apply_reader_labels(seg, seg_header, features_df, plocs_df, ilocs_df)
 
     if options.labeled is not None:
-        print "Writing labeled features..."
+        print ("Writing labeled features...")
         features_df.to_csv(options.labeled)

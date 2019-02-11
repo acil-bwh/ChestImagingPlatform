@@ -25,9 +25,9 @@ class LungSplitter():
         self.RightMiddleThrid = c.GetChestRegionValueFromName('RightMiddleThird')
         self.RightLowerThrid  = c.GetChestRegionValueFromName('RightLowerThird')
         
-        print self.RightUpperThird
-        print self.RightMiddleThrid
-        print self.RightLabel
+        print (self.RightUpperThird)
+        print (self.RightMiddleThrid)
+        print (self.RightLabel)
 
         self.cc_f = sitk.ConnectedComponentImageFilter()
         self.r_f = sitk.RelabelComponentImageFilter()

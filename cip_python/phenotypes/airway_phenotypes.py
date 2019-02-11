@@ -200,7 +200,7 @@ class AirwayPhenotypes(Phenotypes):
         elif self.pairs_ is not None:
             ps = self.pairs_
 
-        lm = vtk_to_numpy(a_pd.GetPointData().GetArray("ChestRegionChestType"))
+        lm = vtk_to_numpy(a_pd.GetPointData().GetArray("ChestRegionChestType")).astype('uint16')
         
         parser = RegionTypeParser(lm)
         

@@ -45,7 +45,7 @@ class botev_bandwidth2():
         t_star = scipy.optimize.brentq(self.fixed_point, 0, guess, 
                                        args=(M, I, SqDCTData))
     except ValueError:
-        print 'Oops!'
+        print ('Oops!')
         return None
     # Smooth the DCTransformed data using t_star
     SmDCTData = DCTData*sci.exp(-sci.arange(N)**2*sci.pi**2*t_star/2)

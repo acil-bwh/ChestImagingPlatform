@@ -4,7 +4,10 @@ import time
 import multiprocessing
 from multiprocessing import Pool
 import ctypes
-import copy_reg
+try:
+    import copy_reg
+except:
+    import copyreg as copy_reg
 import types
 import pdb
  
@@ -424,7 +427,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()                                                                   
 
     image_io = ImageReaderWriter()
-    print "Reading CT..."
+    print ("Reading CT...")
     ct_array, ct_header = image_io.read_in_numpy(options.in_ct) 
 
     if (options.dist_prop >0):
@@ -435,7 +438,7 @@ if __name__ == "__main__":
     lm_array = np.ones(np.shape(ct_array)).astype(int)   # ones by default
         
     if (options.in_lm is not None):
-        print "Reading mask..." 
+        print ("Reading mask...") 
         lm_array, lm_header = image_io.read_in_numpy(options.in_lm) 
          
        
@@ -474,5 +477,5 @@ if __name__ == "__main__":
     assert(options.out_label is  not None), \
         "Output label file must be provided"
     
-    print "Writing output labels "
+    print ("Writing output labels ")
     image_io.write_from_numpy(ct_labels_array,ct_header,options.out_label)                            

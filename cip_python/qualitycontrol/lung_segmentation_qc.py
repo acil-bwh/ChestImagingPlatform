@@ -192,17 +192,17 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     image_io = ImageReaderWriter()
-    print "Reading CT..."
+    print ("Reading CT...")
     ct_array, ct_header = image_io.read_in_numpy(options.in_ct) 
     
     partial_array = None
-    print "Reading partial lung labelmap..."
+    print ("Reading partial lung labelmap...")
     if(options.in_partial):
         partial_array, partial_header = image_io.read_in_numpy(options.in_partial) 
     
     lobe_array = None
     if(options.in_lobes):
-        print "Reading lobe..."
+        print ("Reading lobe...")
         lobe_array, lobe_header = image_io.read_in_numpy(options.in_lobes)               
         
     list_of_lung_qc = []

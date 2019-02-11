@@ -2,7 +2,7 @@ import warnings
 from optparse import OptionParser
 import numpy as np
 import pandas as pd
-from kde_bandwidth import botev_bandwidth
+from .kde_bandwidth import botev_bandwidth
 from scipy import ndimage
 from sklearn.neighbors import KernelDensity
 
@@ -303,25 +303,25 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     image_io = ImageReaderWriter()
-    print "Reading CT..."
+    print ("Reading CT...")
     ct, ct_header = image_io.read_in_numpy(options.in_ct) 
     
     if (options.in_lm is not None):
-        print "Reading mask..." 
+        print ("Reading mask...") 
         lm, lm_header = image_io.read_in_numpy(options.in_lm) 
     else:
          lm = np.ones(np.shape(ct))   
 
-    print "Reading patches segmentation..."
+    print ("Reading patches segmentation...")
     in_patches, in_patches_header = image_io.read_in_numpy(options.in_patches) 
 
     if (options.in_csv is not None):
-        print "Reading previously computed features..."
+        print ("Reading previously computed features...")
         init_df = pd.read_csv(options.in_csv)
     else:    
         init_df = None
         
-    print "Compute histogram features..."
+    print ("Compute histogram features...")
     kde_hist_extractor = kdeHistExtractor(lower_limit=np.int16(options.lower_limit), \
         upper_limit=np.int16(options.upper_limit), x_extent = np.int16(options.x_extent), \
         y_extent=np.int16(options.y_extent), z_extent=np.int16(options.z_extent),
@@ -331,6 +331,6 @@ if __name__ == "__main__":
     
     
     if options.out_csv is not None:
-        print "Writing..."
+        print ("Writing...")
         kde_hist_extractor.df_.to_csv(options.out_csv, index=False)
         

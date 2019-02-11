@@ -35,7 +35,7 @@ class DiaphragmThickness:
    
       scale_arr = vtk_to_numpy(array_d['scale'])
       d_radius = self.particle_radius_from_scale(scale_arr)
-      print d_radius
+      print (d_radius)
       qq=[]
       qqname=[]
       qqname.append('CID')

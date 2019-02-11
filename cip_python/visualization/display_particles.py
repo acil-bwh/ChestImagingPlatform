@@ -12,7 +12,7 @@ class DisplayParticles:
                  color_list=[], lut_list=[], lung=[]):
       
         for feature_type in feature_type_list:
-          print feature_type
+          print (feature_type)
           assert feature_type == "ridge_line" or feature_type == "valley_line" \
           or feature_type == "ridge_surface" or feature_type == "valley_surface" \
           or feature_type == "vessel" or feature_type == "airway" \
@@ -114,8 +114,8 @@ class DisplayParticles:
         pId = self.picker.GetPointId()
         #print pId
         particle_pId=self.particles_locator.FindClosestPoint(pickPos)
-        print "(%.6f, %.6f, %.6f)"%pickPos
-        print particle_pId
+        print ("(%.6f, %.6f, %.6f)"%pickPos)
+        print (particle_pId)
         self.textMapper.SetInput("(%.6f, %.6f, %.6f)"%pickPos)
         self.textActor.SetPosition(selPt[:2])
         self.textActor.VisibilityOn()
@@ -135,14 +135,14 @@ class DisplayParticles:
                 rad_arr =poly.GetPointData().GetArray(radius_array_name)
 
         numpoints  = poly.GetNumberOfPoints()
-        print numpoints
+        print (numpoints)
         radiusA=vtk.vtkDoubleArray()
         radiusA.SetNumberOfTuples(numpoints)
         si=float(0.2)
         s0=float(0.2)
               
         arr = vtk_to_numpy(strength)
-        print arr[0]
+        print (arr[0])
         for kk in range(numpoints):
             if radius_array_name is not None:
                 rad = float(rad_arr.GetValue(kk))
@@ -166,7 +166,7 @@ class DisplayParticles:
             if test==True:
                 rad=0
             if rad < spacing/2.0:
-                print "Setting point to zero "+str(kk)
+                print ("Setting point to zero "+str(kk))
                 rad=0
             radiusA.SetValue(kk,rad)
 
@@ -205,7 +205,7 @@ class DisplayParticles:
 
         glypher = vtk.vtkGlyph3D()
         
-        print glypher.GetClassName()
+        print (glypher.GetClassName())
         glypher.SetInputData(poly)
         glypher.SetSourceConnection(tf.GetOutputPort())
         glypher.SetVectorModeToUseNormal()
@@ -245,7 +245,7 @@ class DisplayParticles:
         #mapper.SetScalarRange(self.min_rad,self.max_rad)
             #else:
         #    mapper.SetColorModeToDefault()
-        print color 
+        print (color) 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         if len(color) > 0 :
@@ -349,7 +349,7 @@ class DisplayParticles:
                 tt=vtk.vtkTransform()
                 tt.Identity()
                 if self.coordinate_system == "RAS":
-                    print "Transforming to RAS"
+                    print ("Transforming to RAS")
                 tt.GetMatrix().SetElement(0,0,-1)
                 tt.GetMatrix().SetElement(1,1,-1)
 
@@ -391,7 +391,7 @@ class DisplayParticles:
       if self.capture_prefix == "":
         return
       key = obj.GetKeySym()
-      print "Key press "+key
+      print ("Key press "+key)
       if key == "s":
         ff = vtk.vtkWindowToImageFilter()
         sf = vtk.vtkPNGWriter()
@@ -491,7 +491,7 @@ if __name__ == "__main__":
         radius_array_name_list=[]
         radius_array_name_list = [str(i) for i in str.split(options.radius_array_name,',')]
 
-    print use_field_data
+    print (use_field_data)
 
     dv = DisplayParticles(file_list, spacing_list,feature_type_list,float(options.irad),hth_list, \
         'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lut_list,lung_filename)

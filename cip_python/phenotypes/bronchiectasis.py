@@ -159,11 +159,11 @@ class Bronchiectasis:
         bden = np.zeros(csa.size)
         cden = np.zeros(csa.size)
 
-        print "Number of Airway Points " + str(na)
+        print ("Number of Airway Points " + str(na))
         if self.artery:
-            print "Number of Artery Points " + str(vessel.GetNumberOfPoints())
+            print ("Number of Artery Points " + str(vessel.GetNumberOfPoints()))
         else:
-            print "Number of Vessel Points " + str(vessel.GetNumberOfPoints())
+            print ("Number of Vessel Points " + str(vessel.GetNumberOfPoints()))
 
         for kk in xrange(na):
             a_p = airway.GetPoint(kk)
@@ -226,7 +226,7 @@ class Bronchiectasis:
             cden += 1/(math.sqrt(2*math.pi)*self.sigma) *           np.exp(-(csa-math.pi*(v_r)**2)**2/(2*self.sigma**2))
     
         # This is how you can do it using a kde method in scipy
-        print "Number of computing points "+str(len(a_radius))
+        print ("Number of computing points "+str(len(a_radius)))
         csa_samples = math.pi*(v_radius**2)
         kcden = kde.gaussian_kde(csa_samples)
         # cden = kcden(csa)
@@ -234,7 +234,7 @@ class Bronchiectasis:
         cden = cden/(float(len(a_radius)))
         cden[cden<np.spacing(1e10)]=np.spacing(1e10)
         bron = bden/cden
-        print kcden.factor
+        print (kcden.factor)
                 # bden[cden<0.01]=0
         if self.plot == True:
             fig=plt.figure()

@@ -70,9 +70,9 @@ class ClusterParticles:
     #Save data for each cluster as a vtkPolyData
     for k in unique_labels:
       ids = np.argwhere(labels == k).flatten()
-      print labels.shape[0]
-      print ids.shape[0]
-      print self._in_vtk.GetNumberOfPoints()
+      print (labels.shape[0])
+      print (ids.shape[0])
+      print (self._in_vtk.GetNumberOfPoints())
       self._out_vtk_collection.AddItem(self.extract_particles(ids))
 
   def feature_extractor(self,in_vtk):
@@ -159,7 +159,7 @@ class LobeParticleLabeling():
     leftright_output=left_right_splitter.execute()
     
     #Right splitter
-    print "Right splitter"
+    print ("Right splitter")
     cluster=ClusterParticles(leftright_output['right'],output_collection,feature_extractor=self.feature_extractor_right)
     cluster._number_of_clusters=3
     #cluster._method='MiniBatchKMeans'
@@ -167,7 +167,7 @@ class LobeParticleLabeling():
     
     cluster.execute()
     
-    print "Done right clustering"
+    print ("Done right clustering")
 
     points = vtk_to_numpy(leftright_output['right'].GetPoints().GetData())
     
@@ -188,8 +188,8 @@ class LobeParticleLabeling():
       chest_type.append(3)
   
     #Left splitter
-    print "Left splitter"
-    print leftright_output['left'].GetNumberOfPoints()
+    print ("Left splitter")
+    print (leftright_output['left'].GetNumberOfPoints())
     cluster=ClusterParticles(leftright_output['left'],output_collection,feature_extractor=self.feature_extractor_left)
     cluster._number_of_clusters=2
     #cluster._method='MiniBatchKMeans'
@@ -197,7 +197,7 @@ class LobeParticleLabeling():
     
     cluster.execute()
     
-    print "Done left clustering"
+    print ("Done left clustering")
     points = vtk_to_numpy(leftright_output['left'].GetPoints().GetData())
     
     p_centroids = np.zeros([2,3])
@@ -219,7 +219,7 @@ class LobeParticleLabeling():
 
     append=vtk.vtkAppendPolyData()
     for k,tag,cr,ct in zip(range(0,len(self.cluster_tags)),self.cluster_tags,chest_region,chest_type):
-      print k
+      print (k)
       self._out_vtk[tag]=output_collection.GetItemAsObject(k)
       chest_region_arr = vtk.vtkUnsignedCharArray()
       chest_region_arr.SetName('ChestRegion')

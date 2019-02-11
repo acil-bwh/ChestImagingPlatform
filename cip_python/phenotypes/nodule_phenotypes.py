@@ -1387,23 +1387,23 @@ class NodulePhenotypes:
             print(self._analysis_results[keyName,reference])
 
             if self._centroid_sphere_radius is not None:
-                print "Radius in reference to centroid"
+                print ("Radius in reference to centroid")
                 self._current_distance_maps[cid] = self.getCurrentDistanceMapFromCentroid(whole_lm)
                 reference="Centroid"
                 for sph_rad in self._centroid_sphere_radius:
                     if sph_rad > 0.0:
-                        print "Running analysis for "+str(sph_rad)
+                        print ("Running analysis for "+str(sph_rad))
                         self.runAnalysisSphere(cid, reference, self._current_distance_maps[cid], sph_rad,
                                        selectedMainFeaturesKeys, selectedFeatureKeys, self._subtypes_lm)
                         self._centroid_analyzedSpheres.append(sph_rad)
             
             if self._boundary_sphere_radius is not None:
-                print "Radius in reference to nodule boundary"
+                print ("Radius in reference to nodule boundary")
                 self._current_distance_maps[cid] = self.getCurrentDistanceMapFromNodule(whole_lm)
                 reference="Boundary"
                 for sph_rad in self._boundary_sphere_radius:
                     if sph_rad > 0.0:
-                        print "Running analysis for "+str(sph_rad)
+                        print ("Running analysis for "+str(sph_rad))
                         self.runAnalysisSphere(cid, reference, self._current_distance_maps[cid], sph_rad,
                                                selectedMainFeaturesKeys, selectedFeatureKeys, self._subtypes_lm)
                         self._boundary_analyzedSpheres.append(sph_rad)
@@ -1418,8 +1418,8 @@ class NodulePhenotypes:
         i_ct_array = sitk.GetArrayFromImage(self._input_ct)
         targetVoxels, targetVoxelsCoordinates = self.tumorVoxelsAndCoordinates(n_lm_array, i_ct_array)
         print("Time to calculate tumorVoxelsAndCoordinates: {0} seconds".format(time.time() - t1))
-        print np.shape(targetVoxels)
-        print np.shape(targetVoxelsCoordinates)
+        print (np.shape(targetVoxels))
+        print (np.shape(targetVoxelsCoordinates))
         # create a padded, rectangular matrix with shape equal to the shape of the tumor
         t1 = time.time()
         matrix, matrixCoordinates = self.paddedTumorMatrixAndCoordinates(targetVoxels, targetVoxelsCoordinates)
@@ -1705,7 +1705,7 @@ class NodulePhenotypes:
             for rad in analyzedSpheres[reference]:
                 keyName = "{}_r{}".format(cid, int(rad))
                 radius = rad
-                print "Saving basic data "+str(radius)
+                print ("Saving basic data "+str(radius))
                 self.saveBasicData(keyName,cid,radius,reference)
                 self.saveCurrentValues(self._analysis_results[keyName,reference])
 
@@ -2003,7 +2003,7 @@ if __name__ == "__main__":
         if subtypes_lm_filename is not None:
             subtypes_lm = sitk.ReadImage(par_lm_filename)
         else:
-            print "Subtype image is necessary to compute all phenotypes"
+            print ("Subtype image is necessary to compute all phenotypes")
 
     else:
         if options.fos_features == 'all':
@@ -2045,7 +2045,7 @@ if __name__ == "__main__":
                 elif options.par_features is not None:
                     feature_classes["Parenchymal Volume"] = [ff for ff in str.split(options.par_features, ',')]
             else:
-                print "Parenchymal features will not be computed because subtype labelmap is not provided"
+                print ("Parenchymal features will not be computed because subtype labelmap is not provided")
 
 
     nodule_lm_list=[]
