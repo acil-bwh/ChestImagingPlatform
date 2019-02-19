@@ -373,6 +373,7 @@ class H5Manager(object):
                     main_ix = self.train_ixs[current_main_pos]
                     self._train_ix_pos_ += 1
                 xs, ys = self.read_data_point(main_ix)
+
                 for i in range(num_xs):
                     batch_xs[i][batch_pos] = xs[i]
                 for i in range(num_ys):
@@ -411,6 +412,8 @@ class H5Manager(object):
                         current_main_pos = self._validation_ix_pos_
                         main_ix = self.validation_ixs[current_main_pos]
                         self._validation_ix_pos_ += 1
+                        if self._validation_ix_pos_ == self.num_validation_points:
+                          self._validation_ix_pos_ = 0
                 else:
                     # Test
                     with self.lock:
@@ -418,6 +421,8 @@ class H5Manager(object):
                         current_main_pos = self._test_ix_pos_
                         main_ix = self.test_ixs[current_main_pos]
                         self._test_ix_pos_ += 1
+                        if self._test_ix_pos_ == self.num_test_points: 
+                          self._test_ix_pos_ = 0
 
                 xs, ys = self.read_data_point(main_ix)
                 for i in range(num_xs):
