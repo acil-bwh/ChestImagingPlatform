@@ -41,5 +41,5 @@ class DataAugmentor(object):
             for n in range(len(xs)):
                 augmented_xs[n][data_point_ix] = data[n]
             for n in range(len(ys)):
-                augmented_ys[n][data_point_ix] = data[len(xs) + n] if augment_ys else np.copy(ys[data_point_ix])
+                augmented_ys[n][data_point_ix] = data[len(xs) + n] if augment_ys else np.copy(ys[n])
         return augmented_xs, augmented_ys
