@@ -77,8 +77,6 @@ class DataProcessing(object):
             min_value = np.min(image_array)
         if max_value is None:
             max_value = np.max(image_array)
-        if clip:
-            np.clip(image_array, min_value, max_value, image_array)
 
         if out is None:
             # Build a new array (copy)
@@ -92,6 +90,9 @@ class DataProcessing(object):
                 image[:] = image_array[:]
 
         assert image.dtype == np.float32, "The out array must contain float32 elements, because the transformation will be performed in place"
+
+        if clip:
+            np.clip(image, min_value, max_value, image)
 
         # Change of range
         image -= min_value
