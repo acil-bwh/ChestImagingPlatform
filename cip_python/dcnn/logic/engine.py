@@ -226,7 +226,6 @@ class Engine(object):
             batch_xs = [np.zeros(((batch_size,) + s), dtype=np.float32) for s in xs_sizes]
             batch_ys = [np.zeros(((batch_size,) + s), dtype=np.float32) for s in ys_sizes]
 
-            print (np.shape(batch_xs), np.shape(batch_ys))
             n = 0
             while n < batch_size:
                 # Read all the original data points
