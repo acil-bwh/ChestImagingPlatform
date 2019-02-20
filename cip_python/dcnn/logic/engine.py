@@ -204,7 +204,7 @@ class Engine(object):
 
     def keras_generator_dynamic_augmentation(self, ds_manager, network,
                                              data_augmentor, num_dynamic_augmented_data_per_data_point,
-                                             batch_size, batch_type=H5Manager.TRAIN):
+                                             batch_size, batch_type=H5Manager.TRAIN, augment_ys=True):
         """
         Iterator to be used in Keras training/testing when there is data augmentation on the fly
         :param ds_manager: H5DatasetManager object (or any of its child classes)
@@ -225,6 +225,8 @@ class Engine(object):
             num_outputs = len(ys_sizes)
             batch_xs = [np.zeros(((batch_size,) + s), dtype=np.float32) for s in xs_sizes]
             batch_ys = [np.zeros(((batch_size,) + s), dtype=np.float32) for s in ys_sizes]
+
+            print (np.shape(batch_xs), np.shape(batch_ys))
             n = 0
             while n < batch_size:
                 # Read all the original data points
@@ -233,9 +235,10 @@ class Engine(object):
                 for j in range(num_original_data):
                     xs = [a[j] for a in original_xs]
                     ys = [a[j] for a in original_ys]
+
                     augmented_xs, augmented_ys = data_augmentor.generate_augmented_data_points(xs, ys,
-                                                                           num_dynamic_augmented_data_per_data_point)
-                    xs, ys = self.format_data_to_network(xs, ys, network)
+                                                                                               num_dynamic_augmented_data_per_data_point,
+                                                                                               augment_ys=augment_ys)
 
                     # Insert original data
                     for i in range(num_inputs):
@@ -249,13 +252,14 @@ class Engine(object):
                     while k < num_dynamic_augmented_data_per_data_point and n < batch_size:
                         xs = [a[k] for a in augmented_xs]
                         ys = [a[k] for a in augmented_ys]
-                        xs, ys = self.format_data_to_network(xs, ys, network)
+
                         for i in range(num_inputs):
                             batch_xs[i][n] = xs[i]
                         for i in range(num_outputs):
                             batch_ys[i][n] = ys[i]
                         n += 1
                         k += 1
+            batch_xs, batch_ys = self.format_data_to_network(batch_xs, batch_ys, network)
             yield batch_xs, batch_ys
 
     ##########################################################################
