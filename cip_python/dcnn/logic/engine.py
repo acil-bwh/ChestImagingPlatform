@@ -124,13 +124,20 @@ class Engine(object):
             - metric;param1;param2
             - metric,param1=value1,param2=value2
         :return: Tuple with:
-            - Loss function (string or pointer to a custom metric function)
+            - Loss functions: List of strings (for regular Keras functions) or pointers to custom additional metrics
             - List of strings (for regular Keras functions) or pointers to custom additional metrics
+            - Loss weights (optional): List of float for the loss weights (if they have been declared in the params file)
         """
-        metric_names = []
+
         metric_functions = []
         loss_function = Utils.get_param('loss', parameters_dict)
-        metric_names.append(loss_function)
+        # Check if we have a single loss or multiple
+        if isinstance(loss_function, list):
+            metric_names = loss_function
+        else:
+            metric_names = [loss_function]
+        num_loss_functions = len(metric_names)
+
         # Check for additional metrics
         if Utils.get_param('metrics', parameters_dict):
             metric_names.extend(Utils.get_param('metrics', parameters_dict))
@@ -169,11 +176,16 @@ class Engine(object):
                 # Assume this is a regular Keras metric. Save the string
                 metric_functions.append(metric_name)
 
-        # The first element in the list is the loss function
-        loss_function = metric_functions.pop(0)
-        additional_metrics = metric_functions
+        # The first element/s in the list are the loss functions
+        loss_functions = metric_functions[:num_loss_functions]
+        additional_metrics = metric_functions[num_loss_functions:]
+        if Utils.get_param("loss_weights", parameters_dict):
+            loss_weights = Utils.get_param("loss_weights", parameters_dict)
+            return loss_functions, additional_metrics, loss_weights
+        else:
+            # Do not use loss weights
+            return loss_functions, additional_metrics
 
-        return loss_function, additional_metrics
 
     def get_optimizer(self, parameters_dict):
         """

@@ -20,7 +20,7 @@ class Network(object):
     def expected_input_values_range(self):
         return self._expected_input_values_range_
 
-    def build_model(self, compile_model, optimizer=None, loss_function=None, additional_metrics=None,
+    def build_model(self, compile_model, optimizer=None, loss_function=None, loss_weights=None, additional_metrics=None,
                     pretrained_weights_file_path=None):
         """
         Create a new model from scratch
@@ -30,11 +30,14 @@ class Network(object):
         Args:
             compile_model: bool. Compile the model (needed for training)
             optimizer: keras Optimizer. Used for training
-            loss_function: "pointer" to a function (custom metric) or string (standard keras metric)
+            loss_function: "pointer" to a function (custom metric) or string (standard keras metric).
+                  It can be a single object or a list (in case of having more than one loss)
+            loss_weights: list of weights for the losses (default: [1.0])
             additional_metrics: list of "pointers" to functions or strings.
             pretrained_weights_file_path: str. Path to an existing weights file path
         Returns:
             Keras Model
+            :param loss_weights:
         """
         self._model_ = self._build_model_()
         # Check if there is a weights file path
@@ -46,7 +49,10 @@ class Network(object):
         if compile_model:
             assert optimizer is not None, "An optimizer is needed to compile the model"
             assert loss_function is not None, "At least a loss function is needed to compile the model"
-            self.model.compile(optimizer=optimizer, loss=loss_function, metrics=additional_metrics)
+            if loss_weights is None:
+                loss_weights = [1.0] * len(loss_function)
+            self.model.compile(optimizer=optimizer, loss=loss_function, loss_weights=loss_weights,
+                               metrics=additional_metrics)
         return self._model_
 
     # @classmethod
