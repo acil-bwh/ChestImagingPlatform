@@ -187,7 +187,7 @@ class VasculaturePhenotypes(Phenotypes):
                 #if isinstance(tmp,vtk.vtkDataArray) == False:
                 #tmp=vessel.GetFieldData().GetArray(ff)
             array_v[ff]=vtk_to_numpy(tmp)
-        print "Number of Vessel Points "+str(vessel.GetNumberOfPoints())
+        print ("Number of Vessel Points "+str(vessel.GetNumberOfPoints()))
         
         if self.rad_arrayname is not None:
             tmp=vessel.GetPointData().GetArray(self.rad_arrayname)
@@ -195,11 +195,11 @@ class VasculaturePhenotypes(Phenotypes):
 
         #Get unique value of spacing as the norm 3D vector
         if vessel.GetFieldData().GetArray("spacing") == None:
-            print "Spacing information missing in particle vtk file. Setting spacing to (%f,%f,%f)" % (spacing[0],spacing[1],spacing[2])
+            print ("Spacing information missing in particle vtk file. Setting spacing to (%f,%f,%f)" % (spacing[0],spacing[1],spacing[2]))
             spacing=spacing
         else:
             spacing = vtk_to_numpy(vessel.GetFieldData().GetArray("spacing"))
-            print "Using spacing in particle file: (%f,%f,%f)" % (spacing[0,0],spacing[0,1],spacing[0,2])
+            print ("Using spacing in particle file: (%f,%f,%f)" % (spacing[0,0],spacing[0,1],spacing[0,2]))
 
         #Compute single spacing value as the geometric mean of the three spacing values
         self._spacing=np.prod(spacing)**(1/3.0)
@@ -225,7 +225,7 @@ class VasculaturePhenotypes(Phenotypes):
         #Compute interparticle distance
         self._dx = self.interparticle_distance(vessel)
 
-        print "DX: "+str(self._dx)
+        print ("DX: "+str(self._dx))
 
         profiles=list()
 
@@ -347,7 +347,7 @@ class VasculaturePhenotypes(Phenotypes):
         #Do some automatic bandwithd estimation
         if self.bw_method=='botev':
           bw_value=self.botev_kde_bandwidth(np.pi*radius_arr**2)
-          print "Using botev bw estimation with value=%f"%bw_value
+          print ("Using botev bw estimation with value=%f"%bw_value)
         else:
           bw_value=self.bw_method
         p_csa=kde.gaussian_kde(np.pi*radius_arr**2,bw_method=bw_value)

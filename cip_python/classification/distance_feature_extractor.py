@@ -275,20 +275,20 @@ if __name__ == "__main__":
     if options.in_patches is None:
         raise ValueError("Must specify a patches segmentation file")
     
-    print "Reading distance map..."
+    print ("Reading distance map...")
     distance_map, dm_header = nrrd.read(options.in_dist) 
 
-    print "Reading patches segmentation..."
+    print ("Reading patches segmentation...")
     in_patches, in_patches_header = nrrd.read(options.in_patches) 
     
     if (options.in_lm is not None):
-        print "Reading mask..."
+        print ("Reading mask...")
         lm,lm_header = nrrd.read(options.in_lm) 
     else:
          lm = np.ones(np.shape(distance_map))   
     
     if (options.in_csv is not None):
-        print "Reading previously computed features..."
+        print ("Reading previously computed features...")
         init_df = pd.read_csv(options.in_csv)
     else:    
         init_df = None
@@ -304,14 +304,14 @@ if __name__ == "__main__":
         assert len(tmp) == 2, 'Specified pairs not understood'
         pair = [options.pair.split(',')[0],options.pair.split(',')[1] ]
 
-    print "Computing distance features..."
+    print ("Computing distance features...")
     dist_extractor = DistanceFeatureExtractor(options.chest_region, \
         options.chest_type, pair, init_df)                 
     dist_extractor.fit(distance_map, lm, in_patches)
 
     if options.out_csv is not None:
-        print "Writing..."
+        print ("Writing...")
         dist_extractor.df_.to_csv(options.out_csv, index=False)
 
-    print "DONE."
+    print ("DONE.")
         

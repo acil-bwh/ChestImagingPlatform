@@ -2,7 +2,7 @@ import platform
 import datetime
 import numpy as np
 import pandas as pd
-from ..common import ChestConventions
+from cip_python.common import ChestConventions
 
 class Phenotypes:
     """Base class for phenotype genearting classes.
@@ -58,7 +58,7 @@ class Phenotypes:
 
         # Intializes the dataframe with static column names, key names, and
         # phenotype names.
-        cols = self.static_names_handler_.keys()
+        cols = list(self.static_names_handler_.keys())
         for n in self.key_names_:
             cols.append(n)
 
@@ -174,12 +174,12 @@ class Phenotypes:
         valid_values = dict()
     
         region_names = [c.GetChestWildCardName()]
-        for i in xrange(0, c.GetNumberOfEnumeratedChestRegions()):
+        for i in range(0, c.GetNumberOfEnumeratedChestRegions()):
             region_names.append(c.GetChestRegionName(i))
         valid_values['Region'] = region_names
 
         type_names = [c.GetChestWildCardName()]
-        for i in xrange(0, c.GetNumberOfEnumeratedChestTypes()):
+        for i in range(0, c.GetNumberOfEnumeratedChestTypes()):
             type_names.append(c.GetChestTypeName(i))
         valid_values['Type'] = type_names
         
@@ -218,14 +218,14 @@ class Phenotypes:
           "Invalid phenotype name: %s" % pheno_name
         
         # Check if key is valid
-        for i in xrange(0, num_keys):
+        for i in range(0, num_keys):
             assert key_value[i] in self.valid_key_values_[self.key_names_[i]], \
                 "Invalid key: %s" % key_value[i]
           
         # Check if key already exists, otherwise add entry to data frame
         key_exists = True
         key_row = np.ones(len(self._df.index), dtype=bool)
-        for i in xrange(0, len(self.key_names_)):
+        for i in range(0, len(self.key_names_)):
             key_row = \
                 np.logical_and(key_row, \
                                self._df[self.key_names_[i]] == key_value[i])
@@ -235,7 +235,7 @@ class Phenotypes:
             for k in self.static_names_handler_.keys():
                 tmp[k] = self.static_names_handler_[k]()
             tmp[pheno_name] = pheno_value
-            for i in xrange(0, num_keys):
+            for i in range(0, num_keys):
                 tmp[self.key_names_[i]] = key_value[i]
             self._df = self._df.append(tmp, ignore_index=True)
         else:

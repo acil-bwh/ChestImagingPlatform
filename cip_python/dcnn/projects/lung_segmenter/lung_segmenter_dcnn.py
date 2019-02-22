@@ -5,13 +5,13 @@ import numpy as np
 import SimpleITK as sitk
 from scipy import signal
 
-from keras.models import load_model
-import keras.backend as K
+from tensorflow.keras.models import load_model
+import tensorflow.keras.backend as K
 
-from cip_python.dcnn import metrics, utils
 from cip_python.common import ChestConventions
 from cip_python.input_output import ImageReaderWriter
-from cip_python.dcnn import DeepLearningModelsManager
+from cip_python.dcnn.logic import DeepLearningModelsManager, MetricsManager, Utils
+from cip_python.dcnn.data import DataProcessing
 
 
 class LungSegmenterDCNN:
@@ -35,8 +35,8 @@ class LungSegmenterDCNN:
         if not os.path.exists(model_path):
             raise Exception("{} not found".format(model_path))
 
-        network_model = load_model(model_path, custom_objects={'dice_coef': metrics.dice_coef,
-                                                               'dice_coef_loss': metrics.dice_coef_loss})
+        network_model = load_model(model_path, custom_objects={'dice_coef': MetricsManager.dice_coef,
+                                                               'dice_coef_loss': MetricsManager.dice_coef_loss})
         return network_model
 
     def normalized_convolution_lp(self, signal, certainty, filter_func, *args):
@@ -51,7 +51,7 @@ class LungSegmenterDCNN:
         return output
 
     @staticmethod
-    def filtra3D(im, window=[1,1,1], spacing=[1,1,1], method=2):
+    def filtra3D(im, window=(1,1,1), spacing=(1,1,1), method=2):
         im_sitk = sitk.GetImageFromArray(im)
         if method == 1:
             # Calculate the sigma parameters for each dimensionssf
@@ -84,34 +84,34 @@ class LungSegmenterDCNN:
         z_shape = image_np.shape[2]
         if patch_size[0] != image_np.shape[0] or patch_size[1] != image_np.shape[1]:
             if orientation == 'coronal' and z_shape >= 4:
-                z_shape /= 2
+                z_shape //= 2
 
             if z_shape <= 3:
                 cnn_img = np.zeros((patch_size[0], patch_size[1], z_shape), dtype=np.float32)
                 for ii in range(z_shape):
                     output_size = np.asarray(patch_size)
-                    res_sitk, out_sp = utils.resample_image(img_sitk[:, :, ii], output_size, sitk.sitkInt16,
+                    res_sitk, out_sp = DataProcessing.resample_image_itk(img_sitk[:, :, ii], output_size, sitk.sitkInt16,
                                                             interpolator=sitk.sitkBSpline)
                     cnn_img[:, :, ii] = sitk.GetArrayFromImage(res_sitk).transpose().astype(np.float32)
                 output_spacing = np.asarray([out_sp[0], out_sp[1], img_sitk.GetSpacing()[2]])
             else:
                 output_size = np.asarray([patch_size[0], patch_size[1], z_shape])
 
-                resampled_sitk, output_spacing = utils.resample_image(img_sitk, output_size, sitk.sitkInt16,
+                resampled_sitk, output_spacing = DataProcessing.resample_image_itk(img_sitk, output_size, sitk.sitkInt16,
                                                                       interpolator=sitk.sitkBSpline)
                 cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0]).astype(np.float32)
         else:
             cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0]).astype(np.float32)
 
-        z_samples = range(0, cnn_img.shape[2], N_subsampling)
+        z_samples = list(range(0, cnn_img.shape[2], N_subsampling))
         if not cnn_img.shape[2] - 1 in z_samples:
             z_samples.append(cnn_img.shape[2] - 1)
 
         predictions = np.zeros((4, z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
         certainty_map = np.zeros((z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
 
-        for ii in xrange(cnn_img.shape[2]):
-            cnn_img[:, :, ii] = utils.standardization(cnn_img[:, :, ii])
+        for ii in range(cnn_img.shape[2]):
+            cnn_img[:, :, ii] = DataProcessing.standardization(cnn_img[:, :, ii])
 
         for ii in z_samples:
             print ('Segmenting slice {} of {}'.format(ii, cnn_img.shape[2]))
@@ -125,7 +125,7 @@ class LungSegmenterDCNN:
             certainty_map[ii, :, :] = np.ones([patch_size[0], patch_size[1]])
 
         if N_subsampling > 1:
-            for cc in xrange(4):
+            for cc in range(4):
                 predictions[cc] = self.normalized_convolution_lp(predictions[cc], certainty_map, self.filtra3D,
                                                                  [1, 1, N_subsampling], [1, 1, 1])
         return predictions, output_spacing
@@ -183,7 +183,7 @@ class LungSegmenterDCNN:
         for ii in range(predictions_image.shape[0]):
             pp_sitk = sitk.GetImageFromArray(predictions_image[ii].transpose([2, 1, 0]))
             pp_sitk.SetSpacing(predictions_spacing)
-            resampled_sitk, _ = utils.resample_image(pp_sitk, output_size, sitk.sitkFloat32,
+            resampled_sitk, _ = DataProcessing.resample_image_itk(pp_sitk, output_size, sitk.sitkFloat32,
                                                      interpolator=sitk.sitkLinear)
             out_predictions[ii] = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
 
@@ -331,7 +331,7 @@ class LungThirdSplitter():
         vol_left = np.sum(olm_np == self.LeftLabel)
         target_vol_right = 0
         target_vol_left = 0
-        for zz in xrange(size[2]):
+        for zz in range(size[2]):
             cut = olm_np[zz, :, :]
             right_mask = (cut == self.RightLabel)
             left_mask = (cut == self.LeftLabel)
@@ -394,7 +394,7 @@ if __name__ == "__main__":
         else:
             # Load with model manager
             manager = DeepLearningModelsManager()
-            axial_model = manager.get_model_path('LUNG_SEGMENTATION_AXIAL')
+            axial_model = manager.get_model('LUNG_SEGMENTATION_AXIAL')
     else:
         axial_model = None
 
@@ -404,7 +404,7 @@ if __name__ == "__main__":
         else:
             # Load with model manager
             manager = DeepLearningModelsManager()
-            coronal_model = manager.get_model_path('LUNG_SEGMENTATION_CORONAL')
+            coronal_model = manager.get_model('LUNG_SEGMENTATION_CORONAL')
     else:
         coronal_model = None
 

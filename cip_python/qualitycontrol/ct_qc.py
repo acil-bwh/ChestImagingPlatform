@@ -62,7 +62,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     image_io = ImageReaderWriter()
-    print "Reading CT..."
+    print ("Reading CT...")
     ct_array, ct_header = image_io.read_in_numpy(options.in_ct) 
     spacing=ct_header['spacing']
     my_ct_qc = CTQC()

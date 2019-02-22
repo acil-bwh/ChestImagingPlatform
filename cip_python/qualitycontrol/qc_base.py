@@ -278,7 +278,7 @@ class QcColorConventionsManager:
                                                    
         """ Sort the tuples and turn back to list """
         color_bound_list.sort(key=lambda tup: tup[1]) 
-        color_bound_list = zip(*color_bound_list)
+        color_bound_list = list(zip(*color_bound_list))
         color_bound_list[0]=list(color_bound_list[0])
         color_bound_list[1]=list(color_bound_list[1])
         """ Go through list sequentially and add bounds if non-existent"""

@@ -72,5 +72,5 @@ if __name__ == "__main__":
     lm2, lm2_header = nrrd.read(options.lm2)    
 
     dice = compute_dice_coefficient(lm1, lm2, int(options.radius))
-    print "Dice coefficient: %s" % dice
+    print ("Dice coefficient: %s" % dice)
     

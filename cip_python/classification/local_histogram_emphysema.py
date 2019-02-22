@@ -2,7 +2,10 @@
 ##!/usr/bin/python
 from __future__ import division
 
-import copy_reg
+try:
+    import copy_reg
+except:
+    import copyreg as copy_reg
 import math
 import os
 import types
@@ -165,7 +168,7 @@ class LocalHistogramEmphysema():
         return strided.reshape(dim)
 
     def process_slice(self,k):
-        print 'Processing slice '+str(k+1)+'/'+str(self.frames.shape[2])
+        print ('Processing slice '+str(k+1)+'/'+str(self.frames.shape[2]))
         image_patches=self.sliding_window(self.frames[:,:,k],self.ws, self.ss, flatten=False)
         m=self.mask[:,:,k]
         m=m>=1
@@ -213,14 +216,14 @@ class LocalHistogramEmphysema():
     def train(self):
       self.database
       ##Creating training set for the KNN Classifier##
-      print '...Creating training set for the KNN Classifier...'
+      print ('...Creating training set for the KNN Classifier...')
       mat = scipy.io.loadmat(self.database)
       mat2=mat['EmphyPatch'] #type: numpy.ndarray
       X=[] #histograms
       y=[] #corresponding class
       for i in range(6):
         if i!=1: #We train the classifier with 5 classes (all except PS class)
-          print 'Running class '+str(i+1)
+          print ('Running class '+str(i+1))
           patches_size=mat2[0][i].shape
           for j in range(patches_size[2]):
               patch=(mat2[0][i])[:,:,j]
@@ -302,7 +305,7 @@ class botev_bandwidth():
             t_star = scipy.optimize.brentq(self.fixed_point, 0, guess,
                                            args=(M, I, SqDCTData))
         except ValueError:
-            print 'Oops!'
+            print ('Oops!')
             return None
         # Smooth the DCTransformed data using t_star
         SmDCTData = DCTData * sci.exp(-sci.arange(N) ** 2 * sci.pi ** 2 * t_star / 2)
@@ -331,7 +334,7 @@ class botev_bandwidth():
 from optparse import OptionParser
 if __name__ == "__main__":
   
-    print "In main"
+    print ("In main")
     desc = """Compute local histogram phenotypes"""
     
     parser = OptionParser(description=desc)
@@ -361,7 +364,7 @@ if __name__ == "__main__":
       raise ValueError('Input image file or mask file have not been set')
     
     ##Processing image##
-    print '...Processing Image: '+options.image_file+'...'
+    print ('...Processing Image: '+options.image_file+'...')
     removed=[]
 
 
@@ -380,20 +383,20 @@ if __name__ == "__main__":
     ss=(options.offset,options.offset)
     num_threads=options.num_threads
     z=options.z
-    print '## Offset: '+str(options.offset)
-    print '## Patch Size: '+str(options.patch_size)
-    print '## Offset along Z axis: '+str(z)
-    print '## Number of threads in multiprocessing: '+str(num_threads)
+    print ('## Offset: '+str(options.offset))
+    print ('## Patch Size: '+str(options.patch_size))
+    print ('## Offset along Z axis: '+str(z))
+    print ('## Number of threads in multiprocessing: '+str(num_threads))
 
     lh = LocalHistogramEmphysema(frames,mask,ws,ss,options.offset,num_threads,z,database=DB)
 
     lh_image = lh.execute()
     
     ##Writing labeled image##
-    print '...Writing labeled image...'
+    print ('...Writing labeled image...')
     #nrrd.write(options.output_image_file,lh_image,options=frames_header)
     image_io.write_from_numpy(lh_image,frames_header,options.output_image_file)
 
   
-    print ''
-    print 'DONE'
+    print ('')
+    print ('DONE')

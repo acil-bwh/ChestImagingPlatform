@@ -572,11 +572,11 @@ if __name__ == "__main__":
     in_df_training = pd.read_csv(options.training_csv)
 
     try:
-        print "Reading testing features file..."
+        print ("Reading testing features file...")
         in_df = pd.read_csv(options.in_csv)  
-    except IOError, e:
-        print e.errno
-        print e
+    except IOError as e:
+        print (e.errno)
+        print (e)
         exit()
         
     if (options.interp_method != 'spline'):
@@ -591,7 +591,7 @@ if __name__ == "__main__":
     
     in_training_features = np.array(in_df_training)[:,int(options.training_col_idx[0]):int(options.training_col_idx[1])+1]
     in_testing_features = np.array(in_df_testing)[:,int(options.col_idx[0]):int(options.col_idx[1])+1]
-    print in_testing_features.shape
+    print (in_testing_features.shape)
     
     """ fit and predict """
     my_severity_index = EmphysemaSeverityIndex(interp_method=options.interp_method, single_path=options.single_path)
@@ -605,6 +605,6 @@ if __name__ == "__main__":
     out_df = pd.concat([in_df_testing, severity_values_df], axis=1)    
     
     if options.out_csv is not None:
-        print "Writing..."
+        print ("Writing...")
         out_df.to_csv(options.out_csv, index=False)
         

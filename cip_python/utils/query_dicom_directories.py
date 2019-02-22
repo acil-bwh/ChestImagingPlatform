@@ -84,55 +84,55 @@ def get_file_in_dir(directory, file_num=0):
 
 def print_dicom_tags():
    """Print the full list of DICOM tags to screen for reference"""
-   print 'PatientName'
-   print 'PatientID'
-   print 'StudyDate'
-   print 'InstitutionName'
-   print 'Manufacturer'
-   print 'ManufacturersModelName'
-   print 'DateOfLastCalibration'
-   print 'ConvolutionKernel'
-   print 'StudyDescription'
-   print 'ModalitiesInStudy'
-   print 'ImageComments'
-   print 'SliceThickness'
-   print 'SpacingBetweenSlices'
-   print 'ExposureTime'
-   print 'XRayTubeCurrent'
-   print 'KVP'
-   print 'WindowCenter'
-   print 'ContrastBolusAgent'
-   print 'DataCollectionDiameter'
-   print 'ReconstructionDiameter'
-   print 'DistanceSourceToDetector'
-   print 'DistanceSourceToPatient'
-   print 'GantryDetectorTilt'
-   print 'TableHeight'
-   print 'Exposure'
-   print 'FocalSpots'
-   print 'ImagePositionPatient'
-   print 'SliceLocation'
-   print 'PixelSpacing'
-   print 'RescaleIntercept'
-   print 'RescaleSlope'
-   print 'ProtocolName'
-   print 'AcquisitionDate'
-   print 'StudyID'
-   print 'SeriesDescription'
-   print 'SeriesTime'
-   print 'PatientBirthDate'
-   print 'FilterType'
-   print 'stationNameID'
-   print 'StationName'
-   print 'AcquisitionTime'
-   print 'PatientPosition'
-   print 'studyInstanceUID'
-   print 'seriesInstanceUID'
-   print 'acquisitionDate'
-   print 'seriesDate'
-   print 'modality'
-   print 'NumSlices'
-   print 'Directory'
+   print ('PatientName')
+   print ('PatientID')
+   print ('StudyDate')
+   print ('InstitutionName')
+   print ('Manufacturer')
+   print ('ManufacturersModelName')
+   print ('DateOfLastCalibration')
+   print ('ConvolutionKernel')
+   print ('StudyDescription')
+   print ('ModalitiesInStudy')
+   print ('ImageComments')
+   print ('SliceThickness')
+   print ('SpacingBetweenSlices')
+   print ('ExposureTime')
+   print ('XRayTubeCurrent')
+   print ('KVP')
+   print ('WindowCenter')
+   print ('ContrastBolusAgent')
+   print ('DataCollectionDiameter')
+   print ('ReconstructionDiameter')
+   print ('DistanceSourceToDetector')
+   print ('DistanceSourceToPatient')
+   print ('GantryDetectorTilt')
+   print ('TableHeight')
+   print ('Exposure')
+   print ('FocalSpots')
+   print ('ImagePositionPatient')
+   print ('SliceLocation')
+   print ('PixelSpacing')
+   print ('RescaleIntercept')
+   print ('RescaleSlope')
+   print ('ProtocolName')
+   print ('AcquisitionDate')
+   print ('StudyID')
+   print ('SeriesDescription')
+   print ('SeriesTime')
+   print ('PatientBirthDate')
+   print ('FilterType')
+   print ('stationNameID')
+   print ('StationName')
+   print ('AcquisitionTime')
+   print ('PatientPosition')
+   print ('studyInstanceUID')
+   print ('seriesInstanceUID')
+   print ('acquisitionDate')
+   print ('seriesDate')
+   print ('modality')
+   print ('NumSlices')
+   print ('Directory')
 
 def print_info_to_screen(tags, info):
     """Print the tags and associated DICOM information to screen.
@@ -146,9 +146,9 @@ def print_info_to_screen(tags, info):
         Each entry of the list is a formatted string of DICOM information
         entries, one for each queried directory.
     """
-    print tags
+    print (tags)
     for i in info:
-        print i
+        print (i)
 
 def print_info_to_file(tags, info, out_file):
     """Print the tags and associated DICOM information to screen.

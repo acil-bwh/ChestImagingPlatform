@@ -102,14 +102,14 @@ class ParenchymaPhenotypes(Phenotypes):
         self.chest_regions_ = None
         if chest_regions is not None:
             tmp = []
-            for m in xrange(0, len(chest_regions)):
+            for m in range(0, len(chest_regions)):
                 tmp.append(c.GetChestRegionValueFromName(chest_regions[m]))
             self.chest_regions_ = np.array(tmp)
 
         self.chest_types_ = None
         if chest_types is not None:
             tmp = []
-            for m in xrange(0, len(chest_types)):
+            for m in range(0, len(chest_types)):
                 tmp.append(c.GetChestTypeValueFromName(chest_types[m]))
             self.chest_types_ = np.array(tmp)
                 
@@ -288,7 +288,7 @@ class ParenchymaPhenotypes(Phenotypes):
 
         dim = len(lm.shape)
         if ct is not None:
-            for i in xrange(0, dim):
+            for i in range(0, dim):
                 assert ct.shape[0] == lm.shape[0], \
                   "Disagreement in CT and label map dimension"
 
@@ -359,7 +359,7 @@ class ParenchymaPhenotypes(Phenotypes):
                     c.GetChestWildCardName(),
                     c.GetChestTypeName(t), phenos_to_compute)
         if ps.size > 0:
-            for i in xrange(0, ps.shape[0]):
+            for i in range(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
@@ -413,7 +413,7 @@ class ParenchymaPhenotypes(Phenotypes):
         distributions'
         """
         mask_sum = np.sum(mask)
-        print "Computing phenos for region %s and type %s"%(chest_region,chest_type)
+        print ("Computing phenos for region %s and type %s"%(chest_region,chest_type))
         if ct is not None:
             ct_mask=ct[mask]
             hus=dict()

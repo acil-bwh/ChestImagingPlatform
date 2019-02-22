@@ -192,20 +192,20 @@ if __name__ == "__main__":
         raise ValueError("Must specify as distance map")
 
     
-    print "Reading distance map..."
+    print ("Reading distance map...")
     distance_map, dm_header = image_io.read_in_numpy(options.in_dist) 
 
     with open(options.in_xml, 'r+b') as f:
         xml_data = f.read()
     
     if (options.in_lm is not None):
-        print "Reading mask..."
+        print ("Reading mask...")
         lm,lm_header = nrrd.read(options.in_lm) 
     else:
          lm = np.ones(np.shape(distance_map))   
     
     if (options.in_csv is not None):
-        print "Reading previously computed features..."
+        print ("Reading previously computed features...")
         init_df = pd.read_csv(options.in_csv)
     else:    
         init_df = None
@@ -221,14 +221,14 @@ if __name__ == "__main__":
         assert len(tmp) == 2, 'Specified pairs not understood'
         pair = [options.pair.split(',')[0],options.pair.split(',')[1] ]
 
-    print "Computing distance features..."
+    print ("Computing distance features...")
     dist_extractor = DistanceFeatureExtractorFromXML(chest_region=options.chest_region, \
         chest_type=options.chest_type, pair=pair, in_df=init_df, x_extent=options.x_extent, \
                                                      y_extent=options.y_extent, z_extent=options.z_extent)
     dist_extractor.fit(distance_map, dm_header, lm, xml_data)
 
     if options.out_csv is not None:
-        print "Writing..."
+        print ("Writing...")
         dist_extractor.df_.to_csv(options.out_csv, index=False)
 
-    print "DONE."
+    print ("DONE.")

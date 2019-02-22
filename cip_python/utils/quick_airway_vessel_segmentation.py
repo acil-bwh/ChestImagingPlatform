@@ -71,7 +71,7 @@ class quickAirwayVesselSegmentator:
         for path_name in toolsPaths:
             path[path_name]=os.environ.get(path_name,False)
             if path[path_name] == False:
-                print path_name + " environment variable is not set"
+                print (path_name + " environment variable is not set")
                 exit()
 
         unuop = os.path.join(path['TEEM_PATH'],'unu')
@@ -91,13 +91,13 @@ class quickAirwayVesselSegmentator:
                 str(self._C_vessel)+" -o %(out)s"
             tmpCommand = tmpCommand % {'in':ct_file_name,'out':featureMapFileName,'minscale':self._min_scale,'maxscale':self._max_scale}
             tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
-            print tmpCommand
+            print (tmpCommand)
             subprocess.call( tmpCommand, shell=True )
                     
             #Hist equalization, threshold Feature strength and masking
             tmpCommand = unuop+" 2op x %(feat)s %(mask)s -t float | "+unuop+" heq -b 10000 -a 0.96 -s 5 |  "+unuop+" 2op gt - %(vesselness_th)f  |  "+unuop+" convert -t short -o %(out)s"
             tmpCommand = tmpCommand % {'feat':featureMapFileName,'mask':pl_file_name,'vesselness_th':self._vesselness_th,'out':maskFileNameVessel}
-            print tmpCommand
+            print (tmpCommand)
             subprocess.call( tmpCommand , shell=True)
 
         if (self._extract_airways):
@@ -107,20 +107,20 @@ class quickAirwayVesselSegmentator:
                 str(self._C_airway)+" -o %(out)s"
             tmpCommand = tmpCommand % {'in':ct_file_name,'out':featureMapFileName,'minscale':self._min_scale,'maxscale':self._max_scale}
             tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
-            print tmpCommand
+            print (tmpCommand)
             subprocess.call( tmpCommand, shell=True )
 
             #Hist equalization, threshold Feature strength and masking
             tmpCommand = unuop+" 2op x %(feat)s %(mask)s -t float | "+unuop+" heq -b 10000 -a 0.5 -s 2 | "+unuop+" 2op gt - %(airwayness_th)f  | "+unuop+" convert -t short -o %(out)s"
             tmpCommand = tmpCommand % {'feat':featureMapFileName,'mask':pl_file_name,'airwayness_th':self._airwayness_th,'out':maskFileNameAirway}
-            print tmpCommand
+            print (tmpCommand)
             subprocess.call( tmpCommand , shell=True)
         
         # Combine both or copy one of them to final output
         if (self._extract_vessels and self._extract_airways):
             tmpCommand = unuop+" 2op min %(in1)s %(in2)s -o %(out)s"
             tmpCommand = tmpCommand % {'in1':maskFileNameVessel,'in2':maskFileNameAirway, 'out':maskFileName}
-            print tmpCommand
+            print (tmpCommand)
             subprocess.call( tmpCommand , shell=True)
         elif(self._extract_airways ):        
             tmpCommand = "cp "+maskFileNameAirway+" "+maskFileName 

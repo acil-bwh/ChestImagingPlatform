@@ -37,6 +37,6 @@ class ReadNRRDsWriteVTK:
         self._argumentList = self._argumentList + ' --cipt ' + cip_type
         
     def execute( self ):
-        print self._argumentList
+        print (self._argumentList)
         tmpCommand = "ReadNRRDsWriteVTK " + self._argumentList
         subprocess.call( tmpCommand, shell=True )

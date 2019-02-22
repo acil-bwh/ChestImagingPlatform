@@ -180,25 +180,25 @@ if __name__ == "__main__":
                       metavar='<string>', default=1)                         
     (options, args) = parser.parse_args()
     
-    print "Reading CT..."
+    print ("Reading CT...")
 
     image_io = ImageReaderWriter()
     ct, ct_header=image_io.read_in_numpy(options.in_ct)
     if (options.in_lm is not None):
-        print "Reading mask..." 
+        print ("Reading mask...") 
         lm, lm_header = nrrd.read(options.in_lm) 
     else:
          lm = np.ones(np.shape(ct))   
 
     with open(options.in_xml, 'r+b') as f:
         xml_data = f.read()
-    print "Compute histogram features..."
+    print ("Compute histogram features...")
     kde_feature_extractor = kdeHistExtractorFromXML(lower_limit=np.int16(options.lower_limit), \
         upper_limit=np.int16(options.upper_limit), x_extent = np.int16(options.x_extent), \
         y_extent=np.int16(options.y_extent), z_extent=np.int16(options.z_extent))
 
     kde_feature_extractor.fit(ct, ct_header, lm, xml_data)    
     if options.out_csv is not None:
-        print "Writing..."+options.out_csv
+        print ("Writing..."+options.out_csv)
         kde_feature_extractor.df_.to_csv(options.out_csv, index=False)
         

@@ -34,7 +34,7 @@ def register_2d_ct(moving_CT_original, fixed_CT_original, output_transfo_name):
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()
             
     """
@@ -86,7 +86,7 @@ def compute_ct_mask_similarity_withlabel(input_ct_volume, input_labelmap_filenam
         cropped_data_temp[cropped_data_temp>1] = 0   
     
         #dilate
-    	cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp, iterations = 20)).astype(np.int) #10    
+        cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp, iterations = 20)).astype(np.int) #10
         cropped_data = np.squeeze(cropped_data_temp)        
     
         ##now find boundingbox
@@ -122,7 +122,7 @@ def compute_ct_mask_similarity(input_labelmap_filename, input_ctfilename ,
     	#   iterations = 10)).astype(np.int) #10    
      #   cropped_data = np.squeeze(cropped_data_temp)  
         if (dilation_value > 0):        
-    	   cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp,\
+    	    cropped_data_temp = np.array(ndimage.binary_dilation(cropped_data_temp,\
     	       iterations = dilation_value)).astype(np.int) #10 is the last functional value   
         cropped_data = np.squeeze(cropped_data_temp)        
         print(np.shape(cropped_data)) 
@@ -150,7 +150,7 @@ def compute_edge_mask(input_mask_name, output_mask_name):
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()    
 
 
@@ -186,7 +186,7 @@ def compute_similarity_from_filenames(testing_ct_filename, \
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()
     
     print("\n\n\n In compute_similarity_from_filenames \n\n\n")
@@ -271,7 +271,7 @@ def compute_dice_with_transfo(img_fixed, img_moving, transfo):
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()
     temp_out = "/Users/rolaharmouche/Documents/Data/temp_reg.nrrd"        
     resamplecall = os.path.join(path['CIP_PATH'], "ResampleCT")    
@@ -316,7 +316,7 @@ def compute_dice_similarity_from_filenames(testing_ct_filename, \
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()
     
     print("\n\n\n In compute_dice_similarity_from_filenames \n\n\n")
@@ -408,7 +408,7 @@ def crop_ct_to_moving_mask(fixed_ct_fname, moving_mask_fname, output_ct_fname,
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()
             
     resamplecall = os.path.join(path['CIP_PATH'], "ResampleCT") 
@@ -470,7 +470,7 @@ def register_tobase_get_closest( testing_ct_filename, base_case_ct_filenames,
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()
     
     print("\n\n\n In register_tobase_get_closest \n\n\n")

@@ -66,12 +66,12 @@ class VasculaturePhenotypes(Phenotypes):
     bden = np.zeros(csa.size)
     cden = np.zeros(csa.size)
 
-    print "Number of Vessel Points "+str(vessel.GetNumberOfPoints())
+    print ("Number of Vessel Points "+str(vessel.GetNumberOfPoints()))
     
     #Compute interparticle distance
     self._dx = self.interparticle_distance()
   
-    print "DX: "+str(self._dx)
+    print ("DX: "+str(self._dx))
     
     tbv=dict()
     bv=dict()

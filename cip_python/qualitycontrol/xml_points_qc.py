@@ -2,8 +2,8 @@
 import numpy as np
 from optparse import OptionParser
 import cip_python.common as common
-from ..input_output import ImageReaderWriter
-from ..classification.get_ct_patch_from_center import Patcher
+from cip_python.input_output import ImageReaderWriter
+from cip_python.classification.get_ct_patch_from_center import Patcher
 import vtk
 import os   
 import scipy.ndimage
@@ -143,7 +143,7 @@ class xMLPointsQC:
             
         """
 
-        print "Extracting patches..."
+        print ("Extracting patches...")
         #intensity_extractor = self.exctract_case_patches( x_extent = np.int16(options.x_extent), \
         
             #y_extent=np.int16(options.y_extent), z_extent=np.int16(options.z_extent))

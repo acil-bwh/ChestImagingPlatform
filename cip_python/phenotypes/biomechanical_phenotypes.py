@@ -246,8 +246,7 @@ class BiomechanicalPhenotypes(Phenotypes):
                 assert ct.shape[0] == lm.shape[0], \
                   "Disagreement in J and label map dimension"
 
-
-	if ADI is not None:
+        if ADI is not None:
             assert len(ADI.shape) == len(lm.shape), \
               "ADI and label map are not the same dimension"
 
@@ -256,8 +255,8 @@ class BiomechanicalPhenotypes(Phenotypes):
             for i in xrange(0, dim):
                 assert ADI.shape[0] == lm.shape[0], \
                   "Disagreement in ADI and label map dimension"
-
-	if SRI is not None:
+    
+        if SRI is not None:
             assert len(SRI.shape) == len(lm.shape), \
               "SRI and label map are not the same dimension"
 
@@ -393,15 +392,15 @@ class BiomechanicalPhenotypes(Phenotypes):
         1. J Biomech. Three dimensional characterization of regional lung deformation
         """
         mask_sum = np.sum(mask)
-        print "Computing phenos for region %s and type %s"%(chest_region,chest_type)
+        print ("Computing phenos for region %s and type %s"%(chest_region,chest_type))
         if J is not None:
             J_mask=J[mask]
             hus=dict()
             hus[extended] = J[np.logical_and(mask, J < 1)]
             hus[reduced] = J[np.logical_and(mask, J > 1)]
 	    
-	    ADI_mask=ADI[mask]
-	    SRI_mask=SRI[mask]
+            ADI_mask=ADI[mask]
+            SRI_mask=SRI[mask]
 	
             for pheno_name in phenos_to_compute:
                 assert pheno_name in self.pheno_names_, \
@@ -428,11 +427,10 @@ class BiomechanicalPhenotypes(Phenotypes):
                 elif pheno_name == 'JMean_Minus1' and mask_sum > 0:
                     if hus[reduced].shape[0] > 0:
                         pheno_val = np.mean(hus[reduced])
-		elif pheno_name == 'JMean_Major1' and mask_sum > 0:
+                elif pheno_name == 'JMean_Major1' and mask_sum > 0:
                     if hus[extended].shape[0] > 0:
                         pheno_val = np.mean(hus[extended])
-
-		elif pheno_name == 'ADIMean' and mask_sum > 0:
+                elif pheno_name == 'ADIMean' and mask_sum > 0:
                     pheno_val = np.mean(ADI_mask)
                 elif pheno_name == 'ADIStd' and mask_sum > 0:
                     pheno_val = np.std(ADI_mask)
@@ -450,8 +448,7 @@ class BiomechanicalPhenotypes(Phenotypes):
                     pheno_val = np.min(ADI_mask)
                 elif pheno_name == 'ADIMax' and mask_sum > 0:
                     pheno_val = np.max(ADI_mask)
-
-		elif pheno_name == 'SRIMean' and mask_sum > 0:
+                elif pheno_name == 'SRIMean' and mask_sum > 0:
                     pheno_val = np.mean(SRI_mask)
                 elif pheno_name == 'SRIStd' and mask_sum > 0:
                     pheno_val = np.std(SRI_mask)
