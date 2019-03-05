@@ -38,7 +38,7 @@ class HistDistKNN():
         else:    
             self.classes_ = np.unique(classes)
         
-    def fit(self, X, y):
+    def fit(self, hists, dists, y):
         """Supply the training data to the classifier.
 
         Parameters
@@ -54,11 +54,6 @@ class HistDistKNN():
         y : array , shape ( N )
             Each of the 'N' values indicates the class label of the data             
         """
-
-        hists=X[:,:-1]
-        #dists=X[:,-1][:,np.newaxis]
-        dists=X[:,-1]
-
         assert hists.shape[0] == dists.shape[0] == y.shape[0], \
           "Data shape mismatch"        
           
@@ -72,14 +67,17 @@ class HistDistKNN():
         if (self.classes_ is None):
             self.classes_ = np.unique(y)
 
-    def predict(self, X):
+    def predict(self, hist, dist):
         """Predict the class label of the input data point.
 
         Parameters
         ----------
-        X : array, shape (B+1) or shape (M, B+1)
-           The first B columns are the histogram (hist) features of 'M' test samples
-           The last colums is the physical distance feature (dist)  of 'M' test samples 
+        hist : array, shape ( B ) or shape ( M, B )
+            Histogram of the test sample or histograms of 'M' test samples.
+
+        dist : float or array, shape ( M ) 
+            Physical distance of test sample to structure of interest or 
+            vector of 'M' distances for 'M' test samples.
         
         Returns
         -------
@@ -89,11 +87,6 @@ class HistDistKNN():
             multiple test samples are specified).
         """
         
-        hist=X[:,:-1]
-        #dist=X[:,-1][:,np.newaxis]
-        dist=X[:,-1]
-
-
         if len(hist.shape) == 1:
             mult_samples = False
             n_samples = 1
@@ -144,7 +137,7 @@ class HistDistKNN():
         return class_label
         
 
-    def predict_proba(self, X):
+    def predict_proba(self, hist, dist):
         """Get the class probabilities for the input data point X.
 
         Parameters
@@ -165,10 +158,6 @@ class HistDistKNN():
             as per the numpy unique command
         """
         
-        hist=X[:,:-1]
-        #dist=X[:,-1][:,np.newaxis]
-        dist=X[:,-1]
-
         num_classes = self.classes_.shape[0] #2#np.shape(self.classes_)[0]
 
         if len(hist.shape) == 1:
