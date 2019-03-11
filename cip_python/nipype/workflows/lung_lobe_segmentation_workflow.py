@@ -101,10 +101,10 @@ class LungLobeSegmentationWorkflow(Workflow):
 
         Workflow.__init__(self, 'LungLobeSegmentationWorkflow')
 
-        ct_file_name = cip_python_interfaces.realpath(ct_file_name)
-        lobe_seg_file_name = cip_python_interfaces.realpath(lobe_seg_file_name)
+        ct_file_name = os.path.realpath(ct_file_name)
+        lobe_seg_file_name = os.path.realpath(lobe_seg_file_name)
         if ilm:
-          ilm = cip_python_interfaces.realpath(ilm)
+          ilm = os.path.realpath(ilm)
 
         file_and_path = os.path.abspath(__file__)
         file_path = os.path.dirname(file_and_path)

@@ -182,12 +182,12 @@ def generate_class(module, launcher):
             if param.getElementsByTagName('description') and param.getElementsByTagName('description')[0].firstChild:
                 traitsParams["desc"] = param.getElementsByTagName('description')[0].firstChild.nodeValue.replace('"', "\\\"").replace("\n", ", ")
 
-            argsDict = {'directory': '%s', 'file': '%s', 'integer': "%d",
-                        'double': "%f", 'float': "%f", 'image': "%s",
-                        'transform': "%s", 'boolean': '',
-                        'string-enumeration': '%s', 'string': "%s",
+            argsDict = {'directory': '"%s"', 'file': '"%s"', 'integer': "%d",
+                        'double': "%f", 'float': "%f", 'image': '"%s"',
+                        'transform': '"%s"', 'boolean': '',
+                        'string-enumeration': '"%s"', 'string': '"%s"',
                         'integer-enumeration': '%s',
-                        'table': '%s', 'point': '%s', 'region': '%s', 'geometry': '%s'}
+                        'table': '"%s"', 'point': '"%s"', 'region': '"%s"', 'geometry': '"%s"'}
 
             if param.nodeName.endswith('-vector'):
                 traitsParams["argstr"] += "%s"
@@ -314,7 +314,7 @@ def parse_params(params):
     list = []
     for key, value in params.iteritems():
         if isinstance(value, str) or isinstance(value, unicode):
-            list.append('%s="%s"' % (key, value.replace('"', "'")))
+            list.append("%s='%s'" % (key, value.replace("'", "''")))
         else:
             list.append('%s=%s' % (key, value))
 
