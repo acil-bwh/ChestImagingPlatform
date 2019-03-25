@@ -24,7 +24,7 @@ IF ( WIN32 )
     input_output
     particles
     phenotypes
-    qualitycontrol
+    quality_control
     registration
     segmentation
     utils
@@ -39,7 +39,7 @@ ELSE ( )
     nipype
     particles
     phenotypes
-    qualitycontrol
+    quality_control
     registration
     segmentation
     utils
