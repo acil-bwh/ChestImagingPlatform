@@ -1,20 +1,15 @@
 from optparse import OptionParser
 from cip_python.input_output import ImageReaderWriter
-from  cip_python.qualitycontrol.qc_base import ImageOverlay
-from  cip_python.qualitycontrol.qc_base import Montage
-
-
-
+from cip_python.quality_control.qc_base import ImageOverlay
+from cip_python.quality_control.qc_base import Montage
 
 class CTQC:
     """
     General purpose class that generates CT QC images.
     """
-    
     def __init__(self):
         pass
-        
-    
+            
     def execute(self, in_ct, out_file, window_width=1100, window_level=-1024, resolution=50,
         spacing=None):
 
@@ -35,10 +30,7 @@ class CTQC:
 
         my_montage.execute([[[x_projection], [y_projection], [z_projection]]],[], \
             out_file, 0.0, 1, 3, window_width=window_width, window_level=window_level,\
-            resolution=resolution, list_of_voxel_spacing=[list_of_voxel_spacing])
-            
-
-            
+            resolution=resolution, list_of_voxel_spacing=[list_of_voxel_spacing])                        
             
 if __name__ == "__main__":
     desc = """Generates a montage of CT slices from a nrrd volume for QC purposes."""
