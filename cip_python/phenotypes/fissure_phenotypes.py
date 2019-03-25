@@ -174,7 +174,7 @@ class FissurePhenotypes(Phenotypes):
             self._rh_obb_tree = vtk.vtkOBBTree()
             self._rh_obb_tree.SetDataSet(surf_filter.GetOutput())
             self._rh_obb_tree.BuildLocator()            
-
+    
     def is_fissure(self, index, lm, fissure_type, origin, spacing, dist_tol):
         """Determines whether or not the label map index coordinate corresponds
         to fissure or not.
@@ -258,7 +258,7 @@ class FissurePhenotypes(Phenotypes):
                 return True  
 
         return False
-            
+
     def get_fissure_completeness_detail(self, surface, fissure, spacing,
         origin, completeness_type, cip_region, cip_type, tps_downsample=1):
         """Creates and returns a pandas data frame that records detailed info
