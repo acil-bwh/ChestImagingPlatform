@@ -393,9 +393,10 @@ class AnatomicStructuresManager(object):
         print ("Case {} finished".format(xml_file_path))
 
     def qc_structure_with_gt(self, case_path_or_sitk_volume, xml_file_path_pred, xml_file_path_gt,
-                             structures=None, output_folder=None, rectangle_color_pred='r', rectangle_color_gt='b',
+                             structures=None, output_folder=None, output_file_type="png",
+                             rectangle_color_pred='r', rectangle_color_gt='b',
                              rectangle_color_out_of_bounds='yellow',
-                             line_width=2, plot_externally=True):
+                             line_width=2, plot_inline=False):
         """
         Generate a 2D QC image comparing a structure with the ground truth.
         The slice will be the predicted one, and the ground truth will be projected in that slice (in a dashed line).
@@ -409,11 +410,12 @@ class AnatomicStructuresManager(object):
             structures: list/set/tuple of structure codes to be analyzed. If None, all the structures will be analyzed
             output_folder: path to the output folder where the files will be stored. If None, the figures won't be stored
                            (just plotted)
+            output_file_type: str. Extension of the saved image
             rectangle_color_pred: color for the prediction bounding box
             rectangle_color_gt: color for the ground truth bounding box
             rectangle_color_out_of_bounds: color for the out of bounds bounding box predictions
             line_width: bounding boxes width
-            plot_externally: when True, the images will be plotted externally. Otherwise, just save the figure
+            plot_inline: when True, the images will be plotted inline too. Otherwise, just save the figure
         """
         if isinstance(case_path_or_sitk_volume, sitk.Image):
             imsitk = case_path_or_sitk_volume
@@ -508,12 +510,13 @@ class AnatomicStructuresManager(object):
             if output_folder is not None:
                 # Save figure in file
                 os.makedirs(output_folder, exist_ok=True)
-                output_file = "{}/{}_{}.png".format(output_folder,
+                output_file = "{}/{}_{}.{}".format(output_folder,
                                                     os.path.basename(xml_file_path_gt).replace("_structures.xml", ""),
-                                                    str)
+                                                    str,
+                                                    output_file_type)
                 plt.savefig(output_file)
                 print(output_file, " saved")
-            if not plot_externally:
+            if not plot_inline:
                 # Close the figure
                 if output_folder is None:
                     warnings.warn("No figures will be saved or plotted. Please specify an output folder to save the figures")
