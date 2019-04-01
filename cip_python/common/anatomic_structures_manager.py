@@ -394,6 +394,7 @@ class AnatomicStructuresManager(object):
 
     def qc_structure_with_gt(self, case_path_or_sitk_volume, xml_file_path_pred, xml_file_path_gt,
                              structures=None, output_folder=None, output_file_type="png",
+                             fig_size=(10,10),
                              rectangle_color_pred='r', rectangle_color_gt='b',
                              rectangle_color_out_of_bounds='yellow',
                              line_width=2, plot_inline=False):
@@ -411,6 +412,7 @@ class AnatomicStructuresManager(object):
             output_folder: path to the output folder where the files will be stored. If None, the figures won't be stored
                            (just plotted)
             output_file_type: str. Extension of the saved image
+            fig_size: 2-int tuple: Fig size (default: (10,10))
             rectangle_color_pred: color for the prediction bounding box
             rectangle_color_gt: color for the ground truth bounding box
             rectangle_color_out_of_bounds: color for the out of bounds bounding box predictions
@@ -483,8 +485,12 @@ class AnatomicStructuresManager(object):
             else:
                 raise Exception("Plane could not be inferred")
 
-            fig, axis = plt.subplots(nrows=1)
-            plt.imshow(slice_img, cmap='gray')
+            # Plot image
+            fig = plt.figure(figsize=fig_size)
+            axis = plt.Axes(fig, [0., 0., 1., 1.])
+            axis.set_axis_off()
+            fig.add_axes(axis)
+            axis.imshow(slice_img, cmap='gray')
 
             # Prediction
             coord1 = start
@@ -503,9 +509,6 @@ class AnatomicStructuresManager(object):
                                          facecolor='none',
                                          linestyle='dashed')
                 axis.add_patch(rect)
-
-            plt.axis('off')
-            plt.tight_layout()
 
             if output_folder is not None:
                 # Save figure in file
