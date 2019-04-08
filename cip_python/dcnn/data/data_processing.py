@@ -1,5 +1,8 @@
 import numpy as np
 import SimpleITK as sitk
+from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage.interpolation import map_coordinates
+import scipy.ndimage.interpolation as scipy_interpolation
 
 class DataProcessing(object):
     @staticmethod
@@ -22,6 +25,22 @@ class DataProcessing(object):
         resampler.SetOutputSpacing(output_spacing)
         resampler.SetOutputPixelType(output_type)
         return resampler.Execute(image), output_spacing
+
+    @staticmethod
+    def scale_images(img, output_size):
+        """
+        Scale an array that represents one or more images into a shape
+        :param img: numpy array. It may contain one or multiple images
+        :param output_size: tuple of int. Shape expected (including possibly the number of images)
+        :return: numpy array rescaled
+        """
+        img_size = np.array(img.shape)
+        if not np.array_equal(output_size, img_size):
+            # The shape is the volume is different than the one expected by the network. We need to resize
+            scale_factors = output_size / img_size
+            # Reduce the volume to fit in the desired size
+            img = scipy_interpolation.zoom(img, scale_factors)
+        return img
 
     @staticmethod
     def standardization(image_array, mean_value=-600, std_value=1.0, out=None):
@@ -114,8 +133,6 @@ class DataProcessing(object):
         :param cval: float
         :return: numpy array. Image transformed
         """
-        from scipy.ndimage.filters import gaussian_filter
-        from scipy.ndimage.interpolation import map_coordinates
         random_state = np.random.RandomState(None)
         shape = image.shape
         dx = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma, mode=fill_mode, cval=cval) * alpha

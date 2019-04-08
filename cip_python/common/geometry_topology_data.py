@@ -15,6 +15,7 @@ import platform
 import time
 import numpy as np
 import warnings
+from future.utils import iteritems
 
 class GeometryTopologyData(object):
     # Coordinate System Constants
@@ -105,6 +106,28 @@ class GeometryTopologyData(object):
             structure.user_name = os.path.split(os.path.expanduser('~'))[-1]
         if not structure.machine_name:
             structure.machine_name = platform.node()
+
+    def equals(self, other):
+        """
+        Compare contents of two GeometryTopologyData objects
+        :param other: GeometryTopologyData object
+        :return: bool
+        """
+        if self.coordinate_system != other.coordinate_system:
+            return False
+
+        for m, o in zip((self.points, self.bounding_boxes), (other.points, other.bounding_boxes)):
+            my_strs = dict((struct.id, struct) for struct in m)
+            other_strs = dict((struct.id, struct) for struct in o)
+
+            if my_strs.keys() != other_strs.keys():
+                return False
+            for key, struct in iteritems(my_strs):
+                if struct.get_hash() != other_strs[key].get_hash():
+                    return False
+        return True
+
+
 
     def update_seed(self):
         """
@@ -446,7 +469,7 @@ class Structure(object):
         """ Get a unique identifier for this structure (string encoding all the fields)
         @return:
         """
-        return "%03d_%03d_%03d" % (self.chest_region, self.chest_type, self.feature_type)
+        return "%03d_%03d_%03d_%s" % (self.chest_region, self.chest_type, self.feature_type, self.description)
 
     @staticmethod
     def from_xml_node(xml_node):

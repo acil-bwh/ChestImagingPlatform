@@ -27,7 +27,7 @@ class Engine(object):
     Class that controls the global processes of the CNN (training, validating, testing).
     '''
 
-    def __init__(self, parameters_dict, output_folder=None):
+    def __init__(self, parameters_dict=None, output_folder=None):
         '''
         Constructor
         Args:
@@ -43,7 +43,7 @@ class Engine(object):
             os.makedirs(self.output_folder)
         logging.info("Results will be stored in " + self.output_folder)
 
-        self.model = None
+        self.network = None
         self.parameters_dict = parameters_dict
         self.train_dataset_manager = None
 
@@ -288,11 +288,11 @@ class Engine(object):
         """
         raise NotImplementedError("This method should be implemented in a child class")
 
-    def build_network(self, parameters_dict=None, compile_model=True, h5_file_path=None):
+    def build_network(self, parameters_dict, compile_model=True):
         """
         Build a Network object either from scratch or from a previously exisiting H5 file.
-        It will initialize the self.network and self.model variables
-        :param parameters_dict: dictionary of parameters to build the network. When specified, it has priority
+        Generally, it will initialize the self.network variable
+        :param model_info: dictionary of parameters to build the network. When specified, it has priority
                                 over possible parameters that are stored in the H5
         :param compile_model: bool. Compile the model for training purposes. In this case we will need loss, optimizer, etc.
         :param h5_file_path: str. Path to an existing model stored in an H5 file
@@ -483,9 +483,11 @@ class Engine(object):
             pickle.dump(training_history.history, f)
 
 
-    def predict(self, input_data, model_folder):
-        # TODO
-        raise NotImplementedError()
+    # def predict(self, input_data, model_folder):
+    #     raise NotImplementedError()
+
+    def predict(self, input_info, network_info, output_info, **additional_params):
+        raise NotImplementedError("This method should be implemented in a child class!")
 
 
 ## THIS CODE IS MEANT BE USED ONLY AS AN EXAMPLE!!
