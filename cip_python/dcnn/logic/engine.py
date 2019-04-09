@@ -32,16 +32,13 @@ class Engine(object):
         Constructor
         Args:
             parameters_dict: dictionary of parameters
-            output_folder: all the output folder will be created here (log, models, training files, etc.)
+            output_folder: all the output files will be created here (log, models, training files, etc.)
         '''
-        if not output_folder:
-            # Generate a temp folder
-            self.output_folder = os.path.join(tempfile.gettempdir(), Utils.now())
-        else:
-            self.output_folder = output_folder
-        if not os.path.isdir(self.output_folder):
-            os.makedirs(self.output_folder)
-        logging.info("Results will be stored in " + self.output_folder)
+        self.output_folder = output_folder
+        if output_folder:
+            if not os.path.isdir(self.output_folder):
+                os.makedirs(self.output_folder)
+            logging.info("Results will be stored in " + self.output_folder)
 
         self.network = None
         self.parameters_dict = parameters_dict
