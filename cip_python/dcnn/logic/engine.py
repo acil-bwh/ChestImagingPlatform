@@ -15,9 +15,7 @@ import re
 import h5py
 
 import tensorflow as tf
-import tensorflow.keras.callbacks as callbacks
-import tensorflow.keras.backend as K
-import tensorflow.keras.optimizers as optimizers
+from tensorflow.python.keras import backend as K, callbacks, optimizers
 
 from cip_python.dcnn.logic.utils import Utils
 from cip_python.dcnn.data import H5Manager
