@@ -256,13 +256,13 @@ class AnatomicStructuresManager(object):
         for i in range(sitk_volume.GetSize()[2]):
             sitk.WriteImage(sitk_volume[:, :, i:i + 1], "{}/{:03}.nrrd".format(p, i))
 
-    def get_cropped_structure(self, case_path_or_sitk_volume, xml_file_path, region, plane,
+    def get_cropped_structure(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane,
                               extra_margin=None, padding_constant_value=0):
         """
         Get a simpleitk volume with the bounding box content of the specified region-plane in a CT volume.
         Args:
             case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
-            xml_file_path: Full path to a GeometryTopologyObject XML file
+            xml_file_path_or_GTD_object: Full path to a GeometryTopologyObject XML file or the object itself
             region: CIP ChestRegion value
             plane: CIP Plane value
             extra_margin: 3-tuple that contains the extra margin (in pixels) for each dimension where the user wants
@@ -271,17 +271,20 @@ class AnatomicStructuresManager(object):
                            When -1 is used, all the slices in that plane will be used
             padding_constant_value: value used in case the result volume has to be padded because of the position of
                                     the structure and the provided spacing
-
         Returns:
-            Sitk volume
+            Sitk volume with the cropped structure
         """
-        if extra_margin is None:
-            extra_margin = [0, 0, 0]
-        gtd = GeometryTopologyData.from_xml_file(xml_file_path)
+        gtd = GeometryTopologyData.from_xml_file(xml_file_path_or_GTD_object) if isinstance(xml_file_path_or_GTD_object, str) \
+              else xml_file_path_or_GTD_object
+
         if isinstance(case_path_or_sitk_volume, sitk.Image):
             sitk_volume = case_path_or_sitk_volume
         else:
             sitk_volume = ImageReaderWriter().read(case_path_or_sitk_volume)
+
+        if extra_margin is None:
+            extra_margin = [0, 0, 0]
+
         pad_filter = sitk.ConstantPadImageFilter()
         structure_code = ChestConventions.GetChestRegionName(region) + ChestConventions.GetPlaneName(plane)
         for bb in gtd.bounding_boxes:

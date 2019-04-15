@@ -1,6 +1,9 @@
 import SimpleITK as sitk
 import numpy as np
 
+from . import VolumeFile
+
+
 class ImageReaderWriter:
     """
     Interface to the ImageReaderWriter program
@@ -58,6 +61,19 @@ class ImageReaderWriter:
           metainfo[key]=sitk_image.GetMetaData(key)
         
         return np_array,metainfo
+
+    def read_in_VolumeFile(self, file_name):
+        """
+        Read a SimpleITK image and encapsulate the information in a VolumeFile object
+        :param file_name: str. Full path to the file that contains the image
+        :return: VolumeFile object
+        """
+        data, metadata = self.read_in_numpy(file_name)
+        volume_file = VolumeFile(file_name, data,  metadata['space origin'],
+                                 metadata['spacing'],  metadata['space directions'],
+                                 metadata)
+        return volume_file
+
 
     def write(self,sitk_image,file_name):
         """Write SimpleITK image.
