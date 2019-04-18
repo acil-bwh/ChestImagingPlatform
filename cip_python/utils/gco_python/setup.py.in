@@ -14,7 +14,7 @@ os.environ["CC"] = "/usr/bin/cc"
 os.environ["CXX"] = "/usr/bin/c++"
 #os.environ["MACOSX_DEPLOYMENT_TARGET"] = "@CMAKE_OSX_DEPLOYMENT_TARGET@"
 
-compile_extra_arg = []
+compile_extra_args = []
 link_extra_args = []
 if platform.system() == "Windows":
     compile_extra_args = ["/std:c++latest", "/EHsc"]
