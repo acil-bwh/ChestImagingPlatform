@@ -271,7 +271,8 @@ class Engine(object):
     ##########################################################################
     # METHODS THAT SHOULD BE IMPLEMENTED IN CHILD CLASSES
     ##########################################################################
-    def format_data_to_network(self, xs, ys, network, intensity_checking=False):
+    @classmethod
+    def format_data_to_network(cls, xs, ys, network, intensity_checking=False):
         """
         Get a list of inputs/outputs and scale the sizes (if needed) and intensities to the format
         expected by the network.

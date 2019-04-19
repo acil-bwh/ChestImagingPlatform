@@ -1,7 +1,6 @@
 import os
 
 from tensorflow.python.keras import backend as K
-import tensorflow.keras.models as kmodels
 
 class Network(object):
     def __init__(self, xs_sizes, ys_sizes):
@@ -49,7 +48,7 @@ class Network(object):
         if compile_model:
             assert optimizer is not None, "An optimizer is needed to compile the model"
             assert loss_function is not None, "At least a loss function is needed to compile the model"
-            if loss_weights is None:
+            if loss_weights is None and isinstance(loss_function, list):
                 loss_weights = [1.0] * len(loss_function)
             self.model.compile(optimizer=optimizer, loss=loss_function, loss_weights=loss_weights,
                                metrics=additional_metrics)

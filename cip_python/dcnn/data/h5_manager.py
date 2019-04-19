@@ -335,9 +335,12 @@ class H5Manager(object):
         """
         Get a tuple for the next batch_size images and labels
         :param batch_size: int
-        :param is_validation: bool. Get the batch from the validation cases
+        :param batch_type: int. One of the values in (H5Manager.TRAIN, H5Manager.VALIDATION, H5Manager.TEST)
         :return: Tuple of (batch_size x images, batch_size x labels)
         """
+        assert batch_type in (self.TRAIN, self.VALIDATION, self.TEST), \
+            "Wrong batch type. Choose one from H5Manager.TRAIN, H5Manager.VALIDATION, H5Manager.TEST"
+
         # Get the maximum number of data points that could be selected in this batch
         if batch_type == self.TRAIN:
             # remaining_data_points = self.num_train_points - self._train_ix_pos_
