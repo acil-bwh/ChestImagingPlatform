@@ -318,14 +318,14 @@ class AnatomicStructuresManager(object):
                 return im
 
         # If the execution reaches this line, the structure was not found
-        raise Exception("Structure {} not found in {}".format(structure_code, xml_file_path))
+        raise Exception("Structure {} not found".format(structure_code))
 
-    def get_full_slice(self, case_path_or_sitk_volume, xml_file_path, region, plane):
+    def get_full_slice(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane):
         """
         Extract a sitk 3D volume that contains the structure provided
         Args:
             case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
-            xml_file_path: Full path to a GeometryTopologyObject XML file
+            xml_file_path_or_GTD_object: Full path to a GeometryTopologyObject XML file or the object itself
             region: CIP ChestRegion
             plane: CIP Plane
         Returns:
@@ -337,8 +337,11 @@ class AnatomicStructuresManager(object):
             margin = [-1, 0, -1]
         elif plane == Plane.AXIAL:
             margin = [-1, -1, 0]
+        else:
+            raise Exception("Wrong plane: {}".format(plane))
 
-        return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path, region, plane, extra_margin=margin)
+        return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane,
+                                          extra_margin=margin)
 
     def generate_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, structures=None,
                            rectangle_color='r', line_width=3):
