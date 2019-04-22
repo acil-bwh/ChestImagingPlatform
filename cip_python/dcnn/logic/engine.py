@@ -6,12 +6,11 @@ import argparse
 import datetime
 import json
 import pickle
-import tempfile
 import time
 import warnings
 import math
 import numpy as np
-import re
+import sys
 import h5py
 
 import tensorflow as tf
@@ -82,6 +81,35 @@ class Engine(object):
 
         model.summary(print_fn=print_fn)
         f.close()
+
+    def add_environment_info_to_parameters_dict(self, parameters_dict):
+        """
+        Add git tag, python version, etc., to a dictionary of parameters in the current environment
+        :param parameters_dict:
+        :return:
+        """
+        try:
+            parameters_dict['python_version'] = str(sys.version)
+            parameters_dict['tensorflow_version'] = tf.__version__
+            giturl = Utils.get_git_url()
+            parameters_dict['git_tag'] = giturl[0]
+            parameters_dict['git_tag_is_dirty'] = giturl[1]
+        except Exception as ex:
+            logging.error(ex)
+
+    def save_parameters_file(self, parameters_dict=None, file_path=None):
+        """
+        Save dictionary of parameters to a file
+        :param parameters_dict: dictionary of parameters. Default: current parameters
+        :param file_path: str. Path to the dictionary of parameters. Default: standard parameters file
+        """
+        if parameters_dict is None:
+            parameters_dict = self.parameters_dict
+        if file_path is None:
+            file_path = self.parameters_file_path
+        with open(file_path, 'wb') as f:
+            f.write(json.dumps(parameters_dict, indent=4, sort_keys=False).encode())
+            logging.info('Parameters saved to {}'.format(file_path))
 
     def save_parameters_to_model_h5(self, parameters_dict, h5_file_path):
         """
@@ -284,14 +312,13 @@ class Engine(object):
         """
         raise NotImplementedError("This method should be implemented in a child class")
 
-    def build_network(self, parameters_dict, compile_model=True):
+    def build_network(self, parameters_dict=None, compile_model=True):
         """
-        Build a Network object either from scratch or from a previously exisiting H5 file.
+        Build a Network object using a dictionary of parameters (default: self.parameters_dict)
         Generally, it will initialize the self.network variable
-        :param model_info: dictionary of parameters to build the network. When specified, it has priority
+        :param parameters_dict: dictionary of parameters to build the network. When specified, it has priority
                                 over possible parameters that are stored in the H5
         :param compile_model: bool. Compile the model for training purposes. In this case we will need loss, optimizer, etc.
-        :param h5_file_path: str. Path to an existing model stored in an H5 file
         :return: Network object
         """
         raise NotImplementedError("This method should be implemented in a child class")

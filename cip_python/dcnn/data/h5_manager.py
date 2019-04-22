@@ -459,4 +459,11 @@ class H5Manager(object):
         """
         return math.ceil(float(self.num_test_points / self.batch_size))
 
+    def reset_validation_index_pos(self):
+        """
+        Set the validation index position to the first element
+        :return:
+        """
+        self._validation_ix_pos_ = 0
+
 
