@@ -168,4 +168,3 @@ def generate_colortable_file():
             color = common.ChestConventions.GetColorFromChestRegionChestType(rkey, tkey)
             output += "{} {}-{} {} {} {} 255\n".format(code, rvalue[1], tvalue[1], int(color[0] * 255), int(color[1] * 255),
                                           int(color[2] * 255))
-    print output
