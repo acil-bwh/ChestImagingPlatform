@@ -33,19 +33,19 @@ parser.add_argument('--out_python_bin', dest='out_python_bin', metavar='<string>
 op =  parser.parse_args()
 
 if op.template_cxx_path is not None and osp.isfile(op.template_cxx_path):
-    with open(op.template_cxx_path, "rb") as f:
+    with open(op.template_cxx_path, "r") as f:
         template_cxx = f.read()
 else:
     template_cxx = ""
 
 if op.template_python_path is not None and osp.isfile(op.template_python_path):
-    with open(op.template_python_path, "rb") as f:
+    with open(op.template_python_path, "r") as f:
         template_python = f.read()
 else:
     template_python = ""
 
 # Read the XML
-with open(op.xml_conventions_file, "rb") as f:
+with open(op.xml_conventions_file, "r") as f:
     xml_root = et.fromstring(f.read())
 
 replacements = (
@@ -140,13 +140,13 @@ template_cxx = template_cxx.replace("//##STRUCTURES##", replacement_text_cxx)
 
 # Write output result files
 if op.output_path_cxx:
-    with open(op.output_path_cxx, "wb") as f:
+    with open(op.output_path_cxx, "w") as f:
         f.write(template_cxx)
 if op.out_python_source:
-    with open(op.out_python_source, "wb") as f:
+    with open(op.out_python_source, "w") as f:
         f.write(template_python)
 if op.out_python_bin:
-    with open(op.out_python_bin, "wb") as f:
+    with open(op.out_python_bin, "w") as f:
         f.write(template_python)
 
 print("Convention Files generated succesfully.")
