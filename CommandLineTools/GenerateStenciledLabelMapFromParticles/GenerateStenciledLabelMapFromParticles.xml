@@ -143,6 +143,14 @@ equations relating particle scale and CT point spread function sigma (set using 
 dnn radius. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \
 equations relating particle dnn_radius and CT point spread function sigma (set using the -ctSigma flag).]]></description>
       </boolean>
+      <string>
+          <name>dnnRadiusName</name>
+          <label>DNN radius name</label>
+          <channel>input</channel>
+          <longflag>dnn_radius_name</longflag>
+          <description><![CDATA[Name of the particles array containing dnn radius information. If not specified, \
+no information will be used for generating the stencil.]]></description>
+      </string>
     </parameters>
 
 </executable>
