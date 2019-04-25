@@ -158,7 +158,14 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
         }
       if ( this->ScaleStencilPatternByParticleDNNRadius )
         {
-          double radius = this->ParticlesData->GetPointData()->GetArray("dnn_radius")->GetTuple(i)[0];
+          if ( this->ChestParticleType == cip::AIRWAY )
+          {
+            double radius = this->ParticlesData->GetPointData()->GetArray("dnn_lumen_radius")->GetTuple(i)[0];
+          }
+          else
+          {
+            double radius = this->ParticlesData->GetPointData()->GetArray("dnn_radius")->GetTuple(i)[0];
+          }
           double tempRadius = vcl_sqrt(2.0)*vcl_sqrt( pow( radius, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
 
           this->Stencil->SetRadius( tempRadius );
