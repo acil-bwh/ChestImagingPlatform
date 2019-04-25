@@ -10,10 +10,10 @@ class DataProcessing(object):
         """
         Image resampling using ITK
         :param image: simpleITK image
-        :param output_size: int-tuple. Output size
+        :param output_size: numpy array. Output size
         :param output_type: output data type
         :param interpolator: simpleITK interpolator (default: BSpline)
-        :return: simpleITK image
+        :return: tuple with simpleITK image and array with output spacing
         """
         factor = np.asarray(image.GetSize()) / output_size.astype(np.float32)
         output_spacing = np.asarray(image.GetSpacing()) * factor
@@ -27,19 +27,24 @@ class DataProcessing(object):
         return resampler.Execute(image), output_spacing
 
     @staticmethod
-    def scale_images(img, output_size):
+    def scale_images(img, output_size, return_scale_factors=False):
         """
         Scale an array that represents one or more images into a shape
         :param img: numpy array. It may contain one or multiple images
         :param output_size: tuple of int. Shape expected (including possibly the number of images)
-        :return: numpy array rescaled
+        :param return_scale_factors: bool. If true, the result will be a tuple whose second values are the factors that
+                                     were needed to downsample the images
+        :return: numpy array rescaled or tuple with (array, factors)
         """
         img_size = np.array(img.shape)
+        scale_factors = None
         if not np.array_equal(output_size, img_size):
             # The shape is the volume is different than the one expected by the network. We need to resize
             scale_factors = output_size / img_size
             # Reduce the volume to fit in the desired size
             img = scipy_interpolation.zoom(img, scale_factors)
+        if return_scale_factors:
+            return img, scale_factors
         return img
 
     @staticmethod

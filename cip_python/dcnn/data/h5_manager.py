@@ -261,7 +261,7 @@ class H5Manager(object):
                 "- Manual asignation of 'train_ixs' variable"
 
         with self.lock:
-            print("\n\n######## New Dataset epoch () ###########".format(self._num_epoch_ + 1))
+            print("\n\n######## New Dataset epoch ({}) ###########".format(self._num_epoch_ + 1))
             t2 = time.time()
             if self.epoch_begin is not None:
                 total_seconds = t2 - self.epoch_begin

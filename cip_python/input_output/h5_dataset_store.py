@@ -53,7 +53,7 @@ class Axis(object):
     def new_index(cls, size_, name="index", description="Main index"):
         """
         Create a new axis of type index
-        :param size_: int. Number of elems in this axis
+        :param size_: int. Number of elems in this axis (equivalent to "batch_size")
         :param name: str. name of this axis. Default: "index"
         :param description: str. Description of this axis. Default: "Main index"
         :return: Axis object of type index.
@@ -99,7 +99,7 @@ class Axis(object):
         if not self.__class__.is_physical_axis(self.kind) and not self.kind == Axis.TYPE_IX:
             # Check that each position in the axis has a name/description
             assert len(self.__splitted_axis_names__) == len(self.__splitted_axis_descriptions__) == self.__size__, \
-                "I need the 'splitted_axis_names' and 'splitted_axis_description' tuples, please!"
+                "I need the 'splitted_axis_names' and 'splitted_axis_description' tuples for the axis '{}', please!".format(self.name)
 
 
     @classmethod
@@ -152,7 +152,8 @@ class H5DatasetStore(object):
             h5.attrs['keys_description'] = keys_description
 
     def create_ndarray(self, name, general_description, dtype, axes,
-                       enable_chunks=True, chunks=None, enable_max_shape=True):
+                       enable_chunks=True, chunks=None, enable_max_shape=True,
+                       compression_type='gzip', compression_level=5):
         """
         Create a 'DATA' dataset
         :param name: str. Name of the dataset
@@ -162,6 +163,9 @@ class H5DatasetStore(object):
         :param enable_chunks: bool. Enable the dataset chunks
         :param chunks: int-tuple. Dataset chunks (typically one element unless otherwise specified)
         :param enable_max_shape: bool. Allow the dataset unlimited growth in the first axis
+        :param compression_type: str. Type of compression. Default: gzip (level 5).
+                            More info: http://docs.h5py.org/en/stable/high/dataset.html#filter-pipeline
+        :param compression_level: int. Level of compression. See h5py docs for more info
         :return: H5 Dataset
         """
         assert len(axes) > 0, "I needed a tuple/list of Axis objects!"
@@ -173,7 +177,8 @@ class H5DatasetStore(object):
         # Atomic dataset creation with corresponding metadata
         with h5py.File(self.h5_file_name, 'r+') as h5:
             ds = self.__create_dataset__(h5, self.DS_NDARRAY, name, general_description, dtype, shape,
-                                         enable_chunks, chunks, enable_max_shape)
+                                         enable_chunks, chunks, enable_max_shape,
+                                         compression_type, compression_level)
             # Save attributes
             ds.attrs['axes_name'] = ";".join(ax.name for ax in axes)
             ds.attrs['axes_description'] = ";".join(ax.description for ax in axes)
@@ -189,7 +194,8 @@ class H5DatasetStore(object):
             spacing_ds_name = name + ".spacing"
             ds.attrs['spacing_dataset'] = spacing_ds_name
             ds_spacing = self.__create_dataset__(h5, self.DS_PROPERTY, spacing_ds_name, "spacing dataset", np.float32,
-                                                 physical_shape, enable_chunks=False, enable_max_shape=enable_max_shape)
+                                                 physical_shape, enable_chunks=False, enable_max_shape=enable_max_shape,
+                                                 compression_type=compression_type, compression_level=compression_level)
             ds_spacing.attrs['axes_name'] = ";".join("{}_spacing".format(ax.name) for ax in axes)
 
             origin_ds_name = name + ".origin"
@@ -210,7 +216,8 @@ class H5DatasetStore(object):
                 ds.attrs["table_ix_col_descriptions_{}".format(ax.name)] = ";".join(ax.splitted_axis_descriptions)
 
     def create_table(self, name, general_description, columns_names, dtype, shape,
-                     enable_chunks=False, chunks=None, enable_max_shape=True):
+                     enable_chunks=False, chunks=None, enable_max_shape=True,
+                     compression_type=None, compression_level=0):
         """
         Create a 'TABLE' dataset
         :param name: str. Name of the dataset
@@ -221,6 +228,9 @@ class H5DatasetStore(object):
         :param enable_chunks: bool. Enable the dataset chunks
         :param chunks: int-tuple. Dataset chunks (typically one element unless otherwise specified)
         :param enable_max_shape: bool. Allow the dataset unlimited growth in the first axis
+        :param compression_type: str. Type of compression . Default: No compression.
+                            More info: http://docs.h5py.org/en/stable/high/dataset.html#filter-pipeline
+        :param compression_level: int. Level of compression. See h5py docs for more info
         :return: H5 Dataset
         """
         # Preconditions
@@ -228,7 +238,8 @@ class H5DatasetStore(object):
 
         with h5py.File(self.h5_file_name, 'r+') as h5:
             ds = self.__create_dataset__(h5, self.DS_TABLE, name, general_description, dtype, shape,
-                                         enable_chunks=enable_chunks, chunks=chunks, enable_max_shape=enable_max_shape)
+                                         enable_chunks=enable_chunks, chunks=chunks, enable_max_shape=enable_max_shape,
+                                         compression_type=compression_type, compression_level=compression_level)
             ds.attrs['columns_names'] = ";".join(columns_names)
 
             key_ds_name = name + ".key"
@@ -559,7 +570,8 @@ class H5DatasetStore(object):
     #####################################
 
     def __create_dataset__(self, h5, ds_kind, name, description, dtype, shape,
-                           enable_chunks=True, chunks=None, enable_max_shape=True):
+                           enable_chunks=True, chunks=None, enable_max_shape=True,
+                           compression_type="gzip", compression_level=5):
         """
         Create a dataset in the H5File. This method should not be called directly (use the public methods instead)
         :param h5: h5 File handler
@@ -571,17 +583,27 @@ class H5DatasetStore(object):
         :param enable_chunks: bool. Set dataset chunks (typically one data point unless 'chunks' argument contains a value)
         :param chunks: int-tuple. Dataset chunks (typically one element unless otherwise specified)
         :param enable_max_shape: bool. Allow the dataset unlimited growth (in the first dimension)
+         :param compression_type: str. Type of compression. Default: gzip (level 5).
+                            More info: http://docs.h5py.org/en/stable/high/dataset.html#filter-pipeline
+        :param compression_level: int. Level of compression. See h5py docs for more info
         :return: H5 Dataset
         """
-        if not enable_chunks:
-            chunks = None
-        elif chunks is None:
-            # Default chunks
-            chunks = (1,) + shape[1:]
-        if enable_max_shape:
-            ds = h5.create_dataset(name, dtype=dtype, shape=shape, chunks=chunks, maxshape=(None,)+shape[1:])
-        else:
-            ds = h5.create_dataset(name, dtype=dtype, shape=shape, chunks=chunks)
+        args = {
+            'maxshape': (None,) + shape[1:]
+        }
+
+        if enable_chunks:
+            if chunks is None:
+                # Default chunks
+                chunks = (1,) + shape[1:]
+            args['chunks'] = chunks
+
+        assert compression_type in (None, "gzip", "lzf"), "Allowed compression types: None (no compression), gzip, lzf"
+        if compression_type is not None:
+            args['compression'] = compression_type
+            args['compression_opts'] = compression_level
+
+        ds = h5.create_dataset(name, dtype=dtype, shape=shape, **args)
 
         ds.attrs['kind'] = ds_kind
         ds.attrs['description'] = description
@@ -606,7 +628,8 @@ class H5DatasetStore(object):
         key_names = self.get_key_names()
         n_keys = len(key_names)
         ds = self.__create_dataset__(h5, self.DS_KEY, name, self.get_keys_description(), dt, (num_elems, n_keys),
-                                     enable_chunks=enable_chunks, chunks=chunks, enable_max_shape=enable_max_shape)
+                                     enable_chunks=enable_chunks, chunks=chunks, enable_max_shape=enable_max_shape,
+                                     compression_type=None)
         return ds
 
     def __validate_ndarray_structure__(self, h5, ds_name):
