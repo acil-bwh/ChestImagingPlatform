@@ -136,7 +136,7 @@ class FissurePhenotypes(Phenotypes):
         alpha : float, optional
             Will be retrieved from the input polydata (irad FieldDataArray)
             unless speficied. If the irad array does not exist, and if no
-            value is passed, a default value of 5.0 will be used. This value
+            value is passed, a default value of 1.5 will be used. This value
             relates to how closely packed the fissure points are that define
             the surface. The larger the value used, the farther apart two
             points can be and still be considered to represent a continuous,
@@ -149,11 +149,11 @@ class FissurePhenotypes(Phenotypes):
         if alpha is None:
             irad_arr = poly.GetFieldData().GetAbstractArray('irad')
             if irad_arr is not None:
-                alpha = 3*irad_arr.GetTuple(0)[0]
+                alpha = irad_arr.GetTuple(0)[0]
             else:
-                alpha = 5.0
+                alpha = 1.5
                 
-        delaunay = vtk.vtkDelaunay3D()
+        delaunay = vtk.vtkDelaunay2D()
         delaunay.SetInputData(poly);
         delaunay.SetAlpha(alpha)
         delaunay.Update()
@@ -439,43 +439,13 @@ class FissurePhenotypes(Phenotypes):
 
         dist_tol = 100.0
         
-        # Set up fissure surfaces if specified with polydata. Note that we need
-        # to create new polydata that has some "girth" to it. Otherwise, when
-        # we create the oriented bounding boxes (OBB), we can get errors when
-        # the covariance matrix is computed due to numerical instability.
+        # Set up fissure surfaces if specified with polydata.
         if lop_poly is not None:
-            lop_pts = lop_poly.GetPoints()
-            for i in xrange(0, lop_poly.GetNumberOfPoints()):
-                pt = np.array(lop_poly.GetPoint(i))
-                pt[2] += spacing[2]
-                lop_pts.InsertNextPoint(pt)
-                
-            new_lop_poly = vtk.vtkPolyData()
-            new_lop_poly.SetPoints(lop_pts)
-            
-            self.init_fissure_surface(new_lop_poly, 'left_oblique', alpha)
+            self.init_fissure_surface(lop_poly, 'left_oblique', alpha)            
         if rop_poly is not None:
-            rop_pts = rop_poly.GetPoints()
-            for i in xrange(0, rop_poly.GetNumberOfPoints()):
-                pt = np.array(rop_poly.GetPoint(i))
-                pt[2] += spacing[2]
-                rop_pts.InsertNextPoint(pt)
-                
-            new_rop_poly = vtk.vtkPolyData()
-            new_rop_poly.SetPoints(rop_pts)
-                        
-            self.init_fissure_surface(new_rop_poly, 'right_oblique', alpha)
+            self.init_fissure_surface(rop_poly, 'right_oblique', alpha)
         if rhp_poly is not None:
-            rhp_pts = rhp_poly.GetPoints()
-            for i in xrange(0, rhp_poly.GetNumberOfPoints()):
-                pt = np.array(rhp_poly.GetPoint(i))
-                pt[2] += spacing[2]
-                rhp_pts.InsertNextPoint(pt)
-                
-            new_rhp_poly = vtk.vtkPolyData()
-            new_rhp_poly.SetPoints(rhp_pts)
-            
-            self.init_fissure_surface(new_rhp_poly, 'right_horizontal', alpha)
+            self.init_fissure_surface(rhp_poly, 'right_horizontal', alpha)
 
         nonzero_domain = np.where(np.sum(lm > 0, 2) > 0)
         ro_surface = []
