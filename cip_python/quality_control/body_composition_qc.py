@@ -133,11 +133,11 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     image_io = ImageReaderWriter()
-    print "Reading CT..."
+    print ("Reading CT...")
     ct_array, ct_header = image_io.read_in_numpy(options.in_ct) 
     
     body_composition_array = None
-    print "Reading partial lung labelmap..."
+    print ("Reading partial lung labelmap...")
     if(options.in_body_composition):
         body_composition_array, body_composition_header = image_io.read_in_numpy(options.in_body_composition) 
             
