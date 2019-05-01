@@ -103,6 +103,10 @@ public:
   {
       ScaleStencilPatternByParticleDNNRadius = dnn_radius;
   }
+  void SetDNNRadiusName( std::string dnn_radius_name )
+  {
+    DNNRadiusName = dnn_radius_name;
+  }
 
 protected:
   void UpdateLabelMapRegion( vtkIdType );
@@ -125,6 +129,7 @@ private:
 
   bool   ScaleStencilPatternByParticleScale;
   bool   ScaleStencilPatternByParticleDNNRadius;
+  std::string DNNRadiusName;
   double CTPointSpreadFunctionSigma;
 
   vtkSmartPointer< vtkPolyData > ParticlesData;

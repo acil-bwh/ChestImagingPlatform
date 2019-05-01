@@ -112,5 +112,9 @@ class MetricsManager(object):
                 (1 - alpha) * K.pow(pt_0, gamma) * K.log(1. - pt_0))
         return _focal_loss_
 
+    @classmethod
+    def categorical_crossentropy_after_softmax(cls, y_true, y_pred):
+        return K.categorical_crossentropy(y_true, y_pred, from_logits=True)
+
 
 
