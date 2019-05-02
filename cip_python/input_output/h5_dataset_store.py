@@ -3,6 +3,8 @@ import datetime
 import h5py
 import numpy as np
 import traceback
+import warnings
+
 
 class Axis(object):
     #####################################
@@ -609,14 +611,20 @@ class H5DatasetStore(object):
         """
         args = {}
 
-        if enable_max_shape:
-            args['maxshape'] = (None,) + shape[1:]
+        if 0 in shape:
+            # Special case. It may happen in spacing/origing datasets
+            warnings.warn("The dataset '{}' has a 0 size in one of its axis ({}). chunks and max_shape will be disabled")
+            args['maxshape'] = args['chunks'] = None
+        else:
+            if enable_max_shape:
+                args['maxshape'] = (None,) + shape[1:]
+                assert enable_chunks, "If enable_max_shape is True, enable_chunks must be True too!"
 
-        if enable_chunks:
-            if chunks is None:
-                # Default chunks
-                chunks = (1,) + shape[1:]
-            args['chunks'] = chunks
+            if enable_chunks:
+                if chunks is None:
+                    # Default chunks
+                    chunks = (1,) + shape[1:]
+                args['chunks'] = chunks
 
         assert compression_type in (None, "gzip", "lzf"), "Allowed compression types: None (no compression), gzip, lzf"
         if compression_type is not None:
