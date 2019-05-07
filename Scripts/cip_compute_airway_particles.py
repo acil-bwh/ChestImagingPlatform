@@ -22,11 +22,11 @@ class AirwayParticlesPipeline:
     assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy' or init_method == 'AirwaySegmentation' or init_method == 'AirwayMask'
 
     if init_method == 'AirwaySegmentation' and (ct_kernel == None or airway_seed == None):
-        print "CT reconstruction kernel or airway seed point was not set"
+        print ("CT reconstruction kernel or airway seed point was not set")
         exit()
         
     if init_method == 'AirwayMask' and airway_mask_name == None:
-        print "Airway mask was not set"
+        print ("Airway mask was not set")
         exit()
 
     self._ct_file_name=ct_file_name
@@ -96,8 +96,8 @@ class AirwayParticlesPipeline:
 
         tmpCommandCT = tmpCommand % {'z1':crop[0],'z2':crop[1],'in':ct_file_name,'out':ct_file_name_crop,'ratestr':ratestr,'kernel':"cubic:1,0"}
         tmpCommandPL = tmpCommand % {'z1':crop[0],'z2':crop[1],'in':pl_file_name,'out':pl_file_name_crop,'ratestr':ratestr,'kernel':"cheap"}
-        print tmpCommandCT
-        print tmpCommandPL
+        print (tmpCommandCT)
+        print (tmpCommandPL)
         
         subprocess.call(tmpCommandCT,shell=True)
         subprocess.call(tmpCommandPL,shell=True)
@@ -159,7 +159,7 @@ class AirwayParticlesPipeline:
                 tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s"
                 tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
-                print tmpCommand
+                print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
 
                 # tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
@@ -178,30 +178,30 @@ class AirwayParticlesPipeline:
                 tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f ValleyLine --std %(minscale)f,%(maxscale)f,4 --ssm 1 --alpha 0.5 --beta 0.5 --C 50 -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
                 tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
-                print tmpCommand
+                print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
 
                 #Hist equalization, threshold Feature strength and masking
                 tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
                 tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
-                print tmpCommand
+                print (tmpCommand)
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'StrainEnergy':
                 tmpCommand = "ComputeFeatureStrength -i %(in)s -m StrainEnergy -f RidgeLine --std %(minscale)f,%(maxscale)f,4 --ssm 1 --alpha 0.2 --beta 0.1 --kappa 0.5 --nu 0.1 -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
                 tmpCommand  = os.path.join(path['CIP_PATH'],tmpCommand)
-                print tmpCommand
+                print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
                     
                 #Hist equalization, threshold Feature strength and masking
                 tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
                 tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
-                print tmpCommand
+                print (tmpCommand)
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'Threshold':
                 tmpCommand = "unu 2op lt %(in)s %(intensity_th)f | unu 2op x - %(mask)s -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'mask':pl_file_nameRegion,'intensity_th':self._intensity_th,'out':maskFileNameRegion}
-                print tmpCommand
+                print (tmpCommand)
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'AirwaySegmentation':
                 #Segment airways from original image 
@@ -290,7 +290,7 @@ if __name__ == "__main__":
   for path_name in toolsPaths:
     path[path_name]=os.environ.get(path_name,False)
     if path[path_name] == False:
-      print path_name + " environment variable is not set"
+      print (path_name + " environment variable is not set")
       exit()
 
   op  = parser.parse_args()

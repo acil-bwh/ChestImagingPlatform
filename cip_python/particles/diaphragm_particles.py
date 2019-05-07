@@ -93,10 +93,10 @@ class DiaphragmParticles(ChestParticles):
             downsampled_vol = self._in_file_name
             self._tmp_mask_file_name = self._mask_file_name
 
-        print "2"
+        print ("2")
         deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampled_vol, deconvolved_vol)
-        print "finished deconvolution\n"
+        print ("finished deconvolution\n")
               
         #Setting member variables that will not change
         self._tmp_in_file_name = deconvolved_vol
@@ -122,13 +122,13 @@ class DiaphragmParticles(ChestParticles):
         self._iterations = 10
 
         #Build parameters and run
-        print "resetting param groups\n"
+        print ("resetting param groups\n")
         self.reset_params()
-        print "building param groups\n"
+        print ("building param groups\n")
         self.build_params()
-        print "Starting pass 1\n"
+        print ("Starting pass 1\n")
         self.execute_pass(out_particles % 1)
-        print "Finished pass 1\n"
+        print ("Finished pass 1\n")
 
         # Pass 2
         # Init params
@@ -154,9 +154,9 @@ class DiaphragmParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 2\n"
+        print ("starting pass 2\n")
         self.execute_pass(out_particles % 2)
-        print "finished pass 2\n"
+        print ("finished pass 2\n")
 
         # Pass 3
         self._init_mode = "Particles"
@@ -177,20 +177,20 @@ class DiaphragmParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 3\n"
+        print ("starting pass 3\n")
         self.execute_pass(out_particles % 3)
-        print "finished pass 3\n"
+        print ("finished pass 3\n")
 
         # Probe quantities and save to VTK
-        print "about to probe\n"
+        print ("about to probe\n")
         self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
-        print "finished probing\n"
+        print ("finished probing\n")
         #Adjust scale if down-sampling was performed
         if self._down_sample_rate > 1:
             self.adjust_scale(out_particles % 3)
-        print "about to save to vtk\n"
+        print ("about to save to vtk\n")
         self.save_vtk(out_particles % 3)
-        print "finished saving\#####n"
+        print ("finished saving\#####n")
 
         #Clean tmp Directory
         self.clean_tmp_dir()

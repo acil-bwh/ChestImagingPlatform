@@ -398,7 +398,7 @@ class ChestParticles:
                 ",3 -t float -o " + self._sp_in_file_name
 
             if self._debug == True:
-                print tmp_command
+                print (tmp_command)
 
             subprocess.call(tmp_command, shell=True)
             
@@ -410,7 +410,7 @@ class ChestParticles:
             str(self._iterations)
         
         if self._debug == True:
-            print tmp_command
+            print (tmp_command)
 
         subprocess.call(tmp_command, shell=True)
         
@@ -421,7 +421,7 @@ class ChestParticles:
                         " | unu inset -min M 0 -s - -i " + output + " -o " + output
         
             if self._debug == True:
-                print tmp_command
+                print (tmp_command)
             subprocess.call( tmp_command, shell=True )
           
     def probe_points(self, in_volume, inputParticles, quantity,
@@ -462,7 +462,7 @@ class ChestParticles:
                 tmp_command += " -ssnd"
 
         if self._debug == True:
-          print tmp_command
+          print (tmp_command)
 
         #print tmp_command
         subprocess.call( tmp_command, shell=True )
@@ -510,7 +510,7 @@ class ChestParticles:
             " -t float -o " + out_vol
 
         if self._debug == True:
-            print tmp_command
+            print (tmp_command)
 
         subprocess.call( tmp_command, shell=True)
 
@@ -524,7 +524,7 @@ class ChestParticles:
         tmp_command = tmp_command %  {'rate':val,'kernel':kernel}
 
         if self._debug == True:
-            print tmp_command
+            print (tmp_command)
 
         #print tmp_command            
         subprocess.call( tmp_command, shell=True)
@@ -540,7 +540,7 @@ class ChestParticles:
             tmp_command = tmp_command % {'output':in_particles, \
           'rate':self._down_sample_rate}
             if self._debug == True:
-                print tmp_command
+                print (tmp_command)
             subprocess.call( tmp_command, shell=True )
 
 
@@ -579,7 +579,7 @@ class ChestParticles:
 
     def clean_tmp_dir(self):
         if self._clean_tmp_dir == True:
-            print "Cleaning temporary directory..."
+            print ("Cleaning temporary directory...")
             
 #            tmp_command = "\bin\rm " + os.path.join(self._tmp_dir, "*")
 #            print tmp_command
@@ -599,7 +599,7 @@ class ChestParticles:
         tmp_command = "unu join -a 1 -i " + particles + " -o "+ output_merged
 
         if self._debug == True:
-            print tmp_command
+            print (tmp_command)
         subprocess.call(tmp_command, shell=True)
 
     def differential_mask (self, current_down_rate, previous_down_rate,
@@ -623,6 +623,6 @@ class ChestParticles:
                                          'out':output_mask}
 
             if self._debug == True:
-                print tmp_command
+                print (tmp_command)
             subprocess.call(tmp_command, shell=True)
 

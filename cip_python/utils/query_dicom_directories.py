@@ -1,6 +1,7 @@
 import sys, math, os
 from optparse import OptionParser
 import pydicom
+import dicom
 import csv
 from os import listdir
 from os.path import isfile, join
@@ -195,7 +196,7 @@ def query_dicom_directories(dirs_file, out_file, tags, dicom_dir, show_tags):
                 # DICOM files. We will just use the first one in the returned
                 # list for querying
                 dir_and_file_name = get_file_in_dir(dicom_dir)               
-                dicom_info = dicom.read_file(dir_and_file_name)
+                dicom_info = dicom.read_file(dir_and_file_name,force=True)
 
                 formatted_line = \
                     formatted_line_from_dicom_info(dicom_dir,
@@ -216,7 +217,7 @@ def query_dicom_directories(dirs_file, out_file, tags, dicom_dir, show_tags):
             for line in dirs:
                 dicom_dir = line.rstrip('\n')
                 dir_and_file_name = get_file_in_dir(dicom_dir)
-                dicom_info = dicom.read_file(dir_and_file_name)
+                dicom_info = dicom.read_file(dir_and_file_name,force=True)
                 all_info.append(formatted_line_from_dicom_info(dicom_dir,
                                                             dicom_info, attrs))
 

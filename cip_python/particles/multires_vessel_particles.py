@@ -112,17 +112,17 @@ class MultiResVesselParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting final pass\n"
+        print ("starting final pass\n")
         self.execute_pass(merged_particles)
-        print "finished final pass\n"
+        print ("finished final pass\n")
 
         # Probe quantities and save to VTK
-        print "about to probe\n"
+        print ("about to probe\n")
         self.probe_quantities(self._tmp_in_file_name, merged_particles)
-        print "finished probing\n"
-        print "about to save to vtk\n"
+        print ("finished probing\n")
+        print ("about to save to vtk\n")
         self.save_vtk(merged_particles)
-        print "finished saving\#####n"
+        print ("finished saving\#####n")
      
         #Clean tmp Directory
         self.clean_tmp_dir()
@@ -159,7 +159,7 @@ class MultiResVesselParticles(ChestParticles):
 
         deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampled_vol, deconvolved_vol)
-        print "finished deconvolution\n"
+        print ("finished deconvolution\n")
         #Setting member variables that will not change
         self._tmp_in_file_name = deconvolved_vol
         
@@ -185,9 +185,9 @@ class MultiResVesselParticles(ChestParticles):
         #Build parameters and run
         self.reset_params()
         self.build_params()
-        print "Starting pass 1\n"
+        print ("Starting pass 1\n")
         self.execute_pass(out_particles % (1,level))
-        print "Finished pass 1\n"
+        print ("Finished pass 1\n")
         
         # Pass 2
         # Init params
@@ -213,9 +213,9 @@ class MultiResVesselParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 2\n"
+        print ("starting pass 2\n")
         self.execute_pass(out_particles % (2,level))
-        print "finished pass 2\n"
+        print ("finished pass 2\n")
         
         # Pass 3
         self._init_mode = "Particles"
@@ -236,9 +236,9 @@ class MultiResVesselParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 3\n"
+        print ("starting pass 3\n")
         self.execute_pass(out_particles % (3,level))
-        print "finished pass 3\n"
+        print ("finished pass 3\n")
         
         # Adjust scale to account for the level of resolution
         self.adjust_scale(out_particles % (3,level))
