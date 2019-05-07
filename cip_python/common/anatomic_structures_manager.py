@@ -256,13 +256,13 @@ class AnatomicStructuresManager(object):
         for i in range(sitk_volume.GetSize()[2]):
             sitk.WriteImage(sitk_volume[:, :, i:i + 1], "{}/{:03}.nrrd".format(p, i))
 
-    def get_cropped_structure(self, case_path_or_sitk_volume, xml_file_path, region, plane,
+    def get_cropped_structure(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane,
                               extra_margin=None, padding_constant_value=0):
         """
         Get a simpleitk volume with the bounding box content of the specified region-plane in a CT volume.
         Args:
             case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
-            xml_file_path: Full path to a GeometryTopologyObject XML file
+            xml_file_path_or_GTD_object: Full path to a GeometryTopologyObject XML file or the object itself
             region: CIP ChestRegion value
             plane: CIP Plane value
             extra_margin: 3-tuple that contains the extra margin (in pixels) for each dimension where the user wants
@@ -271,17 +271,20 @@ class AnatomicStructuresManager(object):
                            When -1 is used, all the slices in that plane will be used
             padding_constant_value: value used in case the result volume has to be padded because of the position of
                                     the structure and the provided spacing
-
         Returns:
-            Sitk volume
+            Sitk volume with the cropped structure or None if it was not found
         """
-        if extra_margin is None:
-            extra_margin = [0, 0, 0]
-        gtd = GeometryTopologyData.from_xml_file(xml_file_path)
+        gtd = GeometryTopologyData.from_xml_file(xml_file_path_or_GTD_object) if isinstance(xml_file_path_or_GTD_object, str) \
+              else xml_file_path_or_GTD_object
+
         if isinstance(case_path_or_sitk_volume, sitk.Image):
             sitk_volume = case_path_or_sitk_volume
         else:
             sitk_volume = ImageReaderWriter().read(case_path_or_sitk_volume)
+
+        if extra_margin is None:
+            extra_margin = [0, 0, 0]
+
         pad_filter = sitk.ConstantPadImageFilter()
         structure_code = ChestConventions.GetChestRegionName(region) + ChestConventions.GetPlaneName(plane)
         for bb in gtd.bounding_boxes:
@@ -315,14 +318,14 @@ class AnatomicStructuresManager(object):
                 return im
 
         # If the execution reaches this line, the structure was not found
-        raise Exception("Structure {} not found in {}".format(structure_code, xml_file_path))
+        return None
 
-    def get_full_slice(self, case_path_or_sitk_volume, xml_file_path, region, plane):
+    def get_full_slice(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane):
         """
         Extract a sitk 3D volume that contains the structure provided
         Args:
             case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
-            xml_file_path: Full path to a GeometryTopologyObject XML file
+            xml_file_path_or_GTD_object: Full path to a GeometryTopologyObject XML file or the object itself
             region: CIP ChestRegion
             plane: CIP Plane
         Returns:
@@ -334,8 +337,31 @@ class AnatomicStructuresManager(object):
             margin = [-1, 0, -1]
         elif plane == Plane.AXIAL:
             margin = [-1, -1, 0]
+        else:
+            raise Exception("Wrong plane: {}".format(plane))
 
-        return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path, region, plane, extra_margin=margin)
+        return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane,
+                                          extra_margin=margin)
+
+    def get_structure_coordinates(self, xml_file_path_or_GTD_object, region, plane, dtype=np.int32):
+        """
+        Gets the coordinates of the bounding box content of the specified region-plane in a CT volume.
+        :param xml_file_path_or_GTD_object: Full path to a GeometryTopologyObject XML file or the object itself
+        :param region: CIP ChestRegion value
+        :param plane: CIP Plane value
+        :return: tuple with 2 numpy arrays with start and size coordinates
+        """
+        gtd = GeometryTopologyData.from_xml_file(xml_file_path_or_GTD_object) \
+            if isinstance(xml_file_path_or_GTD_object, str) else xml_file_path_or_GTD_object
+
+        structure_code = ChestConventions.GetChestRegionName(region) + ChestConventions.GetPlaneName(plane)
+        for bb in gtd.bounding_boxes:
+            if bb.description.upper() == structure_code.upper():
+                bb.convert_to_array(dtype)
+                return bb.start, bb.size
+
+        # If the execution reaches this line, the structure was not found
+        return None
 
     def generate_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, structures=None,
                            rectangle_color='r', line_width=3):
@@ -393,9 +419,11 @@ class AnatomicStructuresManager(object):
         print ("Case {} finished".format(xml_file_path))
 
     def qc_structure_with_gt(self, case_path_or_sitk_volume, xml_file_path_pred, xml_file_path_gt,
-                             structures=None, output_folder=None, rectangle_color_pred='r', rectangle_color_gt='b',
+                             structures=None, output_folder=None, output_file_type="png",
+                             fig_size=(10,10),
+                             rectangle_color_pred='r', rectangle_color_gt='b',
                              rectangle_color_out_of_bounds='yellow',
-                             line_width=2, plot_externally=True):
+                             line_width=2, plot_inline=False):
         """
         Generate a 2D QC image comparing a structure with the ground truth.
         The slice will be the predicted one, and the ground truth will be projected in that slice (in a dashed line).
@@ -409,11 +437,13 @@ class AnatomicStructuresManager(object):
             structures: list/set/tuple of structure codes to be analyzed. If None, all the structures will be analyzed
             output_folder: path to the output folder where the files will be stored. If None, the figures won't be stored
                            (just plotted)
+            output_file_type: str. Extension of the saved image
+            fig_size: 2-int tuple: Fig size (default: (10,10))
             rectangle_color_pred: color for the prediction bounding box
             rectangle_color_gt: color for the ground truth bounding box
             rectangle_color_out_of_bounds: color for the out of bounds bounding box predictions
             line_width: bounding boxes width
-            plot_externally: when True, the images will be plotted externally. Otherwise, just save the figure
+            plot_inline: when True, the images will be plotted inline too. Otherwise, just save the figure
         """
         if isinstance(case_path_or_sitk_volume, sitk.Image):
             imsitk = case_path_or_sitk_volume
@@ -481,8 +511,12 @@ class AnatomicStructuresManager(object):
             else:
                 raise Exception("Plane could not be inferred")
 
-            fig, axis = plt.subplots(nrows=1)
-            plt.imshow(slice_img, cmap='gray')
+            # Plot image
+            fig = plt.figure(figsize=fig_size)
+            axis = plt.Axes(fig, [0., 0., 1., 1.])
+            axis.set_axis_off()
+            fig.add_axes(axis)
+            axis.imshow(slice_img, cmap='gray')
 
             # Prediction
             coord1 = start
@@ -502,18 +536,16 @@ class AnatomicStructuresManager(object):
                                          linestyle='dashed')
                 axis.add_patch(rect)
 
-            plt.axis('off')
-            plt.tight_layout()
-
             if output_folder is not None:
                 # Save figure in file
                 os.makedirs(output_folder, exist_ok=True)
-                output_file = "{}/{}_{}.png".format(output_folder,
+                output_file = "{}/{}_{}.{}".format(output_folder,
                                                     os.path.basename(xml_file_path_gt).replace("_structures.xml", ""),
-                                                    str)
+                                                    str,
+                                                    output_file_type)
                 plt.savefig(output_file)
                 print(output_file, " saved")
-            if not plot_externally:
+            if not plot_inline:
                 # Close the figure
                 if output_folder is None:
                     warnings.warn("No figures will be saved or plotted. Please specify an output folder to save the figures")

@@ -16,7 +16,7 @@ class FissurePhenotypes(Phenotypes):
         self._lo_obb_tree = None
         self._ro_obb_tree = None
         self._rh_obb_tree = None
-
+        
         self.df_data_detail_ = None
         
         self._conventions = ChestConventions()
@@ -53,6 +53,35 @@ class FissurePhenotypes(Phenotypes):
         
         return names
 
+    def patch_periphery_poly(self, df, irad, spacing):
+        """This function marches through all those points that were deemed
+        incomplete and evaluates whether or not they are close enough to the
+        fissure surface to be considered fissures as well. This is needed
+        because the fissure surface constructed from particles that is used
+        to evaluate whether or not a point is a fissure does not
+        completely represent the true fissure surface at the periphery. This
+        is because those particles at the periphery "cover" more area than is
+        represented by the triangular mesh surface.
+        
+        Paramters
+        ---------
+        df : pandas dataframe
+            Contains fissure point detailed information
+        
+        irad : float
+            Indicates spacing (on average) between particles
+
+        spacing : array, shape ( 3 )
+            Physical voxel spacing
+        """
+        not_fissure_indices = np.where(~df.is_fissure.values)[0]
+        fissure_ids = df.is_fissure.values
+        fissure_pts_mat = df[fissure_ids][['i', 'j', 'k']].values*spacing
+        for nn in not_fissure_indices:
+            pt = df[['i', 'j', 'k']].values[nn]*spacing
+            if np.min(np.sqrt(np.sum((fissure_pts_mat - pt)**2, 1))) <= irad:
+                df.at[nn, 'is_fissure'] = True
+                                
     def get_cid(self):
         """Get the case ID (CID)
 
@@ -107,7 +136,7 @@ class FissurePhenotypes(Phenotypes):
         alpha : float, optional
             Will be retrieved from the input polydata (irad FieldDataArray)
             unless speficied. If the irad array does not exist, and if no
-            value is passed, a default value of 5.0 will be used. This value
+            value is passed, a default value of 1.5 will be used. This value
             relates to how closely packed the fissure points are that define
             the surface. The larger the value used, the farther apart two
             points can be and still be considered to represent a continuous,
@@ -120,11 +149,11 @@ class FissurePhenotypes(Phenotypes):
         if alpha is None:
             irad_arr = poly.GetFieldData().GetAbstractArray('irad')
             if irad_arr is not None:
-                alpha = 3*irad_arr.GetTuple(0)[0]
+                alpha = irad_arr.GetTuple(0)[0]
             else:
-                alpha = 5.0
+                alpha = 1.5
                 
-        delaunay = vtk.vtkDelaunay3D()
+        delaunay = vtk.vtkDelaunay2D()
         delaunay.SetInputData(poly);
         delaunay.SetAlpha(alpha)
         delaunay.Update()
@@ -145,7 +174,7 @@ class FissurePhenotypes(Phenotypes):
             self._rh_obb_tree = vtk.vtkOBBTree()
             self._rh_obb_tree.SetDataSet(surf_filter.GetOutput())
             self._rh_obb_tree.BuildLocator()            
-
+    
     def is_fissure(self, index, lm, fissure_type, origin, spacing, dist_tol):
         """Determines whether or not the label map index coordinate corresponds
         to fissure or not.
@@ -229,101 +258,9 @@ class FissurePhenotypes(Phenotypes):
                 return True  
 
         return False
-            
-    def get_fissure_completeness(self, surface, fissure, spacing,
-                                 completeness_type, tps_downsample=1):
-        """Compute the completeness of the fissure. A thin-plate spline
-        representation of the lobe boundary is constructed from the points in
-        'surface'. For each point in the 'surface' list, the surface area of
-        the TPS boundary is approximated and tallied. If the point is also in
-        the 'fissure' coordinate list, the coordinate's surface area
-        approximation is also added to the fissure surface area tally. The
-        final completeness measure is the ratio of fissure_area/surface_area.
-
-        Parameters
-        ----------
-        surface : list of 3D lists
-            Each element is a 3D coordinate along a lobe boundary.
-        
-        fissure : list of 3D lists
-            Each element is a 3D coordinate of a fissure voxel.
-
-        spacing : array, shape (3)
-            Voxel spacing in x, y, and z direction
-
-        completeness_type : string, optional
-            Either 'surface', in which case the surface area of the lobe
-            boundaries and fissure regions will be compared, or 'domain', in
-            which case only the domains (projection onto the axial plane) of
-            the boundary and fissure regions will be compared.
-            
-        tps_downsample : int, optional
-            The amount by which to downsample the surface points before
-            computing the TPS (1 -> no downsampling, 2 -> half the points will
-            be used, etc). This option is irrelevant if 'completeness_type' is
-            set to 'domain'.
-           
-        Returns
-        -------
-        completeness : float
-            In the interval [0, 1] with 0 being totally absent and 1 being
-            totally complete.
-        """
-        surface_arr = np.array(surface)
-
-        surface_dom = [[s[0], s[1]] for s in surface]
-        fissure_dom = [[f[0], f[1]] for f in fissure]
-        if completeness_type == 'domain':
-            return float(len(fissure_dom))/float(len(surface_dom))
-        
-        # Downsample the number of points in the surface list so as not to
-        # choke the TPS computation.
-        ids = np.arange(surface_arr.shape[0])%tps_downsample == 0
-        tps = Rbf(surface_arr[ids, 0]*spacing[0],
-                  surface_arr[ids, 1]*spacing[1],
-                  surface_arr[ids, 2]*spacing[2], function='thin_plate')
-
-        surface_area = 0.
-        fissure_area = 0.
-
-        # For each coordinate in i,j,k space, the corresponding TPS surface
-        # area is approximate by computing the area of four triangles formed
-        # by the index itself, and half-step offsets around the index.
-        nw_delta = np.array([-spacing[0]/2., -spacing[1]/2., 0])
-        ne_delta = np.array([spacing[0]/2., -spacing[1]/2., 0])
-        sw_delta = np.array([-spacing[0]/2., spacing[1]/2., 0])
-        se_delta = np.array([spacing[0]/2., spacing[1]/2., 0])
-        patch_areas = []
-        for i in xrange(0, surface_arr.shape[0]):
-            m = surface_arr[i, :]*spacing
-            nw = m + nw_delta
-            nw[2] = tps(nw[0], nw[1])
-        
-            ne = m + ne_delta
-            ne[2] = tps(ne[0], ne[1])
-        
-            sw = m + sw_delta
-            sw[2] = tps(sw[0], sw[1])
-        
-            se = m + se_delta
-            se[2] = tps(se[0], se[1])
-
-            patch_area = self.get_triangle_area(nw, m, sw) + \
-                self.get_triangle_area(nw, m, ne) + \
-                self.get_triangle_area(ne, m, se) + \
-                self.get_triangle_area(m, sw, se)
-            patch_areas.append(patch_area)
-            surface_area += patch_area
-
-            if surface_dom[i] in fissure_dom:
-                fissure_area += patch_area
-
-        completeness = fissure_area/surface_area                
-
-        return completeness
 
     def get_fissure_completeness_detail(self, surface, fissure, spacing,
-        completeness_type, cip_region, cip_type, tps_downsample=1):
+        origin, completeness_type, cip_region, cip_type, tps_downsample=1):
         """Creates and returns a pandas data frame that records detailed info
         for each lobe boundary voxel considered, including the voxel
         coordinates, patch area, whether or not the boundary voxel is
@@ -345,6 +282,9 @@ class FissurePhenotypes(Phenotypes):
         spacing : array, shape (3)
             Voxel spacing in x, y, and z direction
 
+        origin : array, shape (3)
+
+            
         completeness_type : string, optional
             Either 'surface', in which case the surface area of the lobe
             boundaries and fissure regions will be compared, or 'domain', in
@@ -499,43 +439,13 @@ class FissurePhenotypes(Phenotypes):
 
         dist_tol = 100.0
         
-        # Set up fissure surfaces if specified with polydata. Note that we need
-        # to create new polydata that has some "girth" to it. Otherwise, when
-        # we create the oriented bounding boxes (OBB), we can get errors when
-        # the covariance matrix is computed due to numerical instability.
+        # Set up fissure surfaces if specified with polydata.
         if lop_poly is not None:
-            lop_pts = lop_poly.GetPoints()
-            for i in xrange(0, lop_poly.GetNumberOfPoints()):
-                pt = np.array(lop_poly.GetPoint(i))
-                pt[2] += spacing[2]
-                lop_pts.InsertNextPoint(pt)
-                
-            new_lop_poly = vtk.vtkPolyData()
-            new_lop_poly.SetPoints(lop_pts)
-            
-            self.init_fissure_surface(new_lop_poly, 'left_oblique', alpha)
+            self.init_fissure_surface(lop_poly, 'left_oblique', alpha)            
         if rop_poly is not None:
-            rop_pts = rop_poly.GetPoints()
-            for i in xrange(0, rop_poly.GetNumberOfPoints()):
-                pt = np.array(rop_poly.GetPoint(i))
-                pt[2] += spacing[2]
-                rop_pts.InsertNextPoint(pt)
-                
-            new_rop_poly = vtk.vtkPolyData()
-            new_rop_poly.SetPoints(rop_pts)
-                        
-            self.init_fissure_surface(new_rop_poly, 'right_oblique', alpha)
+            self.init_fissure_surface(rop_poly, 'right_oblique', alpha)
         if rhp_poly is not None:
-            rhp_pts = rhp_poly.GetPoints()
-            for i in xrange(0, rhp_poly.GetNumberOfPoints()):
-                pt = np.array(rhp_poly.GetPoint(i))
-                pt[2] += spacing[2]
-                rhp_pts.InsertNextPoint(pt)
-                
-            new_rhp_poly = vtk.vtkPolyData()
-            new_rhp_poly.SetPoints(rhp_pts)
-            
-            self.init_fissure_surface(new_rhp_poly, 'right_horizontal', alpha)
+            self.init_fissure_surface(rhp_poly, 'right_horizontal', alpha)
 
         nonzero_domain = np.where(np.sum(lm > 0, 2) > 0)
         ro_surface = []
@@ -601,38 +511,54 @@ class FissurePhenotypes(Phenotypes):
         if len(lo_surface) > 2:
             df_lo_detail = \
                 self.get_fissure_completeness_detail(lo_surface, lo_fissure,
-                    spacing, completeness_type, 'LeftLung', 'ObliqueFissure',
-                    tps_downsample)
+                    spacing, origin, completeness_type, 'LeftLung',
+                    'ObliqueFissure', tps_downsample)
+            if lop_poly is not None:
+                irad = lop_poly.GetFieldData().GetAbstractArray('irad').\
+                  GetTuple(0)[0]
+                self.patch_periphery_poly(df_lo_detail, irad, spacing)
+            
             ids = df_lo_detail.is_fissure.values == True
             lo_completeness = np.sum(df_lo_detail.area.values[ids])/\
               np.sum(df_lo_detail.area.values)
         if len(ro_surface) > 2:
             df_ro_detail = \
                 self.get_fissure_completeness_detail(ro_surface, ro_fissure,
-                    spacing, completeness_type, 'RightLung', 'ObliqueFissure',
-                    tps_downsample)
+                    spacing, origin, completeness_type, 'RightLung',
+                    'ObliqueFissure', tps_downsample)
+            if rop_poly is not None:
+                irad = rop_poly.GetFieldData().GetAbstractArray('irad').\
+                  GetTuple(0)[0]
+                self.patch_periphery_poly(df_ro_detail, irad, spacing)
+            
             ids = df_ro_detail.is_fissure.values == True
             ro_completeness = np.sum(df_ro_detail.area.values[ids])/\
               np.sum(df_ro_detail.area.values)
         if len(rh_surface) > 2:
             df_rh_detail = \
                 self.get_fissure_completeness_detail(rh_surface, rh_fissure,
-                    spacing, completeness_type, 'RightLung', 'HorizontalFissure',
-                    tps_downsample)
+                    spacing, origin, completeness_type, 'RightLung',
+                    'HorizontalFissure', tps_downsample)
+            if rhp_poly is not None:
+                irad = rhp_poly.GetFieldData().GetAbstractArray('irad').\
+                  GetTuple(0)[0]
+                self.patch_periphery_poly(df_rh_detail, irad, spacing)            
+            
             ids = df_rh_detail.is_fissure.values == True
             rh_completeness = np.sum(df_rh_detail.area.values[ids])/\
               np.sum(df_rh_detail.area.values)
+              
         self.add_pheno(['LeftLung', 'ObliqueFissure'],
                        'Completeness', lo_completeness)
         self.add_pheno(['RightLung', 'ObliqueFissure'],
                         'Completeness', ro_completeness)
         self.add_pheno(['RightLung', 'HorizontalFissure'],
                         'Completeness', rh_completeness)    
-
+                            
         self.df_data_detail_ = \
           pd.concat([df_lo_detail, df_ro_detail, df_rh_detail],
                     ignore_index=True) 
-        
+
         return self._df
 
 if __name__ == "__main__":

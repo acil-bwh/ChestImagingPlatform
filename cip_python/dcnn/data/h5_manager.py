@@ -261,7 +261,7 @@ class H5Manager(object):
                 "- Manual asignation of 'train_ixs' variable"
 
         with self.lock:
-            print("\n\n######## New Dataset epoch () ###########".format(self._num_epoch_ + 1))
+            print("\n\n######## New Dataset epoch ({}) ###########".format(self._num_epoch_ + 1))
             t2 = time.time()
             if self.epoch_begin is not None:
                 total_seconds = t2 - self.epoch_begin
@@ -335,9 +335,12 @@ class H5Manager(object):
         """
         Get a tuple for the next batch_size images and labels
         :param batch_size: int
-        :param is_validation: bool. Get the batch from the validation cases
+        :param batch_type: int. One of the values in (H5Manager.TRAIN, H5Manager.VALIDATION, H5Manager.TEST)
         :return: Tuple of (batch_size x images, batch_size x labels)
         """
+        assert batch_type in (self.TRAIN, self.VALIDATION, self.TEST), \
+            "Wrong batch type. Choose one from H5Manager.TRAIN, H5Manager.VALIDATION, H5Manager.TEST"
+
         # Get the maximum number of data points that could be selected in this batch
         if batch_type == self.TRAIN:
             # remaining_data_points = self.num_train_points - self._train_ix_pos_
@@ -455,5 +458,12 @@ class H5Manager(object):
         :return: int
         """
         return math.ceil(float(self.num_test_points / self.batch_size))
+
+    def reset_validation_index_pos(self):
+        """
+        Set the validation index position to the first element
+        :return:
+        """
+        self._validation_ix_pos_ = 0
 
 

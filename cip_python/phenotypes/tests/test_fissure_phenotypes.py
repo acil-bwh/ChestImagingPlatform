@@ -83,11 +83,16 @@ def test_main():
     points.InsertNextPoint([1, 0, 1])
     points.InsertNextPoint([1, 1, 1.01])
 
+    irad_arr = vtk.vtkFloatArray()
+    irad_arr.InsertNextTuple1(1)
+    irad_arr.SetName('irad')
+    
     poly = vtk.vtkPolyData()
     poly.SetPoints(points)
+    poly.GetFieldData().AddArray(irad_arr)
     
     df = completeness_phenos.execute(test_im, np.array([0, 0, 0]),
         np.array([1, 1, 1]), 'foo', lop_poly=poly, completeness_type='domain')
 
-    assert df.Completeness.values[0] == 0.25, \
-        "Completeness measure should equal 0.25"
+    assert df.Completeness.values[0] == 0.375, \
+        "Completeness measure should equal 0.375"

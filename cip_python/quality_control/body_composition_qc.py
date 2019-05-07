@@ -2,8 +2,8 @@ import numpy as np
 from optparse import OptionParser
 import warnings
 from cip_python.input_output import ImageReaderWriter
-from  cip_python.qualitycontrol.qc_base import LabelmapQC
-from  cip_python.qualitycontrol.qc_base import Montage
+from cip_python.quality_control.qc_base import LabelmapQC
+from cip_python.quality_control.qc_base import Montage
 
 class BodyCompositionQC(LabelmapQC):
     """
@@ -133,11 +133,11 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     
     image_io = ImageReaderWriter()
-    print "Reading CT..."
+    print ("Reading CT...")
     ct_array, ct_header = image_io.read_in_numpy(options.in_ct) 
     
     body_composition_array = None
-    print "Reading partial lung labelmap..."
+    print ("Reading partial lung labelmap...")
     if(options.in_body_composition):
         body_composition_array, body_composition_header = image_io.read_in_numpy(options.in_body_composition) 
             

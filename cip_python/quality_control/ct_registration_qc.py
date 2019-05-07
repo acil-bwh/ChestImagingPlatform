@@ -1,7 +1,7 @@
 from optparse import OptionParser
 from cip_python.input_output import ImageReaderWriter
-from  cip_python.qualitycontrol.qc_base import ImageOverlay
-from  cip_python.qualitycontrol.qc_base import Montage
+from cip_python.quality_control.qc_base import ImageOverlay
+from cip_python.quality_control.qc_base import Montage
 import numpy as np
 
 class CTRegistrationQC:

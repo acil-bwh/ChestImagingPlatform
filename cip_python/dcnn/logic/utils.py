@@ -56,19 +56,20 @@ class Utils(object):
             return json.loads(f.read())
 
     @staticmethod
-    def get_param(param_name, parameters_dict):
+    def get_param(param_name, parameters_dict, value_if_not_present=None):
         """
         Get a parameter value from a dictionary of parameters.
         Return None if the parameter is not in the dictionary
         Args:
             param_name: str. Name of the parameter
             parameters_dict: Dictionary
+            value_if_not_present: value that will be returned if the parameter does not exist in the dictionary
 
         Returns:
-            Parameter value or None
+            Parameter value or value_if_not_present
         """
         if param_name not in parameters_dict:
-            return None
+            return value_if_not_present
         return parameters_dict[param_name]
 
     @staticmethod

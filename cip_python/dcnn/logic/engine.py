@@ -6,18 +6,15 @@ import argparse
 import datetime
 import json
 import pickle
-import tempfile
 import time
 import warnings
 import math
 import numpy as np
-import re
+import sys
 import h5py
 
 import tensorflow as tf
-import tensorflow.keras.callbacks as callbacks
-import tensorflow.keras.backend as K
-import tensorflow.keras.optimizers as optimizers
+from tensorflow.python.keras import backend as K, callbacks, optimizers
 
 from cip_python.dcnn.logic.utils import Utils
 from cip_python.dcnn.data import H5Manager
@@ -27,23 +24,20 @@ class Engine(object):
     Class that controls the global processes of the CNN (training, validating, testing).
     '''
 
-    def __init__(self, parameters_dict, output_folder=None):
+    def __init__(self, parameters_dict=None, output_folder=None):
         '''
         Constructor
         Args:
             parameters_dict: dictionary of parameters
-            output_folder: all the output folder will be created here (log, models, training files, etc.)
+            output_folder: all the output files will be created here (log, models, training files, etc.)
         '''
-        if not output_folder:
-            # Generate a temp folder
-            self.output_folder = os.path.join(tempfile.gettempdir(), Utils.now())
-        else:
-            self.output_folder = output_folder
-        if not os.path.isdir(self.output_folder):
-            os.makedirs(self.output_folder)
-        logging.info("Results will be stored in " + self.output_folder)
+        self.output_folder = output_folder
+        if output_folder:
+            if not os.path.isdir(self.output_folder):
+                os.makedirs(self.output_folder)
+            logging.info("Results will be stored in " + self.output_folder)
 
-        self.model = None
+        self.network = None
         self.parameters_dict = parameters_dict
         self.train_dataset_manager = None
 
@@ -87,6 +81,35 @@ class Engine(object):
 
         model.summary(print_fn=print_fn)
         f.close()
+
+    def add_environment_info_to_parameters_dict(self, parameters_dict):
+        """
+        Add git tag, python version, etc., to a dictionary of parameters in the current environment
+        :param parameters_dict:
+        :return:
+        """
+        try:
+            parameters_dict['python_version'] = str(sys.version)
+            parameters_dict['tensorflow_version'] = tf.__version__
+            giturl = Utils.get_git_url()
+            parameters_dict['git_tag'] = giturl[0]
+            parameters_dict['git_tag_is_dirty'] = giturl[1]
+        except Exception as ex:
+            logging.error(ex)
+
+    def save_parameters_file(self, parameters_dict=None, file_path=None):
+        """
+        Save dictionary of parameters to a file
+        :param parameters_dict: dictionary of parameters. Default: current parameters
+        :param file_path: str. Path to the dictionary of parameters. Default: standard parameters file
+        """
+        if parameters_dict is None:
+            parameters_dict = self.parameters_dict
+        if file_path is None:
+            file_path = self.parameters_file_path
+        with open(file_path, 'wb') as f:
+            f.write(json.dumps(parameters_dict, indent=4, sort_keys=False).encode())
+            logging.info('Parameters saved to {}'.format(file_path))
 
     def save_parameters_to_model_h5(self, parameters_dict, h5_file_path):
         """
@@ -276,7 +299,8 @@ class Engine(object):
     ##########################################################################
     # METHODS THAT SHOULD BE IMPLEMENTED IN CHILD CLASSES
     ##########################################################################
-    def format_data_to_network(self, xs, ys, network, intensity_checking=False):
+    @classmethod
+    def format_data_to_network(cls, xs, ys, network, intensity_checking=False):
         """
         Get a list of inputs/outputs and scale the sizes (if needed) and intensities to the format
         expected by the network.
@@ -288,14 +312,13 @@ class Engine(object):
         """
         raise NotImplementedError("This method should be implemented in a child class")
 
-    def build_network(self, parameters_dict=None, compile_model=True, h5_file_path=None):
+    def build_network(self, parameters_dict=None, compile_model=True):
         """
-        Build a Network object either from scratch or from a previously exisiting H5 file.
-        It will initialize the self.network and self.model variables
+        Build a Network object using a dictionary of parameters (default: self.parameters_dict)
+        Generally, it will initialize the self.network variable
         :param parameters_dict: dictionary of parameters to build the network. When specified, it has priority
                                 over possible parameters that are stored in the H5
         :param compile_model: bool. Compile the model for training purposes. In this case we will need loss, optimizer, etc.
-        :param h5_file_path: str. Path to an existing model stored in an H5 file
         :return: Network object
         """
         raise NotImplementedError("This method should be implemented in a child class")
@@ -483,9 +506,11 @@ class Engine(object):
             pickle.dump(training_history.history, f)
 
 
-    def predict(self, input_data, model_folder):
-        # TODO
-        raise NotImplementedError()
+    # def predict(self, input_data, model_folder):
+    #     raise NotImplementedError()
+
+    def predict(self, input_info, network_info, output_info, **additional_params):
+        raise NotImplementedError("This method should be implemented in a child class!")
 
 
 ## THIS CODE IS MEANT BE USED ONLY AS AN EXAMPLE!!
