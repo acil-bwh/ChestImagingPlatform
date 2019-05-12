@@ -175,7 +175,7 @@ class FissurePhenotypes(Phenotypes):
             self._rh_obb_tree.SetDataSet(surf_filter.GetOutput())
             self._rh_obb_tree.BuildLocator()            
     
-    def is_fissure(self, index, lm, fissure_type, origin, spacing, dist_tol):
+    def is_fissure(self, index, lm, fissure_type, origin, spacing, ray_tol):
         """Determines whether or not the label map index coordinate corresponds
         to fissure or not.
         
@@ -197,7 +197,7 @@ class FissurePhenotypes(Phenotypes):
         spacing : array, shape (3)
             Voxel spacing in x, y, and z direction
 
-        dist_tol : float
+        ray_tol : float
             Distance tolerance. The physical coordinate corresponding to the
             passed index must be within this vertical distance of the surface
             defined by the class's fissure points poly data (if any). If
@@ -216,12 +216,12 @@ class FissurePhenotypes(Phenotypes):
         ray_from = np.zeros(3)
         ray_from[0] = index[0]*spacing[0] + origin[0]
         ray_from[1] = index[1]*spacing[1] + origin[1]
-        ray_from[2] = index[2]*spacing[2] + origin[2] - dist_tol
+        ray_from[2] = index[2]*spacing[2] + origin[2] - ray_tol
 
         ray_to = np.zeros(3)
         ray_to[0] = index[0]*spacing[0] + origin[0]
         ray_to[1] = index[1]*spacing[1] + origin[1]
-        ray_to[2] = index[2]*spacing[2] + origin[2] + dist_tol
+        ray_to[2] = index[2]*spacing[2] + origin[2] + ray_tol
 
         intersection_points = vtk.vtkPoints()
         if fissure_type == 'right_oblique':
@@ -287,9 +287,9 @@ class FissurePhenotypes(Phenotypes):
             
         completeness_type : string, optional
             Either 'surface', in which case the surface area of the lobe
-            boundaries and fissure regions will be compared, or 'domain', in
-            which case only the domains (projection onto the axial plane) of
-            the boundary and fissure regions will be compared.
+            boundaries and fissure regions will be compared, or 'count', in
+            which case only the voxel counts of the boundary and fissure 
+            regions will be compared.
 
         cip_region : string
             CIP region. Either 'LeftLung' or 'RightLung'
@@ -301,7 +301,7 @@ class FissurePhenotypes(Phenotypes):
             The amount by which to downsample the surface points before
             computing the TPS (1 -> no downsampling, 2 -> half the points will
             be used, etc). This option is irrelevant if 'completeness_type' is
-            set to 'domain'.
+            set to 'count'.
            
         Returns
         -------
@@ -328,7 +328,7 @@ class FissurePhenotypes(Phenotypes):
         surface_dom = [[s[0], s[1]] for s in surface]
         fissure_dom = [[f[0], f[1]] for f in fissure]
         
-        if completeness_type == 'domain':
+        if completeness_type == 'count':
             for i in xrange(0, surface_arr.shape[0]):
                 area_arr[i] = spacing[0]*spacing[1]
                 if surface_dom[i] in fissure_dom:
@@ -380,7 +380,7 @@ class FissurePhenotypes(Phenotypes):
     
     def execute(self, lm, origin, spacing, cid, completeness_type='surface',
                 tps_downsample=1, lop_poly=None, rop_poly=None, rhp_poly=None,
-                alpha=None):
+                alpha=None, ray_tol=None):
         """Compute the fissure completeness phenotypes.
         
         Parameters
@@ -399,15 +399,15 @@ class FissurePhenotypes(Phenotypes):
 
         completeness_type : string, optional
             Either 'surface', in which case the surface area of the lobe
-            boundaries and fissure regions will be compared, or 'domain', in
-            which case only the domains (projection onto the axial plane) of
-            the boundary and fissure regions will be compared.
+            boundaries and fissure regions will be compared, or 'count', in
+            which case only the voxel counts of the boundary and fissure 
+            regions will be compared.
 
         tps_downsample : int, optional
             The amount by which to downsample the surface points before
             computing the TPS (1 -> no downsampling, 2 -> half the points will
             be used, etc). This option is irrelevant if 'completeness_type' is
-            set to 'domain'.
+            set to 'count'.
 
         lop_poly : vtkPolyData, optional
             vtkPolyData containgin points defining the left oblique fissure
@@ -437,7 +437,8 @@ class FissurePhenotypes(Phenotypes):
         assert type(cid) == str, "cid must be a string"
         self.cid_ = cid
 
-        dist_tol = 100.0
+        if ray_tol is None:
+            ray_tol = 1.0
         
         # Set up fissure surfaces if specified with polydata.
         if lop_poly is not None:
@@ -447,7 +448,7 @@ class FissurePhenotypes(Phenotypes):
         if rhp_poly is not None:
             self.init_fissure_surface(rhp_poly, 'right_horizontal', alpha)
 
-        nonzero_domain = np.where(np.sum(lm > 0, 2) > 0)
+        nonzero_count = np.where(np.sum(lm > 0, 2) > 0)
         ro_surface = []
         rh_surface = []
         lo_surface = []
@@ -456,7 +457,7 @@ class FissurePhenotypes(Phenotypes):
         rh_fissure = []
         lo_fissure = []
         
-        for i, j in zip(nonzero_domain[0], nonzero_domain[1]):
+        for i, j in zip(nonzero_count[0], nonzero_count[1]):
             last_region = 0
             for k in xrange(0, lm.shape[2]):                                    
                 curr_region = self._conventions.\
@@ -473,9 +474,9 @@ class FissurePhenotypes(Phenotypes):
                        curr_region == self._right_lung_value): 
                         ro_surface.append([i, j, k])                        
                         if self.is_fissure([i, j, k], lm, 'right_oblique',
-                          origin, spacing, dist_tol) or \
+                          origin, spacing, ray_tol) or \
                           self.is_fissure([i, j, k-1], lm, 'right_oblique',
-                          origin, spacing, dist_tol):
+                          origin, spacing, ray_tol):
                             ro_fissure.append([i, j, k])
                         
                     if (last_region == self._right_middle_lobe_value and \
@@ -484,9 +485,9 @@ class FissurePhenotypes(Phenotypes):
                        curr_region == self._right_lung_value):
                         rh_surface.append([i, j, k])
                         if self.is_fissure([i, j, k], lm, 'right_horizontal',
-                          origin, spacing, dist_tol) or \
+                          origin, spacing, ray_tol) or \
                           self.is_fissure([i, j, k-1], lm, 'right_horizontal',
-                          origin, spacing, dist_tol):
+                          origin, spacing, ray_tol):
                             rh_fissure.append([i, j, k])
                         
                     if (last_region == self._left_lower_lobe_value and \
@@ -495,9 +496,9 @@ class FissurePhenotypes(Phenotypes):
                        curr_region == self._left_lung_value):
                         lo_surface.append([i, j, k])
                         if self.is_fissure([i, j, k], lm, 'left_oblique',
-                          origin, spacing, dist_tol) or \
+                          origin, spacing, ray_tol) or \
                           self.is_fissure([i, j, k-1], lm, 'left_oblique',
-                          origin, spacing, dist_tol):
+                          origin, spacing, ray_tol):
                             lo_fissure.append([i, j, k])                        
                     
                 last_region = curr_region
@@ -575,12 +576,12 @@ if __name__ == "__main__":
         help='The amount by which to downsample the surface points before \
         computing the TPS (1 -> no downsampling, 2 -> half the points will \
         be used, etc). This option is irrelevant if completeness type is \
-        set to domain.')
+        set to count.')
     parser.add_argument('--type', dest='type', required=False,
         default='surface', help='Either surface, in which case the surface \
         area of the lobe boundaries and fissure regions will be compared, or \
-        domain, in which case only the domains (projection onto the axial \
-        plane) of the boundary and fissure regions will be compared.')
+        count, in which case only the voxel counts of the boundary and \
+        fissure regions will be compared.')
     parser.add_argument('--lop', dest='lop', required=False, default=None,
         help='Left oblique points file (vtk). If specified, the surface \
         defined by these points will override the surface defined in the \
@@ -599,12 +600,22 @@ if __name__ == "__main__":
     parser.add_argument('--detail', dest='detail', required=False, \
         default=None, help='csv output file name of voxel-by-voxel \
         information for all lobe boundary points considered.')
+    parser.add_argument('--ray_tol', dest='ray_tol', required=False, \
+        default=None, help='A particle mesh point must be within this \
+        distance of the lobe boundary to be considered fissure. If fissure \
+        point polydata are not being used to define the fissure surface, \
+        this parameter is irrelevant.')
         
     op = parser.parse_args()
 
     image_io = ImageReaderWriter()
     lm, lm_header = image_io.read_in_numpy(op.in_lm)
 
+    if 'spacing' in lm_header.keys():
+        spacing = lm_header['spacing']
+    elif 'space directions' in lm_header.keys():
+        spacing = np.diag(lm_header['space directions'])
+        
     lop_poly = None
     if op.lop is not None:
         lop_reader = vtk.vtkPolyDataReader()
@@ -632,8 +643,9 @@ if __name__ == "__main__":
         
     completeness_phenos = FissurePhenotypes()
     df = completeness_phenos.execute(lm, lm_header['space origin'],
-        lm_header['spacing'], op.cid, op.type, int(op.down),
-        lop_poly=lop_poly, rop_poly=rop_poly, rhp_poly=rhp_poly, alpha=alpha)
+        spacing, op.cid, op.type, int(op.down),
+        lop_poly=lop_poly, rop_poly=rop_poly, rhp_poly=rhp_poly, alpha=alpha,
+        ray_tol=op.ray_tol)
     df.to_csv(op.out_csv, index=False)
 
     if op.detail is not None:

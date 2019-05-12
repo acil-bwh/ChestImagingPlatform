@@ -92,4 +92,23 @@ class unu_convert(CommandLine):
         outputs = self.output_spec().get()
         outputs['output'] = os.path.abspath(self.inputs.output)
         return outputs    
+
+class unu_resampleInputSpec(CommandLineInputSpec):
+    input = File(desc="input nrrd", argstr="--input %s")
+    size = traits.Str(desc="For each axis, info about how many samples in output", argstr="--size %s")
+    kernel = traits.Str(desc="Kernel to use for resampling", argstr="--kernel %s")    
+    output = traits.Either(traits.Bool, File(), hash_files=False, 
+                           desc="Output nrrd (string)", argstr="--output %s")
+
+class unu_resampleOutputSpec(CommandLineInputSpec):
+    output = File(desc="Output nrrd (string)", exists=True)
     
+class unu_resample(CommandLine):
+    _cmd = 'unu resample '
+    input_spec = unu_resampleInputSpec
+    output_spec = unu_resampleOutputSpec    
+
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        outputs['output'] = os.path.abspath(self.inputs.output)
+        return outputs    
