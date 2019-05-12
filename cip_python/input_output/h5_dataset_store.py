@@ -4,6 +4,7 @@ import h5py
 import numpy as np
 import traceback
 
+
 class Axis(object):
     #####################################
     # CONSTANTS DEFINITION              #
@@ -151,18 +152,16 @@ class H5DatasetStore(object):
             h5.attrs['key_names'] = ';'.join(key_names)
             h5.attrs['keys_description'] = keys_description
 
-    def create_ndarray(self, name, general_description, dtype, axes,
-                       enable_chunks=True, chunks=None, enable_max_shape=True,
-                       compression_type='gzip', compression_level=5):
+    def create_ndarray(self, name, general_description, dtype, axes, exclude_metatadata=False,
+                       chunks=None, compression_type='gzip', compression_level=5):
         """
         Create a 'DATA' dataset
         :param name: str. Name of the dataset
         :param general_description: str. Dataset general description
         :param dtype: Numpy type. Dataset data type
         :param axes: List of Axis objects. Axis info for each dimension
-        :param enable_chunks: bool. Enable the dataset chunks
+        :param exclude_metatadata: bool. Exclude the information of spacing, origin, etc. that is stored in dedicated datasets
         :param chunks: int-tuple. Dataset chunks (typically one element unless otherwise specified)
-        :param enable_max_shape: bool. Allow the dataset unlimited growth in the first axis
         :param compression_type: str. Type of compression. Default: gzip (level 5).
                             More info: http://docs.h5py.org/en/stable/high/dataset.html#filter-pipeline
         :param compression_level: int. Level of compression. See h5py docs for more info
@@ -176,48 +175,46 @@ class H5DatasetStore(object):
 
         # Atomic dataset creation with corresponding metadata
         with h5py.File(self.h5_file_name, 'r+') as h5:
-            ds = self.__create_dataset__(h5, self.DS_NDARRAY, name, general_description, dtype, shape,
-                                         enable_chunks, chunks, enable_max_shape,
-                                         compression_type, compression_level)
+            ds = self._create_dataset(h5, self.DS_NDARRAY, name, general_description, dtype, shape,
+                                      chunks, compression_type, compression_level)
             # Save attributes
             ds.attrs['axes_name'] = ";".join(ax.name for ax in axes)
             ds.attrs['axes_description'] = ";".join(ax.description for ax in axes)
             ds.attrs['axes_kind'] = ";".join(ax.kind for ax in axes)
             ds.attrs['axes_units'] = ";".join(ax.units for ax in axes)
+            ds.attrs['exclude_metatadata'] = exclude_metatadata
 
             # Create metadata datasets
             key_ds_name = name + ".key"
             ds.attrs['key_dataset'] = key_ds_name
-            ds_keys = self.__create_dataset_key__(h5, key_ds_name, num_elems)
+            ds_keys = self._create_dataset_key(h5, key_ds_name, num_elems)
 
-            physical_shape = self.get_spacing_shape(shape, axes_kind)
-            spacing_ds_name = name + ".spacing"
-            ds.attrs['spacing_dataset'] = spacing_ds_name
-            ds_spacing = self.__create_dataset__(h5, self.DS_PROPERTY, spacing_ds_name, "spacing dataset", np.float32,
-                                                 physical_shape, enable_chunks=False, enable_max_shape=enable_max_shape,
-                                                 compression_type=compression_type, compression_level=compression_level)
-            ds_spacing.attrs['axes_name'] = ";".join("{}_spacing".format(ax.name) for ax in axes)
+            if not exclude_metatadata:
+                # Create datasets of spacing, origin, etc.
+                physical_shape = self.get_spacing_shape(shape, axes_kind)
+                spacing_ds_name = name + ".spacing"
+                ds.attrs['spacing_dataset'] = spacing_ds_name
+                ds_spacing = self._create_dataset(h5, self.DS_PROPERTY, spacing_ds_name, "spacing dataset", np.float32,
+                                                  physical_shape, compression_type=compression_type, compression_level=compression_level)
+                ds_spacing.attrs['axes_name'] = ";".join("{}_spacing".format(ax.name) for ax in axes)
 
-            origin_ds_name = name + ".origin"
-            ds.attrs['origin_dataset'] = origin_ds_name
-            ds_origin = self.__create_dataset__(h5, self.DS_PROPERTY, origin_ds_name,
-                                                "origin dataset", np.float32, physical_shape,
-                                                enable_chunks=False, enable_max_shape=enable_max_shape)
-            ds_origin.attrs['axes_name'] = ";".join("{}_origin".format(ax.name) for ax in axes)
+                origin_ds_name = name + ".origin"
+                ds.attrs['origin_dataset'] = origin_ds_name
+                ds_origin = self._create_dataset(h5, self.DS_PROPERTY, origin_ds_name,
+                                                    "origin dataset", np.float32, physical_shape)
+                ds_origin.attrs['axes_name'] = ";".join("{}_origin".format(ax.name) for ax in axes)
 
-            missing_ds_name = name + ".missing"
-            ds.attrs['missing_dataset'] = missing_ds_name
-            ds_missing = self.__create_dataset__(h5, self.DS_PROPERTY, missing_ds_name, "missing flag",
-                                                 np.uint8, (shape[0], 1), enable_chunks=False,
-                                                 enable_max_shape=enable_max_shape)
+                missing_ds_name = name + ".missing"
+                ds.attrs['missing_dataset'] = missing_ds_name
+                ds_missing = self._create_dataset(h5, self.DS_PROPERTY, missing_ds_name, "missing flag",
+                                                  np.uint8, (shape[0], 1))
 
             for ax in (ax for ax in axes if ax.kind == Axis.TYPE_TABLE_IX):
                 ds.attrs["table_ix_col_names_{}".format(ax.name)] = ";".join(ax.splitted_axis_names)
                 ds.attrs["table_ix_col_descriptions_{}".format(ax.name)] = ";".join(ax.splitted_axis_descriptions)
 
     def create_table(self, name, general_description, columns_names, dtype, shape,
-                     enable_chunks=False, chunks=None, enable_max_shape=True,
-                     compression_type=None, compression_level=0):
+                     chunks=None, compression_type=None, compression_level=0):
         """
         Create a 'TABLE' dataset
         :param name: str. Name of the dataset
@@ -225,9 +222,7 @@ class H5DatasetStore(object):
         :param columns_names: str-tuple. Description for each column. Ex: ('spacing_x', 'spacing_y', 'spacing_z')
         :param dtype: Numpy type. Dataset data type
         :param shape: int-tuple. Original dataset shape
-        :param enable_chunks: bool. Enable the dataset chunks
         :param chunks: int-tuple. Dataset chunks (typically one element unless otherwise specified)
-        :param enable_max_shape: bool. Allow the dataset unlimited growth in the first axis
         :param compression_type: str. Type of compression . Default: No compression.
                             More info: http://docs.h5py.org/en/stable/high/dataset.html#filter-pipeline
         :param compression_level: int. Level of compression. See h5py docs for more info
@@ -237,14 +232,13 @@ class H5DatasetStore(object):
         assert len(shape) == 2, "Only 2 dimensional arrays are allowed in this kind of dataset"
 
         with h5py.File(self.h5_file_name, 'r+') as h5:
-            ds = self.__create_dataset__(h5, self.DS_TABLE, name, general_description, dtype, shape,
-                                         enable_chunks=enable_chunks, chunks=chunks, enable_max_shape=enable_max_shape,
-                                         compression_type=compression_type, compression_level=compression_level)
+            ds = self._create_dataset(h5, self.DS_TABLE, name, general_description, dtype, shape,
+                                      chunks=chunks, compression_type=compression_type, compression_level=compression_level)
             ds.attrs['columns_names'] = ";".join(columns_names)
 
             key_ds_name = name + ".key"
             ds.attrs['key_dataset'] = key_ds_name
-            ds_keys = self.__create_dataset_key__(h5, key_ds_name, shape[0])
+            ds_keys = self._create_dataset_key(h5, key_ds_name, shape[0])
 
     def insert_ndarray_single_point(self, ds_name, data_array, key_array,
                                     spacing_array, origin_array, missing):
@@ -253,20 +247,43 @@ class H5DatasetStore(object):
         :param ds_name: str. Name of the dataset
         :param data_array: D1 X D2 X ... DN numpy array. Main data array (single point)
         :param key_array: num_keys numpy array. Array of strings with keys (sid, cid, etc.)
-        :param S1 x S2 X ... X SN float array: Spacing metadata for each dimension in data_array
+        :param S1 x S2 X ... X SN float spacing_array: Spacing metadata for each dimension in data_array
         :param origin_array: O1 x O2 X ... X ON float array. Origin metadata for each dimension in data_array
         :param missing: uint8. Missing data point
         :return int. Index of the last inserted element
         """
-        null_array = np.zeros((1, 0) + data_array.shape)
+        null_array = None
         return self.insert_ndarray_data_points(
             ds_name, np.expand_dims(data_array, 0),
             np.expand_dims(key_array, 0),
             np.expand_dims(spacing_array, 0) if spacing_array is not None else null_array,
             np.expand_dims(origin_array, 0) if origin_array is not None else null_array,
-            np.expand_dims(np.array([missing], np.uint8), 0) if missing is not None else np.zeros((1,1), np.uint8),
+            np.expand_dims(np.array([missing], np.uint8), 0) if missing is not None else None,
             #np.array([1, missing], np.uint8)
         )
+
+    def _contains_metatadata(self, ds_name, h5=None):
+        """
+        The ndarray has associated metadata datasets (spacing, origin, etc.)
+        :param ds_name: Name of the dataset
+        :param h5: h5 File open object (if needed)
+        :return: bool
+        """
+        close_h5 = False
+        if h5 is None:
+            h5 = h5py.File(self.h5_file_name, 'r')
+            close_h5 = True
+
+        try:
+            assert ds_name in h5.keys(), "Dataset {} not found".format(ds_name)
+            if 'exclude_metatadata' not in h5[ds_name].attrs:
+                # By default, we assume there is metadata (for compatibility purposes)
+                return True
+            return not h5[ds_name].attrs['exclude_metatadata']
+        finally:
+            if close_h5:
+                h5.close()
+
 
     def insert_ndarray_data_points(self, ds_name, data_array, key_array,
                                    spacing_array, origin_array, missing_array):
@@ -283,24 +300,31 @@ class H5DatasetStore(object):
         # Check that input array shapes align according to convention
         with h5py.File(self.h5_file_name, 'r+') as h5:
             num_elems = data_array.shape[0]
-            assert key_array.shape[0] == spacing_array.shape[0] == origin_array.shape[0] == missing_array.shape[0] \
-                   == num_elems, "Datasets do not align in the first dimension"
+            assert key_array.shape[0] == num_elems
+            if self._contains_metatadata(ds_name, h5=h5):
+                assert spacing_array.shape[0] == origin_array.shape[0] == missing_array.shape[0] == num_elems, \
+                    "Datasets do not align in the first dimension"
 
             # Read the dataset axes information
             axes_kind = h5[ds_name].attrs['axes_kind'].split(";")
-            shape = list(self.get_spacing_shape(h5[ds_name].shape, axes_kind))
-            shape[0] = num_elems
-            shape = tuple(shape)
-            if spacing_array is not None:
+
+            if self._contains_metatadata(ds_name, h5=h5):
+                # Comprobations of Origin, spacing, etc.
+                shape = list(self.get_spacing_shape(h5[ds_name].shape, axes_kind))
+                shape[0] = num_elems
+                shape = tuple(shape)
+                assert spacing_array is not None, "spacing_array is needed"
+                assert origin_array is not None, "origin_array is needed"
                 assert spacing_array.shape == origin_array.shape == shape, \
                     "Spacing and origin do not contain correct number of components to match data array axes"
+            # else:
+            #     # Make sure that there are not any physical axes
+            #     assert shape[1] == 0, "Missing spacing information for some axis"
+
+                assert missing_array.shape[1] == 1, "missing_array last dimension != 1 (Shape: {})".format(missing_array.shape)
+                metadata_elems = ('key', 'spacing', 'origin', 'missing')
             else:
-                # Make sure that there are not any physical axes
-                assert shape[1] == 0, "Missing spacing information for some axis"
-
-            assert missing_array.shape[1] == 1, "missing_array last dimension != 1 (Shape: {})".format(missing_array.shape)
-
-            metadata_elems = ('key', 'spacing', 'origin', 'missing')
+                metadata_elems = ('key',)
 
             # Atomic insertion
 
@@ -318,7 +342,7 @@ class H5DatasetStore(object):
             assert last_ix < h5[ds_name].shape[0], "There is no space in the dataset to insert all the points"
 
             # Insert all the data
-            self.__validate_ndarray_structure__(h5, ds_name)
+            self._validate_ndarray_structure(h5, ds_name)
             inserted = []
             try:
                 h5[ds_name][first_ix:last_ix + 1] = data_array
@@ -328,8 +352,9 @@ class H5DatasetStore(object):
                 # Insert metadata
                 meta_data = dict()
                 meta_data['key'] = key_array
-                meta_data['missing'] = missing_array
-                if spacing_array is not None:
+
+                if self._contains_metatadata(ds_name, h5=h5):
+                    meta_data['missing'] = missing_array
                     meta_data['spacing'] = spacing_array
                     meta_data['origin'] = origin_array
 
@@ -373,7 +398,7 @@ class H5DatasetStore(object):
 
         # Atomic insertion
         with h5py.File(self.h5_file_name, 'r+') as h5:
-            self.__validate_keys_structure__(h5, ds_name)
+            self._validate_keys_structure(h5, ds_name)
 
             # Make sure that the key dataset is aligned
             assert key_array.shape[1] == len(self.get_key_names()), "Key shape does not match"
@@ -458,9 +483,9 @@ class H5DatasetStore(object):
             # Validate schema and number of elements
             for key in main_keys:
                 if h5[key].attrs['kind'] == self.DS_NDARRAY:
-                    self.__validate_ndarray_structure__(h5, key)
+                    self._validate_ndarray_structure(h5, key)
                 else:
-                    self.__validate_keys_structure__(h5, key)
+                    self._validate_keys_structure(h5, key)
                 assert h5[key].shape[0] == num_elems, "Wrong number of elements in dataset {}. Expected: {}. Got: {}" \
                                                     .format(key, num_elems, h5[key].shape[0])
                 assert h5[key].attrs['last_ix'] == last_ix, "Wrong value of 'last_ix' attribute in dataset {}. Expected: {}. Got: {}" \
@@ -565,13 +590,31 @@ class H5DatasetStore(object):
         self.full_validation()
         return errors
 
+    def save_git_tag(self, tag=None):
+        """
+        Save the current git tag (unless a manual task is specified)
+        :param tag: str. git tag (if None, it will be get the project's current git version)
+        """
+        try:
+            if tag is None:
+                from cip_python.dcnn.logic import Utils
+                tag, _ = Utils.get_git_url()
+            if tag is not None:
+                with h5py.File(self.h5_file_name, 'r+') as h5:
+                    h5.attrs['git_tag'] = tag
+        except Exception as ex:
+            pass
+        if tag is None:
+            print("WARNING: the git tag could not be saved")
+
+
+
     #####################################
     # PRIVATE METHODS                   #
     #####################################
 
-    def __create_dataset__(self, h5, ds_kind, name, description, dtype, shape,
-                           enable_chunks=True, chunks=None, enable_max_shape=True,
-                           compression_type="gzip", compression_level=5):
+    def _create_dataset(self, h5, ds_kind, name, description, dtype, shape,
+                        chunks=None, compression_type="gzip", compression_level=5):
         """
         Create a dataset in the H5File. This method should not be called directly (use the public methods instead)
         :param h5: h5 File handler
@@ -580,23 +623,16 @@ class H5DatasetStore(object):
         :param description: str. Dataset 'description' attribute
         :param dtype: numpy type. Dataset data type
         :param shape: int-tuple. Original dataset shape (first dimension=number of data points).
-        :param enable_chunks: bool. Set dataset chunks (typically one data point unless 'chunks' argument contains a value)
         :param chunks: int-tuple. Dataset chunks (typically one element unless otherwise specified)
-        :param enable_max_shape: bool. Allow the dataset unlimited growth (in the first dimension)
          :param compression_type: str. Type of compression. Default: gzip (level 5).
                             More info: http://docs.h5py.org/en/stable/high/dataset.html#filter-pipeline
         :param compression_level: int. Level of compression. See h5py docs for more info
         :return: H5 Dataset
         """
-        args = {
-            'maxshape': (None,) + shape[1:]
-        }
+        args = {}
 
-        if enable_chunks:
-            if chunks is None:
-                # Default chunks
-                chunks = (1,) + shape[1:]
-            args['chunks'] = chunks
+        args['maxshape'] = (None,) + shape[1:]
+        args['chunks'] = (1,) + shape[1:] if chunks is None else chunks
 
         assert compression_type in (None, "gzip", "lzf"), "Allowed compression types: None (no compression), gzip, lzf"
         if compression_type is not None:
@@ -612,7 +648,7 @@ class H5DatasetStore(object):
 
         return ds
 
-    def __create_dataset_key__(self, h5, name, num_elems, enable_chunks=False, chunks=None, enable_max_shape=True):
+    def _create_dataset_key(self, h5, name, num_elems, chunks=None):
         """
         Create a dataset of kind 'DS_KEY'. Example: case ids, subject ids, etc.
         :param h5: h5 file object
@@ -627,12 +663,11 @@ class H5DatasetStore(object):
         dt = h5py.special_dtype(vlen=str)
         key_names = self.get_key_names()
         n_keys = len(key_names)
-        ds = self.__create_dataset__(h5, self.DS_KEY, name, self.get_keys_description(), dt, (num_elems, n_keys),
-                                     enable_chunks=enable_chunks, chunks=chunks, enable_max_shape=enable_max_shape,
-                                     compression_type=None)
+        ds = self._create_dataset(h5, self.DS_KEY, name, self.get_keys_description(), dt, (num_elems, n_keys),
+                                  chunks=chunks, compression_type=None)
         return ds
 
-    def __validate_ndarray_structure__(self, h5, ds_name):
+    def _validate_ndarray_structure(self, h5, ds_name):
         """
         Make all the necessary schema comprobations for a NDARRAY.
         If everything goes well, the method will return nothing. Otherwise, an assertion error will be raised
@@ -644,19 +679,20 @@ class H5DatasetStore(object):
         assert 'kind' in h5[ds_name].attrs and h5[ds_name].attrs['kind'] == self.DS_NDARRAY, \
             "The dasaset has the wrong type"
 
-        self.__validate_keys_structure__(h5, ds_name)
+        self._validate_keys_structure(h5, ds_name)
         # check metadata arrays
-        for md, kind in zip(('spacing', 'origin', 'missing'), (self.DS_PROPERTY, self.DS_PROPERTY, self.DS_PROPERTY)):
-            n = md + '_dataset'
-            assert n in h5[ds_name].attrs, "Attribute '{}' could not be found in the dataset".format(n)
-            md_ds_name = h5[ds_name].attrs[n]
-            assert md_ds_name in h5, "Dataset {} not found".format(md_ds_name)
-            assert 'kind' in h5[md_ds_name].attrs, "Attribute 'kind' not found in {}".format(md_ds_name)
-            assert h5[md_ds_name].attrs[
-                       'kind'] == kind, "Dataset '{}' was expected to be '{}' but it is '{}' instead".format(
-                md_ds_name, kind, h5[md_ds_name].attrs['kind'])
+        if self._contains_metatadata(ds_name, h5=h5):
+            for md, kind in zip(('spacing', 'origin', 'missing'), (self.DS_PROPERTY, self.DS_PROPERTY, self.DS_PROPERTY)):
+                n = md + '_dataset'
+                assert n in h5[ds_name].attrs, "Attribute '{}' could not be found in the dataset".format(n)
+                md_ds_name = h5[ds_name].attrs[n]
+                assert md_ds_name in h5, "Dataset {} not found".format(md_ds_name)
+                assert 'kind' in h5[md_ds_name].attrs, "Attribute 'kind' not found in {}".format(md_ds_name)
+                assert h5[md_ds_name].attrs[
+                           'kind'] == kind, "Dataset '{}' was expected to be '{}' but it is '{}' instead".format(
+                    md_ds_name, kind, h5[md_ds_name].attrs['kind'])
 
-    def __validate_keys_structure__(self, h5, ds_name):
+    def _validate_keys_structure(self, h5, ds_name):
         """
         Check the keys structure for the specified dataset
         :param h5: h5 File object
@@ -686,14 +722,15 @@ class H5DatasetStoreTests(unittest.TestCase):
         # Keys: (sid, cid)
         h5.create_h5_file("This is a test description", override_if_existing=True)
 
+        # Step 1: We define a dataset of 3 images of 10x10 size
         axes = [
             Axis.new_index(3),
             Axis("x", "My X", 10, Axis.TYPE_SPATIAL, Axis.UNIT_PIXEL),
             Axis("y", "My Y", 10, Axis.TYPE_SPATIAL, Axis.UNIT_PIXEL),
         ]
         h5.create_ndarray('images', 'images of something', np.int16, axes)
-        h5.create_table('labels', 'table with categories', ('class1', 'class2'), np.int8, (3, 2))
 
+        # Save 2 images in the dataset
         image_array = np.zeros((2, 10, 10), dtype=np.int16)
         spacing_array = np.zeros((2, 2), dtype=np.float32)
         origin_array = np.zeros((2, 2), dtype=np.float32)
@@ -701,15 +738,19 @@ class H5DatasetStoreTests(unittest.TestCase):
             ['1000X2', '1000X2_INSP_STD_COPD'],
             ['1000X2', '1000X2_EXP_STD_COPD']])
         missing_array = np.zeros((2, 1), dtype=np.uint8)
-
         # Multipoint insertion array
         ix = h5.insert_ndarray_data_points('images', image_array, keys_array, spacing_array, origin_array,
                                            missing_array)
         assert ix == 1
 
         # Single point insertion array
-        ix = h5.insert_ndarray_single_point('images', image_array[0], keys_array[0], spacing_array[0], origin_array[0], 0)
+        ix = h5.insert_ndarray_single_point('images', image_array[0], keys_array[0], spacing_array[0], origin_array[0],
+                                            0)
         assert ix == 2
+
+
+        # Step 2: create a table to save labels or other metadata
+        h5.create_table('labels', 'table with categories', ('class1', 'class2'), np.int8, (3, 2))
 
         # Multipoint insertion table
         table_array = np.array([[1, 0], [0, 1]], dtype=np.int8)
@@ -719,14 +760,19 @@ class H5DatasetStoreTests(unittest.TestCase):
         # Single point insertion table
         ix = h5.insert_table_single_point('labels', table_array[0], keys_array[0])
 
-        # Example of augmented data with "images" of size 3x3 and 10 augmented "images" for each original image
+        ########
+        # Augmented data
+        #########
+
+        # Example of augmented data with "images" of 2 element of size 3x3 and 10 augmented "images" for each original image
+        # The total dimensions of the array would be 2x10x32x32
         axes = [
             Axis.new_index(2),
             Axis.new_index(10, "secondary", "secondary index"),     # Augmented images
-            Axis("x", "My X", 3, Axis.TYPE_SPATIAL, Axis.UNIT_PIXEL),
-            Axis("y", "My Y", 3, Axis.TYPE_SPATIAL, Axis.UNIT_PIXEL),
+            Axis("x", "My X", 32, Axis.TYPE_SPATIAL, Axis.UNIT_PIXEL),
+            Axis("y", "My Y", 32, Axis.TYPE_SPATIAL, Axis.UNIT_PIXEL),
         ]
-        augmented = np.zeros((10, 3, 3), dtype=np.int16)
+        augmented = np.zeros((10, 32, 32), dtype=np.int16)
         h5.create_ndarray('augmented_indexes', 'images of something', np.int16, axes)
         spacing_array = np.random.random((2, 10))
         origin_array = np.random.random((2, 10))
@@ -742,7 +788,7 @@ class H5DatasetStoreTests(unittest.TestCase):
                  splitted_axis_names=("Trans_X", "Trans_Y"),
                  splitted_axis_descriptions=("Translation in axis X", "Translation in axis Y"))
         ]
-        h5.create_ndarray('augmented_images_params', 'Augmented data parameters', np.float32, axes)
+        h5.create_ndarray('augmented_images_params', 'Augmented data parameters', np.float32, axes, exclude_metatadata=True)
         translation_params_array = np.random.random((10, 2))
         h5.insert_ndarray_single_point("augmented_images_params", translation_params_array, keys_array[0], None, None, None)
 

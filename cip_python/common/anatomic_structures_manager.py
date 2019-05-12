@@ -272,7 +272,7 @@ class AnatomicStructuresManager(object):
             padding_constant_value: value used in case the result volume has to be padded because of the position of
                                     the structure and the provided spacing
         Returns:
-            Sitk volume with the cropped structure
+            Sitk volume with the cropped structure or None if it was not found
         """
         gtd = GeometryTopologyData.from_xml_file(xml_file_path_or_GTD_object) if isinstance(xml_file_path_or_GTD_object, str) \
               else xml_file_path_or_GTD_object
@@ -318,7 +318,7 @@ class AnatomicStructuresManager(object):
                 return im
 
         # If the execution reaches this line, the structure was not found
-        raise Exception("Structure {} not found".format(structure_code))
+        return None
 
     def get_full_slice(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane):
         """
@@ -342,6 +342,26 @@ class AnatomicStructuresManager(object):
 
         return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane,
                                           extra_margin=margin)
+
+    def get_structure_coordinates(self, xml_file_path_or_GTD_object, region, plane, dtype=np.int32):
+        """
+        Gets the coordinates of the bounding box content of the specified region-plane in a CT volume.
+        :param xml_file_path_or_GTD_object: Full path to a GeometryTopologyObject XML file or the object itself
+        :param region: CIP ChestRegion value
+        :param plane: CIP Plane value
+        :return: tuple with 2 numpy arrays with start and size coordinates
+        """
+        gtd = GeometryTopologyData.from_xml_file(xml_file_path_or_GTD_object) \
+            if isinstance(xml_file_path_or_GTD_object, str) else xml_file_path_or_GTD_object
+
+        structure_code = ChestConventions.GetChestRegionName(region) + ChestConventions.GetPlaneName(plane)
+        for bb in gtd.bounding_boxes:
+            if bb.description.upper() == structure_code.upper():
+                bb.convert_to_array(dtype)
+                return bb.start, bb.size
+
+        # If the execution reaches this line, the structure was not found
+        return None
 
     def generate_qc_images(self, case_path_or_sitk_volume, xml_file_path, output_folder, structures=None,
                            rectangle_color='r', line_width=3):

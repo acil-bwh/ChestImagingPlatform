@@ -117,13 +117,13 @@ class AirwayParticles(ChestParticles):
         self._population_control_period = self._phase_population_control_periods[0]
 
         #Build parameters and run
-        print "resetting param groups\n"
+        print ("resetting param groups\n")
         self.reset_params()
-        print "building param groups\n"
+        print ("building param groups\n")
         self.build_params()
-        print "Starting pass 1\n"
+        print ("Starting pass 1\n")
         self.execute_pass(out_particles % 1)
-        print "Finished pass 1\n"
+        print ("Finished pass 1\n")
 
         # Pass 2
         # Init params
@@ -150,9 +150,9 @@ class AirwayParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 2\n"
+        print ("starting pass 2\n")
         self.execute_pass(out_particles % 2)
-        print "finished pass 2\n"
+        print ("finished pass 2\n")
 
         # Pass 3
         self._init_mode = "Particles"
@@ -174,18 +174,18 @@ class AirwayParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "starting pass 3\n"
+        print ("starting pass 3\n")
         self.execute_pass(out_particles % 3)
-        print "finished pass 3\n"
+        print ("finished pass 3\n")
 
         # Probe quantities and save to VTK
-        print "about to probe\n"
+        print ("about to probe\n")
         self.probe_quantities(self._sp_in_file_name, out_particles % 3)
-        print "finished probing\n"
+        print ("finished probing\n")
 
-        print "Saving to vtk..."
+        print ("Saving to vtk...")
         self.save_vtk(out_particles % 3)
-        print "finished saving\#####n"
+        print ("finished saving\#####n")
 
         #Clean tmp Directory
 #        self.clean_tmp_dir()
