@@ -5,8 +5,8 @@ from scipy.ndimage.interpolation import map_coordinates
 import scipy.ndimage.interpolation as scipy_interpolation
 
 class DataProcessing(object):
-    @staticmethod
-    def resample_image_itk(image, output_size, output_type=sitk.sitkFloat32, interpolator=sitk.sitkBSpline):
+    @classmethod
+    def resample_image_itk(cls, image, output_size, output_type=sitk.sitkFloat32, interpolator=sitk.sitkBSpline):
         """
         Image resampling using ITK
         :param image: simpleITK image
@@ -26,8 +26,50 @@ class DataProcessing(object):
         resampler.SetOutputPixelType(output_type)
         return resampler.Execute(image), output_spacing
 
-    @staticmethod
-    def scale_images(img, output_size, return_scale_factors=False):
+    @classmethod
+    def similarity_3D_transform_with_coords(cls, img, coords, output_size, translation, scale,
+                                            interpolator=sitk.sitkBSpline, default_pixel_value=0.):
+        """
+        Apply a 3D similarity transform to an image and use the same transformation for a list of coordinates
+        (rotation not implemented at the moment)
+        :param img: simpleITK image
+        :param coords: numpy array of coordinates (Nx3) or None
+        :param output_size:
+        :param scale:
+        :param translation:
+        :return: tuple with sitkImage, transformed_coords 
+        """
+        reference_image = sitk.Image(output_size, img.GetPixelIDValue())
+        output_size_arr = np.array(output_size)
+        reference_image.SetOrigin(img.GetOrigin())
+        reference_image.SetDirection(img.GetDirection())
+        spacing = (np.array(img.GetSize()) * np.array(img.GetSpacing())) / output_size_arr
+        reference_image.SetSpacing(spacing)
+
+        # Create the transformation
+        tr = sitk.Similarity3DTransform()
+        if translation is not None:
+            tr.SetTranslation(translation)
+        if scale is not None:
+            tr.SetScale(scale)
+
+        # Apply the transformation to the image
+        img2 = sitk.Resample(img, reference_image, tr, interpolator, default_pixel_value)
+
+        if coords is not None:
+            # Apply the transformation to the coordinates
+            transformed_coords = np.zeros_like(coords)
+            for i in range(coords.shape[0]):            
+                coords_ph = img.TransformContinuousIndexToPhysicalPoint(coords[i])
+                coords_ph = tr.GetInverse().TransformPoint(coords_ph)
+                transformed_coords[i] = np.array(img2.TransformPhysicalPointToContinuousIndex(coords_ph))
+        else:
+            transformed_coords = None
+        
+        return img2, transformed_coords
+
+    @classmethod
+    def scale_images(cls, img, output_size, return_scale_factors=False):
         """
         Scale an array that represents one or more images into a shape
         :param img: numpy array. It may contain one or multiple images
@@ -47,8 +89,8 @@ class DataProcessing(object):
             return img, scale_factors
         return img
 
-    @staticmethod
-    def standardization(image_array, mean_value=-600, std_value=1.0, out=None):
+    @classmethod
+    def standardization(cls, image_array, mean_value=-600, std_value=1.0, out=None):
         """
         Standarize an image substracting mean and dividing by variance
         :param image_array: image array
@@ -83,8 +125,8 @@ class DataProcessing(object):
         return image
 
 
-    @staticmethod
-    def normalize_CT_image_intensity(image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
+    @classmethod
+    def normalize_CT_image_intensity(cls, image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
                                      out=None):
         """
         Threshold and adjust contrast range in a CT image.
@@ -127,8 +169,8 @@ class DataProcessing(object):
         return image
 
 
-    @staticmethod
-    def elastic_transform(image, alpha, sigma, fill_mode='constant', cval=0.):
+    @classmethod
+    def elastic_transform(cls, image, alpha, sigma, fill_mode='constant', cval=0.):
         """
         Elastic deformation of images as described in  http://doi.ieeecomputersociety.org/10.1109/ICDAR.2003.1227801
         :param image: numpy array

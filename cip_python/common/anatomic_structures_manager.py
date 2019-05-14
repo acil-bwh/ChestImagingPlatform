@@ -387,34 +387,37 @@ class AnatomicStructuresManager(object):
         # Create a png for every structure
         for bb in gtd.bounding_boxes:
             if structures is None or bb.description in structures:
-                if bb.description.endswith("Sagittal"):
-                    slice_sitk = sitk_vol[int(bb.start[0]):int(bb.start[0]) + 1, :, :]
-                    plane = Plane.SAGITTAL
-                elif bb.description.endswith("Coronal"):
-                    slice_sitk = sitk_vol[:, int(bb.start[1]):int(bb.start[1]) + 1, :]
-                    plane = Plane.CORONAL
-                elif bb.description.endswith("Axial"):
-                    slice_sitk = sitk_vol[:, :, int(bb.start[2]):int(bb.start[2]) + 1]
-                    plane = Plane.AXIAL
-                else:
-                    raise Exception("Wrong structure: {}-{}".format(bb.id, bb.description))
+                try:
+                    if bb.description.endswith("Sagittal"):
+                        slice_sitk = sitk_vol[int(bb.start[0]):int(bb.start[0]) + 1, :, :]
+                        plane = Plane.SAGITTAL
+                    elif bb.description.endswith("Coronal"):
+                        slice_sitk = sitk_vol[:, int(bb.start[1]):int(bb.start[1]) + 1, :]
+                        plane = Plane.CORONAL
+                    elif bb.description.endswith("Axial"):
+                        slice_sitk = sitk_vol[:, :, int(bb.start[2]):int(bb.start[2]) + 1]
+                        plane = Plane.AXIAL
+                    else:
+                        raise Exception("Wrong structure: {}-{}".format(bb.id, bb.description))
 
-                slice_np = self.get_2D_numpy_from_sitk_image(slice_sitk, plane=plane)
-                x, y, width, height = self.ijk_to_xywh(bb.start, bb.coord2, sitk_vol.GetSize())
+                    slice_np = self.get_2D_numpy_from_sitk_image(slice_sitk, plane=plane)
+                    x, y, width, height = self.ijk_to_xywh(bb.start, bb.coord2, sitk_vol.GetSize())
 
-                # Draw rectangle
-                fig, axes = plt.subplots(nrows=1, ncols=1)
-                axes.imshow(slice_np, cmap='gray')
-                rect = patches.Rectangle((x, y), width, height, linewidth=line_width, edgecolor=rectangle_color,
-                                         facecolor='none')
-                axes.add_patch(rect)
-                axes.axis('off')
+                    # Draw rectangle
+                    fig, axes = plt.subplots(nrows=1, ncols=1)
+                    axes.imshow(slice_np, cmap='gray')
+                    rect = patches.Rectangle((x, y), width, height, linewidth=line_width, edgecolor=rectangle_color,
+                                             facecolor='none')
+                    axes.add_patch(rect)
+                    axes.axis('off')
 
-                # Save the image
-                name = "{}_{}.png".format(osp.basename(xml_file_path), bb.description)
-                fig.savefig(osp.join(output_folder, name), bbox_inches='tight')
-                plt.close()
-                print (name + " generated")
+                    # Save the image
+                    name = "{}_{}.png".format(osp.basename(xml_file_path), bb.description)
+                    fig.savefig(osp.join(output_folder, name), bbox_inches='tight')
+                    plt.close()
+                    print (name + " generated")
+                except Exception as ex:
+                    print ("Error in structure {}: {}".format(bb.description, ex))
 
         print ("Case {} finished".format(xml_file_path))
 

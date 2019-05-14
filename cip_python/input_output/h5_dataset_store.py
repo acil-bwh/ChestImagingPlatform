@@ -316,7 +316,7 @@ class H5DatasetStore(object):
                 assert spacing_array is not None, "spacing_array is needed"
                 assert origin_array is not None, "origin_array is needed"
                 assert spacing_array.shape == origin_array.shape == shape, \
-                    "Spacing and origin do not contain correct number of components to match data array axes"
+                    "Spacing and origin do not contain correct number of components to match data array axes. Expected: {}".format(shape)
             # else:
             #     # Make sure that there are not any physical axes
             #     assert shape[1] == 0, "Missing spacing information for some axis"
@@ -507,11 +507,12 @@ class H5DatasetStore(object):
         :param h5_file_paths: list of string. Paths to the h5 files
         :return: list of errors
         """
-        assert len(h5_file_paths) >= 2, "The list must contain at least 2 elements"
+        num_files = len(h5_file_paths)
+        assert num_files >= 2, "The list must contain at least 2 elements"
         errors = []
-
         # Create the initial collection of datasets
         with h5py.File(self.h5_file_name, 'r+') as h5f:
+            print("Initializing dataset...")
             h5s_small = H5DatasetStore(h5_file_paths[0])
             # Validate the original dataset
             h5s_small.full_validation()
@@ -526,7 +527,7 @@ class H5DatasetStore(object):
                     ds_copy.attrs['timestamp'] = timestamp
 
             # Iterate over the rest of the datasets
-            for i in range(1, len(h5_file_paths)):
+            for i in range(1, num_files):
                 try:
                     h5s_small = H5DatasetStore(h5_file_paths[i])
                     # Validate the original dataset
@@ -552,6 +553,12 @@ class H5DatasetStore(object):
                 except:
                     # Register the exception
                     errors.append((h5_file_paths[i], traceback.format_exc()))
+                print("{}/{} done".format(i+1, num_files))
+
+            # Save the current git tag
+            print("Saving current git tag...")
+            self.save_git_tag()
+            # Return possible errors
             return errors
 
 
@@ -595,19 +602,32 @@ class H5DatasetStore(object):
         Save the current git tag (unless a manual task is specified)
         :param tag: str. git tag (if None, it will be get the project's current git version)
         """
+        is_dirty = False
         try:
             if tag is None:
                 from cip_python.dcnn.logic import Utils
-                tag, _ = Utils.get_git_url()
+                tag, is_dirty = Utils.get_git_url()
             if tag is not None:
                 with h5py.File(self.h5_file_name, 'r+') as h5:
                     h5.attrs['git_tag'] = tag
         except Exception as ex:
-            pass
-        if tag is None:
-            print("WARNING: the git tag could not be saved")
+            traceback.print_exc()
+        if tag:
+            print("Git tag saved: {}".format(tag))
+            if is_dirty:
+                print("WARNING: some local changes have not been committed to github")
+        else:
+            print("WARNING: no git tag could be saved")
 
-
+    def get_git_tag(self):
+        """
+        Get a stored git tag for the H5 (when it was generated)
+        :return: str. Git tag or None if not found
+        """
+        with h5py.File(self.h5_file_name, 'r') as h5:
+            if 'git_tag' in h5.attrs:
+                return h5.attrs['git_tag']
+            return None
 
     #####################################
     # PRIVATE METHODS                   #
