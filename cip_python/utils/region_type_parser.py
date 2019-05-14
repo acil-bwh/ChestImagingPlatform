@@ -125,7 +125,7 @@ class RegionTypeParser():
         for l in self.labels_:
             r = c.GetChestRegionFromValue(l)
 
-            for sup in xrange(0, num_regions):
+            for sup in range(0, num_regions):
                 if c.CheckSubordinateSuperiorChestRegionRelationship(r, sup):
                     tmp.append(sup)
 
@@ -166,7 +166,7 @@ class RegionTypeParser():
         for l in self.labels_:
             t = c.GetChestTypeFromValue(l)
             r = c.GetChestRegionFromValue(l)
-            for sup in xrange(0, num_regions):
+            for sup in range(0, num_regions):
                 if c.CheckSubordinateSuperiorChestRegionRelationship(r, sup):
                     if not (sup, t) in tmp:
                         tmp.append((sup, t))
