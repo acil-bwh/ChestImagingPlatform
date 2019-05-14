@@ -60,14 +60,14 @@ class VasculaturePhenotypes(Phenotypes):
         self.chest_regions_ = None
         if chest_regions is not None:
             tmp = []
-            for m in xrange(0, len(chest_regions)):
+            for m in range(0, len(chest_regions)):
                 tmp.append(c.GetChestRegionValueFromName(chest_regions[m]))
             self.chest_regions_ = np.array(tmp)
 
         self.chest_types_ = None
         if chest_types is not None:
             tmp = []
-            for m in xrange(0, len(chest_types)):
+            for m in range(0, len(chest_types)):
                 tmp.append(c.GetChestTypeValueFromName(chest_types[m]))
             self.chest_types_ = np.array(tmp)
 
@@ -100,7 +100,7 @@ class VasculaturePhenotypes(Phenotypes):
         cols.append('TBV')
         th = self.csa_th[0]
         cols.append('BV%d'%th)
-        for kk in xrange(len(self.csa_th)-1):
+        for kk in range(len(self.csa_th)-1):
           th = self.csa_th[kk]
           th1 = self.csa_th[kk+1]
           cols.append('BV%d_%d'%(th,th1))
@@ -270,7 +270,7 @@ class VasculaturePhenotypes(Phenotypes):
                                          c.GetChestTypeName(t))
                 profiles.append(profile)
         if ps.size > 0:
-            for i in xrange(0, ps.shape[0]):
+            for i in range(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                                chest_type=int(ps[i, 1]))
@@ -330,7 +330,7 @@ class VasculaturePhenotypes(Phenotypes):
         bv[th] = self.integrate_volume(p_csa, self.min_csa, th, n_points, self._dx)
         self.add_pheno([chest_region_name, chest_type_name], pheno_name, bv[th])
 
-        for kk in xrange(len(self.csa_th) - 1):
+        for kk in range(len(self.csa_th) - 1):
             th = self.csa_th[kk]
             th1 = self.csa_th[kk + 1]
             pheno_name = 'BV%d_%d' % (th, th1)
@@ -459,7 +459,7 @@ if __name__ == "__main__":
         tmp = options.pairs.split(',')
         assert len(tmp)%2 == 0, 'Specified pairs not understood'
         pairs = []
-        for i in xrange(0, len(tmp)/2):
+        for i in range(0, len(tmp)/2):
             pairs.append([tmp[2*i], tmp[2*i+1]])
 
     if options.out_plot is None:

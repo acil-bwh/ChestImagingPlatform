@@ -45,7 +45,7 @@ class VasculaturePhenotypes(Phenotypes):
     cols.append('TBV')
     th = self.csa_th[0]
     cols.append('BV%d'%th)
-    for kk in xrange(len(self.csa_th)-1):
+    for kk in range(len(self.csa_th)-1):
       th = self.csa_th[kk]
       th1 = self.csa_th[kk+1]
       cols.append('BV%d_%d'%(th,th1))
@@ -114,7 +114,7 @@ class VasculaturePhenotypes(Phenotypes):
       th=self.csa_th[0]
       bv[rr_id,th]=self.integrate_volume(p_csa,self.min_csa,th,n_points,self._dx)
       self.add_pheno([region_name,type_name],'BV%d'%th,bv[rr_id,th])
-      for kk in xrange(len(self.csa_th)-1):
+      for kk in range(len(self.csa_th)-1):
         th = self.csa_th[kk]
         th1 = self.csa_th[kk+1]
         bv[rr_id,th]=self.integrate_volume(p_csa,th,th1,n_points,self._dx)

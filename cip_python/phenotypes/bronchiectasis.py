@@ -165,7 +165,7 @@ class Bronchiectasis:
         else:
             print ("Number of Vessel Points " + str(vessel.GetNumberOfPoints()))
 
-        for kk in xrange(na):
+        for kk in range(na):
             a_p = airway.GetPoint(kk)
             pL.FindClosestNPoints(20, a_p, idList)
 
@@ -176,7 +176,7 @@ class Bronchiectasis:
                 a_r = self.airway_radius_from_sigma(a_s)
 
             a_v = array_a["hevec2"].GetTuple3(kk)
-            for kk2 in xrange(idList.GetNumberOfIds()):
+            for kk2 in range(idList.GetNumberOfIds()):
                 # Get info about point
                 test_id = idList.GetId(kk2)
                 v_p = vessel.GetPoint(test_id)

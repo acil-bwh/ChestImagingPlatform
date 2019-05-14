@@ -57,14 +57,14 @@ class AirwayPhenotypes(Phenotypes):
         self.chest_regions_ = None
         if chest_regions is not None:
             tmp = []
-            for m in xrange(0, len(chest_regions)):
+            for m in range(0, len(chest_regions)):
                 tmp.append(c.GetChestRegionValueFromName(chest_regions[m]))
             self.chest_regions_ = np.array(tmp)
 
         self.chest_types_ = None
         if chest_types is not None:
             tmp = []
-            for m in xrange(0, len(chest_types)):
+            for m in range(0, len(chest_types)):
                 tmp.append(c.GetChestTypeValueFromName(chest_types[m]))
             self.chest_types_ = np.array(tmp)
                 
@@ -228,7 +228,7 @@ class AirwayPhenotypes(Phenotypes):
                     c.GetChestWildCardName(),
                     c.GetChestTypeName(t), phenos_to_compute)
         if ps.size > 0:
-            for i in xrange(0, ps.shape[0]):
+            for i in range(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
@@ -456,7 +456,7 @@ class AirwayPhenotypes(Phenotypes):
         lr_metrics = vtk_to_numpy(a_pd.GetPointData().GetArray(arrLumenRadiusName))
         wt_metrics = vtk_to_numpy(a_pd.GetPointData().GetArray(arrWallName))
 
-        print lr_metrics.shape
+        print (lr_metrics.shape)
         # Select region/type requested based on mask
         lr_metrics = lr_metrics[(mask & keep_mask)]
         wt_metrics = wt_metrics[(mask & keep_mask)]
@@ -615,7 +615,7 @@ if __name__ == "__main__" and __package__ is None:
         tmp = options.pairs.split(',')
         assert len(tmp)%2 == 0, 'Specified pairs not understood'
         pairs = []
-        for i in xrange(0, len(tmp)/2):
+        for i in range(0, len(tmp)/2):
             pairs.append([tmp[2*i], tmp[2*i+1]])
 
     exclusion_list = None

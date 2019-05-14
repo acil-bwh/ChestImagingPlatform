@@ -223,7 +223,7 @@ class GeometricalMeasures:
 
         # vectorize
         for i, j, k, l_slice in zip(*extrudedMatrixCoordinates):
-            for l in xrange(l_slice.start, l_slice.stop):
+            for l in range(l_slice.start, l_slice.stop):
                 fxy = np.array([extrudedMatrix[i + 1, j, k, l], extrudedMatrix[i - 1, j, k, l]]) == 0
                 fyz = np.array([extrudedMatrix[i, j + 1, k, l], extrudedMatrix[i, j - 1, k, l]]) == 0
                 fxz = np.array([extrudedMatrix[i, j, k + 1, l], extrudedMatrix[i, j, k - 1, l]]) == 0
@@ -340,7 +340,7 @@ class MorphologyStatistics:
 
         i, j, k = 0, 0, 0
         surfaceArea = 0
-        for voxel in xrange(0, matrixSAValues.size):
+        for voxel in range(0, matrixSAValues.size):
             i, j, k = matrixSACoordinates[0][voxel], matrixSACoordinates[1][voxel], matrixSACoordinates[2][voxel]
             fxy = (np.array([a[i + 1, j, k], a[i - 1, j, k]]) == 0)  # evaluate to 1 if true, 0 if false
             fyz = (np.array([a[i, j + 1, k], a[i, j - 1, k]]) == 0)  # evaluate to 1 if true, 0 if false
@@ -570,12 +570,12 @@ class RenyiDimensions:
         else:
             n[p] = np.sum(c[matrixCoordinatesPadded] ** q)
 
-        for g in xrange(p - 1, -1, -1):
+        for g in range(p - 1, -1, -1):
             siz = 2 ** (p - g)
             siz2 = int(round(siz / 2))
-            for i in xrange(0, maxDim - siz + 1, siz):
-                for j in xrange(0, maxDim - siz + 1, siz):
-                    for k in xrange(0, maxDim - siz + 1, siz):
+            for i in range(0, maxDim - siz + 1, siz):
+                for j in range(0, maxDim - siz + 1, siz):
+                    for k in range(0, maxDim - siz + 1, siz):
                         box = np.array([c[i, j, k], c[i + siz2, j, k], c[i, j + siz2, k], c[i + siz2, j + siz2, k],
                                            c[i, j, k + siz2], c[i + siz2, j, k + siz2], c[i, j + siz2, k + siz2],
                                            c[i + siz2, j + siz2, k + siz2]])
@@ -713,8 +713,8 @@ class TextureGLCM:
             0)
 
         self.pxy = np.zeros(self.P_glcm.shape)  # shape = (self.Ng, self.Ng, distances.size, directions)
-        for a in xrange(directions):
-            for g in xrange(distances.size):
+        for a in range(directions):
+            for g in range(distances.size):
                 self.pxy[:, :, g, a] = np.multiply.outer(self.px[:, g, a], self.py[:, g, a])
 
         self.HXY1 = (-1) * np.sum(
@@ -952,10 +952,10 @@ class TextureGLCM:
         for iteration in range(len(indices)):
         #for h, c, r in indices:
             h, c, r = indices[iteration]
-            for angles_idx in xrange(directions):
+            for angles_idx in range(directions):
                 angle = angles[angles_idx]
 
-                for distances_idx in xrange(distances.size):
+                for distances_idx in range(distances.size):
                     distance = distances[distances_idx]
 
                     i = matrix[h, c, r]
@@ -1199,21 +1199,21 @@ class TextureGLRL:
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[1]
 
-        dDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 0, 1).tolist() for a in xrange(lowBound, highBound)])
+        dDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 0, 1).tolist() for a in range(lowBound, highBound)])
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, dDiags))
 
         # (1,0,1), #(-1,0-1),
         lowBound = -matrix.shape[0] + 1
         highBound = matrix.shape[2]
 
-        eDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 0, 2).tolist() for a in xrange(lowBound, highBound)])
+        eDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 0, 2).tolist() for a in range(lowBound, highBound)])
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, eDiags))
 
         # (0,1,1), #(0,-1,-1),
         lowBound = -matrix.shape[1] + 1
         highBound = matrix.shape[2]
 
-        fDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 1, 2).tolist() for a in xrange(lowBound, highBound)])
+        fDiags = reduce(lambda x, y: x + y, [matrix.diagonal(a, 1, 2).tolist() for a in range(lowBound, highBound)])
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, fDiags))
 
         # (1,-1,0), #(-1,1,0),
@@ -1221,7 +1221,7 @@ class TextureGLRL:
         highBound = matrix.shape[1]
 
         gDiags = reduce(lambda x, y: x + y,
-                        [matrix[:, ::-1, :].diagonal(a, 0, 1).tolist() for a in xrange(lowBound, highBound)])
+                        [matrix[:, ::-1, :].diagonal(a, 0, 1).tolist() for a in range(lowBound, highBound)])
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, gDiags))
 
         # (-1,0,1), #(1,0,-1),
@@ -1229,7 +1229,7 @@ class TextureGLRL:
         highBound = matrix.shape[2]
 
         hDiags = reduce(lambda x, y: x + y,
-                        [matrix[:, :, ::-1].diagonal(a, 0, 2).tolist() for a in xrange(lowBound, highBound)])
+                        [matrix[:, :, ::-1].diagonal(a, 0, 2).tolist() for a in range(lowBound, highBound)])
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, hDiags))
 
         # (0,1,-1), #(0,-1,1),
@@ -1237,7 +1237,7 @@ class TextureGLRL:
         highBound = matrix.shape[2]
 
         iDiags = reduce(lambda x, y: x + y,
-                        [matrix[:, :, ::-1].diagonal(a, 1, 2).tolist() for a in xrange(lowBound, highBound)])
+                        [matrix[:, :, ::-1].diagonal(a, 1, 2).tolist() for a in range(lowBound, highBound)])
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, iDiags))
 
         # (1,1,1), #(-1,-1,-1)
@@ -1245,8 +1245,8 @@ class TextureGLRL:
         highBound = matrix.shape[1]
 
         jDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
-                  [matrix.diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
-                  xrange(-h.shape[0] + 1, h.shape[1])]
+                  [matrix.diagonal(a, 0, 1) for a in range(lowBound, highBound)] for x in
+                  range(-h.shape[0] + 1, h.shape[1])]
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, jDiags))
 
         # (-1,1,-1), #(1,-1,1),
@@ -1254,8 +1254,8 @@ class TextureGLRL:
         highBound = matrix.shape[1]
 
         kDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
-                  [matrix[:, ::-1, :].diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
-                  xrange(-h.shape[0] + 1, h.shape[1])]
+                  [matrix[:, ::-1, :].diagonal(a, 0, 1) for a in range(lowBound, highBound)] for x in
+                  range(-h.shape[0] + 1, h.shape[1])]
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, kDiags))
 
         # (1,1,-1), #(-1,-1,1),
@@ -1263,8 +1263,8 @@ class TextureGLRL:
         highBound = matrix.shape[1]
 
         lDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
-                  [matrix[:, :, ::-1].diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
-                  xrange(-h.shape[0] + 1, h.shape[1])]
+                  [matrix[:, :, ::-1].diagonal(a, 0, 1) for a in range(lowBound, highBound)] for x in
+                  range(-h.shape[0] + 1, h.shape[1])]
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, lDiags))
 
         # (-1,1,1), #(1,-1,-1),
@@ -1272,14 +1272,14 @@ class TextureGLRL:
         highBound = matrix.shape[1]
 
         mDiags = [np.diagonal(h, x, 0, 1).tolist() for h in
-                  [matrix[:, ::-1, ::-1].diagonal(a, 0, 1) for a in xrange(lowBound, highBound)] for x in
-                  xrange(-h.shape[0] + 1, h.shape[1])]
+                  [matrix[:, ::-1, ::-1].diagonal(a, 0, 1) for a in range(lowBound, highBound)] for x in
+                  range(-h.shape[0] + 1, h.shape[1])]
         matrixDiagonals.append(filter(lambda x: np.nonzero(x)[0].size > 1, mDiags))
 
         # [n for n in mDiags if np.nonzero(n)[0].size>1] instead of filter(lambda x: np.nonzero(x)[0].size>1, mDiags)?
 
         # Run-Length Encoding (rle) for the 13 list of diagonals (1 list per 3D direction/angle)
-        for angle in xrange(0, len(matrixDiagonals)):
+        for angle in range(0, len(matrixDiagonals)):
             P = P_out[:, :, angle]
             for diagonal in matrixDiagonals[angle]:
                 diagonal = np.array(diagonal, dtype='int')

@@ -329,7 +329,7 @@ class FissurePhenotypes(Phenotypes):
         fissure_dom = [[f[0], f[1]] for f in fissure]
         
         if completeness_type == 'count':
-            for i in xrange(0, surface_arr.shape[0]):
+            for i in range(0, surface_arr.shape[0]):
                 area_arr[i] = spacing[0]*spacing[1]
                 if surface_dom[i] in fissure_dom:
                     is_fissure_arr[i] = True
@@ -349,7 +349,7 @@ class FissurePhenotypes(Phenotypes):
             ne_delta = np.array([spacing[0]/2., -spacing[1]/2., 0])
             sw_delta = np.array([-spacing[0]/2., spacing[1]/2., 0])
             se_delta = np.array([spacing[0]/2., spacing[1]/2., 0])
-            for i in xrange(0, surface_arr.shape[0]):
+            for i in range(0, surface_arr.shape[0]):
                 m = surface_arr[i, :]*spacing
                 nw = m + nw_delta
                 nw[2] = tps(nw[0], nw[1])
@@ -459,7 +459,7 @@ class FissurePhenotypes(Phenotypes):
         
         for i, j in zip(nonzero_count[0], nonzero_count[1]):
             last_region = 0
-            for k in xrange(0, lm.shape[2]):                                    
+            for k in range(0, lm.shape[2]):                                    
                 curr_region = self._conventions.\
                   GetChestRegionFromValue(int(lm[i, j, k]))
                 curr_type = self._conventions.\

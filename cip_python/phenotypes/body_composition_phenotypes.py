@@ -220,7 +220,7 @@ class BodyCompositionPhenotypes(Phenotypes):
             "CT and label map are not the same dimension"    
 
         dim = len(ct.shape)
-        for i in xrange(0, dim):
+        for i in range(0, dim):
             assert ct.shape[0] == lm.shape[0], \
                 "Disagreement in CT and label map dimension"
 

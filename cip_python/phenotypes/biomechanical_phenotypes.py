@@ -77,14 +77,14 @@ class BiomechanicalPhenotypes(Phenotypes):
         self.chest_regions_ = None
         if chest_regions is not None:
             tmp = []
-            for m in xrange(0, len(chest_regions)):
+            for m in range(0, len(chest_regions)):
                 tmp.append(c.GetChestRegionValueFromName(chest_regions[m]))
             self.chest_regions_ = np.array(tmp)
 
         self.chest_types_ = None
         if chest_types is not None:
             tmp = []
-            for m in xrange(0, len(chest_types)):
+            for m in range(0, len(chest_types)):
                 tmp.append(c.GetChestTypeValueFromName(chest_types[m]))
             self.chest_types_ = np.array(tmp)
                 
@@ -242,7 +242,7 @@ class BiomechanicalPhenotypes(Phenotypes):
 
         dim = len(lm.shape)
         if J is not None:
-            for i in xrange(0, dim):
+            for i in range(0, dim):
                 assert ct.shape[0] == lm.shape[0], \
                   "Disagreement in J and label map dimension"
 
@@ -252,7 +252,7 @@ class BiomechanicalPhenotypes(Phenotypes):
 
         dim = len(lm.shape)
         if ADI is not None:
-            for i in xrange(0, dim):
+            for i in range(0, dim):
                 assert ADI.shape[0] == lm.shape[0], \
                   "Disagreement in ADI and label map dimension"
     
@@ -262,7 +262,7 @@ class BiomechanicalPhenotypes(Phenotypes):
 
         dim = len(lm.shape)
         if SRI is not None:
-            for i in xrange(0, dim):
+            for i in range(0, dim):
                 assert SRI.shape[0] == lm.shape[0], \
                   "Disagreement in SRI and label map dimension"
 
@@ -334,7 +334,7 @@ class BiomechanicalPhenotypes(Phenotypes):
                     c.GetChestWildCardName(),
                     c.GetChestTypeName(t), phenos_to_compute)
         if ps.size > 0:
-            for i in xrange(0, ps.shape[0]):
+            for i in range(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
@@ -569,7 +569,7 @@ if __name__ == "__main__":
         tmp = options.pairs.split(',')
         assert len(tmp)%2 == 0, 'Specified pairs not understood'
         pairs = []
-        for i in xrange(0, len(tmp)/2):
+        for i in range(0, len(tmp)/2):
             pairs.append([tmp[2*i], tmp[2*i+1]])
 
     biomech_pheno = BiomechanicalPhenotypes(chest_regions=regions,
