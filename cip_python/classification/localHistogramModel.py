@@ -10,7 +10,7 @@ class LocalHistogramModel:
 
         self.columns = dict()
         self.columns['Features'] = []
-        for i in xrange(-1024, 1):
+        for i in range(-1024, 1):
             self.columns['Features'].append("hu" + str(i))
         self.columns['Distance'] = ['WholeLungDistance']
         self.columns['Metadata'] = ['cid', 'patch_label', 'coordinates', 'ChestRegion', 'ChestType']
@@ -77,7 +77,7 @@ class LocalHistogramModel:
             cid_sp = csv_file.split('_')[0:-1]
             cid = '_'.join(cid_sp)
             r = pd.read_csv(i)
-            for j in xrange(r.shape[0]):
+            for j in range(r.shape[0]):
                 s.set_value(j, 'cid',  cid)
             result = pd.concat([s, r], axis=1)
             frames.append(result)

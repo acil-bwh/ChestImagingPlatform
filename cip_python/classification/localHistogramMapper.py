@@ -1,5 +1,5 @@
 import json
-from localHistogramModel import LocalHistogramModel
+from .localHistogramModel import LocalHistogramModel
 
 
 class LocalHistogramModelMapper:
