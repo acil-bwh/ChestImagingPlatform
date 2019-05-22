@@ -6,15 +6,17 @@ import scipy.ndimage.interpolation as scipy_interpolation
 
 class DataProcessing(object):
     @classmethod
-    def resample_image_itk(cls, image, output_size, output_type=sitk.sitkFloat32, interpolator=sitk.sitkBSpline):
+    def resample_image_itk(cls, image, output_size, output_type=None, interpolator=sitk.sitkBSpline):
         """
         Image resampling using ITK
         :param image: simpleITK image
-        :param output_size: numpy array. Output size
-        :param output_type: output data type
+        :param output_size: numpy array or tuple. Output size
+        :param output_type: simpleITK output data type. If None, use the same as 'image'
         :param interpolator: simpleITK interpolator (default: BSpline)
-        :return: tuple with simpleITK image and array with output spacing
+        :return: tuple with simpleITK image and array with the resulting output spacing
         """
+        if not isinstance(output_size, np.ndarray):
+            output_size = np.array(output_size)
         factor = np.asarray(image.GetSize()) / output_size.astype(np.float32)
         output_spacing = np.asarray(image.GetSpacing()) * factor
 
@@ -23,7 +25,8 @@ class DataProcessing(object):
         resampler.SetSize(output_size.tolist())
         resampler.SetInterpolator(interpolator)
         resampler.SetOutputSpacing(output_spacing)
-        resampler.SetOutputPixelType(output_type)
+        resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
+        resampler.SetOutputOrigin(image.GetOrigin())
         return resampler.Execute(image), output_spacing
 
     @classmethod
