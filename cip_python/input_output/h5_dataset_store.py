@@ -40,15 +40,15 @@ class Axis(object):
                                     For this example, splitted_axis_names could be something like ("trans_x", "trans_y")
         :param splitted_axis_descriptions: str-tuple. Analog to splitted_axis_names with long descriptions
         """
-        self.__axis_name__ = name
-        self.__description__ = description
-        self.__size__ = size_
-        self.__kind__ = kind
-        self.__units__ = units
-        self.__splitted_axis_names__ = splitted_axis_names
-        self.__splitted_axis_descriptions__ = splitted_axis_descriptions
+        self._axis_name = name
+        self._description = description
+        self._size = int(size_)
+        self._kind = kind
+        self._units = units
+        self._splitted_axis_names = splitted_axis_names
+        self._splitted_axis_descriptions = splitted_axis_descriptions
 
-        self.__validate__()
+        self._validate()
 
     @classmethod
     def new_index(cls, size_, name="index", description="Main index"):
@@ -63,43 +63,43 @@ class Axis(object):
 
     @property
     def name(self):
-        return self.__axis_name__
+        return self._axis_name
 
     @property
     def description(self):
-        return self.__description__
+        return self._description
 
     @property
     def size_(self):
-        return self.__size__
+        return self._size
 
     @property
     def kind(self):
-        return self.__kind__
+        return self._kind
 
     @property
     def units(self):
-        return self.__units__
+        return self._units
 
     @property
     def splitted_axis_names(self):
-        return self.__splitted_axis_names__
+        return self._splitted_axis_names
 
     @property
     def splitted_axis_descriptions(self):
-        return self.__splitted_axis_descriptions__
+        return self._splitted_axis_descriptions
 
 
-    def __validate__(self):
-        assert self.__axis_name__, "An axis name is needed"
-        assert self.__description__, "A description is needed"
-        assert isinstance(self.__size__, int), "'size' should be an integer. Got: {}".format(type(self.__size__))
-        assert self.__kind__ in (Axis.TYPE_IX, Axis.TYPE_SPATIAL, Axis.TYPE_TIME,
-                                 Axis.TYPE_TABLE_IX, Axis.TYPE_UNDEFINED)
+    def _validate(self):
+        assert self._axis_name, "An axis name is needed"
+        assert self._description, "A description is needed"
+        #assert isinstance(self._size, int), "'size' should be an integer. Got: {}".format(type(self._size))
+        assert self._kind in (Axis.TYPE_IX, Axis.TYPE_SPATIAL, Axis.TYPE_TIME,
+                              Axis.TYPE_TABLE_IX, Axis.TYPE_UNDEFINED)
 
         if not self.__class__.is_physical_axis(self.kind) and not self.kind == Axis.TYPE_IX:
             # Check that each position in the axis has a name/description
-            assert len(self.__splitted_axis_names__) == len(self.__splitted_axis_descriptions__) == self.__size__, \
+            assert len(self._splitted_axis_names) == len(self._splitted_axis_descriptions) == self._size, \
                 "I need the 'splitted_axis_names' and 'splitted_axis_description' tuples for the axis '{}', please!".format(self.name)
 
 
@@ -145,7 +145,8 @@ class H5DatasetStore(object):
         :return: h5 File
         """
         if not override_if_existing and os.path.isfile(self.h5_file_name):
-            raise Exception("File {} already exists".format(self.h5_file_name))
+            raise Exception("File {} already exists. Use the parameter 'override_if_existing' if this is the intended behaviour".
+                            format(self.h5_file_name))
         
         with h5py.File(self.h5_file_name, 'w') as h5:
             h5.attrs['description'] = description
@@ -500,11 +501,40 @@ class H5DatasetStore(object):
                     k1 = h5[ds_keys[j]][:]
                     assert np.array_equal(k0, k1), "I found some keys misalignment in dataset {}!".format(ds_keys[j])
 
+    @classmethod
+    def concat_full_h5s_class(cls, h5_file_paths, h5_description, output_file, git_tag=None):
+        """
+        Concat a series of h5 files fully filled (same schema) and concat them in a single H5.
+        Class method (do not require to create an empty h5)
+        :param h5_file_paths: list of string. Paths to the h5 files
+        :param h5_description: str. Description of the whole h5.
+        :param output_file: str. Output H5 file.
+        :param git_tag: str. External git tag (different from the current CIP tag)
+        :return: list of errors
+        """
+        ds = H5DatasetStore(output_file)
+        ds.create_h5_file(h5_description)
+        return ds.concat_full_h5s(h5_file_paths, git_tag=git_tag)
 
-    def concat_full_h5s(self, h5_file_paths):
+    @classmethod
+    def concat_h5_datasets_class(cls, h5_file_paths, h5_description, output_file):
+        """
+        Concat a series of h5 files where each file contains one or more dataset objects, and store
+        them in a single H5 object
+        Class method (do not require to create an empty h5)
+        :param h5_file_paths: list of string. Paths to the h5 files
+        :param h5_description: str. Description of the whole h5.
+        :param output_file: str. Output H5 file.
+        """
+        ds = H5DatasetStore(output_file)
+        ds.create_h5_file(h5_description)
+        return ds.concat_h5_datasets(h5_file_paths)
+
+    def concat_full_h5s(self, h5_file_paths, git_tag=None):
         """
         Concat a series of h5 files fully filled (same schema) and concat them in a single H5
         :param h5_file_paths: list of string. Paths to the h5 files
+        :param git_tag: str. External git tag (different from the current CIP tag)
         :return: list of errors
         """
         num_files = len(h5_file_paths)
@@ -545,7 +575,7 @@ class H5DatasetStore(object):
                             # Resize dataset
                             ds_big.resize((last_ix + num_points_small + 1,) + ds_small.shape[1:])
                             # Copy data
-                            ds_big[last_ix + 1 : last_ix + 1 + num_points_small] = ds_small[:]
+                            ds_big[last_ix + 1: last_ix + 1 + num_points_small] = ds_small[:]
 
                         # Update last_ix attribute to keep track of the inserted data points in an atomic way
                         for key in h5f:
@@ -553,14 +583,13 @@ class H5DatasetStore(object):
                 except:
                     # Register the exception
                     errors.append((h5_file_paths[i], traceback.format_exc()))
-                print("{}/{} done".format(i+1, num_files))
+                print("{}/{} done".format(i + 1, num_files))
 
             # Save the current git tag
             print("Saving current git tag...")
-            self.save_git_tag()
+            self.save_git_tag(git_tag)
             # Return possible errors
             return errors
-
 
     def concat_h5_datasets(self, h5_file_paths):
         """
@@ -597,29 +626,24 @@ class H5DatasetStore(object):
         self.full_validation()
         return errors
 
+
     def save_git_tag(self, tag=None):
         """
-        Save the current git tag (unless a manual task is specified)
-        :param tag: str. git tag (if None, it will be get the project's current git version)
+        Save the current CIP git tag.
+        :param tag: str. External tag (possibly corresponding to a different project)
         """
-        is_dirty = False
+        full_tag = ""
         try:
-            if tag is None:
-                from cip_python.dcnn.logic import Utils
-                tag, is_dirty = Utils.get_git_url()
-            if tag is not None:
-                with h5py.File(self.h5_file_name, 'r+') as h5:
-                    h5.attrs['git_tag'] = tag
+            from cip_python.dcnn.logic import Utils
+            cip_git_tag, _ = Utils.get_git_url()
+            full_tag = "{};{}".format(tag, cip_git_tag)
+            with h5py.File(self.h5_file_name, 'r+') as h5:
+                h5.attrs['git_tag'] = full_tag
         except Exception as ex:
             traceback.print_exc()
-        if tag:
-            print("Git tag saved: {}".format(tag))
-            if is_dirty:
-                print("WARNING: some local changes have not been committed to github")
-        else:
-            print("WARNING: no git tag could be saved")
+        print("Git tag/s saved: {}".format(full_tag))
 
-    def get_git_tag(self):
+    def get_stored_git_tag(self):
         """
         Get a stored git tag for the H5 (when it was generated)
         :return: str. Git tag or None if not found
@@ -726,6 +750,8 @@ class H5DatasetStore(object):
         assert 'kind' in h5[md_ds_name].attrs, "Attribute 'kind' not found in {}".format(md_ds_name)
         assert h5[md_ds_name].attrs['kind'] == kind, "Dataset '{}' was expected to be '{}' but it is '{}' instead" \
             .format(md_ds_name, kind, h5[md_ds_name].attrs['kind'])
+
+
 
 import unittest
 import tempfile

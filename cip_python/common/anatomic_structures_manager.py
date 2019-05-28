@@ -257,19 +257,19 @@ class AnatomicStructuresManager(object):
             sitk.WriteImage(sitk_volume[:, :, i:i + 1], "{}/{:03}.nrrd".format(p, i))
 
     def get_cropped_structure(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane,
-                              extra_margin=None, padding_constant_value=0):
+                              extra_margin=None, padding_constant_value=0, out_of_bouds_tolerance_pixels=0):
         """
         Get a simpleitk volume with the bounding box content of the specified region-plane in a CT volume.
         Args:
-            case_path_or_sitk_volume: path to the CT volume or sitk Image read with CIP ImageReaderWriter
-            xml_file_path_or_GTD_object: Full path to a GeometryTopologyObject XML file or the object itself
-            region: CIP ChestRegion value
-            plane: CIP Plane value
-            extra_margin: 3-tuple that contains the extra margin (in pixels) for each dimension where the user wants
+            case_path_or_sitk_volume: str. Path to the CT volume or sitk Image read with CIP ImageReaderWriter
+            xml_file_path_or_GTD_object: str. Full path to a GeometryTopologyObject XML file or the object itself
+            region: int. CIP ChestRegion value
+            plane: int. CIP Plane value
+            extra_margin: 3-int-tuple that contains the extra margin (in pixels) for each dimension where the user wants
                            to expand the bounding box. Note that we are using ITK convention, which means:
                            0=sagittal, 1=coronal, 2=axial.
                            When -1 is used, all the slices in that plane will be used
-            padding_constant_value: value used in case the result volume has to be padded because of the position of
+            padding_constant_value: int. Value used in case the result volume has to be padded because of the position of
                                     the structure and the provided spacing
         Returns:
             Sitk volume with the cropped structure or None if it was not found
@@ -287,12 +287,30 @@ class AnatomicStructuresManager(object):
 
         pad_filter = sitk.ConstantPadImageFilter()
         structure_code = ChestConventions.GetChestRegionName(region) + ChestConventions.GetPlaneName(plane)
+        if plane == Plane.AXIAL:
+            slix = 2
+        elif plane == Plane.CORONAL:
+            slix = 1
+        elif plane == Plane.SAGITTAL:
+            slix = 0
+        else:
+            raise Exception("Wrong plane")
         for bb in gtd.bounding_boxes:
             if bb.description.upper() == structure_code.upper():
                 start = [0, 0, 0]
                 end = [0, 0, 0]
                 padding_in = [0, 0, 0]
                 padding_out = [0, 0, 0]
+
+                # Check if the slice is inbounds. Otherwise return None
+                if -start[slix] > out_of_bouds_tolerance_pixels or \
+                        start[slix] >= (out_of_bouds_tolerance_pixels + sitk_volume.GetSize()[slix]):
+                    # Structure plane out of bounds
+                    return None
+                else:
+                    # Clip the structure plane coordinate
+                    start[slix] = np.clip(start[slix], 0, sitk_volume.GetSize()[slix] - 1)
+
                 for i in range(3):
                     # If margin == -1 we will take the full slice
                     if extra_margin[i] == -1:
@@ -320,7 +338,7 @@ class AnatomicStructuresManager(object):
         # If the execution reaches this line, the structure was not found
         return None
 
-    def get_full_slice(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane):
+    def get_full_slice(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane, out_of_bounds_slice_tolerance_pixels=0):
         """
         Extract a sitk 3D volume that contains the structure provided
         Args:
@@ -341,7 +359,7 @@ class AnatomicStructuresManager(object):
             raise Exception("Wrong plane: {}".format(plane))
 
         return self.get_cropped_structure(case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane,
-                                          extra_margin=margin)
+                                          extra_margin=margin, out_of_bouds_tolerance_pixels=out_of_bounds_slice_tolerance_pixels)
 
     def get_structure_coordinates(self, xml_file_path_or_GTD_object, region, plane, dtype=np.int32):
         """
