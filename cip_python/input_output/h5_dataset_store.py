@@ -1,5 +1,7 @@
 import os
 import datetime
+import time
+
 import h5py
 import numpy as np
 import traceback
@@ -559,6 +561,7 @@ class H5DatasetStore(object):
             # Iterate over the rest of the datasets
             for i in range(1, num_files):
                 try:
+                    t1 = time.time()
                     h5s_small = H5DatasetStore(h5_file_paths[i])
                     # Validate the original dataset
                     h5s_small.full_validation()
@@ -583,7 +586,7 @@ class H5DatasetStore(object):
                 except:
                     # Register the exception
                     errors.append((h5_file_paths[i], traceback.format_exc()))
-                print("{}/{} done".format(i + 1, num_files))
+                print("{}/{} done ({}s)".format(i + 1, num_files, time.time() - t1))
 
             # Save the current git tag
             print("Saving current git tag...")
