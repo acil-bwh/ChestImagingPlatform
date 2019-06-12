@@ -28,7 +28,7 @@ class LocalHistogramModelMapper:
             training_df = training_df[training_df['ChestType'] != drops]
 
         # Map defined classes
-        for initial_value, final_value in defined_classes.iteritems():
+        for initial_value, final_value in defined_classes.items():
             training_df['ChestType'] = training_df['ChestType'].replace(initial_value, final_value)
 
         return training_df

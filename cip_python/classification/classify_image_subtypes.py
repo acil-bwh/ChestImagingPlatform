@@ -158,7 +158,7 @@ class ParenchymaSubtypeClassifier:
 
         """ define a region type class number for each type value"""
         
-        for i in xrange (0, np.shape(training_df)[0]):
+        for i in range (0, np.shape(training_df)[0]):
             training_classes[i] = \
                 mychestConvention.GetChestTypeValueFromName(\
                     training_text_classes[i])
