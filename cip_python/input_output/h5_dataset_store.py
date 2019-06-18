@@ -265,28 +265,6 @@ class H5DatasetStore(object):
             #np.array([1, missing], np.uint8)
         )
 
-    def _contains_metatadata(self, ds_name, h5=None):
-        """
-        The ndarray has associated metadata datasets (spacing, origin, etc.)
-        :param ds_name: Name of the dataset
-        :param h5: h5 File open object (if needed)
-        :return: bool
-        """
-        close_h5 = False
-        if h5 is None:
-            h5 = h5py.File(self.h5_file_name, 'r')
-            close_h5 = True
-
-        try:
-            assert ds_name in h5.keys(), "Dataset {} not found".format(ds_name)
-            if 'exclude_metatadata' not in h5[ds_name].attrs:
-                # By default, we assume there is metadata (for compatibility purposes)
-                return True
-            return not h5[ds_name].attrs['exclude_metatadata']
-        finally:
-            if close_h5:
-                h5.close()
-
 
     def insert_ndarray_data_points(self, ds_name, data_array, key_array,
                                    spacing_array, origin_array, missing_array):
@@ -713,6 +691,28 @@ class H5DatasetStore(object):
         ds = self._create_dataset(h5, self.DS_KEY, name, self.get_keys_description(), dt, (num_elems, n_keys),
                                   chunks=chunks, compression_type=None)
         return ds
+
+    def _contains_metatadata(self, ds_name, h5=None):
+        """
+        The ndarray has associated metadata datasets (spacing, origin, etc.)
+        :param ds_name: Name of the dataset
+        :param h5: h5 File open object (if needed)
+        :return: bool
+        """
+        close_h5 = False
+        if h5 is None:
+            h5 = h5py.File(self.h5_file_name, 'r')
+            close_h5 = True
+
+        try:
+            assert ds_name in h5.keys(), "Dataset {} not found".format(ds_name)
+            if 'exclude_metatadata' not in h5[ds_name].attrs:
+                # By default, we assume there is metadata (for compatibility purposes)
+                return True
+            return not h5[ds_name].attrs['exclude_metatadata']
+        finally:
+            if close_h5:
+                h5.close()
 
     def _validate_ndarray_structure(self, h5, ds_name):
         """
