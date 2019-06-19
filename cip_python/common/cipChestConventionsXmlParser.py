@@ -7,13 +7,6 @@ import os.path as osp
 import xml.etree.ElementTree as et
 import argparse
 
-# Force the installation of future package if no present (for instance in SlicerCIP)
-try:
-    from future.utils import iteritems
-except Exception as ex:
-    print("Please install future python package (pip install future")
-    raise ex
-
 xml_conventions_default = os.path.join(os.path.dirname(__file__), "..", "..", "Resources", "ChestConventions.xml")
 
 parser = argparse.ArgumentParser(description='Generate chesst conventions from Xml file.')
@@ -161,8 +154,8 @@ if op.out_python_bin:
 def generate_colortable_file():
     import cip_python.common as common
     output = ""
-    for rkey, rvalue in iteritems(common.ChestConventions.ChestRegionsCollection):
-        for tkey, tvalue in iteritems(common.ChestConventions.ChestTypesCollection):
+    for rkey, rvalue in common.ChestConventions.ChestRegionsCollection.items():
+        for tkey, tvalue in common.ChestConventions.ChestTypesCollection.items():
             code = common.ChestConventions.GetValueFromChestRegionAndType(rkey, tkey)
             description = "{}-{}".format(rvalue[1], tvalue[1])
             color = common.ChestConventions.GetColorFromChestRegionChestType(rkey, tkey)
