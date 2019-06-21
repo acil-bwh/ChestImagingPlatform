@@ -36,7 +36,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     message(WARNING "Enabling ITK 4.10 compatibility")
     set(ITKv4_GIT_TAG 16df9b689856cd4a8dd22a2cef92f5ee7222da0c)    # last known tag working in the cluster
   else()
-    set(ITKv4_GIT_TAG 9ab5fb62184e1e41982c1eef6932983c6e62940a) # slicer-v4.12.0-2017-05-09-2d63918
+    set(ITKv4_GIT_TAG 87f5d83f15929900aea038abed43d46a14b69886)  # slicer-v4.13.1-2018-08-17-cdc3e57
   endif()
 
   set(CIP_ITKV3_COMPATIBILITY OFF) # to match the default setting of Slicer
