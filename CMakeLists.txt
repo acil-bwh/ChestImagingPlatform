@@ -5,6 +5,16 @@ set(PRIMARY_PROJECT_NAME CIP)
 
 project(${PRIMARY_PROJECT_NAME})
 
+
+#-----------------------------------------------------------------------------
+# Enable C++11
+#-----------------------------------------------------------------------------
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+message(STATUS "${_msg} - C++${CMAKE_CXX_STANDARD}")
+
+
 #-----------------------------------------------------------------------------
 # Superbuild Option - Enabled by default
 #                   Phase I:  ${PRIMARY_PROJECT_NAME}_SUPERBUILD is set to ON, and the
