@@ -143,6 +143,10 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installscikit-learn
   )
 
+  ExternalProject_Add_Step(${proj} installpytables
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes pytables
+    DEPENDEES installgitpython
+  )
 
   ########################################################################################
   #### Deep Learning dependencies
@@ -156,10 +160,8 @@ if (CIP_PYTHON_INSTALL)
     SET (last_dep installtensorflow)
   else()
     message("Python Deep Learning modules will NOT be installed")
-    SET (last_dep installgitpython)
+    SET (last_dep installpytables)
   endif()
-
-
 
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
