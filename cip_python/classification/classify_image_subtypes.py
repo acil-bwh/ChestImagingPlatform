@@ -230,8 +230,9 @@ class ParenchymaSubtypeClassifier:
                     raise ValueError("classify image subtypes:: Empty histogram")
 
                 the_histogram = my_hist_extractor.hist_[0:600]
-                the_distance = dist_extractor.dist_
-                        
+                #Rescaling distance to account for scale factor for short packing.
+                the_distance = dist_extractor.dist_ / 100.0
+                  
                 predicted_value_tmp = self.knn_classifier.predict(the_histogram, the_distance)
 
                 if (np.median(patch_ct) > (-250)):
@@ -279,7 +280,11 @@ class ParenchymaSubtypeClassifier:
 
         ct_labels_array = np.zeros(np.shape(in_ct))       
         num_patches_to_process = np.shape(self.unique_patch_labels)[0]        
-        
+ 
+        """
+        Pack distance map in short array with two significant digits to improve memory efficiency
+        """
+        in_distance=(100.0*in_distance).astype('int16')
 
         """
         Make a shareable copy of the volumes 
@@ -287,29 +292,29 @@ class ParenchymaSubtypeClassifier:
         global ct
         num_array_items = np.shape(in_ct)[0]* np.shape(in_ct)[1]* \
             np.shape(in_ct)[2]
-        shared_array = multiprocessing.Array(ctypes.c_double, num_array_items, \
+        shared_array = multiprocessing.Array(ctypes.c_short, num_array_items, \
             lock=False)
-        ct = np.frombuffer(shared_array, dtype = ctypes.c_double)
+        ct = np.frombuffer(shared_array, dtype = ctypes.c_short)
         ct = ct.reshape(np.shape(in_ct))
         ct[:] = in_ct[:]
 
         global lm
         num_array_items = np.shape(in_lm)[0]* np.shape(in_lm)[1]* \
             np.shape(in_lm)[2]
-        shared_array_lm = multiprocessing.Array(ctypes.c_double, \
+        shared_array_lm = multiprocessing.Array(ctypes.c_ushort, \
             num_array_items, lock=False)
-        lm = np.frombuffer(shared_array_lm, dtype = ctypes.c_double)
+        lm = np.frombuffer(shared_array_lm, dtype = ctypes.c_ushort)
         lm = lm.reshape(np.shape(in_lm))
         lm[:] = in_lm[:]
 
         global distance_image
         num_array_items = np.shape(in_distance)[0]* np.shape(in_distance)[1]* \
             np.shape(in_distance)[2]
-        shared_array_distance = multiprocessing.Array(ctypes.c_double, \
+        shared_array_distance = multiprocessing.Array(ctypes.c_short, \
             num_array_items, lock=False)
 
         distance_image = np.frombuffer(shared_array_distance, \
-            dtype = ctypes.c_double)
+            dtype = ctypes.c_short)
         distance_image = distance_image.reshape(np.shape(in_distance))
         distance_image[:] = in_distance[:]
 
