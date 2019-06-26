@@ -18,7 +18,6 @@
 cipAirwayParticleConnectedComponentFilter::cipAirwayParticleConnectedComponentFilter()
 {
   this->ScaleRatioThreshold       = 1.0;
-  this->ParticleDistanceThreshold = this->InterParticleSpacing;
   this->MaxAllowableScale         = DBL_MAX;
   this->MinAllowableScale         = 0;
 }
@@ -54,8 +53,8 @@ bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
 {
   // Evaluate whether or not the two particls are sufficiently of the
   // same scale
-  double scale1 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex1 )[0];
-  double scale2 = this->InternalInputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex2 )[0];
+  double scale1 = this->InputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex1 )[0];
+  double scale2 = this->InputPolyData->GetPointData()->GetArray( "scale" )->GetTuple( particleIndex2 )[0];
 
   if ( scale1 < this->MinAllowableScale ||  scale2 < this->MinAllowableScale)
   {
@@ -76,14 +75,14 @@ bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
 
   // Determine the vector connecting the two particles
   double point1[3];
-    point1[0] = this->InternalInputPolyData->GetPoint( particleIndex1 )[0];
-    point1[1] = this->InternalInputPolyData->GetPoint( particleIndex1 )[1];
-    point1[2] = this->InternalInputPolyData->GetPoint( particleIndex1 )[2];
+    point1[0] = this->InputPolyData->GetPoint( particleIndex1 )[0];
+    point1[1] = this->InputPolyData->GetPoint( particleIndex1 )[1];
+    point1[2] = this->InputPolyData->GetPoint( particleIndex1 )[2];
 
   double point2[3];
-    point2[0] = this->InternalInputPolyData->GetPoint( particleIndex2 )[0];
-    point2[1] = this->InternalInputPolyData->GetPoint( particleIndex2 )[1];
-    point2[2] = this->InternalInputPolyData->GetPoint( particleIndex2 )[2];
+    point2[0] = this->InputPolyData->GetPoint( particleIndex2 )[0];
+    point2[1] = this->InputPolyData->GetPoint( particleIndex2 )[1];
+    point2[2] = this->InputPolyData->GetPoint( particleIndex2 )[2];
 
   double connectingVec[3];
     connectingVec[0] = point1[0] - point2[0];
@@ -91,14 +90,14 @@ bool cipAirwayParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
     connectingVec[2] = point1[2] - point2[2];
 
   double particle1Hevec2[3];
-    particle1Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[0];
-    particle1Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[1];
-    particle1Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[2];
+    particle1Hevec2[0] = this->InputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[0];
+    particle1Hevec2[1] = this->InputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[1];
+    particle1Hevec2[2] = this->InputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex1 )[2];
 
   double particle2Hevec2[3];
-    particle2Hevec2[0] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[0];
-    particle2Hevec2[1] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[1];
-    particle2Hevec2[2] = this->InternalInputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[2];
+    particle2Hevec2[0] = this->InputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[0];
+    particle2Hevec2[1] = this->InputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[1];
+    particle2Hevec2[2] = this->InputPolyData->GetPointData()->GetArray( "hevec2" )->GetTuple( particleIndex2 )[2];
 
   if ( this->GetVectorMagnitude( connectingVec ) > this->ParticleDistanceThreshold )
     {

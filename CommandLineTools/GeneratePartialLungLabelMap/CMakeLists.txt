@@ -20,8 +20,8 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
     ModuleEntryPoint
-      -c ${INPUT_DATA_DIR}/ct-64.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
+      --ict ${INPUT_DATA_DIR}/ct-64.nrrd
+      --olm ${OUTPUT_DATA_DIR}/${TEST_NAME}_ct-64.nrrd
       --lcv -1200
       --lrv -1200
       --ucv 100

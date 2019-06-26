@@ -18,8 +18,8 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/airway_particles.vtk
-      -c ${INPUT_DATA_DIR}/airwaygauss.nrrd
+      --ip ${INPUT_DATA_DIR}/airway_particles.vtk
+      --ict ${INPUT_DATA_DIR}/airwaygauss.nrrd
       -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.vtk
       -n 10
       -m ZC

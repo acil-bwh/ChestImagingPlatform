@@ -34,6 +34,9 @@
 #include "itkConnectedComponentImageFilter.h"
 #include "cipThinPlateSplineSurface.h"
 
+#include "vtkPolyData.h"
+#include "vtkSmartPointer.h"
+#include "vtkOBBTree.h"
 
 class ITK_EXPORT cipLabelMapToLungLobeLabelMapImageFilter :
   public itk::ImageToImageFilter< itk::Image<unsigned short, 3>, itk::Image<unsigned short, 3> >
@@ -71,6 +74,24 @@ public:
   typedef itk::ImageRegionIteratorWithIndex< OutputImageType > OutputIteratorType;
   typedef itk::ImageRegionConstIterator< InputImageType >      InputIteratorType;
 
+  /** Note that fissure particles are only used to label fissure voxels.
+   *  This function should not be used for defining the (thin plate spline)
+   *  boundary between lobes. Instead, use SetLeftObliqueFissurePoints to pass the
+   *  particle point locations to this filter in order to define the TPS boundary */
+  void SetLeftObliqueFissureParticles( vtkPolyData* );
+
+  /** Note that fissure particles are only used to label fissure voxels.
+   *  This function should not be used for defining the (thin plate spline)
+   *  boundary between lobes. Instead, use SetRightObliqueFissurePoints to pass the
+   *  particle point locations to this filter in order to define the TPS boundary */  
+  void SetRightObliqueFissureParticles( vtkPolyData* );
+
+  /** Note that fissure particles are only used to label fissure voxels.
+   *  This function should not be used for defining the (thin plate spline)
+   *  boundary between lobes. Instead, use SetRightHorizontalFissurePoints to pass the
+   *  particle point locations to this filter in order to define the TPS boundary */  
+  void SetRightHorizontalFissureParticles( vtkPolyData* );  
+    
   /** Image indices indicating the locations of points along the left 
    *  oblique fissure (along the boundary separating the left upper lobe
    *  from the left lower lobe). */
@@ -147,8 +168,14 @@ private:
 
   int GetBoundaryHeightIndex( cipThinPlateSplineSurface*, cipThinPlateSplineSurface*, BlendMapType::Pointer,
 			      unsigned int, unsigned int );
+
   void UpdateBlendMap( cipThinPlateSplineSurface*, BlendMapType::Pointer );
 
+  /** Casts a ray along the z direction and returns true if the ray intersects
+   *  with the Delaunay surface formed from the fissure particles and returns
+   *  false otherwise. */
+  bool IsFissure( unsigned int, unsigned int, unsigned char, unsigned char );
+  
   unsigned short FissureSurfaceValue;
 
   double BlendSlope;
@@ -167,7 +194,7 @@ private:
   std::vector< cip::PointType >  RightHorizontalFissurePoints;
 
   double m_ThinPlateSplineSurfaceFromPointsLambda;
-
+  
   cipThinPlateSplineSurface* LeftObliqueThinPlateSplineSurface;
   cipThinPlateSplineSurface* RightObliqueThinPlateSplineSurface;
   cipThinPlateSplineSurface* RightHorizontalThinPlateSplineSurface;
@@ -175,6 +202,10 @@ private:
   cipThinPlateSplineSurface* LeftObliqueThinPlateSplineSurfaceFromPoints;
   cipThinPlateSplineSurface* RightObliqueThinPlateSplineSurfaceFromPoints;
   cipThinPlateSplineSurface* RightHorizontalThinPlateSplineSurfaceFromPoints;
+
+  vtkSmartPointer< vtkOBBTree > LeftObliqueObbTree;
+  vtkSmartPointer< vtkOBBTree > RightObliqueObbTree;
+  vtkSmartPointer< vtkOBBTree > RightHorizontalObbTree;  
 };
   
 #ifndef ITK_MANUAL_INSTANTIATION

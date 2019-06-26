@@ -1,50 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GeometryTopologyData>
+  <CoordinateSystem>RAS</CoordinateSystem>
+  <LPStoIJKTransformationMatrix>
+    <value>-1.9</value>
+    <value>0</value>
+    <value>0</value>
+    <value>250</value>
+    <value>0</value>
+    <value>-1.9</value>
+    <value>0</value>
+    <value>510</value>
+    <value>0</value>
+    <value>0</value>
+    <value>2</value>
+    <value>724</value>
+    <value>0</value>
+    <value>0</value>
+    <value>0</value>
+    <value>1</value>
+  </LPStoIJKTransformationMatrix>
+  <Spacing>
+    <value>0.7</value>
+    <value>0.7</value>
+    <value>0.5</value>
+  </Spacing>
+  <Origin>
+    <value>180</value>
+    <value>180</value>
+    <value>-700.5</value>
+  </Origin>
+  <Dimensions>
+    <value>512</value>
+    <value>512</value>
+    <value>600</value>
+  </Dimensions>
   <Point>
-    <ChestRegion>1</ChestRegion>
-    <ChestType>2</ChestType>
-    <Description/>
+    <Id>1</Id>
+    <ChestRegion>2</ChestRegion>
+    <ChestType>5</ChestType>
+    <ImageFeature>1</ImageFeature>
+    <Description>My desc</Description>
+    <Timestamp>2015-10-21 04:00:00</Timestamp>
+    <UserName>mcfly</UserName>
+    <MachineName>DELOREAN</MachineName>
     <Coordinate>
-      <value>0</value>
-      <value>1.5</value>
-      <value>-2.3</value>
+      <value>2</value>
+      <value>3.5</value>
+      <value>3</value>
     </Coordinate>
   </Point>
   <Point>
-    <ChestRegion>2</ChestRegion>
-    <ChestType>1</ChestType>
-    <Description>RightLung-NormalParenchyma</Description>
+    <Id>2</Id>
+    <ChestRegion>3</ChestRegion>
+    <ChestType>2</ChestType>
+    <ImageFeature>0</ImageFeature>
+    <Timestamp>2015-10-21 04:00:00</Timestamp>
+    <UserName>mcfly</UserName>
+    <MachineName>DELOREAN</MachineName>
     <Coordinate>
-      <value>9</value>
-      <value>10</value>
+      <value>2</value>
+      <value>1.5</value>
+      <value>3.75</value>
     </Coordinate>
   </Point>
   <BoundingBox>
+    <Id>3</Id>
     <ChestRegion>3</ChestRegion>
-    <ChestType>3</ChestType>
-    <Description>LeftLung-Vessel</Description>
+    <ChestType>2</ChestType>
+    <ImageFeature>0</ImageFeature>
+    <Timestamp>2015-10-21 04:00:00</Timestamp>
+    <UserName>mcfly</UserName>
+    <MachineName>DELOREAN</MachineName>
     <Start>
+      <value>2</value>
+      <value>3.5</value>
       <value>3</value>
-      <value>4</value>
-      <value>5</value>
     </Start>
     <Size>
-      <value>6</value>
-      <value>7</value>
-      <value>8</value>
+      <value>1</value>
+      <value>1</value>
+      <value>4</value>
     </Size>
   </BoundingBox>
   <BoundingBox>
-    <ChestRegion>4</ChestRegion>
-    <ChestType>0</ChestType>
-    <Description>RightSuperiorLobe-UndefinedType</Description>
+    <Id>4</Id>
+    <ChestRegion>2</ChestRegion>
+    <ChestType>5</ChestType>
+    <ImageFeature>1</ImageFeature>
+    <Description>My desc</Description>
+    <Timestamp>2015-10-21 04:00:00</Timestamp>
+    <UserName>mcfly</UserName>
+    <MachineName>DELOREAN</MachineName>
     <Start>
-      <value>11</value>
-      <value>12</value>
+      <value>2</value>
+      <value>3.5</value>
+      <value>3</value>
     </Start>
     <Size>
-      <value>13</value>
-      <value>14</value>
+      <value>2</value>
+      <value>2</value>
+      <value>5</value>
     </Size>
   </BoundingBox>
 </GeometryTopologyData>

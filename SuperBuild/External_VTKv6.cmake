@@ -3,8 +3,15 @@ set(proj VTKv6)
 
 # Set dependency list
 set(${proj}_DEPENDENCIES "zlib")
-if (Slicer_USE_PYTHONQT)
+
+set(CIP_USE_PYTHONQT OFF)
+
+if (CIP_USE_PYTHONQT)
   list(APPEND ${proj}_DEPENDENCIES python)
+endif()
+
+if (USE_BOOST)
+  list(APPEND ${proj}_DEPENDENCIES Boost)
 endif()
 
 # Include dependent projects if any
@@ -33,11 +40,11 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
   set(VTK_WRAP_TCL OFF)
   set(VTK_WRAP_PYTHON OFF)
 
-  if(Slicer_USE_PYTHONQT)
+  if(CIP_USE_PYTHONQT)
     set(VTK_WRAP_PYTHON ON)
   endif()
 
-  if(Slicer_USE_PYTHONQT)
+  if(CIP_USE_PYTHONQT)
     list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS
       -DVTK_INSTALL_PYTHON_USING_CMAKE:BOOL=ON
       -DPYTHON_EXECUTABLE:PATH=${PYTHON_EXECUTABLE}
@@ -76,7 +83,7 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
   endif()
 
   # Disable Tk when Python wrapping is enabled
-  if(Slicer_USE_PYTHONQT)
+  if(CIP_USE_PYTHONQT)
     list(APPEND EXTERNAL_PROJECT_OPTIONAL_ARGS -DVTK_USE_TK:BOOL=OFF)
   endif()
 
@@ -91,7 +98,7 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
   endif()
 
   set(${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY "github.com/Slicer/VTK.git" CACHE STRING "Repository from which to get VTK" FORCE)
-  set(${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG "c9862c52b05b44f600deab8d103281fb6a91ac5d" CACHE STRING "VTK git tag to use" FORCE)
+  set(${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG "fe92273888219edca422f3a308761ddcd2882e2b" CACHE STRING "VTK git tag to use" FORCE) #slicer-v6.3.0
 
   mark_as_advanced(${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG)
 
@@ -119,12 +126,14 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${CMAKE_PROJECT_N
       -DVTK_WRAP_TCL:BOOL=${VTK_WRAP_TCL}
       #-DVTK_USE_RPATH:BOOL=ON # Unused
       -DVTK_WRAP_PYTHON:BOOL=${VTK_WRAP_PYTHON}
-      -DVTK_INSTALL_LIB_DIR:PATH=${Slicer_INSTALL_LIB_DIR}
+      -DVTK_INSTALL_LIB_DIR:PATH=${CIP_INSTALL_LIB_DIR}
       -DVTK_USE_SYSTEM_ZLIB:BOOL=ON
       -DZLIB_ROOT:PATH=${ZLIB_ROOT}
       -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
       -DModule_vtkTestingRendering:BOOL=ON
+      -DModule_vtkInfovisBoostGraphAlgorithms:BOOL=${USE_BOOST}
+      -DBOOST_ROOT:PATH=${BOOST_DIR}
       ${EXTERNAL_PROJECT_OPTIONAL_ARGS}
     INSTALL_COMMAND ""
     DEPENDS
@@ -153,6 +162,10 @@ endif()
 
 mark_as_superbuild(VTK_SOURCE_DIR:PATH)
 
+set (VTK_LIBXML_INCLUDE_DIR ${VTK_SOURCE_DIR}/ThirdParty/libxml2/vtklibxml2)
+mark_as_superbuild(VTK_LIBXML_INCLUDE_DIR:PATH)
+
+
 mark_as_superbuild(
   VARS VTK_DIR:PATH
   LABELS "FIND_PACKAGE"
@@ -160,3 +173,4 @@ mark_as_superbuild(
 
 ExternalProject_Message(${proj} "PNG_INCLUDE_DIR:${PNG_INCLUDE_DIR}")
 ExternalProject_Message(${proj} "PNG_LIBRARY:${PNG_LIBRARY}")
+ExternalProject_Message(${proj} "LIBXML_INCLUDE_DIR:${VTK_LIBXML_INCLUDE_DIR}")

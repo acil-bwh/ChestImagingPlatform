@@ -1,0 +1,4 @@
+z,method,meanInnerRadius,meanOuterRadius,meanWallThickness,meanInnerRadiusEllipseFitting,meanOuterRadiusEllipseFitting,meanWallThicknessEllipseFitting,stdInnerRadius,stdOuterRadius,stdWallThickness
+0,FWHM,1.55833,3.51167,1.95333,1.57715,3.52111,1.94396,0.243613,0.448085,0.393898,
+1,FWHM,1.15,2.81,1.66,1.2059,2.14831,0.942409,0.358469,1.22763,0.936696,
+2,FWHM,1.52833,3.6,2.07167,1.55314,3.59105,2.03791,0.276189,0.357071,0.233339,

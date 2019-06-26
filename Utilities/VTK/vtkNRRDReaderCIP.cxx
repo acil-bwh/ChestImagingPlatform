@@ -883,7 +883,12 @@ void vtkNRRDReaderCIP::ExecuteData(vtkDataObject *output)
 #else
 void vtkNRRDReaderCIP::ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo)
 {
-  this->SetUpdateExtentToWholeExtent();
+  if (this->GetOutputInformation(0))
+    {
+    this->GetOutputInformation(0)->Set(
+      vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
+      this->GetOutputInformation(0)->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT()), 6);
+    }
   vtkImageData *data = this->AllocateOutputData(output, outInfo);
 #endif
 

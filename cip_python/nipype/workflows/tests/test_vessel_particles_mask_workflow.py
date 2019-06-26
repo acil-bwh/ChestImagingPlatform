@@ -1,23 +1,16 @@
 import os.path
-import subprocess
-import numpy as np
 import tempfile, shutil
-import pdb
 import nrrd
-from cip_python.utils.compute_dice_coefficient import compute_dice_coefficient
-from cip_python.nipype.workflows.vessel_particles_mask_workflow \
-  import VesselParticlesMaskWorkflow
+from cip_python.utils import compute_dice_coefficient
+from cip_python.nipype.workflows import VesselParticlesMaskWorkflow
+
+from cip_python.common import Paths
 
 def test_vessel_particles_mask_workflow():
-    # Get the path to the this test so that we can reference the test data
-    this_dir = os.path.dirname(os.path.realpath(__file__))
-
     # Set up the inputs and run the workflow
-    ct_file_name = this_dir + '/../../../../Testing/Data/Input/vessel.nrrd'
-    label_map_file_name = \
-      this_dir + '/../../../../Testing/Data/Input/vessel_volumeMask.nrrd'
-    seeds_mask_file_name = \
-      this_dir + '/../../../../Testing/Data/Input/vessel_vesselSeedsMask.nrrd'
+    ct_file_name = Paths.testing_file_path('vessel.nrrd')
+    label_map_file_name = Paths.testing_file_path('vessel_volumeMask.nrrd')
+    seeds_mask_file_name = Paths.testing_file_path('vessel_vesselSeedsMask.nrrd')
     tmp_dir = tempfile.mkdtemp()
     vessel_seeds_mask_file_name = os.path.join(tmp_dir, 'vesselSeedsMask.nrrd')
 

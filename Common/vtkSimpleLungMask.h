@@ -108,6 +108,7 @@ protected:
   short WholeLungLabel; //greater than 1
   short LeftLungLabel; //greater than 1
   short RightLungLabel; //greater than 1
+  unsigned char UcharTracheaLabel;
   short TracheaLabel;
   short VesselsLabel;
   short BodyLabel;

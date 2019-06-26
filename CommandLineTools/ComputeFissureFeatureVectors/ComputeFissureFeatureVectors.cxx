@@ -167,7 +167,6 @@ int main( int argc, char *argv[] )
 
   std::cout << "Filtering vessel particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
-    filter->SetInterParticleSpacing( interParticleSpacing );
     filter->SetComponentSizeThreshold( componentSizeThreshold );
     filter->SetParticleDistanceThreshold( maxAllowableDistance );
     filter->SetParticleAngleThreshold( particleAngleThreshold );

@@ -1,4 +1,4 @@
-#ifndef _itCIPkMergeChestLabelMapsImageFilter_txx
+#ifndef _itkCIPMergeChestLabelMapsImageFilter_txx
 #define _itkCIPMergeChestLabelMapsImageFilter_txx
 
 #include "itkCIPMergeChestLabelMapsImageFilter.h"

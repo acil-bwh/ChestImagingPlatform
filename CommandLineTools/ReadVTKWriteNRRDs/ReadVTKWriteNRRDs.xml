@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+    <category>Chest Imaging Platform.Toolkit.Utils</category>
+    <title>ReadVTKWriteNRRDsK</title>
+    <description><![CDATA[This reads a VTK polydata file containing particles data \
+and writes a corresponding collection of NRRD files containing array data.]]>
+    </description>
+    <version>0.0.1</version>
+    <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
+    <license>Slicer</license>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
+    <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+    </acknowledgements>
+    
+    <parameters>
+        <label>IO</label>
+        <description>Input/output parameters</description>
+        <file>
+            <name>inFileName</name>
+            <label>Input FileName Vector</label>
+            <channel>input</channel>
+            <flag>i</flag>
+            <longflag>ip</longflag>
+            <description><![CDATA[Input VTK polydata file corresponding to particles data. The contents of this \
+file will be writtent to output files with file names corresponding to the polydata array names. Note that scale \
+and 3D position information will be packaged together in one file, with the first three coordinates representing \
+spatial location and the fourth component representing scale information. This output file will be designated \
+as 'pass.nrrd'. This is consistent with how data is packaged by teem's puller program that is the main engine \
+for producing particles data.]]></description>
+            <default>NA</default>
+        </file>
+                
+         <string>
+            <name>prefix</name>
+            <label>Prefix for output files</label>
+            <channel>output</channel>
+            <longflag>prefix</longflag>
+            <description><![CDATA[All output NRRD files will have this prefix. The file names will be determined \
+from the array names in input VTK polydata file, so a given output file will have the format: prefix + arrayName \
++ .nrrd.]]></description>
+            <default>NA</default>
+        </string>
+      
+
+    </parameters>
+</executable>

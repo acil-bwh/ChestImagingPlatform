@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
+  <title>FindPatchMatch</title>
+    <description><![CDATA[Perform an exhaustive search through an image and identify the \
+coordinates that correspond to an exact match with the input image. I, J, K Coordinates of exact \
+match correspond to the position of the patch's origin and are written to the command line.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+   </acknowledgements>
+  <parameters>
+  <label>I/O</label>
+    <image>
+      <name>ctFileName</name>
+      <label>CT file name</label>
+      <channel>input</channel>
+      <longflag>ict</longflag>
+      <description><![CDATA[Input CT file. The program will slide the patch over \
+this image and look for coordinates that correspond to exact overlap.]]></description>
+      <default>NA</default>
+    </image>
+
+    <image>
+      <name>patchFileName</name>
+      <label>Patch file name</label>
+      <channel>input</channel>
+      <longflag>patch</longflag>
+      <description><![CDATA[Input patch file. The program will slide this patch over \
+the image and look for coordinates that correspond to exact overlap.]]></description>
+      <default>NA</default>
+    </image>
+  </parameters>
+</executable>

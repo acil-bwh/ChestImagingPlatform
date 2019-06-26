@@ -1,5 +1,3 @@
-#!/Users/predout/Library/Enthought/Canopy_64bit/User/bin/python
-
 import vtk
 import math
 import nrrd
@@ -7,20 +5,7 @@ import numpy as np
 from optparse import OptionParser
 from vtk.util.numpy_support import vtk_to_numpy
 
-## Dependencies:
-#  vtk      - installed from canopy repository
-#  pynrrd   - installed from pip
-#  libpng16 - installed from canopy repository
-
-# python display_particles_volume.py  -s 0.5 -l ~/Dropbox/Radiology-Data/Lung_Acinus_Tortuosity_Phantom/Thorax_1st_phat_06_B31f_200mas.nrrd --capturePrefix ./ --opacity 1.0 -i ~/Dropbox/Radiology-Data/Lung_Acinus_Tortuosity_Phantom/Particles/particles_rightlungVesselParticles.vtk
-
-# python ./display_particles_volume.py -i /Volumes/PE/Particles/Frank-0001_rightlungVesselParticles.vtk -s 0.5 -l /Volumes/PE/ParticlesTmp/Frank-0001/rightlung/Frank-0001_rightlung_masked.nrrd  --capturePrefix ./ --opacity 0.5
-
-# python ./display_particles_volume.py -i /Volumes/PE/nick/phgroup/finalcohortassembled/099/099_pect_phfirst_051314/099_pect_phfirst_051314_leftVesselParticles.vtk -s 0.5 --feature vessel --useFieldData 1 --hth -300
-
-# python ./display_particles_volume.py -i /Volumes/PE/nick/phgroup/finalcohortassembled/099/099_pect_phfirst_051314/099_pect_phfirst_051314_leftVesselParticles.vtk,/Volumes/PE/nick/phgroup/finalcohortassembled/099/099_pect_phfirst_051314/099_pect_phfirst_051314_rightVesselParticles.vtk -s 0.5,0.5 --feature vessel --useFieldData 1 --hth -300 --color red,green
-
-class DisplayParticles:
+class DisplayParticlesVolume:
     def __init__(self, file_list,spacing_list,feature_type,irad = 1.2, h_th=-200,
                  glyph_type='sphere', glyph_scale_factor=1,use_field_data=True, opacity_list=[],
                  color_list=[], lung=[]):
@@ -613,7 +598,7 @@ if __name__ == "__main__":
 
     print use_field_data
 
-    dv = DisplayParticles(file_list, spacing_list,options.feature_type,float(options.irad),float(options.hth), \
-        'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lung_filename)
+    dv = DisplayParticlesVolume(file_list, spacing_list, options.feature_type, float(options.irad), float(options.hth), \
+        'cylinder', float(options.glyph_scale_factor), use_field_data, opacity_list, color_list, lung_filename)
     dv.capture_prefix = options.capture_prefix
     dv.execute()

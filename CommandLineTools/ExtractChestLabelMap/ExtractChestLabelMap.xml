@@ -3,25 +3,26 @@
   <category>Chest Imaging Platform.Toolkit.Processing</category>
   <title>ExtractChestLabelMap</title>
   <description><![CDATA[This program takes in a lung label map and producs a lung \
-  label map; it assumes the labeling conventions coded in cipConventions.h. \
-  The user specifies the regions and types he/she is \
-  interested in.  All other regions/types are set to UNDEFINEDTYPE \
-  and UNDEFINEDREGION.  Given that regions are hierarchical, a region \
-  that is higher in the hierarchy will be preferred to one that is \
-  lower.  E.g., if the user specifies both WHOLELUNG and \
-  LEFTSUPERIORLOBE, the region in the LEFTSUPERIORLOBE will be defined as \
-  such, and WHOLELUNG will be used elsewhere. Precedence will be as \
-  follows: types, regions, region-type pairs. In \
-  other words, if the user requests both LEFTLUNG and AIRWAY (not as a \
-  pair), then an AIRWAY voxel in the LEFTLUNG will be mapped to LEFTLUNG \
-  in the output. If the user additionally requests the AIRWAY, LEFTLUNG \
-  pair, then the entire voxel will be preserved.]]></description>
+label map; it assumes the labeling conventions coded in cipConventions.h. \
+The user specifies the regions and types he/she is \
+interested in.  All other regions/types are set to UndefinedType \
+and UndefinedRegion.  Given that regions are hierarchical, a region \
+that is higher in the hierarchy will be preferred to one that is \
+lower.  E.g., if the user specifies both WholeLung and \
+LeftSuperiorLobe, the region in the LeftSuperiorLobe will be defined as \
+such, and WholeLung will be used elsewhere. Precedence will be as \
+follows: types, regions, region-type pairs. In \
+other words, if the user requests both LeftLung and Airway (not as a \
+pair), then an Airway voxel in the LeftLung will be mapped to LeftLung \
+in the output. If the user additionally requests the Airway, LeftLung \
+pair, then the entire voxel will be preserved.]]></description>
   <version>0.0.1</version>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.</acknowledgements>
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.</acknowledgements>
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
@@ -30,7 +31,7 @@
       <label>Input label map file name</label>
       <channel>input</channel>
       <flag>i</flag>
-      <longflag>--inFileName</longflag>
+      <longflag>ilm</longflag>
       <description><![CDATA[Input label map file name]]></description>
       <default>NA</default>
     </image>
@@ -40,7 +41,7 @@
       <label>Output label map file name</label>
       <channel>output</channel>
       <flag>o</flag>
-      <longflag>--outFileName</longflag>
+      <longflag>olm</longflag>
       <description><![CDATA[Output label map file name]]></description>
       <default>NA</default>
     </image>

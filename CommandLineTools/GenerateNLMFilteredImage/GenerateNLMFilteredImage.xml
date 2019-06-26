@@ -4,7 +4,7 @@
   <title>GenerateNLMFilteredImage</title>
   <description><![CDATA[ This module implements a fast version of the popular Non-Local Means filter for image denoising. The whole description of this version may be found in the following paper (please, cite it if you are willing to use this software):\n A. Tristan-Vega, V. Garcia Perez, S. Aja-Fenandez, and C.-F. Westin, "Efficient and Robust Nonlocal Means Denoising of MR Data Based on Salient Features Matching", Computer Methods and Programs in Biomedicine. 2011.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateMedianFilteredImage</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

@@ -13,7 +13,7 @@ def compute_image_gradient(input_filename, output_filename):
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()  
 
     unuCall = os.path.join(path['TEEM_PATH'], \
@@ -43,7 +43,7 @@ def blur_image(input_filename, sigma, output_filename):
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()  
             
 
@@ -70,7 +70,7 @@ def compute_edge_mask(input_mask_name, output_mask_name):
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()    
 
 
@@ -112,7 +112,7 @@ def compute_image_similarity(fixed_image, registered_moving_image, image_feature
     for path_name in toolsPaths:
         path[path_name]=os.environ.get(path_name,False)
         if path[path_name] == False:
-            print path_name + " environment variable is not set"
+            print (path_name + " environment variable is not set")
             exit()    
 
     possible_similarities = ["nc", "mi", "msqr", "gd", "nmi"]

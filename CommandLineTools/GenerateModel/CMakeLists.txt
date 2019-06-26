@@ -19,11 +19,23 @@ cipMacroBuildCLI(
     )
 
 SET (TEST_NAME ${MODULE_NAME}_Test)
+# Different baseline images because there seems to be slight differences between platforms
+if (UNIX)
+    if (APPLE)
+        SET (IMAGE_NAME ${TEST_NAME}_simple_lm_OSX.vtk)
+    else()
+        SET (IMAGE_NAME ${TEST_NAME}_simple_lm_LINUX.vtk)
+    endif()
+else()
+    SET (IMAGE_NAME ${TEST_NAME}_simple_lm_WIN.vtk)
+endif()
+
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
    --compareVTKPolyData
-      ${BASELINE_DATA_DIR}/${TEST_NAME}_wholelung-64.vtk
-      ${OUTPUT_DATA_DIR}/${TEST_NAME}_wholelung-64.vtk
+      ${BASELINE_DATA_DIR}/${IMAGE_NAME}
+      ${OUTPUT_DATA_DIR}/${IMAGE_NAME}
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/wholelung-64.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_Test_wholelung-64.vtk
+      -i ${INPUT_DATA_DIR}/simple_lm.nrrd
+      -l 2
+      -o ${OUTPUT_DATA_DIR}/${IMAGE_NAME}
 )

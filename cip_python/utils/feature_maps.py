@@ -15,7 +15,7 @@ class FeatureMap:
 
     """
     def __init__(self, feature_vecs):
-	self.feature_vecs = feature_vecs
+        self.feature_vecs = feature_vecs
 
 class PolynomialFeatureMap(FeatureMap):    
     """Class for computing polynomial elements given a feature vector

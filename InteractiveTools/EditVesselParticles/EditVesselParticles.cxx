@@ -372,7 +372,6 @@ will be retained in the output";
   // Optionally filter particles
   std::cout << "Filtering particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
-    filter->SetInterParticleSpacing( interParticleSpacing );
     filter->SetComponentSizeThreshold( componentSizeThreshold );
     filter->SetParticleDistanceThreshold( maxAllowableDistance );
     filter->SetParticleAngleThreshold( particleAngleThreshold );
@@ -435,6 +434,8 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
                                 std::map< unsigned short, std::string >* componentLabelToNameMap, double particleSize,
 				double distThresh, double scaleThresh )  
 {
+  cip::ChestConventions conventions;
+  
   unsigned int numberParticles         = particles->GetNumberOfPoints();
   unsigned int numberOfPointDataArrays = particles->GetPointData()->GetNumberOfArrays();
 
@@ -446,8 +447,10 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
   std::vector< unsigned int > labeledIDs;
   for ( unsigned int i=0; i<numberParticles; i++ )
     {
-      if ( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::ARTERY) ||
-	   *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) == float(cip::VEIN) )
+      unsigned short chestRegionChestTypeValue = 
+	(unsigned short)(*(particles->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple(i)));
+      unsigned char cipType = conventions.GetChestTypeFromValue( chestRegionChestTypeValue );
+      if ( cipType == (unsigned char)(cip::ARTERY) || cipType == (unsigned char)(cip::VEIN) )
 	{
 	  labeledIDs.push_back( i );
 	}
@@ -492,18 +495,21 @@ void AddComponentsToInteractor( cipVesselDataInteractor* interactor, vtkSmartPoi
 
       if ( considerParticle )
 	{
-	  if ( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) != float(cip::ARTERY) &&
-	       *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) != float(cip::VEIN) )
+	  unsigned char chestRegionChestTypeValue = 
+	    *(particles->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple(i));
+	  unsigned char cipType = conventions.GetChestTypeFromValue( chestRegionChestTypeValue );
+	  if ( cipType != (unsigned char)(cip::ARTERY) && cipType != (unsigned char)(cip::VEIN) )
 	    {
 	      component = (unsigned short)( *(particles->GetPointData()->GetArray( "unmergedComponents" )->GetTuple(i)) );
 
 	      // The input particles may already be labeled. Get the ChestType
 	      // recorded for thie component. By default we will color according
 	      // to this type
-	      unsigned char cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(i)) );
+	      unsigned char cipType = 
+		conventions.GetChestTypeFromValue((unsigned short)(*(particles->GetPointData()->
+								     GetArray( "ChestRegionChestType" )->GetTuple(i))));
 	      
-	      bool addComponent = true;
-	  
+	      bool addComponent = true;	  
 	      for ( unsigned int j=0; j<componentVec.size(); j++ )
 		{
 		  if ( component == componentVec[j] )
@@ -573,7 +579,8 @@ void AddSpecifiedParticlesToInteractor( cipVesselDataInteractor* interactor, vtk
 	  // Get the particle's type in order to retrieve color later. We're assuming that all particles
 	  // for the specification have the same type, so we can grab the type of any one of them for the
 	  // color.
-	  cipType = (unsigned char)( *(particles->GetPointData()->GetArray( "ChestType" )->GetTuple(p)) );
+	  cipType = 
+	    conventions.GetChestTypeFromValue( (unsigned short)(*(particles->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple(p))) );
 
 	  points->InsertNextPoint( particles->GetPoint(p) );
 
@@ -653,8 +660,13 @@ vtkSmartPointer< vtkPolyData > GetLabeledVesselParticles( cipVesselDataInteracto
     if ( interactor->Exists( name ) )
       {
 	interactor->GetActorColor( name, actorColor ); 
-	float cipType = float( conventions.GetChestTypeFromColor( actorColor ) );
-	particles->GetPointData()->GetArray( "ChestType" )->SetTuple( i, &cipType );
+
+	unsigned short currentChestRegionChestTypeValue = 
+	  (unsigned short)(*(particles->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple(i)));
+	unsigned char cipRegion = conventions.GetChestRegionFromValue( currentChestRegionChestTypeValue );
+	unsigned char cipType = conventions.GetChestTypeFromColor( actorColor );
+	float newChestRegionChestTypeValue = float(conventions.GetValueFromChestRegionAndType( cipRegion, cipType ));
+	particles->GetPointData()->GetArray( "ChestRegionChestType" )->SetTuple( i, &newChestRegionChestTypeValue );
       }
 
     outPoints->InsertNextPoint( particles->GetPoint(i) );

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Particles</category>
+  <title>UpdateParticlesData</title>
+  <description><![CDATA[This program can be applied to particles data sets created by older versions of the CIP in order to make them compliant with the current CIP version.]]></description>
+  <version>0.0.1</version>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+    <label>I/O</label>
+    <geometry type="model">
+      <name>inFileName</name>
+      <label>inFileName </label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>ip</longflag>
+      <description><![CDATA[Input particles file name (VTK polydata file)].]]></description>
+      <default>NA</default>
+    </geometry>
+    <geometry type="model">
+      <name>outFileName</name>
+      <label>out FileName</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>op</longflag>
+      <description><![CDATA[Output particles file name (VTK polydata file).]]></description>
+      <default>NA</default>
+    </geometry>    
+  </parameters>
+
+  <parameters>
+    <double>
+      <name>scale</name>
+      <flag>s</flag>
+      <longflag>scale</longflag>
+      <description>Scale value to assign to the scale array for every particle. Should only be used if existing scale \
+array values are incorrect (e.g. 0). A value less than or equal to 0 will be ignored. </description>
+      <label>Particle scale</label>
+      <default>0</default>
+    </double>
+  </parameters>
+  
+</executable>

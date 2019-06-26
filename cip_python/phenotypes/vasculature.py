@@ -8,13 +8,9 @@ from scipy.stats import kde
 from scipy.integrate import quadrature
 import os.path
 
-import matplotlib
-#Use Agg backend to allow non-interactive rendering 
-#without relying on X-windows. Other options are: PDF, Cairo..
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from cip_python.phenotypes.phenotypes import Phenotypes
+from cip_python.phenotypes import Phenotypes
 
 
 class VasculaturePhenotypes(Phenotypes):
@@ -49,7 +45,7 @@ class VasculaturePhenotypes(Phenotypes):
     cols.append('TBV')
     th = self.csa_th[0]
     cols.append('BV%d'%th)
-    for kk in xrange(len(self.csa_th)-1):
+    for kk in range(len(self.csa_th)-1):
       th = self.csa_th[kk]
       th1 = self.csa_th[kk+1]
       cols.append('BV%d_%d'%(th,th1))
@@ -70,12 +66,12 @@ class VasculaturePhenotypes(Phenotypes):
     bden = np.zeros(csa.size)
     cden = np.zeros(csa.size)
 
-    print "Number of Vessel Points "+str(vessel.GetNumberOfPoints())
+    print ("Number of Vessel Points "+str(vessel.GetNumberOfPoints()))
     
     #Compute interparticle distance
     self._dx = self.interparticle_distance()
   
-    print "DX: "+str(self._dx)
+    print ("DX: "+str(self._dx))
     
     tbv=dict()
     bv=dict()
@@ -118,7 +114,7 @@ class VasculaturePhenotypes(Phenotypes):
       th=self.csa_th[0]
       bv[rr_id,th]=self.integrate_volume(p_csa,self.min_csa,th,n_points,self._dx)
       self.add_pheno([region_name,type_name],'BV%d'%th,bv[rr_id,th])
-      for kk in xrange(len(self.csa_th)-1):
+      for kk in range(len(self.csa_th)-1):
         th = self.csa_th[kk]
         th1 = self.csa_th[kk+1]
         bv[rr_id,th]=self.integrate_volume(p_csa,th,th1,n_points,self._dx)

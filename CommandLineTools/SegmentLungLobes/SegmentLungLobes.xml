@@ -1,58 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Chest Imaging Platform.Toolkit.Segmentation</category>
-  <title>SegmentLungLobes</title>
-  <description><![CDATA[This program reads a label map image (where the labels\
-  correspond to the conventions laid out cipChestConventions.h) as\
-  well as particles defining the lobe boundaries and produces a\
-  label map with the lung lobes identified. The input is assumed to\
-  have the left and right lungs uniquely labeled. The user can pass\
-  particles for the left lung only (left oblique fissure particles),\
-  right lung only (both right oblique and right horizontal fissure\
-  particles) or both. Thin plate splines are used to define the\
-  interpolation boundaries between the lobes. It is assumed that the\
-  input particles datasets are 'clean' in the sense that each\
-  particle corresponds to (or is very likely to correspond to) the\
-  fissure it represents.]]>
+  <title>Segment Lung Lobes</title>
+  <description><![CDATA[This program reads a label map image (where the labels \
+correspond to the conventions laid out cipChestConventions.h) as \
+well as particles defining the lobe boundaries and produces a \
+label map with the lung lobes identified. The input is assumed to \
+have the left and right lungs uniquely labeled. The user can pass \
+particles for the left lung only (left oblique fissure particles), \
+right lung only (both right oblique and right horizontal fissure \
+particles) or both. Thin plate splines are used to define the \
+interpolation boundaries between the lobes. It is assumed that the \
+input particles datasets are 'clean' in the sense that each \
+particle corresponds to (or is very likely to correspond to) the \
+fissure it represents.]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/segmentation</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-    and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
   </acknowledgements>
 
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
+    
     <image type="label">
       <name>inLabelMapFileName</name>
       <label>Input label map file name</label>
       <channel>input</channel>
-      <flag>i</flag>
-      <longflag>in</longflag>
-      <description><![CDATA[Input lung label map file name. Left and right lungs must be uniquely labeled.]]></description>
+      <longflag>ilm</longflag>
       <default>NA</default>
-    </image>  
+      <description><![CDATA[Input lung label map file name. Left and right lungs must be uniquely labeled.]]></description>
+    </image>
 
     <image type="label">
       <name>outLabelMapFileName</name>
       <label>Output label map file name</label>
-      <channel>input</channel>
+      <channel>output</channel>
       <flag>o</flag>
-      <longflag>out</longflag>
-      <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
+      <longflag>olm</longflag>
       <default>NA</default>
+      <description><![CDATA[Output label map file name with the lung lobe segmented.]]></description>
     </image>
 
     <string>
       <name>leftShapeModelFileName</name>
       <label>Left lung lobes shape model file name</label>
       <channel>input</channel>
-      <longflag>lm</longflag>
+      <longflag>ilsm</longflag>
       <description><![CDATA[File name of shape model describing the boundary between the lobes \
-      in the left lung.]]></description>
+in the left lung.]]></description>
       <default>NA</default>
     </string>  
 
@@ -60,50 +61,71 @@
       <name>rightShapeModelFileName</name>
       <label>Right lung lobes shape model file name</label>
       <channel>input</channel>
-      <longflag>rm</longflag>
+      <longflag>irsm</longflag>
       <description><![CDATA[File name of shape model describing the boundaries between the lobes \
-      in the right lung.]]></description>
+in the right lung.]]></description>
       <default>NA</default>
-    </string>  
+    </string>
+    
   </parameters>
   
   <parameters>
     <label>Fiducial Points</label>
     <description><![CDATA[Fiducials points along the fissures]]></description>
+    
     <point multiple="true" coordinateSystem="ras">
       <name>rightHorizontalFiducials</name>
       <label>Horizontal Right Fiducials</label>
-      <longflag>rightHorizontalFiducials</longflag>
+      <longflag>rhf</longflag>
       <description><![CDATA[Fiducals along right horizontal fissure]]></description>
       <default>0,0,0</default>
     </point>
+
     <point multiple="true" coordinateSystem="ras">
       <name>rightObliqueFiducials</name>
       <label>Oblique Right Fiducials</label>
-      <longflag>rightObliqueFiducials</longflag>
+      <longflag>rof</longflag>
       <description><![CDATA[Fiducials along right oblique fissure]]></description>
       <default>0,0,0</default>
     </point>
+
     <point multiple="true" coordinateSystem="ras">
       <name>leftObliqueFiducials</name>
       <label>Left Oblique Fiducials</label>
-      <longflag>leftObliqueFiducials</longflag>
+      <longflag>lof</longflag>
       <description><![CDATA[Fiducials along left oblique fissure]]></description>
       <default>0,0,0</default>
     </point>
+    
+    <string-enumeration>
+      <name>coordinateSystem</name>
+      <flag>c</flag>
+      <longflag>coordSytem</longflag>
+      <element>RAS</element>
+      <element>LPS</element>
+      <element>Index</element>
+      <default>RAS</default>
+      <description><![CDATA[Point coordinate system.     \
+        RAS   - Right-Anterior-Superior \
+        LPS   - Left-Posterior-Superior \
+        Index - Image index coordinates.
+      ]]></description>
+    </string-enumeration>
+
   </parameters>
 
   <parameters>
     <label>Fissure Particles</label>
     <description>Fissure Particles</description>
+
     <string>
       <name>loParticlesFileName</name>
       <label>Left oblique particles file name</label>
       <channel>input</channel>
-      <longflag>loParticles</longflag>
+      <longflag>lofp</longflag>
       <description><![CDATA[Left oblique particles file name. It's assumed that all particles are "highly likely" to \
-      represent the left oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
-      through these points to define the boundary between the lobes.]]></description>
+represent the left oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
+through these points to define the boundary between the lobes.]]></description>
       <default>NA</default>
     </string>  
 
@@ -111,10 +133,10 @@
       <name>roParticlesFileName</name>
       <label>Right oblique particles file name</label>
       <channel>input</channel>
-      <longflag>roParticles</longflag>
+      <longflag>rofp</longflag>
       <description><![CDATA[Right oblique particles file name. It's assumed that all particles are "highly likely" to \
-      represent the right oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
-      through these points to define the boundary between the lobes.]]></description>
+represent the right oblique fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
+through these points to define the boundary between the lobes.]]></description>
       <default>NA</default>
     </string>  
 
@@ -122,32 +144,36 @@
       <name>rhParticlesFileName</name>
       <label>Right horizontal particles file name</label>
       <channel>input</channel>
-      <longflag>rhParticles</longflag>
+      <longflag>rhfp</longflag>
       <description><![CDATA[Right horizontal particles file name. It's assumed that all particles are "highly likely" to \
-      represent the right horizontal fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
-      through these points to define the boundary between the lobes.]]></description>
+represent the right horizontal fissure (i.e. essentially no noise particles). An interpolating surface will be fit \
+through these points to define the boundary between the lobes.]]></description>
       <default>NA</default>
     </string>  
-    </parameters>
+
+  </parameters>
   
-    <parameters>
+  <parameters>
     <label>Region Type Points</label>
     <description>Region Type Points</description>
+
     <string>
       <name>regionTypePointsFileName</name>
       <label>Region and type points file</label>
       <channel>input</channel>
-      <longflag>regionType</longflag>
+      <longflag>irtp</longflag>
       <description><![CDATA[Region and type points file indicating a set of points that lying on the lobe boundaries. \
-      If specified, these points will be used in addition to any particle points supplied in order to form a full set of \
-      points along the lobe boundaries through which interpolating surfaces will be fit.]]></description>
+If specified, these points will be used in addition to any particle points supplied in order to form a full set of \
+points along the lobe boundaries through which interpolating surfaces will be fit.]]></description>
       <default>NA</default>
     </string>  
+
   </parameters>
 
   <parameters>
     <description>Options</description>
     <label>Options</label>
+
     <double>
       <name>lambda</name>
       <flag>l</flag>
@@ -170,7 +196,8 @@
       <label>Left Mean Shape</label>
       <longflag>lms</longflag>
       <description><![CDATA[Setting this flag will cause the mean of the left shape model \
-      to be used instead of the fit shape model.]]></description>
+to be used instead of the fit shape model.]]></description>
     </boolean>  
+
   </parameters>
 </executable>

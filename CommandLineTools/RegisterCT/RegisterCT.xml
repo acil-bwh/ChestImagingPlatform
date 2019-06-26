@@ -2,90 +2,90 @@
 <executable>
   <category>Chest Imaging Platform.Toolkit.Registration</category>
   <title>RegisterCT</title>
-  <description><![CDATA[This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.]]></description>
+  <description><![CDATA[This program registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/registration</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
-   </acknowledgements>
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
   <parameters>
-  <label>I/O</label>
+    <label>I/O</label>
     <image>
       <name>fixedImageFileName</name>
       <label>fixed Image FileName</label>
       <channel>input</channel>
-      <longflag>--fct</longflag>
+      <longflag>fct</longflag>
       <description><![CDATA[fixed Image File Name]]></description>
-      <default>q</default>
+      <default>NA</default>
     </image>   
     <image>
       <name>movingImageFileName</name>
       <label>moving Image FileName</label>
       <channel>input</channel>
-      <longflag>--mct</longflag>
+      <longflag>mct</longflag>
       <description><![CDATA[moving Image FileName]]></description>
-      <default>q</default>
+      <default>NA</default>
     </image>   
     <transform>
       <name>outputTransformFileName</name>
       <label>output Transform FileName</label>
       <channel>output</channel>
-      <longflag>--otx</longflag>
+      <longflag>otx</longflag>
       <description><![CDATA[Output transform file name]]></description>
-      <default>q</default>
+      <default>NA</default>
     </transform>
     <image>
       <name>resampledCTFileName</name>
       <label>Resampled CT FileName</label>
       <channel>output</channel>
-      <longflag>--oct</longflag>
+      <longflag>oct</longflag>
       <description><![CDATA[output Resampled CT FileName]]></description>
-      <default>q</default>
+      <default>NA</default>
     </image>
     <image type="label">
-          <name>movingLabelmapFileName</name>
-          <label>moving LabelMap FileName</label>
-          <channel>input</channel>
-          <longflag>--mlm</longflag>
-          <description><![CDATA[moving LabelMap FileName]]></description>
-          <default>q</default>
-     </image>
+      <name>movingLabelmapFileName</name>
+      <label>moving LabelMap FileName</label>
+      <channel>input</channel>
+      <longflag>mlm</longflag>
+      <description><![CDATA[moving LabelMap FileName]]></description>
+      <default>NA</default>
+    </image>
     <string>
       <name>movingImageID</name>
       <label>moving Image subject ID</label>
       <channel>input</channel>
-      <longflag>--movingImageID</longflag>
+      <longflag>movingImageID</longflag>
       <description><![CDATA[Moving Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
-      <default>q</default>
+      <default>NA</default>
     </string>   
     <string>
       <name>fixedImageID</name>
       <label>Fixed Image subject ID</label>
       <channel>input</channel>
-      <longflag>--fixedImageID</longflag>
+      <longflag>fixedImageID</longflag>
       <description><![CDATA[Fixed Image subject ID. If not specified, the subject ID will be automatically extracted from the file path]]></description>
-      <default>q</default>
+      <default>NA</default>
     </string> 
     <string>
       <name>registrationID</name>
       <label>registration ID ID</label>
       <channel>input</channel>
-      <longflag>--registrationID</longflag>
+      <longflag>registrationID</longflag>
       <default>NA</default>
       <description><![CDATA[unique Id for the registration process.]]></description>
     </string> 
-    </parameters>
-    <parameters>
+  </parameters>
+  <parameters>
     <label>Registration parameters</label>
     <float>
       <name>downsampleFactor</name>
       <label>downsample Factor</label>
       <channel>input</channel>
       <flag>d</flag>
-      <longflag>--degrees</longflag>
+      <longflag>degrees</longflag>
       <description><![CDATA[downsampleFactor]]></description>
       <default>1.0</default>
     </float>  
@@ -93,7 +93,7 @@
       <name>maxStepLength</name>
       <label>max Step Length</label>
       <channel>input</channel>
-      <longflag>--max</longflag>
+      <longflag>max</longflag>
       <description><![CDATA[maxStepLength]]></description>
       <default>1.0</default>
     </float>  
@@ -101,7 +101,7 @@
       <name>minStepLength</name>
       <label>min Step Length</label>
       <channel>input</channel>
-      <longflag>--min</longflag>
+      <longflag>min</longflag>
       <description><![CDATA[minStepLength]]></description>
       <default>0.001</default>
     </float> 
@@ -109,7 +109,7 @@
       <name>numberOfIterations</name>
       <label>number Of Iterations</label>
       <channel>input</channel>
-      <longflag>--numberOfIterations</longflag>
+      <longflag>numberOfIterations</longflag>
       <description><![CDATA[Number of iterations. ]]></description>
       <default>20</default>
     </integer>   
@@ -117,45 +117,43 @@
       <name>translationScale</name>
       <label>translation Scale</label>
       <channel>input</channel>
-      <longflag>--translationScale</longflag>
+      <longflag>translationScale</longflag>
       <description><![CDATA[translationScale]]></description>
       <default>0.001</default>
     </float>  
-  <integer-vector>
+    <integer-vector>
       <name>regionVecArg</name>
       <longflag>ciprVec</longflag>
       <label>regionVec</label>
       <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-  </integer-vector>
-  <integer-vector>
+    </integer-vector>
+    <integer-vector>
       <name>typeVecArg</name>
       <longflag>typeVec</longflag>
       <label>typeVec</label>
       <description><![CDATA[Specify a region in a region-type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-  </integer-vector>
-  <integer-vector>
+    </integer-vector>
+    <integer-vector>
       <name>typePairVecArg</name>
       <longflag>typePairVec</longflag>
       <label>typePairVec</label>
       <description><![CDATA[Specify a type in a region type pair you want to crop. This flag should be used together with the egionPair flag]]></description>
-  </integer-vector>
-  <integer-vector>
+    </integer-vector>
+    <integer-vector>
       <name>regionPairVecArg</name>
       <longflag>regionPairVec</longflag>
       <label>regionPairVec</label>
       <description><![CDATA[Specify a region in a region type pair you want to crop. This flag should be used together with the -typePair flag]]></description>
-  </integer-vector>
-   
-
-  <integer>
+    </integer-vector>    
+    
+    <integer>
       <name>dimension</name>
       <label>Image dimension</label>
       <channel>input</channel>
       <longflag>dim</longflag>
       <description><![CDATA[Dimension of the image being resampled. Default: 3.]]></description>
-     <default>3</default>
- </integer> 
+      <default>3</default>
+    </integer> 
   </parameters>
-
-
+    
 </executable>

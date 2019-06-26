@@ -19,62 +19,40 @@ typedef itk::ImageFileWriter< UShortImageType >                   UShortWriterTy
 typedef itk::ImageRegionIteratorWithIndex< ShortImageType >       ShortIteratorType;
 typedef itk::ImageRegionIteratorWithIndex< UShortImageType >      UShortIteratorType;
 typedef itk::CIPPartialLungLabelMapImageFilter< ShortImageType >  PartialLungType;
-typedef itk::GDCMImageIO                                          ImageIOType;
-typedef itk::GDCMSeriesFileNames                                  NamesGeneratorType;
-typedef itk::ImageSeriesReader< ShortImageType >                  SeriesReaderType;
 
 void LowerClipImage( ShortImageType::Pointer, short, short );
 void UpperClipImage( ShortImageType::Pointer, short, short );
-ShortImageType::Pointer ReadCTFromDirectory( std::string );
-ShortImageType::Pointer ReadCTFromFile( std::string );
 
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
 
-  // Read the CT image
-  ShortImageType::Pointer ctImage = ShortImageType::New();
-
-  if ( ctDir.compare("NA") != 0 )
+  cip::CTReaderType::Pointer reader = cip::CTReaderType::New();
+    reader->SetFileName( ctFileName );
+  try
     {
-    std::cout << "Reading CT from directory..." << std::endl;
-    ctImage = ReadCTFromDirectory( ctDir );
+    reader->Update();
     }
-  else if ( ctFileName.compare("NA") != 0 )
+  catch ( itk::ExceptionObject &excp )
     {
-    std::cout << "Reading CT from file..." << std::endl;
-    ctImage = ReadCTFromFile( ctFileName );
-    }
-  else
-    {
-    std::cerr << "ERROR: No CT image specified" << std::endl;
-    
-    return 0;
-    }
+    std::cerr << "Exception caught reading CT image:";
+    std::cerr << excp << std::endl;
 
-  // ShortImageType::SpacingType spacing = ctImage->GetSpacing();
-  
-  // unsigned long closingNeighborhood[3];
-  //   closingNeighborhood[0] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[0] ) );
-  //   closingNeighborhood[1] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[1] ) );
-  //   closingNeighborhood[2] = static_cast< unsigned long >( vnl_math_rnd( closingRadius/spacing[2] ) );
-
-  // closingNeighborhood[0] = closingNeighborhood[0]>0 ? closingNeighborhood[0] : 1;
-  // closingNeighborhood[1] = closingNeighborhood[1]>0 ? closingNeighborhood[1] : 1;
-  // closingNeighborhood[2] = closingNeighborhood[2]>0 ? closingNeighborhood[2] : 1;
+    return cip::NRRDREADFAILURE;
+    }
 
   std::cout << "Clipping low CT image values..." << std::endl;
-  LowerClipImage( ctImage, lowerClipValue, lowerReplacementValue );
+  LowerClipImage( reader->GetOutput(), lowerClipValue, lowerReplacementValue );
 
   std::cout << "Clipping upper CT image values..." << std::endl;
-  UpperClipImage( ctImage, upperClipValue, upperReplacementValue );
+  UpperClipImage( reader->GetOutput(), upperClipValue, upperReplacementValue );
 
   std::cout << "Executing partial lung filter..." << std::endl;
   PartialLungType::Pointer partialLungFilter = PartialLungType::New();
-    partialLungFilter->SetInput( ctImage );
+    partialLungFilter->SetInput( reader->GetOutput() );
     partialLungFilter->SetAirwayMinIntensityThreshold( airwayMinThreshold );
     partialLungFilter->SetAirwayMaxIntensityThreshold( airwayMaxThreshold );
-    partialLungFilter->SetLeftRightLungSplitRadius( leftRightLungSplitRadius );
+    partialLungFilter->SetMaxAirwayVolume( maxAirwayVolume );
   if ( feetFirst == true )
     {
     partialLungFilter->SetHeadFirst( false );
@@ -92,6 +70,8 @@ int main( int argc, char *argv[] )
     {
       std::cerr << "Exception caught segmenting lungs:";
       std::cerr << excp << std::endl;
+
+      return cip::SEGMENTATIONFAILURE;
     }
 
   // //
@@ -129,6 +109,8 @@ int main( int argc, char *argv[] )
     {
     std::cerr << "Exception caught while writing lung mask:";
     std::cerr << excp << std::endl;
+
+    return cip::LABELMAPWRITEFAILURE;
     }
 
   std::cout << "DONE." << std::endl;
@@ -153,7 +135,6 @@ void LowerClipImage( ShortImageType::Pointer image, short clipValue, short repla
     }
 }
 
-
 void UpperClipImage( ShortImageType::Pointer image, short clipValue, short replacementValue )
 {
   ShortIteratorType iIt( image, image->GetBufferedRegion() );
@@ -168,50 +149,4 @@ void UpperClipImage( ShortImageType::Pointer image, short clipValue, short repla
 
     ++iIt;
     }
-}
-
-
-ShortImageType::Pointer ReadCTFromDirectory( std::string ctDir )
-{
-  ImageIOType::Pointer gdcmIO = ImageIOType::New();
-
-  std::cout << "---Getting file names..." << std::endl;
-  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
-    namesGenerator->SetInputDirectory( ctDir );
-
-  const SeriesReaderType::FileNamesContainer & filenames = namesGenerator->GetInputFileNames();
-
-  std::cout << "---Reading DICOM image..." << std::endl;
-  SeriesReaderType::Pointer dicomReader = SeriesReaderType::New();
-    dicomReader->SetImageIO( gdcmIO );
-    dicomReader->SetFileNames( filenames );
-  try
-    {
-    dicomReader->Update();
-    }
-  catch (itk::ExceptionObject &excp)
-    {
-    std::cerr << "Exception caught while reading dicom:";
-    std::cerr << excp << std::endl;
-    }  
-
-  return dicomReader->GetOutput();
-}
-
-
-ShortImageType::Pointer ReadCTFromFile( std::string fileName )
-{
-  cip::CTReaderType::Pointer reader = cip::CTReaderType::New();
-    reader->SetFileName( fileName.c_str() );
-  try
-    {
-    reader->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught reading CT image:";
-    std::cerr << excp << std::endl;
-    }
-
-  return reader->GetOutput();
 }

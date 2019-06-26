@@ -1,11 +1,11 @@
 //GetTransformationSimilarityMetric
 
 /** \file
- *  \ingroup commandLineTools 
- *  \details This program registers 2 label maps, source and target, and 
- * a transformation file as well as the transformed image 
+ *  \ingroup commandLineTools
+ *  \details This program registers 2 label maps, source and target, and
+ * a transformation file as well as the transformed image
  *
- *  USAGE: 
+ *  USAGE:
 ./GetTransformationSimilarityMetric --fixedLabelMapFileName ~/Documents/Data/COPDGene/14388A/14388A_INSP_STD_HAR_COPD/14388A_INSP_STD_HAR_COPD_leftLungRightLung.nhdr --movingLabelMapFileName ~/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/14988Y_INSP_STD_UAB_COPD_leftLungRightLung.nhdr --regionVec 1 --fixedCTFileName ~/Documents/Data/COPDGene/14388A/14388A_INSP_STD_HAR_COPD/14388A_INSP_STD_HAR_COPD.nhdr --movingCTFileName ~/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/14988Y_INSP_STD_UAB_COPD.nhdr --inputTransform ~/Documents/Data/COPDGene/14988Y/14988Y_INSP_STD_UAB_COPD/registrationData/14988Y_INSP_STD_UAB_COPD_to_14388A_INSP_STD_HAR_COPD.tfm
 
  *
@@ -109,20 +109,20 @@ struct REGIONTYPEPAIR
 	std::cerr << "Exception caught reading transform:";
 	std::cerr << excp << std::endl;
       }
-  
+
     itk::TransformFileReader::TransformListType::const_iterator it;
     it = transformReader->GetTransformList()->begin();
- 
-    typename TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() ); 
+
+    typename TransformType::Pointer transform = static_cast< TransformType* >( (*it).GetPointer() );
     return transform;
   }
-    
+
   template <unsigned int TDimension> typename itk::Image< unsigned short, TDimension >::Pointer ReadLabelMapFromFile( std::string labelMapFileName )
   {
     typedef itk::Image< unsigned short, TDimension >       LabelMapType;
     typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
 
-    typename LabelMapReaderType::Pointer reader = LabelMapReaderType::New(); 
+    typename LabelMapReaderType::Pointer reader = LabelMapReaderType::New();
     reader->SetFileName( labelMapFileName );
     try
       {
@@ -154,14 +154,14 @@ struct REGIONTYPEPAIR
 	std::cerr << excp << std::endl;
 	return NULL;
       }
-        
+
     return reader->GetOutput();
   }
 
   //writes the similarity measures to an xml file
   // the similarity info is stored in the SIMILARITY_XML_DATA struct
    void WriteMeasuresXML(const char *file, SIMILARITY_XML_DATA &theXMLData)
-  {      
+  {
     std::cout<<"Writing similarity XML file"<<std::endl;
     xmlDocPtr doc = NULL;       /* document pointer */
     xmlNodePtr root_node = NULL; /* Node pointers */
@@ -169,7 +169,7 @@ struct REGIONTYPEPAIR
     xmlAttrPtr newattr;
 
     xmlNodePtr transfo_node[5];
-    
+
     for(int i = 0; i< 5; i++)
       transfo_node[i]= NULL;
 
@@ -179,12 +179,12 @@ struct REGIONTYPEPAIR
     xmlDocSetRootElement(doc, root_node);
 
     dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "InterSubjectMeasures_v3.dtd");
- 
+
     // xmlNewChild() creates a new node, which is "attached"
-    // as child node of root_node node. 
+    // as child node of root_node node.
     std::ostringstream similaritString;
     similaritString <<theXMLData.similarityValue;
-  
+
     xmlNewChild(root_node, NULL, BAD_CAST "movingID", BAD_CAST (theXMLData. movingID.c_str()));
     xmlNewChild(root_node, NULL, BAD_CAST "fixedID", BAD_CAST (theXMLData.fixedID.c_str()));
     xmlNewChild(root_node, NULL, BAD_CAST "movingMask", BAD_CAST (theXMLData. movingMask.c_str()));
@@ -206,7 +206,7 @@ struct REGIONTYPEPAIR
             order_string << theXMLData.transformation_order[i];
             newattr = xmlNewProp(transfo_node[i], BAD_CAST "order",  BAD_CAST (order_string.str().c_str()));
 	  }
-      }    
+      }
     xmlSaveFormatFileEnc(file, doc, "UTF-8", 1);
     xmlFreeDoc(doc);
   }
@@ -220,7 +220,7 @@ template <unsigned int TDimension>  int DoIT(int argc, char * argv[])
    std::vector< unsigned char >  regionPairVec;
    std::vector< unsigned char >  typePairVec;
    const char* similarity_type;
-  
+
   PARSE_ARGS;
 
   //images
@@ -257,12 +257,12 @@ typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType
   for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
       isInvertTransform[i] = false;
-    }   
+    }
   for ( unsigned int i=0; i<invertTransform.size(); i++ )
     {
       isInvertTransform[invertTransform[i]] = true;
-    }  
-   
+    }
+
     //Read the CT images
   typename ShortImageType::Pointer ctFixedImage = ShortImageType::New();
   ctFixedImage = ReadCTFromFile<TDimension>( fixedCTFileName );
@@ -287,7 +287,7 @@ typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType
   typedef itk::ImageFileReader< ImageMaskType >    MaskReaderType;
   typename MaskReaderType::Pointer  fixedMaskReader = MaskReaderType::New();
   typename MaskReaderType::Pointer  movingMaskReader = MaskReaderType::New();
-  
+
  if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
     {
       movingMaskReader->SetFileName(movingLabelmapFileName.c_str() );
@@ -328,40 +328,40 @@ typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType
     {
       std::cout <<"No fixed label map specified"<< std::endl;
     }
-  
+
   //parse transform arg  and join transforms together
-  
+
    //last transform applied first, so make last transform
   typename TransformType::Pointer transformTemp = TransformType::New();
   typename TransformType::Pointer transformTempInv = TransformType::New();
 
   typename CompositeTransformType::Pointer test_inverse_transform = CompositeTransformType::New();
   typename CompositeTransformType::Pointer transform = CompositeTransformType::New();
-   transform->SetAllTransformsToOptimizeOn();
-if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
+  transform->SetAllTransformsToOptimizeOn();
+  if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
+  {
+    for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
     {
-  for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
-    {
-     
-      transformTemp = GetTransformFromFile<TDimension>(inputTransformFileName[i] );
-      // Invert the transformation if specified by command like argument. Only inverting the first transformation
-      if(isInvertTransform[i] == true)
+
+        transformTemp = GetTransformFromFile<TDimension>(inputTransformFileName[i] );
+        // Invert the transformation if specified by command like argument. Only inverting the first transformation
+        if(isInvertTransform[i] == true)
         {
-	  std::cout<<"inverting transform "<<inputTransformFileName[i]<<std::endl;
-          transformTemp->SetMatrix( transformTemp->GetInverseMatrix());
+          std::cout<<"inverting transform "<<inputTransformFileName[i]<<std::endl;
+          transform->AddTransform(transformTemp->GetInverseTransform());
+        }
+        else
+        {
           transform->AddTransform(transformTemp);
-        }          
-      else
-	{
-	transform->AddTransform(transformTemp);
-	transformTempInv->SetMatrix( transformTemp->GetInverseMatrix());
-	test_inverse_transform->AddTransform(transformTempInv);
-	}
-      transform->SetAllTransformsToOptimizeOn();
-      test_inverse_transform->SetAllTransformsToOptimizeOn();
+          //transformTempInv->SetMatrix( transformTemp->GetInverseMatrix());
+          //test_inverse_transform->AddTransform(transformTempInv);
+          test_inverse_transform->AddTransform(transformTemp->GetInverseTransform());
+        }
+        transform->SetAllTransformsToOptimizeOn();
+        test_inverse_transform->SetAllTransformsToOptimizeOn();
     }
-    }
- else
+  }
+  else
    {
      // Set to identity by default
      transformTemp->SetIdentity();
@@ -409,12 +409,12 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetMovingImageMask( movingSpatialObjectMask );
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
+	   metric->SetFixedImageMask( fixedSpatialObjectMask );
 
 	 typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
 	 metric->SetFixedImageRegion(fixedRegion);
 	 metric->Initialize();
-	 
+
 
 	 typename ncMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
 	 zero_params = transform_forsim->GetParameters();
@@ -432,28 +432,28 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
       histogramSize[0] = 20;
       histogramSize[1] = 20;
       metric->SetHistogramSize( histogramSize );
- 
+
       metric->SetInterpolator( interpolator );
       metric->SetTransform(transform_forsim);
       metric->SetFixedImage( ctFixedImage );
       metric->SetMovingImage(resampler->GetOutput() );
-      
+
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );  
-      
+	metric->SetFixedImageMask( fixedSpatialObjectMask );
+
       typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
       metric->SetFixedImageRegion(fixedRegion);
       metric->Initialize();
-      
+
       typename  msqrMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
       zero_params = transform_forsim->GetParameters();
-      
+
       similarityValue = metric->GetValue(zero_params );
       std::cout<<"the nmi value is: "<<similarityValue<<std::endl;
 
-     
+
       similarity_type = "NMI";
     }
     else if (similarityMetric =="msqr")
@@ -470,7 +470,7 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetMovingImageMask( movingSpatialObjectMask );
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
+	   metric->SetFixedImageMask( fixedSpatialObjectMask );
 
 	 typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
 	 metric->SetFixedImageRegion(fixedRegion);
@@ -485,7 +485,7 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	similarity_type = "msqr";
 
       }
-     
+
     else if (similarityMetric =="gd")
       {
 
@@ -500,7 +500,7 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	 if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	   metric->SetMovingImageMask( movingSpatialObjectMask );
 	 if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	   metric->SetFixedImageMask( fixedSpatialObjectMask );  
+	   metric->SetFixedImageMask( fixedSpatialObjectMask );
 
 	 typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
 	 metric->SetFixedImageRegion(fixedRegion);
@@ -511,7 +511,7 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 
 	 similarityValue = metric->GetValue(zero_params );
 	 std::cout<<"the gd value is: "<<similarityValue<<std::endl;
-       
+
 	 similarity_type = "gd";
       }
    else //MI is default
@@ -527,28 +527,28 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
       metric->SetFixedImage( ctFixedImage );
       metric->SetMovingImage( resampler->GetOutput() );
 
-     
+
       if ( strcmp( movingLabelmapFileName.c_str(), "q") != 0 )
 	metric->SetMovingImageMask( movingSpatialObjectMask );
       if ( strcmp( fixedLabelmapFileName.c_str(), "q") != 0 )
-	metric->SetFixedImageMask( fixedSpatialObjectMask );  
+	metric->SetFixedImageMask( fixedSpatialObjectMask );
 
       typename ShortImageType::RegionType fixedRegion = ctFixedImage->GetBufferedRegion();
       metric->SetFixedImageRegion(fixedRegion);
-      metric->Initialize();      
-           
+      metric->Initialize();
+
       typename MIMetricType::TransformParametersType zero_params( transform->GetNumberOfParameters() );
       zero_params = transform_forsim->GetParameters();
-     
+
       similarityValue = metric->GetValue(zero_params );
       std::cout<<"the mi value is: "<<similarityValue<<std::endl;
       similarity_type = "MI";
      }
- 
- 
+
+
 
   //Write data to xml file if necessary
-  if ( strcmp(outputXMLFileName.c_str(), "q") != 0 ) 
+  if ( strcmp(outputXMLFileName.c_str(), "q") != 0 )
     {
 
 
@@ -572,8 +572,8 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	{
 	  ctSimilarityXMLData.fixedMask.assign("N/A");
 	}
-      
-      if ( strcmp(movingImageID.c_str(), "q") != 0 ) 
+
+      if ( strcmp(movingImageID.c_str(), "q") != 0 )
 	{
 	  ctSimilarityXMLData.movingID.assign(movingImageID);
 	}
@@ -581,9 +581,9 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	{
 	  ctSimilarityXMLData.movingID.assign("N/A");
 	}
-  
-      
-      if ( strcmp(fixedImageID.c_str(), "q") != 0 ) 
+
+
+      if ( strcmp(fixedImageID.c_str(), "q") != 0 )
 	{
 	  ctSimilarityXMLData.fixedID =fixedImageID.c_str();
 	}
@@ -593,14 +593,14 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	}
       //extract the extension from the filename
       ctSimilarityXMLData.extention.assign(fixedCTFileName);
-      int pathLength = 0, pos=0, next=0; 
+      int pathLength = 0, pos=0, next=0;
       next = ctSimilarityXMLData.extention.find('.', next+1);
       ctSimilarityXMLData.extention.erase(0,next);
-	
+
       //remove path from output transformation file before storing in xml
-      //For each transformation       
+      //For each transformation
       for ( unsigned int i=0; i<inputTransformFileName.size(); i++ )
-	{ 
+	{
 	  pos=0;
 	  next=0;
 	  for (int ii = 0; ii < (pathLength);ii++)
@@ -616,13 +616,13 @@ if ( strcmp( inputTransformFileName[0].c_str(), "q") != 0 )
 	    ctSimilarityXMLData.transformation_isInverse[i].assign("False");
 	  ctSimilarityXMLData.transformationLink[i].erase(0,pos);
 	}
-   
-      
+
+
       std::cout<<"saving output to: "<<outputXMLFileName.c_str()<<std::endl;
       WriteMeasuresXML(outputXMLFileName.c_str(), ctSimilarityXMLData);
 
     }
- 
+
   return 0;
 
 }

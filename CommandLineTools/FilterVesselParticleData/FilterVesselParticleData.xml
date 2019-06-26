@@ -14,6 +14,7 @@ the output particles will have a defined 'unmergedComponents' \
 array that indicates the component label assigned to each particle.]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/particles</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
@@ -29,7 +30,7 @@ and does not necessarily represent the official views of the National Institutes
       <label>Input particles file name</label>
       <channel>input</channel>
       <flag>i</flag>
-      <longflag>in</longflag>
+      <longflag>ivp</longflag>
       <description><![CDATA[Input particles file name]]></description>
       <default>NA</default>
     </geometry>
@@ -39,7 +40,7 @@ and does not necessarily represent the official views of the National Institutes
       <label>Output particles file name</label>
       <channel>input</channel>
       <flag>o</flag>
-      <longflag>--out</longflag>
+      <longflag>ovp</longflag>
       <description><![CDATA[Output particles file name]]></description>
       <default>NA</default>
     </geometry>
@@ -48,17 +49,9 @@ and does not necessarily represent the official views of the National Institutes
   <parameters>
     <label>Parameters</label>
     <double>
-      <name>interParticleSpacing</name>
-      <longflag>spacing</longflag>
-      <description>This value indicates the inter-particle spacing of the input data set</description>
-      <label>Inter particle spacing</label>
-      <default>1.5</default>
-    </double>
-
-    <double>
       <name>maxAllowableDistance</name>
       <flag>d</flag>
-      <longflag>distance</longflag>
+      <longflag>dist</longflag>
       <description>Maximum inter-particle distance. Two particles must be at least this close \
 together to be considered for connectivity </description>
       <label>Max allowable distance</label>
@@ -104,7 +97,7 @@ will be retained in the output</description>
       <longflag>maxSize</longflag>
       <description>Maximum component size. No component will be larger than the specified size</description>
       <label>Maximum component size</label>
-      <default>USHRT_MAX</default>
+      <default>10000</default>
     </integer>
 
     <double>
@@ -113,7 +106,7 @@ will be retained in the output</description>
       <description>Max allowable scale. No connection will be made between two particles if either of them \
 have a scale that exceeds this amount.</description>
       <label>Maximum allowable scale</label>
-      <default>1.79769e+308</default>
+      <default>1000</default>
     </double>
     
     <double>

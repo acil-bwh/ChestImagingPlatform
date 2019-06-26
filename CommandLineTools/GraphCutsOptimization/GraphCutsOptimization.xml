@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>GraphCutsOptimization</title>
+  <description><![CDATA[Compute GraphCut Optimization.]]>
+  </description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    
+    <string>
+      <name>OutputFileName</name>
+      <label>Output FileName</label>
+      <channel>output</channel>
+      <longflag>out</longflag>
+      <description><![CDATA[String for output file (.txt)]]></description>
+      <default>NA</default>
+    </string>
+  </parameters>
+  
+  <parameters>
+    <label> GC Params </label>
+    <description>Parameters for GraphCutsOptimization computation</description>
+
+    <string>
+      <name>adjMat</name>
+      <longflag>adj</longflag>
+      <label>AdjMatrix</label>
+      <channel>input</channel>
+      <description><![CDATA[Specify the txt file containing the adjacency matrix to compute GC]]></description>
+    </string>
+        
+    <string>
+      <name>WSource</name>
+      <longflag>source</longflag>
+      <label>Artery Prob</label>
+      <channel>input</channel>
+      <description><![CDATA[Txt file with w_source vector containing artery probabilities]]></description>
+    </string>
+    
+    <string>
+      <name>WSink</name>
+      <longflag>sink</longflag>
+      <label>Vein Prob</label>
+      <channel>input</channel>
+      <description><![CDATA[Txt file with wW_sink vector containing vein probabilities]]></description>
+    </string>
+    
+    <string-enumeration>
+      <name>Method</name>
+      <longflag>m</longflag>
+      <label>GC Method</label>
+      <channel>input</channel>
+      <element>Swap</element>
+      <element>Expansion</element>
+      <default>Swap</default>
+      <description><![CDATA[Specify method to compute GC (Swap/Expansion)]]></description>
+    </string-enumeration>
+  </parameters>
+
+</executable>

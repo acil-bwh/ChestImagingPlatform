@@ -1,0 +1,32 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+PROJECT( SegmentLungAirways )
+
+SET ( MODULE_NAME SegmentLungAirways )
+SET ( MODULE_SRCS SegmentLungAirways.cxx )
+
+SET ( MODULE_TARGET_LIBRARIES
+  ${VTK_LIBRARIES}
+  ${ITK_LIBRARIES}
+  )
+
+cipMacroBuildCLI(
+    NAME ${MODULE_NAME}
+    ADDITIONAL_TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
+    ADDITIONAL_INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
+    SRCS ${MODULE_SRCS}
+    )
+
+#Test
+SET (TEST_NAME ${MODULE_NAME}_Test)
+CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
+    --compareLabelMap 
+      ${BASELINE_DATA_DIR}/${TEST_NAME}_crop_ct.nrrd
+      ${OUTPUT_DATA_DIR}/${TEST_NAME}_crop_ct.nrrd
+    ModuleEntryPoint
+      -i ${INPUT_DATA_DIR}/crop_ct.nrrd 
+      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_crop_ct.nrrd  
+      -k STANDARD 
+      -s 0.36,188.01,-84.35 
+      -r WholeAirway
+)

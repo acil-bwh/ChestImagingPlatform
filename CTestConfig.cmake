@@ -8,6 +8,6 @@ set(CTEST_PROJECT_NAME "CIP")
 set(CTEST_NIGHTLY_START_TIME "23:00:00 EST")
 
 set(CTEST_DROP_METHOD "http")
-set(CTEST_DROP_SITE "cdash.airwayinspector.org")
+set(CTEST_DROP_SITE "cdash.chestimagingplatform.org")
 set(CTEST_DROP_LOCATION "/submit.php?project=CIP")
 set(CTEST_DROP_SITE_CDASH TRUE)

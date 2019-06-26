@@ -73,14 +73,18 @@ this->ActivateSector = 0;
 this->Alpha = 3;
 this->T = 7.5;
 
-
+    
+// Outlier detection paramas
+this->StdFactor = 2.0;
+    
 this->StatsMean = vtkDoubleArray::New();
-this->StatsMinMax = vtkDoubleArray::New();
+this->StatsStd = vtkDoubleArray::New();
+this->StatsMin = vtkDoubleArray::New();
+this->StatsMax = vtkDoubleArray::New();
 this->InnerContour = vtkPolyData::New();
 this->OuterContour = vtkPolyData::New();
 
 this->NumberOfQuantities = 21;
-
 }
 
 //----------------------------------------------------------------------------
@@ -88,7 +92,9 @@ vtkComputeAirwayWall::~vtkComputeAirwayWall()
 {
 this->Weights->Delete();
 this->StatsMean->Delete();
-this->StatsMinMax->Delete();
+this->StatsStd->Delete();
+this->StatsMax->Delete();
+this->StatsMin->Delete();
 this->InnerContour->Delete();
 this->OuterContour->Delete();
 }
@@ -108,15 +114,15 @@ int vtkComputeAirwayWall::RequestInformation (
 
   // Make sure the number of rays is even to have antipodal rays
   if (this->NumberOfThetaSamples % 2 != 0)
-    this->NumberOfThetaSamples++; 
-  
+    this->NumberOfThetaSamples++;
+
   return 1;
 }
-  
+
 //----------------------------------------------------------------------------
 // VTK6 migration note:
 // - introduced to replace ExecuteData()
-void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out, 
+void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
   vtkInformation* outInfo)
 {
   vtkImageData* input = vtkImageData::SafeDownCast(this->GetInput());
@@ -127,7 +133,7 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
     vtkErrorMacro(<< "ExecuteData: Input is not set.");
     return;
     }
-    
+
   // Too many filters have floating point exceptions to execute
   // with empty input/ no request.
   if (this->UpdateExtentIsEmpty(outInfo, out))
@@ -135,14 +141,13 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
     return;
     }
 
-
  // Check number of image components: each component is one kernel
  int numKernels = input->GetNumberOfScalarComponents();
 
  if (this->Method == 3 && numKernels<=1) {
    vtkErrorMacro(<< "Phase congruency with multiple kernels requires a multicomponent input (one component per kernel");
    return;
-  } 
+  }
 
  // Loop reformating rays
  // Go into method to extract maximum PC point.
@@ -170,7 +175,7 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
  /*
  double scale =1;
  //Define scale based on method
- 
+
  switch(this->Method) {
   case 0:
     scale = 3;
@@ -184,9 +189,9 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
   case 3:
     scale = 1;
     break;
- } 
+ }
  */
- 
+
  vtkImageReformatAlongRay *ray;
  vtkImageExtractComponents *extract;
 
@@ -210,7 +215,6 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
    }
 
  //ray->SetInput(this->GetInput());
-
 
  // Objects to store points and cell data
  vtkPoints *ip = vtkPoints::New();
@@ -266,13 +270,13 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
  int Isamples=0;
  int Wsamples=0;
 
- // Min - Max 
- double minRi = this->StatsMinMax->GetDataTypeMax();
- double maxRi = this->StatsMinMax->GetDataTypeMin();
- double minRo =this->StatsMinMax->GetDataTypeMax();
- double maxRo = this->StatsMinMax->GetDataTypeMin();
- double minWth =this->StatsMinMax->GetDataTypeMax();
- double maxWth =this->StatsMinMax->GetDataTypeMin();
+ // Min - Max
+ double minRi = this->StatsMin->GetDataTypeMax();
+ double maxRi = this->StatsMax->GetDataTypeMin();
+ double minRo =this->StatsMin->GetDataTypeMax();
+ double maxRo = this->StatsMax->GetDataTypeMin();
+ double minWth =this->StatsMin->GetDataTypeMax();
+ double maxWth =this->StatsMax->GetDataTypeMin();
  double minWI =0;
  double maxWI =0;
  double minPeakI =0;
@@ -345,12 +349,12 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
  int WsamplesS=0;
 
  // Min - Max
- double minRiS =this->StatsMinMax->GetDataTypeMax();
- double maxRiS =this->StatsMinMax->GetDataTypeMin();
- double minRoS =this->StatsMinMax->GetDataTypeMax();
- double maxRoS = this->StatsMinMax->GetDataTypeMin();
- double minWthS =this->StatsMinMax->GetDataTypeMax();
- double maxWthS =this->StatsMinMax->GetDataTypeMin();
+ double minRiS =this->StatsMin->GetDataTypeMax();
+ double maxRiS =this->StatsMax->GetDataTypeMin();
+ double minRoS =this->StatsMin->GetDataTypeMax();
+ double maxRoS = this->StatsMax->GetDataTypeMin();
+ double minWthS =this->StatsMin->GetDataTypeMax();
+ double maxWthS =this->StatsMax->GetDataTypeMin();
  double minWIS =0;
  double maxWIS =0;
  double minPeakIS =0;
@@ -400,13 +404,12 @@ void vtkComputeAirwayWall::ExecuteDataWithInformation(vtkDataObject *out,
 
  double tmpWIMaxS = -5000;
  double tmpPeakMaxS = -5000;
- double tmpInnerMaxS = -5000; 
+ double tmpInnerMaxS = -5000;
  double tmpOuterMaxS = -5000;
  double tmpWIMinS = 5000;
  double tmpPeakMinS = 5000;
- double tmpInnerMinS = 5000; 
+ double tmpInnerMinS = 5000;
  double tmpOuterMinS = 5000;
-
 
  // boolean variables
  int wrapping,condition;
@@ -432,7 +435,7 @@ int idx=0;
       ray->GetOutput()->GetSpacing(sp);
       signalCollection->AddItem(signal);
     }
-    
+
     switch(this->Method) {
        case 0:
           this->FWHM(signal,samples);
@@ -449,7 +452,7 @@ int idx=0;
     }
     loc1 = samples->GetValue(0);
     loc2 = samples->GetValue(1);
-   
+
     if (loc1>loc2 && loc2!= -1) {
       cout<<"WARNING: Inner radius (loc1="<<loc1<<") is greater than outer radius (loc2="<<loc2<<")."<<endl;
       loc1=-1;
@@ -459,9 +462,9 @@ int idx=0;
     //  {
     //  loc1 = radiusInner->GetValue(idx-1)/delta;
 
-    //if (th ==0) 
+    //if (th ==0)
     //  cout<<"Loc1: "<<loc1<<" "<<"Loc2: "<<loc2<<endl;
-   
+
     //Take only into account good rays
     if (loc1 >0 && loc2 >0 ) {
         tmp = loc1*sp[0];
@@ -529,19 +532,18 @@ int idx=0;
         if (tmp > tmpOuterMax)
           tmpOuterMax = tmp;
         if (tmp < tmpOuterMin)
-          tmpOuterMin = tmp; 
+          tmpOuterMin = tmp;
 
         maxInnerI = tmpInnerMax;
         minInnerI = tmpInnerMin;
         maxOuterI = tmpOuterMax;
         minOuterI = tmpOuterMin;
 
-
         Ai += pow(loc1*sp[0],2)*sin(dth)*0.5;
         Ae += pow(loc2*sp[0],2)*sin(dth)*0.5;
         Pi += sin(dth)*loc1*sp[0];
 
-        if (th == 0 || (th > vtkMath::Pi()-dth/2 && th< vtkMath::Pi()+dth/2)) 
+        if (th == 0 || (th > vtkMath::Pi()-dth/2 && th< vtkMath::Pi()+dth/2))
           {
           meanRLInnerDiam = loc1*sp[0] + meanRLInnerDiam;
           meanRLOuterDiam = loc2*sp[0] + meanRLOuterDiam;
@@ -594,22 +596,28 @@ int idx=0;
         double Tpa = (loc1 + this->Alpha * (loc2-loc1));
         tmpPA = 0;
         int tmpSamples = 0;
-        if ((int)Tpa > signal->GetNumberOfTuples())
-          Tpa = signal->GetNumberOfTuples();
-        if (zeroLoc > loc2) {
-          for (int k = (int) zeroLoc ; k<(int) (Tpa); k++) {
+        if ((int)Tpa >= signal->GetNumberOfTuples())
+          {
+          Tpa = signal->GetNumberOfTuples()-1;
+          }
+        if (zeroLoc > loc2)
+          {
+          for (int k = (int) zeroLoc ; k<(int) (Tpa); k++)
+            {
             tmpPA += signal->GetComponent(k,0);
             tmpSamples++;
-          }
+            }
           if (tmpSamples == 0)
-           {
+            {
            tmpPA = signal->GetComponent((int) (Tpa),0);
            tmpSamples++;
-           }
-        } else {
+            }
+          }
+        else
+          {
           tmpPA = signal->GetComponent((int) (Tpa),0);
           tmpSamples++;
-        }
+          }
         tmpPA=tmpPA/tmpSamples;
         meanPA += tmpPA;
         stdPA += tmpPA*tmpPA;
@@ -642,9 +650,9 @@ int idx=0;
 
         //Check sector statistics
         if (this->ActivateSector) {
-          condition = ((wrapping && (th>= this->ThetaMin || th<= ( this->ThetaMax - 2*vtkMath::Pi() ) )) || 
+          condition = ((wrapping && (th>= this->ThetaMin || th<= ( this->ThetaMax - 2*vtkMath::Pi() ) )) ||
                        ((!wrapping) && (th>= this->ThetaMin && th<= this->ThetaMax)) );
- 
+
         if (condition) {
           tmp = loc1*sp[0];
           meanRiS +=tmp;
@@ -693,7 +701,7 @@ int idx=0;
           if (tmpMin < tmpWIMinS)
             tmpWIMinS = tmpMin;
           // Peak Intensity
-          if (tmpMax> tmpPeakMaxS) 
+          if (tmpMax> tmpPeakMaxS)
             tmpPeakMaxS = tmpMax;
           if (tmpMax< tmpPeakMinS)
             tmpPeakMinS = tmpMax;
@@ -713,7 +721,6 @@ int idx=0;
             tmpOuterMaxS = tmp;
           if (tmp < tmpOuterMinS)
             tmpOuterMinS = tmp;
-
 
         AiS += pow(loc1*sp[0],2)*sin(dth)*0.5;
         AeS += pow(loc2*sp[0],2)*sin(dth)*0.5;
@@ -748,7 +755,6 @@ int idx=0;
 
         WsamplesS++;
         }
-
         }
      }
     else {
@@ -774,7 +780,7 @@ int idx=0;
        angleOuter->InsertNextValue(th);
      }
  }
- 
+
  //Remove outlier
  this->RemoveOutliers(radiusInner);
  this->RemoveOutliers(radiusOuter);
@@ -784,7 +790,7 @@ int idx=0;
 vtkCardinalSpline *is = vtkCardinalSpline::New();
 vtkCardinalSpline *os = vtkCardinalSpline::New();
 idx = 0;
-for (double th =-dth ; th <= 2*vtkMath::Pi(); th +=dth) { 
+for (double th =-dth ; th <= 2*vtkMath::Pi(); th +=dth) {
  //Add an extra point at each end to deal with wrapping
   if (th==-dth)
      {
@@ -800,7 +806,7 @@ for (double th =-dth ; th <= 2*vtkMath::Pi(); th +=dth) {
      if (radiusOuter->GetValue(0) > 0)
        os->AddPoint(th,radiusOuter->GetValue(0));
     }
-  else 
+  else
     {
     if (radiusInner->GetValue(idx) > 0)
       is->AddPoint(th,radiusInner->GetValue(idx));
@@ -872,7 +878,7 @@ int cellcount = 0;
 int pointIdx=0;
 for (int i=0; i<radiusInner->GetNumberOfTuples();i++)
   {
-  if (radiusInner->GetValue(i)>0) {  
+  if (radiusInner->GetValue(i)>0) {
     ip->InsertNextPoint(center[0]+radiusInner->GetValue(i)*cos(angleInner->GetValue(i)),center[1]+radiusInner->GetValue(i)*sin(angleInner->GetValue(i)),0);
     if (newcell) {
       ic->InsertNextCell(radiusInner->GetNumberOfTuples());
@@ -888,18 +894,18 @@ for (int i=0; i<radiusInner->GetNumberOfTuples();i++)
       ic->UpdateCellCount(cellcount);
       newcell = 1;
      }
-  }  
   }
- //Finish the last cell  
+  }
+ //Finish the last cell
 if (newcell == 0)
-  ic->UpdateCellCount(cellcount); 
+  ic->UpdateCellCount(cellcount);
 
 pointIdx = 0;
 cellcount = 0;
 newcell = 1;
-for (int i=0; i<radiusOuter->GetNumberOfTuples();i++) 
+for (int i=0; i<radiusOuter->GetNumberOfTuples();i++)
   {
-  if (radiusOuter->GetValue(i) > 0) {  
+  if (radiusOuter->GetValue(i) > 0) {
     op->InsertNextPoint(center[0]+radiusOuter->GetValue(i)*cos(angleOuter->GetValue(i)),center[1]+radiusOuter->GetValue(i)*sin(angleOuter->GetValue(i)),0);
     if (newcell) {
       oc->InsertNextCell(radiusOuter->GetNumberOfTuples());
@@ -914,8 +920,8 @@ for (int i=0; i<radiusOuter->GetNumberOfTuples();i++)
      if (newcell == 0) {
       oc->UpdateCellCount(cellcount);
       newcell = 1;
-     }  
-  }    
+     }
+  }
   }
 //Finish the last cell
 if (newcell == 0)
@@ -931,7 +937,7 @@ angleOuter->Delete();
 sFilter->Delete();
 
 /*
-if (ip->GetNumberOfPoints()>0) 
+if (ip->GetNumberOfPoints()>0)
  ip->InsertNextPoint(ip->GetPoint(0));
 if (op->GetNumberOfPoints()>0)
  op->InsertNextPoint(op->GetPoint(0));
@@ -952,7 +958,7 @@ if (op->GetNumberOfPoints()>0)
  ic->InsertCellPoint(0);
  oc->InsertCellPoint(0);
  */
- 
+
  // Set output polydata
  this->InnerContour->SetPoints(ip);
  this->InnerContour->SetLines(ic);
@@ -960,7 +966,7 @@ if (op->GetNumberOfPoints()>0)
  ic->Delete();
 
  /*
- vtkSmoothLines *sf; 
+ vtkSmoothLines *sf;
  sf = vtkSmoothLines::New();
  sf->SetInput(this->InnerContour);
  sf->SetNumberOfIterations(10);
@@ -968,12 +974,12 @@ if (op->GetNumberOfPoints()>0)
  this->InnerContour->DeepCopy(sf->GetOutput());
  sf->Delete();
 */
- 
+
  this->OuterContour->SetPoints(op);
  this->OuterContour->SetLines(oc);
  op->Delete();
  oc->Delete();
- 
+
  /*
  vtkPolyDataWriter * ww=vtkPolyDataWriter::New();
  ww->SetInput(this->InnerContour);
@@ -995,7 +1001,7 @@ ww2->Delete();
  this->OuterContour->DeepCopy(sf->GetOutput());
  sf->Delete();
 */
- 
+
  meanRi = meanRi/Wsamples;
  meanRo = meanRo/Wsamples;
  meanWth = meanWth/Wsamples;
@@ -1056,7 +1062,7 @@ double lumenA1,lumenA2,lumenMin;
 int lumenSamples=0;
 meanLA = 0;
 stdLA = 0;
-  
+
 for (int k=0; k< lumenA->GetNumberOfTuples()/2;k++)
   {
   lumenA1 = lumenA->GetValue(k);
@@ -1169,198 +1175,204 @@ stdPower = sqrt(stdPower/Wsamples - meanPower*meanPower);
    // Power
    meanPowerS = meanPowerS/WsamplesS;
    stdPowerS = sqrt(stdPowerS/WsamplesS - meanPowerS*meanPowerS);
-
-
-
 }
 
- StatsMean->Initialize();
- StatsMean->SetNumberOfComponents(2);
- StatsMean->SetNumberOfTuples(42);
- StatsMean->SetComponent(0,0,meanRi);
- StatsMean->SetComponent(1,0,stdRi);
- StatsMean->SetComponent(2,0,meanRo);
- StatsMean->SetComponent(3,0,stdRo);
- StatsMean->SetComponent(4,0,meanWth);
- StatsMean->SetComponent(5,0,stdWth);
- StatsMean->SetComponent(6,0,meanI);
- StatsMean->SetComponent(7,0,stdI);
- StatsMean->SetComponent(8,0,WAp);
- StatsMean->SetComponent(9,0,0.0);
- StatsMean->SetComponent(10,0,Pi);
- StatsMean->SetComponent(11,0,0.0);
- StatsMean->SetComponent(12,0,sqrtWA);
- StatsMean->SetComponent(13,0,0.0);
- StatsMean->SetComponent(14,0,Ai);
- StatsMean->SetComponent(15,0,0.0);
- StatsMean->SetComponent(16,0,Ae);
- StatsMean->SetComponent(17,0,0.0);
- StatsMean->SetComponent(18,0,meanPeakI);
- StatsMean->SetComponent(19,0,stdPeakI);
- StatsMean->SetComponent(20,0,meanInnerI);
- StatsMean->SetComponent(21,0,stdInnerI);
- StatsMean->SetComponent(22,0,meanOuterI);
- StatsMean->SetComponent(23,0,stdOuterI);
- StatsMean->SetComponent(24,0,meanVesselI);
- StatsMean->SetComponent(25,0,stdVesselI);
- StatsMean->SetComponent(26,0,meanRLInnerDiam);
- StatsMean->SetComponent(27,0,stdRLInnerDiam);
- StatsMean->SetComponent(28,0,meanRLOuterDiam);
- StatsMean->SetComponent(29,0,stdRLOuterDiam);
- StatsMean->SetComponent(30,0,meanAPInnerDiam);
- StatsMean->SetComponent(31,0,stdAPInnerDiam);
- StatsMean->SetComponent(32,0,meanAPOuterDiam);
- StatsMean->SetComponent(33,0,stdAPOuterDiam);
- StatsMean->SetComponent(34,0,meanLA);
- StatsMean->SetComponent(35,0,stdLA);
- StatsMean->SetComponent(36,0,meanPA);
- StatsMean->SetComponent(37,0,stdPA);
- StatsMean->SetComponent(38,0,meanEnergy);
- StatsMean->SetComponent(39,0,stdEnergy);
- StatsMean->SetComponent(40,0,meanPower);
- StatsMean->SetComponent(41,0,stdPower);
+ this->StatsMean->Initialize();
+ this->StatsMean->SetNumberOfComponents(2);
+ this->StatsMean->SetNumberOfTuples(this->NumberOfQuantities);
+ this->StatsStd->Initialize();
+ this->StatsStd->SetNumberOfComponents(2);
+ this->StatsStd->SetNumberOfTuples(this->NumberOfQuantities);
 
- StatsMean->SetComponent(0,1,meanRiS); 
- StatsMean->SetComponent(1,1,stdRiS);
- StatsMean->SetComponent(2,1,meanRoS);
- StatsMean->SetComponent(3,1,stdRoS);
- StatsMean->SetComponent(4,1,meanWthS);
- StatsMean->SetComponent(5,1,stdWthS);
- StatsMean->SetComponent(6,1,meanIS);
- StatsMean->SetComponent(7,1,stdIS);
- StatsMean->SetComponent(8,1,WApS);
- StatsMean->SetComponent(9,1,0.0);
- StatsMean->SetComponent(10,1,PiS);
- StatsMean->SetComponent(11,1,0.0);
- StatsMean->SetComponent(12,1,sqrtWAS);
- StatsMean->SetComponent(13,1,0.0);
- StatsMean->SetComponent(14,1,AiS);
- StatsMean->SetComponent(15,1,0.0);
- StatsMean->SetComponent(16,1,AeS);
- StatsMean->SetComponent(17,1,0.0);
- StatsMean->SetComponent(18,1,meanPeakIS);
- StatsMean->SetComponent(19,1,stdPeakIS);
- StatsMean->SetComponent(20,1,meanInnerIS);
- StatsMean->SetComponent(21,1,stdInnerIS);
- StatsMean->SetComponent(22,1,meanOuterIS);
- StatsMean->SetComponent(23,1,stdOuterIS);
- StatsMean->SetComponent(24,1,meanVesselIS);
- StatsMean->SetComponent(25,1,stdVesselIS);
- StatsMean->SetComponent(26,1,meanRLInnerDiam);
- StatsMean->SetComponent(27,1,stdRLInnerDiam);
- StatsMean->SetComponent(28,1,meanRLOuterDiam);
- StatsMean->SetComponent(29,1,stdRLOuterDiam);
- StatsMean->SetComponent(30,1,meanAPInnerDiam);
- StatsMean->SetComponent(31,1,stdAPInnerDiam);
- StatsMean->SetComponent(32,1,meanAPOuterDiam);
- StatsMean->SetComponent(33,1,stdAPOuterDiam);
- StatsMean->SetComponent(34,1,meanLAS);
- StatsMean->SetComponent(35,1,stdLAS);
- StatsMean->SetComponent(36,1,meanPAS);
- StatsMean->SetComponent(37,1,stdPAS);
- StatsMean->SetComponent(38,1,meanEnergyS);
- StatsMean->SetComponent(39,1,stdEnergyS);
- StatsMean->SetComponent(40,1,meanPowerS);
- StatsMean->SetComponent(41,1,stdPowerS);
+ this->StatsMean->SetComponent(0,0,meanRi);
+ this->StatsStd->SetComponent(0,0,stdRi);
+ this->StatsMean->SetComponent(1,0,meanRo);
+ this->StatsStd->SetComponent(1,0,stdRo);
+ this->StatsMean->SetComponent(2,0,meanWth);
+ this->StatsStd->SetComponent(2,0,stdWth);
+ this->StatsMean->SetComponent(3,0,meanI);
+ this->StatsStd->SetComponent(3,0,stdI);
+ this->StatsMean->SetComponent(4,0,WAp);
+ this->StatsStd->SetComponent(4,0,0.0);
+ this->StatsMean->SetComponent(5,0,Pi);
+ this->StatsStd->SetComponent(5,0,0.0);
+ this->StatsMean->SetComponent(6,0,sqrtWA);
+ this->StatsStd->SetComponent(6,0,0.0);
+ this->StatsMean->SetComponent(7,0,Ai);
+ this->StatsStd->SetComponent(7,0,0.0);
+ this->StatsMean->SetComponent(8,0,Ae);
+ this->StatsStd->SetComponent(8,0,0.0);
+ this->StatsMean->SetComponent(9,0,meanPeakI);
+ this->StatsStd->SetComponent(9,0,stdPeakI);
+ this->StatsMean->SetComponent(10,0,meanInnerI);
+ this->StatsStd->SetComponent(10,0,stdInnerI);
+ this->StatsMean->SetComponent(11,0,meanOuterI);
+ this->StatsStd->SetComponent(11,0,stdOuterI);
+ this->StatsMean->SetComponent(12,0,meanVesselI);
+ this->StatsStd->SetComponent(12,0,stdVesselI);
+ this->StatsMean->SetComponent(13,0,meanRLInnerDiam);
+ this->StatsStd->SetComponent(13,0,stdRLInnerDiam);
+ this->StatsMean->SetComponent(14,0,meanRLOuterDiam);
+ this->StatsStd->SetComponent(14,0,stdRLOuterDiam);
+ this->StatsMean->SetComponent(15,0,meanAPInnerDiam);
+ this->StatsStd->SetComponent(15,0,stdAPInnerDiam);
+ this->StatsMean->SetComponent(16,0,meanAPOuterDiam);
+ this->StatsStd->SetComponent(16,0,stdAPOuterDiam);
+ this->StatsMean->SetComponent(17,0,meanLA);
+ this->StatsStd->SetComponent(17,0,stdLA);
+ this->StatsMean->SetComponent(18,0,meanPA);
+ this->StatsStd->SetComponent(18,0,stdPA);
+ this->StatsMean->SetComponent(19,0,meanEnergy);
+ this->StatsStd->SetComponent(19,0,stdEnergy);
+ this->StatsMean->SetComponent(20,0,meanPower);
+ this->StatsStd->SetComponent(20,0,stdPower);
 
- StatsMinMax->Initialize();
- StatsMinMax->SetNumberOfComponents(2);
- StatsMinMax->SetNumberOfTuples(42);
+ this->StatsMean->SetComponent(0,1,meanRiS);
+ this->StatsStd->SetComponent(0,1,stdRiS);
+ this->StatsMean->SetComponent(1,1,meanRoS);
+ this->StatsStd->SetComponent(1,1,stdRoS);
+ this->StatsMean->SetComponent(2,1,meanWthS);
+ this->StatsStd->SetComponent(2,1,stdWthS);
+ this->StatsMean->SetComponent(3,1,meanIS);
+ this->StatsStd->SetComponent(3,1,stdIS);
+ this->StatsMean->SetComponent(4,1,WApS);
+ this->StatsStd->SetComponent(4,1,0.0);
+ this->StatsMean->SetComponent(5,1,PiS);
+ this->StatsStd->SetComponent(5,1,0.0);
+ this->StatsMean->SetComponent(6,1,sqrtWAS);
+ this->StatsStd->SetComponent(6,1,0.0);
+ this->StatsMean->SetComponent(7,1,AiS);
+ this->StatsStd->SetComponent(7,1,0.0);
+ this->StatsMean->SetComponent(8,1,AeS);
+ this->StatsStd->SetComponent(8,1,0.0);
+ this->StatsMean->SetComponent(9,1,meanPeakIS);
+ this->StatsStd->SetComponent(9,1,stdPeakIS);
+ this->StatsMean->SetComponent(10,1,meanInnerIS);
+ this->StatsStd->SetComponent(10,1,stdInnerIS);
+ this->StatsMean->SetComponent(11,1,meanOuterIS);
+ this->StatsStd->SetComponent(11,1,stdOuterIS);
+ this->StatsMean->SetComponent(12,1,meanVesselIS);
+ this->StatsStd->SetComponent(12,1,stdVesselIS);
+ this->StatsMean->SetComponent(13,1,meanRLInnerDiam);
+ this->StatsStd->SetComponent(13,1,stdRLInnerDiam);
+ this->StatsMean->SetComponent(14,1,meanRLOuterDiam);
+ this->StatsStd->SetComponent(14,1,stdRLOuterDiam);
+ this->StatsMean->SetComponent(15,1,meanAPInnerDiam);
+ this->StatsStd->SetComponent(15,1,stdAPInnerDiam);
+ this->StatsMean->SetComponent(16,1,meanAPOuterDiam);
+ this->StatsStd->SetComponent(16,1,stdAPOuterDiam);
+ this->StatsMean->SetComponent(17,1,meanLAS);
+ this->StatsStd->SetComponent(17,1,stdLAS);
+ this->StatsMean->SetComponent(18,1,meanPAS);
+ this->StatsStd->SetComponent(18,1,stdPAS);
+ this->StatsMean->SetComponent(19,1,meanEnergyS);
+ this->StatsStd->SetComponent(19,1,stdEnergyS);
+ this->StatsMean->SetComponent(20,1,meanPowerS);
+ this->StatsStd->SetComponent(20,1,stdPowerS);
 
- StatsMinMax->SetComponent(0,0,minRi);
- StatsMinMax->SetComponent(1,0,maxRi);
- StatsMinMax->SetComponent(2,0,minRo);
- StatsMinMax->SetComponent(3,0,maxRo);
- StatsMinMax->SetComponent(4,0,minWth);
- StatsMinMax->SetComponent(5,0,maxWth);
- StatsMinMax->SetComponent(6,0,minWI);
- StatsMinMax->SetComponent(7,0,maxWI);
- StatsMinMax->SetComponent(8,0,WAp);
- StatsMinMax->SetComponent(9,0,WAp);
- StatsMinMax->SetComponent(10,0,Pi);
- StatsMinMax->SetComponent(11,0,Pi);
- StatsMinMax->SetComponent(12,0,sqrtWA);
- StatsMinMax->SetComponent(13,0,sqrtWA);
- StatsMinMax->SetComponent(14,0,Ai);
- StatsMinMax->SetComponent(15,0,Ai);
- StatsMinMax->SetComponent(16,0,Ae);
- StatsMinMax->SetComponent(17,0,Ae);
- StatsMinMax->SetComponent(18,0,minPeakI);
- StatsMinMax->SetComponent(19,0,maxPeakI);
- StatsMinMax->SetComponent(20,0,minInnerI);
- StatsMinMax->SetComponent(21,0,maxInnerI);
- StatsMinMax->SetComponent(22,0,minOuterI);
- StatsMinMax->SetComponent(23,0,maxOuterI);
- StatsMinMax->SetComponent(24,0,minVesselI);
- StatsMinMax->SetComponent(25,0,maxVesselI);
- StatsMinMax->SetComponent(26,0,minRLInnerDiam);
- StatsMinMax->SetComponent(27,0,maxRLInnerDiam);
- StatsMinMax->SetComponent(28,0,minRLOuterDiam);
- StatsMinMax->SetComponent(29,0,maxRLOuterDiam);
- StatsMinMax->SetComponent(30,0,minAPInnerDiam);
- StatsMinMax->SetComponent(31,0,maxAPInnerDiam);
- StatsMinMax->SetComponent(32,0,minAPOuterDiam);
- StatsMinMax->SetComponent(33,0,maxAPOuterDiam);
- StatsMinMax->SetComponent(34,0,minLA);
- StatsMinMax->SetComponent(35,0,maxLA);
- StatsMinMax->SetComponent(36,0,minPA);
- StatsMinMax->SetComponent(37,0,maxPA);
- StatsMinMax->SetComponent(38,0,minEnergy);
- StatsMinMax->SetComponent(39,0,maxEnergy);
- StatsMinMax->SetComponent(40,0,minPower);
- StatsMinMax->SetComponent(41,0,maxPower);
+ this->StatsMin->Initialize();
+ this->StatsMin->SetNumberOfComponents(2);
+ this->StatsMin->SetNumberOfTuples(this->NumberOfQuantities);
+ this->StatsMax->Initialize();
+ this->StatsMax->SetNumberOfComponents(2);
+ this->StatsMax->SetNumberOfTuples(this->NumberOfQuantities);
+    
+ this->StatsMin->SetComponent(0,0,minRi);
+ this->StatsMax->SetComponent(0,0,maxRi);
+ this->StatsMin->SetComponent(1,0,minRo);
+ this->StatsMax->SetComponent(1,0,maxRo);
+ this->StatsMin->SetComponent(2,0,minWth);
+ this->StatsMax->SetComponent(2,0,maxWth);
+ this->StatsMin->SetComponent(3,0,minWI);
+ this->StatsMax->SetComponent(3,0,maxWI);
+ this->StatsMin->SetComponent(4,0,WAp);
+ this->StatsMax->SetComponent(4,0,WAp);
+ this->StatsMin->SetComponent(5,0,Pi);
+ this->StatsMax->SetComponent(5,0,Pi);
+ this->StatsMin->SetComponent(6,0,sqrtWA);
+ this->StatsMax->SetComponent(6,0,sqrtWA);
+ this->StatsMin->SetComponent(7,0,Ai);
+ this->StatsMax->SetComponent(7,0,Ai);
+ this->StatsMin->SetComponent(8,0,Ae);
+ this->StatsMax->SetComponent(8,0,Ae);
+ this->StatsMin->SetComponent(9,0,minPeakI);
+ this->StatsMax->SetComponent(9,0,maxPeakI);
+ this->StatsMin->SetComponent(10,0,minInnerI);
+ this->StatsMax->SetComponent(10,0,maxInnerI);
+ this->StatsMin->SetComponent(11,0,minOuterI);
+ this->StatsMax->SetComponent(11,0,maxOuterI);
+ this->StatsMin->SetComponent(12,0,minVesselI);
+ this->StatsMax->SetComponent(12,0,maxVesselI);
+ this->StatsMin->SetComponent(13,0,minRLInnerDiam);
+ this->StatsMax->SetComponent(13,0,maxRLInnerDiam);
+ this->StatsMin->SetComponent(14,0,minRLOuterDiam);
+ this->StatsMax->SetComponent(14,0,maxRLOuterDiam);
+ this->StatsMin->SetComponent(15,0,minAPInnerDiam);
+ this->StatsMax->SetComponent(15,0,maxAPInnerDiam);
+ this->StatsMin->SetComponent(16,0,minAPOuterDiam);
+ this->StatsMax->SetComponent(16,0,maxAPOuterDiam);
+ this->StatsMin->SetComponent(17,0,minLA);
+ this->StatsMax->SetComponent(17,0,maxLA);
+ this->StatsMin->SetComponent(18,0,minPA);
+ this->StatsMax->SetComponent(18,0,maxPA);
+ this->StatsMin->SetComponent(19,0,minEnergy);
+ this->StatsMax->SetComponent(19,0,maxEnergy);
+ this->StatsMin->SetComponent(20,0,minPower);
+ this->StatsMax->SetComponent(20,0,maxPower);
 
  if (this->ActivateSector == 0)
    {
-   for (int k=0;k<42;k++)
+   for (int k=0;k<this->NumberOfQuantities;k++)
      {
-     StatsMinMax->SetComponent(k,1,0.0);
+     this->StatsMin->SetComponent(k,1,0.0);
+     this->StatsMax->SetComponent(k,1,0.0);
+
      }
    }
- else 
+ else
    {
- StatsMinMax->SetComponent(0,1,minRiS);
- StatsMinMax->SetComponent(1,1,maxRiS);
- StatsMinMax->SetComponent(2,1,minRoS);
- StatsMinMax->SetComponent(3,1,maxRoS);
- StatsMinMax->SetComponent(4,1,minWthS);
- StatsMinMax->SetComponent(5,1,maxWthS);
- StatsMinMax->SetComponent(6,1,minWIS);
- StatsMinMax->SetComponent(7,1,maxWIS);
- StatsMinMax->SetComponent(8,1,WApS);
- StatsMinMax->SetComponent(9,1,WApS);
- StatsMinMax->SetComponent(10,1,PiS);
- StatsMinMax->SetComponent(11,1,PiS);
- StatsMinMax->SetComponent(12,1,sqrtWAS);
- StatsMinMax->SetComponent(13,1,sqrtWAS);
- StatsMinMax->SetComponent(14,1,AiS);
- StatsMinMax->SetComponent(15,1,AiS);
- StatsMinMax->SetComponent(16,1,AeS);
- StatsMinMax->SetComponent(17,1,AeS);
- StatsMinMax->SetComponent(18,1,minPeakIS);
- StatsMinMax->SetComponent(19,1,maxPeakIS);
- StatsMinMax->SetComponent(20,1,minInnerIS);
- StatsMinMax->SetComponent(21,1,maxInnerIS);
- StatsMinMax->SetComponent(22,1,minOuterIS);
- StatsMinMax->SetComponent(23,1,maxOuterIS);
- StatsMinMax->SetComponent(24,1,minVesselIS);
- StatsMinMax->SetComponent(25,1,maxVesselIS);
- StatsMinMax->SetComponent(26,1,minRLInnerDiamS);
- StatsMinMax->SetComponent(27,1,maxRLInnerDiamS);
- StatsMinMax->SetComponent(28,1,minRLOuterDiamS);
- StatsMinMax->SetComponent(29,1,maxRLOuterDiamS);
- StatsMinMax->SetComponent(30,1,minAPInnerDiamS);
- StatsMinMax->SetComponent(31,1,maxAPInnerDiamS);
- StatsMinMax->SetComponent(32,1,minAPOuterDiamS);
- StatsMinMax->SetComponent(33,1,maxAPOuterDiamS);
- StatsMinMax->SetComponent(34,1,minLAS);
- StatsMinMax->SetComponent(35,1,maxLAS);
- StatsMinMax->SetComponent(36,1,minPAS);
- StatsMinMax->SetComponent(37,1,maxPAS);
- StatsMinMax->SetComponent(38,1,minEnergyS);
- StatsMinMax->SetComponent(39,1,maxEnergyS);
- StatsMinMax->SetComponent(40,1,minPowerS);
- StatsMinMax->SetComponent(41,1,maxPowerS);
+ this->StatsMin->SetComponent(0,1,minRiS);
+ this->StatsMax->SetComponent(0,1,maxRiS);
+ this->StatsMin->SetComponent(1,1,minRoS);
+ this->StatsMax->SetComponent(1,1,maxRoS);
+ this->StatsMin->SetComponent(2,1,minWthS);
+ this->StatsMax->SetComponent(2,1,maxWthS);
+ this->StatsMin->SetComponent(3,1,minWIS);
+ this->StatsMax->SetComponent(3,1,maxWIS);
+ this->StatsMin->SetComponent(4,1,WApS);
+ this->StatsMax->SetComponent(4,1,WApS);
+ this->StatsMin->SetComponent(5,1,PiS);
+ this->StatsMax->SetComponent(5,1,PiS);
+ this->StatsMin->SetComponent(6,1,sqrtWAS);
+ this->StatsMax->SetComponent(6,1,sqrtWAS);
+ this->StatsMin->SetComponent(7,1,AiS);
+ this->StatsMax->SetComponent(7,1,AiS);
+ this->StatsMin->SetComponent(8,1,AeS);
+ this->StatsMax->SetComponent(8,1,AeS);
+ this->StatsMin->SetComponent(9,1,minPeakIS);
+ this->StatsMax->SetComponent(9,1,maxPeakIS);
+ this->StatsMin->SetComponent(10,1,minInnerIS);
+ this->StatsMax->SetComponent(10,1,maxInnerIS);
+ this->StatsMin->SetComponent(11,1,minOuterIS);
+ this->StatsMax->SetComponent(11,1,maxOuterIS);
+ this->StatsMin->SetComponent(12,1,minVesselIS);
+ this->StatsMax->SetComponent(12,1,maxVesselIS);
+ this->StatsMin->SetComponent(13,1,minRLInnerDiamS);
+ this->StatsMax->SetComponent(13,1,maxRLInnerDiamS);
+ this->StatsMin->SetComponent(14,1,minRLOuterDiamS);
+ this->StatsMax->SetComponent(14,1,maxRLOuterDiamS);
+ this->StatsMin->SetComponent(15,1,minAPInnerDiamS);
+ this->StatsMax->SetComponent(15,1,maxAPInnerDiamS);
+ this->StatsMin->SetComponent(16,1,minAPOuterDiamS);
+ this->StatsMax->SetComponent(16,1,maxAPOuterDiamS);
+ this->StatsMin->SetComponent(17,1,minLAS);
+ this->StatsMax->SetComponent(17,1,maxLAS);
+ this->StatsMin->SetComponent(18,1,minPAS);
+ this->StatsMax->SetComponent(18,1,maxPAS);
+ this->StatsMin->SetComponent(19,1,minEnergyS);
+ this->StatsMax->SetComponent(19,1,maxEnergyS);
+ this->StatsMin->SetComponent(20,1,minPowerS);
+ this->StatsMax->SetComponent(20,1,maxPowerS);
  }
  //remove objects
  samples->Delete();
@@ -1377,9 +1389,7 @@ extractCollection->Delete();
 lumenA->Delete();
 }
 
-
 void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
-  
   double mean=0;
   double std=0;
   double e2=0;
@@ -1389,13 +1399,13 @@ void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
       mean += r->GetValue(k);
       e2 += r->GetValue(k) * r->GetValue(k);
       tt++;
-    }  
+    }
   }
   mean = mean/tt;
   e2 = e2/tt;
   std = sqrt(e2-mean*mean);
-  
-  //Compute a mean and std that is robust to outlier
+
+  //Compute a mean and std that is robust to outliers
   // We use (r-mean)+- 2sigma
   double meanr = 0;
   double e2r =0;
@@ -1410,24 +1420,22 @@ void vtkComputeAirwayWall::RemoveOutliers(vtkDoubleArray *r) {
       }
     }
   }
-  
+
   meanr = meanr/tt;
   e2r = e2r/tt;
-  
+
   stdr = sqrt(e2r-meanr*meanr);
   //cout<<"Robust mean = "<<meanr<<" Robust std = "<<stdr<<endl;
- 
+
   //Set points to -1 that fall beyond the criteria
   for (int k=0; k<r->GetNumberOfTuples(); k++) {
-    if (fabs(r->GetValue(k)-meanr) >= 2*stdr) {
+    if (fabs(r->GetValue(k)-meanr) >= this->StdFactor*stdr) {
       r->SetValue(k,-1);
     }
   }
-  
-}  
+}
 
 void vtkComputeAirwayWall::FWHM(vtkDoubleArray *ray,vtkDoubleArray *values) {
-
 double rmin,rmax;
 vtkDoubleArray *c = vtkDoubleArray::New();
 vtkDoubleArray *cp = vtkDoubleArray::New();
@@ -1455,13 +1463,9 @@ values->SetValue(1,rmax);
 c->Delete();
 cp->Delete();
 cpp->Delete();
-
-
 }
 
 void vtkComputeAirwayWall::FWHM(vtkDoubleArray *c,vtkDoubleArray *cp, vtkDoubleArray *cpp, double &rmin, double &rmax) {
-
-
 vtkDoubleArray *gzeros = vtkDoubleArray::New();
 //vtkDoubleArray *hzeros = vtkDoubleArray::New();
 
@@ -1482,7 +1486,6 @@ if (nzeros<1)
   rmax=-1;
   return;
   }
-
 
 //Auto adjust wall threhold if the current one is lower that a mean of the estimated luminal samples
 int wallTh;
@@ -1512,7 +1515,6 @@ else
   wallTh = this->WallThreshold;
   }
 
-
 int tmp;
 for (int k=0; k<nzeros; k++) {
   loc=gzeros->GetValue(k);
@@ -1530,12 +1532,12 @@ for (int k=0; k<nzeros; k++) {
 	  continue;
 	}
 	// Get valley locations at both size of the wall maxima.
-	if (k==0) 
+	if (k==0)
   {
 	  loc1=1;
   }
 	else
-    { 
+    {
     loc1 = gzeros->GetValue(k-1);
     }
   if (k>=nzeros-1)
@@ -1551,15 +1553,15 @@ for (int k=0; k<nzeros; k++) {
   if (int(loc1) >=ntuples || int(loc1) <0) {
 	  //Loc1 is out of range
 	  break;
-	} else {  
+	} else {
     val1 = c->GetValue((int) loc1);
     rmin=this->FindValue(c,(int) loc1,(val+val1)/2);
     valg = cp->GetValue((int) rmin);
     // Check that the inner wall location gradient is above the threshold.
     if (fabs(valg)<this->GradientThreshold)
 	    {
-	      cout<<" Gradient= "<<fabs(valg)<<" at rmin="<<rmin<<endl;
-              continue;
+	      //cout<<" Gradient= "<<fabs(valg)<<" at rmin="<<rmin<<endl;
+          continue;
 	    }
             //cout<<"Find rmin: "<<rmin<<endl;
     }
@@ -1567,7 +1569,7 @@ for (int k=0; k<nzeros; k++) {
   if (int(loc2) >=ntuples || int(loc2) <0) {
 	  // Loc2 is out of range but loc1 was assigned, set rmax to -1 and let it finish.
     rmax = -1;
-	} else {  
+	} else {
             val2 = c->GetValue((int) loc2);
             rmax=this->FindValue(c,(int) loc,(val+val2)/2);
             //cout<<"Find rmax: "<<rmax<<endl;
@@ -1586,7 +1588,6 @@ gzeros->Delete();
 }
 
 void vtkComputeAirwayWall::ZeroCrossing(vtkDoubleArray *ray,vtkDoubleArray *values) {
-
 double rmin,rmax;
 vtkDoubleArray *c = vtkDoubleArray::New();
 vtkDoubleArray *cp = vtkDoubleArray::New();
@@ -1614,13 +1615,9 @@ values->SetValue(1,rmax);
 c->Delete();
 cp->Delete();
 cpp->Delete();
-
-
 }
 
 void vtkComputeAirwayWall::ZeroCrossing(vtkDoubleArray *c,vtkDoubleArray *cp, vtkDoubleArray *cpp, double &rmin, double &rmax) {
-
-
 vtkDoubleArray *gzeros = vtkDoubleArray::New();
 vtkDoubleArray *hzeros = vtkDoubleArray::New();
 
@@ -1647,12 +1644,11 @@ else
   wallTh = this->WallThreshold;
 
 for (int k=0; k<ngzeros; k++) {
-
   loc=gzeros->GetValue(k);
   //Check loc is in the allowed range
   if ((int)(loc) >= nc-1 || (int)(loc) < 0)
     continue;
-  
+
    //Wall center point (loc) has to be a maxima (cpp <= 0). We let inflection points pass.
    if (cpp->GetValue((int) loc) > 0) {
      continue;
@@ -1678,16 +1674,13 @@ for (int k=0; k<ngzeros; k++) {
             hzeros->Delete();
             return;
         }
-
     }
   }
 }
 
 gzeros->Delete();
 hzeros->Delete();
-
 }
-
 
 //----------------------------------------------------------------------------
 // VTK6 migration note:
@@ -1697,7 +1690,6 @@ hzeros->Delete();
 //   reference: http://www.vtk.org/Wiki/VTK/VTK_6_Migration/Removal_of_Update
 
 void vtkComputeAirwayWall::PhaseCongruency(vtkDoubleArray *ray,vtkDoubleArray *values) {
-
 // Derivatives of phase congruency
 vtkDoubleArray *pc1 = vtkDoubleArray::New();
 vtkDoubleArray *pc2 = vtkDoubleArray::New();
@@ -1725,7 +1717,6 @@ inputSignal->SetSpacing(1,1,1);
 //inputSignal->SetScalarTypeToDouble();
 inputSignal->GetPointData()->SetScalars(c);
 //inputSignal->UpdateInformation();
-
 
 vtkGeneralizedPhaseCongruency *pcFilter = vtkGeneralizedPhaseCongruency::New();
 pcFilter->SetInputData(inputSignal);
@@ -1756,7 +1747,6 @@ pc2->Delete();
 }
 
 void vtkComputeAirwayWall::PhaseCongruency(vtkDoubleArray *c, vtkDoubleArray *cp,vtkDoubleArray *pcV, vtkDoubleArray *values) {
-
 vtkDoubleArray *pc1 = vtkDoubleArray::New();
 vtkDoubleArray *pc2 = vtkDoubleArray::New();
 
@@ -1773,13 +1763,10 @@ this->PhaseCongruency(c,cp,pc1,pc2,values);
 
 pc1->Delete();
 pc2->Delete();
-
 }
-
 
 void vtkComputeAirwayWall::PhaseCongruency(vtkDoubleArray *c, vtkDoubleArray *cp, vtkDoubleArray *pc1, vtkDoubleArray *pc2, vtkDoubleArray *values)
 {
-
 double rmin,rmax;
 
 int ntuples = pc1->GetNumberOfTuples();
@@ -1809,7 +1796,6 @@ dpc1->SetValue(0,dpc1->GetValue(1));
 dpc2->SetValue(0,dpc2->GetValue(1));
 dpc1->SetValue(ntuples-1,dpc1->GetValue(ntuples-2));
 dpc2->SetValue(ntuples-1,dpc2->GetValue(ntuples-2));
-
 
 vtkDoubleArray *pczeros = vtkDoubleArray::New();
 int npczeros;
@@ -1875,7 +1861,6 @@ if (wallTh < 0 )
 //Gradient threshold
 double wallGradTh = this->GradientThreshold;
 
-
 // Find Inner Wall
 for (int k=0; k<npczeros; k++) {
   loc=pczeros->GetValue(k);
@@ -1888,9 +1873,9 @@ for (int k=0; k<npczeros; k++) {
   val = c->GetValue((int) loc);
   valg = cp->GetValue((int) loc);
   pcval = pc1->GetValue((int) loc);
-  //We check if the relative wall intensity is greater than -10% * pcval (so 
+  //We check if the relative wall intensity is greater than -10% * pcval (so
   // the threshold is modulated by pcval such as if pcval=1 we allow a 10% negative variability in the
-  // intensity threshold) and that pcval is greater than the threshold  
+  // intensity threshold) and that pcval is greater than the threshold
   if ((val - wallTh)/(wallTh+dc_offset) > -0.10*pcval && (fabs(valg) - wallGradTh)/wallGradTh > -0.10*pcval && pcval > this->PCThreshold) {
     rmin = loc;
     break;
@@ -1924,7 +1909,6 @@ values->SetValue(1,rmax);
 pczeros->Delete();
 dpc1->Delete();
 dpc2->Delete();
-
 }
 
 void vtkComputeAirwayWall::PhaseCongruencyMultipleKernels(vtkDataArrayCollection *signalCollection,vtkDoubleArray *values,double sp) {
@@ -1985,7 +1969,7 @@ for (int i=0; i<numKernels-1; i++) {
        } else {
          zc[0] = (-B + sqrt(res))/(2*A);
          zc[1] = (-B - sqrt(res))/(2*A);
-       } 
+       }
        //cout<<"zc[0]: "<<zc[0]<<" zc[1]: "<<zc[1]<<endl;
 
        for (int sol=0 ; sol<2; sol++) {
@@ -2017,7 +2001,7 @@ if (upcrossing->GetNumberOfTuples() > 0)
 for (int i=1;i<upcrossing->GetNumberOfTuples();i++) {
   tmp = (rmin + upcrossing->GetValue(i)/i)*i/(i+1);
   if (fabs(tmp - upcrossing->GetValue(i))<10)
-    rmin = tmp; 
+    rmin = tmp;
 }
 /*
 if (upcrossing->GetNumberOfTuples() > 0)
@@ -2049,7 +2033,6 @@ for (int i=1;i<downcrossing->GetNumberOfTuples();i++) {
   }
 }
 
-
 values->Initialize();
 //values->SetNumberOfComponents(1);
 values->SetNumberOfValues(2);
@@ -2059,7 +2042,6 @@ values->SetValue(1,rmax);
 upcrossing->Delete();
 downcrossing->Delete();
 }
-
 
 double vtkComputeAirwayWall::FindValue(vtkDoubleArray *c, int loc, double target) {
 int ntuples = c->GetNumberOfTuples();
@@ -2083,11 +2065,9 @@ for (int k=loc; k< ntuples; k++) {
 return -1;
 }
 
-
 //Find the zeros of a signal. The signal is given in a vtkDoubleArray and the zeros are return as 0-based coordinates.
 // If derivaties of the signal are available, these are passed in cp and cpp.
 void vtkComputeAirwayWall::FindZeros(vtkDoubleArray *c, vtkDoubleArray *cp, vtkDoubleArray *cpp,vtkDoubleArray *zeros) {
-
 if (zeros == NULL)
     return;
 zeros->Initialize();
@@ -2105,15 +2085,15 @@ double val0,val1,zero;
 int k=0;
 while (initIdx < np-1) {
    val0 = c->GetValue(initIdx);
-   
+
    //Check if we are in a zero
-   if (val0 ==0) 
+   if (val0 ==0)
      {
      zeros->InsertNextValue(initIdx);
      initIdx++;
      continue;
      }
-   
+
    for (k =initIdx+1; k<np; k++) {
       val1 = c->GetValue(k);
       //cout<<"k: "<<k<<" Val1: "<<val1<<endl;
@@ -2142,12 +2122,10 @@ while (initIdx < np-1) {
          initIdx= k;
          break;
       }
-
     }
    if (k>=np)
     break;
 }
-
 }
 
 // Finds the coordinate of the zero crossing based on the bracket points around the zero.
@@ -2156,7 +2134,6 @@ while (initIdx < np-1) {
 // f1 = f(x_1): point rigth to the zero
 // Function return zero is problem has been found finding zero location.
 int  vtkComputeAirwayWall::FindZeroLocation(double fm1, double fm1p, double fm1pp, double f1, double f1p, double f1pp, double delta, double & zero) {
-
 double a = 0.5*fm1pp - 0.5*f1pp;
 double b = fm1p - f1p + delta * f1pp;
 double c = fm1 - f1 + delta*f1p - delta*delta*0.5*f1pp;
@@ -2184,7 +2161,6 @@ return 1;
 // f1 = f(x_1): point rigth to the zero
 // Function return zero is problem has been found finding zero location.
 int  vtkComputeAirwayWall::FindZeroLocation(double fm1, double fm1p, double f1, double f1p, double delta, double & zero) {
-
 //zero = (f1 - delta*f1p - fm1)/(fm1p - f1p);
 
 if (fm1p < 1e-15 && f1p > 1e-15)
@@ -2206,18 +2182,16 @@ else
   }
 if (zero < 0)
   return 0;
-else 
+else
   return 1;
 }
 
 int  vtkComputeAirwayWall::FindZeroLocation(double fm1, double f1, double delta, double & zero) {
-
 //zero = delta*fabs(fm1)/(fabs(fm1)+fabs(f1));
 //Same results but without fabs
 zero = -delta * fm1/(f1-fm1);
 return 1;
 }
-
 
 void vtkComputeAirwayWall::PrintSelf(ostream& os, vtkIndent indent)
 {

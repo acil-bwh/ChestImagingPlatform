@@ -4,12 +4,12 @@
   <title>GenerateModel</title>
     <description><![CDATA[This program generates a 3D model given an input label map mask using the discrete marching cubes algorithm.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateModel</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
 
   <parameters>

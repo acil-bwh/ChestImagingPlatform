@@ -4,10 +4,6 @@
 //  \brief This class is intended to contain a collection of functions that are routinely 
 //	used in other programs.
 //
-//  $Date$
-//  $Revision$
-//  $Author$
-//
 
 #ifndef __cipHelper_h
 #define __cipHelper_h
@@ -23,22 +19,23 @@
 #include "cipThinPlateSplineSurface.h"
 #include "itkImageSeriesReader.h"
 
-
 namespace cip {
   /**
    *  Define typedefs used throughout the cip
    */
-  typedef itk::Image< unsigned short, 3 >       LabelMapType;
-  typedef itk::Image< unsigned short, 2 >       LabelMapSliceType;
-  typedef itk::Image< short, 3 >                CTType;
-  typedef itk::Image< short, 2 >                CTSliceType;
-  typedef itk::ImageFileReader< LabelMapType >  LabelMapReaderType;
-  typedef itk::ImageFileWriter< LabelMapType >  LabelMapWriterType;
-  typedef itk::ImageFileReader< CTType >        CTReaderType;
-  typedef itk::ImageFileWriter< CTType >        CTWriterType;
-
-  typedef itk::ImageSeriesReader< CTType >      CTSeriesReaderType;
-
+  typedef itk::Image< unsigned short, 3 >          LabelMapType;
+  typedef itk::Image< unsigned short, 2 >          LabelMapSliceType;
+  typedef itk::Image< short, 3 >                   CTType;
+  typedef itk::Image< short, 2 >                   CTSliceType;
+  typedef itk::Image< float, 3 >                   DistanceMapType;
+  typedef itk::Image< float, 2 >                   DistanceMapSliceType;
+  typedef itk::ImageFileReader< LabelMapType >     LabelMapReaderType;
+  typedef itk::ImageFileWriter< LabelMapType >     LabelMapWriterType;
+  typedef itk::ImageFileReader< CTType >           CTReaderType;
+  typedef itk::ImageFileWriter< CTType >           CTWriterType;
+  typedef itk::ImageFileReader< DistanceMapType >  DistanceMapReaderType;
+  typedef itk::ImageFileWriter< DistanceMapType >  DistanceMapWriterType;
+  typedef itk::ImageSeriesReader< CTType >         CTSeriesReaderType;
   
   /** Function to read CT from Directory */
   cip::CTType::Pointer ReadCTFromDirectory( std::string ctDir );
@@ -46,30 +43,48 @@ namespace cip {
   /** Function to read CT from file */
   cip::CTType::Pointer ReadCTFromFile( std::string fileName );
 
+  /** Function to read CT from file */
+  cip::LabelMapType::Pointer ReadLabelMapFromFile( std::string fileName );
+  
   /** Function that downsamples a label map. Takes in as input a value for the downsampling amount and
    * a pointer to a LabelMapType, and returns a pointer to a downsampled LabelMapType. */
-  cip::LabelMapType::Pointer DownsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
+  cip::LabelMapType::Pointer DownsampleLabelMap(unsigned short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
 
   /** Function that upsamples a label map. Takes in as input a value for the upsampling
    *amount and a pointer to a LabelMapType, and returns a pointer to a upsampled LabelMapType. */
-  cip::LabelMapType::Pointer UpsampleLabelMap(short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
+  cip::LabelMapType::Pointer UpsampleLabelMap(unsigned short samplingAmount, cip::LabelMapType::Pointer inputLabelMap);
 
   /** Function that downsamples a label map slice. Takes in as input a value for the downsampling amount and 
    * a pointer to a LabelMapSliceType, and returns a pointer to a downsampled LabelMapSliceType. */
-  cip::LabelMapSliceType::Pointer DownsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+  cip::LabelMapSliceType::Pointer 
+    DownsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
 
   /** Function that upsamples a label map slice. Takes in as input a value for the upsampling
    *  amount and a pointer to a LabelMapSliceType, and returns a pointer to a upsampled LabelMapSliceType. */
-  cip::LabelMapSliceType::Pointer UpsampleLabelMapSlice(short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+  cip::LabelMapSliceType::Pointer 
+    UpsampleLabelMapSlice(unsigned short samplingAmount, cip::LabelMapSliceType::Pointer inputLabelMap);
+
+  /** Templated fucntion to downsample an itkImage data type */
+  template<typename ImageType, typename InterpolatorType, unsigned int D> typename ImageType::Pointer 
+    DownsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
 
   /** Function that downsamples a CT. Takes in as input a value for the downsampling amount and 
    * a pointer to a CTType, and returns a pointer to a downsampled CTType. */
-  cip::CTType::Pointer DownsampleCT(short samplingAmount, cip::CTType::Pointer inputCT);
+  cip::CTType::Pointer DownsampleCT(unsigned short samplingAmount, cip::CTType::Pointer inputCT);
+
+  /** Templated fucntion to upsample an itkImage data type */
+  template<typename ImageType,typename InterpolatorType,unsigned int D> typename ImageType::Pointer 
+    UpsampleImage(unsigned short samplingAmount, typename ImageType::Pointer inputImage);
 
   /** Function that upsamples a label CT. Takes in as input a value for the upsampling
    * amount and a pointer to a CTType, and returns a pointer to a upsampled CTType. */
-  cip::CTType::Pointer UpsampleCT(short samplingAmount, cip::CTType::Pointer inputCT);
+  cip::CTType::Pointer UpsampleCT(unsigned short samplingAmount, cip::CTType::Pointer inputCT);
 
+  /** Function that upsamples a distance map. Takes in as input a value for the upsampling
+   * amount and a pointer to a CTType, and returns a pointer to a upsampled CTType. */
+  cip::DistanceMapType::Pointer 
+    UpsampleDistanceMap(unsigned short samplingAmount, cip::DistanceMapType::Pointer inputDM);
+  
   /** Get the magnitude of the indicated vector */
   double GetVectorMagnitude(const cip::VectorType& vector);
 
@@ -110,19 +125,22 @@ namespace cip {
   
   /** Get the bounding with respect to a specified chest region - chest type combination. The bounding
    * box is returned as an ITK image region. */
-  cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
-										 unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
-										 unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE));
+  cip::LabelMapType::RegionType 
+    GetLabelMapChestRegionChestTypeBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+						     unsigned char cipRegion = (unsigned char)(cip::UNDEFINEDREGION), 
+						     unsigned char cipType = (unsigned char)(cip::UNDEFINEDTYPE));
 
   /** Similar to GetLabelMapChestRegionChestTypeBoundingBoxRegion, but this function will return an ITK bounding box region
    * padded according to the specified x, y, and z radii. The region is determined with respect to the specifed chest-region
    * chest-type combination. */
-  cip::LabelMapType::RegionType GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
-										       unsigned char region, unsigned char type,
-										       unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ);
-  /** This function is used to verify that the specified particles have 'ChestRegion' and 'ChestType' arrays. 
-      If the particles don't have these arrays, they are assigned with default entries UNDEFINEDREGION and 
-      UNDEFINEDTYPE */
+  cip::LabelMapType::RegionType 
+    GetLabelMapChestRegionChestTypePaddedBoundingBoxRegion(cip::LabelMapType::Pointer labelMap, 
+							   unsigned char region, unsigned char type,
+							   unsigned int radiusX, unsigned int radiusY, unsigned int radiusZ);
+
+  /** This function is used to verify that the specified particles have the 'ChestRegionChestType' array. 
+      If the particles don't have this array, they are assigned with the default entry corresponding to UNDEFINEDREGION 
+      and UNDEFINEDTYPE */
   void AssertChestRegionChestTypeArrayExistence( vtkSmartPointer< vtkPolyData > );
 
   /** This function will transfer all the point data arrays from the first polydata to the second. In the case
@@ -146,6 +164,13 @@ namespace cip {
   /** Given a thin plate spline surface and some point in 3D space, this function will 
    *  compute the closest point on the surface and set it to tpsPoint. */
   void GetClosestPointOnThinPlateSplineSurface( const cipThinPlateSplineSurface& tps, cip::PointType point, cip::PointType tpsPoint );
+
+  /** Transfer the field data from one polydata to another  */
+  void TransferFieldData( vtkSmartPointer< vtkPolyData >, vtkSmartPointer< vtkPolyData > );
+
+  /** Check to see if two polydata data sets have the exact same field data. If the field
+   *  data differs in any way, return false. Otherwise, return true. */
+  bool HaveSameFieldData( vtkSmartPointer< vtkPolyData > polyData1, vtkSmartPointer< vtkPolyData > polyData2 );
 }  
 
 #endif

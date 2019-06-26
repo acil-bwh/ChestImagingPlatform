@@ -5,18 +5,16 @@ PROJECT(RegisterCT)
 set(MODULE_NAME RegisterCT)
 set(MODULE_SRCS )
 
-find_package(LibXml2)
 
- set (UUID_LIBS -luuid)
+set (UUID_LIBS -luuid)
  
 set(MODULE_INCLUDE_DIRECTORIES
-  ${LIBXML2_INCLUDE_DIR}
+  ${VTK_LIBXML_INCLUDE_DIR}
   )
 
 set(MODULE_TARGET_LIBRARIES
   ${LIBXML2_LIBRARIES}
   )
-
 
 cipMacroBuildCLI(
     NAME ${MODULE_NAME}
@@ -25,13 +23,12 @@ cipMacroBuildCLI(
     SRCS ${MODULE_SRCS}
     )
 
-
 SET (TEST_NAME ${MODULE_NAME}_Test)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
-    --compareLabelMap 
+    --compareCT 
       ${INPUT_DATA_DIR}/ct-64.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_dummy_ct.nrrd
-    --compareIntensityTolerance 4	
+    --compareIntensityTolerance 15
     ModuleEntryPoint
       --fct ${INPUT_DATA_DIR}/ct-64.nrrd
       --mct ${INPUT_DATA_DIR}/ct-64-transformed.nrrd

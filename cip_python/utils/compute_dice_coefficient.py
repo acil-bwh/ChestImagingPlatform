@@ -2,9 +2,6 @@ import numpy as np
 from scipy.stats import mode, kurtosis, skew
 from optparse import OptionParser
 import nrrd
-from cip_python.phenotypes.phenotypes import Phenotypes
-from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.ChestConventions import ChestConventions
 import pdb
 
 def compute_dice_coefficient(lm1, lm2, radius):
@@ -75,5 +72,5 @@ if __name__ == "__main__":
     lm2, lm2_header = nrrd.read(options.lm2)    
 
     dice = compute_dice_coefficient(lm1, lm2, int(options.radius))
-    print "Dice coefficient: %s" % dice
+    print ("Dice coefficient: %s" % dice)
     

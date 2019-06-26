@@ -17,22 +17,37 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG)
 
   ### --- Project specific additions here
-  set(Boost_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install)
+  if (UNIX)
+    set(Boost_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install)
+  else()
+    set(Boost_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/${proj})
+  endif()
   set(Boost_Configure_Script ${CMAKE_CURRENT_LIST_DIR}/External_Boost_configureboost.cmake)
   set(Boost_Build_Script ${CMAKE_CURRENT_LIST_DIR}/External_Boost_buildboost.cmake)
 
   ### --- End Project specific additions
 # SVN is too slow SVN_REPOSITORY http://svn.boost.org/svn/boost/trunk
 # SVN is too slow SVN_REVISION -r "82586"
-  set(${proj}_URL http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.gz )
-  set(${proj}_MD5 efbfbff5a85a9330951f243d0a46e4b9 )
+
+  #set(${proj}_URL http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.gz )
+#  set(${proj}_URL https://acil.s3.amazonaws.com/external_deps/boost_1_54_0_nodoc.tar.gz)
+#  set(${proj}_MD5 81bb79d6939601b43e681449e3eae7df )
+
+    set(${proj}_URL https://s3.amazonaws.com/acil/external_deps/boost_1_65_1.tar.gz)
+    set(${proj}_MD5 ee64fd29a3fe42232c6ac3c419e523cf )
+
   if(CMAKE_COMPILER_IS_CLANGXX)
     set(CLANG_ARG -DCMAKE_COMPILER_IS_CLANGXX:BOOL=ON)
   endif()
   ExternalProject_Add(${proj}
     URL ${${proj}_URL}
     URL_MD5 ${${proj}_MD5}
+
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}
+#     URL    /Users/jonieva/Projects/External/boost_1_65_1.tar.gz
+#    DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E echo "Remove this line and uncomment GIT_REPOSITORY and GIT_TAG"
+#    SOURCE_DIR /Users/jonieva/Projects/External/boost_1_65_1
+
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CONFIGURE_COMMAND ${CMAKE_COMMAND}
     ${CLANG_ARG}
@@ -44,8 +59,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     BUILD_COMMAND ${CMAKE_COMMAND}
     INSTALL_COMMAND ""
   )
-  set(BOOST_ROOT        ${Boost_Install_Dir})
-  set(BOOST_INCLUDE_DIR ${Boost_Install_Dir}/include)
+
+  set(BOOST_ROOT ${Boost_Install_Dir})
+
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${proj} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
@@ -56,7 +72,4 @@ else()
   SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
 endif()
 
-mark_as_superbuild(
-  VARS BOOST_DIR:PATH
-  LABELS "FIND_PACKAGE"
-  )
+mark_as_superbuild(BOOST_ROOT)

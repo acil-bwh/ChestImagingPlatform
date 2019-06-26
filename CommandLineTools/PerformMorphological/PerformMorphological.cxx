@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
   // in the label map, collect them now
   if (allRegionTypePairs)
     {
-      std::cout << "who" << std::endl;
       std::list<unsigned short> labelsList;
       
       IteratorType it(reader->GetOutput(), reader->GetOutput()->GetBufferedRegion());

@@ -5,6 +5,7 @@
   <description><![CDATA[This program segmenta a nodular lesion for quantiative assesment]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/segmentation</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
@@ -34,6 +35,17 @@
       <description><![CDATA[Output level set of the segmented nodule. The nodule boundary is set at the -0.5 level]]></description>
       <default>NA</default>
     </image>
+
+    <boolean>
+      <name>fullSizeOutput</name>
+      <label>Full size output</label>
+      <default>false</default>
+      <flag>f</flag>
+      <longflag>fulloutput</longflag>
+      <description>Resample the output levelset to match the input image.</description>
+    </boolean>
+
+    
     </parameters>
   
     <parameters>
@@ -65,11 +77,13 @@
     <boolean>
       <name>outputROI</name>
       <label>Output ROI</label>
+      <longflag>outputROI</longflag>
       <default>false</default>
     </boolean>
     <image>
       <name>roiImage</name>
       <label>ROI Image</label>
+      <longflag>roiImage</longflag>
       <channel>output</channel>
     </image>
         

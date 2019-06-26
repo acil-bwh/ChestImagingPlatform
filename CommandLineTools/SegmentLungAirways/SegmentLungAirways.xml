@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Segmentation</category>
+  <title>Segment Lung Airways</title>
+  <description><![CDATA[This program segments the airways starting from a chest CT image. \
+  To create a list of fiducials, click on the tool bar icon of an arrow pointing to a \
+  starburst fiducial to enter the 'place a new object mode' and then use the fiducials \
+  module.]]></description>
+  <version>0.0.1</version>
+  <documentation-url> http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/AirwaySegmentation</documentation-url>
+  <license>Slicer</license>
+  <contributor>Applied Chest Imaging Laboratory, Brigham and Women's Hospital. University College of Cork (UCC).</contributor>
+  <acknowledgements><![CDATA[This work is supported by NA-MIC, the Slicer Community and the University College Cork (UCC).<br>]]></acknowledgements>
+  
+  <parameters>
+    <label>Segmentation Parameters</label>
+    <description><![CDATA[Parameters to prescribe the region growing]]></description>
+      
+    <point multiple="true" coordinateSystem="ras">
+      <name>seed</name>
+      <label>Seeds</label>
+      <flag>s</flag>
+      <longflag>seed</longflag>
+      <description><![CDATA[One single seed point in the trachea has to be specified for the region growing algorithm]]></description>
+      <default>0,0,0</default>
+    </point>
+    
+  </parameters>
+  
+  <parameters>
+    
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image>
+      <name>inputVolume</name>
+      <label>Input Volume</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>input</longflag>
+      <description><![CDATA[Input volume to be filtered]]></description>
+    </image>
+    
+    <image type="label">
+      <name>airwayLabel</name>
+      <label>Airway Label</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>output</longflag>
+      <description><![CDATA[Airway Label]]></description>
+    </image>
+    
+    <string-enumeration>
+      <name>reconstructionKernelType</name>
+      <label>Kernel Type</label>
+      <flag>k</flag>
+      <longflag>kernel</longflag>
+      <element>STANDARD</element>
+      <element>LUNG</element>
+      <element>B70f</element>
+      <default>STANDARD</default>
+      <description><![CDATA[Reconstruction kernel type used to reconstruct the input dataset. \
+        STANDARD - compatible with smooth recon kernels like B20f, B30f, B, C, FC10, FC12 and STD depending on the vendor \
+        LUNG     - compatible with sharp recon kernels like B50f, B60f, D, FC50, FC52 and LUNG \
+        B70f     - compatible with ultrasharp recon kernels.]]></description>
+    </string-enumeration>
+
+    <string-enumeration>
+      <name>regionSegmentation</name>
+      <flag>r</flag>
+      <longflag>region</longflag>
+      <element>WholeAirway</element>
+      <element>Trachea</element>
+      <element>RightAirway</element>
+      <element>LeftAirway</element>
+      <default>WholeAirway</default>
+      <description>
+        <![CDATA[Region to segment. 
+      ]]>
+      </description>
+    </string-enumeration>
+    
+  </parameters>
+  
+</executable>

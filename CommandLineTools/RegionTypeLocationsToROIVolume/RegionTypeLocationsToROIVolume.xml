@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
+  <title>RegionTypeLocationsToROIVolume</title>
+  <description><![CDATA[This program reads a chest-region chest-type locations file (and a reference \
+CT image) and produces an ROI volume, either a segmentation or a label map. This output volume will \
+contain regions of interest centered at the points in the region and type locations covering an extent \
+(ROI) with dimensions speficied by the user. If the output volume is desired to be a label map, then the \
+ROIs will have values corresponding to the chest-region chest-type values. If the output is desired to \
+be a segmentation, the ROIs will be assigned unique numbers at random.]]>
+  </description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+
+    <file>
+      <name>inputPointsFile</name>
+      <label>Input region and type points file</label>
+      <channel>input</channel>
+      <longflag>ip</longflag>
+      <description><![CDATA[Input region and type points file name (csv).]]></description>
+      <default>NA</default>
+    </file>
+
+    <file>
+      <name>inputIndicesFile</name>
+      <label>Input region and type indices file</label>
+      <channel>input</channel>
+      <longflag>ii</longflag>
+      <description><![CDATA[Input region and type indices file name (csv).]]></description>
+      <default>NA</default>
+    </file>
+
+    <image>
+      <name>ctFileName</name>
+      <label>Reference CT image</label>
+      <channel>input</channel>
+      <longflag>ict</longflag>
+      <description><![CDATA[Input CT image used to define output image size, spacing, and origin.]]></description>
+      <default>NA</default>
+    </image>
+
+    <image>
+      <name>outVolumeFileName</name>
+      <label>Output ROI volume</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>ov</longflag>
+      <description><![CDATA[Output volume with regions of interest.]]></description>
+      <default>NA</default>
+    </image>
+
+    <boolean>
+      <name>seg</name>
+      <label>Segmentation</label>
+      <channel>input</channel>
+      <longflag>seg</longflag>
+      <description><![CDATA[By default the output volume will be a label map. Use this flag to indicate \
+that it should be a segmentation instead.]]></description>
+    </boolean>
+
+    <integer>
+      <name>xRadius</name>
+      <label>X Radius</label>
+      <channel>input</channel>
+      <longflag>xr</longflag>
+      <description><![CDATA[ROI radius in x-direction.]]></description>
+      <default>1</default>
+    </integer>
+
+    <integer>
+      <name>yRadius</name>
+      <label>Y Radius</label>
+      <channel>input</channel>
+      <longflag>yr</longflag>
+      <description><![CDATA[ROI radius in y-direction.]]></description>
+      <default>1</default>
+    </integer>
+
+    <integer>
+      <name>zRadius</name>
+      <label>Z Radius</label>
+      <channel>input</channel>
+      <longflag>zr</longflag>
+      <description><![CDATA[ROI radius in z-direction.]]></description>
+      <default>1</default>
+    </integer>
+
+  </parameters>
+</executable>

@@ -77,9 +77,12 @@ protected:
   // instead of RequestData.  It is called by RequestData.
   virtual void ExecuteDataWithInformation(vtkDataObject *output,
                                           vtkInformation* outInfo);
-                                          
+
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
                                  vtkInformationVector *);
+
+  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **,
+                                  vtkInformationVector *);
 
   double Theta;
   double RMin;

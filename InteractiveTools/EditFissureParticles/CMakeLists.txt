@@ -23,15 +23,6 @@ ${CMAKE_SOURCE_DIR}/Utilities
 ${CMAKE_SOURCE_DIR}/Common
 )
 
-SET ( VTK_LIBS
-vtkCommon 
-vtkImaging 
-vtkFiltering 
-vtkGraphics 
-vtkRendering 
-vtkWidgets 
-vtkHybrid
-)
 
 SET ( EditFissureParticles_SOURCE EditFissureParticles.cxx )
 
@@ -40,4 +31,4 @@ IF ( APPLE )
 ELSE ( APPLE )
    ADD_EXECUTABLE ( EditFissureParticles  ${EditFissureParticles_SOURCE})
 ENDIF ( APPLE )
-TARGET_LINK_LIBRARIES ( EditFissureParticles ${ITK_LIBRARIES} ${VTK_LIBS} CIPUtilities CIPCommon )
+TARGET_LINK_LIBRARIES ( EditFissureParticles ${ITK_LIBRARIES} ${VTK_LIBRARIES} CIPUtilities CIPCommon )

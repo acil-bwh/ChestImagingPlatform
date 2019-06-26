@@ -5,8 +5,9 @@
   <description><![CDATA[This program filters out connected components that are smaller than a set size. It reads a labelmap and regions and types. For each region / type or pair in the inclusion set (or each pair not in the exclusion set) , it first finds all the connected components having the corresponding label value. It then proceeds to remove labels for all connected components having a voxel number that is less than a user input threshold.]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
     Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
     and does not necessarily represent the official views of the National Institutes of Health.

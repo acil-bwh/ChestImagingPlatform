@@ -18,6 +18,8 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
   this->SelectedParticleType               = VALLEYLINE; // Corresponds to airway
   this->ParticlesData                      = vtkSmartPointer< vtkPolyData >::New();
   this->ScaleStencilPatternByParticleScale = false;
+  this->ScaleStencilPatternByParticleDNNRadius = false;
+  this->DNNRadiusName                      = "";
   this->CTPointSpreadFunctionSigma         = 0.0;
 }
 
@@ -91,7 +93,10 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 
   // TODO: Can the following be multithreaded? By what mechanism?
   for ( unsigned int i=0; i<this->ParticlesData->GetNumberOfPoints(); i++ ) 
-    {   
+    {
+      unsigned short typeValue = conventions.GetChestTypeFromValue(ParticlesData->GetPointData()->GetArray("ChestRegionChestType")->GetTuple(i)[0]);
+      unsigned short foregroundLabel = conventions.GetValueFromChestRegionAndType( static_cast< unsigned char >( cip::UNDEFINEDREGION ),
+                                                                                   static_cast< unsigned char >( typeValue ) );
     //
     // Get the bounding box for the particle. We will create an ITK region
     // based on the extent of this bounding box.
@@ -115,8 +120,18 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 
       if ( this->ScaleStencilPatternByParticleScale )
         {
-        //TODO: Need to properly define a function that converts
-        //particle scale to physical airway radius.
+          double scale = this->ParticlesData->GetPointData()->GetArray("scale")->GetTuple(i)[0];
+          double tempRadius = vcl_sqrt(2.0)*vcl_sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
+
+          this->Stencil->SetRadius( tempRadius );
+        }
+
+      if ( this->DNNRadiusName != "" )
+        {
+          double radius = this->ParticlesData->GetPointData()->GetArray(this->DNNRadiusName.c_str())->GetTuple(i)[0];
+//          double tempRadius = vcl_sqrt(2.0) * vcl_sqrt(pow(radius, 2) + pow(this->CTPointSpreadFunctionSigma, 2));
+
+          this->Stencil->SetRadius(radius);
         }
       }
     if ( this->ChestParticleType == cip::FISSURE )
@@ -152,8 +167,15 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 
         this->Stencil->SetRadius( tempRadius );
         }
-      }
 
+      if ( this->DNNRadiusName != "" )
+       {
+        double radius = this->ParticlesData->GetPointData()->GetArray(this->DNNRadiusName.c_str())->GetTuple(i)[0];
+        double tempRadius = vcl_sqrt(2.0) * vcl_sqrt(pow(radius, 2) + pow(this->CTPointSpreadFunctionSigma, 2));
+
+        this->Stencil->SetRadius(tempRadius);
+        }
+      }
     //
     // Must be AFTER we set the center, orientation, and radius
     //
@@ -272,7 +294,7 @@ unsigned int
 cipParticlesToStenciledLabelMapImageFilter< TInputImage >
 ::GetChestParticleType()
 {  
-  if ( this->ParticleType == RIDGESURFACE )
+  if ( this->SelectedParticleType == RIDGESURFACE )
     {
     //
     // Our current scheme doesn't allow disambiguation of fissure
@@ -281,7 +303,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
     //
     return cip::FISSURE;
     }
-  if ( this->ParticleType == RIDGELINE )
+  if ( this->SelectedParticleType == RIDGELINE )
     {
     return cip::VESSEL;
     }

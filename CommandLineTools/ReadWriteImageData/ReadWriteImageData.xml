@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
   <title>ReadWriteImageData</title>
-    <description><![CDATA[This simple program reads and writes images, either label maps or CT images. It is useful for renaming (obviating the need to need to manually modify headers.]]></description>
+  <description><![CDATA[This simple program reads and writes images, either label maps or CT images. It is useful for renaming (obviating the need to manually modify headers.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ReadWriteImageData</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
-    </acknowledgements>
-
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
@@ -21,7 +21,7 @@
           <channel>input</channel>
           <longflag>ict</longflag>
           <description><![CDATA[Input CT file name]]></description>
-          <default>q</default>
+          <default>NA</default>
     </image>
     
     <image type="label">
@@ -30,28 +30,27 @@
       <channel>input</channel>
       <longflag>il</longflag>
       <description><![CDATA[Input label map file name]]></description>
-      <default>q</default>
+      <default>NA</default>
     </image>
-      
-      
-      <image>
-          <name>outCTFileName</name>
-          <label>output CT FileName</label>
-          <channel>output</channel>
-          <longflag>oct</longflag>
-          <description><![CDATA[Output CT file name]]></description>
-          <default>q</default>
-      </image>
-      
+        
+    <image>
+      <name>outCTFileName</name>
+      <label>output CT FileName</label>
+      <channel>output</channel>
+      <longflag>oct</longflag>
+      <description><![CDATA[Output CT file name]]></description>
+      <default>NA</default>
+    </image>
+    
     <image type="label">
-          <name>outLabelMapFileName</name>
-          <label>output Label Map FileName</label>
-          <channel>output</channel>
-          <longflag>ol</longflag>
-          <description><![CDATA[Output label map file name]]></description>
-          <default>NA</default>
+      <name>outLabelMapFileName</name>
+      <label>output Label Map FileName</label>
+      <channel>output</channel>
+      <longflag>ol</longflag>
+      <description><![CDATA[Output label map file name]]></description>
+      <default>NA</default>
     </image>
-      
+    
   </parameters>
   
 </executable>

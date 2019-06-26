@@ -1,13 +1,12 @@
 import os.path
-import subprocess
-import numpy as np
-from numpy import sum, sqrt
-import tempfile, shutil
+import shutil
+import tempfile
 import vtk
-from vtk.util.numpy_support import vtk_to_numpy
-import pdb
-from cip_python.particles.vessel_particles import VesselParticles
+
+from cip_python.common import Paths
 from cip_python.particles.particle_metrics import ParticleMetrics
+from cip_python.particles.vessel_particles import VesselParticles
+
 
 def test_vessel_particles():
     try:
@@ -15,17 +14,15 @@ def test_vessel_particles():
         this_dir = os.path.dirname(os.path.realpath(__file__))
 
         # Set up the inputs to VesselParticles
-        input_ct = this_dir + '/../../../Testing/Data/Input/vesselgauss.nrrd'
-        input_mask = \
-          this_dir + '/../../../Testing/Data/Input/vessel_vesselSeedsMask.nrrd'
+        input_ct = Paths.testing_file_path('vessel.nrrd')
+        input_mask = Paths.testing_file_path('vessel_vesselSeedsMask.nrrd')
 
-        #tmp_dir = this_dir + '/../../../Testing/tmp/'
         tmp_dir = tempfile.mkdtemp()
         output_particles = os.path.join(tmp_dir,'vessel_particles.vtk')
         print tmp_dir
         max_scale = 6.0
-        live_th = -100
-        seed_th = -80
+        live_th = -95
+        seed_th = -70
         scale_samples = 10
         down_sample_rate = 1.0
         min_intensity = -800
@@ -40,8 +37,7 @@ def test_vessel_particles():
 
         # Read in the reference data set for comparison
         ref_reader = vtk.vtkPolyDataReader()
-        ref_reader.SetFileName(this_dir + \
-            '/../../../Testing/Data/Input/vessel_particles.vtk')
+        ref_reader.SetFileName(Paths.testing_file_path('vessel_particles.vtk'))
         ref_reader.Update()
 
         # Now read in the output data set

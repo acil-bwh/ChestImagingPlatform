@@ -36,7 +36,7 @@ path=dict()
 for path_name in toolsPaths:
   path[path_name]=os.environ.get(path_name,False)
   if path[path_name] == False:
-    print path_name + " environment variable is not set"
+    print (path_name + " environment variable is not set")
     exit()
 
 # Set up input and output and temp volumes
@@ -69,7 +69,7 @@ for im in [insp,exp_to_insp]:
   out = os.path.join(tmp_dir,os.path.basename(im))
   tmp_command = unu + " resample -i %(in)s -s x1 x1 = -k dgauss:%(sigma)f,3 | "+ unu + " resample -s x%(r)f x%(r)f x%(r)f -k tent -o %(out)s"
   tmp_command = tmp_command % {'in':im, 'out':out,'sigma':sigma,'r':rate}
-  print tmp_command
+  print (tmp_command)
   subprocess.call( tmp_command, shell=True)
 
 #Define region labels and variables
@@ -92,7 +92,7 @@ for ii,rr in enumerate(regions):
   region_mask = np.logical_and(insp_mask_im>=rr[0],insp_mask_im<=rr[1])
   #print ii,gastrapping_mask[region_mask].sum(),region_mask.sum()
   fSAD.append(100*gastrapping_mask[region_mask].sum()/float(region_mask.sum()));
-  print "Gas trapping region "+ str(rr[0]) + " is "+ str(fSAD[ii])
+  print ("Gas trapping region "+ str(rr[0]) + " is "+ str(fSAD[ii]))
 
 phenos[phenos_labels[0]]=fSAD
 
@@ -100,17 +100,17 @@ phenos[phenos_labels[0]]=fSAD
 tmp_command = "ANTSJacobian 3 %(warp)s %(out)s"
 tmp_command = tmp_command % {'warp': elastic_tfm, 'out': deformation_prefix_tmp}
 tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
-print tmp_command
+print (tmp_command)
 subprocess.call( tmp_command, shell=True )
 
 tmp_command = "c3d %(in)s -o %(out)s"
 tmp_command = tmp_command % {'in': jacobian_nifti_tmp, 'out': jacobian_tmp}
-print tmp_command
+print (tmp_command)
 subprocess.call( tmp_command, shell=True )
 
 tmp_command = unu + " resample -k tent -s %(x)d %(y)d %(z)d -i %(in)s -o %(out)s"
 tmp_command = tmp_command % {'x':insp_header['sizes'][0],'y':insp_header['sizes'][1],'z':insp_header['sizes'][2],'in':jacobian_tmp,'out':jacobian_tmp}
-print tmp_command
+print (tmp_command)
 subprocess.call( tmp_command, shell=True )
 
 jac_im, jac_header = nrrd.read(jacobian_tmp)
@@ -125,7 +125,7 @@ for th in mass_th:
   for ii,rr in enumerate(regions):
     region_mask = np.logical_and(insp_mask_im>=rr[0],insp_mask_im<=rr[1])
     tmplist.append(100*mass_mask[region_mask].sum()/float(region_mask.sum()))
-    print "Residual mask % "+ str(rr[0]) + " for th " + str(th) + " is " + str(tmplist[ii])
+    print ("Residual mask % "+ str(rr[0]) + " for th " + str(th) + " is " + str(tmplist[ii]))
   resmass.append(tmplist)
 
 phenos[phenos_labels[1]]=resmass
@@ -141,7 +141,7 @@ for ii,rr in enumerate(regions):
   Jkur = stats.kurtosis(jac_im[region_mask])
   Jskew = stats.skew(jac_im[region_mask])
   jacstats.append([Jmean,Jstd,Jkur,Jskew])
-  print "Residual mask % "+ str(rr[0]) + " is " + str(jacstats[ii])
+  print ("Residual mask % "+ str(rr[0]) + " is " + str(jacstats[ii]))
 
 phenos[phenos_labels[2]]=jacstats
 

@@ -1,10 +1,6 @@
-import os.path
 import numpy as np
-import dicom
-from dicom.tag import Tag
-from dicom.dataset import Dataset
 from cip_python.utils.anonymize_dicom import *
-import pdb
+from pydicom.dataset import Dataset
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 

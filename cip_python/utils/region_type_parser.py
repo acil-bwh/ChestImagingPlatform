@@ -1,7 +1,6 @@
 import numpy as np
-from cip_python.ChestConventions import ChestConventions
+from cip_python.common import ChestConventions
 
-import pdb
 
 class RegionTypeParser():
     """Parses the chest-region chest-type input data to identify all existing
@@ -25,7 +24,7 @@ class RegionTypeParser():
         assert len(data.shape) > 0, "Empty data set"
 
         self.labels_ = np.unique(self._data)
-
+   
     def get_mask(self, chest_region=None, chest_type=None):
         """Get's boolean mask of all data indices that match the chest-region
         chest-type query.
@@ -55,11 +54,13 @@ class RegionTypeParser():
             chest-type query. The chest region hierarchy is honored.
         """
         if chest_region is not None:
-            if type(chest_region) != int and type(chest_region) != np.int64:
+            if type(chest_region) != int and type(chest_region) != np.int64 \
+              and type(chest_region) != np.int32:
                 raise ValueError(
                     'chest_region must be an int between 0 and 255 inclusive')
         if chest_type is not None:
-            if type(chest_type) != int and type(chest_type) != np.int64:
+            if type(chest_type) != int and type(chest_type) != np.int64 \
+              and type(chest_type) != np.int32:
                 raise ValueError(
                     'chest_type must be an int between 0 and 255 inclusive')        
         
@@ -82,12 +83,12 @@ class RegionTypeParser():
                     CheckSubordinateSuperiorChestRegionRelationship(r, \
                     chest_region):
                     mask_labels.append(l)
-
+                
         mask = np.empty(self._data.shape, dtype=bool)
         mask[:] = False
-
-        for ml in mask_labels:
-            mask = np.logical_or(mask, self._data == ml)
+        
+        for ll in set(mask_labels):
+            mask[self._data==ll]=True
 
         return mask
 
@@ -124,7 +125,7 @@ class RegionTypeParser():
         for l in self.labels_:
             r = c.GetChestRegionFromValue(l)
 
-            for sup in xrange(0, num_regions):
+            for sup in range(0, num_regions):
                 if c.CheckSubordinateSuperiorChestRegionRelationship(r, sup):
                     tmp.append(sup)
 
@@ -165,7 +166,7 @@ class RegionTypeParser():
         for l in self.labels_:
             t = c.GetChestTypeFromValue(l)
             r = c.GetChestRegionFromValue(l)
-            for sup in xrange(0, num_regions):
+            for sup in range(0, num_regions):
                 if c.CheckSubordinateSuperiorChestRegionRelationship(r, sup):
                     if not (sup, t) in tmp:
                         tmp.append((sup, t))

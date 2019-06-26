@@ -22,9 +22,9 @@ cipNewtonOptimizer< Dimension >
   this->InitialParams = new PointType( Dimension, Dimension );
   this->OptimalParams = new PointType( Dimension, Dimension );
 
-  this->GradientTolerance         = 0.5;
-  this->SufficientDecreaseFactor  = 0.0001;
-  this->Rho                       = 0.9;
+  this->GradientDifferenceTolerance = 0.5;
+  this->SufficientDecreaseFactor    = 0.0001;
+  this->Rho                         = 0.9;
 }
 
 
@@ -77,11 +77,12 @@ void cipNewtonOptimizer< Dimension >::Update( bool verbose )
   // initialize OptimalValue (it will be updated during the
   // optimization below)
   //
-  this->OptimalValue = this->Metric->GetValueGradientAndHessian( params, g, &h );
+  this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
 
   double gradMag = vcl_sqrt( dot_product(*g,*g) );
-
-  while ( gradMag > this->GradientTolerance )
+  double gradMagDiff = DBL_MAX;
+  double gradMagLast = gradMag;
+  while ( gradMagDiff > this->GradientDifferenceTolerance )
     {
     //
     // Check for positive definiteness of the Hessian. If not positive
@@ -112,11 +113,13 @@ void cipNewtonOptimizer< Dimension >::Update( bool verbose )
     // each iteration, but upon convergence they will be set to the
     // final ("optimal") values
     //
-    this->OptimalValue = this->Metric->GetValueGradientAndHessian( params, g, h );
+    this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
     (*this->OptimalParams) = (*params);
     
     gradMag = vcl_sqrt( dot_product(*g,*g) );
-
+    gradMagDiff = gradMagLast - gradMag;
+    gradMagLast = gradMag;
+    
     if ( verbose )
       {
       std::cout << "Dimension:\t" << Dimension << std::endl;
@@ -167,7 +170,9 @@ void cipNewtonOptimizer< Dimension >::Update()
   this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
 
   double gradMag = vcl_sqrt( dot_product(*g,*g) );
-  while ( gradMag > this->GradientTolerance )
+  double gradMagDiff = DBL_MAX;
+  double gradMagLast = gradMag;
+  while ( gradMagDiff > this->GradientDifferenceTolerance )
     {
     //
     // Check for positive definiteness of the Hessian. If not positive
@@ -199,10 +204,12 @@ void cipNewtonOptimizer< Dimension >::Update()
     // final ("optimal") values
     //
     this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
-    
+
     (*this->OptimalParams) = (*params);
     
     gradMag = vcl_sqrt( dot_product(*g,*g) );
+    gradMagDiff = gradMagLast - gradMag;
+    gradMagLast = gradMag;
     }
 
   delete params;

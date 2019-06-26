@@ -2,12 +2,13 @@
 <executable>
     <category>Chest Imaging Platform.Toolkit.Utils</category>
     <title>ReadNRRDsWriteVTK</title>
-    <description><![CDATA[CThis program reads a number of NRRD files and collects the data in those files into \
-        a single VTK polydata file for writing. The input data files typically contain particles information.]]>
+    <description><![CDATA[This program reads a number of NRRD files and collects the data in those files into \
+a single VTK polydata file for writing. The input data files typically contain particles information.]]>
     </description>
     <version>0.0.1</version>
+    <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
     <license>Slicer</license>
-    <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+    <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
         Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
         and does not necessarily represent the official views of the National Institutes of Health.
@@ -30,7 +31,7 @@
                 component for the 4th. Note that in this case, the string value assigned to this file is just a placeholder -- \
                 the scale data will be placed in matrix with name 'scale'. 7xN files are assumed to have the following format: \
                 mask xx xy xz yy yz zz, so a matrix is constructed using the components in the following order: [1 2 3 2 4 5 3 5 6] \
-                (zero-based indexing)]]></description>
+                (zero-based indexing).]]></description>
             <default>NA</default>
         </file>
         
@@ -41,10 +42,11 @@
             <flag>a</flag>
             <longflag>arrayName</longflag>
             <description><![CDATA[Array names corresponding to files immediately preceding invocation of this flag (specified \
-                with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
-                data arrays]]></description>
+with the -i or --inFileName flags). Array names follow conventinos laid out in the ACIL wiki for particles polydata point \
+data arrays]]></description>
             <default>NA</default>
         </string>
+        
         
          <string>
             <name>outFileName</name>
@@ -55,7 +57,47 @@
             <description><![CDATA[Ouput vtk file name. All particles information will be stored in this file.]]></description>
             <default>NA</default>
         </string>
-      
+         
+        <float>
+           <name>irad</name>
+           <label>interparticle Radius</label>
+           <longflag>irad</longflag>
+           <description><![CDATA[Store interparticle radius. This metadata information is stored as field data in an array name "irad".]]></description>
+           <default>0</default>
+        </float>
+        
+        <float>
+          <name>srad</name>
+          <label>scale Radius</label>
+          <longflag>srad</longflag>
+          <description><![CDATA[Store scale radius. This metadata information is stored as field data in an array name "srad".]]></description>
+          <default>0</default>
+        </float>
+          
+        <float-vector>
+          <name>spacing</name>
+          <label>Spacing</label>
+          <longflag>spacing</longflag>
+          <description><![CDATA[Spacing of the volume data that generated the particles. This metadata info is stored as a field data in an array named "spacing"]]></description>
+            <default>0,0,0</default>
+        </float-vector>
+ 
+        <float>
+          <name>liveThreshold</name>
+          <label>Live Threshold</label>
+          <longflag>liveth</longflag>
+          <description><![CDATA[Live threshold parameter that generated the particle's result. This metadata info is stored as a field data in an array named "liveth"]]></description>
+            <default>0</default>
+        </float>
+          
+        <float>
+            <name>seedThreshold</name>
+            <label>Seed Threshold</label>
+            <longflag>seedth</longflag>
+            <description><![CDATA[Seed treshold parameter that generated the particle's result. This metadata info is stored as a field data in an array named "seedth"]]></description>
+              <default>0</default>
+        </float>
+
         <boolean>
           <name>binaryOutput</name>
           <label>VTK binary output file</label>
@@ -64,5 +106,24 @@
           <description><![CDATA[Ouput vtk file name in binary format.]]></description>
           <default>false</default>
         </boolean>
+        
+        <string>
+          <name>cipRegionArg</name>
+          <label>Chest Region</label>
+          <channel>input</channel>
+          <longflag>cipr</longflag>
+          <description><![CDATA[Chest region for particles labeling. UndefinedRegion by default]]></description>
+          <default>UndefinedRegion</default>
+       </string>
+
+       <string>
+         <name>cipTypeArg</name>
+         <label>Chest Type</label>
+         <channel>input</channel>
+         <longflag>cipt</longflag>
+         <description><![CDATA[Chest type for particles labeling. UndefinedType by default]]></description>
+         <default>UndefinedType</default>
+      </string>
+
     </parameters>
 </executable>
