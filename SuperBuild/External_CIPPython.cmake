@@ -95,19 +95,6 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installcython
   )
 
-  if (UNIX)
-    ExternalProject_Add_Step(${proj} installvtk
-            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes vtk
-            DEPENDEES installscipy
-            )
-  else()
-    # VTK 8.X not compatible with Python 2.7 in Windows. Install VTK 7 from conda-forge instead
-    ExternalProject_Add_Step(${proj} installvtk
-            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge vtk
-            DEPENDEES installscipy
-            )
-  endif()
-
   ExternalProject_Add_Step(${proj} installpandas
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes pandas
     DEPENDEES installvtk
@@ -156,6 +143,19 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installgitpython
   )
 
+  if (UNIX)
+      ExternalProject_Add_Step(${proj} installvtk
+              COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes vtk
+              DEPENDEES installscipy
+              )
+  else()
+      # VTK 8.X not compatible with Python 2.7 in Windows. Install VTK 7.1.1 from a custom build (the "official" ones don't work)
+      ExternalProject_Add_Step(${proj} installvtk
+              COMMAND ${CIP_PYTHON_BIN_DIR}/pip install ${CIP_PYTHON_SOURCE_DIR}/VTK-7.1.1-cp27-cp27m-win_amd64.whl
+              DEPENDEES installscipy
+              )
+  endif()
+
   ########################################################################################
   #### Deep Learning dependencies
   ########################################################################################
@@ -170,6 +170,7 @@ if (CIP_PYTHON_INSTALL)
     message("Python Deep Learning modules will NOT be installed")
     SET (last_dep installpytables)
   endif()
+
 
   if (CIP_PYTHON_USE_QT4)
     # Force qt 4.8.7 (to reuse for VTK build)
