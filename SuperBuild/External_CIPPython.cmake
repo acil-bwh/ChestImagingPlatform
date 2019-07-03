@@ -41,58 +41,53 @@ if (CIP_PYTHON_INSTALL)
   endif()
 
 
-  ########################################################################################
-  #### Conda-forge packages
-  ########################################################################################
-  ExternalProject_Add_Step(${proj} installnipype
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge nipype==0.12.1
+
+    ExternalProject_Add_Step(${proj} installnipype
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge nipype
           DEPENDEES install
           )
 
-  ExternalProject_Add_Step(${proj} installnetworkx
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge networkx==1.11
+
+    ExternalProject_Add_Step(${proj} installscikit-image
+          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes scikit-image
           DEPENDEES installnipype
-  )
-
-  ExternalProject_Add_Step(${proj} installscikit-image
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge scikit-image
-          DEPENDEES installnetworkx
-  )
-
-  ########################################################################################
-  #### pip packages
-  ########################################################################################
-  ExternalProject_Add_Step(${proj} installpynrrd
-          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pynrrd
-          DEPENDEES installscikit-image
           )
 
-  ExternalProject_Add_Step(${proj} installpydicom
-          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pydicom==1.1.0
-          DEPENDEES installpynrrd
-          )
+    if (UNIX)
+      ExternalProject_Add_Step(${proj} installsimpleitk
+        COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c SimpleITK SimpleITK
+        DEPENDEES installsphinx
+      )
+    else()
+      # Unknown conflict with SimpleITK 1.1.0. For the time being, force 0.9.1
+      ExternalProject_Add_Step(${proj} installsimpleitk
+              COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c SimpleITK SimpleITK=0.9.1
+              DEPENDEES installsphinx
+      )
+    endif()
 
-  ExternalProject_Add_Step(${proj} installnibabel
-          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install nibabel
-          DEPENDEES installpydicom
-          )
+    ExternalProject_Add_Step(${proj} installgitpython
+      COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes gitpython
+      DEPENDEES installscikit-learn
+    )
 
-  ########################################################################################
-  #### Conda packages
-  ########################################################################################
-  ExternalProject_Add_Step(${proj} installnumpy
-          COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes numpy
-          DEPENDEES installnibabel
-  )
+    if (UNIX)
+        ExternalProject_Add_Step(${proj} installvtk
+                COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes vtk
+                DEPENDEES installscipy
+                )
+    else()
+        # VTK 8.X not compatible with Python 2.7 in Windows. Install VTK 7.1.1 from a custom build (the "official" ones don't work)
+        ExternalProject_Add_Step(${proj} installvtk
+                COMMAND ${CIP_PYTHON_BIN_DIR}/pip install ${CIP_PYTHON_SOURCE_DIR}/VTK-7.1.1-cp27-cp27m-win_amd64.whl
+                DEPENDEES installscipy
+                )
+    endif()
 
-  ExternalProject_Add_Step(${proj} installcython
-	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes cython
-	DEPENDEES installnumpy
-  )
 
-  ExternalProject_Add_Step(${proj} installscipy
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes scipy
-    DEPENDEES installcython
+  ExternalProject_Add_Step(${proj} installpytables
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes pytables
+    DEPENDEES installgitpython
   )
 
   ExternalProject_Add_Step(${proj} installpandas
@@ -100,9 +95,19 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installvtk
   )
 
-  ExternalProject_Add_Step(${proj} installnose
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes nose
-    DEPENDEES installpandas
+  ExternalProject_Add_Step(${proj} installpynrrd
+          COMMAND ${CIP_PYTHON_BIN_DIR}/pip install pynrrd
+          DEPENDEES installscikit-image
+          )
+
+  ExternalProject_Add_Step(${proj} installscikit-learn
+    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes scikit-learn
+    DEPENDEES installxml
+  )
+
+  ExternalProject_Add_Step(${proj} installcython
+	COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes cython
+	DEPENDEES installnumpy
   )
 
   ExternalProject_Add_Step(${proj} installsphinx
@@ -110,51 +115,6 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installnose
   )
 
-  if (UNIX)
-    ExternalProject_Add_Step(${proj} installsimpleitk
-      COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c SimpleITK SimpleITK
-      DEPENDEES installsphinx
-    )
-  else()
-    # Unknown conflict with SimpleITK 1.1.0. For the time being, force 0.9.1
-    ExternalProject_Add_Step(${proj} installsimpleitk
-            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c SimpleITK SimpleITK=0.9.1
-            DEPENDEES installsphinx
-    )
-  endif()
-
-  ExternalProject_Add_Step(${proj} installxml
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes lxml
-    DEPENDEES installsimpleitk
-  )
-
-  ExternalProject_Add_Step(${proj} installscikit-learn
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes scikit-learn
-    DEPENDEES installxml
-  )
-
-  ExternalProject_Add_Step(${proj} installgitpython
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes gitpython
-    DEPENDEES installscikit-learn
-  )
-
-  ExternalProject_Add_Step(${proj} installpytables
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes pytables
-    DEPENDEES installgitpython
-  )
-
-  if (UNIX)
-      ExternalProject_Add_Step(${proj} installvtk
-              COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes vtk
-              DEPENDEES installscipy
-              )
-  else()
-      # VTK 8.X not compatible with Python 2.7 in Windows. Install VTK 7.1.1 from a custom build (the "official" ones don't work)
-      ExternalProject_Add_Step(${proj} installvtk
-              COMMAND ${CIP_PYTHON_BIN_DIR}/pip install ${CIP_PYTHON_SOURCE_DIR}/VTK-7.1.1-cp27-cp27m-win_amd64.whl
-              DEPENDEES installscipy
-              )
-  endif()
 
   ########################################################################################
   #### Deep Learning dependencies
@@ -169,15 +129,6 @@ if (CIP_PYTHON_INSTALL)
   else()
     message("Python Deep Learning modules will NOT be installed")
     SET (last_dep installpytables)
-  endif()
-
-
-  if (CIP_PYTHON_USE_QT4)
-    # Force qt 4.8.7 (to reuse for VTK build)
-    ExternalProject_Add_Step(${proj} installqt4
-            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes qt=4.8.7
-            DEPENDEES last_dep
-    )
   endif()
 else()
   # Ignore CIPPython
