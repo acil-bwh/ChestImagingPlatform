@@ -489,8 +489,6 @@ if __name__ == "__main__":
         radius_array_name_list=[]
         radius_array_name_list = [str(i) for i in str.split(options.radius_array_name,',')]
 
-    print (use_field_data)
-
     dv = DisplayParticles(file_list, spacing_list,feature_type_list,float(options.irad),hth_list, \
         'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lut_list,lung_filename)
     if options.color_by is not None:
@@ -500,7 +498,6 @@ if __name__ == "__main__":
     if options.ras_coordinate_system:
         dv.coordinate_system="RAS"
 
-    print ('nodisplay: ', options.nodisplay)
     dv.no_display = options.nodisplay
 
     dv.radius_array_name_list=radius_array_name_list
