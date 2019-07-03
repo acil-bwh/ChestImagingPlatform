@@ -95,10 +95,18 @@ if (CIP_PYTHON_INSTALL)
     DEPENDEES installcython
   )
 
-  ExternalProject_Add_Step(${proj} installvtk
-    COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes vtk
-    DEPENDEES installscipy
-  )
+  if (UNIX)
+    ExternalProject_Add_Step(${proj} installvtk
+            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes vtk
+            DEPENDEES installscipy
+            )
+  else()
+    # VTK 8.X not compatible with Python 2.7 in Windows. Install VTK 7 from conda-forge instead
+    ExternalProject_Add_Step(${proj} installvtk
+            COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes -c conda-forge vtk
+            DEPENDEES installscipy
+            )
+  endif()
 
   ExternalProject_Add_Step(${proj} installpandas
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes pandas
