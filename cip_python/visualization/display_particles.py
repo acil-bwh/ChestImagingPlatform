@@ -1,7 +1,7 @@
 import vtk
 import math
 import numpy as np
-from optparse import OptionParser
+from argparse import ArgumentParser
 from vtk.util.numpy_support import vtk_to_numpy
 
 
@@ -407,44 +407,42 @@ class DisplayParticles:
 
 
 if __name__ == "__main__":
-  
-  
     desc=" Visualization of particles vtk files"
-    parser = OptionParser(description=desc)
-    
-    parser.add_option("-i", help='Input particle files to render', dest="file_name")
-    parser.add_option("-s", help='Input spacing', dest="spacing")
-    parser.add_option("--feature", help='Feature type for each particle point. Options are: valley_line (or vessel), ridge_line (or airway), ridge_surface (or fissure) and valley_surface', \
-                      dest="feature_type", default="vessel")
-    parser.add_option("--irad", help='Interparticle distance', dest="irad", \
-                      default=1.2)
-    parser.add_option("--hth", help='Threshold on particle strength', dest="hth", default="")
-    parser.add_option("--color", help='RGB color', dest="color_list", default="")
-    parser.add_option("--opacity", help='Opacity values', dest="opacity_list", \
-                      default="")
-    parser.add_option("--lut", help='Look up table file list for each particle file (comma separated values with R,G,B,Alpha values)', \
-                      dest="lut_list", default="")
-    parser.add_option("-l", help='Lung mesh', dest="lung_filename", default="")
-    parser.add_option("--useFieldData", help='Enable if particle features are stored in Field data instead of Point Data', dest="use_field_data", \
-                      action="store_true", default=False)
+    parser = ArgumentParser(description=desc)
+
+    parser.add_argument("-i", help='Input particle files to render', dest="file_name")
+    parser.add_argument("-s", help='Input spacing', dest="spacing")
+    parser.add_argument("--feature", help='Feature type for each particle point. Options are: valley_line (or vessel), ridge_line (or airway), ridge_surface (or fissure) and valley_surface', \
+                        dest="feature_type", default="vessel")
+    parser.add_argument("--irad", help='Interparticle distance', dest="irad", \
+                        default=1.2)
+    parser.add_argument("--hth", help='Threshold on particle strength', dest="hth", default="")
+    parser.add_argument("--color", help='RGB color', dest="color_list", default="")
+    parser.add_argument("--opacity", help='Opacity values', dest="opacity_list", \
+                        default="")
+    parser.add_argument("--lut", help='Look up table file list for each particle file (comma separated values with R,G,B,Alpha values)', \
+                        dest="lut_list", default="")
+    parser.add_argument("-l", help='Lung mesh', dest="lung_filename", default="")
+    parser.add_argument("--useFieldData", help='Enable if particle features are stored in Field data instead of Point Data', dest="use_field_data", \
+                        action="store_true", default=False)
   
-    parser.add_option("--glyphScale", help='Scaling factor for glyph', dest="glyph_scale_factor", \
+    parser.add_argument("--glyphScale", help='Scaling factor for glyph', dest="glyph_scale_factor", \
                         default=1)
-    parser.add_option("--colorBy", help='Array name to color by', dest="color_by", \
+    parser.add_argument("--colorBy", help='Array name to color by', dest="color_by", \
                         default=None)
-    parser.add_option("--ras", help='Set output for RAS', dest="ras_coordinate_system", \
+    parser.add_argument("--ras", help='Set output for RAS', dest="ras_coordinate_system", \
                         default=False,action="store_true")
-    parser.add_option("--glyphOutput", help='Output vtk with glpyh poly data', dest='glyph_output', \
+    parser.add_argument("--glyphOutput", help='Output vtk with glpyh poly data', dest='glyph_output', \
                         default=None)
-    parser.add_option("--capturePrefix", help='Prefix filename to save screenshots. This options enables screen capture. Press the "s" key to capture a screenshot.', \
-                      dest="capture_prefix", default="")
+    parser.add_argument("--capturePrefix", help='Prefix filename to save screenshots. This options enables screen capture. Press the "s" key to capture a screenshot.', \
+                        dest="capture_prefix", default="")
                       
-    parser.add_option("--radius_name", help='Array name with the radius information (optional).\
+    parser.add_argument("--radius_name", help='Array name with the radius information (optional).\
                                         If this is not provided the radius will be computed from the scale information.',
                                         dest='radius_array_name',metavar='<float>',default=None)
-    parser.add_option("--no-display", help='No display mode. Objects will be created but not render. It can be used for off-line saving of glyh vtk file',dest='nodisplay',action='store_true')
+    parser.add_argument("--no-display", help='No display mode. Objects will be created but not render. It can be used for off-line saving of glyh vtk file',dest='nodisplay',action='store_true')
                                         
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
 
     translate_color = dict()
     translate_color['red'] = [1, 0.1, 0.1]
@@ -485,7 +483,7 @@ if __name__ == "__main__":
           _df=pd.read_csv(lut_file)
           lut_list.append(_df.values())
 
-    if options.radius_array_name == "":
+    if options.radius_array_name == "" or options.radius_array_name is None:
         radius_array_name_list=None
     else:
         radius_array_name_list=[]
@@ -502,6 +500,7 @@ if __name__ == "__main__":
     if options.ras_coordinate_system:
         dv.coordinate_system="RAS"
 
+    print ('nodisplay: ', options.nodisplay)
     dv.no_display = options.nodisplay
 
     dv.radius_array_name_list=radius_array_name_list
