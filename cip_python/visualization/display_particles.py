@@ -418,13 +418,13 @@ if __name__ == "__main__":
                       dest="feature_type", default="vessel")
     parser.add_option("--irad", help='Interparticle distance', dest="irad", \
                       default=1.2)
-    parser.add_option("--hth", help='Threshold on particle strength', dest="hth", default="")
-    parser.add_option("--color", help='RGB color', dest="color_list", default="")
+    parser.add_option("--hth", help='Threshold on particle strength', dest="hth", default=None)
+    parser.add_option("--color", help='RGB color', dest="color_list", default=None)
     parser.add_option("--opacity", help='Opacity values', dest="opacity_list", \
-                      default="")
+                      default=None)
     parser.add_option("--lut", help='Look up table file list for each particle file (comma separated values with R,G,B,Alpha values)', \
-                      dest="lut_list", default="")
-    parser.add_option("-l", help='Lung mesh', dest="lung_filename", default="")
+                      dest="lut_list", default=None)
+    parser.add_option("-l", help='Lung mesh', dest="lung_filename", default=None)
     parser.add_option("--useFieldData", help='Enable if particle features are stored in Field data instead of Point Data', dest="use_field_data", \
                       action="store_true", default=False)
   
@@ -437,7 +437,7 @@ if __name__ == "__main__":
     parser.add_option("--glyphOutput", help='Output vtk with glpyh poly data', dest='glyph_output', \
                         default=None)
     parser.add_option("--capturePrefix", help='Prefix filename to save screenshots. This options enables screen capture. Press the "s" key to capture a screenshot.', \
-                      dest="capture_prefix", default="")
+                      dest="capture_prefix", default=None)
                       
     parser.add_option("--radius_name", help='Array name with the radius information (optional).\
                                         If this is not provided the radius will be computed from the scale information.',
@@ -457,27 +457,30 @@ if __name__ == "__main__":
     if options.spacing is not None:
       spacing_list = [float(i) for i in str.split(options.spacing,',')]
     
-    lung_filename = options.lung_filename
+    if options.lung_filename == None:
+        lung_filename=""
+    else:
+        lung_filename = options.lung_filename
 
     feature_type_list = [i for i in str.split(options.feature_type,',')]
 
 
-    if options.opacity_list == "":
+    if options.opacity_list == None:
         opacity_list=[]
     else:
         opacity_list = [float(i) for i in str.split(options.opacity_list,',')]
                            
-    if options.color_list == "" :
+    if options.color_list == None:
         color_list=[]
     else:
         color_list = [translate_color[val] for val in str.split(options.color_list,',')]
 
-    if options.hth == "" :
+    if options.hth == None:
         hth_list = []
     else:
         hth_list = [float(i) for i in str.split(options.hth,',')]
 
-    if options.lut_list == "":
+    if options.lut_list == None:
         lut_list=[]
     else:
         lut_list=[]
@@ -485,7 +488,7 @@ if __name__ == "__main__":
           _df=pd.read_csv(lut_file)
           lut_list.append(_df.values())
 
-    if options.radius_array_name == "":
+    if options.radius_array_name == None:
         radius_array_name_list=None
     else:
         radius_array_name_list=[]
