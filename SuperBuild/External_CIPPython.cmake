@@ -102,7 +102,7 @@ if (CIP_PYTHON_INSTALL)
 
   ExternalProject_Add_Step(${proj} installscikit-learn
     COMMAND ${CIP_PYTHON_BIN_DIR}/conda install --yes scikit-learn
-    DEPENDEES installxml
+    DEPENDEES installpynrrd
   )
 
   ExternalProject_Add_Step(${proj} installcython
