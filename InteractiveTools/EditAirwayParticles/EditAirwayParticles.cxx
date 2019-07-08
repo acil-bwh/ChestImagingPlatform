@@ -350,7 +350,7 @@ the user to label groups of particles according to their airway generation.";
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
         writer->SetFileName( genParticlesFileName.c_str() );
-	writer->SetInput( particlesReader->GetOutput() );
+	writer->SetInputData( particlesReader->GetOutput() );
 	//writer->SetFileTypeToASCII();
 	writer->Write();  
     }
@@ -370,7 +370,7 @@ the user to label groups of particles according to their airway generation.";
       std::cout << "Writing labeled particles..." << std::endl;
       vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
         writer->SetFileName( genParticlesFileName.c_str() );
-	writer->SetInput( outParticles );
+	writer->SetInputData( outParticles );
 	//writer->SetFileTypeToASCII();
 	writer->Write();  
     }

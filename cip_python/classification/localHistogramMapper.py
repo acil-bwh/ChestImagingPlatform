@@ -1,5 +1,5 @@
 import json
-from .localHistogramModel import LocalHistogramModel
+from cip_python.classification.localHistogramModel import LocalHistogramModel
 
 
 class LocalHistogramModelMapper:

@@ -221,8 +221,7 @@ int DoIT(int argc, char * argv[])
 	  if(isInvertTransform[i] == true)
 	    {
 	      std::cout<<"inverting transform "<<inputTransformFileName[i]<<std::endl;
-	      transformTemp->SetMatrix( transformTemp->GetInverseMatrix());
-	      transform->AddTransform(transformTemp);
+        transform->AddTransform(transformTemp->GetInverseTransform());
 	    }          
 	  else
 	    {
