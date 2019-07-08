@@ -73,10 +73,10 @@ class ParenchymaSubtypeClassifier:
     feature_extent: list, shape (3,1)
         (x,y,z) Size of the ROI in which the features are to be extracted
         (centered at each patch)
-        
-    defined_classes: dict()
-        dictionary mapping each class in the training data 
-        to the class that it should be clasified as.
+    
+    high_density_label: int
+        type label to assign to high density patches (mean value > -250).
+        Default 1=Normal Parenchyma
             
     Attribues
     ---------
@@ -96,7 +96,7 @@ class ParenchymaSubtypeClassifier:
     def __init__(self, lm = None, kde_lower_limit=-1024, 
             kde_upper_limit=0, beta=0.075, n_neighbors=5, num_threads = 1, 
             n_patches_perbatch = 10000, patch_size = [5,5,5], feature_extent = 
-            [31,31,1], hist_comparison='l1_minkowski'):
+            [31,31,1], hist_comparison='l1_minkowski',high_density_label=1):
         
         self.kde_lower_limit = kde_lower_limit
         self.kde_upper_limit = kde_upper_limit
@@ -114,6 +114,8 @@ class ParenchymaSubtypeClassifier:
 
         self.min_hu = -1024
         self.max_hu = - 1024+600
+        
+        self.high_density_label = high_density_label
         
         """ compute patches so that they can be used for obtaining centers"""
         mypatch_array = np.zeros(np.shape(lm)).astype(int)
@@ -171,7 +173,7 @@ class ParenchymaSubtypeClassifier:
         
 
 
-    def process_patchset(self, patch_begin_index):
+    def process_patchset(self, patch_begin_index,high_density_label=1):
         """ processes a set of patches in parallel, having patch index starting  
         at patch_begin_index and ending at patch_begin_index+n_patches_perbatch
         
@@ -235,8 +237,10 @@ class ParenchymaSubtypeClassifier:
                   
                 predicted_value_tmp = self.knn_classifier.predict(the_histogram, the_distance)
 
+                #Post kNN classification rule encoding
+                #1. Set high density values to default label (ex. Normal parenchyma)
                 if (np.median(patch_ct) > (-250)):
-                    predicted_value_tmp = 1 # Normal parenchyma
+                    predicted_value_tmp = self.high_density_label
                                     
                 predicted_values[inc] = \
                     [mychestConvention.GetValueFromChestRegionAndType(0, predicted_value_tmp)]
@@ -408,13 +412,17 @@ if __name__ == "__main__":
                         features will be estimated. The region will be \
                         centered at the patch center.', dest='feature_extent', 
                         metavar='<string>', type=int, nargs=3, 
-                        default=[31,31,1])     
+                        default=[31,31,1])
     parser.add_option('--n_patches_perbatch',
                       help='Number of patches to execute at a time. This is \
                       relevant when multithreading, the higher the number, \
                       the less paralel calls are done (optional)', 
                       dest='n_patches_perbatch', metavar='<string>', 
-                      type=int, default=10000)   
+                      type=int, default=10000)
+    parser.add_option('--high_density_label',
+                      help='Label to use for patches whose mean value is above -250',
+                      dest='high_density_label',metavar='<string>',
+                      type=int,default=1)
     parser.add_option('--num_threads',
                       help='Number of threads in parallel.  (optional)',  
                       dest='num_threads', metavar='<string>', type=int, 
@@ -474,7 +482,7 @@ if __name__ == "__main__":
         n_neighbors=options.n_neighbors, num_threads = options.num_threads, \
         n_patches_perbatch = options.n_patches_perbatch, patch_size = \
         options.patch_size, feature_extent = options.feature_extent, \
-        hist_comparison = options.hist_comparison)
+        hist_comparison = options.hist_comparison,high_density_label=options.high_density_label)
 
     my_classifier.fit(training_df)
     ct_labels_array = my_classifier.predict(ct_array, lm_array, dist_array)
