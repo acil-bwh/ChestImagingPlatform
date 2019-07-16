@@ -278,7 +278,7 @@ class DisplayParticles:
         # create a rendering window and renderer
         self.renWin.AddRenderer(self.ren)
         self.renWin.SetSize(widht,height)
-        self.renWin.SetAAFrames(0)
+      #  self.renWin.SetAAFrames(0)
 
         # create a renderwindowinteractor
         self.iren.SetRenderWindow(self.renWin)
@@ -418,7 +418,7 @@ if __name__ == "__main__":
     parser.add_argument("--irad", help='Interparticle distance', dest="irad", \
                         default=1.2)
     parser.add_argument("--hth", help='Threshold on particle strength', dest="hth", default=None)
-    parser.add_argument("--color", help='RGB color', dest="color_list", default="")
+    parser.add_argument("--color", help='RGB color', dest="color_list", default=None)
     parser.add_argument("--opacity", help='Opacity values', dest="opacity_list", \
                         default=None)
     parser.add_argument("--lut", help='Look up table file list for each particle file (comma separated values with R,G,B,Alpha values)', \
