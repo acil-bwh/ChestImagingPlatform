@@ -4,8 +4,8 @@ from scipy.ndimage.interpolation import rotate
 from . import DataOperatorInterface
 
 
-class RandomRotatioDataOperator(DataOperatorInterface):
-    def __init__(self, max_rotation_angle, min_rotation_angle, rotation_axis=(1, 0), fill_mode='nearest', reshape=False):
+class RotatioDataOperator(DataOperatorInterface):
+    def __init__(self, min_rotation_angle, max_rotation_angle, rotation_axis=(1, 0), fill_mode='nearest', reshape=False):
         self.max_rotation_angle = max_rotation_angle
         self.min_rotation_angle = min_rotation_angle
         self.rotation_axis = rotation_axis
