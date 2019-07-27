@@ -7,7 +7,7 @@ class FlippingDataOperator(DataOperatorInterface):
     def __init__(self):
         self.direction = None
 
-        self.flip_function = {'left_right': np.flipud, 'up_down': np.fliplr}
+        self.flip_function = {'left_right': np.fliplr, 'up_down': np.flipud}
 
     def set_operation_parameters(self, direction):
         self.direction = direction
