@@ -23,7 +23,7 @@ class FlippingDataOperator(DataOperatorInterface):
         elif isinstance(data, list):
             result = list()
             for image in data:
-                self.flip_function[self.direction](image)
+                result.append(self.flip_function[self.direction](image))
             return result
         else:
             raise AttributeError("Wrong type for 'data'. It should be an image (numpy array) or a list of images")
