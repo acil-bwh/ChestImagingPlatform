@@ -5,12 +5,14 @@ from . import DataOperatorInterface
 
 
 class RotationDataOperator(DataOperatorInterface):
-    def __init__(self, min_rotation_angle, max_rotation_angle, rotation_axis=(1, 0), fill_mode='nearest', reshape=False):
+    def __init__(self, min_rotation_angle, max_rotation_angle, rotation_axis=(1, 0), fill_mode='nearest', cval=0.0,
+                 reshape=False):
         self.max_rotation_angle = max_rotation_angle
         self.min_rotation_angle = min_rotation_angle
-        self.rotation_axis = rotation_axis
+        self.rotation_axis = rotation_axis  # The two axes that define the plane of rotation. Default is the first two axes
         self.fill_mode = fill_mode
         self.reshape = reshape
+        self.cval = 0.0
 
         self.rotation_angle = None
 
@@ -30,7 +32,7 @@ class RotationDataOperator(DataOperatorInterface):
             result = list()
             for image in data:
                 result.append(rotate(image, self.rotation_angle, axes=self.rotation_axis, mode=self.fill_mode,
-                                     reshape=self.reshape))
+                                     reshape=self.reshape, cval=self.cval))
             return result
         else:
             raise AttributeError("Wrong type for 'data'. It should be an image (numpy array) or a list of images")
