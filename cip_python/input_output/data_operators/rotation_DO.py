@@ -12,7 +12,7 @@ class RotationDataOperator(DataOperatorInterface):
         self.rotation_axis = rotation_axis  # The two axes that define the plane of rotation. Default is the first two axes
         self.fill_mode = fill_mode
         self.reshape = reshape
-        self.cval = 0.0
+        self.cval = cval
 
         self.rotation_angle = None
 

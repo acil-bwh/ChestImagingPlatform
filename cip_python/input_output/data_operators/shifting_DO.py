@@ -14,7 +14,7 @@ class ShiftingDataOperator(DataOperatorInterface):
         self.min_shift_z = min_shift_z
         self.max_shift_z = max_shift_z
         self.fill_mode = fill_mode
-        self.cval=0.0
+        self.cval=cval
 
         self.shift_x = None
         self.shift_y = None
