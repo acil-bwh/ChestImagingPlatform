@@ -1,5 +1,7 @@
+import math
 import numpy as np
 import SimpleITK as sitk
+from PIL import Image
 from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import map_coordinates
 import scipy.ndimage.interpolation as scipy_interpolation
@@ -191,3 +193,229 @@ class DataProcessing(object):
         indices = np.reshape(x + dx, (-1, 1)), np.reshape(y + dy, (-1, 1))
         distorted_image = map_coordinates(image, indices, order=1).reshape(shape)
         return distorted_image
+
+
+    @classmethod
+    def elastic_deformation_2D(cls, image, grid_width=2, grid_height=2, magnitude=4, resampling='bicubic'):
+        """
+        Distorts a 2D image according to the parameters and returns the newly distorted image. Class taken from Augmentor methods
+        :param image:
+        :param grid_width: int. Grid width
+        :param grid_height: int. Grid height
+        :param magnitude: int. Magnitude
+        :param resampling: str. Resampling filter. Options: nearest (use nearest neighbour) |
+        bilinear (linear interpolation in a 2x2 environment) | bicubic (cubic spline interpolation in a 4x4 environment)
+        """
+        image = Image.fromarray(image.transpose())
+        w, h = image.size
+
+        horizontal_tiles = grid_width
+        vertical_tiles = grid_height
+
+        width_of_square = int(math.floor(w / float(horizontal_tiles)))
+        height_of_square = int(math.floor(h / float(vertical_tiles)))
+
+        width_of_last_square = w - (width_of_square * (horizontal_tiles - 1))
+        height_of_last_square = h - (height_of_square * (vertical_tiles - 1))
+
+        dimensions = []
+
+        for vertical_tile in range(vertical_tiles):
+            for horizontal_tile in range(horizontal_tiles):
+                if vertical_tile == (vertical_tiles - 1) and horizontal_tile == (horizontal_tiles - 1):
+                    dimensions.append([horizontal_tile * width_of_square,
+                                       vertical_tile * height_of_square,
+                                       width_of_last_square + (horizontal_tile * width_of_square),
+                                       height_of_last_square + (height_of_square * vertical_tile)])
+                elif vertical_tile == (vertical_tiles - 1):
+                    dimensions.append([horizontal_tile * width_of_square,
+                                       vertical_tile * height_of_square,
+                                       width_of_square + (horizontal_tile * width_of_square),
+                                       height_of_last_square + (height_of_square * vertical_tile)])
+                elif horizontal_tile == (horizontal_tiles - 1):
+                    dimensions.append([horizontal_tile * width_of_square,
+                                       vertical_tile * height_of_square,
+                                       width_of_last_square + (horizontal_tile * width_of_square),
+                                       height_of_square + (height_of_square * vertical_tile)])
+                else:
+                    dimensions.append([horizontal_tile * width_of_square,
+                                       vertical_tile * height_of_square,
+                                       width_of_square + (horizontal_tile * width_of_square),
+                                       height_of_square + (height_of_square * vertical_tile)])
+
+        # For loop that generates polygons could be rewritten, but maybe harder to read?
+        # polygons = [x1,y1, x1,y2, x2,y2, x2,y1 for x1,y1, x2,y2 in dimensions]
+        # last_column = [(horizontal_tiles - 1) + horizontal_tiles * i for i in range(vertical_tiles)]
+        last_column = []
+        for i in range(vertical_tiles):
+            last_column.append((horizontal_tiles - 1) + horizontal_tiles * i)
+
+        last_row = range((horizontal_tiles * vertical_tiles) - horizontal_tiles, horizontal_tiles * vertical_tiles)
+
+        polygons = []
+        for x1, y1, x2, y2 in dimensions:
+            polygons.append([x1, y1, x1, y2, x2, y2, x2, y1])
+
+        polygon_indices = []
+        for i in range((vertical_tiles * horizontal_tiles) - 1):
+            if i not in last_row and i not in last_column:
+                polygon_indices.append([i, i + 1, i + horizontal_tiles, i + 1 + horizontal_tiles])
+
+        for a, b, c, d in polygon_indices:
+            dx = np.random.randint(-magnitude, magnitude)
+            dy = np.random.randint(-magnitude, magnitude)
+
+            x1, y1, x2, y2, x3, y3, x4, y4 = polygons[a]
+            polygons[a] = [x1, y1,
+                           x2, y2,
+                           x3 + dx, y3 + dy,
+                           x4, y4]
+
+            x1, y1, x2, y2, x3, y3, x4, y4 = polygons[b]
+            polygons[b] = [x1, y1,
+                           x2 + dx, y2 + dy,
+                           x3, y3,
+                           x4, y4]
+
+            x1, y1, x2, y2, x3, y3, x4, y4 = polygons[c]
+            polygons[c] = [x1, y1,
+                           x2, y2,
+                           x3, y3,
+                           x4 + dx, y4 + dy]
+
+            x1, y1, x2, y2, x3, y3, x4, y4 = polygons[d]
+            polygons[d] = [x1 + dx, y1 + dy,
+                           x2, y2,
+                           x3, y3,
+                           x4, y4]
+
+        generated_mesh = []
+        for i in range(len(dimensions)):
+            generated_mesh.append([dimensions[i], polygons[i]])
+
+        if resampling == 'bilinear':
+            resampling_filter = Image.BILINEAR
+        elif resampling == 'nearest':
+            resampling_filter = Image.NEAREST
+        else:
+            resampling_filter = Image.BICUBIC
+
+        return np.asarray(image.transform(image.size, Image.MESH, generated_mesh, resample=resampling_filter)).transpose()
+
+
+    @classmethod
+    def perspective_skew_2D_transform(cls, image, skew_amount, skew_type="random", resampling='bicubic'):
+        """
+        Apply perspective skewing on images. Class taken from Augmentor methods
+        :param image:
+        :param skew_type: str. Skew type. Options: random | tilt (will randomly skew either left, right, up, or down.) |
+        tilt_top_buttton (skew up or down) | tilt_left_right (skew left or right) |
+        corner (will randomly skew one **corner** of the image either along the x-axis or y-axis.
+        This means in one of 8 different directions, randomly.
+        :param skew_amount: int. The degree to which the image is skewed
+        :param resampling: str. Resampling filter. Options: nearest (use nearest neighbour) |
+        bilinear (linear interpolation in a 2x2 environment) | bicubic (cubic spline interpolation in a 4x4 environment)
+        """
+        image = Image.fromarray(image.transpose())
+
+        w, h = image.size
+
+        x1 = 0
+        x2 = h
+        y1 = 0
+        y2 = w
+
+        original_plane = [(y1, x1), (y2, x1), (y2, x2), (y1, x2)]
+
+        if skew_type == "random":
+            skew = np.random.choice(["tilt", "tilt_left_right", "tilt_top_buttton", "corner"])
+        else:
+            skew = skew_type
+
+        # We have two choices now: we tilt in one of four directions
+        # or we skew a corner.
+
+        if skew == "tilt" or skew == "tilt_left_right" or skew == "tilt_top_buttton":
+            if skew == "tilt":
+                skew_direction = np.random.randint(0, 3)
+            elif skew == "tilt_left_right":
+                skew_direction = np.random.randint(0, 1)
+            elif skew == "tilt_top_buttton":
+                skew_direction = np.random.randint(2, 3)
+
+            if skew_direction == 0:
+                # Left Tilt
+                new_plane = [(y1, x1 - skew_amount),  # Top Left
+                             (y2, x1),  # Top Right
+                             (y2, x2),  # Bottom Right
+                             (y1, x2 + skew_amount)]  # Bottom Left
+            elif skew_direction == 1:
+                # Right Tilt
+                new_plane = [(y1, x1),  # Top Left
+                             (y2, x1 - skew_amount),  # Top Right
+                             (y2, x2 + skew_amount),  # Bottom Right
+                             (y1, x2)]  # Bottom Left
+            elif skew_direction == 2:
+                # Forward Tilt
+                new_plane = [(y1 - skew_amount, x1),  # Top Left
+                             (y2 + skew_amount, x1),  # Top Right
+                             (y2, x2),  # Bottom Right
+                             (y1, x2)]  # Bottom Left
+            elif skew_direction == 3:
+                # Backward Tilt
+                new_plane = [(y1, x1),  # Top Left
+                             (y2, x1),  # Top Right
+                             (y2 + skew_amount, x2),  # Bottom Right
+                             (y1 - skew_amount, x2)]  # Bottom Left
+
+        if skew == "corner":
+            skew_direction = np.random.randint(0, 7)
+
+            if skew_direction == 0:
+                # Skew possibility 0
+                new_plane = [(y1 - skew_amount, x1), (y2, x1), (y2, x2), (y1, x2)]
+            elif skew_direction == 1:
+                # Skew possibility 1
+                new_plane = [(y1, x1 - skew_amount), (y2, x1), (y2, x2), (y1, x2)]
+            elif skew_direction == 2:
+                # Skew possibility 2
+                new_plane = [(y1, x1), (y2 + skew_amount, x1), (y2, x2), (y1, x2)]
+            elif skew_direction == 3:
+                # Skew possibility 3
+                new_plane = [(y1, x1), (y2, x1 - skew_amount), (y2, x2), (y1, x2)]
+            elif skew_direction == 4:
+                # Skew possibility 4
+                new_plane = [(y1, x1), (y2, x1), (y2 + skew_amount, x2), (y1, x2)]
+            elif skew_direction == 5:
+                # Skew possibility 5
+                new_plane = [(y1, x1), (y2, x1), (y2, x2 + skew_amount), (y1, x2)]
+            elif skew_direction == 6:
+                # Skew possibility 6
+                new_plane = [(y1, x1), (y2, x1), (y2, x2), (y1 - skew_amount, x2)]
+            elif skew_direction == 7:
+                # Skew possibility 7
+                new_plane = [(y1, x1), (y2, x1), (y2, x2), (y1, x2 + skew_amount)]
+
+        # To calculate the coefficients required by PIL for the perspective skew,
+        # see the following Stack Overflow discussion: https://goo.gl/sSgJdj
+        matrix = []
+
+        for p1, p2 in zip(new_plane, original_plane):
+            matrix.append([p1[0], p1[1], 1, 0, 0, 0, -p2[0] * p1[0], -p2[0] * p1[1]])
+            matrix.append([0, 0, 0, p1[0], p1[1], 1, -p2[1] * p1[0], -p2[1] * p1[1]])
+
+        A = np.matrix(matrix, dtype=np.float)
+        B = np.array(original_plane).reshape(8)
+
+        perspective_skew_coefficients_matrix = np.dot(np.linalg.pinv(A), B)
+        perspective_skew_coefficients_matrix = np.array(perspective_skew_coefficients_matrix).reshape(8)
+
+        if resampling == 'bilinear':
+            resampling_filter = Image.BILINEAR
+        elif resampling == 'nearest':
+            resampling_filter = Image.NEAREST
+        else:
+            resampling_filter = Image.BICUBIC
+
+        return np.asarray(image.transform(image.size, Image.PERSPECTIVE, perspective_skew_coefficients_matrix,
+                                          resample=resampling_filter)).transpose()

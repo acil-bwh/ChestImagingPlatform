@@ -91,7 +91,7 @@ class UniformAffineTransform2DDataOperator(DataOperatorInterface):
                 self.shear = np.random.uniform(low=self.min_shear, high=self.shear) * math.pi / 180.0
 
         tr = transform.AffineTransform(translation=(self.translation_h, self.translation_v), rotation=self.rotation,
-                                       scale=(self.scale_h, self.scale_v))
+                                       scale=(self.scale_h, self.scale_v), shear=self.shear)
 
         if is_list:
             result = []

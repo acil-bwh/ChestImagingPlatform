@@ -16,8 +16,8 @@ class GaussianNoiseDataOperator(DataOperatorInterface):
         self.noise_mean = noise_mean
         self.noise_std = noise_std
 
-    def run(self, data,generate_parameters=True):
-        if generate_parameters:
+    def run(self, data, generate_random_parameters=True):
+        if generate_random_parameters:
             self.noise_mean = np.random.uniform(low=self.min_noise_mean, high=self.max_noise_mean)
             self.noise_std = np.random.uniform(low=self.min_noise_std, high=self.max_noise_std)
         else:
