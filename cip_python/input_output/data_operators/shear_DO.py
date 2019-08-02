@@ -35,18 +35,18 @@ class ShearDataOperator(DataOperatorInterface):
         """
         if generate_random_parameters:
             if self.min_shear is not None:
-                self.shear_angle = np.deg2rad(np.random.uniform(low=self.min_shear, high=self.max_shear))
+                self.shear_angle = np.deg2rad(np.random.randint(low=self.min_shear, high=self.max_shear))
         else:
             assert self.shear_angle is not None, "Shear angle not specified"
 
         tr = transform.AffineTransform(translation=None, rotation=None, scale=None, shear=self.shear_angle)
 
         if isinstance(data, np.ndarray):
-            return transform.warp(data, tr, cval=self.cval)
+            return transform.warp(data, tr, cval=self.cval, preserve_range=True)
         elif isinstance(data, list):
             result = list()
             for image in data:
-                result.append(transform.warp(image, tr, cval=self.cval))
+                result.append(transform.warp(image, tr, cval=self.cval, preserve_range=True))
             return result
         else:
             raise AttributeError("Wrong type for 'data'. It should be an image (numpy array) or a list of images")

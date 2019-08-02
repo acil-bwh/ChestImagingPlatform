@@ -51,12 +51,12 @@ class UniformAffineTransform2DDataOperator(DataOperatorInterface):
         :param scale: float
         :param shear: float
         """
-        self.rotation = rotation
+        self.rotation = np.deg2rad(rotation)
         self.translation_h = translation_h
         self.translation_v = translation_v
         self.scale_h = scale_h
         self.scale_v = scale_v
-        self.shear = shear
+        self.shear = np.deg2rad(shear)
 
     def run(self, data, generate_random_parameters=True):
         """
@@ -96,7 +96,7 @@ class UniformAffineTransform2DDataOperator(DataOperatorInterface):
         if is_list:
             result = []
             for image in data:
-                result.append(transform.warp(image, tr, cval=self.padding))
+                result.append(transform.warp(image, tr, cval=self.padding, preserve_range=True))
             return result
-        return transform.warp(image, tr, cval=self.padding)
+        return transform.warp(image, tr, cval=self.padding, preserve_range=True)
 
