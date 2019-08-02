@@ -24,7 +24,7 @@ class ShearDataOperator(DataOperatorInterface):
         Manually set the parameters needed to apply the operation
         :param shear_angle: int. Shear angle in degrees
         """
-        self.shear_angle = shear_angle
+        self.shear_angle = np.deg2rad(shear_angle)
 
     def run(self, data, generate_random_parameters=True):
         """
