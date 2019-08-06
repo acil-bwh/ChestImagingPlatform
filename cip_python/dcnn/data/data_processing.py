@@ -1,4 +1,5 @@
 import math
+import vtk
 import numpy as np
 import SimpleITK as sitk
 from PIL import Image
@@ -30,6 +31,64 @@ class DataProcessing(object):
         resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
         resampler.SetOutputOrigin(image.GetOrigin())
         return resampler.Execute(image), output_spacing
+
+    @classmethod
+    def reslice_3D_image_vtk(cls, image, x_axis, y_axis, z_axis, center_point, target_size, output_spacing):
+        """
+        3D image reslicing using vtk.
+        :param image: VTK image
+        :param x_axis: tuple. X direction for vtk SetResliceAxesDirectionCosines function used to specify the orientation of the slice. The direction cosines give the x, y, and z axes for the output volume
+        :param y_axis: tuple. Y direction for vtk SetResliceAxesDirectionCosines function used to specify the orientation of the slice. The direction cosines give the x, y, and z axes for the output volume
+        :param z_axis: tuple. Z direction for vtk SetResliceAxesDirectionCosines function used to specify the orientation of the slice. The direction cosines give the x, y, and z axes for the output volume
+        :param center_point: tuple. Axes center for the reslicing operation in RAS format.
+        :param target_size: tuple. Size of the output image.
+        :param output_spacing: tuple. Spacing of the output image.
+        :return: resliced vtk image in 3D
+        """
+        reslice = vtk.vtkImageReslice()
+        reslice.SetInputData(image)
+        reslice.SetResliceAxesDirectionCosines(x_axis[0], x_axis[1], x_axis[2], y_axis[0], y_axis[1], y_axis[2],
+                                               z_axis[0], z_axis[1], z_axis[2])
+        reslice.SetResliceAxesOrigin(center_point)
+        reslice.SetOutputDimensionality(3)
+
+        reslice.SetInterpolationMode(vtk.VTK_RESLICE_CUBIC)
+        reslice.SetOutputSpacing(output_spacing)
+        reslice.SetOutputExtent(0, target_size[0] - 1, 0, target_size[1] - 1, 0, target_size[2] - 1)
+        reslice.SetOutputOrigin(-(target_size[0] * 0.5 - 0.5) * output_spacing[0],
+                                -(target_size[1] * 0.5 - 0.5) * output_spacing[1],
+                                -(target_size[2] * 0.5 - 0.5) * output_spacing[2])
+        reslice.Update()
+        return reslice.GetOutput().GetPointData().GetScalars()
+
+    @classmethod
+    def reslice_2D_image_vtk(cls, image, x_axis, y_axis, z_axis, center_point, target_size, output_spacing):
+        """
+        2D image reslicing using vtk.
+        :param image: VTK image
+        :param x_axis: tuple. X direction for vtk SetResliceAxesDirectionCosines function used to specify the orientation of the slice. The direction cosines give the x, y, and z axes for the output volume
+        :param y_axis: tuple. Y direction for vtk SetResliceAxesDirectionCosines function used to specify the orientation of the slice. The direction cosines give the x, y, and z axes for the output volume
+        :param z_axis: tuple. Z direction for vtk SetResliceAxesDirectionCosines function used to specify the orientation of the slice. The direction cosines give the x, y, and z axes for the output volume
+        :param center_point: tuple. Axes center for the reslicing operation in RAS format.
+        :param target_size: tuple. Size of the output image.
+        :param output_spacing: tuple. Spacing of the output image in x, y , z.
+        :return: resliced vtk image in 2D
+        """
+        reslice = vtk.vtkImageReslice()
+        reslice.SetInputData(image)
+        reslice.SetResliceAxesDirectionCosines(x_axis[0], x_axis[1], x_axis[2], y_axis[0], y_axis[1], y_axis[2],
+                                               z_axis[0], z_axis[1], z_axis[2])
+        reslice.SetResliceAxesOrigin(center_point)
+        reslice.SetOutputDimensionality(2)
+
+        reslice.SetInterpolationMode(vtk.VTK_RESLICE_CUBIC)
+        reslice.SetOutputSpacing(output_spacing)
+        reslice.SetOutputExtent(0, target_size[0] - 1, 0, target_size[1] - 1, 0, 1)
+        reslice.SetOutputOrigin(-(target_size[0] * 0.5 - 0.5) * output_spacing[0],
+                                -(target_size[1] * 0.5 - 0.5) * output_spacing[1],
+                                0)
+        reslice.Update()
+        return reslice.GetOutput().GetPointData().GetScalars()
 
     @classmethod
     def similarity_3D_transform_with_coords(cls, img, coords, output_size, translation, scale,
@@ -129,7 +188,6 @@ class DataProcessing(object):
 
         return image
 
-
     @classmethod
     def normalize_CT_image_intensity(cls, image_array, min_value=-300, max_value=700, min_output=0.0, max_output=1.0,
                                      out=None):
@@ -173,7 +231,6 @@ class DataProcessing(object):
 
         return image
 
-
     @classmethod
     def elastic_transform(cls, image, alpha, sigma, fill_mode='constant', cval=0.):
         """
@@ -193,7 +250,6 @@ class DataProcessing(object):
         indices = np.reshape(x + dx, (-1, 1)), np.reshape(y + dy, (-1, 1))
         distorted_image = map_coordinates(image, indices, order=1).reshape(shape)
         return distorted_image
-
 
     @classmethod
     def elastic_deformation_2D(cls, image, grid_width=2, grid_height=2, magnitude=4, resampling='bicubic'):
@@ -301,7 +357,6 @@ class DataProcessing(object):
             resampling_filter = Image.BICUBIC
 
         return np.asarray(image.transform(image.size, Image.MESH, generated_mesh, resample=resampling_filter)).transpose()
-
 
     @classmethod
     def perspective_skew_2D_transform(cls, image, skew_amount, skew_type="random", resampling='bicubic'):
