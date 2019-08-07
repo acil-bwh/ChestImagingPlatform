@@ -531,7 +531,8 @@ class H5DatasetStore(object):
             with h5py.File(h5_file_paths[0], 'r') as smh5f:
                 for key in smh5f:
                     ds = smh5f[key]
-                    ds_copy = h5f.create_dataset(key, data=ds[:], maxshape=(None,) + ds.shape[1:], chunks=ds.chunks)
+                    ds_copy = h5f.create_dataset(key, data=ds[:], maxshape=(None,) + ds.shape[1:], chunks=ds.chunks,
+                                                 compression=ds.compression, compression_opts=ds.compression_opts)
                     for attr in (attr for attr in ds.attrs if attr != "timestamp"):
                         ds_copy.attrs[attr] = ds.attrs[attr]
                     ds_copy.attrs['timestamp'] = timestamp
@@ -593,7 +594,9 @@ class H5DatasetStore(object):
                         for key in smh5f:
                             ds = smh5f[key]
                             # Copy data
-                            ds_copy = h5f.create_dataset(key, data=ds[:], maxshape=ds.maxshape, chunks=ds.chunks)
+                            ds_copy = h5f.create_dataset(key, data=ds[:], maxshape=ds.maxshape, chunks=ds.chunks,
+                                                         compression=ds.compression,
+                                                         compression_opts=ds.compression_opts)
                             # Copy all the attributes (except timestamp)
                             for attr in (attr for attr in ds.attrs if attr != "timestamp"):
                                 ds_copy.attrs[attr] = ds.attrs[attr]
