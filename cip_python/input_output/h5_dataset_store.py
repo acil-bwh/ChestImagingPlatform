@@ -482,22 +482,30 @@ class H5DatasetStore(object):
                     assert np.array_equal(k0, k1), "I found some keys misalignment in dataset {}!".format(ds_keys[j])
 
     @classmethod
-    def concat_full_h5s_class(cls, h5_file_paths, h5_description, output_file, git_tag=None):
+    def concat_full_h5s_class(cls, h5_file_paths, h5_description, output_file, key_names=('sid', 'cid'),
+                              keys_description="Element ids: subject id (sid) and case id (cid)",
+                              override_if_existing=False, git_tag=None):
         """
         Concat a series of h5 files fully filled (same schema) and concat them in a single H5.
         Class method (do not require to create an empty h5)
         :param h5_file_paths: list of string. Paths to the h5 files
         :param h5_description: str. Description of the whole h5.
         :param output_file: str. Output H5 file.
+        :param key_names: str-tuple. Names of the keys that will be used for each dataset in the H5
+        :param keys_description: str. Brief description of the key names
+        :param override_if_existing: bool. If True, the existence of a previous h5 file will be ignored
         :param git_tag: str. External git tag (different from the current CIP tag)
         :return: list of errors
         """
         ds = H5DatasetStore(output_file)
-        ds.create_h5_file(h5_description)
+        ds.create_h5_file(h5_description, key_names=key_names, keys_description=keys_description,
+                          override_if_existing=override_if_existing)
         return ds.concat_full_h5s(h5_file_paths, git_tag=git_tag)
 
     @classmethod
-    def concat_h5_datasets_class(cls, h5_file_paths, h5_description, output_file):
+    def concat_h5_datasets_class(cls, h5_file_paths, h5_description, output_file, key_names=('sid', 'cid'),
+                                 keys_description="Element ids: subject id (sid) and case id (cid)",
+                                 override_if_existing=False):
         """
         Concat a series of h5 files where each file contains one or more dataset objects, and store
         them in a single H5 object
@@ -505,9 +513,13 @@ class H5DatasetStore(object):
         :param h5_file_paths: list of string. Paths to the h5 files
         :param h5_description: str. Description of the whole h5.
         :param output_file: str. Output H5 file.
+        :param key_names: str-tuple. Names of the keys that will be used for each dataset in the H5
+        :param keys_description: str. Brief description of the key names
+        :param override_if_existing: bool. If True, the existence of a previous h5 file will be ignored
         """
         ds = H5DatasetStore(output_file)
-        ds.create_h5_file(h5_description)
+        ds.create_h5_file(h5_description, key_names=key_names, keys_description=keys_description,
+                          override_if_existing=override_if_existing)
         return ds.concat_h5_datasets(h5_file_paths)
 
     def concat_full_h5s(self, h5_file_paths, git_tag=None):
