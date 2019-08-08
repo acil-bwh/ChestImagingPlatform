@@ -10,7 +10,9 @@ if __name__ == "__main__":
                                                  'the first h5 in the specified paths list.')
     parser.add_argument('--descr', dest='h5_file_description', help="Description of the final h5", type=str,
                         required=True)
-    parser.add_argument('--paths_list', dest='h5_paths_list', help="List of string. Paths to the h5 files", type=str,
+    parser.add_argument('--paths_list', dest='h5_paths_list', help=".txt file containing the full paths to the single "
+                                                                   "h5 files to merge",
+                        type=str,
                         required=True)
     parser.add_argument('--override', dest='override_if_existing',
                         help="If specified, the existence of a previous h5 file will be ignored and it will be "
