@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument('--override', dest='override_if_existing',
                         help="If specified, the existence of a previous h5 file will be ignored and it will be "
                              "overwritten", action='store_true')
-    parser.add_argument('--o_h5', dest='out_h5', help="Output h5 file", required=True, type=str)
+    parser.add_argument('--o', dest='out_h5', help="Output h5 file", required=True, type=str)
 
     op = parser.parse_args()
     paths_list = open(op.h5_paths_list, "r").read().split("\n")[:-1]
