@@ -8,6 +8,7 @@ class DeepLearningModelsManager(object):
     _MODELS_ = {
           'LUNG_SEGMENTATION_AXIAL': 'lung_segmentation/lung_segmentation_axial.hdf5',
           'LUNG_SEGMENTATION_CORONAL': 'lung_segmentation/lung_segmentation_coronal.hdf5',
+          'LOW_DOSE_TO_HIGH_DOSE': 'low_dose_to_high_dose/low_dose_to_high_dose_3d2d.h5'
     }
 
     def __init__(self, root_url="https://s3.amazonaws.com/acil-deep-learning-data/models/"):
