@@ -104,9 +104,27 @@ class ImageReaderWriter:
       return sitk_image
 
     def sitkImage_to_numpy(self,sitk_image):
-      np_array = sitk.GetArrayFromImage(sitk_image)
-      np_array = np_array.transpose(self._np_axes_order)
-      return np_array
+        np_array = sitk.GetArrayFromImage(sitk_image)
+        np_array = np_array.transpose(self._np_axes_order)
+        return np_array
+
+    def numpy_to_sitkImage_2d(self, npy_array, metainfo=None, sitk_image_template=None):
+        sitk_image = sitk.GetImageFromArray(npy_array.transpose())
+        if sitk_image_template == None and metainfo == None:
+            pass
+        elif metainfo == None:
+            sitk_image.CopyInformation(sitk_image_template)
+        else:
+            sitk_image.SetSpacing(metainfo['spacing'])
+            sitk_image.SetOrigin(metainfo['space origin'])
+            sitk_image.SetDirection(metainfo['space directions'])
+
+        return sitk_image
+
+    def sitkImage_to_numpy_2d(self,sitk_image):
+        np_array = sitk.GetArrayFromImage(sitk_image)
+        np_array = np_array.transpose()
+        return np_array
 
     def write_from_numpy(self,npy_array,metainfo,file_name):
         """Write an image numpy array.
