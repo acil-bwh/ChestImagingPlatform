@@ -90,15 +90,17 @@ class LungSegmenterDCNN:
                 cnn_img = np.zeros((patch_size[0], patch_size[1], z_shape), dtype=np.float32)
                 for ii in range(z_shape):
                     output_size = np.asarray(patch_size)
-                    res_sitk, out_sp = DataProcessing.resample_image_itk(img_sitk[:, :, ii], output_size, sitk.sitkInt16,
-                                                            interpolator=sitk.sitkBSpline)
+                    res_sitk, out_sp = DataProcessing.resample_image_itk(img_sitk[:, :, ii], output_size,
+                                                                         sitk.sitkInt16,
+                                                                         interpolator=sitk.sitkBSpline)
                     cnn_img[:, :, ii] = sitk.GetArrayFromImage(res_sitk).transpose().astype(np.float32)
                 output_spacing = np.asarray([out_sp[0], out_sp[1], img_sitk.GetSpacing()[2]])
             else:
                 output_size = np.asarray([patch_size[0], patch_size[1], z_shape])
 
-                resampled_sitk, output_spacing = DataProcessing.resample_image_itk(img_sitk, output_size, sitk.sitkInt16,
-                                                                      interpolator=sitk.sitkBSpline)
+                resampled_sitk, output_spacing = DataProcessing.resample_image_itk(img_sitk, output_size,
+                                                                                   sitk.sitkInt16,
+                                                                                   interpolator=sitk.sitkBSpline)
                 cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0]).astype(np.float32)
         else:
             cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0]).astype(np.float32)
@@ -111,7 +113,7 @@ class LungSegmenterDCNN:
         certainty_map = np.zeros((z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
 
         for ii in range(cnn_img.shape[2]):
-            cnn_img[:, :, ii] = DataProcessing.standardization(cnn_img[:, :, ii])
+            cnn_img[:, :, ii] = DataProcessing.standardization(cnn_img[:, :, ii], mean_value=-700., std_value=450.)
 
         for ii in z_samples:
             print ('Segmenting slice {} of {}'.format(ii, cnn_img.shape[2]))
