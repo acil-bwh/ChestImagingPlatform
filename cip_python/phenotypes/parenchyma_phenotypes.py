@@ -467,8 +467,8 @@ class ParenchymaPhenotypes(Phenotypes):
                 elif pheno_name == 'HUSkewness' and mask_sum > 0:
                     pheno_val = skew(ct_mask, bias=False)
                 elif pheno_name == 'HUMode' and mask_sum > 0:
-                    min_val = np.min(ct_mask)
-                    pheno_val = np.argmax(np.bincount(ct_mask + \
+                    min_val = np.min(ct_mask.clip(-3000))
+                    pheno_val = np.argmax(np.bincount(ct_mask.clip(-3000) + \
                         np.abs(min_val))) - np.abs(min_val)
                 elif pheno_name == 'HUMedian' and mask_sum > 0:
                     pheno_val = np.median(ct_mask)
@@ -490,8 +490,8 @@ class ParenchymaPhenotypes(Phenotypes):
                         pheno_val = skew(hus[500], bias=False)
                 elif pheno_name == 'HUMode500' and mask_sum > 0:
                     if hus[500].shape[0] > 0:
-                        min_val = np.min(hus[500])
-                        pheno_val = np.argmax(np.bincount(hus[500] +\
+                        min_val = np.min(hus[500].clip(-3000))
+                        pheno_val = np.argmax(np.bincount(hus[500].clip(-3000) +\
                             np.abs(min_val))) - np.abs(min_val)                
                 elif pheno_name == 'HUMedian500' and mask_sum > 0:
                     if hus[500].shape[0] > 0:
@@ -516,8 +516,8 @@ class ParenchymaPhenotypes(Phenotypes):
                         pheno_val = skew(hus[950], bias=False)
                 elif pheno_name == 'HUMode950' and mask_sum > 0:
                     if hus[950].shape[0] > 0:
-                        min_val = np.min(hus[950])
-                        pheno_val = np.argmax(np.bincount(hus[950] +\
+                        min_val = np.min(hus[950].clip(-3000))
+                        pheno_val = np.argmax(np.bincount(hus[950].clip(-3000) +\
                             np.abs(min_val))) - np.abs(min_val)
                 elif pheno_name == 'HUMedian950' and mask_sum > 0:
                     if hus[950].shape[0] > 0:
