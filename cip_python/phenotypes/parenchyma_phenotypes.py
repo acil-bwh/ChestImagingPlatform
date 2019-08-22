@@ -417,35 +417,43 @@ class ParenchymaPhenotypes(Phenotypes):
         if ct is not None:
             ct_mask=ct[mask]
             hus=dict()
-            hus[500] = ct[np.logical_and(mask, ct < -500)]
-            hus[950] = ct[np.logical_and(mask, ct < -950)]
+
+            ##########
+            # Changed in Aug 21 2019 to speed phenotyping. To avoid continuous
+            # evaluation labelmap
+            ##########
+            # PREVIUS CODE
+            # hus[500] = ct[np.logical_and(mask, ct < -500)]
+            # hus[950] = ct[np.logical_and(mask, ct < -950)]
+            hus[500] = ct_mask[ct_mask < -500]
+            hus[950] = ct_mask[ct_mask < -950]
 
             for pheno_name in phenos_to_compute:
                 assert pheno_name in self.pheno_names_, \
                   "Invalid phenotype name " + pheno_name
                 pheno_val = None
                 if pheno_name == 'LAA950' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask < -950.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask < -950.)) / mask_sum
                 elif pheno_name == 'LAA925' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask < -925.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask < -925.)) / mask_sum
                 elif pheno_name == 'LAA910' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask < -910.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask < -910.)) / mask_sum
                 elif pheno_name == 'LAA905' and mask_sum > 0:
                     pheno_val = float(np.sum(ct_mask < -905.)) / mask_sum
                 elif pheno_name == 'LAA900' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask < -900.))/mask_sum
-                elif pheno_name == 'LAA875'and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask < -875.))/mask_sum
-                elif pheno_name == 'LAA856'and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask < -856.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask < -900.)) / mask_sum
+                elif pheno_name == 'LAA875' and mask_sum > 0:
+                    pheno_val = float(np.sum(ct_mask < -875.)) / mask_sum
+                elif pheno_name == 'LAA856' and mask_sum > 0:
+                    pheno_val = float(np.sum(ct_mask < -856.)) / mask_sum
                 elif pheno_name == 'HAA700' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask > -700.))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -700.)) / mask_sum
                 elif pheno_name == 'HAA600' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask > -600))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -600)) / mask_sum
                 elif pheno_name == 'HAA500' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask > -500))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -500)) / mask_sum
                 elif pheno_name == 'HAA250' and mask_sum > 0:
-                    pheno_val = float(np.sum(ct_mask > -250))/mask_sum
+                    pheno_val = float(np.sum(ct_mask > -250)) / mask_sum
                 elif pheno_name == 'Perc15' and mask_sum > 0:
                     pheno_val = np.percentile(ct_mask, 15)
                 elif pheno_name == 'Perc10' and mask_sum > 0:

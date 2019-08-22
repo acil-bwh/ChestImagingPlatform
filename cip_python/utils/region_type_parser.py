@@ -24,6 +24,15 @@ class RegionTypeParser():
         assert len(data.shape) > 0, "Empty data set"
 
         self.labels_ = np.unique(self._data)
+
+        ##########
+        # Changed in Aug 21 2019 to speed phenotyping. To avoid continuous
+        # evaluation labelmap
+        ##########
+        self._data_indices = dict()
+        for ll in set(self.labels_):
+            self._data_indices[ll] = np.where(self._data==ll)
+
    
     def get_mask(self, chest_region=None, chest_type=None):
         """Get's boolean mask of all data indices that match the chest-region
@@ -86,9 +95,18 @@ class RegionTypeParser():
                 
         mask = np.empty(self._data.shape, dtype=bool)
         mask[:] = False
-        
+
+
+        ##########
+        # Changed in Aug 21 2019 to speed phenotyping. To avoid continuous
+        # evaluation labelmap
+        ##########
+        # PREVIUS CODE
+        # for ll in set(mask_labels):
+        #     tic = time.time()
+        #     mask[self._data == ll] = True
         for ll in set(mask_labels):
-            mask[self._data==ll]=True
+            mask[self._data_indices[ll]] = True
 
         return mask
 
