@@ -24,6 +24,7 @@ class H5Manager(object):
                  train_ixs=None, validation_ixs=None, test_ixs=None,
                  xs_dataset_names=('images',), ys_dataset_names=('labels',),
                  use_pregenerated_augmented_train_data=False,
+                 use_pregenerated_augmented_val_data=False,
                  pregenerated_augmented_xs_dataset_names=('images_augmented',),
                  pregenerated_augmented_ys_dataset_names=('labels_augmented',),
                  num_augmented_train_data_points_per_original_data_point=0,
@@ -43,6 +44,7 @@ class H5Manager(object):
         :param xs_dataset_names: tuple/list of str. Names for the datasets that will be used as input data
         :param ys_dataset_names: tuple/list of str. Names for the datasets that will be used as output data
         :param use_pregenerated_augmented_train_data: bool. Use a dataset that already contains pre-augmented data
+        :param use_pregenerated_augmented_val_data: bool. Use a dataset that already contains pre-augmented data for validation
         :param pregenerated_augmented_xs_dataset_names: tuple/list of str. Names for the datasets that will be used as augmented input data
         :param pregenerated_augmented_ys_dataset_names: tuple/list of str. Names for the datasets that will be used as augmented output data
         """
@@ -67,8 +69,11 @@ class H5Manager(object):
 
         # Pregenerated data augmentation
         self.use_pregenerated_augmented_train_data = use_pregenerated_augmented_train_data
+        self.use_pregenerated_augmented_val_data = use_pregenerated_augmented_val_data
         self._pregenerated_augmented_ixs_ = None      # 2-Dimensional Array with the indexes of the images generated with data augmentation
         self._pregenerated_augmented_ixs_pos_ = None  # 1-dimensional array with current positions of the list of indexes for the images generated with data augmentation
+        self._pregenerated_augmented_ixs_val_ = None  # 2-Dimensional Array with the indexes of the images generated with data augmentation (for validation)
+        self._pregenerated_augmented_ixs_val_pos_ = None  # 1-dimensional array with current positions of the list of indexes for the images generated with data augmentation (for validation)
         self.pregenerated_augmented_xs_ds_names = pregenerated_augmented_xs_dataset_names
         self.pregenerated_augmented_ys_ds_names = pregenerated_augmented_ys_dataset_names
         self.pregenerated_num_augmented_data_points_per_data_point = None
@@ -285,9 +290,18 @@ class H5Manager(object):
                 if self.shuffle_training:
                     for i in range(self.num_train_points):
                         np.random.shuffle(self._pregenerated_augmented_ixs_[i])
+            if self.use_pregenerated_augmented_val_data:
+                if self._pregenerated_augmented_ixs_val_ is None:
+                    # We need to create a list for each index in the training dataset.
+                    # In order to loop over all the images in the dataset, we need main index
+                    # that contains 'num_total_augmented_images' for each main image.
+                    # We assume we have the same number of augmented data points for each used data dataset
+                    self._pregenerated_augmented_ixs_val_ = np.tile(np.arange(self.pregenerated_num_augmented_data_points_per_data_point),
+                                                                   self.num_validation_points).reshape(self.num_validation_points, -1)
 
             self._train_ix_pos_ = 0
             self._pregenerated_augmented_ixs_pos_ = [0] * self.num_train_points
+            self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
             self._num_epoch_ += 1
 
     def read_data_point(self, main_ix):
@@ -417,6 +431,30 @@ class H5Manager(object):
                         self._validation_ix_pos_ += 1
                         if self._validation_ix_pos_ == self.num_validation_points:
                           self._validation_ix_pos_ = 0
+
+                        if self.use_pregenerated_augmented_val_data:
+                            # Augmented images
+                            aug = 0
+                            while aug < self.num_augmented_train_data_points_per_data_point and batch_pos < num_data_points_current_batch:
+                                # Pre-augmented dataset
+                                val_secondary_ix = self._pregenerated_augmented_ixs_val_[current_main_pos][
+                                    self._pregenerated_augmented_ixs_val_pos_[current_main_pos]]
+                                self._pregenerated_augmented_ixs_val_pos_[current_main_pos] += 1
+
+                                if self._pregenerated_augmented_ixs_val_pos_[
+                                    current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
+                                    # Start over with the first augmented image for this original image
+                                    self._pregenerated_augmented_ixs_val_pos_[current_main_pos] = 0
+
+                                # Read the data point from the dataset
+                                augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, val_secondary_ix)
+
+                                for i in range(num_xs):
+                                    batch_xs[i][batch_pos] = augmented_xs[i]
+                                for i in range(num_ys):
+                                    batch_ys[i][batch_pos] = augmented_ys[i]
+                                batch_pos += 1
+                                aug += 1
                 else:
                     # Test
                     with self.lock:
