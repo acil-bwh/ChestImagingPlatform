@@ -364,9 +364,10 @@ class H5Manager(object):
             remaining_data_points = batch_size   # We will always return 'batch_size' elements
         # Otherwise we can return less elements than asked in the batch because we reach the end of the validation/test data
         elif batch_type == self.VALIDATION:
-            remaining_data_points = self.num_validation_points - self._validation_ix_pos_
-            # if remaining_data_points == 0:
-            #     self._validation_ix_pos_ = 0
+            if self.use_pregenerated_augmented_val_data:
+                remaining_data_points = batch_size
+            else:
+                remaining_data_points = self.num_validation_points - self._validation_ix_pos_
         elif batch_type == self.TEST:
             remaining_data_points = self.num_test_points - self._test_ix_pos_
         else:
