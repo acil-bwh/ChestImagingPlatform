@@ -1,5 +1,5 @@
 import nipype.pipeline.engine as pe
-import cip_convention_manager as cm
+from cip_python.nipype import cip_convention_manager as cm
 
 class CIPNode(pe.Node):
     """
