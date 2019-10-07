@@ -435,7 +435,8 @@ class H5Manager(object):
                         self._validation_ix_pos_ += 1
                     if self._validation_ix_pos_ == self.num_validation_points:
                         self._validation_ix_pos_ = 0
-                        self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
+                        if self.use_pregenerated_augmented_val_data:
+                            self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
                 else:
                     # Test
                     with self.lock:
