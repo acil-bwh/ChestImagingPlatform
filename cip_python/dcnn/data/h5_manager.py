@@ -290,16 +290,6 @@ class H5Manager(object):
                 if self.shuffle_training:
                     for i in range(self.num_train_points):
                         np.random.shuffle(self._pregenerated_augmented_ixs_[i])
-            if self.use_pregenerated_augmented_val_data:
-                if self._pregenerated_augmented_ixs_val_ is None:
-                    # We need to create a list for each index in the training dataset.
-                    # In order to loop over all the images in the dataset, we need main index
-                    # that contains 'num_total_augmented_images' for each main image.
-                    # We assume we have the same number of augmented data points for each used data dataset
-                    self._pregenerated_augmented_ixs_val_ = np.tile(np.arange(self.pregenerated_num_augmented_data_points_per_data_point),
-                                                                    self.num_validation_points).reshape(self.num_validation_points, -1)
-                self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
-                self._validation_ix_pos_ = 0
 
             self._train_ix_pos_ = 0
             self._pregenerated_augmented_ixs_pos_ = [0] * self.num_train_points
@@ -365,6 +355,17 @@ class H5Manager(object):
             remaining_data_points = batch_size   # We will always return 'batch_size' elements
         # Otherwise we can return less elements than asked in the batch because we reach the end of the validation/test data
         elif batch_type == self.VALIDATION:
+            if self._validation_ix_pos_ == 0 and self.use_pregenerated_augmented_val_data:
+                if self._pregenerated_augmented_ixs_val_ is None:
+                    # We need to create a list for each index in the training dataset.
+                    # In order to loop over all the images in the dataset, we need main index
+                    # that contains 'num_total_augmented_images' for each main image.
+                    # We assume we have the same number of augmented data points for each used data dataset
+                    self._pregenerated_augmented_ixs_val_ = np.tile(
+                        np.arange(self.pregenerated_num_augmented_data_points_per_data_point),
+                        self.num_validation_points).reshape(self.num_validation_points, -1)
+                self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
+
             if self.use_pregenerated_augmented_val_data:
                 remaining_data_points = batch_size
             else:
@@ -425,28 +426,12 @@ class H5Manager(object):
                 if self._train_ix_pos_ == self.num_train_points:
                     # We reached the end of a training dataset. End of epoch
                     self._new_epoch_()
-            else:
-                # Validation or test dataset. Just take X elements sequentially
-                if batch_type == self.VALIDATION:
-                    with self.lock:
-                        # Select the next main index
-                        current_main_pos = self._validation_ix_pos_
-                        main_ix = self.validation_ixs[current_main_pos]
-                        self._validation_ix_pos_ += 1
-                    if self._validation_ix_pos_ == self.num_validation_points:
-                        self._validation_ix_pos_ = 0
-                        if self.use_pregenerated_augmented_val_data:
-                            self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
-                else:
-                    # Test
-                    with self.lock:
-                        # Select the next main index
-                        current_main_pos = self._test_ix_pos_
-                        main_ix = self.test_ixs[current_main_pos]
-                        self._test_ix_pos_ += 1
-                        if self._test_ix_pos_ == self.num_test_points: 
-                          self._test_ix_pos_ = 0
-
+            elif batch_type == self.VALIDATION:
+                with self.lock:
+                    # Select the next main index
+                    current_main_pos = self._validation_ix_pos_
+                    main_ix = self.validation_ixs[current_main_pos]
+                    self._validation_ix_pos_ += 1
                 xs, ys = self.read_data_point(main_ix)
                 for i in range(num_xs):
                     batch_xs[i][batch_pos] = xs[i]
@@ -454,17 +439,15 @@ class H5Manager(object):
                     batch_ys[i][batch_pos] = ys[i]
                 batch_pos += 1
 
-                if batch_type == self.VALIDATION and self.use_pregenerated_augmented_val_data:
+                if self.use_pregenerated_augmented_val_data:
                     # Augmented images
                     aug = 0
                     while aug < self.num_augmented_train_data_points_per_data_point and batch_pos < num_data_points_current_batch:
                         # Pre-augmented dataset
-                        val_secondary_ix = self._pregenerated_augmented_ixs_val_[current_main_pos][
-                            self._pregenerated_augmented_ixs_val_pos_[current_main_pos]]
+                        val_secondary_ix = self._pregenerated_augmented_ixs_val_[current_main_pos][self._pregenerated_augmented_ixs_val_pos_[current_main_pos]]
                         self._pregenerated_augmented_ixs_val_pos_[current_main_pos] += 1
 
-                        if self._pregenerated_augmented_ixs_val_pos_[
-                            current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
+                        if self._pregenerated_augmented_ixs_val_pos_[current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
                             # Start over with the first augmented image for this original image
                             self._pregenerated_augmented_ixs_val_pos_[current_main_pos] = 0
 
@@ -477,6 +460,24 @@ class H5Manager(object):
                             batch_ys[i][batch_pos] = augmented_ys[i]
                         batch_pos += 1
                         aug += 1
+                if self._validation_ix_pos_ == self.num_validation_points:
+                    self._validation_ix_pos_ = 0
+            else:
+                # Test
+                with self.lock:
+                    # Select the next main index
+                    current_main_pos = self._test_ix_pos_
+                    main_ix = self.test_ixs[current_main_pos]
+                    self._test_ix_pos_ += 1
+                    if self._test_ix_pos_ == self.num_test_points:
+                      self._test_ix_pos_ = 0
+
+                xs, ys = self.read_data_point(main_ix)
+                for i in range(num_xs):
+                    batch_xs[i][batch_pos] = xs[i]
+                for i in range(num_ys):
+                    batch_ys[i][batch_pos] = ys[i]
+                batch_pos += 1
 
         return batch_xs, batch_ys
 
