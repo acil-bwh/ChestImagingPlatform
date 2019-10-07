@@ -297,11 +297,12 @@ class H5Manager(object):
                     # that contains 'num_total_augmented_images' for each main image.
                     # We assume we have the same number of augmented data points for each used data dataset
                     self._pregenerated_augmented_ixs_val_ = np.tile(np.arange(self.pregenerated_num_augmented_data_points_per_data_point),
-                                                                   self.num_validation_points).reshape(self.num_validation_points, -1)
+                                                                    self.num_validation_points).reshape(self.num_validation_points, -1)
+                self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
+                self._validation_ix_pos_ = 0
 
             self._train_ix_pos_ = 0
             self._pregenerated_augmented_ixs_pos_ = [0] * self.num_train_points
-            self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
             self._num_epoch_ += 1
 
     def read_data_point(self, main_ix):
@@ -432,8 +433,9 @@ class H5Manager(object):
                         current_main_pos = self._validation_ix_pos_
                         main_ix = self.validation_ixs[current_main_pos]
                         self._validation_ix_pos_ += 1
-                        if self._validation_ix_pos_ == self.num_validation_points:
-                          self._validation_ix_pos_ = 0
+                    if self._validation_ix_pos_ == self.num_validation_points:
+                        self._validation_ix_pos_ = 0
+                        self._pregenerated_augmented_ixs_val_pos_ = [0] * self.num_validation_points
                 else:
                     # Test
                     with self.lock:
