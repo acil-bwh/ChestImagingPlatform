@@ -33,6 +33,31 @@ class DataProcessing(object):
         return resampler.Execute(image), output_spacing
 
     @classmethod
+    def resample_image_itk_by_spacing(cls, image, output_spacing, output_type=None, interpolator=sitk.sitkBSpline):
+        """
+        Image resampling using ITK
+        :param image: simpleITK image
+        :param output_size: numpy array or tuple. Output size
+        :param output_type: simpleITK output data type. If None, use the same as 'image'
+        :param interpolator: simpleITK interpolator (default: BSpline)
+        :return: tuple with simpleITK image and array with the resulting output spacing
+        """
+        if not isinstance(output_spacing, np.ndarray):
+            output_spacing = np.array(output_spacing)
+        factor = np.asarray(image.GetSpacing()) / np.asarray(output_spacing)
+
+        output_size = np.asarray(np.asarray(image.GetSize()) * factor)
+        
+        resampler = sitk.ResampleImageFilter()
+        resampler.SetOutputDirection(image.GetDirection())
+        resampler.SetSize(output_size.tolist())
+        resampler.SetInterpolator(interpolator)
+        resampler.SetOutputSpacing(output_spacing)
+        resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
+        resampler.SetOutputOrigin(image.GetOrigin())
+        return resampler.Execute(image), output_spacing
+
+    @classmethod
     def reslice_3D_image_vtk(cls, image, x_axis, y_axis, z_axis, center_point, target_size, output_spacing):
         """
         3D image reslicing using vtk.
