@@ -37,7 +37,7 @@ class DataProcessing(object):
         """
         Image resampling using ITK
         :param image: simpleITK image
-        :param output_size: numpy array or tuple. Output size
+        :param output_spacing: numpy array or tuple. Output size
         :param output_type: simpleITK output data type. If None, use the same as 'image'
         :param interpolator: simpleITK interpolator (default: BSpline)
         :return: tuple with simpleITK image and array with the resulting output spacing
@@ -47,7 +47,7 @@ class DataProcessing(object):
         factor = np.asarray(image.GetSpacing()) / np.asarray(output_spacing)
 
         output_size = np.asarray(np.asarray(image.GetSize()) * factor)
-        
+
         resampler = sitk.ResampleImageFilter()
         resampler.SetOutputDirection(image.GetDirection())
         resampler.SetSize(output_size.tolist())
