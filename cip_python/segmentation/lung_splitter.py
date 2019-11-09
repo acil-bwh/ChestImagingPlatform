@@ -61,20 +61,20 @@ class LungSplitter():
         size = lm_wl.GetSize()
 
         #Axial run
-        for zz in xrange(size[2]):
+        for zz in range(size[2]):
             #print 'Axial %d'%zz
             cut = lm_wl[:,:,zz]
             out_cut = olm_np[zz,:,:]
             self.twoobject_label_cut(cut,out_cut,2,zz,0)
         #Coronal run
-        for yy in xrange(size[1]):
+        for yy in range(size[1]):
             #print 'Coronal %d'%yy
             cut = lm_wl[:,yy,:]
             out_cut = olm_np[:,yy,:]
             self.twoobject_label_cut(cut,out_cut,1,yy,0)
 
         #Do majority voting split along sagittal
-        for xx in xrange(size[0]):
+        for xx in range(size[0]):
             cut = lm_wl[xx,:,:]
             out_cut = olm_np[:,:,xx]
             self.allobjects_majority_voting_label_cut(cut,out_cut)
@@ -82,7 +82,7 @@ class LungSplitter():
 
         #Final labeling to isolate largest connected component per lung
         for label_test in [self.RightLabel,self.LeftLabel]:
-            cc = sitk.ConnectedComponent(sitk.GetImageFromArray((olm_np==label_test).astype('uint8')), fullyConnected=True)
+            cc = sitk.ConnectedComponent(sitk.GetImageFromArray((olm_np==label_test).astype('uint8')), True)
             cc = sitk.RelabelComponent(cc)
             cc_np = sitk.GetArrayFromImage(cc)
             #Get the largest components cc_np=1 by setting the smallest to zero
@@ -94,7 +94,7 @@ class LungSplitter():
             vol_left = np.sum(olm_np==self.LeftLabel)
             target_vol_right = 0
             target_vol_left = 0
-            for zz in xrange(size[2]):
+            for zz in range(size[2]):
                 cut =olm_np[zz,:,:]
                 right_mask= (cut==self.RightLabel)
                 left_mask= (cut==self.LeftLabel)
@@ -149,7 +149,7 @@ class LungSplitter():
         rr = self.r_f.Execute(cc)
         rr_np = sitk.GetArrayFromImage(rr)
 
-        for oo in xrange(n_objects):
+        for oo in range(n_objects):
             out_np[rr_np==oo+1]
             left_sum = np.sum(out_np[rr_np==oo+1]==self.LeftLabel)
             right_sum = np.sum(out_np[rr_np==oo+1]==self.RightLabel)
