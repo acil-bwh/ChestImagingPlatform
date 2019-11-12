@@ -59,12 +59,11 @@ class MetricsManager(object):
     ###########################################################################################################
     @classmethod
     def dice_coef(cls, y_true, y_pred):
-        smooth = 1.
+        smooth = 1.0
         y_true_f = K.flatten(y_true)
         y_pred_f = K.flatten(y_pred)
         intersection = K.sum(y_true_f * y_pred_f)
-        # return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-        return (2. * intersection + smooth) / (K.sum(K.square(y_true_f)) + K.sum(K.square(y_pred_f)) + smooth)
+        return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
     @classmethod
     def dice_coef_loss(cls, y_true, y_pred):
