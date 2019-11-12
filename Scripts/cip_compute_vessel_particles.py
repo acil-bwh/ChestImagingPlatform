@@ -49,7 +49,7 @@ class VesselParticlesPipeline:
         
         #Internal params
         #Distance from wall that we don't want to consider in the initialization (negative= inside the lung, positive= outside the lung)
-        self._distance_from_wall = -2
+        self._distance_from_wall = 2.0
         #Threshold on the vesselness map (for particles initialization mask)
         self._vesselness_th = vesselness_th
         #Intensity threshold (for particles initialization mask)
@@ -153,8 +153,11 @@ class VesselParticlesPipeline:
             
             # Define FileNames that will be used
             pl_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + "_partialLungLabelMap.nrrd")
+            pl_file_nameRegion2= os.path.join(tmpDir,self._case_id + "_" + rtag + "_partialLungLabelMap2.nrrd")
+
             ct_file_nameRegion= os.path.join(tmpDir,self._case_id + "_" + rtag + ".nrrd")
             featureMapFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_featureMap.nrrd")
+            distanceMapFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_distanceMap.nrrd")
             maskFileNameRegion = os.path.join(tmpDir,self._case_id + "_" + rtag + "_mask.nrrd")
             particlesFileNameRegion = os.path.join(self._output_prefix+ "_" + rtag + "VesselParticles.vtk")
             
@@ -179,23 +182,30 @@ class VesselParticlesPipeline:
                 print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
                 
-                #tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s -s 2"
-                #tmpCommand = tmpCommand % {'lm-in':self._pl_file_nameRegion,'distance-map':self._pl_file_nameRegion}
-                #tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
-                #print tmpCommand
-                #subprocess.call( tmpCommand, shell=True )
-                
-                tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
-                tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
-                tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
+                #Trimming of chest wall using CIP distance map approach
+                tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s -s 1 -p -m Maurer"
+                tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':distanceMapFileNameRegion}
+                tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
                 print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
-                
-                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
-                tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
+                print ("Distance from wall: "+str(self._distance_from_wall))
+                tmpCommand ="unu 2op gt %(distance-map)s %(distance)f | unu convert -t short -o %(lm-out)s"
+                tmpCommand = tmpCommand % {'distance-map':distanceMapFileNameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
                 print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
-                
+
+                #Trimming of chest wall using ITKTools distance map approach
+#                tmpCommand ="pxdistancetransform -in %(lm-in)s -out %(distance-map)s"
+#                tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
+#                tmpCommand = os.path.join(path['ITKTOOLS_PATH'],tmpCommand)
+#                print (tmpCommand)
+#                subprocess.call( tmpCommand, shell=True )
+#
+#                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
+#                tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':-1.0*self._distance_from_wall,'lm-out':pl_file_nameRegion}
+#                print (tmpCommand)
+#                subprocess.call( tmpCommand, shell=True )
+
                 # Compute Frangi
                 if self._init_method == 'Frangi':
                     tmpCommand = "ComputeFeatureStrength -i %(in)s -m Frangi -f RidgeLine --std %(minscale)f,%(maxscale)f,7 --ssm 1 --alpha 0.63 --beta 0.51 --C 245 -o %(out)s"
@@ -255,7 +265,20 @@ class VesselParticlesPipeline:
                 #particlesGenerator._irad_phase3 = 0.9
                 #particlesGenerator._srad_phase3 = 4
                 particlesGenerator._verbose = 0
+                
+                #Adjust default irad param to accomodate different scales. Those params were optimized for a nominal resolution of 0.625 mm
+                adjust_irad_factor=0.625/self._voxel_size
+                if adjust_irad_factor is not 1.0:
+                    phase_irads=particlesGenerator._phase_irads
+                    new_phase_irads=list()
+                    for val in phase_irads:
+                        new_phase_irads.append(val/adjust_irad_factor)
+                    particlesGenerator._phase_irads = new_phase_irads
+            
+                #particlesGenerator._ppv = 1
                 particlesGenerator.execute()
+            
+            
             else:
                 particlesGenerator = MultiResVesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
                 particlesGenerator._clean_tmp_dir=self._clean_cache
@@ -282,6 +305,7 @@ if __name__ == "__main__":
     parser.add_argument("--maxscale", dest="max_scale",type=float,default=4)
     parser.add_argument("--init", dest="init_method",default="Frangi")
     parser.add_argument("--vmask", dest="vessel_mask", default=None)
+    parser.add_argument("--dwall", dest="distance_from_wall", type=float,default=2.0,help="Distance from wall (in mm) to exclude for the vessel extraction to avoid chest wall artifacts")
     parser.add_argument("--vesselness_th", dest="vesselness_th",type=float,default=0.38)
     parser.add_argument("--resampling", dest="resampling_method",default="Linear",help="Resampling method for CT image: linear, cubic, registration (demons-based approach), hybrid (registration + cubic)")
     parser.add_argument("--multires", dest="multires",action="store_true", default = False)
@@ -310,5 +334,7 @@ if __name__ == "__main__":
     vp = VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,
                                op.vessel_mask, op.resampling_method, op.lth,op.sth,op.voxel_size,op.min_scale,
                                op.max_scale,op.vesselness_th,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
-                               
+
+    vp._distance_from_wall=op.distance_from_wall
+
     vp.execute()
