@@ -21,7 +21,7 @@ class VesselParticlesPipeline:
         """
     def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',
                  vessel_mask=None,resampling_method='Linear',lth=-95,sth=-70,voxel_size=0,min_scale=0.7,max_scale=4,
-                 vesselness_th=0.38,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True):
+                 vesselness_th=0.38,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True, permissive=False):
         
         assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy' \
                or init_method == 'VesselMask'
@@ -54,6 +54,8 @@ class VesselParticlesPipeline:
         self._vesselness_th = vesselness_th
         #Intensity threshold (for particles initialization mask)
         self._intensity_th = -700
+
+        self._permissive = permissive  # Allow volumes to have different shapes (false is safer)
     
     def execute(self):
         
@@ -259,7 +261,9 @@ class VesselParticlesPipeline:
             
             # Vessel Particles For the Region
             if self._multires==False:
-                particlesGenerator = VesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=self._lth,seed_thresh=self._sth,min_intensity=-950,max_intensity=200)
+                particlesGenerator = VesselParticles(ct_file_nameRegion, particlesFileNameRegion, tmpDir,
+                                                     maskFileNameRegion, live_thresh=self._lth, seed_thresh=self._sth,
+                                                     min_intensity=-950, max_intensity=200, permissive=self._permissive)
                 particlesGenerator._clean_tmp_dir=self._clean_cache
                 #particlesGenerator._interations_phase3 = 70
                 #particlesGenerator._irad_phase3 = 0.9
@@ -277,10 +281,9 @@ class VesselParticlesPipeline:
             
                 #particlesGenerator._ppv = 1
                 particlesGenerator.execute()
-            
-            
             else:
-                particlesGenerator = MultiResVesselParticles(ct_file_nameRegion,particlesFileNameRegion,tmpDir,maskFileNameRegion,live_thresh=-600,seed_thresh=-600)
+                particlesGenerator = MultiResVesselParticles(ct_file_nameRegion, particlesFileNameRegion, tmpDir,
+                                                             maskFileNameRegion, live_thresh=-600, seed_thresh=-600)
                 particlesGenerator._clean_tmp_dir=self._clean_cache
                 particlesGenerator.execute()
 
@@ -305,12 +308,22 @@ if __name__ == "__main__":
     parser.add_argument("--maxscale", dest="max_scale",type=float,default=4)
     parser.add_argument("--init", dest="init_method",default="Frangi")
     parser.add_argument("--vmask", dest="vessel_mask", default=None)
-    parser.add_argument("--dwall", dest="distance_from_wall", type=float,default=2.0,help="Distance from wall (in mm) to exclude for the vessel extraction to avoid chest wall artifacts")
+    parser.add_argument("--dwall", dest="distance_from_wall", type=float,default=2.0, help="Distance from wall (in mm) "
+                                                                                           "to exclude for the vessel "
+                                                                                           "extraction to avoid chest "
+                                                                                           "wall artifacts")
     parser.add_argument("--vesselness_th", dest="vesselness_th",type=float,default=0.38)
-    parser.add_argument("--resampling", dest="resampling_method",default="Linear",help="Resampling method for CT image: linear, cubic, registration (demons-based approach), hybrid (registration + cubic)")
+    parser.add_argument("--resampling", dest="resampling_method", default="Linear", help="Resampling method for CT "
+                                                                                         "image: linear, cubic, "
+                                                                                         "registration (demons-based "
+                                                                                         "approach), hybrid "
+                                                                                         "(registration + cubic)")
     parser.add_argument("--multires", dest="multires",action="store_true", default = False)
     parser.add_argument("--justparticles", dest="justparticles",action="store_true", default=False)
     parser.add_argument("--cleanCache", action="store_true", dest="clean_cache", default=False)
+    parser.add_argument("--perm", dest="permissive",action="store_true", default=False, help="If set, it allows volumes "
+                                                                                             "to have different shapes "
+                                                                                             "(false is safer)")
 
     # Check required tools path enviroment variables for tools path
     toolsPaths = ['CIP_PATH','TEEM_PATH','ITKTOOLS_PATH'];
@@ -320,7 +333,7 @@ if __name__ == "__main__":
         if path[path_name] == False:
             print (path_name + " environment variable is not set")
             exit()
-    
+
     op = parser.parse_args()
     assert op.init_method == 'Frangi' or op.init_method == 'Threshold' or op.init_method == 'StrainEnergy' or \
            op.init_method == 'VesselMask'
@@ -331,9 +344,10 @@ if __name__ == "__main__":
     crop = [int(kk) for kk in str.split(op.crop,',')]
     regions = [kk for kk in str.split(op.regions,',')]
     
-    vp = VesselParticlesPipeline(op.ct_file_name,op.pl_file_name,regions,op.tmp_dir,op.output_prefix,op.init_method,
-                               op.vessel_mask, op.resampling_method, op.lth,op.sth,op.voxel_size,op.min_scale,
-                               op.max_scale,op.vesselness_th,crop,op.rate,op.multires,op.justparticles,op.clean_cache)
+    vp = VesselParticlesPipeline(op.ct_file_name, op.pl_file_name, regions, op.tmp_dir, op.output_prefix,
+                                 op.init_method, op.vessel_mask, op.resampling_method, op.lth,op.sth, op.voxel_size,
+                                 op.min_scale, op.max_scale, op.vesselness_th, crop, op.rate, op.multires,
+                                 op.justparticles, op.clean_cache, op.permissive)
 
     vp._distance_from_wall=op.distance_from_wall
 

@@ -56,7 +56,7 @@ class VesselParticles(ChestParticles):
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
                  mask_file_name=None, max_scale=6, live_thresh=-95,
                  seed_thresh=-70, scale_samples=10, down_sample_rate=1,
-                 min_intensity=-800, max_intensity=400):
+                 min_intensity=-800, max_intensity=400, permissive=False):
         ChestParticles.__init__(self, feature_type="ridge_line",
                                 in_file_name=in_file_name,
                                 out_particles_file_name=out_particles_file_name,
@@ -89,6 +89,8 @@ class VesselParticles(ChestParticles):
         self._init_mode = "PerVoxel"
         self._ppv = 2
         self._nss = 2
+
+        self._permissive = permissive  # Allow volumes to have different shapes (false is safer)
 
     def execute(self):
       
