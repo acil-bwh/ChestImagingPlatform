@@ -45,7 +45,7 @@ class DataProcessing(object):
         if not isinstance(output_spacing, np.ndarray):
             output_spacing = np.array(output_spacing)
         factor = np.asarray(image.GetSpacing()) / output_spacing.astype(np.float32)
-        output_size = np.round(np.asarray(np.asarray(image.GetSize()) * factor)).astype(np.uint32)
+        output_size = np.round(np.asarray(image.GetSize()) * factor + 0.0005).astype(np.uint32)
 
         resampler = sitk.ResampleImageFilter()
         resampler.SetOutputDirection(image.GetDirection())
