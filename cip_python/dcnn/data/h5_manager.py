@@ -19,6 +19,7 @@ class H5Manager(object):
     TEST = 3
 
     def __init__(self, h5_file_path, open_mode='r',
+                 rdcc_nbytes=None,
                  batch_size=None,
                  shuffle_training=True,
                  train_ixs=None, validation_ixs=None, test_ixs=None,
@@ -33,6 +34,9 @@ class H5Manager(object):
         Constructor
         :param h5_file_path: str. Path to the h5 file
         :param open_mode: str. Open mode for the h5 file (defaut: 'r'=read only)
+        :param rdcc_nbytes: int. Sets the total size (measured in bytes) of the raw data chunk cache for each dataset.
+                                 If None, the default size is 1 MB. This should be set to the size of each chunk times
+                                 the number of chunks that are likely to be needed in cache.
         :param network: instance of Network class that will receive the dataset data
         :param batch_size: int. Batch size used in keras generators
         :param shuffle_training: bool. Shuffle the training indexes
@@ -50,7 +54,10 @@ class H5Manager(object):
         """
         self.h5_file_path = h5_file_path
         try:
-            self.h5 = h5py.File(h5_file_path, open_mode)
+            if rdcc_nbytes is not None:
+                self.h5 = h5py.File(h5_file_path, open_mode, rdcc_nbytes=rdcc_nbytes)
+            else:
+                self.h5 = h5py.File(h5_file_path, open_mode)
         except Exception as ex:
             raise Exception("H5 File {} could not be opened in '{}' mode: {}".format(h5_file_path, open_mode, ex))
 
