@@ -400,14 +400,14 @@ class H5Manager(object):
                     # Select the next main index
                     current_main_pos = self._train_ix_pos_
                     main_ix = self.train_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                    np.sort(main_ix)
+                    main_ix = np.sort(main_ix)
                     self._train_ix_pos_ += num_data_points_current_batch
-                xs, ys = self.read_data_point(main_ix)
+                xs, ys = self.read_data_point(main_ix.tolist())
 
                 for i in range(num_xs):
-                    batch_xs[i][batch_pos] = xs[i]
+                    batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
                 for i in range(num_ys):
-                    batch_ys[i][batch_pos] = ys[i]
+                    batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
                 batch_pos += num_data_points_current_batch
 
                 if self.use_pregenerated_augmented_train_data:
@@ -426,9 +426,9 @@ class H5Manager(object):
                         augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, secondary_ix)
 
                         for i in range(num_xs):
-                            batch_xs[i][batch_pos] = augmented_xs[i]
+                            batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = augmented_xs[i]
                         for i in range(num_ys):
-                            batch_ys[i][batch_pos] = augmented_ys[i]
+                            batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = augmented_ys[i]
                         batch_pos += 1
                         aug += 1
                 if self._train_ix_pos_ == self.num_train_points:
@@ -439,9 +439,9 @@ class H5Manager(object):
                     # Select the next main index
                     current_main_pos = self._validation_ix_pos_
                     main_ix = self.validation_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                    np.sort(main_ix)
+                    main_ix = np.sort(main_ix)
                     self._validation_ix_pos_ += num_data_points_current_batch
-                xs, ys = self.read_data_point(main_ix)
+                xs, ys = self.read_data_point(main_ix.tolist())
                 for i in range(num_xs):
                     batch_xs[i][batch_pos] = xs[i]
                 for i in range(num_ys):
