@@ -52,6 +52,9 @@ class H5Manager(object):
         """
         self.h5_file_path = h5_file_path
 
+        self.xs_dataset_names = xs_dataset_names
+        self.ys_dataset_names = ys_dataset_names
+
         self.xs_ds_all_data = None
         self.ys_ds_all_data = None
         try:
@@ -60,9 +63,6 @@ class H5Manager(object):
                 self.load_all_data_first()
         except Exception as ex:
             raise Exception("H5 File {} could not be opened in '{}' mode: {}".format(h5_file_path, open_mode, ex))
-
-        self.xs_dataset_names = xs_dataset_names
-        self.ys_dataset_names = ys_dataset_names
 
         self._xs_sizes_ = self._ys_sizes_ = None
 
