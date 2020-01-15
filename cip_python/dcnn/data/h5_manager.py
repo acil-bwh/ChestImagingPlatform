@@ -57,6 +57,7 @@ class H5Manager(object):
 
         self.xs_ds_all_data = None
         self.ys_ds_all_data = None
+        self.load_all_data = load_all_data
         try:
             self.h5 = h5py.File(h5_file_path, open_mode)
             if load_all_data:
@@ -321,7 +322,7 @@ class H5Manager(object):
         xs = [None] * num_xs
         ys = [None] * num_ys
 
-        if self.xs_ds_all_data is None and self.ys_ds_all_data is None:
+        if not self.load_all_data:
             xs_ds = tuple(map(lambda n: self.h5[n], self.xs_dataset_names))
             ys_ds = tuple(map(lambda n: self.h5[n], self.ys_dataset_names))
         else:
@@ -412,17 +413,30 @@ class H5Manager(object):
             with self.lock:
                 # Select the next main index
                 current_main_pos = self._train_ix_pos_
-                main_ix = self.train_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                if self.xs_dataset_names is None:
-                    main_ix = np.sort(main_ix)
-                self._train_ix_pos_ += num_data_points_current_batch
-            xs, ys = self.read_data_point(main_ix.tolist())
+                if self.load_all_data:
+                    main_ix = self.train_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
+                    self._train_ix_pos_ += num_data_points_current_batch
+                else:
+                    main_ix = self.train_ixs[current_main_pos]
+                    self._train_ix_pos_ += 1
+
+            xs, ys = self.read_data_point(main_ix)
 
             for i in range(num_xs):
-                batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                if self.load_all_data:
+                    batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                else:
+                    batch_xs[i][batch_pos] = xs[i]
             for i in range(num_ys):
-                batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
-            batch_pos += num_data_points_current_batch
+                if self.load_all_data:
+                    batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
+                else:
+                    batch_ys[i][batch_pos] = ys[i]
+
+            if self.load_all_data:
+                batch_pos += num_data_points_current_batch
+            else:
+                batch_pos += 1
 
             if self.use_pregenerated_augmented_train_data:
                 # Augmented images
@@ -452,16 +466,29 @@ class H5Manager(object):
             with self.lock:
                 # Select the next main index
                 current_main_pos = self._validation_ix_pos_
-                main_ix = self.validation_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                if self.xs_dataset_names is None:
-                    main_ix = np.sort(main_ix)
-                self._validation_ix_pos_ += num_data_points_current_batch
-            xs, ys = self.read_data_point(main_ix.tolist())
+                if self.load_all_data:
+                    main_ix = self.validation_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
+                    self._validation_ix_pos_ += num_data_points_current_batch
+                else:
+                    main_ix = self.validation_ixs[current_main_pos]
+                    self._validation_ix_pos_ += 1
+
+            xs, ys = self.read_data_point(main_ix)
             for i in range(num_xs):
-                batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                if self.load_all_data:
+                    batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                else:
+                    batch_xs[i][batch_pos] = xs[i]
             for i in range(num_ys):
-                batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
-            batch_pos += num_data_points_current_batch
+                if self.load_all_data:
+                    batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
+                else:
+                    batch_ys[i][batch_pos] = ys[i]
+
+            if self.load_all_data:
+                batch_pos += num_data_points_current_batch
+            else:
+                batch_pos += 1
 
             if self.use_pregenerated_augmented_val_data:
                 # Augmented images
@@ -491,22 +518,30 @@ class H5Manager(object):
             with self.lock:
                 # Select the next main index
                 current_main_pos = self._test_ix_pos_
-                main_ix = self.test_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                if self.xs_dataset_names is None:
-                    main_ix = np.sort(main_ix)
-                self._test_ix_pos_ += num_data_points_current_batch
+                if self.load_all_data:
+                    main_ix = self.test_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
+                    self._test_ix_pos_ += num_data_points_current_batch
+                else:
+                    main_ix = self.test_ixs[current_main_pos]
+                    self._test_ix_pos_ += 1
+
                 if self._test_ix_pos_ == self.num_test_points:
                   self._test_ix_pos_ = 0
 
-            xs, ys = self.read_data_point(main_ix.tolist())
+            xs, ys = self.read_data_point(main_ix)
             for i in range(num_xs):
-                batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                if self.load_all_data:
+                    batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                else:
+                    batch_xs[i][batch_pos] = xs[i]
             for i in range(num_ys):
-                batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
+                if self.load_all_data:
+                    batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
+                else:
+                    batch_ys[i][batch_pos] = ys[i]
             batch_pos += num_data_points_current_batch
 
         return batch_xs, batch_ys
-
 
     def get_steps_per_epoch_train(self):
         """
