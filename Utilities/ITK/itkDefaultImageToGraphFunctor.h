@@ -166,7 +166,7 @@ public:
 protected:
   ImageToGraphFunctor();
   ~ImageToGraphFunctor() {}
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
   unsigned int GetNeighborhoodIndex( const OffsetType &o ) const;
   void ComputeNeighborhoodStrideTable();
@@ -220,19 +220,19 @@ public:
   typedef typename Superclass::EdgeIdentifierContainerType
                                                     EdgeIdentifierContainerType;
 
-  virtual bool IsPixelANode(IndexType idx)
+  virtual bool IsPixelANode(IndexType idx) override
     { return ( !this->m_ExcludeBackground ||
       ( this->GetInput()->GetPixel( idx ) != this->m_BackgroundValue ) ); }
-  virtual EdgeWeightType GetEdgeWeight(IndexType idx1, IndexType idx2 )
+  virtual EdgeWeightType GetEdgeWeight(IndexType idx1, IndexType idx2 ) override
       { return ( static_cast<EdgeWeightType>( 1 ) ); }
-  virtual NodeWeightType GetNodeWeight( IndexType idx )
+  virtual NodeWeightType GetNodeWeight( IndexType idx ) override
       { return ( static_cast<NodeWeightType>( 1 ) ); }
-  virtual void NormalizeGraph( NodeImageType *im, OutputGraphType *g ) {}
+  virtual void NormalizeGraph( NodeImageType *im, OutputGraphType *g ) override {}
 
 protected:
   DefaultImageToGraphFunctor() {}
   ~DefaultImageToGraphFunctor() {}
-  void PrintSelf(std::ostream& os, Indent indent) const
+  void PrintSelf(std::ostream& os, Indent indent) const override
      { Superclass::PrintSelf( os, indent ); }
 
 private:

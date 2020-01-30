@@ -43,7 +43,7 @@ class VTK_CIP_COMMON_EXPORT vtkLungIntensityCorrection : public vtkThreadedImage
 public:
   static vtkLungIntensityCorrection *New();
   vtkTypeMacro(vtkLungIntensityCorrection, vtkThreadedImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Specify the stencil to use.  The stencil can be created
@@ -109,12 +109,12 @@ protected:
   vtkLungIntensityCorrection();
   ~vtkLungIntensityCorrection();
   
-  virtual int FillInputPortInformation(int, vtkInformation*);
+  virtual int FillInputPortInformation(int, vtkInformation*) override;
 
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
   void ThreadedExecute(vtkImageData *inData, vtkImageData *outData,
-                       int extent[6], int id);
+                       int extent[6], int id) override;
 
   int ReverseStencil;
   int ClampNegativeValues;

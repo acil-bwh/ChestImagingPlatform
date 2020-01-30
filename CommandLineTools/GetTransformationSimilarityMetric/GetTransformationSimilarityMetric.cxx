@@ -146,13 +146,13 @@ struct REGIONTYPEPAIR
     reader->SetFileName( fileName );
     try
       {
-	reader->Update();
+      reader->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
-	std::cerr << "Exception caught reading CT image:";
-	std::cerr << excp << std::endl;
-	return NULL;
+      std::cerr << "Exception caught reading CT image:";
+      std::cerr << excp << std::endl;
+      return nullptr;
       }
 
     return reader->GetOutput();
@@ -163,35 +163,35 @@ struct REGIONTYPEPAIR
    void WriteMeasuresXML(const char *file, SIMILARITY_XML_DATA &theXMLData)
   {
     std::cout<<"Writing similarity XML file"<<std::endl;
-    xmlDocPtr doc = NULL;       /* document pointer */
-    xmlNodePtr root_node = NULL; /* Node pointers */
-    xmlDtdPtr dtd = NULL;       /* DTD pointer */
+    xmlDocPtr doc = nullptr;       /* document pointer */
+    xmlNodePtr root_node = nullptr; /* Node pointers */
+    xmlDtdPtr dtd = nullptr;       /* DTD pointer */
     xmlAttrPtr newattr;
 
     xmlNodePtr transfo_node[5];
 
     for(int i = 0; i< 5; i++)
-      transfo_node[i]= NULL;
+      transfo_node[i]= nullptr;
 
 
     doc = xmlNewDoc(BAD_CAST "1.0");
-    root_node = xmlNewNode(NULL, BAD_CAST "Inter_Subject_Measure");
+    root_node = xmlNewNode(nullptr, BAD_CAST "Inter_Subject_Measure");
     xmlDocSetRootElement(doc, root_node);
 
-    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "InterSubjectMeasures_v3.dtd");
+    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", nullptr, BAD_CAST "InterSubjectMeasures_v3.dtd");
 
     // xmlNewChild() creates a new node, which is "attached"
     // as child node of root_node node.
     std::ostringstream similaritString;
     similaritString <<theXMLData.similarityValue;
 
-    xmlNewChild(root_node, NULL, BAD_CAST "movingID", BAD_CAST (theXMLData. movingID.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "fixedID", BAD_CAST (theXMLData.fixedID.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "movingMask", BAD_CAST (theXMLData. movingMask.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "fixedMask", BAD_CAST (theXMLData.fixedMask.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "SimilarityMeasure", BAD_CAST (theXMLData.similarityMeasure.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "ImageExtension", BAD_CAST (theXMLData.extention.c_str()));
+    xmlNewChild(root_node, nullptr, BAD_CAST "movingID", BAD_CAST (theXMLData. movingID.c_str()));
+    xmlNewChild(root_node, nullptr, BAD_CAST "fixedID", BAD_CAST (theXMLData.fixedID.c_str()));
+    xmlNewChild(root_node, nullptr, BAD_CAST "movingMask", BAD_CAST (theXMLData. movingMask.c_str()));
+    xmlNewChild(root_node, nullptr, BAD_CAST "fixedMask", BAD_CAST (theXMLData.fixedMask.c_str()));
+    xmlNewChild(root_node, nullptr, BAD_CAST "SimilarityMeasure", BAD_CAST (theXMLData.similarityMeasure.c_str()));
+    xmlNewChild(root_node, nullptr, BAD_CAST "SimilarityValue", BAD_CAST (similaritString.str().c_str()));
+    xmlNewChild(root_node, nullptr, BAD_CAST "ImageExtension", BAD_CAST (theXMLData.extention.c_str()));
 
 
 
@@ -199,8 +199,8 @@ struct REGIONTYPEPAIR
       {
         if (!theXMLData.transformationLink[i].empty())
 	  {
-            transfo_node[i] = xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST (""));
-            xmlNewChild(transfo_node[i], NULL, BAD_CAST "file", BAD_CAST (theXMLData.transformationLink[i].c_str()));
+            transfo_node[i] = xmlNewChild(root_node, nullptr, BAD_CAST "transformation", BAD_CAST (""));
+            xmlNewChild(transfo_node[i], nullptr, BAD_CAST "file", BAD_CAST (theXMLData.transformationLink[i].c_str()));
             newattr = xmlNewProp(transfo_node[i], BAD_CAST "isInverse", BAD_CAST (theXMLData.transformation_isInverse[i].c_str()));
             std::ostringstream order_string;
             order_string << theXMLData.transformation_order[i];
@@ -266,14 +266,14 @@ typedef itk::GradientDifferenceImageToImageMetric<ShortImageType, ShortImageType
     //Read the CT images
   typename ShortImageType::Pointer ctFixedImage = ShortImageType::New();
   ctFixedImage = ReadCTFromFile<TDimension>( fixedCTFileName );
-  if (ctFixedImage.GetPointer() == NULL)
+  if (ctFixedImage.GetPointer() == nullptr)
       {
         return cip::NRRDREADFAILURE;
       }
 
   typename ShortImageType::Pointer ctMovingImage = ShortImageType::New();
   ctMovingImage = ReadCTFromFile<TDimension>( movingCTFileName);
-  if (ctMovingImage.GetPointer() == NULL)
+  if (ctMovingImage.GetPointer() == nullptr)
       {
         return cip::NRRDREADFAILURE;
       }

@@ -138,8 +138,8 @@ public:
 protected:
   VesselEnhancingDiffusion3DImageFilter();
   ~VesselEnhancingDiffusion3DImageFilter() {};
-  void PrintSelf(std::ostream &os, Indent indent) const;
-  void GenerateData();
+  void PrintSelf(std::ostream &os, Indent indent) const override;
+  void GenerateData() override;
 
 private:
 

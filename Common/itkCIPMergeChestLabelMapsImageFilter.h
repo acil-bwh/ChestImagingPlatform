@@ -201,14 +201,14 @@ public:
    *  image. **/
   void SetOverlayImage( cip::LabelMapType::Pointer, cip::LabelMapType::IndexType );
     
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 protected:
 
   CIPMergeChestLabelMapsImageFilter();
   virtual ~CIPMergeChestLabelMapsImageFilter() {}
 
-  void GenerateData();
+  void GenerateData() override;
 
   void MergeOverlay();
   void GraftOverlay();

@@ -39,7 +39,7 @@ class VTK_CIP_COMMON_EXPORT vtkTubularScaleSelection : public vtkThreadedImageAl
 public:
   static vtkTubularScaleSelection *New();
   vtkTypeMacro(vtkTubularScaleSelection, vtkThreadedImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   // Description: Mask (short image) where the tubular confidence map will be computed.
   vtkSetObjectMacro(Mask,vtkImageData);
   vtkGetObjectMacro(Mask,vtkImageData);
@@ -78,10 +78,10 @@ protected:
   ~vtkTubularScaleSelection();
 
   virtual int RequestInformation (vtkInformation *, vtkInformationVector**,
-                                  vtkInformationVector *);
+                                  vtkInformationVector *) override;
 
   void ThreadedExecute (vtkImageData *inData, vtkImageData *outData,
-                        int outExt[6], int id);
+                        int outExt[6], int id) override;
 
   int TubularType;
   vtkImageData *Mask;

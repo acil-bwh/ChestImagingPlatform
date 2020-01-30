@@ -40,7 +40,7 @@ class VTK_CIP_COMMON_EXPORT vtkImageResliceWithPlane : public vtkImageAlgorithm
 public:
   static vtkImageResliceWithPlane *New();
   vtkTypeMacro(vtkImageResliceWithPlane, vtkImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Get right Centroid of the lung
   vtkSetVector3Macro(Dimensions,int);
@@ -100,10 +100,10 @@ protected:
   // This is a convenience method that is implemented in many subclasses
   // instead of RequestData.  It is called by RequestData.
   virtual void ExecuteDataWithInformation(vtkDataObject *output,
-                                          vtkInformation* outInfo);
+                                          vtkInformation* outInfo) override;
 
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
 
   int ComputeAxes;
   int ComputeCenter;

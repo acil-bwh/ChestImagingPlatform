@@ -160,11 +160,11 @@ protected:
    *     ImageToImageFilter::GenerateData()  */
   virtual void ThreadedGenerateData(
     const OutputImageRegionType & outputRegionForThread,
-    ThreadIdType threadId );
+    ThreadIdType threadId ) override;
 
   // needed to take the image information from the 2nd input, if the first one is
   // a simple decorated object
-  virtual void GenerateOutputInformation( void );
+  virtual void GenerateOutputInformation( void ) override;
 
 private:
   BinaryFunctorImageFilter2(const Self &); // purposely not implemented

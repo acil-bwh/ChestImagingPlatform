@@ -87,7 +87,7 @@ public:
 
   void SetLungLabelMap( LabelMapType::Pointer );
 
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 protected:
   typedef itk::Image< LabelMapPixelType, 2 >         LabelMapSliceType;
@@ -130,7 +130,7 @@ protected:
   /** */
   void SetLocalGraphROIAndSearchIndices( unsigned int );
 
-  void GenerateData();
+  void GenerateData() override;
 
 private:
   CIPSplitLeftLungRightLungImageFilter(const Self&); //purposely not implemented

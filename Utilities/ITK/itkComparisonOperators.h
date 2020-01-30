@@ -19,8 +19,6 @@
 #define __itkComparisonOperators_h
 
 #include <algorithm>
-#include "vnl/vnl_math.h"
-
 
 namespace itk
 {
@@ -41,7 +39,7 @@ class AbsLessEqualCompare
 public:
   bool operator()( T a, T b )
   {
-    return vnl_math_abs( a ) <= vnl_math_abs( b );
+    return std::fabs( a ) <= std::fabs( b );
   }
 };
 
@@ -58,7 +56,7 @@ class AbsLessCompare
 public:
   bool operator()( T a, T b )
   {
-    return vnl_math_abs( a ) < vnl_math_abs( b );
+    return std::fabs( a ) < std::fabs( b );
   }
 };
 

@@ -93,7 +93,7 @@ protected:
    * below.
    *
    * \sa ProcessObject::GenerateOutputInformaton()  */
-  virtual void GenerateOutputInformation( void );
+  virtual void GenerateOutputInformation( void ) override;
 
   /** UnaryFunctorImageFilter can be implemented as a multithreaded filter.
    * Therefore, this implementation provides a ThreadedGenerateData() routine
@@ -107,7 +107,7 @@ protected:
    *     ImageToImageFilter::GenerateData()  */
   virtual void ThreadedGenerateData(
     const OutputImageRegionType & outputRegionForThread,
-    ThreadIdType threadId );
+    ThreadIdType threadId ) override;
 
 private:
   UnaryFunctorImageFilter2(const Self &); // purposely not implemented

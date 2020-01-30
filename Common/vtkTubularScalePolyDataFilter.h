@@ -20,7 +20,7 @@ class VTK_CIP_COMMON_EXPORT vtkTubularScalePolyDataFilter : public vtkPolyDataAl
 {
 public:
   static vtkTubularScalePolyDataFilter *New();
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   vtkTypeMacro(vtkTubularScalePolyDataFilter, vtkPolyDataAlgorithm);
 
    // Description: Type of tubular structure that we want to capture. Valleys are dark tubes (i.e. airways). Ridges are bright tubes (i.e. vessels)
@@ -52,7 +52,7 @@ protected:
   // Usual data generation method
   virtual int RequestData(vtkInformation *request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
                           
   int TubularType;
   vtkImageData *ImageData;

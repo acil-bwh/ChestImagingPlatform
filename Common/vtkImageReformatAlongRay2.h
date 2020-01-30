@@ -41,7 +41,7 @@ class VTK_CIP_COMMON_EXPORT vtkImageReformatAlongRay2 : public vtkImageAlgorithm
 public:
   static vtkImageReformatAlongRay2 *New();
   vtkTypeMacro(vtkImageReformatAlongRay2, vtkImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   //Description:
   //Tanget of the ray
@@ -97,10 +97,10 @@ protected:
   // This is a convenience method that is implemented in many subclasses
   // instead of RequestData.  It is called by RequestData.
   virtual void ExecuteDataWithInformation(vtkDataObject *output,
-                                          vtkInformation* outInfo);
+                                          vtkInformation* outInfo) override;
                                           
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
   void ComputeTangentFromNormal();
 
   double Theta;

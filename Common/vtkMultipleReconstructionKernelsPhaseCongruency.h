@@ -35,7 +35,7 @@ class VTK_CIP_COMMON_EXPORT vtkMultipleReconstructionKernelsPhaseCongruency : pu
 public:
   static vtkMultipleReconstructionKernelsPhaseCongruency *New();
   vtkTypeMacro(vtkMultipleReconstructionKernelsPhaseCongruency, vtkThreadedImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Set a stencil to apply when blending the data.
@@ -54,21 +54,21 @@ public:
                                    vtkInformationVector *outputVector,
                                    vtkImageData ***inData,
                                    vtkImageData **outData,
-                                   int extent[6], int threadId);
+                                   int extent[6], int threadId) override;
 
 protected:
   vtkMultipleReconstructionKernelsPhaseCongruency();
   ~vtkMultipleReconstructionKernelsPhaseCongruency();
 
-  virtual int FillInputPortInformation(int, vtkInformation*);
+  virtual int FillInputPortInformation(int, vtkInformation*) override;
 
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
 
   // This is called by the superclass.
   virtual int RequestData(vtkInformation* request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
 
   // Description:                                                         
   // Keep the old signature for the sake of simplicity.

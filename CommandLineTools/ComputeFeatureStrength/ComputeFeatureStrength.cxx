@@ -43,7 +43,7 @@ namespace
       {
       std::cerr << "Exception caught reading CT image:";
       std::cerr << excp << std::endl;
-      return NULL;
+      return nullptr;
       }
     
     return reader->GetOutput();
@@ -122,14 +122,14 @@ int main( int argc, char *argv[] )
     
     
   // Set threads
-  unsigned int maxThreads = itk::MultiThreader::GetGlobalDefaultNumberOfThreads();
+  unsigned int maxThreads = itk::MultiThreaderBase::GetGlobalDefaultNumberOfThreads();
   
   if (threads == 0)
     {
       threads = maxThreads;
     }
   
-  itk::MultiThreader::SetGlobalMaximumNumberOfThreads( maxThreads );
+  itk::MultiThreaderBase::SetGlobalMaximumNumberOfThreads( maxThreads );
   
     
   // Read the input image now that filter is good to go
@@ -138,7 +138,7 @@ int main( int argc, char *argv[] )
   std::cout << "Reading CT from file..." << std::endl;
   ctImage = ReadCTFromFile( ctFileName );
 
-  if (ctImage.GetPointer() == NULL)
+  if (ctImage.GetPointer() == nullptr)
     {
         return cip::NRRDREADFAILURE;
     }
@@ -425,7 +425,7 @@ int main( int argc, char *argv[] )
     
   std::cout<< "DONE." << std::endl;
   
-  multiScaleFilter = NULL;
+  multiScaleFilter = nullptr;
   return cip::EXITSUCCESS;
 }
 

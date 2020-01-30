@@ -79,10 +79,10 @@ public:
   typedef std::vector<IndexType> IndexContainerType;
 
   /** define virtual functions */
-  virtual EdgeWeightType GetEdgeWeight( IndexType, IndexType );
-  virtual NodeWeightType GetNodeWeight( IndexType idx );
-  virtual bool IsPixelANode( IndexType idx );
-  virtual void NormalizeGraph( NodeImageType *, OutputGraphType * );
+  virtual EdgeWeightType GetEdgeWeight( IndexType, IndexType ) override;
+  virtual NodeWeightType GetNodeWeight( IndexType idx ) override;
+  virtual bool IsPixelANode( IndexType idx ) override;
+  virtual void NormalizeGraph( NodeImageType *, OutputGraphType * ) override;
 
   bool IsAnEdge( IndexType, IndexType );
 
@@ -150,7 +150,7 @@ public:
 protected:
   CIPDijkstraImageToGraphFunctor();
   ~CIPDijkstraImageToGraphFunctor() {}
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 private:
   CIPDijkstraImageToGraphFunctor( const Self& ); //purposely not implemented

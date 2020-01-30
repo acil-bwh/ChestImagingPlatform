@@ -127,12 +127,12 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetValueGradientAndHessian( Po
     double xDiffi = s[0] - surfPoints[i][0];
     double yDiffi = s[1] - surfPoints[i][1];
 
-    r    = vcl_sqrt( std::pow(xDiffi,2) + std::pow(yDiffi,2) );
+    r    = std::sqrt( std::pow(xDiffi,2) + std::pow(yDiffi,2) );
     drdx = xDiffi/r;
     drdy = yDiffi/r;
 
     double rln10   = r*vnl_math::ln10;
-    double rGroup  = 2.0*vcl_log10(r) + 1.0/vnl_math::ln10;
+    double rGroup  = 2.0*std::log10(r) + 1.0/vnl_math::ln10;
     double rrGroup = r*rGroup;
 
     double d11dx  = (r-drdx*xDiffi)/std::pow(r,2);
@@ -170,12 +170,12 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetAngleBetweenVectors( const 
 
   double arg = (vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2])/(vec1Mag*vec2Mag);
 
-  if ( vcl_abs( arg ) > 1.0 )
+  if ( std::abs( arg ) > 1.0 )
     {
     arg = 1.0;
     }
 
-  double angle = vcl_acos( arg );
+  double angle = std::acos( arg );
 
   return angle;   
 }
@@ -183,7 +183,7 @@ double cipParticleToThinPlateSplineSurfaceMetric::GetAngleBetweenVectors( const 
 
 double cipParticleToThinPlateSplineSurfaceMetric::GetVectorMagnitude( const double vector[3] ) const
 {
-  double magnitude = vcl_sqrt( std::pow( vector[0], 2 ) + std::pow( vector[1], 2 ) + std::pow( vector[2], 2 ) );
+  double magnitude = std::sqrt( std::pow( vector[0], 2 ) + std::pow( vector[1], 2 ) + std::pow( vector[2], 2 ) );
 
   return magnitude;
 }

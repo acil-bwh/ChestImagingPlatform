@@ -25,7 +25,7 @@ class VTK_CIP_COMMON_EXPORT vtkSimpleLungMask : public vtkImageAlgorithm
 public:
   static vtkSimpleLungMask *New();
   vtkTypeMacro(vtkSimpleLungMask,vtkImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Get left Centroid of the lung
@@ -80,7 +80,7 @@ protected:
   vtkSimpleLungMask();
   ~vtkSimpleLungMask();
 
-  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation *);
+  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation *) override;
 
   void ComputeCentroids(vtkImageData *in, int LC[3], int RC[3]);
   void ComputeCentroid(vtkImageData *in, int ext[6], int C[3]);

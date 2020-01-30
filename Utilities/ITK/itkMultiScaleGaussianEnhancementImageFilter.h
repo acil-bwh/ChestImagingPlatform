@@ -181,7 +181,7 @@ public:
   /** This is overloaded to create the Scales and Hessian output images */
   virtual DataObjectPointer MakeOutput( unsigned int idx );
 
-  void EnlargeOutputRequestedRegion( DataObject * );
+  void EnlargeOutputRequestedRegion( DataObject * ) override;
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
@@ -195,10 +195,10 @@ protected:
   ~MultiScaleGaussianEnhancementImageFilter() {};
 
   /** Does the work. */
-  virtual void GenerateData( void );
+  virtual void GenerateData( void ) override;
 
   /** Print member variables. */
-  virtual void PrintSelf( std::ostream& os, Indent indent ) const;
+  virtual void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 private:
   MultiScaleGaussianEnhancementImageFilter(const Self&); // purposely not implemented

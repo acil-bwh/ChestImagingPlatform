@@ -84,11 +84,11 @@ public:
 protected:
   FastMarchingSegmentationModule();
   virtual ~FastMarchingSegmentationModule();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** Method invoked by the pipeline in order to trigger the computation of
    * the segmentation. */
-  void  GenerateData ();
+  void  GenerateData () override;
 
   /** Extract the input set of landmark points to be used as seeds. */
   const InputSpatialObjectType * GetInternalInputLandmarks() const;

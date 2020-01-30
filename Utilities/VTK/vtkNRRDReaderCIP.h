@@ -80,21 +80,21 @@ public:
   /// Get a value given a key in the header
   const char* GetHeaderValue(const char *key);
 
-  virtual void PrintSelf(ostream& os, vtkIndent indent);
+  virtual void PrintSelf(ostream& os, vtkIndent indent) override;
 
   ///  is the given file name a NRRD file?
-  virtual int CanReadFile(const char* filename);
+  virtual int CanReadFile(const char* filename) override;
 
   ///
   /// Valid extentsions
-  virtual const char* GetFileExtensions()
+  virtual const char* GetFileExtensions() override
     {
       return ".nhdr .nrrd";
     }
 
   ///
   /// A descriptive name for this format
-  virtual const char* GetDescriptiveName()
+  virtual const char* GetDescriptiveName() override
     {
       return "NRRD - Nearly Raw Raster Data";
     }
@@ -224,8 +224,8 @@ virtual void AllocateOutputData(vtkImageData *out, int *uExtent)
     { Superclass::AllocateOutputData(out, uExtent); }
 void AllocatePointData(vtkImageData *out);
 #else
-virtual vtkImageData * AllocateOutputData(vtkDataObject *out, vtkInformation* outInfo);
-virtual void AllocateOutputData(vtkImageData *out, vtkInformation* outInfo, int *uExtent)
+virtual vtkImageData * AllocateOutputData(vtkDataObject *out, vtkInformation* outInfo) override;
+virtual void AllocateOutputData(vtkImageData *out, vtkInformation* outInfo, int *uExtent) override
     { Superclass::AllocateOutputData(out, outInfo, uExtent); }
 void AllocatePointData(vtkImageData *out, vtkInformation* outInfo);
 #endif
@@ -252,11 +252,11 @@ protected:
 
   std::map <std::string, std::string> HeaderKeyValue;
 
-  virtual void ExecuteInformation();
+  virtual void ExecuteInformation() override;
 #if (VTK_MAJOR_VERSION <= 5)
   virtual void ExecuteData(vtkDataObject *out);
 #else
-  virtual void ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo);
+  virtual void ExecuteDataWithInformation(vtkDataObject *output, vtkInformation* outInfo) override;
 #endif
 
   int tenSpaceDirectionReduce(Nrrd *nout, const Nrrd *nin, double SD[9]);

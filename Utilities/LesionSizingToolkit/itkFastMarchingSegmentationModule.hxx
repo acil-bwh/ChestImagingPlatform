@@ -99,7 +99,7 @@ FastMarchingSegmentationModule<NDimension>
 
   typedef typename InputSpatialObjectType::SpatialObjectPointType   SpatialObjectPointType;
   typedef typename SpatialObjectPointType::PointType                PointType;
-  typedef typename InputSpatialObjectType::PointListType            PointListType;
+  typedef typename InputSpatialObjectType::LandmarkPointListType    LandmarkPointListType;
   typedef typename FeatureImageType::IndexType                      IndexType;
   typedef typename FeatureImageType::IndexType                      IndexType;
   typedef typename FilterType::NodeContainer                        NodeContainer;
@@ -107,13 +107,13 @@ FastMarchingSegmentationModule<NDimension>
 
   typename NodeContainer::Pointer trialPoints = NodeContainer::New();
   
-  const PointListType & points = inputSeeds->GetPoints();
+  const LandmarkPointListType & points = inputSeeds->GetPoints();
 
   IndexType index;
 
   for( unsigned int i=0; i < numberOfPoints; i++ )
     {
-    featureImage->TransformPhysicalPointToIndex( points[i].GetPosition(), index );
+    featureImage->TransformPhysicalPointToIndex( points[i].GetPositionInWorldSpace(), index );
 
     NodeType node;
 

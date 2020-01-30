@@ -162,13 +162,13 @@ void cipCylinderStencil::ComputeStencilBoundingBox()
   radius2D[1] =  this->Orientation[0];
   if ( radius2D[0] == 0 && radius2D[1] == 0 )
     {
-    radius2D[0] = vcl_sqrt(2.0)*this->Radius;
+    radius2D[0] = std::sqrt(2.0)*this->Radius;
     }
   else
     {
     mag = this->GetVectorMagnitude2D( radius2D );
-    radius2D[0] = vcl_sqrt(2.0)*this->Radius*radius2D[0]/mag;
-    radius2D[1] = vcl_sqrt(2.0)*this->Radius*radius2D[1]/mag;
+    radius2D[0] = std::sqrt(2.0)*this->Radius*radius2D[0]/mag;
+    radius2D[1] = std::sqrt(2.0)*this->Radius*radius2D[1]/mag;
     }
 
   //
@@ -202,13 +202,13 @@ void cipCylinderStencil::ComputeStencilBoundingBox()
   radius2D[1] =  this->Orientation[0];
   if ( radius2D[0] == 0 && radius2D[1] == 0 )
     {
-    radius2D[0] = vcl_sqrt(2.0)*this->Radius;
+    radius2D[0] = std::sqrt(2.0)*this->Radius;
     }
   else
     {
     mag = this->GetVectorMagnitude2D( radius2D );
-    radius2D[0] = vcl_sqrt(2.0)*this->Radius*radius2D[0]/mag;
-    radius2D[1] = vcl_sqrt(2.0)*this->Radius*radius2D[1]/mag;
+    radius2D[0] = std::sqrt(2.0)*this->Radius*radius2D[0]/mag;
+    radius2D[1] = std::sqrt(2.0)*this->Radius*radius2D[1]/mag;
     }
 
   //
@@ -242,13 +242,13 @@ void cipCylinderStencil::ComputeStencilBoundingBox()
   radius2D[1] =  this->Orientation[1];
   if ( radius2D[0] == 0 && radius2D[1] == 0 )
     {
-    radius2D[0] = vcl_sqrt(2.0)*this->Radius;
+    radius2D[0] = std::sqrt(2.0)*this->Radius;
     }
   else
     {
     mag = this->GetVectorMagnitude2D( radius2D );
-    radius2D[0] = vcl_sqrt(2.0)*this->Radius*radius2D[0]/mag;
-    radius2D[1] = vcl_sqrt(2.0)*this->Radius*radius2D[1]/mag;
+    radius2D[0] = std::sqrt(2.0)*this->Radius*radius2D[0]/mag;
+    radius2D[1] = std::sqrt(2.0)*this->Radius*radius2D[1]/mag;
     }
 
   //

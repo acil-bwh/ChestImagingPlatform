@@ -32,7 +32,7 @@ class VTK_CIP_UTILITIES_EXPORT vtkImageConnectivity : public vtkImageAlgorithm
 public:
   static vtkImageConnectivity *New();
   vtkTypeMacro(vtkImageConnectivity,vtkImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   /// Function
   void SetFunction(int func) {
@@ -93,7 +93,7 @@ protected:
 #if (VTK_MAJOR_VERSION <= 5)
   void ExecuteData(vtkDataObject *);
 #else
-  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation *);
+  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation *) override;
 #endif
 
 private:

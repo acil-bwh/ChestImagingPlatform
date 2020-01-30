@@ -175,7 +175,7 @@ struct PARENCHYMAPHENOTYPES
             histSTD += static_cast< double >( histogram[i] )*std::pow( static_cast< double >(i) - mean, 2 );
         }
         
-        histSTD = vcl_sqrt( histSTD/static_cast< double >( counts ) );
+        histSTD = std::sqrt( histSTD/static_cast< double >( counts ) );
         
         return histSTD;
     }

@@ -80,7 +80,7 @@ public:
 protected:
   SegmentationModule();
   virtual ~SegmentationModule();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /* Derived classes MUST implement the "void  GenerateData ()" method */
 

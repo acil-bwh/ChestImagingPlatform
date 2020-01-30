@@ -153,8 +153,8 @@ protected:
   GaussianEnhancementImageFilter();
   virtual ~GaussianEnhancementImageFilter() {};
 
-  virtual void PrintSelf(std::ostream& os, Indent indent) const;
-  virtual void GenerateData( void );
+  virtual void PrintSelf(std::ostream& os, Indent indent) const override;
+  virtual void GenerateData( void ) override;
 
 private:
   GaussianEnhancementImageFilter(const Self&); //purposely not implemented

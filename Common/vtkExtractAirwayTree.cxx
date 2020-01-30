@@ -866,7 +866,7 @@ double vtkExtractAirwayTree::ScaleSelection(gageContext *gtx, gagePerVolume *pvl
     if (prevV > 0)
       Sopt = Sopt2;
 
-  delete strength;
+  delete[] strength;
   return Sopt;
 }
 

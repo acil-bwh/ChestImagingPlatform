@@ -637,7 +637,7 @@ PCA GetHighDimensionPCA( std::vector< std::vector< double > > valuesVecVec )
       u = Xt*eig.get_eigenvector( numVecs-v-1 );
 
       // Compute u's magnitude
-      double mag = vcl_sqrt( dot_product( u, u ) );
+      double mag = std::sqrt( dot_product( u, u ) );
 
       for ( unsigned int z=0; z<numZvals; z++ )
         {

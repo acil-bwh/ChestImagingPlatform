@@ -581,7 +581,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
                     m_ComputeCannyEdge1stDerivativeOper);
         }
       
-      gradMag = vcl_sqrt((double)gradMag);
+      gradMag = std::sqrt((double)gradMag);
       derivPos = zero;
       for ( unsigned int i = 0; i < ImageDimension; i++)
         {

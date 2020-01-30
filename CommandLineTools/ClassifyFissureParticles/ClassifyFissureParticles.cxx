@@ -327,7 +327,7 @@ void GetParticleDistanceAndAngle( vtkPolyData* particles, unsigned int whichPart
     newtonOptimizer->Update();
     newtonOptimizer->GetOptimalParameters( optimalParams );
 
-  *distance = vcl_sqrt( newtonOptimizer->GetOptimalValue() );
+  *distance = std::sqrt( newtonOptimizer->GetOptimalValue() );
 
   tps.GetSurfaceNormal( (*optimalParams)[0], (*optimalParams)[1], normal );
 

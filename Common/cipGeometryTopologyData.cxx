@@ -140,7 +140,7 @@ cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundin
 
   this->m_BoundingBoxes.push_back( bb );
 
-  return &bb;
+  return &bb; // TODO: this returns a pointer into the stack!
 }
 
 cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundingBox( int id,
@@ -194,7 +194,7 @@ cip::GeometryTopologyData::BOUNDINGBOX* cip::GeometryTopologyData::InsertBoundin
 
   this->m_BoundingBoxes.push_back( bb );
 
-  return &bb;
+  return &bb; // TODO: this generates a warning that we are returning a pointer to an object on the stack!
 }
 
 
@@ -251,7 +251,7 @@ cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( unsign
   this->FillMetaFieldsPoint(&p);
 
   this->m_Points.push_back( p );
-  return &p;
+  return &p; // TODO: this returns a pointer to an object on the stack!
 }
 
 cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( int id,
@@ -287,7 +287,7 @@ cip::GeometryTopologyData::POINT* cip::GeometryTopologyData::InsertPoint( int id
   p.userName = userName;
   p.machineName = machineName;
   this->m_Points.push_back( p );
-  return &p;
+  return &p; // TODO: this returns a pointer to an object on the stack!
 }
 
 void cip::GeometryTopologyData::FillMetaFieldsPoint(POINT* p){

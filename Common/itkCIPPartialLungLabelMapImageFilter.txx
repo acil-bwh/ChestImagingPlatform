@@ -606,7 +606,7 @@ CIPPartialLungLabelMapImageFilter< TInputImage >
       std::map< unsigned int, unsigned short >::iterator mapIt = xCentroidMap.begin();
       while ( mapIt != xCentroidMap.end() )
         {
-        int diff = vcl_abs( int((*mapIt).first) - int(middleLocation) );
+        int diff = std::abs( int((*mapIt).first) - int(middleLocation) );
 
         if ( diff < minDiff )
           {                                     

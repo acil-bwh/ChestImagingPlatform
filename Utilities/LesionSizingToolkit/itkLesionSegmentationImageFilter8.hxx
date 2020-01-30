@@ -196,7 +196,7 @@ LesionSegmentationImageFilter8< TInputImage, TOutputImage >
   // Crop and perform thin slice resampling (done only if necessary)
   m_CropFilter->Update();
 
-  typename InputImageType::Pointer inputImage = NULL;
+  typename InputImageType::Pointer inputImage = nullptr;
   if (m_ResampleThickSliceData)
     {
     m_IsotropicResampler->Update();

@@ -211,7 +211,7 @@ void cipLobeSurfaceModel::ComputeRightHorizontalWeightedSurfacePoints()
 
     for ( unsigned int m=0; m<this->NumberOfModes; m++ )
       {                  
-      point[2] += this->ModeWeights[m]*vcl_sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][index];
+      point[2] += this->ModeWeights[m]*std::sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][index];
       }
 
     this->RightHorizontalWeightedSurfacePoints.push_back( point );
@@ -252,7 +252,7 @@ void cipLobeSurfaceModel::ComputeRightObliqueWeightedSurfacePoints()
 
     for ( unsigned int m=0; m<this->NumberOfModes; m++ )
       {                  
-      point[2] += this->ModeWeights[m]*vcl_sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][i];
+      point[2] += this->ModeWeights[m]*std::sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][i];
       }
 
     this->RightObliqueWeightedSurfacePoints.push_back( point );
@@ -272,7 +272,7 @@ void cipLobeSurfaceModel::ComputeWeightedSurfacePoints()
 
     for ( unsigned int m=0; m<this->NumberOfModes; m++ )
       {                  
-      point[2] += this->ModeWeights[m]*vcl_sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][i];
+      point[2] += this->ModeWeights[m]*std::sqrt( this->Eigenvalues[m] )*this->Eigenvectors[m][i];
       }
 
     this->WeightedSurfacePoints.push_back( point );

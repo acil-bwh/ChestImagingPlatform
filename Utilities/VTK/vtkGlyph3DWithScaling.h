@@ -98,7 +98,7 @@ class VTK_CIP_UTILITIES_EXPORT vtkGlyph3DWithScaling : public vtkPolyDataAlgorit
 {
 public:
   vtkTypeMacro(vtkGlyph3DWithScaling,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description
   // Construct object with scaling on, scaling mode is by scalar value,
@@ -265,15 +265,15 @@ public:
 
   // Description:
   // Overridden to include SourceTransform's MTime.
-  virtual vtkMTimeType GetMTime();
+  virtual vtkMTimeType GetMTime() override;
 
 protected:
   vtkGlyph3DWithScaling();
   ~vtkGlyph3DWithScaling();
 
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int FillInputPortInformation(int, vtkInformation *);
+  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int, vtkInformation *) override;
 
   vtkPolyData* GetSource(int idx, vtkInformationVector *sourceInfo);
 

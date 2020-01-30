@@ -118,7 +118,7 @@ public:
   itkGetConstReferenceMacro( LabelLungThirds, bool );
   itkBooleanMacro( LabelLungThirds );
 
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 protected:
   typedef Image< LabelMapPixelType, 3 >                                     LabelMapType;
@@ -134,7 +134,7 @@ protected:
 
   bool LabelLeftAndRightLungs();
   void SetLungThirds();
-  void GenerateData();
+  void GenerateData() override;
 
 private:
   CIPLabelLungRegionsImageFilter(const Self&); //purposely not implemented

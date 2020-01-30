@@ -185,7 +185,7 @@ int vtkEllipseFitting::RequestData(vtkInformation* vtkNotUsed(request),
   double a[6];
 
   vnl_real_eigensystem solver(mMat);
-  vnl_matrix<vcl_complex<double> > vMat = solver.V;
+  vnl_matrix<std::complex<double> > vMat = solver.V;
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
       v[i][j]=vMat(i,j).real();

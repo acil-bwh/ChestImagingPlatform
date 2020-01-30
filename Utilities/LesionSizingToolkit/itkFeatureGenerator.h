@@ -73,7 +73,7 @@ public:
 protected:
   FeatureGenerator();
   virtual ~FeatureGenerator();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** Derived classes must implement the "void  GenerateData()" method  */
 

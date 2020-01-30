@@ -79,7 +79,7 @@ void cipNewtonOptimizer< Dimension >::Update( bool verbose )
   //
   this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
 
-  double gradMag = vcl_sqrt( dot_product(*g,*g) );
+  double gradMag = std::sqrt( dot_product(*g,*g) );
   double gradMagDiff = DBL_MAX;
   double gradMagLast = gradMag;
   while ( gradMagDiff > this->GradientDifferenceTolerance )
@@ -93,8 +93,8 @@ void cipNewtonOptimizer< Dimension >::Update( bool verbose )
 
     if ( d[0] < 0 || d[1] < 0 )
       {
-      h = vcl_abs(d[0])*outer_product(v.get_column(0),v.get_column(0)) + 
-        vcl_abs(d[1])*outer_product(v.get_column(1),v.get_column(1));
+      h = std::abs(d[0])*outer_product(v.get_column(0),v.get_column(0)) + 
+        std::abs(d[1])*outer_product(v.get_column(1),v.get_column(1));
       }
 
     (*hInv) =  vnl_matrix_inverse<double>(h);    
@@ -116,7 +116,7 @@ void cipNewtonOptimizer< Dimension >::Update( bool verbose )
     this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
     (*this->OptimalParams) = (*params);
     
-    gradMag = vcl_sqrt( dot_product(*g,*g) );
+    gradMag = std::sqrt( dot_product(*g,*g) );
     gradMagDiff = gradMagLast - gradMag;
     gradMagLast = gradMag;
     
@@ -169,7 +169,7 @@ void cipNewtonOptimizer< Dimension >::Update()
   //
   this->OptimalValue = this->Metric.GetValueGradientAndHessian( params, g, &h );
 
-  double gradMag = vcl_sqrt( dot_product(*g,*g) );
+  double gradMag = std::sqrt( dot_product(*g,*g) );
   double gradMagDiff = DBL_MAX;
   double gradMagLast = gradMag;
   while ( gradMagDiff > this->GradientDifferenceTolerance )
@@ -183,8 +183,8 @@ void cipNewtonOptimizer< Dimension >::Update()
 
     if ( d[0] < 0 || d[1] < 0 )
       {
-      h = vcl_abs(d[0])*outer_product(v.get_column(0),v.get_column(0)) + 
-        vcl_abs(d[1])*outer_product(v.get_column(1),v.get_column(1));
+      h = std::abs(d[0])*outer_product(v.get_column(0),v.get_column(0)) + 
+        std::abs(d[1])*outer_product(v.get_column(1),v.get_column(1));
       }
 
     (*hInv) =  vnl_matrix_inverse<double>(h);    
@@ -207,7 +207,7 @@ void cipNewtonOptimizer< Dimension >::Update()
 
     (*this->OptimalParams) = (*params);
     
-    gradMag = vcl_sqrt( dot_product(*g,*g) );
+    gradMag = std::sqrt( dot_product(*g,*g) );
     gradMagDiff = gradMagLast - gradMag;
     gradMagLast = gradMag;
     }

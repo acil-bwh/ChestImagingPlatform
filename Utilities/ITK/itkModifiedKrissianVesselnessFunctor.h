@@ -20,7 +20,6 @@
 
 #include "itkUnaryFunctorBase.h"
 #include "itkComparisonOperators.h"
-#include "vnl/vnl_math.h"
 
 namespace itk
 {
@@ -64,7 +63,7 @@ public:
   typedef typename EigenValueArrayType::ValueType   EigenValueType;
 
   /** This does the real computation */
-  virtual TOutput Evaluate( const TInput & eigenValues ) const
+  virtual TOutput Evaluate( const TInput & eigenValues ) const override
   {
     /** Sort the eigenvalues by their absolute value, such that |l1| < |l2| < |l3|. */
     EigenValueArrayType sortedEigenValues = eigenValues;
@@ -72,9 +71,9 @@ public:
       Functor::AbsLessCompare<EigenValueType>() );
 
     /** Take the absolute values and abbreviate. */
-    const RealType l1 = vnl_math_abs( sortedEigenValues[ 0 ] );
-    const RealType l2 = vnl_math_abs( sortedEigenValues[ 1 ] );
-    const RealType l3 = vnl_math_abs( sortedEigenValues[ 2 ] );
+    const RealType l1 = std::fabs( sortedEigenValues[ 0 ] );
+    const RealType l2 = std::fabs( sortedEigenValues[ 1 ] );
+    const RealType l3 = std::fabs( sortedEigenValues[ 2 ] );
 
     /** Reject. */
     if( this->m_BrightObject )
@@ -95,7 +94,7 @@ public:
     }
 
     /** Avoid divisions by zero (or close to zero). */
-    if( l3 < vnl_math::eps )
+    if( l3 < itk::Math::eps )
     {
       return NumericTraits<TOutput>::Zero;
     }

@@ -92,12 +92,12 @@ protected:
     void ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread, int threadId );
     
 #else
-    void ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread, ThreadIdType threadId );
+    void ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread, ThreadIdType threadId ) override;
     
 #endif
-	void GenerateInputRequestedRegion();
-	void BeforeThreadedGenerateData( void );
-	void PrintSelf( std::ostream &os, Indent indent ) const;
+	void GenerateInputRequestedRegion() override;
+	void BeforeThreadedGenerateData( void ) override;
+	void PrintSelf( std::ostream &os, Indent indent ) const override;
 private:
 	PFNLMFilter(const Self&);         // purposely not implemented
 	void operator=(const Self&);    // purposely not implemented

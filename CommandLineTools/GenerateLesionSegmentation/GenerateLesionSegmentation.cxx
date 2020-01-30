@@ -20,7 +20,8 @@ typedef itk::Image< PixelType, ImageDimension > InputImageType;
 typedef itk::Image< float, ImageDimension > RealImageType;
 
 typedef itk::LandmarkSpatialObject< 3 >    SeedSpatialObjectType;
-typedef SeedSpatialObjectType::PointListType   PointListType;
+typedef SeedSpatialObjectType::LandmarkPointType   LandmarkPointType;
+typedef SeedSpatialObjectType::LandmarkPointListType   LandmarkPointListType;
 typedef InputImageType::IndexType IndexType;
 
 typedef itk::ImageFileReader< InputImageType > InputReaderType;
@@ -33,11 +34,11 @@ typedef itk::ResampleImageFilter<RealImageType,RealImageType> ResampleImageFilte
 typedef itk::IdentityTransform<double, ImageDimension> TransformType;
 typedef itk::NearestNeighborExtrapolateImageFunction<RealImageType,double> ExtrapolatorType;
 
-PointListType GetSeeds(std::vector<std::vector<float> > seeds,InputImageType *image)
+LandmarkPointListType GetSeeds(std::vector<std::vector<float> > seeds,InputImageType *image)
 {
   
   const unsigned int nb_of_markers = seeds.size();
-  PointListType seedsList(seeds.size());
+  LandmarkPointListType seedsList(seeds.size());
   
   for (unsigned int i = 0; i < seeds.size(); i++)
   {
@@ -55,8 +56,7 @@ PointListType GetSeeds(std::vector<std::vector<float> > seeds,InputImageType *im
       << image->GetBufferedRegion() << std::endl;
       
     } else {
-      
-      seedsList[i].SetPosition(seeds[i][0],seeds[i][1],seeds[i][2]);
+      seedsList[i].SetPositionInWorldSpace(pointSeed);
       
     }
   }
@@ -114,12 +114,12 @@ int main( int argc, char * argv[] )
   if (roi[0] == 0 && roi[1] == 0 && roi[2]==0 &&
       roi[3] == 0 && roi[4] ==0 && roi[5]==0){
     //Compute ROI from seed and maximum Radius
-    PointListType seeds=GetSeeds(seedsFiducials,image);
+    LandmarkPointListType seeds=GetSeeds(seedsFiducials,image);
     seeds[0];
     for (int i=0; i < 3; i++)
     {
-      roi[2*i]= seeds[0].GetPosition()[i] - maximumRadius;
-      roi[2*i+1]= seeds[0].GetPosition()[i] + maximumRadius;
+      roi[2*i]= seeds[0].GetPositionInWorldSpace()[i] - maximumRadius;
+      roi[2*i+1]= seeds[0].GetPositionInWorldSpace()[i] + maximumRadius;
     }
   }
   

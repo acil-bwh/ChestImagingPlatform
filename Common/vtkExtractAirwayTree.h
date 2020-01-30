@@ -98,7 +98,7 @@ class VTK_CIP_COMMON_EXPORT vtkExtractAirwayTree : public vtkPolyDataAlgorithm
 public:
   static vtkExtractAirwayTree *New();
   vtkTypeMacro(vtkExtractAirwayTree, vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   vtkSetVector3Macro(Seed,double);
   vtkGetVector3Macro(Seed,double);
@@ -178,10 +178,10 @@ protected:
   vtkExtractAirwayTree();
   ~vtkExtractAirwayTree();
 
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
   virtual int RequestData(vtkInformation *request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
   int SettingContextAndState(gageContext *gtx,gagePerVolume *pvl,vtkTrackingState *state,double scale);
 
   double Seed[3];

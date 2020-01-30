@@ -90,7 +90,7 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
 	      // locations of the points (the x and y coordinates) remain
 	      // fixed 
 	      this->RightObliqueSurfacePoints[p][2] += 
-		(*params)[m]*vcl_sqrt(this->Eigenvalues[m])*this->Eigenvectors[m][p];
+		(*params)[m]*std::sqrt(this->Eigenvalues[m])*this->Eigenvectors[m][p];
 	    }
 	}
       else
@@ -104,7 +104,7 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( cons
 	      // locations of the points (the x and y coordinates) remain
 	      // fixed 
 	      this->RightHorizontalSurfacePoints[index][2] += 
-		(*params)[m]*vcl_sqrt(this->Eigenvalues[m])*this->Eigenvectors[m][p];
+		(*params)[m]*std::sqrt(this->Eigenvalues[m])*this->Eigenvectors[m][p];
 	    }
 	}
     }
@@ -193,8 +193,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTerm
     // Get the distances between the particle and the TPS surfaces. This
     // is just the square root of the objective function value
     // optimized by the Newton method.
-    double roDistance = vcl_sqrt( this->RightObliqueNewtonOptimizer.GetOptimalValue() );
-    double rhDistance = vcl_sqrt( this->RightHorizontalNewtonOptimizer.GetOptimalValue() );
+    double roDistance = std::sqrt( this->RightObliqueNewtonOptimizer.GetOptimalValue() );
+    double rhDistance = std::sqrt( this->RightHorizontalNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
     this->RightObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
@@ -292,8 +292,8 @@ double cipRightLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermV
     // Get the distances between the particle and the TPS surfaces. This
     // is just the square root of the objective function value
     // optimized by the Newton method.
-    double roDistance = vcl_sqrt( this->RightObliqueNewtonOptimizer.GetOptimalValue() );
-    double rhDistance = vcl_sqrt( this->RightHorizontalNewtonOptimizer.GetOptimalValue() );
+    double roDistance = std::sqrt( this->RightObliqueNewtonOptimizer.GetOptimalValue() );
+    double rhDistance = std::sqrt( this->RightHorizontalNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
     this->RightObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().

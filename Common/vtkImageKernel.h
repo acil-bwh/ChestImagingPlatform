@@ -19,7 +19,7 @@ class VTK_CIP_COMMON_EXPORT vtkImageKernel : public vtkImageData
 public:
   static vtkImageKernel *New();
   vtkTypeMacro(vtkImageKernel, vtkImageData);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Create a similar type object
@@ -27,7 +27,7 @@ public:
 
   // Description:
   // To simplify filter superclasses,
-  int GetDataObjectType() {return VTK_IMAGE_DATA;}
+  int GetDataObjectType() override {return VTK_IMAGE_DATA;}
 
   // Description:
   // Whether the kernel is located in the
@@ -89,8 +89,8 @@ public:
 
   // Description:
   // Shallow and Deep copy.
-  void ShallowCopy(vtkDataObject *src);
-  void DeepCopy(vtkDataObject *src);
+  void ShallowCopy(vtkDataObject *src) override;
+  void DeepCopy(vtkDataObject *src) override;
 
 protected:
   vtkImageKernel();

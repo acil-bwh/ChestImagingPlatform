@@ -193,7 +193,7 @@ public:
    * pipeline execution model.
    *
    * \sa ImageToImageFilter::GenerateInputRequestedRegion()  */  
-  virtual void GenerateInputRequestedRegion() throw(InvalidRequestedRegionError);
+  virtual void GenerateInputRequestedRegion() throw(InvalidRequestedRegionError) override;
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
@@ -213,9 +213,9 @@ public:
 protected:
   CannyEdgeDetectionRecursiveGaussianImageFilter();
   CannyEdgeDetectionRecursiveGaussianImageFilter(const Self&) {}
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
-  void GenerateData();
+  void GenerateData() override;
 
   typedef MultiplyImageFilter< OutputImageType, 
               OutputImageType, OutputImageType>       MultiplyImageFilterType;

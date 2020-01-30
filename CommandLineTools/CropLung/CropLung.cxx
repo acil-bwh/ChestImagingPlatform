@@ -54,13 +54,13 @@ namespace
     reader->SetFileName( fileName );
     try
       {
-	reader->Update();
+      reader->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
-	std::cerr << "Exception caught reading CT image:";
-	std::cerr << excp << std::endl;
-	return NULL;
+      std::cerr << "Exception caught reading CT image:";
+      std::cerr << excp << std::endl;
+      return cip::CTType::Pointer(nullptr);
       }
     
     return reader->GetOutput();
@@ -164,10 +164,10 @@ int main( int argc, char *argv[] )
       std::cout << "Reading CT from file..." << std::endl;
       ctImage = ReadCTFromFile( ctFileName );
       
-      if (ctImage.GetPointer() == NULL)
-	{
-	  return cip::NRRDREADFAILURE;
-	}
+      if (ctImage.GetPointer() == nullptr)
+        {
+          return cip::NRRDREADFAILURE;
+        }
     }
   else
     {
@@ -186,10 +186,10 @@ int main( int argc, char *argv[] )
       std::cout << "Reading label map from file..." << std::endl;
       labelMap = ReadLabelMapFromFile( plInputFileName );
       
-      if (labelMap.GetPointer() == NULL)
-	{
-	  return cip::LABELMAPREADFAILURE;
-	}
+      if (labelMap.GetPointer() == nullptr)
+        {
+          return cip::LABELMAPREADFAILURE;
+        }
     }
   else
     {
