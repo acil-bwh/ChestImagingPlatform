@@ -20,7 +20,6 @@
 
 #include "itkUnaryFunctorBase.h"
 #include "itkComparisonOperators.h"
-#include "vnl/vnl_math.h"
 
 namespace itk
 {
@@ -65,7 +64,7 @@ public:
   typedef typename EigenValueArrayType::ValueType   EigenValueType;
 
   /** This does the real computation */
-  virtual TOutput Evaluate( const TInput & eigenValues ) const
+  virtual TOutput Evaluate( const TInput & eigenValues ) const override
   {
     /** Sort the eigenvalues by their absolute value, such that |l1| < |l2| < |l3|. */
     EigenValueArrayType sortedEigenValues = eigenValues;
@@ -73,9 +72,9 @@ public:
       Functor::AbsLessCompare<EigenValueType>() );
 
     /** Take the absolute values and abbreviate. */
-    const RealType l1 = vnl_math_abs( sortedEigenValues[ 0 ] );
-    const RealType l2 = vnl_math_abs( sortedEigenValues[ 1 ] );
-    const RealType l3 = vnl_math_abs( sortedEigenValues[ 2 ] );
+    const RealType l1 = std::fabs( sortedEigenValues[ 0 ] );
+    const RealType l2 = std::fabs( sortedEigenValues[ 1 ] );
+    const RealType l3 = std::fabs( sortedEigenValues[ 2 ] );
 
     /** Reject. */
     if( this->m_BrightObject )
@@ -96,21 +95,21 @@ public:
     }
 
     /** Avoid divisions by zero (or close to zero). */
-    if( l3 < vnl_math::eps )
+    if( l3 < itk::Math::eps )
     {
       return NumericTraits<TOutput>::Zero;
     }
 
     /** Compute several structure measures. */
     const RealType Rsheet = l2 / l3;
-    const RealType Rblob  = vnl_math_abs( l3 + l3 - l2 - l1 ) / l3;
-    const RealType Rnoise = vcl_sqrt( l1 * l1 + l2 * l2 + l3 * l3 );
+    const RealType Rblob  = std::fabs( l3 + l3 - l2 - l1 ) / l3;
+    const RealType Rnoise = std::sqrt( l1 * l1 + l2 * l2 + l3 * l3 );
 
     /** Compute final sheetness measure, see Eq.(13). */
     RealType sheetness = NumericTraits<RealType>::Zero;
-    sheetness  =         vcl_exp( - ( Rsheet * Rsheet ) / ( 2.0 * this->m_Alpha * this->m_Alpha ) ); // sheetness vs lineness
-    sheetness *= ( 1.0 - vcl_exp( - ( Rblob  * Rblob )  / ( 2.0 * this->m_Beta * this->m_Beta ) ) ); // blobness
-    sheetness *= ( 1.0 - vcl_exp( - ( Rnoise * Rnoise ) / ( 2.0 * this->m_C * this->m_C ) ) );       // noise = structuredness
+    sheetness  =         std::exp( - ( Rsheet * Rsheet ) / ( 2.0 * this->m_Alpha * this->m_Alpha ) ); // sheetness vs lineness
+    sheetness *= ( 1.0 - std::exp( - ( Rblob  * Rblob )  / ( 2.0 * this->m_Beta * this->m_Beta ) ) ); // blobness
+    sheetness *= ( 1.0 - std::exp( - ( Rnoise * Rnoise ) / ( 2.0 * this->m_C * this->m_C ) ) );       // noise = structuredness
 
     return static_cast<TOutput>( sheetness );
   } // end operator ()

@@ -44,7 +44,7 @@ class VTK_CIP_COMMON_EXPORT vtkNRRDExport : public vtkAlgorithm
 public:
   static vtkNRRDExport *New();
   vtkTypeMacro(vtkNRRDExport, vtkAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Set/Get the input object from the image pipeline.

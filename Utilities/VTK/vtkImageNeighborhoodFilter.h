@@ -29,7 +29,7 @@ class VTK_CIP_UTILITIES_EXPORT vtkImageNeighborhoodFilter : public vtkImageSpati
 public:
   static vtkImageNeighborhoodFilter *New();
   vtkTypeMacro(vtkImageNeighborhoodFilter,vtkImageSpatialAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   
   /// 
   /// Mask that defines area of interest in the neighborhood.

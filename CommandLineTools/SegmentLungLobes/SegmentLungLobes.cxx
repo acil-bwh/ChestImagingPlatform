@@ -405,7 +405,7 @@ void AppendFissurePoints( std::vector< cip::PointType >* fissurePoints, vtkSmart
   unsigned int maxNum = 1000;
   unsigned int added = 0;
 
-  unsigned int inc = (unsigned int)( vcl_ceil(float(particles->GetNumberOfPoints())/float(maxNum) ) );
+  unsigned int inc = (unsigned int)( std::ceil(float(particles->GetNumberOfPoints())/float(maxNum) ) );
 
   bool addPoint;
 

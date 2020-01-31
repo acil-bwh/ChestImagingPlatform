@@ -70,7 +70,7 @@ cip::CTType::Pointer cip::ReadCTFromDirectory( std::string ctDir )
   {
     std::cerr << "Exception caught while reading dicom:";
     std::cerr << excp << std::endl;
-    return NULL;
+    return cip::CTType::Pointer(nullptr);
   }
   
   return dicomReader->GetOutput();
@@ -88,7 +88,7 @@ cip::CTType::Pointer cip::ReadCTFromFile( std::string fileName )
   {
     std::cerr << "Exception caught reading CT image:";
     std::cerr << excp << std::endl;
-    return NULL;
+    return cip::CTType::Pointer(nullptr);
   }
   
   return reader->GetOutput();
@@ -106,7 +106,7 @@ cip::LabelMapType::Pointer cip::ReadLabelMapFromFile( std::string fileName )
   {
     std::cerr << "Exception caught reading Label Map image:";
     std::cerr << excp << std::endl;
-    return NULL;
+    return cip::LabelMapType::Pointer(nullptr);
   }
   
   return reader->GetOutput();
@@ -269,7 +269,7 @@ cip::LabelMapSliceType::Pointer cip::DownsampleLabelMapSlice(unsigned short samp
 
 double cip::GetVectorMagnitude(const cip::VectorType& vector)
 {
-  double magnitude = vcl_sqrt(std::pow(vector[0], 2) + std::pow(vector[1], 2) + std::pow(vector[2], 2));
+  double magnitude = std::sqrt(std::pow(vector[0], 2) + std::pow(vector[1], 2) + std::pow(vector[2], 2));
 
   return magnitude;
 }
@@ -282,12 +282,12 @@ double cip::GetAngleBetweenVectors(const cip::VectorType& vec1,
 
   double arg = (vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2])/(vec1Mag*vec2Mag);
 
-  if ( vcl_abs( arg ) > 1.0 )
+  if ( std::abs( arg ) > 1.0 )
     {
       arg = 1.0;
     }
 
-  double angle = vcl_acos( arg );
+  double angle = std::acos( arg );
 
   if ( !returnDegrees )
     {
@@ -966,7 +966,7 @@ double cip::GetDistanceToThinPlateSplineSurface( const cipThinPlateSplineSurface
     optimizer.SetInitialParameters( domainParams );
     optimizer.Update();
 
-  double distance = vcl_sqrt( optimizer.GetOptimalValue() );
+  double distance = std::sqrt( optimizer.GetOptimalValue() );
   
   return distance;  
 }

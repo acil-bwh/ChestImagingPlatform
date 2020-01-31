@@ -22,7 +22,7 @@ class VTK_CIP_UTILITIES_EXPORT vtkNRRDWriterCIP : public vtkWriter
 public:
 
   vtkTypeMacro(vtkNRRDWriterCIP,vtkWriter);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkNRRDWriterCIP *New();
 
@@ -69,11 +69,11 @@ protected:
   vtkNRRDWriterCIP();
   ~vtkNRRDWriterCIP();
 
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   ///
   /// Write method. It is called by vtkWriter::Write();
-  void WriteData();
+  void WriteData() override;
 
   ///
   /// Flag to set to on when a write error occured

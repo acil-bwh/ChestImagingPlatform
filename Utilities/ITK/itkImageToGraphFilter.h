@@ -50,7 +50,7 @@ public:
   itkTypeMacro( ImageToGraphFilter, GraphSource );
 
   /** Create a valid output. */
-  DataObject::Pointer  MakeOutput( unsigned int idx );
+  DataObject::Pointer  MakeOutput( unsigned int idx ) override;
 
   /** Some Image related typedefs. */
   typedef   TInputImage                        ImageType;
@@ -93,14 +93,14 @@ public:
   itkSetObjectMacro( ImageToGraphFunctor, ImageToGraphFunctorType );
 
   /** Prepare the output */
-  void GenerateOutputInformation( void );
+  void GenerateOutputInformation( void ) override;
 
 protected:
   ImageToGraphFilter();
   ~ImageToGraphFilter();
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
   
-  void GenerateData();
+  void GenerateData() override;
  
 private:
   ImageToGraphFilter( const ImageToGraphFilter& ); //purposely not implemented

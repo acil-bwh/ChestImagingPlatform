@@ -239,9 +239,9 @@ int main( int argc, char *argv[] )
     float ao = ellipse->GetComponent(zz,4);
     float bo = ellipse->GetComponent(zz,3);
     
-    phenotypesFile << vcl_sqrt(ai*bi) << ",";
-    phenotypesFile << vcl_sqrt(ao*bo) << ",";
-    phenotypesFile << (ao*bo-ai*bi)/(vcl_sqrt(ai*bi)+sqrt(ao*bo)) << ",";
+    phenotypesFile << std::sqrt(ai*bi) << ",";
+    phenotypesFile << std::sqrt(ao*bo) << ",";
+    phenotypesFile << (ao*bo-ai*bi)/(std::sqrt(ai*bi)+std::sqrt(ao*bo)) << ",";
     
     for (int c=0; c<3;c++)
     {

@@ -302,7 +302,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter<TInputImage, TOutputImage>
     str->Filter->ThreadedCompute2ndDerivative(splitRegion, threadId);
     }
 
-  return ITK_THREAD_RETURN_VALUE;
+  return nullptr;
 }
 
 template< class TInputImage, class TOutputImage >
@@ -568,7 +568,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
                     m_ComputeCannyEdge1stDerivativeOper);
         }
       
-      gradMag = vcl_sqrt((double)gradMag);
+      gradMag = std::sqrt((double)gradMag);
       derivPos = zero;
       for ( unsigned int i = 0; i < ImageDimension; i++)
         {
@@ -635,7 +635,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter<TInputImage, TOutputImage>
     str->Filter->ThreadedCompute2ndDerivativePos( splitRegion, threadId);
     }
   
-  return ITK_THREAD_RETURN_VALUE;
+  return nullptr;
 }
 
 // Set value of Sigma (isotropic)

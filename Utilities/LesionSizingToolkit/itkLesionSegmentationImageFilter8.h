@@ -85,7 +85,7 @@ public:
   typedef typename CannyEdgesFeatureGeneratorType::SigmaArrayType SigmaArrayType;
 
   virtual void GenerateInputRequestedRegion()
-            throw(InvalidRequestedRegionError);
+            throw(InvalidRequestedRegionError) override;
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
@@ -129,10 +129,10 @@ public:
   itkBooleanMacro( UseVesselEnhancingDiffusion );
 
   typedef itk::LandmarkSpatialObject< ImageDimension >    SeedSpatialObjectType;
-  typedef typename SeedSpatialObjectType::PointListType   PointListType;
+  typedef typename SeedSpatialObjectType::LandmarkPointListType   LandmarkPointListType;
 
-  void SetSeeds( PointListType p ) { this->m_Seeds = p; }
-  PointListType GetSeeds() { return m_Seeds; }
+  void SetSeeds( LandmarkPointListType p ) { this->m_Seeds = p; }
+  LandmarkPointListType GetSeeds() { return m_Seeds; }
 
   /** Report progress */
   void ProgressUpdate( Object * caller, const EventObject & event );
@@ -140,7 +140,7 @@ public:
   // Return the status message
   const char *GetStatusMessage() const
     {
-    return m_StatusMessage.length() ? m_StatusMessage.c_str() : NULL;
+    return m_StatusMessage.length() ? m_StatusMessage.c_str() : nullptr;
     }
 
   /* Manually specify sigma. This defaults to the max spacing in the dataset */
@@ -148,15 +148,15 @@ public:
 
   /** Override the superclass implementation so as to set the flag on all the
    * filters within our lesion segmentation pipeline */
-  virtual void SetAbortGenerateData( const bool );
+  virtual void SetAbortGenerateData( const bool ) override;
 
 protected:
   LesionSegmentationImageFilter8();
   LesionSegmentationImageFilter8(const Self&) {}
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
-  virtual void GenerateOutputInformation();
-  void GenerateData();
+  virtual void GenerateOutputInformation() override;
+  void GenerateData() override;
 
   // Filters used by this class
   typedef LesionSegmentationMethod< ImageDimension >                LesionSegmentationMethodType;
@@ -182,23 +182,23 @@ private:
   double                                m_FastMarchingStoppingTime;
   double                                m_FastMarchingDistanceFromSeeds;
 
-  typename LesionSegmentationMethodType::Pointer      m_LesionSegmentationMethod;
-  typename LungWallGeneratorType::Pointer             m_LungWallFeatureGenerator;
-  typename VesselnessGeneratorType::Pointer           m_VesselnessFeatureGenerator;
-  typename SigmoidFeatureGeneratorType::Pointer       m_SigmoidFeatureGenerator;
-  typename CannyEdgesFeatureGeneratorType::Pointer    m_CannyEdgesFeatureGenerator;
-  typename FeatureAggregatorType::Pointer             m_FeatureAggregator;
-  typename SegmentationModuleType::Pointer            m_SegmentationModule;
-  typename CropFilterType::Pointer                    m_CropFilter;
-  typename IsotropicResamplerType::Pointer            m_IsotropicResampler;
-  typename CommandType::Pointer                       m_CommandObserver;
-  RegionType                                          m_RegionOfInterest;
-  std::string                                         m_StatusMessage;
-  typename SeedSpatialObjectType::PointListType       m_Seeds;
-  typename InputImageSpatialObjectType::Pointer       m_InputSpatialObject;
-  bool                                                m_ResampleThickSliceData;
-  double                                              m_AnisotropyThreshold;
-  bool                                                m_UserSpecifiedSigmas;
+  typename LesionSegmentationMethodType::Pointer          m_LesionSegmentationMethod;
+  typename LungWallGeneratorType::Pointer                 m_LungWallFeatureGenerator;
+  typename VesselnessGeneratorType::Pointer               m_VesselnessFeatureGenerator;
+  typename SigmoidFeatureGeneratorType::Pointer           m_SigmoidFeatureGenerator;
+  typename CannyEdgesFeatureGeneratorType::Pointer        m_CannyEdgesFeatureGenerator;
+  typename FeatureAggregatorType::Pointer                 m_FeatureAggregator;
+  typename SegmentationModuleType::Pointer                m_SegmentationModule;
+  typename CropFilterType::Pointer                        m_CropFilter;
+  typename IsotropicResamplerType::Pointer                m_IsotropicResampler;
+  typename CommandType::Pointer                           m_CommandObserver;
+  RegionType                                              m_RegionOfInterest;
+  std::string                                             m_StatusMessage;
+  typename SeedSpatialObjectType::LandmarkPointListType   m_Seeds;
+  typename InputImageSpatialObjectType::Pointer           m_InputSpatialObject;
+  bool                                                    m_ResampleThickSliceData;
+  double                                                  m_AnisotropyThreshold;
+  bool                                                    m_UserSpecifiedSigmas;
 };
 
 } //end of namespace itk

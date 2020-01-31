@@ -83,7 +83,7 @@ public:
   typedef itk::ImageRegionIteratorWithIndex< OutputImageType > OutputIteratorType;
   typedef itk::ImageRegionConstIterator< InputImageType >      InputIteratorType;
 
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
   /** This method allows the user to specify region-type pairs.  Only
    *  those input image values satisfying both the specified
@@ -115,7 +115,7 @@ protected:
   CIPExtractChestLabelMapImageFilter();
   //virtual ~CIPExtractChestLabelMapImageFilter() {}
 
-  void GenerateData();
+  void GenerateData() override;
 
 private:
   CIPExtractChestLabelMapImageFilter(const Self&); //purposely not implemented

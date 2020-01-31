@@ -32,7 +32,7 @@ class VTK_CIP_COMMON_EXPORT vtkImageStatistics : public vtkImageAlgorithm
   public:
   static vtkImageStatistics *New();
   vtkTypeMacro(vtkImageStatistics,vtkImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Should the data with value 0 be ignored?
@@ -98,11 +98,11 @@ class VTK_CIP_COMMON_EXPORT vtkImageStatistics : public vtkImageAlgorithm
   // convenience method
   virtual int RequestInformation(vtkInformation* request,
                                  vtkInformationVector** inputVector,
-                                 vtkInformationVector* outputVector);
+                                 vtkInformationVector* outputVector) override;
 
  virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
 
 };
 

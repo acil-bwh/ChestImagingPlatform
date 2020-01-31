@@ -90,11 +90,11 @@ protected:
     void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, int threadId );
     
 #else
-    void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, ThreadIdType threadId );
+    void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, ThreadIdType threadId ) override;
     
 #endif
-	void BeforeThreadedGenerateData();
-	void GenerateInputRequestedRegion();
+	void BeforeThreadedGenerateData() override;
+	void GenerateInputRequestedRegion() override;
 private:
 	LSDerivativesL0(const Self&);   // purposely not implemented
 	void operator=(const Self&);    // purposely not implemented
@@ -150,11 +150,11 @@ private:
         void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, int threadId );
         
 #else
-        void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, ThreadIdType threadId );
+        void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, ThreadIdType threadId ) override;
         
 #endif
-		void BeforeThreadedGenerateData();
-		void GenerateInputRequestedRegion();
+		void BeforeThreadedGenerateData() override;
+		void GenerateInputRequestedRegion() override;
 	private:
 		LSDerivativesL1(const Self&);   // purposely not implemented
 		void operator=(const Self&);    // purposely not implemented
@@ -210,11 +210,11 @@ private:
         void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, int threadId );
         
 #else
-        void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, ThreadIdType threadId );
+        void ThreadedGenerateData( const OutputRegionType& outputRegionForThread, ThreadIdType threadId ) override;
         
 #endif
-		void BeforeThreadedGenerateData();
-		void GenerateInputRequestedRegion();
+		void BeforeThreadedGenerateData() override;
+		void GenerateInputRequestedRegion() override;
 	private:
 		LSDerivativesL2(const Self&);   // purposely not implemented
 		void operator=(const Self&);    // purposely not implemented

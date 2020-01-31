@@ -20,7 +20,6 @@
 
 #include "itkUnaryFunctorBase.h"
 #include "itkComparisonOperators.h"
-#include "vnl/vnl_math.h"
 
 namespace itk
 {
@@ -67,7 +66,7 @@ public:
   typedef typename EigenValueArrayType::ValueType   EigenValueType;
 
   /** This does the real computation */
-  virtual TOutput Evaluate( const TInput & eigenValues ) const
+  virtual TOutput Evaluate( const TInput & eigenValues ) const override
   {
     /** Sort the eigenvalues by their absolute value, such that |l1| < |l2| < |l3|. */
     EigenValueArrayType sortedEigenValues = eigenValues;
@@ -75,9 +74,9 @@ public:
       Functor::AbsLessCompare<EigenValueType>() );
 
     /** Take the absolute values and abbreviate. */
-    const RealType l1 = vnl_math_abs( sortedEigenValues[ 0 ] );
-    const RealType l2 = vnl_math_abs( sortedEigenValues[ 1 ] );
-    const RealType l3 = vnl_math_abs( sortedEigenValues[ 2 ] );
+    const RealType l1 = std::fabs( sortedEigenValues[ 0 ] );
+    const RealType l2 = std::fabs( sortedEigenValues[ 1 ] );
+    const RealType l3 = std::fabs( sortedEigenValues[ 2 ] );
 
     /** Reject. */
     if( this->m_BrightObject )
@@ -98,21 +97,21 @@ public:
     }
 
     /** Avoid divisions by zero (or close to zero). */
-    if( l2 < vnl_math::eps || l3 < vnl_math::eps )
+    if( l2 < itk::Math::eps || l3 < itk::Math::eps )
     {
       return NumericTraits<TOutput>::Zero;
     }
 
     /** Compute several structure measures. */
     const RealType Ra = l2 / l3; // see Eq.(11)
-    const RealType Rb = l1 / vcl_sqrt( l2 * l3 ); // see Eq.(10)
-    const RealType S  = vcl_sqrt( l1 * l1 + l2 * l2 + l3 * l3 ); // see Eq.(12)
+    const RealType Rb = l1 / std::sqrt( l2 * l3 ); // see Eq.(10)
+    const RealType S  = std::sqrt( l1 * l1 + l2 * l2 + l3 * l3 ); // see Eq.(12)
 
     /** Compute final vesselness measure, see Eq.(13). */
     RealType vesselness = NumericTraits<RealType>::Zero;
-    vesselness  = ( 1.0 - vcl_exp( -( Ra * Ra ) / ( 2.0 * m_Alpha * m_Alpha ) ) ); // sheetness vs lineness
-    vesselness *=         vcl_exp( -( Rb * Rb ) / ( 2.0 * m_Beta  * m_Beta  ) );   // blobness
-    vesselness *= ( 1.0 - vcl_exp( -( S  * S )  / ( 2.0 * m_C     * m_C ) ) );     // noise = structuredness
+    vesselness  = ( 1.0 - std::exp( -( Ra * Ra ) / ( 2.0 * m_Alpha * m_Alpha ) ) ); // sheetness vs lineness
+    vesselness *=         std::exp( -( Rb * Rb ) / ( 2.0 * m_Beta  * m_Beta  ) );   // blobness
+    vesselness *= ( 1.0 - std::exp( -( S  * S )  / ( 2.0 * m_C     * m_C ) ) );     // noise = structuredness
 
     return static_cast<TOutput>( vesselness );
   } // end operator ()

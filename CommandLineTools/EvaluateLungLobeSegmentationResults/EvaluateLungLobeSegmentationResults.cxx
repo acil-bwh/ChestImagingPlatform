@@ -416,11 +416,11 @@ void PrintStats( std::vector< double > distances )
     }
   std /= static_cast< double >( distances.size() );
 
-  std = vcl_sqrt( std );
+  std = std::sqrt( std );
   std::cout << "STD:\t" << std << std::endl;
 
   std::cout << "Max:\t" << maxDist << std::endl;
-  std::cout << "RMS:\t" << vcl_sqrt(rms/static_cast< double >( distances.size() )) << std::endl;
+  std::cout << "RMS:\t" << std::sqrt(rms/static_cast< double >( distances.size() )) << std::endl;
 }
 
 
@@ -465,7 +465,7 @@ double GetDistanceFromPointToThinPlateSplineSurface( double x, double y, double 
   // is just the square root of the objective function value
   // optimized by the Newton method.
   //
-  double distance = vcl_sqrt( optimizer->GetOptimalValue() );
+  double distance = std::sqrt( optimizer->GetOptimalValue() );
 
 //  delete particleToTPSMetric;  
   delete optimizer;

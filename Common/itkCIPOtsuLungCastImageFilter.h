@@ -50,7 +50,7 @@ public:
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
   typedef typename InputImageType::SizeType            InputSizeType;
 
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 protected:
   typedef itk::Image< unsigned short, 3 >                                                ComponentImageType;
@@ -74,7 +74,7 @@ protected:
       contain the lung region, a situation that we don't handle) */
   void RemoveCornerObjects();
 
-  void GenerateData();
+  void GenerateData() override;
 
 private:
   CIPOtsuLungCastImageFilter(const Self&); //purposely not implemented

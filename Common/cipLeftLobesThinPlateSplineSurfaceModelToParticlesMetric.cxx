@@ -66,7 +66,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetValue( const
 	  // locations of the points (the x and y coordinates) remain
 	  // fixed 
 	  this->LeftObliqueSurfacePoints[p][2] += 
-	    (*params)[m]*vcl_sqrt(this->Eigenvalues[m])*this->Eigenvectors[m][p];
+	    (*params)[m]*std::sqrt(this->Eigenvalues[m])*this->Eigenvectors[m][p];
 	}
     }
 
@@ -135,7 +135,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetFissureTermV
     // Get the distances between the particle and the TPS surfaces. This
     // is just the square root of the objective function value
     // optimized by the Newton method.
-    double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
+    double loDistance = std::sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
     this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().
@@ -191,7 +191,7 @@ double cipLeftLobesThinPlateSplineSurfaceModelToParticlesMetric::GetVesselTermVa
     // Get the distances between the particle and the TPS surfaces. This
     // is just the square root of the objective function value
     // optimized by the Newton method.
-    double loDistance = vcl_sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
+    double loDistance = std::sqrt( this->LeftObliqueNewtonOptimizer.GetOptimalValue() );
 
     // Get the TPS surface normals at the domain locations.
     this->LeftObliqueNewtonOptimizer.GetMetric().GetThinPlateSplineSurface().

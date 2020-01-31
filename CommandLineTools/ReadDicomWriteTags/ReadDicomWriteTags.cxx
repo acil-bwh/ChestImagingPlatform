@@ -238,24 +238,24 @@ namespace
     tagValue = entryValue->GetMetaDataObjectValue();
         
     // Replace commas and new-lines with spaces
-    unsigned int commaLocation = tagValue.find( ',' );
+    size_t commaLocation = tagValue.find( ',' );
     
     //First check if comma exists
     if (commaLocation <tagValue.length())
       {
         if ( commaLocation != std::string::npos )
-	  {
+          {
             tagValue.replace( commaLocation, 1, " " );
-	  }
+	        }
         
-        unsigned int newlineLocation = tagValue.find( '\n' );
+        size_t newlineLocation = tagValue.find( '\n' );
         if ( newlineLocation != std::string::npos )
-	  {
+	        {
             if (newlineLocation<tagValue.length())
-	      {
+	            {
                 tagValue.replace( newlineLocation, 1, " " );
-	      }
-	  }
+	            }
+	        }
       }
     
     return tagValue;

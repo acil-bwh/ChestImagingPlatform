@@ -127,12 +127,12 @@ public:
     {
     if( ls <= 0.0 && lt <= ls )
       {
-      return ( 1 + vcl_pow( ls / vnl_math_abs( lt ), m_Gamma ) );
+      return ( 1 + std::pow( ls / vnl_math_abs( lt ), m_Gamma ) );
       }
     const double abslt = vnl_math_abs( lt );
     if( ls > 0.0  &&  abslt / m_Gamma > ls )
       {
-      return vcl_pow( 1 - m_Alpha * ls / vnl_math_abs( lt ), m_Gamma );
+      return std::pow( 1 - m_Alpha * ls / vnl_math_abs( lt ), m_Gamma );
       }
     return 0.0;
     }
@@ -140,7 +140,7 @@ public:
     {
     if( ls < 0.0 && lt <= ls )
       {
-      return vcl_pow( ( ls / lt ), m_Gamma );
+      return std::pow( ( ls / lt ), m_Gamma );
       }
     return 0.0;
     }

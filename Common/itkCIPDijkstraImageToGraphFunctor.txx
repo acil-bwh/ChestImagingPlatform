@@ -52,11 +52,11 @@ CIPDijkstraImageToGraphFunctor<TInputImage, TOutputGraph>
     }
   else if ( this->m_ExponentialBasedCostAssignment )
     {
-    nodeWeight = this->m_ExponentialCoefficient*vcl_exp( pixelValue/this->m_ExponentialTimeConstant );
+    nodeWeight = this->m_ExponentialCoefficient*std::exp( pixelValue/this->m_ExponentialTimeConstant );
     }
   else
     {
-    nodeWeight = this->m_SigmoidScale/( 1.0 + vcl_exp( -this->m_SigmoidSteepness*( pixelValue - this->m_SigmoidShift ) ) );
+    nodeWeight = this->m_SigmoidScale/( 1.0 + std::exp( -this->m_SigmoidSteepness*( pixelValue - this->m_SigmoidShift ) ) );
     }
 
   return static_cast< NodeWeightType >( nodeWeight );

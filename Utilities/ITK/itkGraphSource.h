@@ -122,12 +122,12 @@ public:
 protected:
   GraphSource();
   virtual ~GraphSource() {}
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
   /** Requested region of Graph is specified as i of N unstructured regions.
    * Since all DataObjects should be able to set the requested region in
    * unstructured form, just copy output->RequestedRegion all inputs. */
-  void GenerateInputRequestedRegion();
+  void GenerateInputRequestedRegion() override;
 
 private:
   GraphSource( const Self& ); //purposely not implemented

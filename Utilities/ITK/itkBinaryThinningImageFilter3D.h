@@ -122,10 +122,10 @@ public:
 protected:
   BinaryThinningImageFilter3D();
   virtual ~BinaryThinningImageFilter3D() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** Compute thinning Image. */
-  void GenerateData();
+  void GenerateData() override;
 
   /** Prepare data. */
   void PrepareData();

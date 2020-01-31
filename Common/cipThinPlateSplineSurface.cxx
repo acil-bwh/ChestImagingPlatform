@@ -96,7 +96,7 @@ void cipThinPlateSplineSurface::ComputeThinPlateSplineVectors()
       double x2 = this->m_SurfacePoints[j][0];
       double y2 = this->m_SurfacePoints[j][1];
 
-      double r = vcl_sqrt( (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) );
+      double r = std::sqrt( (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) );
       rTotal += r;
 
       if ( i == j )
@@ -111,7 +111,7 @@ void cipThinPlateSplineSurface::ComputeThinPlateSplineVectors()
 	  }
 	else
 	  {
-	  K[i][j] = r*r*vcl_log10( r );
+	  K[i][j] = r*r*std::log10( r );
 	  }
         }
       }
@@ -236,11 +236,11 @@ double cipThinPlateSplineSurface::GetSurfaceHeight( double x, double y ) const
     double x2 = this->m_SurfacePoints[n][0];
     double y2 = this->m_SurfacePoints[n][1];
     
-    double r = vcl_sqrt( (x-x2)*(x-x2)+(y-y2)*(y-y2) );
+    double r = std::sqrt( (x-x2)*(x-x2)+(y-y2)*(y-y2) );
 
     if ( r!=0 )
       {
-      total += this->m_w[n]*r*r*vcl_log10( r );
+      total += this->m_w[n]*r*r*std::log10( r );
       }
     }
   double z = this->m_a[0] + x*this->m_a[1] + y*this->m_a[2] + total;
@@ -253,7 +253,7 @@ void cipThinPlateSplineSurface::GetSurfaceNormal( double x, double y, cip::Vecto
 {
   this->GetNonNormalizedSurfaceNormal( x, y, normal );
 
-  double mag = vcl_sqrt( std::pow( normal[0], 2 ) + std::pow( normal[1], 2 ) + std::pow( normal[2], 2 ) );
+  double mag = std::sqrt( std::pow( normal[0], 2 ) + std::pow( normal[1], 2 ) + std::pow( normal[2], 2 ) );
 
   normal[0] = normal[0]/mag;
   normal[1] = normal[1]/mag;
@@ -277,9 +277,9 @@ void cipThinPlateSplineSurface::GetNonNormalizedSurfaceNormal( double x, double 
     double xDiff = x - this->m_SurfacePoints[i][0];
     double yDiff = y - this->m_SurfacePoints[i][1];
 
-    double r = vcl_sqrt( std::pow( xDiff, 2 ) + std::pow( yDiff, 2 ) );
+    double r = std::sqrt( std::pow( xDiff, 2 ) + std::pow( yDiff, 2 ) );
 
-    double dUdr = r*(2.0*vcl_log10( r ) + 1.0/vnl_math::ln10);
+    double dUdr = r*(2.0*std::log10( r ) + 1.0/vnl_math::ln10);
     double drdx = xDiff/r;
     double drdy = yDiff/r;
 
@@ -310,7 +310,7 @@ double cipThinPlateSplineSurface::GetBendingEnergy() const
       double x2 = this->m_SurfacePoints[j][0];
       double y2 = this->m_SurfacePoints[j][1];
 
-      double r = vcl_sqrt( (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) );
+      double r = std::sqrt( (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) );
 
       if ( r==0 )
         {
@@ -332,7 +332,7 @@ double cipThinPlateSplineSurface::GetBendingEnergy() const
         }
       else
         {
-        K[i][j] = r*r*vcl_log10( r );
+        K[i][j] = r*r*std::log10( r );
         }
       }
     }

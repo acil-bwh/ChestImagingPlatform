@@ -40,7 +40,7 @@ class VTK_CIP_COMMON_EXPORT vtkComputeAirwayWallPolyData : public vtkPolyDataAlg
 public:
   static vtkComputeAirwayWallPolyData *New();
   vtkTypeMacro(vtkComputeAirwayWallPolyData, vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   
   // Description:
   // Set/Get Image data
@@ -122,7 +122,7 @@ protected:
   // Usual data generation method
   virtual int RequestData(vtkInformation *request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
   //void ExecuteInformation();
   void ComputeCellData();
   int AxisMode;

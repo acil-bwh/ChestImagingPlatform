@@ -536,7 +536,7 @@ CIPWholeLungVesselAndAirwaySegmentationImageFilter< TInputImage >
       std::map< unsigned int, unsigned short >::iterator mapIt = xCentroidMap.begin();
       while ( mapIt != xCentroidMap.end() )
         {
-        int diff = vcl_abs( static_cast< int >( (*mapIt).first ) - static_cast< int >( middleLocation ) );
+        int diff = std::abs( static_cast< int >( (*mapIt).first ) - static_cast< int >( middleLocation ) );
 
         if ( diff < minDiff )
           {                                     

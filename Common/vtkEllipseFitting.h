@@ -18,7 +18,7 @@ class VTK_CIP_COMMON_EXPORT vtkEllipseFitting : public vtkPolyDataAlgorithm
 {
 public:
   static vtkEllipseFitting *New();
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   vtkTypeMacro(vtkEllipseFitting, vtkPolyDataAlgorithm);
 
   vtkGetMacro(MajorAxisLength,double);
@@ -46,9 +46,9 @@ protected:
   // Usual data generation method
   virtual int RequestData(vtkInformation *request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
   void MultiplyMatrix(double A1[3][3], double A2[3][3], double R[3][3]);
 
 private:

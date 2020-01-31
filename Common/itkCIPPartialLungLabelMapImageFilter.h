@@ -133,7 +133,7 @@ public:
    */
   void SetHelperMask( OutputImageType::Pointer );
 
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 protected:
   typedef itk::Image< unsigned short, 3 >                                                      ComponentImageType;
@@ -163,7 +163,7 @@ protected:
   CIPPartialLungLabelMapImageFilter();
   virtual ~CIPPartialLungLabelMapImageFilter() {}
 
-  void GenerateData();
+  void GenerateData() override;
   void ApplyHelperMask();
   void ExtractLabelMapSlice( LabelMapType::Pointer, LabelMapSliceType::Pointer, int );
   void CloseLabelMap( unsigned short );

@@ -521,9 +521,9 @@ void VesselEnhancingDiffusion3DImageFilter<PixelType, NDimension>
       ev[1] = ES.get_eigenvalue(1);
       ev[2] = ES.get_eigenvalue(2);
 
-      if ( vcl_abs(ev[0]) > vcl_abs(ev[1])  ) std::swap(ev[0], ev[1]);
-      if ( vcl_abs(ev[1]) > vcl_abs(ev[2])  ) std::swap(ev[1], ev[2]);
-      if ( vcl_abs(ev[0]) > vcl_abs(ev[1])  ) std::swap(ev[0], ev[1]);
+      if ( std::abs(ev[0]) > std::abs(ev[1])  ) std::swap(ev[0], ev[1]);
+      if ( std::abs(ev[1]) > std::abs(ev[2])  ) std::swap(ev[1], ev[2]);
+      if ( std::abs(ev[0]) > std::abs(ev[1])  ) std::swap(ev[0], ev[1]);
 
       const Precision vesselness = VesselnessFunction3D(ev[0],ev[1],ev[2]);
 
@@ -565,13 +565,13 @@ VesselEnhancingDiffusion3DImageFilter<PixelType,NDimension>
     const Precision vc2= 2.0*m_Gamma*m_Gamma;
 
     const Precision   Ra2 = (l2 * l2) / (l3 * l3);
-    const Precision   Rb2 = (l1 * l1) / vcl_abs(l2 * l3);
+    const Precision   Rb2 = (l1 * l1) / std::abs(l2 * l3);
     const Precision   S2 =  (l1 * l1) + (l2 *l2) + (l3 * l3);
-    const Precision   T = vcl_exp(-(2*smoothC*smoothC)/(vcl_abs(l2)*l3*l3));
+    const Precision   T = std::exp(-(2*smoothC*smoothC)/(std::abs(l2)*l3*l3));
 
-    vesselness = T * (1.0 - vcl_exp( - Ra2/va2)) *
-      vcl_exp(-Rb2/vb2) *
-      (1.0 - vcl_exp(-S2/vc2));
+    vesselness = T * (1.0 - std::exp( - Ra2/va2)) *
+      std::exp(-Rb2/vb2) *
+      (1.0 - std::exp(-S2/vc2));
 
     }
 
@@ -615,18 +615,18 @@ void VesselEnhancingDiffusion3DImageFilter<PixelType, NDimension>
     ev[1] = ES.get_eigenvalue(1);
     ev[2] = ES.get_eigenvalue(2);
 
-    if ( vcl_abs(ev[0]) > vcl_abs(ev[1])  ) std::swap(ev[0], ev[1]);
-    if ( vcl_abs(ev[1]) > vcl_abs(ev[2])  ) std::swap(ev[1], ev[2]);
-    if ( vcl_abs(ev[0]) > vcl_abs(ev[1])  ) std::swap(ev[0], ev[1]);
+    if ( std::abs(ev[0]) > std::abs(ev[1])  ) std::swap(ev[0], ev[1]);
+    if ( std::abs(ev[1]) > std::abs(ev[2])  ) std::swap(ev[1], ev[2]);
+    if ( std::abs(ev[0]) > std::abs(ev[1])  ) std::swap(ev[0], ev[1]);
 
     const Precision V=VesselnessFunction3D(ev[0],ev[1],ev[2]);
     vnl_vector<Precision> evn(3);
 
     // adjusting eigenvalues
     // static_cast required to prevent error with gcc 4.1.2
-    evn[0]   = 1.0 + (m_Epsilon - 1.0) * vcl_pow(V,static_cast<Precision>(1.0/m_Sensitivity));
-    evn[1]   = 1.0 + (m_Epsilon - 1.0) * vcl_pow(V,static_cast<Precision>(1.0/m_Sensitivity));
-    evn[2]   = 1.0 + (m_Omega - 1.0 ) * vcl_pow(V,static_cast<Precision>(1.0/m_Sensitivity));
+    evn[0]   = 1.0 + (m_Epsilon - 1.0) * std::pow(V,static_cast<Precision>(1.0/m_Sensitivity));
+    evn[1]   = 1.0 + (m_Epsilon - 1.0) * std::pow(V,static_cast<Precision>(1.0/m_Sensitivity));
+    evn[2]   = 1.0 + (m_Omega - 1.0 ) * std::pow(V,static_cast<Precision>(1.0/m_Sensitivity));
 
     vnl_matrix<Precision> LAM(3,3);
     LAM.fill(0);

@@ -126,7 +126,7 @@ void cipParticleConnectedComponentFilter::SetComponentSizeThreshold( unsigned in
 
 double cipParticleConnectedComponentFilter::GetVectorMagnitude( double vector[3] )
 {
-  double magnitude = vcl_sqrt( std::pow( vector[0], 2 ) + std::pow( vector[1], 2 ) + std::pow( vector[2], 2 ) );
+  double magnitude = std::sqrt( std::pow( vector[0], 2 ) + std::pow( vector[1], 2 ) + std::pow( vector[2], 2 ) );
 
   return magnitude;
 }
@@ -152,12 +152,12 @@ double cipParticleConnectedComponentFilter::GetAngleBetweenVectors( double vec1[
 
   double arg = (vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2])/(vec1Mag*vec2Mag);
 
-  if ( vcl_abs( arg ) > 1.0 )
+  if ( std::abs( arg ) > 1.0 )
     {
     arg = 1.0;
     }
 
-  double angle = vcl_acos( arg );
+  double angle = std::acos( arg );
 
   if ( !returnDegrees )
     {

@@ -109,13 +109,13 @@ namespace
     reader->SetFileName( fileName );
     try
       {
-	reader->Update();
+      reader->Update();
       }
     catch ( itk::ExceptionObject &excp )
       {
-	std::cerr << "Exception caught reading CT image:";
-	std::cerr << excp << std::endl;
-	return NULL;
+      std::cerr << "Exception caught reading CT image:";
+      std::cerr << excp << std::endl;
+      return nullptr;
       }
     
     return reader->GetOutput();
@@ -125,15 +125,15 @@ namespace
 			    &theXMLData)
   {
     std::cout<<"Writing registration XML file"<<std::endl;
-    xmlDocPtr doc = NULL;       /* document pointer */
-    xmlNodePtr root_node = NULL; /* Node pointers */
-    xmlDtdPtr dtd = NULL;       /* DTD pointer */
+    xmlDocPtr doc = nullptr;       /* document pointer */
+    xmlNodePtr root_node = nullptr; /* Node pointers */
+    xmlDtdPtr dtd = nullptr;       /* DTD pointer */
     
     doc = xmlNewDoc(BAD_CAST "1.0");
-    root_node = xmlNewNode(NULL, BAD_CAST "Registration");
+    root_node = xmlNewNode(nullptr, BAD_CAST "Registration");
     xmlDocSetRootElement(doc, root_node);
     
-    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST
+    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", nullptr, BAD_CAST
 			     "RegistrationOutput_v2.dtd");
     
     time_t timer;
@@ -158,19 +158,19 @@ namespace
     std::ostringstream transformationIndexString;
     transformationIndexString <<theXMLData.transformationIndex;
     
-    xmlNewChild(root_node, NULL, BAD_CAST "image_type", BAD_CAST
+    xmlNewChild(root_node, nullptr, BAD_CAST "image_type", BAD_CAST
 		(theXMLData.image_type.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "transformation", BAD_CAST
+    xmlNewChild(root_node, nullptr, BAD_CAST "transformation", BAD_CAST
 		(theXMLData.transformationLink.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "transformation_index", BAD_CAST
+    xmlNewChild(root_node, nullptr, BAD_CAST "transformation_index", BAD_CAST
 		(transformationIndexString.str().c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "movingID", BAD_CAST
+    xmlNewChild(root_node, nullptr, BAD_CAST "movingID", BAD_CAST
 		(theXMLData.sourceID.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "fixedID", BAD_CAST
+    xmlNewChild(root_node, nullptr, BAD_CAST "fixedID", BAD_CAST
 		(theXMLData.destID.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "SimilarityMeasure", BAD_CAST
+    xmlNewChild(root_node, nullptr, BAD_CAST "SimilarityMeasure", BAD_CAST
 		(theXMLData.similarityMeasure.c_str()));
-    xmlNewChild(root_node, NULL, BAD_CAST "SimilarityValue", BAD_CAST
+    xmlNewChild(root_node, nullptr, BAD_CAST "SimilarityValue", BAD_CAST
 		(similaritString.str().c_str()));
     xmlSaveFormatFileEnc(file, doc, "UTF-8", 1);
     xmlFreeDoc(doc);
@@ -259,9 +259,9 @@ int DoIT2(int argc, char * argv[])
       std::cout << "Reading CT from file..." << std::endl;
       
       fixedCT = ReadCTFromFile< TDimension > ( fixedImageFileName );
-      if (fixedCT.GetPointer() == NULL)
+      if (fixedCT.GetPointer() == nullptr)
         {
-	  return cip::LABELMAPREADFAILURE;
+        return cip::LABELMAPREADFAILURE;
         }
       
     }
@@ -280,7 +280,7 @@ int DoIT2(int argc, char * argv[])
       
       movingCT = ReadCTFromFile< TDimension > ( movingImageFileName );
       
-      if (movingCT.GetPointer() == NULL)
+      if (movingCT.GetPointer() == nullptr)
         {
 	  return cip::LABELMAPREADFAILURE;
         }
@@ -636,9 +636,9 @@ int DoIT3(int argc, char * argv[])
       std::cout << "Reading CT from file..." << std::endl;
       
       fixedCT = ReadCTFromFile< TDimension > ( fixedImageFileName );
-      if (fixedCT.GetPointer() == NULL)
+      if (fixedCT.GetPointer() == nullptr)
         {
-	  return cip::LABELMAPREADFAILURE;
+        return cip::LABELMAPREADFAILURE;
         }
       
     }
@@ -657,9 +657,9 @@ int DoIT3(int argc, char * argv[])
       
       movingCT = ReadCTFromFile< TDimension > ( movingImageFileName );
       
-      if (movingCT.GetPointer() == NULL)
+      if (movingCT.GetPointer() == nullptr)
         {
-	  return cip::LABELMAPREADFAILURE;
+        return cip::LABELMAPREADFAILURE;
         }      
     }
   catch (cip::ExceptionObject &exep)

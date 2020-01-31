@@ -121,7 +121,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       if ( this->ScaleStencilPatternByParticleScale )
         {
           double scale = this->ParticlesData->GetPointData()->GetArray("scale")->GetTuple(i)[0];
-          double tempRadius = vcl_sqrt(2.0)*vcl_sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
+          double tempRadius = std::sqrt(2.0)*std::sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
 
           this->Stencil->SetRadius( tempRadius );
         }
@@ -129,7 +129,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       if ( this->DNNRadiusName != "" )
         {
           double radius = this->ParticlesData->GetPointData()->GetArray(this->DNNRadiusName.c_str())->GetTuple(i)[0];
-//          double tempRadius = vcl_sqrt(2.0) * vcl_sqrt(pow(radius, 2) + pow(this->CTPointSpreadFunctionSigma, 2));
+//          double tempRadius = std::sqrt(2.0) * std::sqrt(pow(radius, 2) + pow(this->CTPointSpreadFunctionSigma, 2));
 
           this->Stencil->SetRadius(radius);
         }
@@ -163,7 +163,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       if ( this->ScaleStencilPatternByParticleScale )
         {
         double scale = this->ParticlesData->GetPointData()->GetArray("scale")->GetTuple(i)[0];
-        double tempRadius = vcl_sqrt(2.0)*vcl_sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
+        double tempRadius = std::sqrt(2.0)*std::sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
 
         this->Stencil->SetRadius( tempRadius );
         }
@@ -171,7 +171,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       if ( this->DNNRadiusName != "" )
        {
         double radius = this->ParticlesData->GetPointData()->GetArray(this->DNNRadiusName.c_str())->GetTuple(i)[0];
-        double tempRadius = vcl_sqrt(2.0) * vcl_sqrt(pow(radius, 2) + pow(this->CTPointSpreadFunctionSigma, 2));
+        double tempRadius = std::sqrt(2.0) * std::sqrt(pow(radius, 2) + pow(this->CTPointSpreadFunctionSigma, 2));
 
         this->Stencil->SetRadius(tempRadius);
         }

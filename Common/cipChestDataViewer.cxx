@@ -579,7 +579,7 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
     vals1->GetTuple( i, val1 );
     vals2->GetTuple( i, val2 );
 
-    float mag = vcl_sqrt( std::pow( *val0, 2 ) + std::pow( *val1, 2 ) + std::pow( *val2, 2 ) );
+    float mag = std::sqrt( std::pow( *val0, 2 ) + std::pow( *val1, 2 ) + std::pow( *val2, 2 ) );
 
     double vec0[3];
     double vec1[3];
@@ -607,16 +607,16 @@ void cipChestDataViewer::SetParticles( vtkPolyData* polyData, double scaleFactor
     if ( fissureParticles )
       {
       *scale = 1.0;
-      M1 *= (1 - vcl_abs( *val0/mag ));
-      M2 *= (1 - vcl_abs( *val1/mag ));
-      M3 *= (1 - vcl_abs( *val2/mag ));
+      M1 *= (1 - std::abs( *val0/mag ));
+      M2 *= (1 - std::abs( *val1/mag ));
+      M3 *= (1 - std::abs( *val2/mag ));
       }
     else
       {
       scaleArray->GetTuple( i, scale );
-      M1 *= vcl_abs( *val0/mag );
-      M2 *= vcl_abs( *val1/mag );
-      M3 *= vcl_abs( *val2/mag );
+      M1 *= std::abs( *val0/mag );
+      M2 *= std::abs( *val1/mag );
+      M3 *= std::abs( *val2/mag );
       }
 
     vnl_matrix_fixed< double, 3, 3 > tensorMat;
@@ -954,7 +954,7 @@ void cipChestDataViewer::ModifyLeftObliqueFissureByPCAMode( unsigned int whichMo
 {
 //   for ( unsigned int i=0; i<(this->LeftObliqueFissurePCAModes[whichMode]).size(); i++ )
 //     {
-//     (this->LeftObliqueFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*vcl_sqrt( this->LeftObliqueFissurePCAVariances[whichMode] )*
+//     (this->LeftObliqueFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*std::sqrt( this->LeftObliqueFissurePCAVariances[whichMode] )*
 //                                                                               (this->LeftObliqueFissurePCAModes[whichMode])[i] );
 //     }
 //   this->Renderer->RemoveActor( this->ActorMap["LEFTLUNGOBLIQUEFISSURE"] );
@@ -966,7 +966,7 @@ void cipChestDataViewer::ModifyRightObliqueFissureByPCAMode( unsigned int whichM
 {
 //   for ( unsigned int i=0; i<(this->RightObliqueFissurePCAModes[whichMode]).size(); i++ )
 //     {
-//     (this->RightObliqueFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*vcl_sqrt( this->RightObliqueFissurePCAVariances[whichMode] )*
+//     (this->RightObliqueFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*std::sqrt( this->RightObliqueFissurePCAVariances[whichMode] )*
 //                                                                               (this->RightObliqueFissurePCAModes[whichMode])[i] );
 //     }
 //   this->Renderer->RemoveActor( this->ActorMap["RIGHTLUNGOBLIQUEFISSURE"] );
@@ -978,7 +978,7 @@ void cipChestDataViewer::ModifyRightHorizontalFissureByPCAMode( unsigned int whi
 {
 //   for ( unsigned int i=0; i<(this->RightHorizontalFissurePCAModes[whichMode]).size(); i++ )
 //     {
-//     (this->RightHorizontalFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*vcl_sqrt( this->RightHorizontalFissurePCAVariances[whichMode] )*
+//     (this->RightHorizontalFissureIndices[i])[2] += static_cast< unsigned int >( stdMultiplier*std::sqrt( this->RightHorizontalFissurePCAVariances[whichMode] )*
 //                                                                                   (this->RightHorizontalFissurePCAModes[whichMode])[i] );
 //     }
 //   this->Renderer->RemoveActor( this->ActorMap["RIGHTLUNGHORIZONTALFISSURE"] );

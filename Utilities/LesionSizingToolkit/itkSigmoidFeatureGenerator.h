@@ -86,11 +86,11 @@ public:
 protected:
   SigmoidFeatureGenerator();
   virtual ~SigmoidFeatureGenerator();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** Method invoked by the pipeline in order to trigger the computation of
    * the segmentation. */
-  void  GenerateData ();
+  void  GenerateData () override;
 
 private:
   SigmoidFeatureGenerator(const Self&); //purposely not implemented

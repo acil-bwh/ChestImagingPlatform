@@ -19,7 +19,7 @@ class VTK_CIP_COMMON_EXPORT vtkSmoothLines : public vtkPolyDataAlgorithm
 {
 public:
   static vtkSmoothLines *New();
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   vtkTypeMacro(vtkSmoothLines,vtkPolyDataAlgorithm);
 
   vtkGetMacro(Beta,double);
@@ -43,7 +43,7 @@ protected:
   // Usual data generation method
   virtual int RequestData(vtkInformation *request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
 private:
   vtkSmoothLines(const vtkSmoothLines&);  // Not implemented.
   void operator=(const vtkSmoothLines&);  // Not implemented.

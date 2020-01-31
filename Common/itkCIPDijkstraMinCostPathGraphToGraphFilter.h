@@ -58,7 +58,7 @@ protected:
   CIPDijkstraMinCostPathGraphToGraphFilter();
   ~CIPDijkstraMinCostPathGraphToGraphFilter() {};
 
-  void GenerateData();
+  void GenerateData() override;
 
 private:
   CIPDijkstraMinCostPathGraphToGraphFilter( const Self& ); //purposely not implemented

@@ -38,7 +38,7 @@ class VTK_CIP_COMMON_EXPORT vtkImageReformatAlongRay : public vtkImageAlgorithm
 public:
   static vtkImageReformatAlongRay *New();
   vtkTypeMacro(vtkImageReformatAlongRay, vtkImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   vtkSetMacro(Theta,double);
   vtkGetMacro(Theta,double);
@@ -76,13 +76,13 @@ protected:
   // This is a convenience method that is implemented in many subclasses
   // instead of RequestData.  It is called by RequestData.
   virtual void ExecuteDataWithInformation(vtkDataObject *output,
-                                          vtkInformation* outInfo);
+                                          vtkInformation* outInfo) override;
 
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
 
   virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **,
-                                  vtkInformationVector *);
+                                  vtkInformationVector *) override;
 
   double Theta;
   double RMin;

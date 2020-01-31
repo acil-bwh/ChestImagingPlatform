@@ -76,16 +76,16 @@ public:
   void AddFeatureGenerator( FeatureGeneratorType * generator ); 
 
   /** Check all feature generators and return consolidate MTime */
-  virtual unsigned long GetMTime() const;
+  virtual unsigned long GetMTime() const override;
 
 protected:
   FeatureAggregator();
   virtual ~FeatureAggregator();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** Method invoked by the pipeline in order to trigger the computation of
    * the segmentation. */
-  void  GenerateData();
+  void  GenerateData() override;
 
   unsigned int GetNumberOfInputFeatures() const;
 

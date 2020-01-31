@@ -36,7 +36,7 @@ class VTK_CIP_COMMON_EXPORT vtkComputeMonogenicSignal : public vtkImageAlgorithm
 public:
   static vtkComputeMonogenicSignal *New();
   vtkTypeMacro(vtkComputeMonogenicSignal, vtkImageAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   vtkSetObjectMacro(QuadratureFilter,vtkGeneralizedQuadratureKernelSource);
   vtkGetObjectMacro(QuadratureFilter,vtkGeneralizedQuadratureKernelSource);
@@ -60,10 +60,10 @@ protected:
   // Use RequestData instead of ExecuteDataWithInformation when input data is needed
   virtual int RequestData(vtkInformation* request, 
                           vtkInformationVector** inputVector, 
-                          vtkInformationVector* outputVector); 
+                          vtkInformationVector* outputVector) override;
                                           
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
 
   void FillOutput(vtkImageData *out, vtkImageData *in, int comp);
 

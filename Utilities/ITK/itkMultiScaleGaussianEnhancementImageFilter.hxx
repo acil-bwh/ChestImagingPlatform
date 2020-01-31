@@ -288,17 +288,17 @@ MultiScaleGaussianEnhancementImageFilter< TInputImage, TOutputImage >
   {
   case Self::EquispacedSigmaSteps:
     {
-      const double stepSize = vnl_math_max( 1e-10,
+      const double stepSize = std::max( 1e-10,
         ( this->m_SigmaMaximum - this->m_SigmaMinimum ) / ( this->m_NumberOfSigmaSteps - 1 ) );
       sigmaValue = this->m_SigmaMinimum + stepSize * scaleLevel;
       break;
     }
   case Self::LogarithmicSigmaSteps:
     {
-      const double stepSize = vnl_math_max( 1e-10,
-        ( vcl_log( this->m_SigmaMaximum ) - vcl_log( this->m_SigmaMinimum ) )
+      const double stepSize = std::max( 1e-10,
+        ( std::log( this->m_SigmaMaximum ) - std::log( this->m_SigmaMinimum ) )
         / ( this->m_NumberOfSigmaSteps - 1 ) );
-      sigmaValue = vcl_exp( vcl_log ( this->m_SigmaMinimum ) + stepSize * scaleLevel );
+      sigmaValue = std::exp( std::log ( this->m_SigmaMinimum ) + stepSize * scaleLevel );
       break;
     }
   default:

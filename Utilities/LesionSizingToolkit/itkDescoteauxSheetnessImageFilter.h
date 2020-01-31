@@ -133,11 +133,11 @@ public:
 
     const double Rs = l2 / l3;
     const double Rb = vnl_math_abs( l3 + l3 - l2 - l1 ) / l3;
-    const double Rn = vcl_sqrt( l3*l3 + l2*l2 + l1*l1 );
+    const double Rn = std::sqrt( l3*l3 + l2*l2 + l1*l1 );
 
-    sheetness  =         vcl_exp( - ( Rs * Rs ) / ( 2.0 * m_Alpha * m_Alpha ) ); 
-    sheetness *= ( 1.0 - vcl_exp( - ( Rb * Rb ) / ( 2.0 * m_Gamma * m_Gamma ) ) ); 
-    sheetness *= ( 1.0 - vcl_exp( - ( Rn * Rn ) / ( 2.0 * m_C     * m_C     ) ) ); 
+    sheetness  =         std::exp( - ( Rs * Rs ) / ( 2.0 * m_Alpha * m_Alpha ) ); 
+    sheetness *= ( 1.0 - std::exp( - ( Rb * Rb ) / ( 2.0 * m_Gamma * m_Gamma ) ) ); 
+    sheetness *= ( 1.0 - std::exp( - ( Rn * Rn ) / ( 2.0 * m_C     * m_C     ) ) ); 
 
     return static_cast<TOutput>( sheetness );
     }

@@ -295,7 +295,7 @@ protected:
   /** Constructor for use by New() method. */
   Graph();
   ~Graph();
-  virtual void PrintSelf( std::ostream& os, Indent indent ) const;
+  virtual void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 private:
   Graph( const Self& ); //purposely not implemented

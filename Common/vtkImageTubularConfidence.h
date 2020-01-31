@@ -88,9 +88,9 @@ protected:
   ~vtkImageTubularConfidence();
 
   virtual int RequestInformation(vtkInformation *, vtkInformationVector**,
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
   void ThreadedExecute(vtkImageData *inData, vtkImageData *outData,
-                       int extent[6], int id);
+                       int extent[6], int id) override;
                        
   int TubularType;
   vtkImageData *Mask;

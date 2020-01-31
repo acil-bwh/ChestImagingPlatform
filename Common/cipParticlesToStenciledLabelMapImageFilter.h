@@ -59,12 +59,12 @@ public:
   typedef typename InputImageType::SizeType                     InputSizeType;
   typedef itk::ImageRegionIteratorWithIndex< OutputImageType >  IteratorType;
 
-  void PrintSelf( std::ostream& os, itk::Indent indent ) const;
+  void PrintSelf( std::ostream& os, itk::Indent indent ) const override;
 
   cipParticlesToStenciledLabelMapImageFilter();
   virtual ~cipParticlesToStenciledLabelMapImageFilter() {}
 
-  void GenerateData();
+  void GenerateData() override;
   
   /** */
   void SetStencil( cipStencil* );

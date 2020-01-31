@@ -358,7 +358,7 @@ double vtkTubularScaleSelection::ScaleSelection(gageContext **gtx, gagePerVolume
   if (prevV > 0)
     Sopt = Sopt2;
 
-  delete strength;
+  delete[] strength;
 
   return Sopt;
 }
@@ -456,7 +456,7 @@ double vtkTubularScaleSelection::ScaleSelection(gageContext *gtx, gagePerVolume 
   if (prevV > 0)
     Sopt = Sopt2;
 
-  delete strength;
+  delete[] strength;
 
   return Sopt;
 }

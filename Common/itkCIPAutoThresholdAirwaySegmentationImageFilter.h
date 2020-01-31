@@ -87,7 +87,7 @@ public:
    * growing */
   void AddSeed( typename TOutputImage::IndexType );
 
-  void PrintSelf( std::ostream& os, Indent indent ) const;
+  void PrintSelf( std::ostream& os, Indent indent ) const override;
 
 protected:
   typedef itk::Image< LabelMapPixelType, 3 >                                             LabelMapType;
@@ -101,7 +101,7 @@ protected:
   CIPAutoThresholdAirwaySegmentationImageFilter();
   virtual ~CIPAutoThresholdAirwaySegmentationImageFilter() {}
 
-  void GenerateData();
+  void GenerateData() override;
   void Test();
 
 private:

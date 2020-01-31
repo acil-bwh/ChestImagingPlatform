@@ -142,12 +142,12 @@ public:
       }
 
     const double Rs = l2 / l3;
-    const double Rb = l1 / vcl_sqrt( l2 * l3 );
-    const double Rn = vcl_sqrt( l3*l3 + l2*l2 + l1*l1 );
+    const double Rb = l1 / std::sqrt( l2 * l3 );
+    const double Rn = std::sqrt( l3*l3 + l2*l2 + l1*l1 );
 
-    tubularness  = ( 1.0 - vcl_exp( - ( Rs * Rs ) / ( 2.0 * m_Alpha * m_Alpha ) ) ); 
-    tubularness *= (       vcl_exp( - ( Rb * Rb ) / ( 2.0 * m_Beta  * m_Beta  ) ) ); 
-    tubularness *= ( 1.0 - vcl_exp( - ( Rn * Rn ) / ( 2.0 * m_Gamma * m_Gamma ) ) ); 
+    tubularness  = ( 1.0 - std::exp( - ( Rs * Rs ) / ( 2.0 * m_Alpha * m_Alpha ) ) ); 
+    tubularness *= (       std::exp( - ( Rb * Rb ) / ( 2.0 * m_Beta  * m_Beta  ) ) ); 
+    tubularness *= ( 1.0 - std::exp( - ( Rn * Rn ) / ( 2.0 * m_Gamma * m_Gamma ) ) ); 
 
     return static_cast<TOutput>( tubularness );
     }

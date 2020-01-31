@@ -52,7 +52,7 @@ class VTK_CIP_UTILITIES_EXPORT vtkSuperquadricTensorGlyphFilter : public vtkPoly
 public:
   vtkTypeMacro(vtkSuperquadricTensorGlyphFilter,vtkPolyDataAlgorithm);
 
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkSuperquadricTensorGlyphFilter *New();
 
@@ -73,8 +73,8 @@ protected:
   ~vtkSuperquadricTensorGlyphFilter();
 
   /* implementation of algorithm */
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
   //virtual int FillInputPortInformation(int port, vtkInformation* info);
 

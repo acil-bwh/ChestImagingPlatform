@@ -68,7 +68,7 @@ bool cipVesselParticleConnectedComponentFilter::EvaluateParticleConnectedness( u
 
   double maxScale;  (scale1>scale2) ? (maxScale = scale1) : (maxScale = scale2);
 
-  if ( vcl_abs(scale1 - scale2)/maxScale > this->ScaleRatioThreshold )
+  if ( std::abs(scale1 - scale2)/maxScale > this->ScaleRatioThreshold )
     {
     return false;
     }

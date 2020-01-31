@@ -151,7 +151,7 @@ public:
    *  will gradually be preferred. */
   void SetRightHorizontalThinPlateSplineSurface( cipThinPlateSplineSurface* );
 
-  void PrintSelf( std::ostream& os, itk::Indent indent ) const;
+  void PrintSelf( std::ostream& os, itk::Indent indent ) const override;
 
 protected:
   cipLabelMapToLungLobeLabelMapImageFilter();
@@ -160,7 +160,7 @@ protected:
   typedef itk::ConnectedComponentImageFilter< OutputImageType, OutputImageType >  ConnectedComponentType;
   typedef itk::Image< float, 2 >                                                  BlendMapType;
 
-  void GenerateData();
+  void GenerateData() override;
 
 private:
   cipLabelMapToLungLobeLabelMapImageFilter(const Self&); //purposely not implemented
