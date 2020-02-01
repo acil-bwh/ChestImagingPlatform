@@ -20,7 +20,7 @@ class VTK_CIP_COMMON_EXPORT vtkMaskBoundingBox : public vtkAlgorithm
   static vtkMaskBoundingBox *New();
 
   vtkTypeMacro(vtkMaskBoundingBox, vtkAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Set the Input of a filter.
