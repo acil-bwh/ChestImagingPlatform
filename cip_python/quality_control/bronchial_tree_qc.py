@@ -41,7 +41,7 @@ class BronchialLumenQualityControl():
         X = xyz_arr[:, 0]
         Y = xyz_arr[:, 1]
         Z = xyz_arr[:, 2]
-        ax.scatter(X, Y, Z, s=array_a['dnn_lumen_radius'], c=array_a['ChestRegionChestType'], marker='.', cmap=plt.cm.jet,
+        ax.scatter(X, Y, Z, s=array_a['dnn_lumen_radius'], c=array_a['dnn_lumen_radius'], marker='.', cmap=plt.cm.jet,
                    linewidth=0)
         ax.grid(True)
         plt.xlabel('x')
