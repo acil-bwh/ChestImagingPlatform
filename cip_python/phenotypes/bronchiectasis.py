@@ -30,6 +30,7 @@ class Bronchiectasis:
 
         self.dnn_ = False
         self.artery = False
+        self.add_ratio_to_particles = False
 
     @staticmethod
     def get_artery_indices(vessel_pp):
@@ -154,6 +155,7 @@ class Bronchiectasis:
         na = airway.GetNumberOfPoints()
         a_radius = list()
         v_radius = list()
+        av_ratio_to_particles = list()
         csa = np.arange(0, 40, 0.05)
         rad = np.sqrt(csa/math.pi)
         bden = np.zeros(csa.size)
@@ -175,6 +177,7 @@ class Bronchiectasis:
             else:
                 a_r = self.airway_radius_from_sigma(a_s)
 
+            mean_v_r = list()
             a_v = array_a["hevec2"].GetTuple3(kk)
             for kk2 in range(idList.GetNumberOfIds()):
                 # Get info about point
@@ -207,6 +210,34 @@ class Bronchiectasis:
                     a_radius.append(a_r)
                     #v_r=1.0
                     v_radius.append(v_r)
+                    mean_v_r.append(v_r)
+
+            if len(mean_v_r) > 0 and np.mean(mean_v_r) > 0.0:
+                av_ratio_to_particles.append(a_r / np.mean(mean_v_r))
+            else:
+                av_ratio_to_particles.append(0.0)
+
+        if self.add_ratio_to_particles:
+            av_ratio_to_particles = np.asarray(av_ratio_to_particles)
+            vtk_array = vtk.vtkFloatArray()
+            vtk_array.SetNumberOfValues(airway.GetNumberOfPoints())
+            vtk_array.SetNumberOfComponents(1)
+            vtk_array.SetName('AV_ratio')
+
+            for ii in range(av_ratio_to_particles.shape[0]):
+                vtk_array.SetValue(ii, av_ratio_to_particles[ii])
+            airway.GetPointData().AddArray(vtk_array)
+            writer = vtk.vtkPolyDataWriter()
+            file_name = self.airway_file.split('.')[0] + '_AVRatio.vtk'
+            writer.SetFileName(file_name)
+
+            if vtk.VTK_MAJOR_VERSION <= 5:
+                writer.SetInput(airway)
+            else:
+                writer.SetInputData(airway)
+
+            writer.SetFileTypeToBinary()
+            writer.Update()
 
         a_radius = np.array(a_radius,dtype=float)
         v_radius = np.array(v_radius,dtype=float)
@@ -329,9 +360,12 @@ if __name__ == "__main__":
     parser.add_option('--dnn', help='Flag to use dnn measurements', action="store_true", dest="dnn")
     parser.add_option('--artery', help='Flag to use only particles classified as artery', action="store_true",
                       dest="artery")
+    parser.add_option('--ratio_to_particles', help='Flag to add AV ratio to airway particle file', action="store_true",
+                      dest="ratio_to_particles")
 
     (options, args) = parser.parse_args()
     bb = Bronchiectasis(options.vessel_file, options.airway_file, options.output_prefix, options.plot)
     bb.dnn_ = options.dnn
     bb.artery = options.artery
+    bb.add_ratio_to_particles = options.ratio_to_particles
     bb.execute()
