@@ -3,8 +3,9 @@ Read a not-isotropic DICOM series and generate an isotropic nrrd volume (discard
 in the slices that are closest to each other)
 """
 import os
-import SimpleITK as sitk
+import shutil
 import pydicom
+import SimpleITK as sitk
 from argparse import ArgumentParser
 
 from cip_python.input_output import ImageReaderWriter
@@ -19,6 +20,10 @@ class IodineMapDicomConverter(object):
         :param feet_first: bool. Flag to indicate that scan is feet first
         """
         # Re-name DICOM file using SOPInstanceUID tag
+
+        if not os.path.isdir(tmp_folder):
+            os.mkdir(tmp_folder)
+
         dcm_names = os.listdir(dicom_input_folder)
         for nn in dcm_names:
             in_name = os.path.join(dicom_input_folder, nn)
@@ -45,6 +50,8 @@ class IodineMapDicomConverter(object):
         imap_sitk.CopyInformation(ct_sitk)
         io_sitk.write(imap_sitk, output_file_path)
 
+        shutil.rmtree(tmp_folder)
+
 
 if __name__ == '__main__':
     desc = "Read a iodine map DICOM series and generate a nrrd volume " \
@@ -61,4 +68,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     converter = IodineMapDicomConverter()
     input_dicom_folder = os.path.realpath(args.input_dicom_folder)
-    converter.run(input_dicom_folder, args.input_ct_file, args.output_file, args.tmp_folder, args.feet_first)
+    tmp_folder = os.path.realpath(args.tmp_folder)
+    converter.run(input_dicom_folder, args.input_ct_file, args.output_file, tmp_folder, args.feet_first)
