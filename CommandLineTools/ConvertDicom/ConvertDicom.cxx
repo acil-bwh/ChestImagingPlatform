@@ -28,9 +28,14 @@ typedef itk::RGBPixel< unsigned char >       RGBPixelType;
 typedef itk::Image< RGBPixelType, 3 >            RGBImageType;
 typedef itk::ImageSeriesReader< RGBImageType >   RGBReaderType;
 typedef itk::ImageFileWriter< RGBImageType >     RGBWriterType;
+typedef itk::Image< float, 3 >                PETImageType;
+typedef itk::ImageFileReader< PETImageType >     PETReaderHeaderType;
+typedef itk::ImageSeriesReader< PETImageType >   PETReaderType;
+typedef itk::ImageFileWriter< PETImageType >     PETWriterType;
 
 int DoItCT( std::string, std::string );
 int DoItUS( std::string, std::string );
+int DoItPT( std::string, std::string );
 std::string FindDicomTag( const std::string & , const ImageIOType::Pointer );
 
 int main( int argc, char *argv[] )
@@ -76,6 +81,10 @@ int main( int argc, char *argv[] )
   else if (modality == "US")
     {
       code=DoItUS( dicomDir, outputImageFileName);
+    }
+  else if (modality == "PT")
+    {
+      code=DoItPT( dicomDir, outputImageFileName);
     }
   else
     {
@@ -146,6 +155,55 @@ int DoItCT( std::string dicomDir, std::string outputImageFileName )
 
   return cip::EXITSUCCESS;
 }
+
+int DoItPT( std::string dicomDir, std::string outputImageFileName )
+{
+  NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
+    namesGenerator->SetInputDirectory( dicomDir );
+    namesGenerator->Update();
+
+  // Read the DICOM data
+  ImageIOType::Pointer gdcmIO = ImageIOType::New();
+
+  std::cout << "Getting file names..." << std::endl;
+  std::vector< std::string > filenames = namesGenerator->GetInputFileNames();
+ 
+    
+  // Write the DICOM data
+  std::cout << "Reading DICOM image..." << std::endl;
+  PETReaderType::Pointer dicomReader = PETReaderType::New();
+    dicomReader->SetImageIO( gdcmIO );
+    dicomReader->SetFileNames( filenames );
+  try
+    {
+    dicomReader->Update();
+    }
+  catch (itk::ExceptionObject &excp)
+    {
+    std::cerr << "Exception caught while reading dicom:";
+    std::cerr << excp << std::endl;
+    return cip::DICOMREADFAILURE;
+    }
+  
+  std::cout << "Writing converted image..." << std::endl;
+  PETWriterType::Pointer writer = PETWriterType::New();
+    writer->SetInput( dicomReader->GetOutput() );
+    writer->UseCompressionOn();
+    writer->SetFileName( outputImageFileName );
+  try
+    {
+    writer->Update();
+    }
+  catch ( itk::ExceptionObject &excp )
+    {
+    std::cerr << "Exception caught writing image:";
+    std::cerr << excp << std::endl;
+    return cip::NRRDWRITEFAILURE;
+    }
+
+  return cip::EXITSUCCESS;
+}
+
 
 int DoItUS( std::string dicomDir, std::string outputImageFileName )
 {
