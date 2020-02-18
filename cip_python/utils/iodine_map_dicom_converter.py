@@ -48,11 +48,11 @@ class IodineMapDicomConverter(object):
         if imap_sitk.GetSize()[0] > ct_sitk.GetSize()[0]:
             imap_sitk = imap_sitk[1:-1, 1:-1, :]
         elif imap_sitk.GetSize()[0] < ct_sitk.GetSize()[0]:
-            imap_np = sitk.GetArrayFromImage(imap_sitk).transpose([1, 2, 0, 3])
+            imap_np = sitk.GetArrayFromImage(imap_sitk).transpose([2, 1, 0, 3])
             diff_x = (ct_sitk.GetSize()[0] - imap_sitk.GetSize()[0]) // 2
             diff_y = (ct_sitk.GetSize()[1] - imap_sitk.GetSize()[1]) // 2
             imap_np = np.pad(imap_np, ((diff_x, diff_x), (diff_y, diff_y), (0, 0), (0, 0)), 'constant')
-            imap_sitk = sitk.GetImageFromArray(imap_np.transpose([2, 0, 1, 3]))
+            imap_sitk = sitk.GetImageFromArray(imap_np.transpose([2, 1, 0, 3]))
 
         imap_sitk.CopyInformation(ct_sitk)
         io_sitk.write(imap_sitk, output_file_path)
