@@ -408,138 +408,138 @@ class H5Manager(object):
             batch_ys[i] = np.zeros((num_data_points_current_batch,) + self.ys_sizes[i], np.float32)
 
         batch_pos = 0
-        # while batch_pos < num_data_points_current_batch:
-        if batch_type == self.TRAIN:
-            with self.lock:
-                # Select the next main index
-                current_main_pos = self._train_ix_pos_
+        while batch_pos < num_data_points_current_batch:
+            if batch_type == self.TRAIN:
+                with self.lock:
+                    # Select the next main index
+                    current_main_pos = self._train_ix_pos_
+                    if self.load_all_data:
+                        main_ix = self.train_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
+                        self._train_ix_pos_ += num_data_points_current_batch
+                    else:
+                        main_ix = self.train_ixs[current_main_pos]
+                        self._train_ix_pos_ += 1
+
+                xs, ys = self.read_data_point(main_ix)
+
+                for i in range(num_xs):
+                    if self.load_all_data:
+                        batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                    else:
+                        batch_xs[i][batch_pos] = xs[i]
+                for i in range(num_ys):
+                    if self.load_all_data:
+                        batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
+                    else:
+                        batch_ys[i][batch_pos] = ys[i]
+
                 if self.load_all_data:
-                    main_ix = self.train_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                    self._train_ix_pos_ += num_data_points_current_batch
+                    batch_pos += num_data_points_current_batch
                 else:
-                    main_ix = self.train_ixs[current_main_pos]
-                    self._train_ix_pos_ += 1
-
-            xs, ys = self.read_data_point(main_ix)
-
-            for i in range(num_xs):
-                if self.load_all_data:
-                    batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
-                else:
-                    batch_xs[i][batch_pos] = xs[i]
-            for i in range(num_ys):
-                if self.load_all_data:
-                    batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
-                else:
-                    batch_ys[i][batch_pos] = ys[i]
-
-            if self.load_all_data:
-                batch_pos += num_data_points_current_batch
-            else:
-                batch_pos += 1
-
-            if self.use_pregenerated_augmented_train_data:
-                # Augmented images
-                aug = 0
-                while aug < self.num_augmented_train_data_points_per_data_point and batch_pos < num_data_points_current_batch:
-                    # Pre-augmented dataset
-                    secondary_ix = self._pregenerated_augmented_ixs_[current_main_pos][self._pregenerated_augmented_ixs_pos_[current_main_pos]]
-                    self._pregenerated_augmented_ixs_pos_[current_main_pos] += 1
-
-                    if self._pregenerated_augmented_ixs_pos_[current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
-                        # Start over with the first augmented image for this original image
-                        self._pregenerated_augmented_ixs_pos_[current_main_pos] = 0
-
-                    # Read the data point from the dataset
-                    augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, secondary_ix)
-
-                    for i in range(num_xs):
-                        batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = augmented_xs[i]
-                    for i in range(num_ys):
-                        batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = augmented_ys[i]
                     batch_pos += 1
-                    aug += 1
-            if self._train_ix_pos_ == self.num_train_points:
-                # We reached the end of a training dataset. End of epoch
-                self._new_epoch_()
-        elif batch_type == self.VALIDATION:
-            with self.lock:
-                # Select the next main index
-                current_main_pos = self._validation_ix_pos_
+
+                if self.use_pregenerated_augmented_train_data:
+                    # Augmented images
+                    aug = 0
+                    while aug < self.num_augmented_train_data_points_per_data_point and batch_pos < num_data_points_current_batch:
+                        # Pre-augmented dataset
+                        secondary_ix = self._pregenerated_augmented_ixs_[current_main_pos][self._pregenerated_augmented_ixs_pos_[current_main_pos]]
+                        self._pregenerated_augmented_ixs_pos_[current_main_pos] += 1
+
+                        if self._pregenerated_augmented_ixs_pos_[current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
+                            # Start over with the first augmented image for this original image
+                            self._pregenerated_augmented_ixs_pos_[current_main_pos] = 0
+
+                        # Read the data point from the dataset
+                        augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, secondary_ix)
+
+                        for i in range(num_xs):
+                            batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = augmented_xs[i]
+                        for i in range(num_ys):
+                            batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = augmented_ys[i]
+                        batch_pos += 1
+                        aug += 1
+                if self._train_ix_pos_ == self.num_train_points:
+                    # We reached the end of a training dataset. End of epoch
+                    self._new_epoch_()
+            elif batch_type == self.VALIDATION:
+                with self.lock:
+                    # Select the next main index
+                    current_main_pos = self._validation_ix_pos_
+                    if self.load_all_data:
+                        main_ix = self.validation_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
+                        self._validation_ix_pos_ += num_data_points_current_batch
+                    else:
+                        main_ix = self.validation_ixs[current_main_pos]
+                        self._validation_ix_pos_ += 1
+
+                xs, ys = self.read_data_point(main_ix)
+                for i in range(num_xs):
+                    if self.load_all_data:
+                        batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                    else:
+                        batch_xs[i][batch_pos] = xs[i]
+                for i in range(num_ys):
+                    if self.load_all_data:
+                        batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
+                    else:
+                        batch_ys[i][batch_pos] = ys[i]
+
                 if self.load_all_data:
-                    main_ix = self.validation_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                    self._validation_ix_pos_ += num_data_points_current_batch
+                    batch_pos += num_data_points_current_batch
                 else:
-                    main_ix = self.validation_ixs[current_main_pos]
-                    self._validation_ix_pos_ += 1
-
-            xs, ys = self.read_data_point(main_ix)
-            for i in range(num_xs):
-                if self.load_all_data:
-                    batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
-                else:
-                    batch_xs[i][batch_pos] = xs[i]
-            for i in range(num_ys):
-                if self.load_all_data:
-                    batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
-                else:
-                    batch_ys[i][batch_pos] = ys[i]
-
-            if self.load_all_data:
-                batch_pos += num_data_points_current_batch
-            else:
-                batch_pos += 1
-
-            if self.use_pregenerated_augmented_val_data:
-                # Augmented images
-                aug = 0
-                while aug < self.num_augmented_train_data_points_per_data_point and batch_pos < num_data_points_current_batch:
-                    # Pre-augmented dataset
-                    val_secondary_ix = self._pregenerated_augmented_ixs_val_[current_main_pos][self._pregenerated_augmented_ixs_val_pos_[current_main_pos]]
-                    self._pregenerated_augmented_ixs_val_pos_[current_main_pos] += 1
-
-                    if self._pregenerated_augmented_ixs_val_pos_[current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
-                        # Start over with the first augmented image for this original image
-                        self._pregenerated_augmented_ixs_val_pos_[current_main_pos] = 0
-
-                    # Read the data point from the dataset
-                    augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, val_secondary_ix)
-
-                    for i in range(num_xs):
-                        batch_xs[i][batch_pos] = augmented_xs[i]
-                    for i in range(num_ys):
-                        batch_ys[i][batch_pos] = augmented_ys[i]
                     batch_pos += 1
-                    aug += 1
-            if self._validation_ix_pos_ == self.num_validation_points:
-                self._validation_ix_pos_ = 0
-        else:
-            # Test
-            with self.lock:
-                # Select the next main index
-                current_main_pos = self._test_ix_pos_
-                if self.load_all_data:
-                    main_ix = self.test_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
-                    self._test_ix_pos_ += num_data_points_current_batch
-                else:
-                    main_ix = self.test_ixs[current_main_pos]
-                    self._test_ix_pos_ += 1
 
-                if self._test_ix_pos_ == self.num_test_points:
-                  self._test_ix_pos_ = 0
+                if self.use_pregenerated_augmented_val_data:
+                    # Augmented images
+                    aug = 0
+                    while aug < self.num_augmented_train_data_points_per_data_point and batch_pos < num_data_points_current_batch:
+                        # Pre-augmented dataset
+                        val_secondary_ix = self._pregenerated_augmented_ixs_val_[current_main_pos][self._pregenerated_augmented_ixs_val_pos_[current_main_pos]]
+                        self._pregenerated_augmented_ixs_val_pos_[current_main_pos] += 1
 
-            xs, ys = self.read_data_point(main_ix)
-            for i in range(num_xs):
-                if self.load_all_data:
-                    batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
-                else:
-                    batch_xs[i][batch_pos] = xs[i]
-            for i in range(num_ys):
-                if self.load_all_data:
-                    batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
-                else:
-                    batch_ys[i][batch_pos] = ys[i]
-            batch_pos += num_data_points_current_batch
+                        if self._pregenerated_augmented_ixs_val_pos_[current_main_pos] == self.pregenerated_num_augmented_data_points_per_data_point:
+                            # Start over with the first augmented image for this original image
+                            self._pregenerated_augmented_ixs_val_pos_[current_main_pos] = 0
+
+                        # Read the data point from the dataset
+                        augmented_xs, augmented_ys = self.read_data_point_augmented(main_ix, val_secondary_ix)
+
+                        for i in range(num_xs):
+                            batch_xs[i][batch_pos] = augmented_xs[i]
+                        for i in range(num_ys):
+                            batch_ys[i][batch_pos] = augmented_ys[i]
+                        batch_pos += 1
+                        aug += 1
+                if self._validation_ix_pos_ == self.num_validation_points:
+                    self._validation_ix_pos_ = 0
+            else:
+                # Test
+                with self.lock:
+                    # Select the next main index
+                    current_main_pos = self._test_ix_pos_
+                    if self.load_all_data:
+                        main_ix = self.test_ixs[current_main_pos:current_main_pos+num_data_points_current_batch]
+                        self._test_ix_pos_ += num_data_points_current_batch
+                    else:
+                        main_ix = self.test_ixs[current_main_pos]
+                        self._test_ix_pos_ += 1
+
+                    if self._test_ix_pos_ == self.num_test_points:
+                      self._test_ix_pos_ = 0
+
+                xs, ys = self.read_data_point(main_ix)
+                for i in range(num_xs):
+                    if self.load_all_data:
+                        batch_xs[i][batch_pos:batch_pos+num_data_points_current_batch] = xs[i]
+                    else:
+                        batch_xs[i][batch_pos] = xs[i]
+                for i in range(num_ys):
+                    if self.load_all_data:
+                        batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
+                    else:
+                        batch_ys[i][batch_pos] = ys[i]
+                batch_pos += num_data_points_current_batch
 
         return batch_xs, batch_ys
 
