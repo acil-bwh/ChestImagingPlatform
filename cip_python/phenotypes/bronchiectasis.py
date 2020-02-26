@@ -38,7 +38,7 @@ class Bronchiectasis:
         if not isinstance(tmp, vtk.vtkDataArray):
             tmp = vessel_pp.GetPointData().GetArray('ChestRegionChestType')
 
-        array_v = vtk_to_numpy(tmp)
+        array_v = vtk_to_numpy(tmp).astype(np.uint16)
         type_values = ChestConventions.GetChestTypeFromValue(array_v)
         artery_type = ChestConventions.GetChestTypeValueFromName('Artery')
         return np.argwhere(type_values == artery_type)[:, 0]
@@ -50,11 +50,10 @@ class Bronchiectasis:
                        a_r > self.airway_scale_th) & (v_r > self.vessel_scale_th)
         else:
             return (distance < self.distance_th - self.distance_decay * kk2) & (angle1 < self.angle1_th) & (
-            angle2 > self.angle2_th) & (a_r > self.airway_dnn_th) & (v_r > self.vessel_dnn_th)
+                angle2 > self.angle2_th) & (a_r > self.airway_dnn_th) & (v_r > self.vessel_dnn_th)
 
     def extract_artery_polydata(self, vessel_pp):
         artery_indices = self.get_artery_indices(vessel_pp)
-
         artery_polydata = vtk.vtkPolyData()
         vtk_points = vtk.vtkPoints()
         vtk_points.SetNumberOfPoints(artery_indices.shape[0])
@@ -66,14 +65,15 @@ class Bronchiectasis:
 
         for ii in range(vessel_pp.GetPointData().GetNumberOfArrays()):
             array_name = vessel_pp.GetPointData().GetArrayName(ii)
-
             vessel_array_vtk = vessel_pp.GetPointData().GetArray(array_name)
             vessel_array_np = vtk_to_numpy(vessel_array_vtk)
 
-            vtk_array = vessel_pp.GetPointData().GetArray(array_name)
-            vtk_array.SetNumberOfValues(artery_indices.shape[0])
-            vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
+            vtk_array = vessel_array_vtk.NewInstance()
+            vtk_array.DeepCopy(vessel_array_vtk)
             vtk_array.SetName(array_name)
+            vtk_array.SetNumberOfValues(artery_indices.shape[0])
+            vtk_array.SetNumberOfTuples(artery_indices.shape[0])
+            vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
 
             for jj, vv in enumerate(artery_indices):
                 if np.shape([vessel_array_np[vv]])[-1] > 1:
@@ -82,10 +82,9 @@ class Bronchiectasis:
                     vtk_array.SetValue(jj, vessel_array_np[vv])
 
             artery_polydata.GetPointData().AddArray(vtk_array)
-
         for ii in range(vessel_pp.GetFieldData().GetNumberOfArrays()):
             array_name = vessel_pp.GetFieldData().GetArrayName(ii)
-            if array_name == 'AV_classification_dnn_model_name':
+            if array_name == 'AV_classification_dnn_model_name' or array_name == 'vessel_sizing_dnn_model_name':
                 vessel_array_vtk = vessel_pp.GetFieldData().GetAbstractArray(array_name)
                 artery_polydata.GetFieldData().AddArray(vessel_array_vtk)
             else:
@@ -93,10 +92,12 @@ class Bronchiectasis:
                 vessel_array_np = vtk_to_numpy(vessel_array_vtk)
 
                 if vessel_array_np.shape[0] == vessel_pp.GetNumberOfPoints():
-                    vtk_array = vessel_pp.GetFieldData().GetArray(array_name)
-                    vtk_array.SetNumberOfValues(artery_indices.shape[0])
-                    vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
+                    vtk_array = vessel_array_vtk.NewInstance()
+                    vtk_array.DeepCopy(vessel_array_vtk)
                     vtk_array.SetName(array_name)
+                    vtk_array.SetNumberOfValues(artery_indices.shape[0])
+                    vtk_array.SetNumberOfTuples(artery_indices.shape[0])
+                    vtk_array.SetNumberOfComponents(vessel_array_vtk.GetNumberOfComponents())
 
                     for jj, vv in enumerate(artery_indices):
                         if np.shape([vessel_array_np[vv]])[-1] > 1:
@@ -228,8 +229,9 @@ class Bronchiectasis:
                 vtk_array.SetValue(ii, av_ratio_to_particles[ii])
             airway.GetPointData().AddArray(vtk_array)
             writer = vtk.vtkPolyDataWriter()
-            file_name = self.airway_file.split('.')[0] + '_AVRatio.vtk'
-            writer.SetFileName(file_name)
+            file_name = self.airway_file.split('/')[-1].split('.')[0]
+            out_file_name = self.output_prefix + '_{}.vtk'.format('AVRatio')
+            writer.SetFileName(out_file_name)
 
             if vtk.VTK_MAJOR_VERSION <= 5:
                 writer.SetInput(airway)
@@ -266,7 +268,8 @@ class Bronchiectasis:
         cden[cden<np.spacing(1e10)]=np.spacing(1e10)
         bron = bden/cden
         print (kcden.factor)
-                # bden[cden<0.01]=0
+
+        # bden[cden<0.01]=0
         if self.plot == True:
             fig=plt.figure()
             ax1=fig.add_subplot(211)
