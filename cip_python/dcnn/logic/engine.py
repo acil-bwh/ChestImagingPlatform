@@ -257,9 +257,14 @@ class Engine(object):
             # Initialize batch memory
             xs_sizes, ys_sizes = network.get_xs_ys_size()
             num_inputs = len(xs_sizes)
-            num_outputs = len(ys_sizes)
             batch_xs = [np.zeros(((batch_size,) + s), dtype=np.float32) for s in xs_sizes]
-            batch_ys = [np.zeros(((batch_size,) + s), dtype=np.float32) for s in ys_sizes]
+
+            if ys_sizes is not None:
+                num_outputs = len(ys_sizes)
+                batch_ys = [np.zeros(((batch_size,) + s), dtype=np.float32) for s in ys_sizes]
+            else:
+                num_outputs = 0
+                batch_ys = []
 
             n = 0
             while n < batch_size:
