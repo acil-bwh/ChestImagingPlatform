@@ -6,6 +6,7 @@ import vtk
 from vtk.util.numpy_support import vtk_to_numpy
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from mpl_toolkits.mplot3d import Axes3D
 
 from cip_python.common import ChestConventions
@@ -37,9 +38,12 @@ class VasculatureQualityControl():
       ax.w_zaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
 
       ax.margins(0.0)
-      ax.set_xlabel(xlabel)
-      ax.set_ylabel(ylabel)
-      ax.set_zlabel(zlabel)
+      if xlabel is not None:
+          ax.set_xlabel(xlabel)
+      if ylabel is not None:
+          ax.set_ylabel(ylabel)
+      if zlabel is not None:
+          ax.set_zlabel(zlabel)
 
       plt.title(title)
       ax.view_init(elev=20., azim=80)
@@ -47,7 +51,7 @@ class VasculatureQualityControl():
       ax.w_xaxis.set_ticks([])
       ax.w_yaxis.set_ticks([])
       ax.w_zaxis.set_ticks([])
-
+      
       # Create cubic bounding box to simulate equal aspect ratio
       X = xyz_arr[:, 0]
       Y = xyz_arr[:, 1]
