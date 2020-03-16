@@ -1,14 +1,14 @@
 import os
 import pydicom
 import argparse
-
+import shutil
 
 class Sorter():
     def __init__(self):
         """ Sorter initialization
         """
     
-    def execute(self,folder):
+    def execute(self, folder, output, cop):
 
         for root, dirs, files in os.walk(folder):
 
@@ -20,17 +20,29 @@ class Sorter():
                             patientid = ds['PatientID'].value
                             studyuid = ds['StudyInstanceUID'].value
                             seriesuid = ds['SeriesInstanceUID'].value
-                            directory = os.path.join(folder,patientid,studyuid,seriesuid)
+                            if output:
+                                directory = os.path.join(output,patientid,studyuid,seriesuid)
+                            else:
+                                directory = os.path.join(folder,patientid,studyuid,seriesuid)
+
                             if not os.path.exists(directory):
                                 os.makedirs(directory)
-
-                            os.rename(os.path.join(root,filename), os.path.join(directory,filename))
+                            if cop:
+                                shutil.copy(os.path.join(root,filename), os.path.join(directory,filename))
+                            else:
+                                os.rename(os.path.join(root,filename), os.path.join(directory,filename))
                         except:
                             print ("Error reading %s." % os.path.join(root,filename))
-                            err_folder = os.path.join(folder,"errors",root)
+                            if output:
+                                err_folder = os.path.join(output,"errors",root)
+                            else:
+                                err_folder = os.path.join(folder,"errors",root)
                             if not os.path.exists(err_folder):
                                 os.makedirs(err_folder)
-                            os.rename(os.path.join(root,filename), os.path.join(err_folder,filename))
+                            if cop:
+                                shutil.copy(os.path.join(root,filename), os.path.join(err_folder,filename))
+                            else:
+                                os.rename(os.path.join(root,filename), os.path.join(err_folder,filename))
 
 
     
@@ -58,6 +70,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Sort dicom series in different folders.')
     parser.add_argument('-i', dest='in_folder', metavar='in_folder', required=True, help="Path to folder containing dicom hierarchy.")
+    parser.add_argument('-o', dest='out_folder', metavar='out_folder', required=False, help="Path to output folder where to put the \
+        sorted files. If not specified, original dicom folder is used.")
+    parser.add_argument("--copy", dest='copy', help="Copy dicoms instead of moving them. This preserve original dicom hierarchy.", action="store_true")
     parser.add_argument("--clean", dest='clean', help="Clean empty directories after sorting dicoms.", action="store_true")
 
 
@@ -65,10 +80,14 @@ if __name__ == '__main__':
     op = parser.parse_args()
 
     st = Sorter()
-    st.execute(op.in_folder)
+    st.execute(op.in_folder, op.out_folder, op.copy)
 
     if op.clean:
-        print("Cleaning empty folders...")    
-        st.clean_empty_folders(op.in_folder)
+        print("Cleaning empty folders...")
+        if op.out_folder:
+            st.clean_empty_folders(op.in_folder)
+            st.clean_empty_folders(op.out_folder)
+        else:
+            st.clean_empty_folders(op.in_folder)
 
     print ("DONE.")

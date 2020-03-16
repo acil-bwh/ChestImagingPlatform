@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
-import cip_python.nipype.interfaces.cip as cip
+from cip_python.nipype.interfaces.cip import cip as cip
 
-import cip_python.nipype.interfaces.unu as unu
-import cip_python.nipype.interfaces.cip.cip_python_interfaces as cip_python_interfaces
+from cip_python.nipype.interfaces.unu import unu as unu
+from cip_python.nipype.interfaces.cip import cip_python_interfaces as cip_python_interfaces
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype.pipeline.engine import Workflow
 import tempfile, shutil, sys, os, pickle, gzip
