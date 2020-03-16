@@ -33,8 +33,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 #  set(${proj}_URL https://acil.s3.amazonaws.com/external_deps/boost_1_54_0_nodoc.tar.gz)
 #  set(${proj}_MD5 81bb79d6939601b43e681449e3eae7df )
 
-    set(${proj}_URL https://s3.amazonaws.com/acil/external_deps/boost_1_65_1.tar.gz)
-    set(${proj}_MD5 ee64fd29a3fe42232c6ac3c419e523cf )
+#    set(${proj}_URL https://s3.amazonaws.com/acil/external_deps/boost_1_65_1.tar.gz)
+#    set(${proj}_MD5 ee64fd29a3fe42232c6ac3c419e523cf )
+    
+    set(${proj}_URL https://s3.amazonaws.com/acil/external_deps/boost_1_72_0.tar.gz)
+    set(${proj}_MD5 e2b0b1eac302880461bcbef097171758 )
 
   if(CMAKE_COMPILER_IS_CLANGXX)
     set(CLANG_ARG -DCMAKE_COMPILER_IS_CLANGXX:BOOL=ON)

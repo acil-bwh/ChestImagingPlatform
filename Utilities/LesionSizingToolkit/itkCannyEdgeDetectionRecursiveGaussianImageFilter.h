@@ -24,11 +24,11 @@
 #include "itkSmoothingRecursiveGaussianImageFilter.h"
 #include "itkMultiplyImageFilter.h"
 #include "itkZeroFluxNeumannBoundaryCondition.h"
-#include "itkMultiThreader.h"
+#include "itkMultiThreaderBase.h"
 #include "itkDerivativeOperator.h"
 #include "itkSparseFieldLayer.h"
 #include "itkObjectStore.h"
-
+#include "itkPlatformMultiThreader.h"
 
 namespace itk
 {
@@ -264,7 +264,7 @@ private:
    *  \sa Compute2ndDerivative
    *  \sa Compute2ndDerivativeThreaderCallBack   */ 
   void ThreadedCompute2ndDerivative(const OutputImageRegionType&
-                                    outputRegionForThread, int threadId);
+                                    outputRegionForThread);
 
   /** This callback method uses ImageSource::SplitRequestedRegion to acquire an 
    * output region that it passes to ThreadedCompute2ndDerivative for
@@ -290,7 +290,7 @@ private:
    *  \sa Compute2ndDerivativePos
    *  \sa Compute3ndDerivativePosThreaderCallBack   */ 
   void ThreadedCompute2ndDerivativePos(const OutputImageRegionType&
-                                       outputRegionForThread, int threadId);
+                                       outputRegionForThread);
 
   /**This callback method uses ImageSource::SplitRequestedRegion to acquire an
    * output region that it passes to ThreadedCompute2ndDerivative for

@@ -18,8 +18,8 @@ mark_as_advanced(${PRIMARY_PROJECT_NAME}_INSTALL_DEVELOPMENT)
 option(${PRIMARY_PROJECT_NAME}_USE_QT "Find and use Qt with VTK to build GUI Tools" OFF)
 mark_as_advanced(${PRIMARY_PROJECT_NAME}_USE_QT)
 
-set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build, only version 4 allowed.")
-set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
+set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build, only version 4 allowed. (testing 5)")
+set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4" "5")
 
 set(VTK_VERSION_MAJOR 8 CACHE STRING "Choose the expected VTK major version to build. At least version 7 is strongly recommended.")
 set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "9" "8" "7" "6")

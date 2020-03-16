@@ -149,10 +149,10 @@ MultiScaleGaussianEnhancementImageFilter< TInputImage, TOutputImage >
 template< typename TInputImage, typename TOutputImage >
 void
 MultiScaleGaussianEnhancementImageFilter< TInputImage, TOutputImage >
-::SetNumberOfThreads( ThreadIdType nt )
+::SetNumberOfWorkUnits( ThreadIdType nt )
 {
-  Superclass::SetNumberOfThreads( nt );
-  this->m_GaussianEnhancementFilter->SetNumberOfThreads( nt );
+  Superclass::SetNumberOfWorkUnits( nt );
+  this->m_GaussianEnhancementFilter->SetNumberOfWorkUnits( nt );
   this->Modified();
 
 } // end SetNumberOfThreads()
@@ -265,7 +265,7 @@ MultiScaleGaussianEnhancementImageFilter< TInputImage, TOutputImage >
   typename MaxFilterType::Pointer maxFilter = MaxFilterType::New();
   maxFilter->SetInput1( this->GetOutput() );
   maxFilter->SetInput2( seOutput );
-  maxFilter->SetNumberOfThreads(this->GetNumberOfThreads());
+  maxFilter->SetNumberOfWorkUnits(this->GetNumberOfWorkUnits());
   maxFilter->InPlaceOn();
   maxFilter->Update();
   this->GraftOutput( maxFilter->GetOutput() );

@@ -173,7 +173,7 @@ public:
   bool GetNormalizeAcrossScale() const;
 
   /** Set the number of threads to create when executing. */
-  void SetNumberOfThreads( ThreadIdType nt );
+  void SetNumberOfWorkUnits( ThreadIdType nt );
 
   /** Get the image containing the scales at which each pixel gave the best response */
   const ScalesImageType * GetScalesOutput( void ) const;

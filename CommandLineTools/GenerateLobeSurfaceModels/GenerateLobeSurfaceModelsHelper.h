@@ -43,7 +43,7 @@ typedef itk::ImageRegionIteratorWithIndex< ImageSliceType >                     
 typedef itk::ResampleImageFilter< ImageType, ImageType >                            ResampleType;
 typedef itk::IdentityTransform< double, 3 >                                         IdentityType;
 typedef itk::CIPExtractChestLabelMapImageFilter< 3 >                                LabelMapExtractorType;
-typedef itk::TransformFileReader::TransformListType*                                TransformListType;
+typedef const itk::TransformFileReader::TransformListType*                                TransformListType;
 typedef itk::ContinuousIndex< double, 3 >                                           ContinuousIndexType;
 
 struct PCA

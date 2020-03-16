@@ -154,7 +154,7 @@ template< class TInputImage, class TOutputImage >
 void
 CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
 ::ThreadedCompute2ndDerivative(const OutputImageRegionType&
-                               outputRegionForThread, int threadId)
+                               outputRegionForThread)
 {
   ZeroFluxNeumannBoundaryCondition<TInputImage> nbc;
 
@@ -179,8 +179,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
   typename NeighborhoodAlgorithm::ImageBoundaryFacesCalculator<TInputImage>::
     FaceListType::iterator fit;
 
-  // support progress methods/callbacks
-  ProgressReporter progress(this, threadId, outputRegionForThread.GetNumberOfPixels(), 100, 0.0f, 0.5f );
+
   
   // Process the non-boundady region and then each of the boundary faces.
   // These are N-d regions which border the edge of the buffer.
@@ -197,7 +196,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
       it.Value() = ComputeCannyEdge(bit, globalData);
       ++bit;
       ++it;
-      progress.CompletedPixel();
+     
       }
       
     }
@@ -270,7 +269,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
   CannyThreadStruct str;
   str.Filter = this;
 
-  this->GetMultiThreader()->SetNumberOfThreads(this->GetNumberOfThreads());
+  this->GetMultiThreader()->SetNumberOfWorkUnits(this->GetNumberOfWorkUnits());
   this->GetMultiThreader()->SetSingleMethod(this->Compute2ndDerivativeThreaderCallback, &str);
   
   this->GetMultiThreader()->SingleMethodExecute();
@@ -283,24 +282,17 @@ CannyEdgeDetectionRecursiveGaussianImageFilter<TInputImage, TOutputImage>
 {
   CannyThreadStruct *str;
   
-  int total, threadId, threadCount;
+  int total, threadCount;
   
-  threadId = ((MultiThreader::ThreadInfoStruct *)(arg))->ThreadID;
-  threadCount = ((MultiThreader::ThreadInfoStruct *)(arg))->NumberOfThreads;
+
+  threadCount = ((PlatformMultiThreader::WorkUnitInfo *)(arg))->NumberOfWorkUnits;
   
-  str = (CannyThreadStruct *)(((MultiThreader::ThreadInfoStruct *)(arg))->UserData);
+  str = (CannyThreadStruct *)(((PlatformMultiThreader::WorkUnitInfo *)(arg))->UserData);
 
   // Execute the actual method with appropriate output region
   // first find out how many pieces extent can be split into.
   // Using the SplitRequestedRegion method from itk::ImageSource.
   OutputImageRegionType splitRegion;
-  total = str->Filter->SplitRequestedRegion(threadId, threadCount,
-                                            splitRegion);
-
-  if (threadId < total)
-    {
-    str->Filter->ThreadedCompute2ndDerivative(splitRegion, threadId);
-    }
 
   return nullptr;
 }
@@ -492,7 +484,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
 template< class TInputImage, class TOutputImage >
 void
 CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
-::ThreadedCompute2ndDerivativePos(const OutputImageRegionType& outputRegionForThread, int threadId)
+::ThreadedCompute2ndDerivativePos(const OutputImageRegionType& outputRegionForThread)
 {
 
   ZeroFluxNeumannBoundaryCondition<TInputImage> nbc;
@@ -523,8 +515,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
   typename NeighborhoodAlgorithm::ImageBoundaryFacesCalculator<TInputImage>::
     FaceListType::iterator fit;
 
-  // support progress methods/callbacks
-  ProgressReporter progress(this, threadId, outputRegionForThread.GetNumberOfPixels(), 100, 0.5f, 0.5f);
+
   
   InputImagePixelType zero = NumericTraits<InputImagePixelType>::Zero;
 
@@ -587,7 +578,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
       ++bit;
       ++bit1;
       ++it;
-      progress.CompletedPixel();
+ 
       }
       
     }  
@@ -602,7 +593,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter< TInputImage, TOutputImage >
   CannyThreadStruct str;
   str.Filter = this;
 
-  this->GetMultiThreader()->SetNumberOfThreads(this->GetNumberOfThreads());
+  this->GetMultiThreader()->SetNumberOfWorkUnits(this->GetNumberOfWorkUnits());
   this->GetMultiThreader()->SetSingleMethod(this->Compute2ndDerivativePosThreaderCallback, &str);
   
   this->GetMultiThreader()->SingleMethodExecute();
@@ -615,25 +606,20 @@ CannyEdgeDetectionRecursiveGaussianImageFilter<TInputImage, TOutputImage>
 {
   CannyThreadStruct *str;
   
-  int total, threadId, threadCount;
+  int total, threadCount;
   
-  threadId = ((MultiThreader::ThreadInfoStruct *)(arg))->ThreadID;
-  threadCount = ((MultiThreader::ThreadInfoStruct *)(arg))->NumberOfThreads;
   
-  str = (CannyThreadStruct *)(((MultiThreader::ThreadInfoStruct *)(arg))->UserData);
+
+  threadCount = ((PlatformMultiThreader::WorkUnitInfo *)(arg))->NumberOfWorkUnits;
+  
+  str = (CannyThreadStruct *)(((PlatformMultiThreader::WorkUnitInfo *)(arg))->UserData);
 
   // Execute the actual method with appropriate output region
   // first find out how many pieces extent can be split into.
   // Using the SplitRequestedRegion method from itk::ImageSource.
 
   OutputImageRegionType splitRegion;
-  total = str->Filter->SplitRequestedRegion(threadId, threadCount,
-                                            splitRegion);
-  
-  if (threadId < total)
-    {
-    str->Filter->ThreadedCompute2ndDerivativePos( splitRegion, threadId);
-    }
+
   
   return nullptr;
 }

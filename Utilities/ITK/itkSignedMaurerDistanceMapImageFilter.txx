@@ -12,7 +12,7 @@
 #include "itkSubtractImageFilter.h"
 
 #include "vnl/vnl_vector.h"
-#include "vnl/vnl_math.h"
+
 
 namespace itk
 {
@@ -138,8 +138,8 @@ SignedMaurerDistanceMapImageFilter<TInputImage, TOutputImage>
     for (It.GoToBegin(); !It.IsAtEnd(); ++It)
     {
       (m_BinaryImage->GetPixel(It.GetIndex()) && m_InsideIsPositive) 
-        ? It.Set( static_cast<OutputPixelType>(sqrt(double(vnl_math_abs(It.Get())))))
-        : It.Set(-static_cast<OutputPixelType>(sqrt(double(vnl_math_abs(It.Get())))));
+        ? It.Set( static_cast<OutputPixelType>(sqrt(double(std::fabs(It.Get())))))
+        : It.Set(-static_cast<OutputPixelType>(sqrt(double(std::fabs(It.Get())))));
     }
   }  
 }
@@ -196,13 +196,13 @@ SignedMaurerDistanceMapImageFilter<TInputImage, TOutputImage>
     OutputPixelType iw = (m_UseImageSpacing) ? static_cast<OutputPixelType>(i*m_Spacing[d])
                                              : static_cast<OutputPixelType>(i);
 
-    OutputPixelType d1 = vnl_math_abs(g(l  )) + (h(l  )-iw)*(h(l  )-iw);
-    OutputPixelType d2 = vnl_math_abs(g(l+1)) + (h(l+1)-iw)*(h(l+1)-iw);
+    OutputPixelType d1 = std::fabs(g(l  )) + (h(l  )-iw)*(h(l  )-iw);
+    OutputPixelType d2 = std::fabs(g(l+1)) + (h(l+1)-iw)*(h(l+1)-iw);
     while ((l < ns) && (d1 > d2))
     {
       l++;
       d1 = d2;
-      d2 = vnl_math_abs(g(l+1)) + (h(l+1)-iw)*(h(l+1)-iw);      
+      d2 = std::fabs(g(l+1)) + (h(l+1)-iw)*(h(l+1)-iw);      
     }      
     idx[d] = i;
     (m_BinaryImage->GetPixel(idx) && m_InsideIsPositive) 
@@ -221,7 +221,7 @@ SignedMaurerDistanceMapImageFilter<TInputImage, TOutputImage>
   OutputPixelType b = xf - x2;
   OutputPixelType c = xf - x1;
 
-  return ((c*vnl_math_abs(d2) - b*vnl_math_abs(d1) - a*vnl_math_abs(df) - a*b*c) > 0);
+  return ((c*std::fabs(d2) - b*std::fabs(d1) - a*std::fabs(df) - a*b*c) > 0);
 }
 
 /**
