@@ -273,7 +273,6 @@ class VesselParticlesPipeline:
                     # print tmpCommand
                     subprocess.call(tmpCommand, shell=True)
                 elif self._init_method == 'VesselProbability':
-                    print(self._vessel_prob_file)
                     assert self._vessel_prob_file is not None, "VesselProbability init method was chosen, but vprob " \
                                                                "was not specified"
 
