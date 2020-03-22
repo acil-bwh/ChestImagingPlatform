@@ -258,7 +258,8 @@ class VesselParticlesPipeline:
 
                 elif self._init_method == 'VesselMask':
                     # vessel_file=os.path.join(self._tmp_dir,self._vessel_mask)
-                    assert self._vessel_mask is None, "VesselMask init method was chosen, but vmask was not specified"
+                    assert self._vessel_mask is not None, "VesselMask init method was chosen, but vmask was not " \
+                                                          "specified"
                     vessel_file=self._vessel_mask
                     vessel_file_resampled=os.path.join(self._tmp_dir,self._case_id + "_" + "vesselMaskResampled" + ".nrrd")
                     tmpCommandUnuResampling = "unu resample -k %(kernel)s -s x%(f1)f x%(f2)f x%(f3)f -i %(in)s -o %(out)s -c cell"
@@ -272,8 +273,9 @@ class VesselParticlesPipeline:
                     # print tmpCommand
                     subprocess.call(tmpCommand, shell=True)
                 elif self._init_method == 'VesselProbability':
-                    assert self._vessel_prob_file is None, "VesselProbability init method was chosen, but vprob was " \
-                                                           "not specified"
+                    print(self._vessel_prob_file)
+                    assert self._vessel_prob_file is not None, "VesselProbability init method was chosen, but vprob " \
+                                                               "was not specified"
 
                     # Resampling and cropping to match reformatted ct image
                     vessel_prob_file=self._vessel_prob_file
@@ -405,7 +407,7 @@ if __name__ == "__main__":
     
     vp = VesselParticlesPipeline(op.ct_file_name, op.pl_file_name, regions, op.tmp_dir, op.output_prefix,
                                  op.init_method, op.vessel_mask, op.vessel_probabilities, op.resampling_method,
-                                 op.lth,op.sth, op.voxel_size, op.min_scale, op.max_scale, op.vesselness_th, crop,
+                                 op.lth, op.sth, op.voxel_size, op.min_scale, op.max_scale, op.vesselness_th, crop,
                                  op.rate, op.multires, op.justparticles, op.clean_cache, op.permissive, op.heq_dir)
 
     vp._distance_from_wall=op.distance_from_wall
