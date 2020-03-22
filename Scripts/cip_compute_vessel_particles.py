@@ -19,12 +19,14 @@ class VesselParticlesPipeline:
         ---------
         
         """
-    def __init__(self,ct_file_name,pl_file_name,regions,tmp_dir,output_prefix,init_method='Frangi',
-                 vessel_mask=None,resampling_method='Linear',lth=-95,sth=-70,voxel_size=0,min_scale=0.7,max_scale=4,
-                 vesselness_th=0.38,crop=0,rate=1,multires=False,justparticles=False,clean_cache=True, permissive=False):
+    def __init__(self,ct_file_name, pl_file_name, regions, tmp_dir, output_prefix, init_method='Frangi',
+                 vessel_mask=None, vessel_probabilities=None, resampling_method='Linear', lth=-95, sth=-70,
+                 voxel_size=0, min_scale=0.7, max_scale=4, vesselness_th=0.38, crop=0, rate=1, multires=False,
+                 justparticles=False, clean_cache=True, permissive=False, heq_dir=None):
         
         assert init_method == 'Frangi' or init_method == 'Threshold' or init_method == 'StrainEnergy' \
-               or init_method == 'VesselMask'
+               or init_method == 'VesselMask' or init_method == 'VesselProbability', "Incorrect initialization method " \
+                                                                                     "specified."
         
         self._ct_file_name=ct_file_name
         self._pl_file_name=pl_file_name
@@ -44,6 +46,8 @@ class VesselParticlesPipeline:
         self._justparticles=justparticles
         self._clean_cache=clean_cache
         self._vessel_mask=vessel_mask
+        self._vessel_prob_file = vessel_probabilities
+        self._heq_out_directory = heq_dir
         
         self._case_id = str.split(os.path.basename(ct_file_name),'.')[0]
         
@@ -218,9 +222,15 @@ class VesselParticlesPipeline:
                     
                     #Hist equalization, threshold Feature strength and masking
                     tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.96 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
-                    tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
                     print (tmpCommand)
                     subprocess.call( tmpCommand , shell=True)
+
+                    if self._heq_out_directory is not None:
+                        heqFileNameRegion = os.path.join(self._heq_out_directory, self._case_id + "_" + rtag + "_heq.nrrd")
+                        tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 -o %(out)s"
+                        tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion, 'out':heqFileNameRegion}
+                        subprocess.call(tmpCommand, shell=True)
+
                 elif self._init_method == 'StrainEnergy':
                     tmpCommand = "ComputeFeatureStrength -i %(in)s -m StrainEnergy -f RidgeLine --std %(minscale)f,%(maxscale)f,7 --ssm 1 --alpha 0.2 --beta 0.1 --kappa 0.5 --nu 0.1 -o %(out)s"
                     tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'out':featureMapFileNameRegion,'minscale':self._min_scale,'maxscale':self._max_scale}
@@ -233,13 +243,22 @@ class VesselParticlesPipeline:
                     tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
                     print (tmpCommand)
                     subprocess.call( tmpCommand , shell=True)
+
+                    if self._heq_out_directory is not None:
+                        heqFileNameRegion = os.path.join(self._heq_out_directory, self._case_id + "_" + rtag + "_heq.nrrd")
+                        tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 -o %(out)s"
+                        tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion, 'out':heqFileNameRegion}
+                        subprocess.call(tmpCommand, shell=True)
+
                 elif self._init_method == 'Threshold':
                     tmpCommand = "unu 2op gt %(in)s %(intensity_th)f | unu 2op x - %(mask)s -o %(out)s"
                     tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'mask':pl_file_nameRegion,'intensity_th':self._intensity_th,'out':maskFileNameRegion}
                     print (tmpCommand)
                     subprocess.call( tmpCommand , shell=True)
+
                 elif self._init_method == 'VesselMask':
                     # vessel_file=os.path.join(self._tmp_dir,self._vessel_mask)
+                    assert self._vessel_mask is None, "VesselMask init method was chosen, but vmask was not specified"
                     vessel_file=self._vessel_mask
                     vessel_file_resampled=os.path.join(self._tmp_dir,self._case_id + "_" + "vesselMaskResampled" + ".nrrd")
                     tmpCommandUnuResampling = "unu resample -k %(kernel)s -s x%(f1)f x%(f2)f x%(f3)f -i %(in)s -o %(out)s -c cell"
@@ -252,7 +271,33 @@ class VesselParticlesPipeline:
                     tmpCommand = os.path.join(path['CIP_PATH'], tmpCommand)
                     # print tmpCommand
                     subprocess.call(tmpCommand, shell=True)
-                
+                elif self._init_method == 'VesselProbability':
+                    assert self._vessel_prob_file is None, "VesselProbability init method was chosen, but vprob was " \
+                                                           "not specified"
+
+                    # Resampling and cropping to match reformatted ct image
+                    vessel_prob_file=self._vessel_prob_file
+                    vessel_file_resampled=os.path.join(self._tmp_dir,self._case_id + "_" + "vesselMaskResampled" + ".nrrd")
+                    tmpCommandUnuResampling = "unu resample -k %(kernel)s -s x%(f1)f x%(f2)f x%(f3)f -i %(in)s -o %(out)s -c cell"
+                    tmpCommandPL = tmpCommandUnuResampling % {'in':vessel_prob_file,'out':vessel_file_resampled,'kernel':"cheap",'f1':spacing[0]/self._voxel_size,'f2':spacing[1]/self._voxel_size,'f3':spacing[2]/self._voxel_size}
+                    subprocess.call(tmpCommandPL,shell=True)
+
+                    tmpCommand = "CropLung --cipr %(region)s -m 0 -v 0 --ict %(mask-in)s --ilm %(lm-in)s --oct %(mask-out)s --olm %(lm-out)s"
+                    tmpCommand = tmpCommand % {'region': ii, 'mask-in': vessel_file_resampled, 'lm-in': pl_file_name,
+                                               'mask-out': featureMapFileNameRegion, 'lm-out': pl_file_nameRegion}
+                    tmpCommand = os.path.join(path['CIP_PATH'], tmpCommand)
+                    subprocess.call(tmpCommand, shell=True)
+
+                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                    tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
+                    subprocess.call(tmpCommand, shell=True)
+
+                    if self._heq_out_directory is not None:
+                        heqFileNameRegion = os.path.join(self._heq_out_directory, self._case_id + "_" + rtag + "_heq.nrrd")
+                        tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 -o %(out)s"
+                        tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion, 'out':heqFileNameRegion}
+                        subprocess.call(tmpCommand, shell=True)
+
                 # Binary Thinning
                 tmpCommand = "GenerateBinaryThinning3D -i %(in)s -o %(out)s"
                 tmpCommand = tmpCommand % {'in':maskFileNameRegion,'out':maskFileNameRegion}
@@ -288,8 +333,6 @@ class VesselParticlesPipeline:
                 particlesGenerator.execute()
 
 
-
-
 if __name__ == "__main__":
     import argparse
     
@@ -306,13 +349,25 @@ if __name__ == "__main__":
     parser.add_argument("--rate", dest="rate",type=float,default=1)
     parser.add_argument("--minscale", dest="min_scale",type=float,default=0.7)
     parser.add_argument("--maxscale", dest="max_scale",type=float,default=4)
-    parser.add_argument("--init", dest="init_method",default="Frangi")
-    parser.add_argument("--vmask", dest="vessel_mask", default=None)
-    parser.add_argument("--dwall", dest="distance_from_wall", type=float,default=2.0, help="Distance from wall (in mm) "
-                                                                                           "to exclude for the vessel "
-                                                                                           "extraction to avoid chest "
-                                                                                           "wall artifacts")
-    parser.add_argument("--vesselness_th", dest="vesselness_th",type=float,default=0.38)
+    parser.add_argument("--init", dest="init_method",default="Frangi", help="Initialization method. Options: "
+                                                                            "Frangi | Threshold | StrainEnergy | "
+                                                                            "VesselMask | VesselProbability")
+    parser.add_argument("--vmask", dest="vessel_mask", default=None, help="Vessel mask image. To be specified "
+                                                                          "if VesselMask is chosen as "
+                                                                          "initialization method")
+    parser.add_argument("--vprob", dest="vessel_probabilities", default=None, help="Vessel probability image. To be "
+                                                                                   "specified if VesselProbability is "
+                                                                                   "chosen as initialization method")
+    parser.add_argument("--dwall", dest="distance_from_wall", type=float, default=2.0, help="Distance from wall (in mm) "
+                                                                                            "to exclude for the vessel "
+                                                                                            "extraction to avoid chest "
+                                                                                            "wall artifacts")
+    parser.add_argument("--vesselness_th", dest="vesselness_th", type=float, default=0.38, help="Threshold to generate "
+                                                                                                "the vesselness map. "
+                                                                                                "To be specified for "
+                                                                                                "Frangi, StrainEnergy,"
+                                                                                                "and VesselProbability "
+                                                                                                "initialization methods")
     parser.add_argument("--resampling", dest="resampling_method", default="Linear", help="Resampling method for CT "
                                                                                          "image: linear, cubic, "
                                                                                          "registration (demons-based "
@@ -324,9 +379,12 @@ if __name__ == "__main__":
     parser.add_argument("--perm", dest="permissive",action="store_true", default=False, help="If set, it allows volumes "
                                                                                              "to have different shapes "
                                                                                              "(false is safer)")
+    parser.add_argument("--heqDir", dest="heq_dir", default=None, help="Optional. Path to directory to save histogram "
+                                                                       "equalization image (for Frangi, StrainEnergy, "
+                                                                       "and VesselProbability initialization methods).")
 
     # Check required tools path enviroment variables for tools path
-    toolsPaths = ['CIP_PATH','TEEM_PATH','ITKTOOLS_PATH'];
+    toolsPaths = ['CIP_PATH','TEEM_PATH','ITKTOOLS_PATH']
     path=dict()
     for path_name in toolsPaths:
         path[path_name] = os.environ.get(path_name,False)
@@ -336,7 +394,8 @@ if __name__ == "__main__":
 
     op = parser.parse_args()
     assert op.init_method == 'Frangi' or op.init_method == 'Threshold' or op.init_method == 'StrainEnergy' or \
-           op.init_method == 'VesselMask'
+           op.init_method == 'VesselMask' or op.init_method == 'VesselProbability', "Incorrect initialization method " \
+                                                                                    "specified."
     
     # region = [2,3]
     # region=[2]
@@ -345,10 +404,9 @@ if __name__ == "__main__":
     regions = [kk for kk in str.split(op.regions,',')]
     
     vp = VesselParticlesPipeline(op.ct_file_name, op.pl_file_name, regions, op.tmp_dir, op.output_prefix,
-                                 op.init_method, op.vessel_mask, op.resampling_method, op.lth,op.sth, op.voxel_size,
-                                 op.min_scale, op.max_scale, op.vesselness_th, crop, op.rate, op.multires,
-                                 op.justparticles, op.clean_cache, op.permissive)
+                                 op.init_method, op.vessel_mask, op.vessel_probabilities, op.resampling_method,
+                                 op.lth,op.sth, op.voxel_size, op.min_scale, op.max_scale, op.vesselness_th, crop,
+                                 op.rate, op.multires, op.justparticles, op.clean_cache, op.permissive, op.heq_dir)
 
     vp._distance_from_wall=op.distance_from_wall
-
     vp.execute()
