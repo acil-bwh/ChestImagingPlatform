@@ -69,11 +69,6 @@ class DataProcessing(object):
         :param padding_value: pixel padding value when a transformed pixel is outside of the image
         :return: tuple with simpleITK image and array with the resulting output spacing
         """
-        # if not isinstance(output_spacing, np.ndarray):
-        #     output_spacing = np.array(output_spacing)
-        # factor = np.asarray(image.GetSpacing()) / output_spacing.astype(np.float32)
-        # output_size = np.round(np.asarray(image.GetSize()) * factor + 0.0005).astype(np.uint32)
-
         resampler = sitk.ResampleImageFilter()
         resampler.SetOutputDirection(image.GetDirection())
         resampler.SetSize(output_size)
@@ -81,7 +76,14 @@ class DataProcessing(object):
         resampler.SetInterpolator(interpolator)
         resampler.SetOutputSpacing(np.array(output_spacing))
         resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
-        resampler.SetOutputOrigin(image.GetOrigin())
+        factor = np.asarray(image.GetSpacing()) / np.asarray(output_spacing).astype(np.float32)
+
+        # Get new output origin
+        real_output_size = np.round(np.asarray(image.GetSize()) * factor + 0.0005).astype(np.uint32)
+        diff = ((output_size - real_output_size) * np.asarray(output_spacing)) / 2
+        output_origin = np.asarray(image.GetOrigin()) - diff
+
+        resampler.SetOutputOrigin(output_origin)
         return resampler.Execute(image)
 
     @classmethod
