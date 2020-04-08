@@ -37,7 +37,7 @@ class DataProcessing(object):
         """
         Image resampling using ITK
         :param image: simpleITK image
-        :param output_spacing: numpy array or tuple. Output size
+        :param output_spacing: numpy array or tuple. Output spacing
         :param output_type: simpleITK output data type. If None, use the same as 'image'
         :param interpolator: simpleITK interpolator (default: BSpline)
         :return: tuple with simpleITK image and array with the resulting output spacing
@@ -52,6 +52,34 @@ class DataProcessing(object):
         resampler.SetSize(output_size.tolist())
         resampler.SetInterpolator(interpolator)
         resampler.SetOutputSpacing(output_spacing)
+        resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
+        resampler.SetOutputOrigin(image.GetOrigin())
+        return resampler.Execute(image)
+
+    @classmethod
+    def resample_image_itk_by_spacing_and_size(cls, image, output_spacing, output_size, output_type=None,
+                                               interpolator=sitk.sitkBSpline, padding_value=-1024):
+        """
+        Image resampling using ITK
+        :param image: simpleITK image
+        :param output_spacing: numpy array or tuple. Output spacing
+        :param output_size: numpy array or tuple. Output size
+        :param output_type: simpleITK output data type. If None, use the same as 'image'
+        :param interpolator: simpleITK interpolator (default: BSpline)
+        :param padding_value: pixel padding value when a transformed pixel is outside of the image
+        :return: tuple with simpleITK image and array with the resulting output spacing
+        """
+        # if not isinstance(output_spacing, np.ndarray):
+        #     output_spacing = np.array(output_spacing)
+        # factor = np.asarray(image.GetSpacing()) / output_spacing.astype(np.float32)
+        # output_size = np.round(np.asarray(image.GetSize()) * factor + 0.0005).astype(np.uint32)
+
+        resampler = sitk.ResampleImageFilter()
+        resampler.SetOutputDirection(image.GetDirection())
+        resampler.SetSize(output_size)
+        resampler.SetDefaultPixelValue(padding_value)
+        resampler.SetInterpolator(interpolator)
+        resampler.SetOutputSpacing(np.array(output_spacing))
         resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
         resampler.SetOutputOrigin(image.GetOrigin())
         return resampler.Execute(image)
