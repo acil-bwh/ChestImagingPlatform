@@ -619,9 +619,8 @@ class H5DatasetStore(object):
                     errors.append((p, traceback.format_exc()))
 
         # Final validation
-        self.full_validation()
+        # self.full_validation()
         return errors
-
 
     def save_git_tag(self, tag=None):
         """
