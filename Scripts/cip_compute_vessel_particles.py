@@ -222,6 +222,7 @@ class VesselParticlesPipeline:
                     
                     #Hist equalization, threshold Feature strength and masking
                     tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.96 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                    tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
                     print (tmpCommand)
                     subprocess.call( tmpCommand , shell=True)
 
