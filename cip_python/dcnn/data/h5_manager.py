@@ -539,7 +539,11 @@ class H5Manager(object):
                         batch_ys[i][batch_pos:batch_pos+num_data_points_current_batch] = ys[i]
                     else:
                         batch_ys[i][batch_pos] = ys[i]
-                batch_pos += num_data_points_current_batch
+
+                if self.load_all_data:
+                    batch_pos += num_data_points_current_batch
+                else:
+                    batch_pos += 1
 
         return batch_xs, batch_ys
 
