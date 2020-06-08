@@ -294,7 +294,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter<TInputImage, TOutputImage>
   // Using the SplitRequestedRegion method from itk::ImageSource.
   OutputImageRegionType splitRegion;
 
-  return nullptr;
+  return ITK_THREAD_RETURN_DEFAULT_VALUE;
 }
 
 template< class TInputImage, class TOutputImage >
@@ -620,8 +620,7 @@ CannyEdgeDetectionRecursiveGaussianImageFilter<TInputImage, TOutputImage>
 
   OutputImageRegionType splitRegion;
 
-  
-  return nullptr;
+  return ITK_THREAD_RETURN_DEFAULT_VALUE;
 }
 
 // Set value of Sigma (isotropic)
