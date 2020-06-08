@@ -125,7 +125,7 @@ FeatureAggregator<NDimension>
 }
 
 template <unsigned int NDimension>
-unsigned long
+ModifiedTimeType
 FeatureAggregator<NDimension>
 ::GetMTime() const
 {
