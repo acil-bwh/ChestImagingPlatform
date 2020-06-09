@@ -76,7 +76,7 @@ public:
   void AddFeatureGenerator( FeatureGeneratorType * generator ); 
 
   /** Check all feature generators and return consolidate MTime */
-  virtual unsigned long GetMTime() const override;
+  ModifiedTimeType GetMTime() const override;
 
 protected:
   FeatureAggregator();
