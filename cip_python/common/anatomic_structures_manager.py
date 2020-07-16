@@ -338,6 +338,42 @@ class AnatomicStructuresManager(object):
         # If the execution reaches this line, the structure was not found
         return None
 
+    def get_region_in_axial_view(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane, 
+                                slice_operation=np.max):
+
+
+        gtd = GeometryTopologyData.from_xml_file(xml_file_path_or_GTD_object) if isinstance(xml_file_path_or_GTD_object, str) \
+              else xml_file_path_or_GTD_object
+
+        if isinstance(case_path_or_sitk_volume, sitk.Image):
+            sitk_volume = case_path_or_sitk_volume
+        else:
+            sitk_volume = ImageReaderWriter().read(case_path_or_sitk_volume)
+
+        structure_code = ChestConventions.GetChestRegionName(region) + ChestConventions.GetPlaneName(plane)
+        if plane == Plane.AXIAL:
+            slix = 2
+        elif plane == Plane.CORONAL:
+            slix = 1
+        elif plane == Plane.SAGITTAL:
+            slix = 0
+        else:
+            raise Exception("Wrong plane")
+        for bb in gtd.bounding_boxes:
+            if bb.description.upper() == structure_code.upper():
+
+                start = [0, 0, 0]
+                end = [0, 0, 0]
+                end[0]=sitk_volume.GetSize()[0]
+                end[1]=sitk_volume.GetSize()[1]
+
+                zmax= bb.start[2] + bb.size[2]
+                zmin = bb.start[2]
+                z_select=int(slice_operation(np.array([zmin,zmax])))
+                im = sitk_volume[start[0]:end[0], start[1]:end[1], z_select-1:z_select]
+                return im
+        return None
+
     def get_full_slice(self, case_path_or_sitk_volume, xml_file_path_or_GTD_object, region, plane, out_of_bounds_slice_tolerance_pixels=0):
         """
         Extract a sitk 3D volume that contains the structure provided
