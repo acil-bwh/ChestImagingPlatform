@@ -20,6 +20,7 @@ class Sorter():
                             patientid = ds['PatientID'].value
                             studyuid = ds['StudyInstanceUID'].value
                             seriesuid = ds['SeriesInstanceUID'].value
+                            instanceuid = str(ds['SliceLocation'].value)
                             if output:
                                 directory = os.path.join(output,patientid,studyuid,seriesuid)
                             else:
@@ -28,7 +29,7 @@ class Sorter():
                             if not os.path.exists(directory):
                                 os.makedirs(directory)
                             if cop:
-                                shutil.copy(os.path.join(root,filename), os.path.join(directory,filename))
+                                shutil.copy(os.path.join(root,filename), os.path.join(directory,instanceuid))
                             else:
                                 os.rename(os.path.join(root,filename), os.path.join(directory,filename))
                         except:
