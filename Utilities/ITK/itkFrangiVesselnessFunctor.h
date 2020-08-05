@@ -90,7 +90,7 @@ public:
     else
     {
       // Reject bright tubes and bright ridges over dark background
-      if( sortedEigenValues[ 0 ] < NumericTraits<RealType>::Zero )
+      if( sortedEigenValues[ 2 ] < NumericTraits<RealType>::Zero )
       {
         return NumericTraits<TOutput>::Zero;
       }
