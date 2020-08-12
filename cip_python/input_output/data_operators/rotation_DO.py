@@ -43,7 +43,7 @@ class RotationDataOperator(DataOperatorInterface):
             assert self.rotation_angle is not None, "Rotation angle not specified"
 
         if isinstance(data, np.ndarray):
-            return rotate(data, self.rotation_angle, axes=self.rotation_axes, mode=self.fill_mode,
+            return rotate(data, self.rotation_angle, axes=self.rotation_axes, mode=self.fill_mode, cval=self.cval,
                           reshape=self.reshape)
         elif isinstance(data, list):
             result = list()

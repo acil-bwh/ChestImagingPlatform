@@ -55,7 +55,7 @@ class ShiftingDataOperator(DataOperatorInterface):
             assert self.shift_x is not None and self.shift_y is not None and self.shift_z is not None, "Shift along the three dimensions not specified"
 
         if isinstance(data, np.ndarray):
-            return shift(data, (self.shift_x, self.shift_y, self.shift_z), mode=self.fill_mode)
+            return shift(data, (self.shift_x, self.shift_y, self.shift_z), mode=self.fill_mode, cval=self.cval)
         elif isinstance(data, list):
             result = list()
             for image in data:

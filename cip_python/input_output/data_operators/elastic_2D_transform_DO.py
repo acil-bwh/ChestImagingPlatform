@@ -39,7 +39,7 @@ class Elastic2DTransformDataOperator(DataOperatorInterface):
             # Generate parameters
             self.grid_width = np.random.randint(self.min_grid_width, self.max_grid_width)
             self.grid_height = np.random.randint(self.min_grid_height, self.max_grid_height)
-            self.magnitude = np.random.randint(self.magnitude, self.magnitude)
+            self.magnitude = np.random.randint(self.min_magnitude, self.max_magnitude)
         else:
             assert self.grid_width is not None and self.grid_height is not None and self.magnitude is not None, "Grid width, grid height and magnitude not specified"
 
