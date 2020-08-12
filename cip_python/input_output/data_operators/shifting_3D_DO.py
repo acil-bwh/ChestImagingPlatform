@@ -50,12 +50,13 @@ class ShiftingDataOperator(DataOperatorInterface):
         if generate_random_parameters:
             self.shift_x = np.random.randint(low=self.min_shift_x, high=self.max_shift_x)
             self.shift_y = np.random.randint(low=self.min_shift_y, high=self.max_shift_y)
-            self.shift_x = np.random.randint(low=self.min_shift_z, high=self.max_shift_z)
+            self.shift_z = np.random.randint(low=self.min_shift_z, high=self.max_shift_z)
         else:
             assert self.shift_x is not None and self.shift_y is not None and self.shift_z is not None, "Shift along the three dimensions not specified"
 
         if isinstance(data, np.ndarray):
-            return shift(data, (self.shift_x, self.shift_y, self.shift_z), mode=self.fill_mode, cval=self.cval)
+            return shift(data, (self.shift_x, self.shift_y, self.shift_z), mode=self.fill_mode,order=self.order,
+                         cval=self.cval)
         elif isinstance(data, list):
             result = list()
             for image in data:
