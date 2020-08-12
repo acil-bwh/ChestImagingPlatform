@@ -4,7 +4,7 @@ from scipy.ndimage import shift
 from . import DataOperatorInterface
 
 
-class ShiftingDataOperator(DataOperatorInterface):
+class Shifting2DDataOperator(DataOperatorInterface):
     def __init__(self, min_shift_x, max_shift_x, min_shift_y, max_shift_y, order=3, fill_mode='nearest', cval=0.0):
         """
         Shift an array. The array is shifted using spline interpolation of the requested order.

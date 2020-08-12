@@ -5,7 +5,8 @@ from . uniform_similarity_3D_transform_with_coords_DO import UniformSimilarity3D
 from . rotation_DO import RotationDataOperator
 from . transpose_2D_DO import Transpose2DDataOperator
 from . flipping_DO import FlippingDataOperator
-from . shifting_3D_DO import ShiftingDataOperator
+from . shifting_3D_DO import Shifting3DDataOperator
+from . shifting_2D_DO import Shifting2DDataOperator
 from . shear_DO import ShearDataOperator
 from . invert_intensities_DO import InvertIntensitiesDataOperator
 from . elastic_2D_transform_DO import Elastic2DTransformDataOperator

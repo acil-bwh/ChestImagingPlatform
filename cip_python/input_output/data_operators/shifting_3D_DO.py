@@ -4,7 +4,7 @@ from scipy.ndimage import shift
 from . import DataOperatorInterface
 
 
-class ShiftingDataOperator(DataOperatorInterface):
+class Shifting3DDataOperator(DataOperatorInterface):
     def __init__(self, min_shift_x, max_shift_x, min_shift_y, max_shift_y, min_shift_z, max_shift_z,
                  order=3, fill_mode='nearest', cval=0.0):
         """
