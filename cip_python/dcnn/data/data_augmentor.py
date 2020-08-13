@@ -33,7 +33,7 @@ class DataAugmentor(object):
             augmented_ys.append(np.zeros(((n,) + output.shape), dtype=np.float32))
 
         for data_point_ix in range(n):
-            data = xs
+            data = xs.copy()
             if augment_ys:
                 data.extend(ys)
             for data_operator in self.data_operators:
