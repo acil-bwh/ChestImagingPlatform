@@ -129,6 +129,7 @@ class MetricsManager(object):
             false_neg = K.sum(y_true_pos * (1 - y_pred_pos))
             false_pos = K.sum((1 - y_true_pos) * y_pred_pos)
             return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+
         return _tversky_index_
 
     @classmethod
@@ -136,30 +137,29 @@ class MetricsManager(object):
         smooth = float(smooth)
         alpha = float(alpha)
 
-        def _tversky_index_(y_true, y_pred):
+        def _tversky_loss_(y_true, y_pred):
             y_true_pos = K.flatten(y_true)
             y_pred_pos = K.flatten(y_pred)
             true_pos = K.sum(y_true_pos * y_pred_pos)
             false_neg = K.sum(y_true_pos * (1 - y_pred_pos))
             false_pos = K.sum((1 - y_true_pos) * y_pred_pos)
-            return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+            tversky_index = (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+            return 1 - tversky_index
 
-        return 1 - _tversky_index_
+        return _tversky_loss_
 
     @classmethod
     def focal_tversky_loss(cls, smooth=1., alpha=0.7, gamma=0.75):
         smooth = float(smooth)
         alpha = float(alpha)
 
-        def _tversky_index_(y_true, y_pred):
+        def _focal_tversky_loss_(y_true, y_pred):
             y_true_pos = K.flatten(y_true)
             y_pred_pos = K.flatten(y_pred)
             true_pos = K.sum(y_true_pos * y_pred_pos)
             false_neg = K.sum(y_true_pos * (1 - y_pred_pos))
             false_pos = K.sum((1 - y_true_pos) * y_pred_pos)
-            return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+            tversky_index = (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+            return K.pow((1 - tversky_index), gamma)
 
-        return K.pow((1 - _tversky_index_), gamma)
-
-
-
+        return _focal_tversky_loss_
