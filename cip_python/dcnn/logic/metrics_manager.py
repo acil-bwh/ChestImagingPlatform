@@ -103,6 +103,7 @@ class MetricsManager(object):
         """
         gamma = float(gamma)
         alpha = float(alpha)
+
         def _focal_loss_(y_true, y_pred):
             eps = 1e-12
             y_pred = K.clip(y_pred, eps, 1. - eps)  # improve the stability of the focal loss
@@ -115,6 +116,50 @@ class MetricsManager(object):
     @classmethod
     def categorical_crossentropy_after_softmax(cls, y_true, y_pred):
         return K.categorical_crossentropy(y_true, y_pred, from_logits=True)
+
+    @classmethod
+    def tversky_index(cls, smooth=1., alpha=0.7):
+        smooth = float(smooth)
+        alpha = float(alpha)
+
+        def _tversky_index_(y_true, y_pred):
+            y_true_pos = K.flatten(y_true)
+            y_pred_pos = K.flatten(y_pred)
+            true_pos = K.sum(y_true_pos * y_pred_pos)
+            false_neg = K.sum(y_true_pos * (1 - y_pred_pos))
+            false_pos = K.sum((1 - y_true_pos) * y_pred_pos)
+            return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+        return _tversky_index_
+
+    @classmethod
+    def tversky_loss(cls, smooth=1., alpha=0.7):
+        smooth = float(smooth)
+        alpha = float(alpha)
+
+        def _tversky_index_(y_true, y_pred):
+            y_true_pos = K.flatten(y_true)
+            y_pred_pos = K.flatten(y_pred)
+            true_pos = K.sum(y_true_pos * y_pred_pos)
+            false_neg = K.sum(y_true_pos * (1 - y_pred_pos))
+            false_pos = K.sum((1 - y_true_pos) * y_pred_pos)
+            return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+
+        return 1 - _tversky_index_
+
+    @classmethod
+    def focal_tversky_loss(cls, smooth=1., alpha=0.7, gamma=0.75):
+        smooth = float(smooth)
+        alpha = float(alpha)
+
+        def _tversky_index_(y_true, y_pred):
+            y_true_pos = K.flatten(y_true)
+            y_pred_pos = K.flatten(y_pred)
+            true_pos = K.sum(y_true_pos * y_pred_pos)
+            false_neg = K.sum(y_true_pos * (1 - y_pred_pos))
+            false_pos = K.sum((1 - y_true_pos) * y_pred_pos)
+            return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+
+        return K.pow((1 - _tversky_index_), gamma)
 
 
 
