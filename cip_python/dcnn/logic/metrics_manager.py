@@ -178,7 +178,7 @@ class MetricsManager(object):
             true_pos = K.sum(y_true_pos * y_pred_pos, 1)
             false_neg = K.sum(y_true_pos * (1 - y_pred_pos), 1)
             false_pos = K.sum((1 - y_true_pos) * y_pred_pos, 1)
-            return (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
+            return K.sum((true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth))
 
         return _multiclass_2D_tversky_index_
 
@@ -216,5 +216,5 @@ class MetricsManager(object):
             false_pos = K.sum((1 - y_true_pos) * y_pred_pos, 1)
             tversky_index = (true_pos + smooth) / (true_pos + alpha * false_neg + (1 - alpha) * false_pos + smooth)
             return K.sum(K.pow((1 - tversky_index), gamma))
-        
+
         return _multiclass_2D_tversky_loss_
