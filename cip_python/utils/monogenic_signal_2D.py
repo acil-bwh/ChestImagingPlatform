@@ -126,7 +126,7 @@ class MonogenicSignal2D:
 
         return np.reshape(data, shape_dat)
 
-    def nss_monogenic_signal(self, x, y, data, pad_pt=10, pad_mode='linear_ramp', get_riesz_components=False):
+    def nss_monogenic_signal(self, x, y, data, pad_pt=10, pad_mode='linear_ramp', return_riesz_components=False):
         """
         Calculates the local amplitude, local phase and local orientation in the
         non-scale monogenic signal of data.
@@ -144,8 +144,8 @@ class MonogenicSignal2D:
                'mean': pads with the mean value of all the data.
                            }
         Returns:
-        if get_riesz_components is True, Riesz components (rx and ry) will be returned
-        Otherwise:
+        * Riesz components: 2d-arrays (if return_riesz_components = True)
+            fbp, rxp, and ryp
         * amplitude: 2d-array
             The local amplitude.
         * phase: 2d-array
@@ -173,15 +173,17 @@ class MonogenicSignal2D:
         rx = self.ifft_unpad_data(RX*F, mask, shape_dat, shape_pdat)
         ry = self.ifft_unpad_data(RY*F, mask, shape_dat, shape_pdat)
 
-        if get_riesz_components:
+        amplitude, phase, orientation = self.riesz_to_attributes(rx, ry, data)
+
+        if return_riesz_components:
             # Riesz components in the space domain
-            return rx, ry
+            return rx, ry, amplitude, phase, orientation
         else:
             # Returns the amplitude, phase and orientation
-            return self.riesz_to_attributes(rx, ry, data)
+            return amplitude, phase, orientation
 
     def pss_monogenic_signal(self, x, y, data, hc=None, hf=None, pad_pt=10, pad_mode='linear_ramp',
-                             get_riesz_components=False):
+                             return_riesz_components=False):
         """
         Calculates the local amplitude, local phase and local orientation in the
         Poisson scale-space monogenic signal of data.
@@ -205,9 +207,8 @@ class MonogenicSignal2D:
             The fine Poisson scale-space parameter.
             None = default parameters calculation.
         Returns:
-        if get_riesz_components is True, Riesz components (fbp, rxp, and ryp) will be returned
-        Otherwise:
-
+        * Riesz components: 2d-arrays (if return_riesz_components = True)
+            fbp, rxp, and ryp
         * amplitude: 2d-array
             The local amplitude.
         * phase: 2d-array
@@ -248,9 +249,10 @@ class MonogenicSignal2D:
         rxp = self.ifft_unpad_data(RX*F, mask, shape_dat, shape_pdat)
         ryp = self.ifft_unpad_data(RY*F, mask, shape_dat, shape_pdat)
 
-        if get_riesz_components:
+        amplitude, phase, orientation = self.riesz_to_attributes(rxp, ryp, fbp)
+        if return_riesz_components:
             # Riesz components and data in the Poisson scale-space domain
-            return fbp, rxp, ryp
+            return fbp, rxp, ryp, amplitude, phase, orientation
         else:
             # Amplitude, phase and orientation in the Poisson scale-space
-            return self.riesz_to_attributes(rxp, ryp, fbp)
+            return amplitude, phase, orientation
