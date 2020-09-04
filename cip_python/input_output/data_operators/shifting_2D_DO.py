@@ -46,7 +46,7 @@ class Shifting2DDataOperator(DataOperatorInterface):
             assert self.shift_x is not None and self.shift_y is not None, "Shift along the two dimensions not specified"
 
         if isinstance(data, np.ndarray):
-            return shift(data, (self.shift_x, self.shift_y), mode=self.fill_mode, cval=self.cval)
+            return shift(data, (self.shift_x, self.shift_y), mode=self.fill_mode, cval=self.cval, order=self.order)
         elif isinstance(data, list):
             result = list()
             for image in data:

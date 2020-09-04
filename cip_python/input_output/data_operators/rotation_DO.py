@@ -44,7 +44,7 @@ class RotationDataOperator(DataOperatorInterface):
 
         if isinstance(data, np.ndarray):
             return rotate(data, self.rotation_angle, axes=self.rotation_axes, mode=self.fill_mode, cval=self.cval,
-                          reshape=self.reshape)
+                          reshape=self.reshape, order=self.order)
         elif isinstance(data, list):
             result = list()
             for image in data:
