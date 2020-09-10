@@ -70,6 +70,42 @@ class MetricsManager(object):
         return 1.0-cls.dice_coef(y_true, y_pred)
 
     @classmethod
+    def multiclass_2D_dice_coef(cls, smooth=1.0):
+        smooth = float(smooth)
+
+        def _multiclass_2D_dice_coef_(y_true, y_pred):
+            y_true = K.permute_dimensions(y_true, (3, 1, 2, 0))
+            y_pred = K.permute_dimensions(y_pred, (3, 1, 2, 0))
+
+            y_true_pos = K.batch_flatten(y_true)
+            y_pred_pos = K.batch_flatten(y_pred)
+
+            true_pos = K.sum(y_true_pos * y_pred_pos, 1)
+            false_neg = K.sum(y_true_pos * (1 - y_pred_pos), 1)
+            false_pos = K.sum((1 - y_true_pos) * y_pred_pos, 1)
+            return K.mean((2. * true_pos + smooth) / (2. * true_pos + false_pos + false_neg + smooth))
+
+        return _multiclass_2D_dice_coef_
+
+    @classmethod
+    def multiclass_2D_dice_loss(cls, smooth=1.):
+        smooth = float(smooth)
+
+        def _multiclass_2D_dice_loss_(y_true, y_pred):
+            y_true = K.permute_dimensions(y_true, (3, 1, 2, 0))
+            y_pred = K.permute_dimensions(y_pred, (3, 1, 2, 0))
+
+            y_true_pos = K.batch_flatten(y_true)
+            y_pred_pos = K.batch_flatten(y_pred)
+            true_pos = K.sum(y_true_pos * y_pred_pos, 1)
+            false_neg = K.sum(y_true_pos * (1 - y_pred_pos), 1)
+            false_pos = K.sum((1 - y_true_pos) * y_pred_pos, 1)
+            dice_coef = (2. * true_pos + smooth) / (2. * true_pos + false_pos + false_neg + smooth)
+            return K.mean(1 - dice_coef)
+
+        return _multiclass_2D_dice_loss_
+
+    @classmethod
     def l2(cls, y_true, y_pred):
         """
         L2 loss (squared L2 norm). One value per data point (reduce all the possible dimensions)
