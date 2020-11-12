@@ -6,8 +6,8 @@ import sys
 class DeepLearningModelsManager(object):
     # Model URLs
     _MODELS_ = {
-          'LUNG_SEGMENTATION_AXIAL': 'lung_segmentation/lung_segmentation_axial.hdf5',
-          'LUNG_SEGMENTATION_CORONAL': 'lung_segmentation/lung_segmentation_coronal.hdf5',
+          'LUNG_SEGMENTATION_AXIAL': 'lung_segmentation/AxialModel_v02_94c9243.h5',
+          'LUNG_SEGMENTATION_CORONAL': 'lung_segmentation/CoronalModel_v02_94c9243.h5',
           'LOW_DOSE_TO_HIGH_DOSE': 'low_dose_to_high_dose/low_dose_to_high_dose_3d2d.h5'
     }
 

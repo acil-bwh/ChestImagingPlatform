@@ -35,8 +35,8 @@ class LungSegmenterDCNN:
         if not os.path.exists(model_path):
             raise Exception("{} not found".format(model_path))
 
-        network_model = load_model(model_path, custom_objects={'dice_coef': MetricsManager.dice_coef,
-                                                               'dice_coef_loss': MetricsManager.dice_coef_loss})
+        network_model = load_model(model_path, custom_objects={'_multiclass_2D_tversky_loss_': MetricsManager.multiclass_2D_tversky_loss(smooth=1, alpha=0.75),
+                                                               '_multiclass_2D_tversky_index_': MetricsManager.multiclass_2D_tversky_index(smooth=1, alpha=0.75)})
         return network_model
 
     def normalized_convolution_lp(self, signal, certainty, filter_func, *args):
@@ -73,6 +73,7 @@ class LungSegmenterDCNN:
     def lung_segmentation(self, network_model, patch_size, image_sitk, N_subsampling=10, orientation='axial'):
         image_spacing = image_sitk.GetSpacing()
         image_np = sitk.GetArrayFromImage(image_sitk).transpose([2, 1, 0])
+        image_np = image_np.astype(np.float32)
 
         if orientation == 'coronal':  # Transpose image
             image_np = image_np.transpose([0, 2, 1])
@@ -83,37 +84,28 @@ class LungSegmenterDCNN:
 
         z_shape = image_np.shape[2]
         if patch_size[0] != image_np.shape[0] or patch_size[1] != image_np.shape[1]:
-            if orientation == 'coronal' and z_shape >= 4:
-                z_shape //= 2
+            if orientation == 'coronal':
+                z_shape /= 2
+            output_size = np.asarray([int(patch_size[0]), int(patch_size[1]), int(z_shape)])
 
-            if z_shape <= 3:
-                cnn_img = np.zeros((patch_size[0], patch_size[1], z_shape), dtype=np.float32)
-                for ii in range(z_shape):
-                    output_size = np.asarray(patch_size)
-                    res_sitk, out_sp = DataProcessing.resample_image_itk(img_sitk[:, :, ii], output_size,
-                                                                         sitk.sitkInt16,
-                                                                         interpolator=sitk.sitkBSpline)
-                    cnn_img[:, :, ii] = sitk.GetArrayFromImage(res_sitk).transpose().astype(np.float32)
-                output_spacing = np.asarray([out_sp[0], out_sp[1], img_sitk.GetSpacing()[2]])
-            else:
-                output_size = np.asarray([patch_size[0], patch_size[1], z_shape])
-
-                resampled_sitk, output_spacing = DataProcessing.resample_image_itk(img_sitk, output_size,
-                                                                                   sitk.sitkInt16,
-                                                                                   interpolator=sitk.sitkBSpline)
-                cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0]).astype(np.float32)
+            resampled_sitk, output_spacing = DataProcessing.resample_image_itk(img_sitk, output_size, sitk.sitkFloat32,
+                                                                               interpolator=sitk.sitkLinear)
+            cnn_img = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
+            cnn_img = cnn_img.astype(np.float32)
         else:
-            cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0]).astype(np.float32)
+            cnn_img = sitk.GetArrayFromImage(img_sitk).transpose([2, 1, 0])
+            output_spacing = img_sitk.GetSpacing()
 
-        z_samples = list(range(0, cnn_img.shape[2], N_subsampling))
+        z_samples = range(0, cnn_img.shape[2], N_subsampling)
         if not cnn_img.shape[2] - 1 in z_samples:
             z_samples.append(cnn_img.shape[2] - 1)
 
-        predictions = np.zeros((4, z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
-        certainty_map = np.zeros((z_shape, patch_size[0], patch_size[1]), dtype=np.float32)
+        predictions = np.zeros((int(z_shape), int(patch_size[0]), int(patch_size[1]), 4), dtype=np.float32)
+        certainty_map = np.zeros((int(z_shape), int(patch_size[0]), int(patch_size[1])), dtype=np.float32)
 
         for ii in range(cnn_img.shape[2]):
-            cnn_img[:, :, ii] = DataProcessing.standardization(cnn_img[:, :, ii], mean_value=-700., std_value=450.)
+            cnn_img[:, :, ii] = DataProcessing.standardization(cnn_img[:, :, ii], mean_value=-700,
+                                                               std_value=450)
 
         for ii in z_samples:
             print ('Segmenting slice {} of {}'.format(ii, cnn_img.shape[2]))
@@ -123,8 +115,8 @@ class LungSegmenterDCNN:
             pred_img = np.expand_dims(pred_img, axis=0)
             pred_img = np.expand_dims(pred_img, axis=-1)
             cnn_predictions = np.squeeze(network_model.predict(pred_img, batch_size=N_subsampling))
-            predictions[:, ii, :, :] = cnn_predictions
-            certainty_map[ii, :, :] = np.ones([patch_size[0], patch_size[1]])
+            predictions[ii] = cnn_predictions
+            certainty_map[ii] = np.ones([patch_size[0], patch_size[1]])
 
         if N_subsampling > 1:
             for cc in range(4):
@@ -133,15 +125,8 @@ class LungSegmenterDCNN:
         return predictions, output_spacing
 
     @staticmethod
-    def sum_up_to_one(prob):
-        # Avoid division by 0
-        prob += 0.000001
-        xx = 1.0 / np.sum(prob, axis=0)
-        return prob * xx
-
-    @staticmethod
     def compute_map(prob):  # Maximum a posteriori probability
-        map_id = np.argmax(prob, axis=0)
+        map_id = np.argmax(prob, axis=-1)
 
         return map_id.astype(np.uint16)
 
@@ -178,18 +163,13 @@ class LungSegmenterDCNN:
 
     @staticmethod
     def resample_predictions(predictions_image, predictions_spacing, output_size):
-        out_predictions = np.zeros((4, output_size[0], output_size[1], output_size[2]))
-
         output_size = np.asarray(output_size)
-
-        for ii in range(predictions_image.shape[0]):
-            pp_sitk = sitk.GetImageFromArray(predictions_image[ii].transpose([2, 1, 0]))
-            pp_sitk.SetSpacing(predictions_spacing)
-            resampled_sitk, _ = DataProcessing.resample_image_itk(pp_sitk, output_size, sitk.sitkFloat32,
-                                                     interpolator=sitk.sitkLinear)
-            out_predictions[ii] = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
-
-        return out_predictions
+        pp_sitk = sitk.GetImageFromArray(predictions_image.transpose([2, 1, 0]))
+        pp_sitk.SetSpacing(predictions_spacing)
+        resampled_sitk, _ = DataProcessing.resample_image_itk(pp_sitk, output_size, sitk.sitkUInt16,
+                                                              interpolator=sitk.sitkNearestNeighbor)
+        resampled_np = sitk.GetArrayFromImage(resampled_sitk).transpose([2, 1, 0])
+        return resampled_np
 
     def execute(self, input_ct, axial_model_path, coronal_model_path, segmentation_type='combined', N_subsampling=10):
         image_sitk = sitk.ReadImage(input_ct)
@@ -199,31 +179,17 @@ class LungSegmenterDCNN:
             # Axial Lung Segmentation
             print ('    Predicting axial probabilities...')
             axial_model = self.load_network_model(axial_model_path)
-
-            a_batch_input_shape = axial_model.layers[0].get_config()['batch_input_shape']
-
-            if K.image_data_format() == 'channels_last':
-                a_patch_size = np.asarray([a_batch_input_shape[1], a_batch_input_shape[2]])
-            else:
-                a_patch_size = np.asarray([a_batch_input_shape[2], a_batch_input_shape[3]])
+            a_patch_size = np.asarray([256, 256])
 
             axial_predictions, axial_spacing = self.lung_segmentation(axial_model, a_patch_size, image_sitk,
-                                                                      N_subsampling,
-                                                                      orientation='axial')
-            axial_predictions = axial_predictions.transpose([0, 2, 3, 1])
-            axial_predictions = self.sum_up_to_one(axial_predictions)
+                                                                      N_subsampling, orientation='axial')
+            axial_predictions = axial_predictions.transpose([1, 2, 0, 3])
 
         if segmentation_type == 'combined' or segmentation_type == 'coronal':
             # Coronal Lung Segmentation
-            print('    Predicting coronal probabilities...')
+            print ('    Predicting coronal probabilities...')
             coronal_model = self.load_network_model(coronal_model_path)
-
-            c_batch_input_shape = coronal_model.layers[0].get_config()['batch_input_shape']
-
-            if K.image_data_format() == 'channels_last':
-                c_patch_size = np.asarray([c_batch_input_shape[1], c_batch_input_shape[2]])
-            else:
-                c_patch_size = np.asarray([c_batch_input_shape[2], c_batch_input_shape[3]])
+            c_patch_size = np.asarray([256, 320])
 
             if N_subsampling > 1:
                 N_subsampling_coronal = 2
@@ -231,45 +197,38 @@ class LungSegmenterDCNN:
                 N_subsampling_coronal = 1
 
             coronal_predictions, coronal_spacing = self.lung_segmentation(coronal_model, c_patch_size, image_sitk,
-                                                                          N_subsampling_coronal,
-                                                                          orientation='coronal')
-            coronal_predictions = coronal_predictions.transpose([0, 2, 1, 3])
-            coronal_predictions = self.sum_up_to_one(coronal_predictions)
+                                                                          N_subsampling_coronal, orientation='coronal')
+            coronal_predictions = coronal_predictions.transpose([1, 0, 2, 3])
 
         if segmentation_type == 'combined':
-            print('    Combining axial and coronal probabilities...')
-            if axial_predictions.shape[3] != coronal_predictions.shape[3]:
-                coronal_predictions = self.resample_predictions(coronal_predictions, coronal_spacing,
-                                                                np.asarray(axial_predictions.shape[1:]))
+            print ('    Combining axial and coronal probabilities...')
+            if axial_predictions.shape[2] != coronal_predictions.shape[2]:
+                for kk in range(coronal_predictions.shape[3]):
+                    tmp = np.zeros((axial_predictions.shape))
+                    tmp[:, :, :, kk] = self.resample_predictions(coronal_predictions[:, :, :, kk], coronal_spacing,
+                                                                 np.asarray(axial_predictions.shape[0:3]))
+                    coronal_predictions = tmp.copy()
 
             combined_predictions = self.combine_planes(axial_predictions, coronal_predictions)
-            if combined_predictions.shape[0] != img_size[0] or combined_predictions[1] != img_size[1]:
+            output_labels = self.compute_map(combined_predictions)
+            if output_labels.shape[0] != img_size[0] or output_labels[1] != img_size[1]:
                 output_size = np.asarray(img_size)
-                out_predictions = self.resample_predictions(combined_predictions, coronal_spacing, output_size)
-            else:
-                out_predictions = combined_predictions
-            output_labels = self.compute_map(out_predictions)
+                output_labels = self.resample_predictions(output_labels, coronal_spacing, output_size)
         elif segmentation_type == 'axial':
+            output_labels = self.compute_map(axial_predictions)
             if a_patch_size[0] != img_size[0] or a_patch_size[1] != img_size[1]:
                 output_size = np.asarray(img_size)
-                out_predictions = self.resample_predictions(axial_predictions, axial_spacing, output_size)
-            else:
-                out_predictions = axial_predictions
-
-            output_labels = self.compute_map(out_predictions)
+                output_labels = self.resample_predictions(output_labels, axial_spacing, output_size)
         else:
+            output_labels = self.compute_map(coronal_predictions)
             if c_patch_size[0] != img_size[0] or c_patch_size[1] != img_size[1]:
                 output_size = np.asarray(img_size)
-                out_predictions = self.resample_predictions(coronal_predictions, coronal_spacing, output_size)
-            else:
-                out_predictions = coronal_predictions
-
-            output_labels = self.compute_map(out_predictions)
+                output_labels = self.resample_predictions(output_labels, coronal_spacing, output_size)
 
         output_labels = output_labels.astype(np.uint16)
         output_labels[output_labels == 3] = self.AirwayLabel
-        output_labels[output_labels == 1] = self.LeftLabel
-        output_labels[output_labels == 2] = self.RightLabel
+        output_labels[output_labels == 2] = self.LeftLabel
+        output_labels[output_labels == 1] = self.RightLabel
 
         output_labels_sitk = sitk.GetImageFromArray(output_labels.transpose([2, 1, 0]))
         output_labels_sitk.SetSpacing(image_sitk.GetSpacing())
@@ -374,11 +333,12 @@ if __name__ == "__main__":
     parser.add_argument('--i', dest='in_ct', help="Input CT file (.nrrd)", type=str, required=True)
     parser.add_argument('--t', dest='segmentation_type', choices=['axial','coronal','combined'],
                         help='Options: [axial|coronal|combined]', type=str, default='combined')
-    parser.add_argument('--am', dest='axial_model', help='CNN model for axial lung segmentation (.hdf5)', required=False,
-                        type=str, default=None)
-    parser.add_argument('--cm', dest='coronal_model', help='CNN model for coronal lung segmentation (.hdf5)',
-                        required=False,
-                        type=str, default=None)
+    parser.add_argument('--am', dest='axial_model', help='Optional. CNN model for axial lung segmentation (.h5). '
+                                                         'If not specified the default model will be used.',
+                        required=False, type=str, default=None)
+    parser.add_argument('--cm', dest='coronal_model', help='Optional. CNN model for coronal lung segmentation (.h5). '
+                                                           'If not specified the default model will be used.',
+                        required=False, type=str, default=None)
     parser.add_argument('--n', dest='n_subsampling', help='Number of slices to use for segmentation',
                         required=False, type=int, default=1)
     parser.add_argument('--o', dest='out_lm', help='Output labelmap file (.nrrd)', required=True, type=str,
