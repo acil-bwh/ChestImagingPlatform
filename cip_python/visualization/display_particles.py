@@ -8,7 +8,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 class DisplayParticles:
     def __init__(self, file_list,spacing_list,feature_type_list,irad = 1.2, h_th_list=[],
-                 glyph_type='sphere', glyph_scale_factor=1,use_field_data=True, opacity_list=[],
+                 glyph_type='sphere', glyph_scale_factor=1,max_rad=6.0,use_field_data=True, opacity_list=[],
                  color_list=[], lut_list=[], lung=[]):
       
         for feature_type in feature_type_list:
@@ -63,14 +63,14 @@ class DisplayParticles:
   
         if feature_type == 'ridge_line' or feature_type == 'valley_line':
             self.height = irad
-            self.radius = 0.5
+            self.radius = 1.0
         elif feature_type == 'ridge_surface' or feature_type == 'valley_surface':
-            self.height = 0.5
+            self.height = 1.0
             self.radius = irad
   
         self.min_rad = 0.5
-        self.min_rad = 0
-        self.max_rad = 6
+        self.min_rad = 0.5
+        self.max_rad = max_rad
         self.glyph_scale_factor = glyph_scale_factor
 
         self.capture_prefix = ""
@@ -130,6 +130,7 @@ class DisplayParticles:
         else:
             scale=poly.GetFieldData().GetArray("scale")
             strength = poly.GetFieldData().GetArray(self.strength_map[feature_type])
+            print(strength)
             val = poly.GetFieldData().GetArray('val')
             if radius_array_name is not None:
                 rad_arr =poly.GetPointData().GetArray(radius_array_name)
@@ -255,7 +256,9 @@ class DisplayParticles:
         self.actor_list.append(actor)
         for aa in self.actor_list:
             self.ren.AddActor(aa)
-            self.ren.SetBackground(1,1,1)
+            #self.ren.SetBackground(1,1,1)
+            self.ren.SetBackground(0,0,0)
+
         return actor
 
     def add_color_bar(self):
@@ -418,6 +421,8 @@ if __name__ == "__main__":
     parser.add_argument("--irad", help='Interparticle distance', dest="irad", \
                         default=1.2)
     parser.add_argument("--hth", help='Threshold on particle strength', dest="hth", default=None)
+    parser.add_argument("--maxrad", help='Maximum radius to display', dest="max_rad", \
+                        default=6.0)
     parser.add_argument("--color", help='RGB color', dest="color_list", default=None)
     parser.add_argument("--opacity", help='Opacity values', dest="opacity_list", \
                         default=None)
@@ -493,7 +498,7 @@ if __name__ == "__main__":
         radius_array_name_list = [str(i) for i in str.split(options.radius_array_name,',')]
 
     dv = DisplayParticles(file_list, spacing_list,feature_type_list,float(options.irad),hth_list, \
-        'cylinder', float(options.glyph_scale_factor),use_field_data, opacity_list, color_list, lut_list,lung_filename)
+        'cylinder', float(options.glyph_scale_factor),float(options.max_rad),use_field_data, opacity_list, color_list, lut_list,lung_filename)
     if options.color_by is not None:
         dv.color_by_array_name=options.color_by
     if options.glyph_output is not None:
