@@ -1,0 +1,1 @@
+cmd='/home/mylap9/CIP-build/CIPPython-install/lib/python2.7/site-packages/cmake/data/bin/cmake;-GNinja;-C<TMP_DIR>/SlicerExecutionModel-cache-$<CONFIG>.cmake;<SOURCE_DIR><SOURCE_SUBDIR>'

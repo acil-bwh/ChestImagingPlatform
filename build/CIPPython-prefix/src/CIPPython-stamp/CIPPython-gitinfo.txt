@@ -1,0 +1,3 @@
+repository='git://github.com/acil-bwh/CIPPython.git'
+module=''
+tag='origin'

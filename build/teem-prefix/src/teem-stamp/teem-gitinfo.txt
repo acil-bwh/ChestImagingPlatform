@@ -1,0 +1,3 @@
+repository='git://github.com/Slicer/teem'
+module=''
+tag='origin'

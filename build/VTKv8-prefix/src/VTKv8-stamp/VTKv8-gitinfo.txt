@@ -1,0 +1,3 @@
+repository='git://github.com/Slicer/VTK.git'
+module=''
+tag='origin'

@@ -19,7 +19,7 @@ class VesselParticlesPipeline:
         ---------
         
         """
-    def __init__(self,ct_file_name, pl_file_name, regions, tmp_dir, output_prefix, init_method='Frangi',
+    def __init__(self, ct_file_name, pl_file_name, regions, tmp_dir, output_prefix, init_method='Frangi',
                  vessel_mask=None, vessel_probabilities=None, resampling_method='Linear', lth=-95, sth=-70,
                  voxel_size=0, min_scale=0.7, max_scale=4, vesselness_th=0.38, crop=0, rate=1, multires=False,
                  justparticles=False, clean_cache=True, permissive=False, heq_dir=None):
