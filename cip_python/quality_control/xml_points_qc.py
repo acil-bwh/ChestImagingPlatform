@@ -109,7 +109,7 @@ class xMLPointsQC:
                   
             chest_type = myChestConventions.GetChestTypeName(the_point.chest_type)
 
-            if(ct_patch != None):    
+            if(ct_patch is not None):
                case_patch_list.append([ct_patch,lm_patch,chest_type, test_bounds])
             else:
                print("Error! point "+str(inc)+" out of bounds!! "+\
