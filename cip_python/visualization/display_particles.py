@@ -353,8 +353,8 @@ class DisplayParticles:
                 tt.Identity()
                 if self.coordinate_system == "RAS":
                     print ("Transforming to RAS")
-                tt.GetMatrix().SetElement(0,0,-1)
-                tt.GetMatrix().SetElement(1,1,-1)
+                    tt.GetMatrix().SetElement(0,0,-1)
+                    tt.GetMatrix().SetElement(1,1,-1)
 
                 tf=vtk.vtkTransformPolyDataFilter()
                 tf.SetTransform(tt)
@@ -375,8 +375,8 @@ class DisplayParticles:
             tt=vtk.vtkTransform()
             tt.Identity()
             if self.coordinate_system == "RAS":
-              tt.GetMatrix().SetElement(0,0,-1)
-              tt.GetMatrix().SetElement(1,1,-1)
+                tt.GetMatrix().SetElement(0,0,-1)
+                tt.GetMatrix().SetElement(1,1,-1)
             
             tf=vtk.vtkTransformPolyDataFilter()
             tf.SetTransform(tt)
