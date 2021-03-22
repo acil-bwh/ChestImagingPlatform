@@ -1083,6 +1083,12 @@
             <Name>VesselBranch</Name>
             <Color>0.05;0.05;0.11</Color>
         </ChestType>
+        <ChestType>
+            <Id>101</Id>
+            <Code>LYMPHNODE</Code>
+            <Name>LymphNode</Name>
+            <Color>0.05;0.06;0.12</Color>
+        </ChestType>
     </ChestTypes>
     <ChestRegionHierarchyMap>
         <Hierarchy>
