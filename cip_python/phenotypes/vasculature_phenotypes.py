@@ -184,8 +184,8 @@ class VasculaturePhenotypes(Phenotypes):
 
         for ff in ("scale", "hevec0", "hevec1", "hevec2", "h0", "h1", "h2","ChestRegionChestType"):
             tmp=vessel.GetPointData().GetArray(ff)
-                #if isinstance(tmp,vtk.vtkDataArray) == False:
-                #tmp=vessel.GetFieldData().GetArray(ff)
+              #if isinstance(tmp,vtk.vtkDataArray) == False:
+              #tmp=vessel.GetFieldData().GetArray(ff)
             array_v[ff]=vtk_to_numpy(tmp)
         print ("Number of Vessel Points "+str(vessel.GetNumberOfPoints()))
         
@@ -459,7 +459,7 @@ if __name__ == "__main__":
         tmp = options.pairs.split(',')
         assert len(tmp)%2 == 0, 'Specified pairs not understood'
         pairs = []
-        for i in range(0, len(tmp)/2):
+        for i in range(0, int(len(tmp)/2)):
             pairs.append([tmp[2*i], tmp[2*i+1]])
 
     if options.out_plot is None:
