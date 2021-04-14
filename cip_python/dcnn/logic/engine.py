@@ -13,8 +13,16 @@ import numpy as np
 import sys
 import h5py
 
+import grpc
+from tensorflow_serving.apis import predict_pb2, prediction_service_pb2_grpc, get_model_metadata_pb2
+from tensorboard.compat.proto import types_pb2
+from google.protobuf.json_format import MessageToJson
+
 import tensorflow as tf
-from tensorflow.python.keras import backend as K, callbacks, optimizers
+if tf.__version__[0] == '2':
+    from tensorflow.keras import backend as K, callbacks, optimizers
+elif tf.__version__[0] == '1':
+    from tensorflow.python.keras import backend as K, callbacks, optimizers
 
 from cip_python.dcnn.logic.utils import Utils
 from cip_python.dcnn.data import H5Manager
@@ -514,8 +522,125 @@ class Engine(object):
     # def predict(self, input_data, model_folder):
     #     raise NotImplementedError()
 
-    def predict(self, input_info, network_info, output_info, **additional_params):
-        raise NotImplementedError("This method should be implemented in a child class!")
+    def load_prediction_data(self, input_data):
+        raise NotImplementedError("This method should be implemented in the child class")
+
+    def predict(self, input_data, tf_model_server, parameters_dict=None, model_folder=None, model_name='model.h5',
+                tfms_params=None, server_gpu='10.0.0.101', server_port=9500, model_version=0):
+        """
+        Perform inference on unlabeled data.
+        :param input_data: data to perform inference on. It will be loaded and formatted to the network according to the
+                           load_prediction_data and format_data_to_network methods.
+        :param tf_model_server: bool. Whether to make inference on the LOCAL machine or using the REMOTE model server.
+        :param parameters_dict: dictionary of parameters to build the network.
+        :param model_folder: string. Path to the folder containing the model to be used on the LOCAL machine.
+        :param model_name: string. Name of the model to use on the LOCAL machine.
+        :param tfms_params: dictionary of parameters regarding the models in the REMOTE model server.
+        :param server_gpu: string. Name (ex: gpu01) or IP address (ex: 10.0.0.3) of the GPU that is running the REMOTE model server.
+        :param server_port: integer. Port to connect to the desired REMOTE server in the server_gpu.
+        :param model_version: integer. Version of the model in the REMOTE model server. If set to 0, the latest
+                              available version will be selected.
+        :return: prediction(s).
+        """
+
+        test_data = self.load_prediction_data(input_data)
+        test_data = self.format_data_to_network(test_data)
+
+        if tf_model_server == False:
+            # print('Predictions will be made loading the model into memory.')
+            return self.predict_local(parameters_dict, test_data, model_folder, model_name)
+        elif tf_model_server == True:
+            # print('Predictions will be made using the remote model server.')
+            self.model_version   = model_version
+            self.tfms_params     = tfms_params
+            self.tfms_model_name = self.tfms_params['model_name']
+            return self.predict_tfms(test_data, server_gpu, server_port)
+
+    def predict_local(self, parameters_dict, input_data, model_folder, model_name):
+        # Build the model
+        network = self.build_network(parameters_dict, compile_model=False, h5_file_path=model_folder + model_name)
+        model = network.model
+
+        # Make predictions
+        predictions = model.predict(input_data, batch_size=parameters_dict['batch_size'], verbose=1)
+
+        return predictions
+
+    def predict_tfms(self, input_data, server_gpu, server_port):
+        # Set up a channel to connect to the server via gRPC:
+        channel = grpc.insecure_channel(str(server_gpu) + ":" + str(server_port))
+        stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
+
+        # Retrieve model metadata and create a prediction request:
+        input_layer, output_layer = self.get_gRPC_metadata(stub)
+        request = self.request_gRPC_prediction(input_layer, input_data)
+
+        # Make the request and get the prediction:
+        result = stub.Predict(request)
+        predictions = result.outputs[output_layer].float_val
+
+        return predictions
+
+    def get_gRPC_metadata(self, stub):
+        """
+        Connect to the remote tfms via gRPC, and retrieve model information (needed to make prediction requests).
+        :param stub: gRPC stub to connect to the remote server.
+        :return name of both the input and output layers of the model.
+        """
+
+        # Retrieve metadata regarding model versions in the remote server:
+        request_metadata = get_model_metadata_pb2.GetModelMetadataRequest()
+        request_metadata.model_spec.name = self.tfms_model_name
+        request_metadata.metadata_field.append("signature_def")
+        metadata = stub.GetModelMetadata(request_metadata)
+        metadata = json.loads(MessageToJson(metadata))
+        latest_model_version = int(metadata['modelSpec']['version'])
+
+        # Make sure the Engine (class TFMSConfig) is updated with the latest changes to the server:
+        model_version_choices = self.tfms_params['model_versions']
+        if latest_model_version > np.max(model_version_choices):
+            warnings.warn(
+                "The code needs to be updated (class TFMSConfig, key 'model_version_choices') to include the latest model version "
+                "(the newest version is [{}], but the available choices are {})".format(latest_model_version,
+                                                                                        model_version_choices))
+
+        # If no model version has been specified (0), the latest version will be selected:
+        if self.model_version == 0:
+            self.model_version = latest_model_version
+
+        if self.model_version != latest_model_version:
+            # Retrieve metadata of the specific version:
+            request_metadata.model_spec.version.value = self.model_version
+            request_metadata.metadata_field.append("signature_def")
+            metadata = stub.GetModelMetadata(request_metadata)
+            metadata = json.loads(MessageToJson(metadata))
+
+        # Retrieve the name of the input layer of the selected model version:
+        input_layer = str(metadata['metadata']['signature_def']['signatureDef']['serving_default']['inputs'])
+        input_layer = input_layer.split('\'')[1]
+        # Retrieve the name of the output layer of the selected model version:
+        output_layer = str(metadata['metadata']['signature_def']['signatureDef']['serving_default']['outputs'])
+        output_layer = output_layer.split('\'')[1]
+        # print('Using {} version {}.\n'.format(self.tfms_model_name, self.model_version))
+
+        return (input_layer, output_layer)
+
+    def request_gRPC_prediction(self, input_layer, input_data):
+        """
+        Create a prediction request to the gRPC server.
+        :param input_layer: string. Name of the model's input layer.
+        :param test_data_x: numpy array. Data to make the prediction on.
+        :return request.
+        """
+        # Make the prediction request:
+        request = predict_pb2.PredictRequest()
+        request.model_spec.name = self.tfms_model_name
+        request.model_spec.signature_name = 'serving_default'
+        request.model_spec.version.value = self.model_version
+        request.inputs[input_layer].CopyFrom(tf.make_tensor_proto(input_data[0],
+                                                                  dtype=types_pb2.DT_FLOAT,
+                                                                  shape=(1,) + input_data[0].shape))
+        return request
 
 
 ## THIS CODE IS MEANT BE USED ONLY AS AN EXAMPLE!!
