@@ -16,7 +16,11 @@
 
 #include "vtkComputeAirwayWallPolyData.h"
 
+#include <vtkVersion.h> // must be included before using VTK_MAJOR_VERSION
 #include "vtkCellArray.h"
+#if (VTK_MAJOR_VERSION >= 9)
+#include "vtkCellArrayIterator.h"
+#endif
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 #include "vtkCellData.h"
@@ -168,9 +172,6 @@ void vtkComputeAirwayWallPolyData::ExecuteInformation()
 
 
 void vtkComputeAirwayWallPolyData::ComputeAirwayAxisFromLines() {
-  
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   double d[3];
   vtkPolyData *input = vtkPolyData::SafeDownCast(this->GetInput());
   
@@ -185,9 +186,20 @@ void vtkComputeAirwayWallPolyData::ComputeAirwayAxisFromLines() {
   //Allocate axis DataArray
   this->AxisArray->SetNumberOfComponents(3);
   this->AxisArray->SetNumberOfTuples(input->GetNumberOfPoints());
+
+#if (VTK_MAJOR_VERSION >= 9)
+  vtkIdType npts = 0;
+  const vtkIdType *pts = 0;
+  vtkSmartPointer<vtkCellArrayIterator> inLinesIter = vtkSmartPointer<vtkCellArrayIterator>::Take(inLines->NewIterator());
+  for (inLinesIter->GoToFirstCell(); !inLinesIter->IsDoneWithTraversal(); inLinesIter->GoToNextCell()) {
+    inLinesIter->GetCurrentCell(npts, pts);
+#else
+  vtkIdType npts = 0;
+  vtkIdType *pts = 0;
   inLines->InitTraversal();
   for (int id=0; inLines->GetNextCell(npts,pts); id++)
     {
+#endif
       for (int kk=0; kk<npts; kk++)
       {
 	for (int c=0;c<3;c++) {
@@ -572,8 +584,6 @@ void vtkComputeAirwayWallPolyData::ComputeCellData()
   
   vtkCellArray *inLines = input->GetLines();
   int numLines = inLines->GetNumberOfCells();
-  vtkIdType *pts = 0;
-  vtkIdType npts = 0;
   
    int nl = inLines->GetNumberOfCells();
    int nc = this->WallSolver->GetNumberOfQuantities();
@@ -616,9 +626,20 @@ void vtkComputeAirwayWallPolyData::ComputeCellData()
   vtkDataArray *minc = output->GetCellData()->GetScalars(this->arrayNameMin);
   vtkDataArray *maxc = output->GetCellData()->GetScalars(this->arrayNameMax);
   
+#if (VTK_MAJOR_VERSION >= 9)
+  vtkIdType npts = 0;
+  const vtkIdType *pts = 0;
+  vtkIdType id = 0;
+  vtkSmartPointer<vtkCellArrayIterator> inLinesIter = vtkSmartPointer<vtkCellArrayIterator>::Take(inLines->NewIterator());
+  for (inLinesIter->GoToFirstCell(); !inLinesIter->IsDoneWithTraversal(); inLinesIter->GoToNextCell(), ++id) {
+    inLinesIter->GetCurrentCell(npts, pts);
+#else
+  vtkIdType npts = 0;
+  vtkIdType *pts = 0;
   inLines->InitTraversal();
   for (int id=0; inLines->GetNextCell(npts,pts); id++)
   {
+#endif
     //Compute segment length and define initial and end array id.
     double d[3],p1[3],p2[3];
     double length = 0;
