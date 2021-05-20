@@ -14,7 +14,11 @@
 =========================================================================*/
 #include "vtkTubularScalePolyDataFilter.h"
 
+#include <vtkVersion.h> // must be included before using VTK_MAJOR_VERSION
 #include "vtkCellArray.h"
+#if (VTK_MAJOR_VERSION >= 9)
+#include "vtkCellArrayIterator.h"
+#endif
 #include "vtkCellData.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
@@ -120,8 +124,6 @@ int vtkTubularScalePolyDataFilter::RequestData(vtkInformation *request,
   helper->SetTubularType(this->GetTubularType());
   
   // Loop through each line
-  vtkIdType npts;
-  vtkIdType *pts;
   double xyzin[3];
   int ijk[3];
   double pcoords[3];
@@ -129,11 +131,22 @@ int vtkTubularScalePolyDataFilter::RequestData(vtkInformation *request,
   double scale;
   
   double xout[3];
+
+#if (VTK_MAJOR_VERSION >= 9)
+  vtkIdType npts = 0;
+  const vtkIdType *pts = 0;
+  vtkSmartPointer<vtkCellArrayIterator> inLinesIter = vtkSmartPointer<vtkCellArrayIterator>::Take(inLines->NewIterator());
+  for (inLinesIter->GoToFirstCell(); !inLinesIter->IsDoneWithTraversal(); inLinesIter->GoToNextCell()) {
+    inLinesIter->GetCurrentCell(npts, pts);
+#else
+  vtkIdType npts = 0;
+  vtkIdType *pts = 0;
   inLines->InitTraversal();
   cout<<" Num cells: :"<<inLines->GetNumberOfCells()<<endl;
   for (int i = 0; i<inLines->GetNumberOfCells();i++) {
     //Get list point in cell
     inLines->GetNextCell(npts,pts);
+#endif
     
     for (int j=0;j<npts;j++)
       {
