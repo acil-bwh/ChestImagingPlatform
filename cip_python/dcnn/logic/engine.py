@@ -13,14 +13,14 @@ import numpy as np
 import sys
 import h5py
 
-import grpc
-from tensorflow_serving.apis import predict_pb2, prediction_service_pb2_grpc, get_model_metadata_pb2
-from tensorboard.compat.proto import types_pb2
-from google.protobuf.json_format import MessageToJson
 
 import tensorflow as tf
 if tf.__version__[0] == '2':
     from tensorflow.keras import backend as K, callbacks, optimizers
+    from tensorflow_serving.apis import predict_pb2, prediction_service_pb2_grpc, get_model_metadata_pb2
+    from tensorboard.compat.proto import types_pb2
+    import grpc
+    from google.protobuf.json_format import MessageToJson
 elif tf.__version__[0] == '1':
     from tensorflow.python.keras import backend as K, callbacks, optimizers
 
