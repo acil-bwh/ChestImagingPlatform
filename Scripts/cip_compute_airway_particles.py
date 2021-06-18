@@ -54,8 +54,8 @@ class AirwayParticlesPipeline:
     self._case_id = str.split(os.path.basename(ct_file_name),'.')[0]
 
     #Internal params
-    #Distance from wall that we don't want to consider in the initialization (negative= inside the lung, positive= outside the lung)
-    self._distance_from_wall = -2
+    #Distance from wall that we don't want to consider in the initialization (negative= outside the lung, positive= inside the lung)
+    self._distance_from_wall = 2.0
     #Threshold on the airwayness map (for particles initialization mask)
     self._airwayness_th = 0.5
     #Intensity threshold (for particles initialization mask)
@@ -156,7 +156,7 @@ class AirwayParticlesPipeline:
             subprocess.call( tmpCommand, shell=True )
 
             if self._wall_peeling == True:
-                tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s"
+                tmpCommand ="ComputeDistanceMap -l %(lm-in)s -d %(distance-map)s -s 1 -p -m Maurer"
                 tmpCommand = tmpCommand % {'lm-in':pl_file_nameRegion,'distance-map':pl_file_nameRegion}
                 tmpCommand = os.path.join(path['CIP_PATH'],tmpCommand)
                 print (tmpCommand)
@@ -168,7 +168,7 @@ class AirwayParticlesPipeline:
                 # #print tmpCommand
                 # subprocess.call( tmpCommand, shell=True )
 
-                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f | unu convert -t ushort | unu save -f nrrd -e gzip -o %(lm-out)s"
+                tmpCommand ="unu 2op gt %(distance-map)s %(distance)f | unu convert -t ushort | unu save -f nrrd -e gzip -o %(lm-out)s"
                 tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
                 #print tmpCommand
                 subprocess.call( tmpCommand, shell=True )
