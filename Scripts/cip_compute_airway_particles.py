@@ -168,7 +168,7 @@ class AirwayParticlesPipeline:
                 # #print tmpCommand
                 # subprocess.call( tmpCommand, shell=True )
 
-                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
+                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f | unu convert -t ushort | unu save -f nrrd -e gzip -o %(lm-out)s"
                 tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
                 #print tmpCommand
                 subprocess.call( tmpCommand, shell=True )
@@ -182,7 +182,7 @@ class AirwayParticlesPipeline:
                 subprocess.call( tmpCommand, shell=True )
 
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t ushort | unu save -f nrrd -e gzip -o %(out)s"
                 tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
                 print (tmpCommand)
                 subprocess.call( tmpCommand , shell=True)
@@ -194,12 +194,12 @@ class AirwayParticlesPipeline:
                 subprocess.call( tmpCommand, shell=True )
                     
                 #Hist equalization, threshold Feature strength and masking
-                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t short -o %(out)s"
+                tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.5 -s 2 | unu 2op gt - %(airwayness_th)f  | unu convert -t ushort | unu save -f nrrd -e gzip -o %(out)s"
                 tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'airwayness_th':self._airwayness_th,'out':maskFileNameRegion}
                 print (tmpCommand)
                 subprocess.call( tmpCommand , shell=True)
             elif self._init_method == 'Threshold':
-                tmpCommand = "unu 2op lt %(in)s %(intensity_th)f | unu 2op x - %(mask)s -o %(out)s"
+                tmpCommand = "unu 2op lt %(in)s %(intensity_th)f | unu 2op x - %(mask)s | unu convert -t ushort | unu save -f nrrd -e gzip -o %(out)s"
                 tmpCommand = tmpCommand % {'in':ct_file_nameRegion,'mask':pl_file_nameRegion,'intensity_th':self._intensity_th,'out':maskFileNameRegion}
                 print (tmpCommand)
                 subprocess.call( tmpCommand , shell=True)
