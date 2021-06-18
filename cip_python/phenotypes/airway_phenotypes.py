@@ -355,9 +355,19 @@ class AirwayPhenotypes(Phenotypes):
             ao = ellip_metrics[:,4]
             bo = ellip_metrics[:,3]
 
+            #Select points with non-degenerated ellipse fitting
+            #Find points with proper ellipse fitting (outer area > inner area)
+            delta_ellipse_r2=(ao * bo - ai * bi)
+            mask_ellipse=delta_ellipse_r2>0
+            ai=ai[mask_ellipse]
+            bi=bi[mask_ellipse]
+            ao=ao[mask_ellipse]
+            bo=bo[mask_ellipse]
+            
             #Setting up regressor for Pi10 and Pi15 metrics
-            sqrtwa = np.sqrt(np.pi *( ao * bo - ai * bi))
+            sqrtwa = np.sqrt(np.pi * (ao * bo - ai * bi))
             peri = self.ellipse_perimeter(ai,bi)
+
             #limit pi for pi15
             mask_peri = ((peri>=self.pi_lowerlimit_) & (peri<=self.pi_upperlimit_))
             regr = skl.linear_model.LinearRegression()
