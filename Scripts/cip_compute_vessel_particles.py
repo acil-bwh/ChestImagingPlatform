@@ -52,7 +52,7 @@ class VesselParticlesPipeline:
         self._case_id = str.split(os.path.basename(ct_file_name),'.')[0]
         
         #Internal params
-        #Distance from wall that we don't want to consider in the initialization (negative= inside the lung, positive= outside the lung)
+        #Distance from wall that we don't want to consider in the initialization (negative= outside the lung, positive= inside the lung)
         self._distance_from_wall = 2.0
         #Threshold on the vesselness map (for particles initialization mask)
         self._vesselness_th = vesselness_th
@@ -195,7 +195,7 @@ class VesselParticlesPipeline:
                 print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
                 print ("Distance from wall: "+str(self._distance_from_wall))
-                tmpCommand ="unu 2op gt %(distance-map)s %(distance)f | unu convert -t short -o %(lm-out)s"
+                tmpCommand ="unu 2op gt %(distance-map)s %(distance)f | unu convert -t ushort | unu save -f nrrd -e gzip -o %(lm-out)s"
                 tmpCommand = tmpCommand % {'distance-map':distanceMapFileNameRegion,'distance':self._distance_from_wall,'lm-out':pl_file_nameRegion}
                 print (tmpCommand)
                 subprocess.call( tmpCommand, shell=True )
@@ -207,7 +207,7 @@ class VesselParticlesPipeline:
 #                print (tmpCommand)
 #                subprocess.call( tmpCommand, shell=True )
 #
-#                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f -t short -o %(lm-out)s"
+#                tmpCommand ="unu 2op lt %(distance-map)s %(distance)f | unu convert -t ushort | unu save -f nrrd -e gzip -o %(lm-out)s"
 #                tmpCommand = tmpCommand % {'distance-map':pl_file_nameRegion,'distance':-1.0*self._distance_from_wall,'lm-out':pl_file_nameRegion}
 #                print (tmpCommand)
 #                subprocess.call( tmpCommand, shell=True )
@@ -221,7 +221,7 @@ class VesselParticlesPipeline:
                     subprocess.call( tmpCommand, shell=True )
                     
                     #Hist equalization, threshold Feature strength and masking
-                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.96 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.96 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t ushort | unu save -f nrrd -e gzip -o %(out)s"
                     tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
                     print (tmpCommand)
                     subprocess.call( tmpCommand , shell=True)
@@ -240,7 +240,7 @@ class VesselParticlesPipeline:
                     subprocess.call( tmpCommand, shell=True )
                     
                     #Hist equalization, threshold Feature strength and masking
-                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t ushort | unu save -f nrrd -e gzip -o %(out)s"
                     tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
                     print (tmpCommand)
                     subprocess.call( tmpCommand , shell=True)
@@ -290,7 +290,7 @@ class VesselParticlesPipeline:
                     tmpCommand = os.path.join(path['CIP_PATH'], tmpCommand)
                     subprocess.call(tmpCommand, shell=True)
 
-                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t short -o %(out)s"
+                    tmpCommand = "unu 2op x %(feat)s %(mask)s -t float | unu heq -b 10000 -a 0.95 -s 5 | unu 2op gt - %(vesselness_th)f  | unu convert -t ushort | unu save -f nrrd -e gzip -o %(out)s"
                     tmpCommand = tmpCommand % {'feat':featureMapFileNameRegion,'mask':pl_file_nameRegion,'vesselness_th':self._vesselness_th,'out':maskFileNameRegion}
                     subprocess.call(tmpCommand, shell=True)
 
