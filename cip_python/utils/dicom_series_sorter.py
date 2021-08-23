@@ -29,7 +29,10 @@ class Sorter():
                             if not os.path.exists(directory):
                                 os.makedirs(directory)
                             if cop:
-                                shutil.copy(os.path.join(root,filename), os.path.join(directory,instanceuid))
+                                try:
+                                    shutil.copy(os.path.join(root,filename), os.path.join(directory,instanceuid))
+                                except OSError as error:
+                                    print(error)
                             else:
                                 os.rename(os.path.join(root,filename), os.path.join(directory,filename))
                         except:
