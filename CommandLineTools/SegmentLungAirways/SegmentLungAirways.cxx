@@ -1832,7 +1832,12 @@ int main( int argc, char *argv[] )
 
     typedef itk::MergeLabelMapFilter< ShapeLabelMapType > MergeFilterType;
     MergeFilterType::Pointer mergeFilter = MergeFilterType::New();
+
+#if (ITK_VERSION_MAJOR < 5 || (ITK_VERSION_MAJOR == 5 && ITK_VERSION_MINOR < 2))
     mergeFilter->SetMethod(MergeFilterType::PACK);
+#else
+    mergeFilter->SetMethod(itk::ChoiceMethodEnum::PACK);
+#endif
 
     ShapeLabelType::Pointer labelConverter = ShapeLabelType::New();
     labelConverter->SetInputForegroundValue(cip::AIRWAY);
