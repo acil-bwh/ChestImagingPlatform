@@ -18,6 +18,7 @@ class ChestConventionsInitializer(object):
     __preconfigured_colors__ = None
     __body_composition_phenotype_names__ = None
     __parenchyma_phenotype_names__ = None
+    __cac_phenotype_names__ = None
     __pulmonary_vasculature_phenotype_names__ = None
     __airway_phenotype_names__ = None
     __biomechanical_phenotype_names__ = None
@@ -181,6 +182,16 @@ class ChestConventionsInitializer(object):
         return ChestConventionsInitializer.__parenchyma_phenotype_names__
 
     @staticmethod
+    def cac_phenotype_names():
+        if ChestConventionsInitializer.__cac_phenotype_names__ is None:
+            root = ChestConventionsInitializer.xml_root_conventions()
+            ChestConventionsInitializer.__cac_phenotype_names__ = list()
+            parent = root.find("CacPhenotypeNames")
+            list(map(lambda n: ChestConventionsInitializer.__cac_phenotype_names__.append(n.text),
+                parent.findall("Name")))
+        return ChestConventionsInitializer.__cac_phenotype_names__
+
+    @staticmethod
     def pulmonary_vasculature_phenotype_names():
         if ChestConventionsInitializer.__pulmonary_vasculature_phenotype_names__ is None:
             root = ChestConventionsInitializer.xml_root_conventions()
@@ -234,6 +245,7 @@ class ChestConventions(object):
     #
     BodyCompositionPhenotypeNames = ChestConventionsInitializer.body_composition_phenotype_names()   # List of strings
     ParenchymaPhenotypeNames = ChestConventionsInitializer.parenchyma_phenotype_names()   # List of strings
+    CacPhenotypeNames = ChestConventionsInitializer.cac_phenotype_names()   # List of strings
     PulmonaryVasculaturePhenotypeNames = ChestConventionsInitializer.pulmonary_vasculature_phenotype_names()   # List of strings
     AirwayPhenotypeNames = ChestConventionsInitializer.airway_phenotype_names()   # List of strings
     BiomechanicalPhenotypeNames = ChestConventionsInitializer.biomechanical_phenotype_names() #List of strings

@@ -1793,6 +1793,20 @@
         <Name>Mass</Name>
         <Name>TypeFrac</Name>
     </ParenchymaPhenotypeNames>
+    <CacPhenotypeNames>
+        <Name>Agatston0mm</Name>
+        <Name>Agatston1mm</Name>
+        <Name>VolAgatston0mm</Name>
+        <Name>VolAgatstonTmm</Name>
+        <Name>TotalArea0mm</Name>
+        <Name>TotalArea1mm</Name>
+        <Name>TotalVol0mm</Name>
+        <Name>TotalVolTmm</Name>
+        <Name>TotalLesions0mm</Name>
+        <Name>TotalLesions1mm</Name>
+        <Name>VolTotalLesions0mm</Name>
+        <Name>VolTotalLesionsTmm</Name>
+    </CacPhenotypeNames>
     <PulmonaryVasculaturePhenotypeNames>
         <Name>BV5</Name>
         <Name>BV5_10</Name>
