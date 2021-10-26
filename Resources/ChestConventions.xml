@@ -1806,6 +1806,11 @@
         <Name>TotalLesions1mm</Name>
         <Name>VolTotalLesions0mm</Name>
         <Name>VolTotalLesionsTmm</Name>
+        <Name>MassScore0mm</Name>
+        <Name>MassScoreTmm</Name>
+        <Name>AreaScore0mm</Name>
+        <Name>AreaScoreTmm</Name>
+        <Name>MeanDensityScore0mm</Name>
     </CacPhenotypeNames>
     <PulmonaryVasculaturePhenotypeNames>
         <Name>BV5</Name>
