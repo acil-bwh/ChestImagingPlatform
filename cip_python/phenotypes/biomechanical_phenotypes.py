@@ -324,13 +324,13 @@ class BiomechanicalPhenotypes(Phenotypes):
         for r in rs:
             if r != 0:
                 mask_region = parser.get_mask(chest_region=r)
-                self.add_pheno_group(ct, mask_region, mask_region,
+                self.add_pheno_group(J, ADI, SRI, mask_region, mask_region,
                     None, c.GetChestRegionName(r),
                     c.GetChestWildCardName(), phenos_to_compute)
         for t in ts:
             if t != 0:
                 mask_type = parser.get_mask(chest_type=t)
-                self.add_pheno_group(ct, mask_type, None, mask_type,
+                self.add_pheno_group(J, ADI, SRI, mask_type, None, mask_type,
                     c.GetChestWildCardName(),
                     c.GetChestTypeName(t), phenos_to_compute)
         if ps.size > 0:
@@ -344,7 +344,7 @@ class BiomechanicalPhenotypes(Phenotypes):
                     else:
                         mask_region = None
 
-                    self.add_pheno_group(ct, mask, mask_region,
+                    self.add_pheno_group(J, ADI, SRI, mask, mask_region,
                         None, c.GetChestRegionName(int(ps[i, 0])),
                         c.GetChestTypeName(int(ps[i, 1])), phenos_to_compute)
 
