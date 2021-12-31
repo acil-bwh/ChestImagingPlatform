@@ -171,7 +171,7 @@ class ChestPartitionManager(object):
             
 
     if partitionId == cp.get_partition_region_value_from_name('WholeLung'): 
-        return self._get_whole_lung_()
+        return self._get_whole_lung_(kwargs['spacing'])
          
   
   def _get_whole_lung_(self, spacing, rind_width = None, rind_ratio = None):
