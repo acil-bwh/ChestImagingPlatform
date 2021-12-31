@@ -50,7 +50,7 @@ class ClusterParticles:
       core_samples =  mbk.cluster_centers_
     elif self._method == 'SpectralClustering':
       sc = SpectralClustering(n_clusters=self._number_of_clusters).fit(features)
-      labels = mbk.labels_
+      labels = sc.labels_
       core_samples=np.zeros([self._number_of_clusters,features.shape[1]])
       for ii in self._number_of_clusters:
         core_samples[ii,:] = np.means(features[labels,:],axis=0)
