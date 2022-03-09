@@ -7,13 +7,17 @@ project(${PRIMARY_PROJECT_NAME})
 
 
 #-----------------------------------------------------------------------------
-# Enable C++11
+# Set C++ standard version and extensions
 #-----------------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# Cache the variable values to allow setting a value externally.
+set(_minimum_cxx_standard "11")
+set(CMAKE_CXX_STANDARD "${_minimum_cxx_standard}" CACHE STRING "C++ standard")
+if("${CMAKE_CXX_STANDARD}" LESS "${_minimum_cxx_standard}")
+  message(FATAL_ERROR "CMAKE_CXX_STANDARD must be equal or larger than ${_minimum_cxx_standard}")
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE STRING "C++ standard required")
+set(CMAKE_CXX_EXTENSIONS OFF CACHE STRING "C++ extensions")
 message(STATUS "${_msg} - C++${CMAKE_CXX_STANDARD}")
-
 
 #-----------------------------------------------------------------------------
 # Superbuild Option - Enabled by default
