@@ -23,6 +23,8 @@
 #include "vtkExecutive.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 
+#include <cmath>
+
 #define VTK_EPS 1e-15
 
 vtkStandardNewMacro(vtkMultipleReconstructionKernelsPhaseCongruency);
