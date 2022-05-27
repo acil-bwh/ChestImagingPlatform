@@ -1,8 +1,7 @@
 import numpy as np
-from numpy import linalg as LA
 import vtk
 from vtk.util.numpy_support import vtk_to_numpy
-from scipy.stats import kde
+
 
 class FilterParticlesBySize:
     def __init__(self):
