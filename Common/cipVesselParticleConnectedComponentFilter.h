@@ -30,35 +30,39 @@ class cipVesselParticleConnectedComponentFilter: public cipParticleConnectedComp
 {
 public:
 
-  cipVesselParticleConnectedComponentFilter();
-  ~cipVesselParticleConnectedComponentFilter(){};
+    cipVesselParticleConnectedComponentFilter();
+    ~cipVesselParticleConnectedComponentFilter(){};
 
-  /** Value to determine how close two particles must be in scale to
-      be considered connected. The value should be in the interval
-      [0,1]. The closer the value is to 1, the more permissive the
-      filter is to large differences in scale between adjacent
-      particles. */
-  void   SetScaleRatioThreshold( double );
-  double GetScaleRatioThreshold();
+    /** Value to determine how close two particles must be in scale to
+        be considered connected. The value should be in the interval
+        [0,1]. The closer the value is to 1, the more permissive the
+        filter is to large differences in scale between adjacent
+        particles. */
+    void   SetScaleRatioThreshold( double );
+    double GetScaleRatioThreshold();
 
-  /** When considering the connectedness between two particles, if either
-   *  of them has a scale greater than the max allowable scale, no connection
-   *  will be formed */
-  void SetMaximumAllowableScale( double );
+    /** When considering the connectedness between two particles, if either
+     *  of them has a scale greater than the max allowable scale, no connection
+     *  will be formed */
+    void SetMaximumAllowableScale( double );
 
-  /** When considering the connectedness between two particles, if either
-   *  of them has a scale smaller than the min allowable scale, no connection
-   *  will be formed */
-  void SetMinimumAllowableScale( double );
-  
-  vtkPolyData* GetOutput();
+    /** When considering the connectedness between two particles, if either
+     *  of them has a scale smaller than the min allowable scale, no connection
+     *  will be formed */
+    void SetMinimumAllowableScale( double );
+
+    /** Name of the array containing the radius size. Default is "scale" */
+    void SetRadiusName( const char* );
+
+    vtkPolyData* GetOutput();
 
 private:
-  bool   EvaluateParticleConnectedness( unsigned int, unsigned int );
+    bool   EvaluateParticleConnectedness( unsigned int, unsigned int );
 
-  double ScaleRatioThreshold;
-  double MaxAllowableScale;
-  double MinAllowableScale;
+    double ScaleRatioThreshold;
+    double MaxAllowableScale;
+    double MinAllowableScale;
+    const char* RadiusName;
 };
 
 #endif

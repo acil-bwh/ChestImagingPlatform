@@ -31,30 +31,31 @@ int main( int argc, char *argv[] )
 
   std::cout << "Reading particles ..." << std::endl;
   vtkPolyDataReader* reader = vtkPolyDataReader::New();
-    reader->SetFileName( inParticlesFileName.c_str() );
-    reader->Update();
+  reader->SetFileName( inParticlesFileName.c_str() );
+  reader->Update();
 
   std::cout << "Asserting chest-region chest-type existence..." << std::endl;
   cip::AssertChestRegionChestTypeArrayExistence( reader->GetOutput() );
 
   std::cout << "Filtering particles..." << std::endl;
   cipVesselParticleConnectedComponentFilter* filter = new cipVesselParticleConnectedComponentFilter();
-    filter->SetComponentSizeThreshold( componentSizeThreshold );
-    filter->SetParticleDistanceThreshold( maxAllowableDistance );
-    filter->SetParticleAngleThreshold( particleAngleThreshold );
-    filter->SetScaleRatioThreshold( scaleRatioThreshold );
-    filter->SetMaximumComponentSize( maxComponentSize );
-    filter->SetMaximumAllowableScale( maxAllowableScale );
-    filter->SetMinimumAllowableScale( minAllowableScale );
-    filter->SetInput( reader->GetOutput() );
-    filter->Update();
+  filter->SetComponentSizeThreshold( componentSizeThreshold );
+  filter->SetParticleDistanceThreshold( maxAllowableDistance );
+  filter->SetParticleAngleThreshold( particleAngleThreshold );
+  filter->SetScaleRatioThreshold( scaleRatioThreshold );
+  filter->SetMaximumComponentSize( maxComponentSize );
+  filter->SetMaximumAllowableScale( maxAllowableScale );
+  filter->SetMinimumAllowableScale( minAllowableScale );
+  filter->SetRadiusName( radiusName.c_str() );
+  filter->SetInput( reader->GetOutput() );
+  filter->Update();
 
   std::cout << "Writing filtered particles ..." << std::endl;
   vtkPolyDataWriter *filteredWriter = vtkPolyDataWriter::New();
-    filteredWriter->SetFileName( outParticlesFileName.c_str() );
-    filteredWriter->SetInputData( filter->GetOutput() );
-    filteredWriter->SetFileTypeToBinary();
-    filteredWriter->Write();
+  filteredWriter->SetFileName( outParticlesFileName.c_str() );
+  filteredWriter->SetInputData( filter->GetOutput() );
+  filteredWriter->SetFileTypeToBinary();
+  filteredWriter->Write();
 
   reader->Delete();
   delete filter;
