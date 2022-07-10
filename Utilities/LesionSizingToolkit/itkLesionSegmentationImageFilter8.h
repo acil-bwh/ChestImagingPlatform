@@ -84,8 +84,7 @@ public:
   typedef CannyEdgesFeatureGenerator< ImageDimension > CannyEdgesFeatureGeneratorType;
   typedef typename CannyEdgesFeatureGeneratorType::SigmaArrayType SigmaArrayType;
 
-  virtual void GenerateInputRequestedRegion()
-            throw(InvalidRequestedRegionError) override;
+  virtual void GenerateInputRequestedRegion() override;
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */

@@ -193,7 +193,7 @@ public:
    * pipeline execution model.
    *
    * \sa ImageToImageFilter::GenerateInputRequestedRegion()  */  
-  virtual void GenerateInputRequestedRegion() throw(InvalidRequestedRegionError) override;
+  virtual void GenerateInputRequestedRegion() override;
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
