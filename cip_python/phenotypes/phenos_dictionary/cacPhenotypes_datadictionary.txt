@@ -1,0 +1,18 @@
+ 
+'Agatston0mm': Agatston score measured without discarting any structure by size.
+'Agatston1mm': Agatston score discarting strucutres with an area of less than 1mm^2.
+'VolAgatston0mm': Agatston score metric adapted to a volumetric fashion without discarting any strucutre by size.
+'VolAgatstonTmm': Agatston score metric adapted to a volumetric fashion discarting strucutres with a volume of less than 1x1x(layer thickness) mm^3.
+'TotalArea0mm': Total lesion area measured by adding all individual areas in each lesion axial slice without discarting by size.
+'TotalArea1mm': Total lesion area measured by adding all individual areas in each lesion axil slice discarting those with less than 1mm^2.
+'TotalVol0mm': Total lesion volume measured by adding all individual volumes in each lesion without dicarting by size.
+'TotalVolTmm': Total lesion volume measured by adding all individual volumes in each lesion discarting those with less than 1x1x(layer thickness) mm^3.
+'TotalLesions0mm': Total of individual lesions measured in each axial slice without dicarting any by size.
+'TotalLesions1mm': Total of individual lesions measured in each axial slice dicarting those with less than 1mm^2.
+'VolTotalLesions0mm': Total of individual lesions volumes without dicarting any by size.
+'VolTotalLesionsTmm': Total of individual lesions volumes dicarting those with less than 1x1x(layer thickness) mm^3.
+'MassScore0mm': Total mass score measured without dicarting any structure by size.
+'MassScoreTmm': Total mass score discarting strucutres with an area of less than 1x1x(layer thickness) mm^3.
+'AreaScore0mm': Calculated by dividing the TotalVol0mm by the slice thickness/3.0 for all lessions without discarting by size.
+'AreaScoreTmm': Calculated by dividing the TotalVolTmm by the slice thickness/3.0 for those lessions with a volume bigger than 1x1x(layer thickness) mm^3.
+'MeanDensityScore0mm': Calculated by dividing the Agatston0mm by AreaScore0mm.

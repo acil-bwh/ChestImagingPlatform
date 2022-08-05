@@ -1,0 +1,33 @@
+    'AxialCSA': Axial cross-sectional area
+    'CoronalCSA': Coronal cross-sectional area
+    'SagittalCSA': Sagittal cross-sectional area
+    'HUMean': Mean value of the structure's HU values
+    'HUStd': Standard deviation of the structure's HU values
+    'HUKurtosis': Kurtosis of the structure's HU values. Fisher's definition is
+    used, meaning that normal distribution has kurtosis of 0. The calculation
+    is corrected for statistical bias.
+    'HUSkewness': Skewness of the structure's HU values. The calculation is
+    corrected for statistical bias.
+    'HUMode': Mode of the structure's HU values
+    'HUMedian': Median of the structure's HU values
+    'HUMin': Min HU value for the structure
+    'HUMax': Max HU value for the structure
+
+    The following set of phenotypes are identical to the above except that
+    computation is isolated to the voxels within the Hounsfield units interval [-50, 90]. 
+    These phenotypes are capture lean muscle information and only have meaning for muscle structures.
+
+    'leanAxialCSA': Axial cross-sectional area 
+    'leanCoronalCSA': Coronal cross-sectional area
+    'leanSagittalCSA': Sagittal cross-sectional area
+    'leanHUMean': Mean value of the structure's HU values
+    'leanHUStd': Standard deviation of the structure's HU values
+    'leanHUKurtosis': Kurtosis of the structure's HU values. Fisher's definition is
+    used, meaning that normal distribution has kurtosis of 0. The calculation
+    is corrected for statistical bias.
+    'leanHUSkewness': Skewness of the structure's HU values. The calculation is
+    corrected for statistical bias.
+    'leanHUMode': Mode of the structure's HU values
+    'leanHUMedian': Median of the structure's HU values
+    'leanHUMin': Min HU value for the structure
+    'leanHUMax': Max HU value for the structure

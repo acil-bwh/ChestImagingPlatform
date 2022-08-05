@@ -1,0 +1,3 @@
+    'Pi10': square root of wall area for an equivalent airway with 10 mm of internal perimeter
+    'Pi15': square root of wall area for an equivalent airway with 15 mm of internal perimeter
+    'numPointsTotal': number of airway wall measurements used for the Pix computation

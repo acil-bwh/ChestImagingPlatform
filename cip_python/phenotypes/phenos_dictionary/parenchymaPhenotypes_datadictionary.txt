@@ -1,0 +1,60 @@
+    'LAA950': fraction of the structure's region with CT HU values < -950
+    'LAA925': fraction of the structure's region with CT HU values < -925
+    'LAA910': fraction of the structure's region with CT HU values < -910
+    'LAA905': fraction of the structure's region with CT HU values < -905
+    'LAA900': fraction of the structure's region with CT HU values < -900
+    'LAA875': fraction of the structure's region with CT HU values < -875
+    'LAA856': fraction of the structure's region with CT HU values < -856
+    'HAA700': fraction of the structure's region with CT HU values > -700
+    'HAA600': fraction of the structure's region with CT HU values > -600
+    'HAA500': fraction of the structure's region with CT HU values > -500
+    'HAA250': fraction of the structure's region with CT HU values > -250
+    'Perc10': HU value at the 10th percentile of the structure's HU histogram
+    'Perc15': HU value at the 15th percentile of the structure's HU histogram
+    'HUMean': Mean value of the structure's HU values
+    'HUStd': Standard deviation of the structure's HU values
+    'HUKurtosis': Kurtosis of the structure's HU values. Fisher's definition is
+    used, meaning that normal distribution has kurtosis of 0. The calculation
+    is corrected for statistical bias.
+    'HUSkewness': Skewness of the structure's HU values. The calculation is
+    corrected for statistical bias.
+    'HUMode': Mode of the structure's HU values
+    'HUMedian': Median of the structure's HU values
+    'HUMin': Min HU value for the structure
+    'HUMax': Max HU value for the structure
+    'HUMean500': Mean CT value of the structure, but only considering CT
+    values that are < -500 HU
+    'HUStd500': Standard deviation of the structure's CT values, but only
+    considering CT values that are < -500 HU
+    'HUKurtosis500': Kurtosis of the structure's HU values, but only
+    considering CT values that are < -500 HU
+    'HUSkewness500': Skewness of the structure's HU values, but only
+    considering CT values that are < -500 HU
+    'HUMode500': Mode of the structure's HU values, but only
+    considering CT values that are < -500 HU
+    'HUMedian500': Median of the structure's HU values, but only
+    considering CT values that are < -500 HU
+    'HUMin500': Min HU value for the structure, but only considering CT values
+    that are < -500 HU
+    'HUMax500': Max HU value for the structure, but only considering CT values
+    that are < -500 HU
+    'HUMean950': Mean CT value of the structure, but only considering CT
+    values that are < -950 HU
+    'HUStd950': Standard deviation of the structure's CT values, but only
+    considering CT values that are < -950 HU
+    'HUKurtosis950': Kurtosis of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUSkewness950': Skewness of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUMode950': Mode of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUMedian950': Median of the structure's HU values, but only
+    considering CT values that are < -950 HU
+    'HUMin950': Min HU value for the structure, but only considering CT values
+    that are < -950 HU
+    'HUMax950': Max HU value for the structure, but only considering CT values
+    that are < -950 HU
+    'Volume': Volume of the structure, measured in liters
+    'Mass': Mass of the structure measure in grams    
+    'TypeFrac': The fraction of a type in a specified chest-region chest-type
+    pair within the chest region of that pair.
