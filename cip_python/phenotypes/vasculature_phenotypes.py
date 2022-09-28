@@ -44,6 +44,8 @@ class VasculaturePhenotypes(Phenotypes):
         self._dx = None
         self._number_test_points=5000
         self.factor=0.16
+        self.scale_radius_ratio_th = 3
+        self.filter_particles_with_scale_radius_ratio=None
         
         #Method to do KDE of prob(CSA)
         self.bw_method='scott'  #options are scott,botev,silverman or a value
@@ -192,6 +194,8 @@ class VasculaturePhenotypes(Phenotypes):
         if self.rad_arrayname is not None:
             tmp=vessel.GetPointData().GetArray(self.rad_arrayname)
             array_v[self.rad_arrayname]=vtk_to_numpy(tmp)
+            
+            
 
         #Get unique value of spacing as the norm 3D vector
         if vessel.GetFieldData().GetArray("spacing") == None:
@@ -312,6 +316,14 @@ class VasculaturePhenotypes(Phenotypes):
           vessel_radius = self.vessel_radius_from_sigma(array_v['scale'][region_vessel_mask])
         else:
           vessel_radius = array_v[self.rad_arrayname][region_vessel_mask]
+          if self.filter_particles_with_scale_radius_ratio:
+            radius_scale = self.vessel_radius_from_sigma(array_v['scale'][region_vessel_mask])
+            ratio = np.where(vessel_radius==0, 10, (radius_scale / vessel_radius))
+            vessel_radius = np.where(ratio < self.scale_radius_ratio_th, radius_scale ,0)
+
+
+
+          
 
         p_csa = self.compute_bv_profile_from_radius(vessel_radius)
         n_points = np.sum(region_vessel_mask == True)
@@ -433,6 +445,10 @@ if __name__ == "__main__":
                       help='Array name with the radius information (optional).\
                       If this is not provided the radius will be computed from the scale information.',
                       dest='radius_array_name',metavar='<float>',default=None)
+    parser.add_option('--filter_scale',
+                      help='Used alongside --radius_name option. Uses scale info to compute phenotypes filtering particles that are \
+                      out of ratio compare to dnn sizing  (optional)',
+                      dest='filter_particles_with_scale_radius_ratio',action="store_true")
     parser.add_option('-s',
                         help='Spacing of the volume that was used to generate the particles (optional).\
                         This information is used if the spacing field of the particle\'s FieldData is not present.',
@@ -474,6 +490,7 @@ if __name__ == "__main__":
 
     vasculature_pheno=VasculaturePhenotypes(chest_regions=regions,chest_types=types,pairs=pairs,plot=plot)
     vasculature_pheno.rad_arrayname=options.radius_array_name
+    vasculature_pheno.filter_particles_with_scale_radius_ratio=options.filter_particles_with_scale_radius_ratio
     v_df,figure,profiles=vasculature_pheno.execute(vessel,options.cid,spacing=spacing)
 
 
