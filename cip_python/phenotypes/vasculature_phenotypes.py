@@ -46,6 +46,7 @@ class VasculaturePhenotypes(Phenotypes):
         self.factor=0.16
         self.scale_radius_ratio_th = 3
         self.filter_particles_with_scale_radius_ratio=None
+        self.old_interarticle_distance=None
         
         #Method to do KDE of prob(CSA)
         self.bw_method='scott'  #options are scott,botev,silverman or a value
@@ -381,9 +382,15 @@ class VasculaturePhenotypes(Phenotypes):
 
         na=vessel.GetNumberOfPoints()
 
-        random_ids=np.random.random_integers(0,na-1,self._number_test_points)
-        distance = np.zeros(self._number_test_points)
-        idList=vtk.vtkIdList()
+        if self.old_interparticle_distance:
+            random_ids=np.random.random_integers(0,na-1,self._number_test_points)
+            distance = np.zeros(self._number_test_points)
+            idList=vtk.vtkIdList()
+        else:
+            random_ids=range(0,na)
+            distance = np.zeros(na)
+            idList=vtk.vtkIdList()
+
         #Find random closest point and take mean
         for pos,kk in enumerate(random_ids):
           v_p=vessel.GetPoint(kk)
@@ -447,8 +454,11 @@ if __name__ == "__main__":
                       dest='radius_array_name',metavar='<float>',default=None)
     parser.add_option('--filter_scale',
                       help='Used alongside --radius_name option. Uses scale info to compute phenotypes filtering particles that are \
-                      out of ratio compare to dnn sizing  (optional)',
+                      out of ratio compare to dnn sizing  (Flag)',
                       dest='filter_particles_with_scale_radius_ratio',action="store_true")
+    parser.add_option('--old_interparticle_distance',
+                      help='Calculates interparticle distance from 5000 random particles. This mode is deprecated, now it uses all particles. (Flag)',
+                      dest='old_interparticle_distance',action="store_true")
     parser.add_option('-s',
                         help='Spacing of the volume that was used to generate the particles (optional).\
                         This information is used if the spacing field of the particle\'s FieldData is not present.',
@@ -491,6 +501,7 @@ if __name__ == "__main__":
     vasculature_pheno=VasculaturePhenotypes(chest_regions=regions,chest_types=types,pairs=pairs,plot=plot)
     vasculature_pheno.rad_arrayname=options.radius_array_name
     vasculature_pheno.filter_particles_with_scale_radius_ratio=options.filter_particles_with_scale_radius_ratio
+    vasculature_pheno.old_interparticle_distance=options.old_interparticle_distance
     v_df,figure,profiles=vasculature_pheno.execute(vessel,options.cid,spacing=spacing)
 
 
