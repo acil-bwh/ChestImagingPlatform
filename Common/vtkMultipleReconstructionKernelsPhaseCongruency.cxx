@@ -23,6 +23,8 @@
 #include "vtkExecutive.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 
+#include <cmath>
+
 #define VTK_EPS 1e-15
 
 vtkStandardNewMacro(vtkMultipleReconstructionKernelsPhaseCongruency);
@@ -268,7 +270,7 @@ void vtkMultipleReconstructionKernelsPhaseCongruencyExecute(vtkMultipleReconstru
             A=0;Fe=0;Fo=0;
             for (idxK = 0; idxK< numKernels; idxK++)
               {
-              A += sqrt(meanf*meanf+((double) *inPtrs[idxK]) * ((double) *inPtrs[idxK]) );
+              A += std::sqrt(meanf*meanf+((double) *inPtrs[idxK]) * ((double) *inPtrs[idxK]) );
               if (*inPtrs[idxK]<meanf)
                 sign = -1;
               else
@@ -276,7 +278,7 @@ void vtkMultipleReconstructionKernelsPhaseCongruencyExecute(vtkMultipleReconstru
               Fe += sign*meanf;
               Fo += (double) *inPtrs[idxK];
               }
-            F = sqrt(Fe*Fe + Fo*Fo);
+            F = std::sqrt(Fe*Fe + Fo*Fo);
 
             if (A > VTK_EPS)
               PC = (F - self->GetNoiseLevel())/(A);
