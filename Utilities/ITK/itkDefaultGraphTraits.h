@@ -22,6 +22,8 @@
 
 #include <vector>
 
+#include <itkConfigure.h>
+
 namespace itk
 {
 

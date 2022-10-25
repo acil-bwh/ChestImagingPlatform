@@ -20,6 +20,8 @@
 
 #include <algorithm>
 
+#include <itkConfigure.h>
+
 namespace itk
 {
 namespace Functor
