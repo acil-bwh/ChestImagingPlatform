@@ -1,11 +1,11 @@
 """
-File: composite_transform.py
+File: transform.py
 Author: Ariel Hernán Curiale
 Email: curiale@gmail.com
 Github: https://gitlab.com/Curiale
 Description:
-    This class composes a list of ITK transfomration into a single composite
-    ITK transform
+    This module contains usefull classes to work with ITK transforms, for
+    example the Composite transform.
 """
 import SimpleITK as sitk
 
