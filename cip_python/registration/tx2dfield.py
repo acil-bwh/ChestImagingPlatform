@@ -17,8 +17,9 @@ class Transform2DenseField():
     """
 
     def __init__(self, tx, ref_img):
-        if not isinstance(tx, list):
-            tx = list(tx)
+        if not isinstance(tx, list) and not isinstance(tx, tuple):
+            tx = [tx]
+
         if len(tx) == 1:
             self.tx = tx[0]
         else:
