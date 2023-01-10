@@ -8,7 +8,7 @@ Description:
     transformations
 """
 import SimpleITK as sitk
-from .transform import CompositeTransform
+from cip_python.registration.transform import CompositeTransform
 
 
 class Transform2DenseField():

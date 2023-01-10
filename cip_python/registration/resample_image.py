@@ -4,11 +4,12 @@ Author: Ariel Hernán Curiale
 Email: curiale@gmail.com
 Github: https://gitlab.com/Curiale
 Description:
+    This script resample an image according to the alist of tx
 """
 
 import SimpleITK as sitk
-from .transform import CompositeTransform
-from .tx2field import Transform2DenseField
+from cip_python.registration.transform import CompositeTransform
+from cip_python.registration.tx2field import Transform2DenseField
 
 
 def cast(img, pixelID):
