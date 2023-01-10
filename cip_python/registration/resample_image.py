@@ -129,7 +129,7 @@ def main():
         '--transforms',
         nargs='+',
         help="List of transformations, for example [Affine, FFD]",
-        type=list,
+        type=str,
         required=True)
     parser.add_argument('-c', '--correction', action='store_true')
     parser.add_argument('-o', '--offset_correction', type=float, default=0)

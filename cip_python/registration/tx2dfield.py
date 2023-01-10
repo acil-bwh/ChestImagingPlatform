@@ -58,7 +58,7 @@ def main():
         '--transforms',
         nargs='+',
         help="List of transformations, for example [Affine, FFD]",
-        type=list,
+        type=str,
         required=True)
 
     args = parser.parse_args()
