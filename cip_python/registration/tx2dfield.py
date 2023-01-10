@@ -16,7 +16,7 @@ class Transform2DenseField():
     Filter to create a dense deformation field from a list of ITK Transform
     """
 
-    def __init__(self, tx, ref_img):
+    def __init__(self, tx, ref_img, sitk_pixel_type=sitk.sitkVectorFloat32):
         if not isinstance(tx, list) and not isinstance(tx, tuple):
             tx = [tx]
 
@@ -25,6 +25,7 @@ class Transform2DenseField():
         else:
             self.tx = CompositeTransform(tx)
         self.ref = ref_img
+        self.pixel_type = sitk_pixel_type
 
     def Execute(self):
         """
@@ -33,6 +34,8 @@ class Transform2DenseField():
         dfield_filter = sitk.TransformToDisplacementFieldFilter()
         dfield_filter.SetReferenceImage(self.ref)
         dfield = dfield_filter.Execute(self.tx)
+        if dfield.GetPixelID() != self.pixel_type:
+            dfield = sitk.Cast(dfield, self.pixel_type)
         return dfield
 
 
