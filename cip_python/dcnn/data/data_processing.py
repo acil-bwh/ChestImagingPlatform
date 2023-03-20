@@ -7,15 +7,18 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import map_coordinates
 import scipy.ndimage.interpolation as scipy_interpolation
 
+
 class DataProcessing(object):
     @classmethod
-    def resample_image_itk(cls, image, output_size, output_type=None, interpolator=sitk.sitkBSpline):
+    def resample_image_itk(cls, image, output_size, output_type=None, interpolator=sitk.sitkBSpline,
+                                      padding_value=-1024):
         """
         Image resampling using ITK
         :param image: simpleITK image
         :param output_size: numpy array or tuple. Output size
         :param output_type: simpleITK output data type. If None, use the same as 'image'
         :param interpolator: simpleITK interpolator (default: BSpline)
+        :param padding_value: the pixel value when a transformed pixel is outside of the image
         :return: tuple with simpleITK image and array with the resulting output spacing
         """
         if not isinstance(output_size, np.ndarray):
@@ -26,6 +29,7 @@ class DataProcessing(object):
         resampler = sitk.ResampleImageFilter()
         resampler.SetOutputDirection(image.GetDirection())
         resampler.SetSize(output_size.tolist())
+        resampler.SetDefaultPixelValue(padding_value)
         resampler.SetInterpolator(interpolator)
         resampler.SetOutputSpacing(output_spacing)
         resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
@@ -33,13 +37,15 @@ class DataProcessing(object):
         return resampler.Execute(image), output_spacing
 
     @classmethod
-    def resample_image_itk_by_spacing(cls, image, output_spacing, output_type=None, interpolator=sitk.sitkBSpline):
+    def resample_image_itk_by_spacing(cls, image, output_spacing, output_type=None, interpolator=sitk.sitkBSpline,
+                                      padding_value=-1024):
         """
         Image resampling using ITK
         :param image: simpleITK image
         :param output_spacing: numpy array or tuple. Output spacing
         :param output_type: simpleITK output data type. If None, use the same as 'image'
         :param interpolator: simpleITK interpolator (default: BSpline)
+        :param padding_value: the pixel value when a transformed pixel is outside of the image
         :return: tuple with simpleITK image and array with the resulting output spacing
         """
         if not isinstance(output_spacing, np.ndarray):
@@ -50,6 +56,7 @@ class DataProcessing(object):
         resampler = sitk.ResampleImageFilter()
         resampler.SetOutputDirection(image.GetDirection())
         resampler.SetSize(output_size.tolist())
+        resampler.SetDefaultPixelValue(padding_value)
         resampler.SetInterpolator(interpolator)
         resampler.SetOutputSpacing(output_spacing)
         resampler.SetOutputPixelType(output_type if output_type is not None else image.GetPixelIDValue())
