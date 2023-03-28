@@ -275,7 +275,7 @@ class H5Manager(object):
             self._training_sanity_checks_()
             assert (self.train_ixs is not None
                     and isinstance(self.train_ixs, np.ndarray)
-                    and self.train_ixs.dtype == np.int), \
+                    and self.train_ixs.dtype == np.int8), \
                 "You must set the training indexes (numpy of ints) using one of these methods: \n" \
                 "- 'generate_random_train_validation_partition' method\n" \
                 "- 'read_datapoint_use_ixs_from_dataset' method\n" \
