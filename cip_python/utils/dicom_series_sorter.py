@@ -21,6 +21,9 @@ class Sorter():
                             studyuid = ds['StudyInstanceUID'].value
                             seriesuid = ds['SeriesInstanceUID'].value
                             instanceuid = str(ds['SliceLocation'].value)
+                            seriesNumber = str(ds.get("SeriesNumber","NA"))
+                            instanceNumber = str(ds.get("InstanceNumber","0"))
+                            fileName = "IM" + "-" + seriesNumber.zfill(4) + "-" + instanceNumber.zfill(4) + ".dcm"
                             if output:
                                 directory = os.path.join(output,patientid,studyuid,seriesuid)
                             else:
@@ -30,11 +33,11 @@ class Sorter():
                                 os.makedirs(directory)
                             if cop:
                                 try:
-                                    shutil.copy(os.path.join(root,filename), os.path.join(directory,instanceuid))
+                                    shutil.copy(os.path.join(root,filename), os.path.join(directory,fileName))
                                 except OSError as error:
                                     print(error)
                             else:
-                                os.rename(os.path.join(root,filename), os.path.join(directory,filename))
+                                os.rename(os.path.join(root,filename), os.path.join(directory,fileName))
                         except:
                             print ("Error reading %s." % os.path.join(root,filename))
                             if output:
