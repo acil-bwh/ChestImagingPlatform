@@ -24,18 +24,32 @@ def resample_image_itk_by_reference(labelmap, img_ref, interpolator=sitk.sitkNea
 
 if __name__=='__main__':
 
-    parser = argparse.ArgumentParser(description='Resample labelmap to reference nrrd')
-    parser.add_argument("-in_lm", dest="in_lm", required=True)
-    parser.add_argument("-out_lm", dest="out_lm", required=True)
-    parser.add_argument("-ref", dest="img_ref", required=True)
+    parser = argparse.ArgumentParser(description='Resample image to the coordinate frame of a reference image')
+    parser.add_argument("-i", dest="in_im", required=True)
+    parser.add_argument("-o", dest="out_im", required=True)
+    parser.add_argument("--ref", dest="im_ref", required=True)
+    parser.add_argument("--interpolator", dest="interpolator", choices=['NearestNeighbor','Linear','BSpline','BSpline1','BSpline2','BSpline3','BSpline4','BSpline5',
+        'WelchWindowedSinc','HammingWindowedSinc','CosineWindowedSinc','BlackmanWindowedSinc','LanczosWindowSinc'],default='Linear')
 
 op = parser.parse_args()
 
-resampled_lm = resample_image_itk_by_reference(op.in_lm, op.img_ref)
+interpolator=dict()
+interpolator['NearestNeighbor']=sitk.sitkNearestNeighbor
+interpolator['Linear']=sitk.sitkLinear
+interpolator['BSpline']=sitk.sitkBSpline
+interpolator['BSpline1']=sitk.sitkBSpline1
+interpolator['BSpline2']=sitk.sitkBSpline2
+interpolator['BSpline3']=sitk.sitkBSpline3
+interpolator['BSpline4']=sitk.sitkBSpline4
+interpolator['BSpline5']=sitk.sitkBSpline5
+interpolator['WelchWindowedSinc']=sitk.sitkWelchWindowedSinc
+interpolator['HammingWindowedSinc']=sitk.sitkHammingWindowedSinc
+
+resampled_im = resample_image_itk_by_reference(op.in_im, op.im_ref,interpolator=interpolator[op.interpolator])
 
 writer = sitk.ImageFileWriter()
 writer.SetImageIO("NrrdImageIO")
-writer.SetFileName(op.out_lm)
+writer.SetFileName(op.out_im)
 writer.UseCompressionOn()
-writer.Execute(resampled_lm)
+writer.Execute(resampled_im)
 
