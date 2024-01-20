@@ -19,7 +19,7 @@ class RegionTypeParser():
         The M unique labels in the data set
     """
 
-    def __init__(self, data):        
+    def __init__(self, data,prebuild_lookup_table=False):        
         self._data = data
         assert len(data.shape) > 0, "Empty data set"
 
@@ -29,9 +29,11 @@ class RegionTypeParser():
         # Changed in Aug 21 2019 to speed phenotyping. To avoid continuous
         # evaluation labelmap
         ##########
+        ##Create lookup table of indices for each label
         self._data_indices = dict()
-        for ll in set(self.labels_):
-            self._data_indices[ll] = np.where(self._data==ll)
+        if prebuild_lookup_table==True:
+            for ll in set(self.labels_):
+                self._data_indices[ll] = np.where(self._data==ll)
 
    
     def get_mask(self, chest_region=None, chest_type=None):
@@ -62,6 +64,7 @@ class RegionTypeParser():
             Boolean mask of all data indices that match the chest-region
             chest-type query. The chest region hierarchy is honored.
         """
+
         if chest_region is not None:
             if type(chest_region) != int and type(chest_region) != np.int64 \
               and type(chest_region) != np.int32:
@@ -106,7 +109,13 @@ class RegionTypeParser():
         #     tic = time.time()
         #     mask[self._data == ll] = True
         for ll in set(mask_labels):
-            mask[self._data_indices[ll]] = True
+            if ll in self._data_indices.keys():
+                mask[self._data_indices[ll]] = True
+            else:
+                #Build cache of indices for label
+                self._data_indices[ll] = np.where(self._data==ll)
+                mask[self._data_indices[ll]] = True
+
 
         return mask
 
