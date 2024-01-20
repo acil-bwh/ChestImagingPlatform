@@ -236,8 +236,8 @@ class Phenotypes:
                 tmp[k] = self.static_names_handler_[k]()
             tmp[pheno_name] = pheno_value
             for i in range(0, num_keys):
-                tmp[self.key_names_[i]] = key_value[i]
-            self._df = self._df.append(tmp, ignore_index=True)
+                tmp[self.key_names_[i]] = [key_value[i]]
+            self._df = pd.concat([self._df, pd.DataFrame(tmp)], ignore_index=True)
         else:
             self._df.loc[np.where(key_row==True)[0][0],pheno_name] = pheno_value
         
