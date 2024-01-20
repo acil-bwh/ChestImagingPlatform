@@ -7,6 +7,7 @@ from cip_python.phenotypes import Phenotypes
 from cip_python.common import ChestConventions
 from cip_python.input_output import ImageReaderWriter
 from cip_python.utils import RegionTypeParser
+import SimpleITK as sitk
 
 
 class FractalDimensionPhenotypes(Phenotypes):
@@ -40,7 +41,7 @@ class FractalDimensionPhenotypes(Phenotypes):
     """
 
     def __init__(self, chest_regions=None, chest_types=None, pairs=None,
-                 pheno_names=None):
+                 pheno_names=None,method='Method2'):
         c = ChestConventions()
 
         self.chest_regions_ = None
@@ -72,6 +73,8 @@ class FractalDimensionPhenotypes(Phenotypes):
 
         self.requested_pheno_names = pheno_names
 
+        self.method=method
+
         Phenotypes.__init__(self)
 
     def declare_pheno_names(self):  # TODO: modify this function to use ChestConvention names once tested
@@ -84,7 +87,18 @@ class FractalDimensionPhenotypes(Phenotypes):
           Phenotype names
         """
         cols = []
-        cols.append('FDbc')
+        cols.append('FDbc_pos')
+        cols.append('FDbc_neg')
+        cols.append('Lacunaritybc_pos')
+        cols.append('Lacunaritybc_neg')
+        cols.append('FDid_pos')
+        cols.append('FDid_neg')
+        cols.append('Lacunarityid_pos')
+        cols.append('Lacunarityid_neg')
+        cols.append('FDrenyi_pos')
+        cols.append('FDrenyi_neg')
+        cols.append('Lacunarityrenyi_pos')
+        cols.append('Lacunarityrenyi_neg')
         return cols
 
     def get_cid(self):
@@ -92,7 +106,7 @@ class FractalDimensionPhenotypes(Phenotypes):
         """
         return self.cid_
 
-    def execute(self, lm, cid, spacing, stencil=None, num_offsets=1, chest_regions=None, chest_types=None, pairs=None, pheno_names=None):
+    def execute(self, lm, cid, spacing, num_offsets=1, chest_regions=None, chest_types=None, pairs=None, pheno_names=None):
         """Compute the phenotypes for the specified structures.
 
         The following values are computed for the specified structures.
@@ -108,9 +122,6 @@ class FractalDimensionPhenotypes(Phenotypes):
 
         spacing : array, shape ( 3 )
             The x, y, and z spacing, respectively, of the CT volume
-
-        stencil : array, shape ( X, Y, Z )
-            The 3D stencil image array
 
         num_offsets : int
             Number of offsets to use. If set to 1, no offsets are generated. If greater than 1, then generate evenly
@@ -156,15 +167,8 @@ class FractalDimensionPhenotypes(Phenotypes):
             chest type phenotype quantities.
         """
         c = ChestConventions()
-        if stencil is not None:
-            assert len(stencil.shape) == len(lm.shape), \
-                "Stencil image and label map are not the same dimension"
-
         dim = len(lm.shape)
-        if stencil is not None:
-            for i in range(0, dim):
-                assert stencil.shape[0] == lm.shape[0], \
-                    "Disagreement in Stencil and label map dimension"
+
 
         assert type(cid) == str, "cid must be a string"
         self.cid_ = cid
@@ -215,42 +219,40 @@ class FractalDimensionPhenotypes(Phenotypes):
         for r in rs:
             if r != 0:
                 mask_region = parser.get_mask(chest_region=r)
-                self.add_pheno_group(stencil, num_offsets, mask_region, c.GetChestRegionName(r),
+                self.add_pheno_group(mask_region, num_offsets, c.GetChestRegionName(r),
                                      c.GetChestWildCardName(), phenos_to_compute)
         for t in ts:
             if t != 0:
                 mask_type = parser.get_mask(chest_type=t)
-                self.add_pheno_group(stencil, num_offsets, mask_type, c.GetChestWildCardName(),
+                self.add_pheno_group(mask_type, num_offsets, c.GetChestWildCardName(),
                                      c.GetChestTypeName(t), phenos_to_compute)
         if ps.size > 0:
             for i in range(0, ps.shape[0]):
                 if not (ps[i, 0] == 0 and ps[i, 1] == 0):
                     mask = parser.get_mask(chest_region=int(ps[i, 0]),
                                            chest_type=int(ps[i, 1]))
-                    self.add_pheno_group(stencil, num_offsets, mask, c.GetChestRegionName(int(ps[i, 0])),
-                                         c.GetChestTypeName(int(ps[i, 1])), phenos_to_compute)
+                    mask_region = parser.get_mask(chest_region=int(ps[i, 0]))
+                    sitk.WriteImage(sitk.GetImageFromArray(mask.astype('uint16')),'Mask.nrrd')
+                    sitk.WriteImage(sitk.GetImageFromArray(mask_region.astype('uint16')),'MaskRegion.nrrd')
+
+                    self.add_pheno_group(mask, num_offsets, c.GetChestRegionName(int(ps[i, 0])),
+                                         c.GetChestTypeName(int(ps[i, 1])), phenos_to_compute,mask_region=mask_region)
 
         return self._df
 
-    def add_pheno_group(self, stencil, num_offsets, mask, chest_region,
-                        chest_type, phenos_to_compute):
+    def add_pheno_group(self, mask, num_offsets, chest_region,
+                        chest_type, phenos_to_compute,mask_region=None):
         """This function computes phenotypes and adds them to the dataframe with
         the 'add_pheno' method.
 
         Parameters
         ----------
-        stencil : array, shape ( X, Y, Z )
-            The 3D stencil image array
-
-        mask : boolean array, shape ( X, Y, Z ), optional
+        mask : boolean array, shape ( X, Y, Z )
             Boolean mask where True values indicate presence of the structure
             of interest
 
-        mask_region: boolean array, shape ( X, Y, Z ), optional
-            Boolean mask for the corresponding region
-
-        mask_type: boolean array, shape ( X, Y, Z ), optional
-            Boolean mask for the corresponding type
+        num_offsets: int, optional
+            Number of offsets to apply in the box counting method. Used only for method1
 
         chest_region : string
             Name of the chest region in the (region, type) key used to populate
@@ -259,6 +261,10 @@ class FractalDimensionPhenotypes(Phenotypes):
         chest_type : string
             Name of the chest region in the (region, type) key used to populate
             the dataframe
+
+        mask_region: boolean array, shape ( X, Y, Z ), optional
+            Boolean mask for the region. Used to isolate a structure within a given region 
+            where typically the structure is defined by the type.
 
         phenos_to_compute : list of strings
             Names of the phenotype used to populate the dataframe
@@ -269,23 +275,173 @@ class FractalDimensionPhenotypes(Phenotypes):
         parameters needed for Monte Carlo simulations of clinical dose
         distributions'
         """
-        mask_sum = np.sum(mask)
+        #mask_sum = np.sum(mask)
         print("Computing phenos for region %s and type %s" % (chest_region, chest_type))
-        if stencil is not None:
-            stencil_mask = np.zeros(stencil.shape, dtype=stencil.dtype)
-            # stencil_mask = stencil[mask]
-            idx = np.nonzero(mask)
-            stencil_mask[idx] = 1
+        if mask is not None:
+            #stencil_mask = np.zeros(stencil.shape, dtype=stencil.dtype)
+            #idx = np.nonzero(mask)
+            #stencil_mask[idx] = 1
+            stencil_mask=mask.astype('int8')
+            #stencil_mask[mask==0]=0
+
+            if mask_region is not None:
+                stencil_mask[mask_region==0]=0
+                stencil_negative=mask_region.astype('int8')-stencil_mask
+            else:
+                stencil_negative=1-stencil_mask
+
+            stencil_mask_cropped=np.pad(self.crop_to_bounding_box_nd(stencil_mask,stencil_mask),1)
+            stencil_negative_cropped=np.pad(self.crop_to_bounding_box_nd(stencil_negative,stencil_negative),1)
+
+            if self.method=='Method1':
+                fdbc_pos,lacunaritybc_pos = self.compute_FD_box_counting(stencil_mask_cropped, num_offsets=num_offsets)
+                fdbc_neg,lacunaritybc_neg = self.compute_FD_box_counting(stencil_negative_cropped, num_offsets=num_offsets)
+                fdid_pos=lacunarityid_pos=fdrenyi_pos=lacunarityrenyi_pos=0
+                fdid_neg=lacunarityid_neg=fdrenyi_neg=lacunarityrenyi_neg=0
+
+            elif self.method == 'Method2':
+                fdbc_pos,lacunaritybc_pos,fdid_pos,lacunarityid_pos,fdrenyi_pos,lacunarityrenyi_pos = self.compute_fractal_dimension(stencil_mask_cropped)
+                fdbc_neg,lacunaritybc_neg,fdid_neg,lacunarityid_neg,fdrenyi_neg,lacunarityrenyi_neg = self.compute_fractal_dimension(stencil_negative_cropped)
+            else:
+                raise ValueError("Fractal dimension method is not supported")
+
 
             for pheno_name in phenos_to_compute:
                 assert pheno_name in self.pheno_names_, \
                     "Invalid phenotype name " + pheno_name
-                pheno_val = self.compute_FD_box_counting(stencil_mask, num_offsets=num_offsets)
-
-                if pheno_val is not None:
+                
+                if pheno_name == 'FDbc_pos':
                     self.add_pheno([chest_region, chest_type],
-                                   pheno_name, pheno_val)
+                                   'FDbc_pos', fdbc_pos)
+                if pheno_name == 'FDbc_neg':
+                    self.add_pheno([chest_region, chest_type],
+                                   'FDbc_neg', fdbc_neg)
+                if pheno_name == 'Lacunaritybc_pos':
+                    self.add_pheno([chest_region, chest_type],
+                                   'Lacunaritybc_pos', lacunaritybc_pos)
+                if pheno_name == 'Lacunaritybc_neg':
+                    self.add_pheno([chest_region, chest_type],
+                                   'Lacunaritybc_neg', lacunaritybc_neg)
+                if pheno_name == 'FDid_pos':
+                    self.add_pheno([chest_region, chest_type],
+                                   'FDid_pos', fdid_pos)
+                if pheno_name == 'FDid_neg':
+                    self.add_pheno([chest_region, chest_type],
+                                   'FDid_neg', fdid_neg)
+                if pheno_name == 'Lacunarityid_pos':
+                    self.add_pheno([chest_region, chest_type],
+                                   'Lacunarityid_pos', lacunarityid_pos)
+                if pheno_name == 'Lacunarityid_neg':
+                    self.add_pheno([chest_region, chest_type],
+                                   'Lacunarityid_neg', lacunarityid_neg)
+                if pheno_name == 'FDrenyi_pos':
+                    self.add_pheno([chest_region, chest_type],
+                                   'FDrenyi_pos', fdrenyi_pos)
+                if pheno_name == 'FDrenyi_neg':
+                    self.add_pheno([chest_region, chest_type],
+                                   'FDrenyi_neg', fdrenyi_neg)               
+                if pheno_name == 'Lacunarityrenyi_pos':
+                    self.add_pheno([chest_region, chest_type],
+                                   'Lacunarityrenyi_pos', lacunarityrenyi_pos)
+                if pheno_name == 'Lacunarityrenyi_neg':
+                    self.add_pheno([chest_region, chest_type],
+                                   'Lacunarityrenyi_neg', lacunarityrenyi_neg)
 
+    #https://en.wikipedia.org/wiki/Minkowski–Bouligand_dimension
+    #https://francescoturci.net/2016/03/31/box-counting-in-numpy/
+    def compute_fractal_dimension(self,mask,alpha=2):
+        coords=np.where(mask > 0)
+        # computing the fractal dimension
+        # considering only scales in a logarithmic list
+        min_p = np.min(mask.shape)
+        # Greatest power of 2 less than or equal to p
+        n_bins = int(np.floor(np.log2(min_p)))
+    
+        scales = np.logspace(1, n_bins+1, num=n_bins, endpoint=False, base=2)
+
+        Ns = []
+        Ps = []
+        Psalpha=[]
+        # looping over several scales
+        for scale in scales:
+            # computing the histogram
+            if mask.ndim == 1:
+                (Lx)=mask.shape
+                xx=np.linspace(0,scale*np.ceil(Lx/scale),int(np.ceil(Lx/scale))+1)
+                H, edges = np.histogramdd(coords, bins=(xx))
+
+            elif mask.ndim == 2:  
+                (Lx,Ly)=mask.shape 
+                xx=np.linspace(0,scale*np.ceil(Lx/scale),int(np.ceil(Lx/scale))+1)
+                yy=np.linspace(0,scale*np.ceil(Ly/scale),int(np.ceil(Ly/scale))+1)
+                H, edges = np.histogramdd(coords, bins=(xx,yy))
+            elif mask.ndim == 3:
+                (Lx,Ly,Lz)=mask.shape
+                #xx=np.arange(0,Lx,scale)
+                #yy=np.arange(0, Ly, scale)
+                #zz=np.arange(0,Lz,scale)
+                xx=np.linspace(0,scale*np.ceil(Lx/scale),int(np.ceil(Lx/scale))+1)
+                yy=np.linspace(0,scale*np.ceil(Ly/scale),int(np.ceil(Ly/scale))+1)
+                zz=np.linspace(0,scale*np.ceil(Lz/scale),int(np.ceil(Lz/scale))+1)
+                H, edges = np.histogramdd(coords, bins=(xx,yy,zz))
+
+            box_count=np.sum(H>0)
+            #print(f'{scale}:{box_count}')
+            Ns.append(box_count)
+            Ps.append(-np.mean(np.log(H[H>0])))
+            Psalpha.append(np.sum(H[H>0]**alpha))
+        # linear fit, polynomial of degree 1
+        coeffs_bc = np.polyfit(np.log(1/scales), np.log(Ns), 1)
+        coeffs_id = np.polyfit(np.log(1/scales), Ps, 1)
+        coeffs_cd = np.polyfit(np.log(scales),1/(alpha-1)*np.log(Psalpha),1)
+
+        #pl.plot(np.log(scales), np.log(Ns), 'o', mfc='none')
+        #pl.plot(np.log(scales), np.polyval(coeffs, np.log(scales)))
+        #pl.xlabel('log $\epsilon$')
+        #pl.ylabel('log N')
+        #pl.savefig('sierpinski_dimension.pdf')
+
+        fd_bc=coeffs_bc[0]  #box counting dimensions
+        lacunarity_bc=coeffs_bc[1]
+
+        fd_id=coeffs_id[0]
+        lacunarity_id=coeffs_id[1]
+        
+        fd_renyi=coeffs_cd[0]
+        lacunarity_renyi=coeffs_cd[1]
+
+         #information dimension
+         #correlation dimension
+         #Generalized or Rényi dimensions
+         #Higuchi dimension
+
+        return fd_bc,lacunarity_bc,fd_id,lacunarity_id,fd_renyi,lacunarity_renyi
+
+    def crop_to_bounding_box_nd(self,image, binary_mask):
+        """
+        Crop an n-dimensional image to the bounding box of a binary mask.
+
+        :param image: n-dimensional numpy array, the image to be cropped
+        :param binary_mask: n-dimensional numpy array, binary mask with objects marked with True or non-zero values
+        :return: n-dimensional numpy array, cropped image
+        """
+        
+        # Check if the dimensions of the image and the mask are the same
+        if image.shape != binary_mask.shape:
+            raise ValueError("Image and mask must have the same dimensions")
+
+        # Find the bounding box indices for each dimension
+        indices = []
+        for dim in range(image.ndim):
+            axis = np.any(binary_mask, axis=tuple(range(image.ndim))[:dim] + tuple(range(image.ndim))[dim+1:])
+            indices.append(np.where(axis)[0][[0, -1]])
+
+        # Use slicing to crop the image
+        slices = tuple(slice(idx[0], idx[1]+1) for idx in indices)
+        cropped_image = image[slices]
+
+        return cropped_image
+    
     def compute_FD_box_counting(self, arr, threshold=1.0, num_offsets=1, do_plot=False):
         """ This function takes as input a 1, 2, or 3D array and returns the fractal dimension as computed by box counting.
 
@@ -309,6 +465,8 @@ class FractalDimensionPhenotypes(Phenotypes):
         -------
         fractal_dim : float
             Corresponding fractal dimension of the arr
+        lacunarity : float
+            Corresponding lacunarity of the arr
 
         """
 
@@ -426,7 +584,7 @@ class FractalDimensionPhenotypes(Phenotypes):
         #         plt.tight_layout()
         #         plt.show()
 
-        return -coeffs[0]
+        return -coeffs[0],coeffs[1]
 
     @staticmethod
     def box_count(z, k):
@@ -523,8 +681,6 @@ if __name__ == "__main__":
               the requested phenotypes are computed."""
 
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--in_stencil', '-in_stencil', required=True,
-                        help='Stencil file (.nrrd) generated from airway/vessel particles')
     parser.add_argument('--in_lm', '-in_lm', required=True,
                         help='Input label map containing structures of interest')
     parser.add_argument('--out_csv', '-out_csv', required=True,
@@ -572,7 +728,7 @@ if __name__ == "__main__":
         types = args.chest_types.split(',')
 
     lm, lm_header = image_io.read_in_numpy(args.in_lm)
-    stencil, stencil_header = image_io.read_in_numpy(args.in_stencil)
+    #stencil, stencil_header = image_io.read_in_numpy(args.in_stencil)
 
     spacing = lm_header['spacing']
 
@@ -585,5 +741,5 @@ if __name__ == "__main__":
             pairs.append([tmp[2 * i], tmp[2 * i + 1]])
 
     paren_pheno = FractalDimensionPhenotypes(chest_regions=regions, chest_types=types, pairs=pairs)
-    df = paren_pheno.execute(lm, args.cid, spacing, stencil=stencil, num_offsets=args.num_offsets)
+    df = paren_pheno.execute(lm, args.cid, spacing, num_offsets=int(args.num_offsets))
     df.to_csv(args.out_csv, index=False)
