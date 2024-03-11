@@ -109,7 +109,7 @@ class TracheaNoiseEstimation:
         is_truncated = self.is_case_truncated(ct, lm)
         if is_truncated:
             corrected_ct = self.truncation_correction(ct, mm, vv, th=-1023)
-            mm, vv, pp, ss, kk = self.get_trachea_noise_params(corrected_ct, lm, erosion_kernel)
+            mm, vv, pp, ss, kk, mm_raw, std_raw = self.get_trachea_noise_params(corrected_ct, lm, erosion_kernel)
 
         out_csv = dict()
 
