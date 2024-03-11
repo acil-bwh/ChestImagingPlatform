@@ -37,8 +37,7 @@ class TracheaNoiseEstimation:
         lmtrachea = 1 * (lm == 512)
 
         #In case trachea leaks into surrounding tissue, set a hard threshold
-        lmtrachea[ct<-600]=0
-
+        lmtrachea[ct>-600]=0
         lmtrachea = binary_erosion(lmtrachea, structure=np.ones((erosion_kernel, erosion_kernel, erosion_kernel))).astype(lmtrachea.dtype)
         hutrachea = ct[lmtrachea == 1]
 
@@ -62,10 +61,11 @@ class TracheaNoiseEstimation:
         skewness = skew(hutrachea)
         kurt = kurtosis(hutrachea)
 
-        # Calculate the 15th percentile
-        perc15 = np.percentile(hutrachea, 15)
 
-        return me2, ve2, perc15, skewness, kurt,raw_mean,raw_std
+        # Calculate the 15th percentile
+        perc15 = np.percentile(hutrachea[:], 15)
+
+        return me2, ve2, perc15, skewness, kurt, mean_raw, std_raw
 
     @staticmethod
     def truncation_correction(ct, mean, std_dev, th=-1023):
@@ -99,7 +99,7 @@ class TracheaNoiseEstimation:
 
         return False
 
-    def execute(self, in_ct, in_lm, out_file,erosion_kernel):
+    def execute(self, in_ct, in_lm, out_file,erosion_kernel,cid):
         ct, metainfo = self.io.read_in_numpy(in_ct)
         lm = self.io.read_in_numpy(in_lm)[0]
 
@@ -113,6 +113,7 @@ class TracheaNoiseEstimation:
 
         out_csv = dict()
 
+        out_csv['CID'] = [cid]
         out_csv['Noise Mean'] = [mm]
         out_csv['Noise Sigma'] = [vv]
         out_csv['Noise Perc15'] = [pp]
@@ -134,12 +135,13 @@ if __name__ == "__main__":
     parser.add_argument('--i_lm', help="Path to lung labelmap (.nrrd)", type=str, required=True)
     parser.add_argument('--o', help="Path to save .csv file with mean, sigma, perc15, skewness, and kurtosis of the CT "
                                     "noise", type=str, required=True)
+    parser.add_argument('--cid', help="Case ID", type =str, required=True)
     parser.add_argument('-k', help="Erosion kernel size", type=int,default=5)
 
     args = parser.parse_args()
 
     tr = TracheaNoiseEstimation()
-    tr.execute(args.i_ct, args.i_lm, args.o,args.k)
+    tr.execute(args.i_ct, args.i_lm, args.o,args.k,args.cid)
 
 
 
