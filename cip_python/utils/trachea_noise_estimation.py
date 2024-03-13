@@ -33,21 +33,41 @@ class TracheaNoiseEstimation:
         v0 = aa.x[1]
         return m0, v0, aa.x[2]
 
-    def get_trachea_noise_params(self, ct, lm,erosion_kernel=5):
+    def get_roi_from_trachea(self,ct, lm, erosion_kernel=5):
         lmtrachea = 1 * (lm == 512)
 
         #In case trachea leaks into surrounding tissue, set a hard threshold
         lmtrachea[ct>-600]=0
-        lmtrachea = binary_erosion(lmtrachea, structure=np.ones((erosion_kernel, erosion_kernel, erosion_kernel))).astype(lmtrachea.dtype)
-        hutrachea = ct[lmtrachea == 1]
+        roi_lm= binary_erosion(lmtrachea, structure=np.ones((erosion_kernel, erosion_kernel, erosion_kernel))).astype(lmtrachea.dtype)
 
-        mean_raw=np.mean(hutrachea)
-        std_raw=np.std(hutrachea)
+        return roi_lm
 
-        thist, xx = np.histogram(hutrachea, bins=1100, range=(-1100, 0), density=True)
+    def get_raw_moments(self, ct, roi_lm):
+        huroi = ct[roi_lm == 1]
+
+        mean_raw=np.mean(huroi)
+        std_raw=np.std(huroi)
+
+        # Calculate skewness and kurtosis
+        skewness_raw = skew(huroi)
+        kurt_raw = kurtosis(huroi)
+
+        # Calculate the 15th percentile
+        perc15_raw = np.percentile(huroi[:], 15)
+
+        return mean_raw, std_raw, skewness_raw, kurt_raw, perc15_raw
+
+    def estimate_truncated_noise_params(self, ct, roi_lm, truncation_th=-1022):
+
+        huroi = ct[roi_lm == 1]
+
+        thist, xx = np.histogram(huroi, bins=1100, range=(-1100, 0), density=True)
         xx = xx[:-1]
 
-        idx = np.where(xx > -1022)[0][0]  # Remove everything below -1022 to take away truncation
+        if np.min(xx)>truncation_th:
+            idx=0
+        else:
+            idx = np.where(xx > truncation_th)[0][0]  # Remove everything below -1022 (truncation_th) to take away truncation
         xx_r = xx[idx:]
         ht = thist[idx:]    # Get trachea histogram without truncation
         ht = ht/np.sum(ht)  #Renormalize histogram to take into account the portion that we have remove
@@ -57,15 +77,7 @@ class TracheaNoiseEstimation:
         std_t = np.sqrt(np.sum(ht * (xx_r ** 2)) - mean_t ** 2)  # Initial estimation of variance
         me2, ve2, ww2 = self.gauss_trunc_ls(mean_t, std_t, ht, xx_r)  # Moment fitting estimation
 
-        # Calculate skewness and kurtosis
-        skewness = skew(hutrachea)
-        kurt = kurtosis(hutrachea)
-
-
-        # Calculate the 15th percentile
-        perc15 = np.percentile(hutrachea[:], 15)
-
-        return me2, ve2, perc15, skewness, kurt, mean_raw, std_raw
+        return me2, ve2
 
     @staticmethod
     def truncation_correction(ct, mean, std_dev, th=-1023):
@@ -103,24 +115,35 @@ class TracheaNoiseEstimation:
         ct, metainfo = self.io.read_in_numpy(in_ct)
         lm = self.io.read_in_numpy(in_lm)[0]
 
-        # Compute mean, std, perc15, skewness, and kurtosis before truncation correction
-        mm, vv, pp, ss, kk, mm_raw, std_raw = self.get_trachea_noise_params(ct, lm, erosion_kernel)
+        roi_lm = self.get_roi_from_trachea(ct, lm, erosion_kernel)
+
+        # Compute raw moments in roi assuming no truncated distribution
+        mm_raw, std_raw, ss_raw,kk_raw, pp_raw = self.get_raw_moments(ct, roi_lm)
+
+        # Compute mean, std, assuming a truncated gaussian model
+        mm, vv  = self.estimate_truncated_noise_params(ct, roi_lm)
 
         is_truncated = self.is_case_truncated(ct, lm)
-        if is_truncated:
-            corrected_ct = self.truncation_correction(ct, mm, vv, th=-1023)
-            mm, vv, pp, ss, kk, mm_raw, std_raw = self.get_trachea_noise_params(corrected_ct, lm, erosion_kernel)
+
+        # Impute truncated values with a gaussian model and compute moments
+        corrected_ct = self.truncation_correction(ct, mm, vv, th=-1023)
+        mm_cor, std_cor, ss_cor,kk_cor, pp_cor = self.get_raw_moments(corrected_ct, roi_lm)
 
         out_csv = dict()
 
         out_csv['CID'] = [cid]
         out_csv['Noise Mean'] = [mm]
         out_csv['Noise Sigma'] = [vv]
-        out_csv['Noise Perc15'] = [pp]
-        out_csv['Noise Skew'] = [ss]
-        out_csv['Noise Kurtosis'] = [kk]
-        out_csv['Noise Mean (raw)'] = [mm_raw]
-        out_csv['Noise Sigma (raw)'] = [std_raw]
+        out_csv['Noise Mean Imputed'] = [mm_cor]
+        out_csv['Noise Sigma Imputed'] = [std_cor]
+        out_csv['Noise Skew Imputed'] = [ss_cor]
+        out_csv['Noise Kurtosis Imputed'] = [kk_cor]
+        out_csv['Noise Perc15 Imputed'] = [pp_cor]
+        out_csv['Noise Mean Raw'] = [mm_raw]
+        out_csv['Noise Sigma Raw'] = [std_raw]
+        out_csv['Noise Skew Raw'] = [ss_raw]
+        out_csv['Noise Kurtosis Raw'] = [kk_raw]
+        out_csv['Noise Perc15 Raw'] = [pp_raw]
         out_csv['Truncation Status'] = [is_truncated]
 
         df = pd.DataFrame.from_dict(out_csv)
@@ -133,7 +156,7 @@ if __name__ == "__main__":
                                                  'will be applied if required.')
     parser.add_argument('--i_ct', help="Path to CT image (.nrrd)", type=str, required=True)
     parser.add_argument('--i_lm', help="Path to lung labelmap (.nrrd)", type=str, required=True)
-    parser.add_argument('--o', help="Path to save .csv file with mean, sigma, perc15, skewness, and kurtosis of the CT "
+    parser.add_argument('-o', help="Path to save .csv file with mean, sigma, perc15, skewness, and kurtosis of the CT "
                                     "noise", type=str, required=True)
     parser.add_argument('--cid', help="Case ID", type =str, required=True)
     parser.add_argument('-k', help="Erosion kernel size", type=int,default=5)
