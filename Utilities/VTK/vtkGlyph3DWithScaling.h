@@ -265,7 +265,7 @@ public:
 
   // Description:
   // Overridden to include SourceTransform's MTime.
-  virtual unsigned long GetMTime();
+  virtual vtkMTimeType GetMTime();
 
 protected:
   vtkGlyph3DWithScaling();

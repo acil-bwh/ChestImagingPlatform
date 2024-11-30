@@ -4,7 +4,7 @@
   <title>GenerateModel</title>
     <description><![CDATA[This program extract the airway wall and computes multiple airway wall metrics from a particle's VTK files using multiple approaches. The output is another particle's' VTK file.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/GenerateModel</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/particles</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
@@ -82,11 +82,11 @@ and does not necessarily represent the official views of the National Institutes
     <description>Wall constrast threshold at the candidate edge point to qualify (positive value).</description>
     <longflag>wth</longflag>
     <constraints>
-      <minimum>250</minimum>
+      <minimum>50</minimum>
       <maximum>500</maximum>
       <step>1</step>
     </constraints>
-    <default>300</default>
+    <default>150</default>
   </integer>
     
   <double>
@@ -114,7 +114,20 @@ and does not necessarily represent the official views of the National Institutes
     </constraints>
     <default>0.6</default>
   </double>
-    
+  
+  <double>
+      <name>stdFactor</name>
+      <label>Std Factor</label>
+      <description>Factor of the std that will be allowed. This factor can be used to reject wall detections that are outlier. Reducing the factor will less variance arond the mean value.</description>
+      <longflag>stdFactor</longflag>
+      <constraints>
+          <minimum>0.1</minimum>
+          <maximum>5</maximum>
+          <step>0.1</step>
+      </constraints>
+      <default>2</default>
+  </double>
+  
   <boolean>
     <name>inPlane</name>
     <label>In-plane mode</label>
@@ -122,7 +135,23 @@ and does not necessarily represent the official views of the National Institutes
     <description>Compute airway wall in-plane ignoring airway longitudinal axis.</description>
     <default>false</default>
   </boolean>
-    
+  
+  <boolean>
+      <name>centroidCentering</name>
+      <label>Centroid centering</label>
+      <longflag>centroidCentering</longflag>
+      <description>Center airway point based on lumen centroid.</description>
+      <default>false</default>
+  </boolean>
+  
+  <boolean>
+      <name>fineCentering</name>
+      <label>Fine centering</label>
+      <longflag>fineCentering</longflag>
+      <description>Center airway point at lumen intensity minimum.</description>
+      <default>false</default>
+  </boolean>
+  
   <boolean>
     <name>largeAirways</name>
     <label>Large airways mode</label>

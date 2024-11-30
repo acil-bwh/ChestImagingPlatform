@@ -1,21 +1,18 @@
-import os.path
-import pandas as pd
-import nrrd
-from cip_python.ChestConventions import ChestConventions
-from cip_python.phenotypes.body_composition_phenotypes import *
-import pdb
-
+from cip_python.phenotypes import BodyCompositionPhenotypes
+from cip_python.input_output import ImageReaderWriter
+import cip_python.common as common
+import numpy as np
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-lm_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
-lm, lm_header = nrrd.read(lm_name)
-ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
-ct, ct_header = nrrd.read(ct_name)
+image_io = ImageReaderWriter()
+lm_name = ct_name = common.Paths.testing_file_path('simple_lm.nrrd')
+lm, lm_header = image_io.read_in_numpy(lm_name)
+ct_name = common.Paths.testing_file_path('simple_ct.nrrd')
+ct, ct_header=image_io.read_in_numpy(ct_name)
 
 def test_execute():
-    c = ChestConventions()
+    c = common.ChestConventions()
     wc = c.GetChestWildCardName()
     spacing = np.array([0.5, 0.4, 0.3])
     
@@ -39,7 +36,7 @@ def test_execute():
                               9*spacing[1]*spacing[2]), \
                 'Phenotype not as expected'            
         if (r == 'WholeLung' and t == wc):
-            assert df['HUMedian'].iloc[i] == -825, 'Phenotype not as expected'            
+            assert df['HUMedian'].iloc[i] == -825, 'Phenotype not as expected'
             assert np.isclose(df['HUStd'].iloc[i], 256.9695), \
                 'Phenotype not as expected'
             assert np.isclose(df['AxialCSA'].iloc[i], \

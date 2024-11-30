@@ -12,6 +12,8 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
+#include <cmath>
+
 #include "vtkComputeAirwayWallPolyData.h"
 
 #include "vtkCellArray.h"
@@ -30,10 +32,9 @@
 #include "vtkNRRDWriterCIP.h"
 #include "vtkSmartPointer.h"
 
-
-#ifdef WIN32
-#define round(x) floor((x)+0.5)
-#endif
+#include "vtkImageThreshold.h"
+#include "vtkImageSeedConnectivity.h"
+#include "vtkComputeCentroid.h"
 
 vtkStandardNewMacro(vtkComputeAirwayWallPolyData);
 
@@ -41,6 +42,8 @@ vtkComputeAirwayWallPolyData::vtkComputeAirwayWallPolyData()
 {
   this->AxisMode = VTK_HESSIAN;
   this->Reformat = 1;
+  this->FineCentering = 0;
+    this->CentroidCentering = 0;
   this->WallSolver = vtkComputeAirwayWall::New();
   this->AxisArray = vtkDoubleArray::New();
   this->SelfTuneModelSmooth[0]=0.0017;
@@ -58,6 +61,8 @@ vtkComputeAirwayWallPolyData::vtkComputeAirwayWallPolyData()
   
   this->AirwayImagePrefix= NULL;
   this->SaveAirwayImage=0;
+    
+    this->AirBaselineIntensity=0;
 
 }
 
@@ -227,22 +232,28 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   
   output->DeepCopy(input);
   
-  cout<<"Spacing: "<<sp[0]<<" "<<sp[1]<<" "<<sp[2]<<endl;
-  cout<<"Origin: "<<orig[0]<<" "<<orig[1]<<" "<<orig[2]<<endl;
+  //cout<<"Spacing: "<<sp[0]<<" "<<sp[1]<<" "<<sp[2]<<endl;
+  ///cout<<"Origin: "<<orig[0]<<" "<<orig[1]<<" "<<orig[2]<<endl;
   
   double resolution = this->Resolution;
 
   //Create helper objects
   vtkImageResliceWithPlane *reslicer = vtkImageResliceWithPlane::New();
   // Set up options
-  if (this->GetReformat()){
+  if (this->GetReformat())
+  {
     reslicer->InPlaneOff();
   } else {
     reslicer->InPlaneOn();
   }
   reslicer->SetInputData(this->GetImage());
   reslicer->SetInterpolationModeToCubic();
-  reslicer->ComputeCenterOff();
+  if (this->GetFineCentering() == 0) {
+    reslicer->ComputeCenterOff();
+  } else {
+    reslicer->ComputeCenterOn();
+  }
+  
   reslicer->SetDimensions(256,256,1);
   reslicer->SetSpacing(resolution,resolution,resolution);
 
@@ -376,16 +387,22 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   // Loop through each point
   int npts = input->GetNumberOfPoints();
   for (vtkIdType k=0; k<npts; k++) {
-  //for (vtkIdType k=63; k<67; k++) {
+  //for (vtkIdType k=400; k<403; k++) {
     input->GetPoints()->GetPoint(k,p);
     cout<<"Processing point "<<k<<" out of "<<npts<<endl;
     
    
   //reslicer->SetCenter(0.5+(p[0]+orig[0])/sp[0],511-((p[1]+orig[1])/sp[1])+0.5,(p[2]-orig[2])/sp[2]);
   ijk[0]=(p[0]-orig[0])/sp[0] ;
-  ijk[1]= (dim[1]-1) - (p[1]-orig[1])/sp[1];  // j coordinate has to be reflected (vtk origin is lower left and DICOM origing is upper left).
+  //ijk[1]= (dim[1]-1) - (p[1]-orig[1])/sp[1];  // j coordinate has to be reflected (vtk origin is lower left and DICOM origing is upper left). Needed when using vtkCIPNRRDReader
+  ijk[1]= (p[1]-orig[1])/sp[1];
   ijk[2]=(p[2]-orig[2])/sp[2];
+      
+  //std::cout<<"point id: "<<k<<"LPS: "<<p[0]<<" "<<p[1]<<" "<<p[2]<<std::endl;
   //std::cout<<"point id: "<<k<<"Ijk: "<<ijk[0]<<" "<<ijk[1]<<" "<<ijk[2]<<std::endl;
+  if (this->GetCentroidCentering()) {
+      this->ComputeCenterFromCentroid(this->GetImage(),ijk,ijk);
+  }
   reslicer->SetCenter(ijk[0],ijk[1],ijk[2]);
    
    switch(this->GetAxisMode()) {
@@ -422,71 +439,18 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
    vtkComputeAirwayWall *worker = this->WallSolver;
    worker->SetInputData(reslicer->GetOutput());
 
-   //this->WallSolver->SetInputData(reslicer->GetOutput());
-   //Maybe we have to update the threshold depending on the center value.
-   if (worker->GetMethod()==2) {
-     // Use self tune phase congruency
-     vtkComputeAirwayWall *tmp = vtkComputeAirwayWall::New();
-     this->SetWallSolver(worker,tmp);
-     tmp->SetInputData(reslicer->GetOutput());
-     tmp->ActivateSectorOff();
-     tmp->SetBandwidth(1.577154);
-     tmp->SetNumberOfScales(12);
-     tmp->SetMultiplicativeFactor(1.27);
-     tmp->SetMinimumWavelength(2);
-     tmp->UseWeightsOn();
-     vtkDoubleArray *weights = vtkDoubleArray::New();
-     weights->SetNumberOfTuples(12);
-     double tt[12]={1.249966,0.000000,0.000000,0.734692,0.291580,0.048616,0.718651,0.000000,0.620357,0.212188,0.000000,1.094157};
-     for (int i=0;i<12;i++) { 
-       weights->SetValue(i,tt[i]);
-     }
-     tmp->SetWeights(weights);
-     tmp->Update();
-     double wt = tmp->GetStatsMean()->GetComponent(4,0);
-     tmp->Delete();
-     weights->Delete();
-     double ml;
-     double *factors;
-     switch (this->Reconstruction) {
-       case VTK_SMOOTH:
-         factors = this->SelfTuneModelSmooth;
-         break;
-       case VTK_SHARP:
-         factors = this->SelfTuneModelSharp;
-         break;
-     }
-     ml = exp(factors[0]*pow(log(wt*factors[1]),factors[2]));
-     worker->SetMultiplicativeFactor(ml);
-   }
-   
-   //cout<<"Update solver"<<endl;
-   worker->Update();
-   //cout<<"Done solver"<<endl;
-   
    // Fit ellipse model to obtain those parameters ->Move this to compute airway wall
    vtkEllipseFitting *eifit = vtkEllipseFitting::New();
    vtkEllipseFitting *eofit = vtkEllipseFitting::New();
-   //cout<<"Ellipse fitting 1: "<<this->WallSolver->GetInnerContour()->GetNumberOfPoints()<<endl;
-   if (worker->GetInnerContour()->GetNumberOfPoints() >= 3)
-   {
-     eifit->SetInputData(worker->GetInnerContour());
-     eifit->Update();
-   }
-   //cout<<"Ellipse fitting 2: "<<this->WallSolver->GetOuterContour()->GetNumberOfPoints()<<endl;
-    if (worker->GetOuterContour()->GetNumberOfPoints() >= 3)
-    {
-      eofit->SetInputData(worker->GetOuterContour());
-      eofit->Update();
-    }
-   //cout<<"Done ellipse fitting"<<endl;
-   
+    
+   this->ComputeWallFromSolver(worker,eifit,eofit);
+    
    // Collect results and assign them to polydata
    for (int c = 0; c < worker->GetNumberOfQuantities();c++) {
-     mean->SetComponent(k,c,worker->GetStatsMean()->GetComponent(2*c,0));
-     std->SetComponent(k,c,worker->GetStatsMean()->GetComponent((2*c)+1,0));
-     min->SetComponent(k,c,worker->GetStatsMinMax()->GetComponent(2*c,0));
-     max->SetComponent(k,c,worker->GetStatsMinMax()->GetComponent((2*c)+1,0));
+     mean->SetComponent(k,c,worker->GetStatsMean()->GetComponent(c,0));
+     std->SetComponent(k,c,worker->GetStatsStd()->GetComponent(c,0));
+     min->SetComponent(k,c,worker->GetStatsMin()->GetComponent(c,0));
+     max->SetComponent(k,c,worker->GetStatsMax()->GetComponent(c,0));
    }
    
    ellipse->SetComponent(k,0,eifit->GetMinorAxisLength()*resolution);
@@ -496,24 +460,17 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
    ellipse->SetComponent(k,4,eofit->GetMajorAxisLength()*resolution);
    ellipse->SetComponent(k,5,eofit->GetAngle());
    
-   if (this->SaveAirwayImage) {
-     char fileName[10*256];
-     vtkPNGWriter *writer = vtkPNGWriter::New();
-     vtkImageData *airwayImage = vtkImageData::New();
-     this->CreateAirwayImage(reslicer->GetOutput(),eifit,eofit,airwayImage);
-     writer->SetInputData(airwayImage);
-     sprintf(fileName,"%s%03lld.png",this->AirwayImagePrefix,k);
-     writer->SetFileName(fileName);
-     writer->Write();
-     airwayImage->Delete();
-     writer->Delete();
+  if (this->SaveAirwayImage) {
+    char fileName[10*256];
+    sprintf(fileName,"%s_airwayWallImage%s-%05lld.png",this->AirwayImagePrefix,methodTag.c_str(),k);
+    this->SaveQualityControlImage(fileName,reslicer->GetOutput(),eifit,eofit);
+    
   }
-  
+    
     eifit->Delete();
     eofit->Delete();
   }
   
-
   //Compute stats for each line if lines are available
   if (input->GetLines()) {
     this->ComputeCellData();
@@ -521,6 +478,92 @@ int vtkComputeAirwayWallPolyData::RequestData(vtkInformation *request,
   
   return 1;
 }
+
+void vtkComputeAirwayWallPolyData::SaveQualityControlImage(char *fileName,vtkImageData *reslice_airway,vtkEllipseFitting *eifit, vtkEllipseFitting *eofit)
+{
+  
+  vtkPNGWriter *writer = vtkPNGWriter::New();
+  vtkImageData *airwayImage = vtkImageData::New();
+  this->CreateAirwayImage(reslice_airway,eifit,eofit,airwayImage);
+  writer->SetInputData(airwayImage);
+  writer->SetFileName(fileName);
+  writer->Write();
+  airwayImage->Delete();
+  writer->Delete();
+
+}
+
+void vtkComputeAirwayWallPolyData::ComputeWallFromSolver(vtkComputeAirwayWall *worker,vtkEllipseFitting *eifit, vtkEllipseFitting *eofit)
+{
+  
+  //this->WallSolver->SetInputData(reslicer->GetOutput());
+  //Maybe we have to update the threshold depending on the center value.
+  if (worker->GetMethod()==2) {
+    // Use self tune phase congruency
+    vtkComputeAirwayWall *tmp = vtkComputeAirwayWall::New();
+    this->SetWallSolver(worker,tmp);
+    tmp->SetInputData(worker->GetInput());
+    tmp->ActivateSectorOff();
+    tmp->SetBandwidth(1.577154);
+    tmp->SetNumberOfScales(12);
+    tmp->SetMultiplicativeFactor(1.27);
+    tmp->SetMinimumWavelength(2);
+    tmp->UseWeightsOn();
+    vtkDoubleArray *weights = vtkDoubleArray::New();
+    weights->SetNumberOfTuples(12);
+    double tt[12]={1.249966,0.000000,0.000000,0.734692,0.291580,0.048616,0.718651,0.000000,0.620357,0.212188,0.000000,1.094157};
+    for (int i=0;i<12;i++) {
+      weights->SetValue(i,tt[i]);
+    }
+    tmp->SetWeights(weights);
+    tmp->Update();
+    double wt = tmp->GetStatsMean()->GetComponent(4,0);
+    tmp->Delete();
+    weights->Delete();
+    double ml;
+    double *factors;
+    switch (this->Reconstruction) {
+      case VTK_SMOOTH:
+        factors = this->SelfTuneModelSmooth;
+        break;
+      case VTK_SHARP:
+        factors = this->SelfTuneModelSharp;
+        break;
+    }
+    ml = exp(factors[0]*pow(log(wt*factors[1]),factors[2]));
+    worker->SetMultiplicativeFactor(ml);
+  }
+  
+  //cout<<"Update solver"<<endl;
+  worker->Update();
+  //cout<<"Done solver"<<endl;
+  
+  if (eifit != NULL)
+  {
+    //cout<<"Ellipse fitting 1: "<<worker->GetInnerContour()->GetNumberOfPoints()<<endl;
+    if (worker->GetInnerContour()->GetNumberOfPoints() >= 3)
+    {
+      eifit->SetInputData(worker->GetInnerContour());
+      eifit->Update();
+    }
+
+  }
+  
+  if (eofit !=NULL)
+  {
+    //cout<<"Ellipse fitting 2: "<<worker->GetOuterContour()->GetNumberOfPoints()<<endl;
+    if (worker->GetOuterContour()->GetNumberOfPoints() >= 3)
+    {
+      eofit->SetInputData(worker->GetOuterContour());
+      eofit->Update();
+    }
+  }
+  //cout<<"Done ellipse fitting"<<endl;
+
+}
+
+
+
 
 void vtkComputeAirwayWallPolyData::ComputeCellData()
 {
@@ -715,9 +758,9 @@ void vtkComputeAirwayWallPolyData::CreateAirwayImage(vtkImageData *resliceCT,vtk
       //So on and so forth...
       // Simple NN
       for (int cc=0;cc<rgbImage->GetNumberOfScalarComponents();cc++)
-	rgbImage->SetScalarComponentFromFloat(round(px),round(py),0,cc,0);
+	    rgbImage->SetScalarComponentFromFloat(std::floor(px), std::floor(py),0,cc,0);
       
-      rgbImage->SetScalarComponentFromFloat(round(px),round(py),0,colorChannel[ii],255);
+      rgbImage->SetScalarComponentFromFloat(std::floor(px), std::floor(py),0,colorChannel[ii],255);
       
     }
   }
@@ -728,6 +771,103 @@ void vtkComputeAirwayWallPolyData::CreateAirwayImage(vtkImageData *resliceCT,vtk
   rgbFilter->Delete();
   
 }
+
+void vtkComputeAirwayWallPolyData::ComputeCenterFromCentroid(vtkImageData *inputImage,double ijk[3],double ijk_out[3])
+{
+    
+    double orig[3];
+    int dim[3];
+    dim[0] = 128;
+    dim[1] = 128;
+    dim[2] = 1;
+    double outsp[3];
+    outsp[0] = 0.25;
+    outsp[1] = 0.25;
+    outsp[2] = 0.25;
+    
+    double insp[3];
+    
+    inputImage->GetOrigin(orig);
+    inputImage->GetSpacing(insp);
+    
+    double pixelshift = 0.5;
+    double outcenter[3];
+    for (int i=0; i<3; i++)
+    {
+        outcenter[i] = dim[i]*0.5 - pixelshift;
+    }
+    
+    //Create helper objects
+    // Set up options
+    vtkImageReslice* rFind = vtkImageReslice::New();
+    rFind->SetInputData(inputImage);
+    rFind->SetOutputDimensionality( 2 );
+    rFind->SetOutputExtent( 0, dim[0]-1,
+                           0, dim[1]-1,
+                           0, dim[2]-1);
+    rFind->SetOutputSpacing(outsp);
+    rFind->SetOutputOrigin(-1.0*outcenter[0]*outsp[0],
+                           -1.0*outcenter[1]*outsp[1],
+                           -1.0*outcenter[2]*outsp[2]);
+    
+    rFind->SetResliceAxesDirectionCosines( 1, 0, 0, 0, 1, 0, 0, 0, 1);
+    rFind->SetResliceAxesOrigin(orig[0] + ijk[0]*insp[0],
+                                orig[1] + ijk[1]*insp[1],
+                                orig[2] + ijk[2]*insp[2]);
+    rFind->SetInterpolationModeToLinear();
+    rFind->Update();
+
+    
+    vtkImageThreshold *th = vtkImageThreshold::New();
+    th->SetInputData(rFind->GetOutput());
+    th->ThresholdBetween(this->AirBaselineIntensity,
+                         this->WallSolver->GetWallThreshold());
+    th->SetInValue (1);
+    th->SetOutValue (0);
+    th->ReplaceInOn();
+    th->ReplaceOutOn();
+    th->SetOutputScalarTypeToUnsignedChar();
+    th->Update();
+    
+    vtkImageSeedConnectivity *cc = vtkImageSeedConnectivity::New();
+    cc->SetInputData(th->GetOutput());
+    cc->AddSeed(outcenter[0]+0.5,outcenter[1]+0.5,outcenter[2]+0.5);
+    cc->SetInputConnectValue(1);
+    cc->SetOutputConnectedValue(1);
+    cc->SetOutputUnconnectedValue(0);
+    cc->Update();
+    
+    //Flag is zero if not CC has been found.
+    int flag = cc->GetOutput()->GetScalarRange()[1];
+    
+    if (flag ==0 )
+    {
+        for (int k=0; k<3; k++)
+        {
+            ijk_out[k] = ijk[k];
+        }
+    }
+    else
+    {
+      vtkComputeCentroid *ccen = vtkComputeCentroid::New();
+      ccen->SetInputData(cc->GetOutput());
+      ccen->Update();
+      double *centroid = ccen->GetCentroid();
+    
+      // Add delta IJK
+    
+      for (int k=0; k<3; k++)
+      {
+          ijk_out[k] = ijk[k] + centroid[k] - outcenter[k];
+      }
+      ccen->Delete();
+    }
+    
+    rFind->Delete();
+    th->Delete();
+    cc->Delete();
+}
+
   
   
 void vtkComputeAirwayWallPolyData::PrintSelf(ostream& os, vtkIndent indent)

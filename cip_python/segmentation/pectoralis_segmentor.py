@@ -1,16 +1,11 @@
-#import nrrd
-import numpy as np
-import vtk
 import pickle
-from vtk.util import numpy_support as VN
+
 import nrrd
-from cip_python.segmentation.segment_chest_with_atlas \
-    import segment_pec_with_atlas
-import construct_pec_atlas_from_filenames     
-     
+import numpy as np
+
+from cip_python.segmentation.segment_chest_with_atlas import segment_pec_with_atlas
+
 class pectoralis_segmentor:
-    
-    
     def __init__(self, input_volume,  testing_ct_filename, training_labelmaps_filenames,\
             training_ct_filenames, base_case_ct_filenames, base_case_labelmap_filenames, \
             test_case_transfo_dir, transformation_filenames,  num_closest_cases,\
@@ -114,3 +109,11 @@ class pectoralis_segmentor:
         print("out volume shape in pectoralis segmentor, new")
         print(np.shape(output_volume))
         return output_volume, prior_probabilities, out_posteriors
+
+
+
+
+
+
+
+

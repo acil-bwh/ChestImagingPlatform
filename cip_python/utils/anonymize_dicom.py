@@ -1,10 +1,8 @@
 from os import listdir
 from os.path import isfile, join, isdir
 from optparse import OptionParser
-import dicom
-from dicom.tag import Tag
-
-import pdb
+import pydicom as dicom
+from pydicom.tag import Tag
 
 def anonymize_dicom(ds):
     """Anonymizes a dicom dataset. A value of 'Anonymized' is set for all tags
@@ -76,7 +74,7 @@ def anonymize_dicom(ds):
         if t in keys:
             if type(ds[t].value) == str or \
                 type(ds[t].value) == dicom.valuerep.PersonName or \
-                type(ds[t].value) == dicom.UID.UID:
+                type(ds[t].value) == dicom.uid.UID:
                 ds[t].value = 'Anonymized'
             else:
                 ds[t].value = ''

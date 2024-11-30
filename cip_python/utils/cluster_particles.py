@@ -10,7 +10,6 @@ from vtk.util.numpy_support import vtk_to_numpy
 from vtk.util.numpy_support import numpy_to_vtk
 from vtk.util.numpy_support import numpy_to_vtkIdTypeArray
 
-import matplotlib
 import matplotlib.pyplot as plt
 
 class ClusterParticles:
@@ -71,9 +70,9 @@ class ClusterParticles:
     #Save data for each cluster as a vtkPolyData
     for k in unique_labels:
       ids = np.argwhere(labels == k).flatten()
-      print labels.shape[0]
-      print ids.shape[0]
-      print self._in_vtk.GetNumberOfPoints()
+      print (labels.shape[0])
+      print (ids.shape[0])
+      print (self._in_vtk.GetNumberOfPoints())
       self._out_vtk_collection.AddItem(self.extract_particles(ids))
 
   def feature_extractor(self,in_vtk):
@@ -104,10 +103,14 @@ class ClusterParticles:
     for pd,out_pd in zip([self._in_vtk.GetPointData(),self._in_vtk.GetFieldData()],[data.GetPointData(),data.GetFieldData()]):
       for k in xrange(pd.GetNumberOfArrays()):
         arr=vtk_to_numpy(pd.GetArray(pd.GetArrayName(k)))
-        if len(arr.shape) == 1:
-          s_vtk_arr=numpy_to_vtk(arr[ids],1)
+        if arr.shape[0]< len(ids):
+          #Transfer directly without masking with sids
+          s_vtk_array = numpy_to_vtk(arr,1)
         else:
-          s_vtk_arr=numpy_to_vtk(arr[ids,:],1)
+          if len(arr.shape) == 1:
+            s_vtk_arr=numpy_to_vtk(arr[ids],1)
+          else:
+            s_vtk_arr=numpy_to_vtk(arr[ids,:],1)
         
         s_vtk_arr.SetName(pd.GetArrayName(k))
         out_pd.AddArray(s_vtk_arr)
@@ -156,7 +159,7 @@ class LobeParticleLabeling():
     leftright_output=left_right_splitter.execute()
     
     #Right splitter
-    print "Right splitter"
+    print ("Right splitter")
     cluster=ClusterParticles(leftright_output['right'],output_collection,feature_extractor=self.feature_extractor_right)
     cluster._number_of_clusters=3
     #cluster._method='MiniBatchKMeans'
@@ -164,6 +167,8 @@ class LobeParticleLabeling():
     
     cluster.execute()
     
+    print ("Done right clustering")
+
     points = vtk_to_numpy(leftright_output['right'].GetPoints().GetData())
     
     p_centroids = np.zeros([3,3])
@@ -183,8 +188,8 @@ class LobeParticleLabeling():
       chest_type.append(3)
   
     #Left splitter
-    print "Left splitter"
-    print leftright_output['left'].GetNumberOfPoints()
+    print ("Left splitter")
+    print (leftright_output['left'].GetNumberOfPoints())
     cluster=ClusterParticles(leftright_output['left'],output_collection,feature_extractor=self.feature_extractor_left)
     cluster._number_of_clusters=2
     #cluster._method='MiniBatchKMeans'
@@ -192,7 +197,7 @@ class LobeParticleLabeling():
     
     cluster.execute()
     
-    print "Done left clustering"
+    print ("Done left clustering")
     points = vtk_to_numpy(leftright_output['left'].GetPoints().GetData())
     
     p_centroids = np.zeros([2,3])
@@ -213,7 +218,8 @@ class LobeParticleLabeling():
     
 
     append=vtk.vtkAppendPolyData()
-    for k,tag,cr,ct in zip([0,1],self.cluster_tags,chest_region,chest_type):
+    for k,tag,cr,ct in zip(range(0,len(self.cluster_tags)),self.cluster_tags,chest_region,chest_type):
+      print (k)
       self._out_vtk[tag]=output_collection.GetItemAsObject(k)
       chest_region_arr = vtk.vtkUnsignedCharArray()
       chest_region_arr.SetName('ChestRegion')
@@ -228,7 +234,7 @@ class LobeParticleLabeling():
       self._out_vtk[tag].GetPointData().AddArray(chest_region_arr)
       self._out_vtk[tag].GetPointData().AddArray(chest_type_arr)
       
-      append.AddInput(self._out_vtk[tag])
+      append.AddInputData(self._out_vtk[tag])
 
     append.Update()
     self._out_vtk['all']=append.GetOutput()
@@ -240,7 +246,7 @@ class LobeParticleLabeling():
     #features =np.concatenate((points, vec[:,0:1]),axis=1)
     features = points
     #features=StandardScaler().fit_transform(features)
-    pca = PCA(n_components=4)
+    pca = PCA(n_components=3)
     pca.fit(features)
     features_t=pca.transform(features)
     return features_t[:,[0,1]]
@@ -252,7 +258,7 @@ class LobeParticleLabeling():
     features =np.concatenate((points, vec[:,[0,1,2]]),axis=1)
     #features = points
     #features=StandardScaler().fit_transform(features)
-    pca = PCA(n_components=4)
+    pca = PCA(n_components=3)
     pca.fit(features)
     features_t=pca.transform(features)
     return features_t
@@ -307,7 +313,7 @@ class LeftRightParticleLabeling():
       self._out_vtk[tag].GetPointData().AddArray(chest_region_arr)
       self._out_vtk[tag].GetPointData().AddArray(chest_type_arr)
       
-      append.AddInput(self._out_vtk[tag])
+      append.AddInputData(self._out_vtk[tag])
     
     append.Update()
     self._out_vtk['all']=append.GetOutput()
@@ -319,7 +325,7 @@ class LeftRightParticleLabeling():
     #features =np.concatenate((points, vec[:,0:1]),axis=1)
     features = points
     #features=StandardScaler().fit_transform(features)
-    pca = PCA(n_components=4)
+    pca = PCA(n_components=3)
     pca.fit(features)
     features_t=pca.transform(features)
     return features_t[:,[0,1]]
@@ -363,14 +369,14 @@ if __name__ == "__main__":
     output = labeler.execute()
     if op.label_flag == True:
       writer=vtk.vtkPolyDataWriter()
-      writer.SetInput(output['all'])
+      writer.SetInputData(output['all'])
       writer.SetFileTypeToBinary()
       writer.SetFileName(op.output_prefix + op.output_suffix)
       writer.Update()
     else:
       for tag in labeler.cluster_tags:
         writer=vtk.vtkPolyDataWriter()
-        writer.SetInput(output[tag])
+        writer.SetInputData(output[tag])
         writer.SetFileName(op.output_prefix + '_%s%s' % (tag,op.output_suffix))
         writer.SetFileTypeToBinary()
         writer.Update()
@@ -381,7 +387,7 @@ if __name__ == "__main__":
     cluster.execute()
     for k in xrange(output_collection.GetNumberOfItems()):
       writer=vtk.vtkPolyDataWriter()
-      writer.SetInput(output_collection.GetItemAsObject(k))
+      writer.SetInputData(output_collection.GetItemAsObject(k))
       writer.SetFileName(op.output_prefix + '_cluster%03d%s' % (k,op.output_suffix) )
       writer.SetFileTypeToBinary()
       writer.Update()

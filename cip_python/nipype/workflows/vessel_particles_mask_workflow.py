@@ -1,15 +1,11 @@
 from optparse import OptionParser
-import cip_python.nipype.interfaces.cip as cip
-import cip_python.nipype.interfaces.unu as unu
-import cip_python.nipype.interfaces.cip.cip_pythonWrap as cip_python_interfaces
-from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
+import os
+import tempfile, shutil
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype.pipeline.engine import Workflow
-import tempfile, shutil
-import pydot
-import sys
-import os 
-import pdb
+from ..interfaces import cip
+from ..interfaces import unu
+from .. import CIPConventionManager as CM
 
 class VesselParticlesMaskWorkflow(Workflow):
     """This workflow produces a vessel seeds mask that is intended to be used
@@ -76,7 +72,7 @@ class VesselParticlesMaskWorkflow(Workflow):
         self._thinned_file_name = \
           os.path.join(self._tmp_dir, self._cid + '_thinned.nhdr')          
         self._sigma_step_method = 1
-        self._rescale = False
+        self._rescaleOff = True
         self._threads = 0
         self._method = 'Frangi'
         self._alpha = 0.63 # In [0, 1]
@@ -126,8 +122,8 @@ class VesselParticlesMaskWorkflow(Workflow):
                   name='compute_feature_strength')
         compute_feature_strength.inputs.inFileName = self._ct_file_name
         compute_feature_strength.inputs.outFileName = self._strength_file_name  
-        compute_feature_strength.inputs.ssm = self._sigma_step_method
-        compute_feature_strength.inputs.rescale = self._rescale
+        compute_feature_strength.inputs.ssm = str(self._sigma_step_method)
+        compute_feature_strength.inputs.rescaleOff = self._rescaleOff
         compute_feature_strength.inputs.threads = self._threads
         compute_feature_strength.inputs.method = self._method
         compute_feature_strength.inputs.feature = 'RidgeLine'

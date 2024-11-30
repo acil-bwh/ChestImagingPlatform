@@ -1,25 +1,27 @@
 import os.path
-import pandas as pd
-import nrrd
-from cip_python.ChestConventions import ChestConventions
-from cip_python.phenotypes.parenchyma_phenotypes import *
-import pdb
+import numpy as np
+
+from cip_python.input_output import ImageReaderWriter
+from cip_python.common import ChestConventions, Paths
+from cip_python.phenotypes import ParenchymaPhenotypes
 
 np.set_printoptions(precision = 3, suppress = True, threshold=1e6,
                     linewidth=200) 
 
-this_dir = os.path.dirname(os.path.realpath(__file__))
-lm_name = this_dir + '/../../../Testing/Data/Input/simple_lm.nrrd'
-lm, lm_header = nrrd.read(lm_name)
-ct_name = this_dir + '/../../../Testing/Data/Input/simple_ct.nrrd'
-ct, ct_header = nrrd.read(ct_name)
+image_io = ImageReaderWriter()
+
+ct_name = Paths.testing_file_path('simple_ct.nrrd')
+lm_name = Paths.testing_file_path('simple_lm.nrrd')
+
+lm, lm_header = image_io.read_in_numpy(lm_name)
+ct, ct_header=image_io.read_in_numpy(ct_name)
 
 def test_execute():
     c = ChestConventions()
     wc = c.GetChestWildCardName()
     
     paren_pheno = ParenchymaPhenotypes()    
-    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+    df = paren_pheno.execute(lm, 'simple', np.array([1., 1., 1.]), ct=ct)
 
     for i in xrange(0, 14):
         r = df['Region'].iloc[i]
@@ -33,18 +35,30 @@ def test_execute():
             assert val_950 == wc, 'Phenotype not as expected'
             assert val_910 == wc, 'Phenotype not as expected'
             assert val_856 == wc, 'Phenotype not as expected'
+            assert val_perc10 == wc, 'Phenotype not as expected'
+            assert val_perc15 == wc, 'Phenotype not as expected'
         elif (r == 'WholeLung' and t == wc) or \
             (r == 'RightLung' and t == wc) or \
             (r == 'LeftLung' and t == wc):
-            assert np.isclose(val_950, 0.1111111), 'Phenotype not as expected'
+            test_val_950=dict()
+            test_val_950['WholeLung']=0.0555555
+            test_val_950['RightLung']=0
+            test_val_950['LeftLung']=0.1111111
+            assert np.isclose(val_950, test_val_950[r]), 'Phenotype not as expected'
             assert np.isclose(val_910, 0.1111111), 'Phenotype not as expected'
             assert np.isclose(val_856, 0.1111111), 'Phenotype not as expected'
         elif (r == wc and t == 'Airway') or \
-            (r == 'UndefinedRegion' and t == 'AIRWAY') or \
+            (r == 'UndefinedRegion' and t == 'Airway') or \
             (r == 'WholeLung' and t == 'Airway') or \
             (r == 'RightLung' and t == 'Airway') or \
             (r == 'LeftLung' and t == 'Airway'):
-            assert np.isclose(val_950, 1.0), 'Phenotype not as expected'
+            test_val_950=dict()
+            test_val_950[wc,'Airway']=0.75
+            test_val_950['UndefinedRegion','Airway']=1.
+            test_val_950['WholeLung','Airway']=0.5
+            test_val_950['RightLung','Airway']=0
+            test_val_950['LeftLung','Airway']=1.
+            assert np.isclose(val_950, test_val_950[r,t]), 'Phenotype not as expected'
             assert np.isclose(val_910, 1.0), 'Phenotype not as expected'
             assert np.isclose(val_856, 1.0), 'Phenotype not as expected'
         elif (r == 'WholeLung' and t == 'UndefinedType') or \
@@ -112,7 +126,7 @@ def test_execute():
         if (r == 'WholeLung' and t == wc):
             assert df['HUMax500'].iloc[i] == -800, 'Phenotype not as expected'
         if (r == 'WholeLung' and t == wc):
-            assert df['Volume'].iloc[i] == 18, 'Phenotype not as expected'
+            assert df['Volume'].iloc[i] == 1.8e-05, 'Phenotype not as expected'
         if (r == 'RightLung' and t == wc):
             assert np.isclose(df['Mass'].iloc[i], 0.00247609596), \
                 'Phenotype not as expected'
@@ -122,7 +136,7 @@ def test_execute2():
     wc = c.GetChestWildCardName()
 
     paren_pheno = ParenchymaPhenotypes(chest_regions=['WholeLung'])
-    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+    df = paren_pheno.execute(lm, 'simple', np.array([1., 1., 1.]), ct=ct)
     assert len(df.index) == 1, "Unexpected number of rows in dataframe"
     assert df['Region'].iloc[0] == 'WholeLung', "Unexpected region in dataframe"
     assert df['Type'].iloc[0] == wc, "Unexpected type in dataframe"
@@ -132,7 +146,7 @@ def test_execute3():
     wc = c.GetChestWildCardName()
 
     paren_pheno = ParenchymaPhenotypes(chest_types=['Vessel'])
-    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+    df = paren_pheno.execute(lm, 'simple', np.array([1., 1., 1.]), ct=ct)
     assert len(df.index) == 1, "Unexpected number of rows in dataframe"
     assert df['Region'].iloc[0] == wc, "Unexpected region in dataframe"
     assert df['Type'].iloc[0] == 'Vessel', "Unexpected type in dataframe"    
@@ -142,7 +156,7 @@ def test_execute4():
     wc = c.GetChestWildCardName()
 
     paren_pheno = ParenchymaPhenotypes(pairs=[['LeftLung','Vessel']])
-    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+    df = paren_pheno.execute(lm, 'simple', np.array([1., 1., 1.]), ct=ct)
 
     assert len(df.index) == 1, "Unexpected number of rows in dataframe"
     assert df['Region'].iloc[0] == 'LeftLung', "Unexpected region in dataframe"
@@ -154,7 +168,7 @@ def test_execute5():
 
     paren_pheno = ParenchymaPhenotypes(chest_regions=['LeftLung'], \
                                        pheno_names=['LAA950'])
-    df = paren_pheno.execute(ct, lm, 'simple', np.array([1., 1., 1.]))
+    df = paren_pheno.execute(lm, 'simple', np.array([1., 1., 1.]), ct)
 
     assert len(df.index) == 1, "Unexpected number of rows in dataframe"
     assert df['Region'].iloc[0] == 'LeftLung', "Unexpected region in dataframe"
@@ -185,3 +199,15 @@ def test_execute5():
     assert np.isnan(df.HUMax500.iloc[0]), "Phenotype value should be NaN"
     assert np.isnan(df.Volume.iloc[0]), "Phenotype value should be NaN"
     assert np.isnan(df.Mass.iloc[0]), "Phenotype value should be NaN"
+
+def test_execute6():
+    paren_pheno = ParenchymaPhenotypes(pairs=[['LeftLung','Vessel']])
+    df = paren_pheno.execute(lm, 'simple', np.array([1., 1., 1.]), 
+                             pheno_names=['TypeFrac'])
+
+    assert len(df.index) == 1, "Unexpected number of rows in dataframe"
+    assert df['Region'].iloc[0] == 'LeftLung', "Unexpected region in dataframe"
+    assert df['Type'].iloc[0] == 'Vessel', "Unexpected type in dataframe"    
+    assert np.isclose(df['TypeFrac'].iloc[0], 1./9.), \
+      'Phenotype value not as expected'
+

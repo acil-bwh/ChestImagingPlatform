@@ -177,7 +177,7 @@ class FeatureStrengthMap:
             tmpCommand += " -ssnd"
 
         if self._verbose == 1:
-            print tmpCommand
+            print (tmpCommand)
 
         subprocess.call( tmpCommand, shell=True )
 
@@ -186,7 +186,7 @@ class FeatureStrengthMap:
         tmpCommand = "unu 3op clamp " + str(self._minIntensity) + " " + inputVol + " " + str(self._maxIntensity)  + \
                         " | unu resample -s x1 x1 x1 " + self._reconInverseKernelParams + " -t float -o " + outputVol
         if self._verbose == 1:
-            print tmpCommand
+            print (tmpCommand)
         subprocess.call( tmpCommand, shell=True)
 
     def down_sample(self,inputVol,outputVol):
@@ -196,12 +196,12 @@ class FeatureStrengthMap:
         tmpCommand = tmpCommand %  {'rate':val}
 
         if self._verbose == 1:
-            print tmpCommand
+            print (tmpCommand)
 
         subprocess.call( tmpCommand, shell=True)
 
     def clean_tmp_dir(self):
         if self._clean_tmp_dir == True:
-            print "Cleaning temporary directory..."
+            print ("Cleaning temporary directory...")
             tmpCommand = "/bin/rm " + os.path.join(self._tmp_dir,"*")
             subprocess.call( tmpCommand, shell=True )

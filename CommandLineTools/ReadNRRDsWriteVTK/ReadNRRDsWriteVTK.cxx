@@ -4,52 +4,6 @@
  *  the data in those files into a single VTK polydata file for
  *  writing. The input data files typically contain particles
  *  information.
- *
- *  $Date: 2012-09-04 15:09:57 -0400 (Tue, 04 Sep 2012) $
- *  $Revision: 224 $
- *  $Author: jross $
- *
- *  USAGE:
- *
- *  ReadNRRDsWriteVTK [-a \<string\>] ...  [-i \<string\>] ...  -o \<string\>
- *                    [--] [--version] [-h]
- *
- *  Where:
- *
- *   -a \<string\>,  --arrayName \<string\>  (accepted multiple times)
- *     Array names corresponding to files immediately preceding invocation of
- *     this flag (specified with the -i or --inFileName flags). Array names
- *     follow conventinos laid out in the ACIL wiki for particles polydata
- *     point data arrays
- *
- *   -i \<string\>,  --inFileName \<string\>  (accepted multiple times)
- *     Specify an input NRRD file name followed by a string (using the -a or
- *     --arrayName flags) designating the name of the array in the output vtk
- *     file. Can specify multiple inputs. Note that a file name specified
- *     with this flag must immediately be followed by a corresponding array
- *     name using the -a or --arrayName flags. Files that are 1xN are assumed
- *     to have scalar data, 3xN are assumed to have vector data, and 9xN are
- *     assumed to have matrix data. A 4xN file is assumed to contain spatial
- *     coordinates for the first 3 components and a scale component for the
- *     4th. Note that in this case, the string value assigned to this file is
- *     just a placeholder -- the scale data will be placed in matrix with
- *     name 'scale'. 7xN files are assumed to have the following format: mask
- *     xx xy xz yy yz zz, so a matrix is constructed using the components in
- *     the following order: [1 2 3 2 4 5 3 5 6] (zero-based indexing)
- *
- *   -o \<string\>,  --outFileName \<string\>
- *     (required)  Ouput vtk file name. All particles information will be
- *     stored in this file.
- *
- *   --,  --ignore_rest
- *     Ignores the rest of the labeled arguments following this flag.
- *
- *   --version
- *     Displays version information and exits.
- *
- *   -h,  --help
- *     Displays usage information and exits.
- *
  */
 
 #include "vtkSmartPointer.h"
@@ -57,45 +11,63 @@
 #include "vtkPolyDataReader.h"
 #include "vtkPolyDataWriter.h"
 #include "vtkFloatArray.h"
-#include "vtkDoubleArray.h"
 #include "vtkPointData.h"
+#include "vtkCellArray.h"
+#include "vtkVertex.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "cipChestConventions.h"
 #include "ReadNRRDsWriteVTKCLP.h"
+#include "cipHelper.h"
 
 namespace
 {
-typedef itk::Image< double, 2 >                NRRDImageType;
-typedef itk::ImageFileReader< NRRDImageType >  ReaderType;
+  typedef itk::Image< double, 2 >                NRRDImageType;
+  typedef itk::ImageFileReader< NRRDImageType >  ReaderType;
 }
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Parse the input arguments
-  //
   PARSE_ARGS;
-    std::vector<std::string> arrayNameVec;
-    std::vector<std::string> inFileNameVec;
 
-    if ( inFileNameVecArg.size() != arrayNameVecArg.size() )
-      {
+  cip::ChestConventions conventions;
+
+  if ( !conventions.IsChestRegion( cipRegionArg ) )
+    {
+      std::cerr << "Chest region is not valid" << std::endl;
+      return cip::EXITFAILURE;
+    }
+  if ( !conventions.IsChestType( cipTypeArg ) )
+    {
+      std::cerr << "Chest type is not valid" << std::endl;
+      return cip::EXITFAILURE;
+    }
+
+  unsigned char cipRegion = conventions.GetChestRegionValueFromName( cipRegionArg );
+  unsigned char cipType = conventions.GetChestTypeValueFromName( cipTypeArg );
+
+  float chestRegionChestTypeValue = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
+
+  std::vector<std::string> arrayNameVec;
+  std::vector<std::string> inFileNameVec;
+
+  if ( inFileNameVecArg.size() != arrayNameVecArg.size() )
+    {
       std::cerr << "Mismatch between input file name (specified with -i or --inFileName) and array name ";
       std::cerr << "(specified with -a or --arrayName). See help for details" << std::endl;
       return cip::ARGUMENTPARSINGERROR;
-      }
-
-    outFileName = outFileNameArg.getValue();
-    for ( unsigned int i=0; i<inFileNameVecArg.size(); i++ )
-      {
+    }
+  
+  outFileName = outFileNameArg.getValue();
+  for ( unsigned int i=0; i<inFileNameVecArg.size(); i++ )
+    {
       inFileNameVec.push_back( inFileNameVecArg[i] );
-      }
-    for ( unsigned int i=0; i<arrayNameVecArg.size(); i++ )
-      {
+    }
+  for ( unsigned int i=0; i<arrayNameVecArg.size(); i++ )
+    {
       arrayNameVec.push_back( arrayNameVecArg[i] );
-      }
-
+    }
+  
   vtkSmartPointer< vtkPolyData > polyData = vtkSmartPointer< vtkPolyData >::New();
   vtkSmartPointer< vtkPoints >   points   = vtkSmartPointer< vtkPoints >::New();
 
@@ -120,10 +92,8 @@ int main( int argc, char *argv[] )
     unsigned int numComponents = reader->GetOutput()->GetBufferedRegion().GetSize()[0];
     unsigned int numParticles  = reader->GetOutput()->GetBufferedRegion().GetSize()[1];
 
-    //
     // If 4 components, this file consists of the spatial position and
     // scale
-    //
     if ( numComponents == 4 )
       {
       vtkSmartPointer< vtkFloatArray > scale = vtkSmartPointer< vtkFloatArray >::New();
@@ -206,9 +176,7 @@ int main( int argc, char *argv[] )
       polyData->GetPointData()->AddArray( array );
       }
 
-    //
     // If 9 components
-    //
     if ( numComponents == 9 )
       {
       vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
@@ -261,9 +229,7 @@ int main( int argc, char *argv[] )
       polyData->GetPointData()->AddArray( array );
       }
 
-    //
     // If 7 components
-    //
     if ( numComponents == 7 )
       {
       vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
@@ -316,26 +282,101 @@ int main( int argc, char *argv[] )
       polyData->GetPointData()->AddArray( array );
       }
     }
-
+  
+  // Store metadata information in a field array
+  if (irad !=0 )
+    {
+      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+      array->SetNumberOfComponents( 1 );
+      array->SetNumberOfTuples(1);
+      array->SetName("irad");
+      array->SetValue(0,irad);
+      
+      polyData->GetFieldData()->AddArray(array);
+    }
+  
+  if (srad != 0 )
+  {
+      vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+      array->SetNumberOfComponents( 1 );
+      array->SetNumberOfTuples(1);
+      array->SetName("srad");
+      array->SetValue(0,srad);
+      polyData->GetFieldData()->AddArray(array);
+  }
+  
+  if ((spacing[0] > 0 ||  spacing[1] >0 || spacing[2] >0)  && spacing.size() == 3 )
+  {
+    
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+    array->SetNumberOfComponents( 3 );
+    array->SetNumberOfTuples(1);
+    array->SetName("spacing");
+    array->SetComponent(0,0,spacing[0]);
+    array->SetComponent(0,1,spacing[1]);
+    array->SetComponent(0,2,spacing[2]);
+    polyData->GetFieldData()->AddArray(array);
+  }
+  
+  if (liveThreshold != 0 )
+  {
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+    array->SetNumberOfComponents( 1 );
+    array->SetNumberOfTuples(1);
+    array->SetName("liveth");
+    array->SetValue(0,liveThreshold);
+    polyData->GetFieldData()->AddArray(array);
+  }
+  
+  if (seedThreshold != 0 )
+  {
+    vtkSmartPointer< vtkFloatArray > array = vtkSmartPointer< vtkFloatArray >::New();
+    array->SetNumberOfComponents( 1 );
+    array->SetNumberOfTuples(1);
+    array->SetName("seedth");
+    array->SetValue(0,seedThreshold);
+    polyData->GetFieldData()->AddArray(array);
+  }
+    
   polyData->SetPoints( points );
 
+  // Create the 'ChestRegion' and 'ChestType' arrays, and set the region and/or type if
+  // they have been specified by the user.
+  cip::AssertChestRegionChestTypeArrayExistence( polyData );
+  for ( unsigned int i=0; i<polyData->GetNumberOfPoints(); i++ )
+    {
+      polyData->GetPointData()->GetArray("ChestRegionChestType")->SetTuple( i, &chestRegionChestTypeValue );
+    }
+
+  // If not present, add Vertices to the polydata file
+  if ( polyData->GetNumberOfVerts() == 0 )
+    {
+    vtkSmartPointer< vtkCellArray > cellArray = vtkSmartPointer< vtkCellArray >::New();
+    for ( unsigned int pid = 0; pid < polyData->GetNumberOfPoints(); pid++ )
+        {
+        vtkSmartPointer< vtkVertex > Vertex = vtkSmartPointer< vtkVertex >::New();
+        Vertex->GetPointIds()->SetId(0, pid);
+        cellArray->InsertNextCell(Vertex);
+      }
+  polyData->SetVerts(cellArray);
+  }
+  
   std::cout << "Writing poly data..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );
     writer->SetInputData( polyData );
-    if (binaryOutput)
-      {
-      writer->SetFileTypeToBinary();
-      }
-    else
-      {
-      writer->SetFileTypeToASCII();
-      }
-
+  if ( binaryOutput )
+    {
+    writer->SetFileTypeToBinary();
+    }
+  else
+    {
+    writer->SetFileTypeToASCII();
+    }
     writer->Write();
 
-  std::cout << "DONE." << std::endl;
-
-  return cip::EXITSUCCESS;
+    std::cout << "DONE." << std::endl;
+    
+    return cip::EXITSUCCESS;
 }
 

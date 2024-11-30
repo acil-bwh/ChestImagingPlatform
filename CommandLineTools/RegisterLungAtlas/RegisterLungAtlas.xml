@@ -4,8 +4,9 @@
   <title>RegisterLungAtlas</title>
   <description><![CDATA[This program is used to register a lung atlas convex hull mesh to the bones (ribs) in CT image. It used the iterativeclosest point algorithm with an affine transform to perform the registration. The input CT image is thresholded at a specified level: all voxels (physical points) above the threshold are added to the target point set. We assume that the ribs will be the bony objects that the mesh points will attract to. The final transform is written to file for image resampling using other tools.]]></description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/registration</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
         Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
         and does not necessarily represent the official views of the National Institutes of Health.

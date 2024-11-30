@@ -90,7 +90,7 @@ int main( int argc, char *argv[] )
     }
 
   // Perform marching cubes on the reference binary image and then
-  // decimate
+  // decimate    
   std::cout << "Running marching cubes..." << std::endl;
   vtkSmartPointer< vtkDiscreteMarchingCubes > cubes = vtkSmartPointer< vtkDiscreteMarchingCubes >::New();
     cubes->SetInputData( connector->GetOutput() );
@@ -99,14 +99,15 @@ int main( int argc, char *argv[] )
     cubes->ComputeScalarsOff();
     cubes->ComputeGradientsOff();
     cubes->Update();
-
+  
   std::cout << "Smoothing model..." << std::endl;
   vtkSmartPointer< vtkWindowedSincPolyDataFilter > smoother = vtkSmartPointer< vtkWindowedSincPolyDataFilter >::New();
     smoother->SetInputConnection( cubes->GetOutputPort() );
     smoother->SetNumberOfIterations( smootherIterations );
     smoother->BoundarySmoothingOff();
     smoother->FeatureEdgeSmoothingOff();
-    smoother->SetPassBand( 0.001 );
+    smoother->SetPassBand( 0.01 );
+    smoother->SetFeatureAngle( 120.0 );
     smoother->NonManifoldSmoothingOn();
     smoother->NormalizeCoordinatesOn();
     smoother->Update();

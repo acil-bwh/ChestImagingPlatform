@@ -1,12 +1,13 @@
-
 import sys
 import os
 import nipype.pipeline.engine as pe         # the workflow and node wrappers
 from nipype import SelectFiles, Node
 from cip_python.nipype.cip_node import CIPNode
 from cip_python.nipype.cip_convention_manager import CIPConventionManager as CM
-import cip_python.nipype.interfaces.cip as cip
-import cip_python.nipype.interfaces.cip.cip_pythonWrap as cip_python_interfaces
+from ..interfaces import cip
+from ..interfaces.cip import cip_python_interfaces
+# import cip_python.nipype.interfaces.cip.cip_python_interfaces \
+#   as cip_python_interfaces
 import nipype.interfaces.utility as util     # utility
 import nipype.interfaces.io as nio           # Data i/o
 from nipype import config, logging
@@ -14,16 +15,11 @@ from nipype import config, logging
 import pdb
 import nipype.interfaces.utility as niu
 from optparse import OptionParser
-
-                    
-               
+                               
 class ParenchymaPhenotypesWorkflow(pe.Workflow):
-
     def __init__(self, tmp_dir, in_ct=None,  out_lm=None, out_csv= None,  filter_image = False, 
                   cid=None, chest_regions = None, chest_types = None, pairs = None, 
-                 pheno_names = None, median_filter_radius=None, save_graph=False):
-                    
-                                                                             
+                 pheno_names = None, median_filter_radius=None, save_graph=False):                                                                                             
         """ set up inputs to workflow"""
         self._in_ct = in_ct
         self._out_lm = out_lm

@@ -4,12 +4,12 @@
   <title>PerformMorphological</title>
   <description><![CDATA[This program performs morphological operations such as dilation , erosion, opening and closing.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/PerformMorphological</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
-        Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-        and does not necessarily represent the official views of the National Institutes of Health.
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
     </acknowledgements>
   <parameters>
   <label>I/O</label>    
@@ -18,9 +18,9 @@
           <label>Input Label Map Filename</label>
           <channel>input</channel>
           <flag>i</flag>
-          <longflag>in</longflag>
+          <longflag>ilm</longflag>
           <description><![CDATA[Input label map file name.]]></description>
-          <default>q</default>
+          <default>NA</default>
       </image>
 
       <image type="label">
@@ -28,9 +28,9 @@
           <label> Label Map Filename</label>
           <channel>output</channel>
           <flag>o</flag>
-          <longflag>out</longflag>
+          <longflag>olm</longflag>
           <description><![CDATA[Output label map file name.]]></description>
-          <default>q</default>
+          <default>NA</default>
       </image>
   </parameters>
     <parameters>
@@ -41,9 +41,9 @@
             <channel>input</channel>
             <longflag>cl</longflag>
             <description><![CDATA[If specified, morphological closing will be performed. Default: False. Only \
-	    one morphological operation can be specified. Operations are considered in the following \
-	    order: dilate, erode, open, close. E.g., if dilation is specified, only it will be \
-	    performed regardless of whether the other operations have requested.]]></description>
+one morphological operation can be specified. Operations are considered in the following \
+order: dilate, erode, open, close. E.g., if dilation is specified, only it will be \
+performed regardless of whether the other operations have requested.]]></description>
         </boolean>
         <boolean>
             <name>dilate</name>
@@ -52,9 +52,9 @@
             <flag>d</flag>
             <longflag>dilate</longflag>
             <description><![CDATA[If specified, morphological dilation will be performed. Default: False. Only \
-	    one morphological operation can be specified. Operations are considered in the following \
-	    order: dilate, erode, open, close. E.g., if dilation is specified, only it will be \
-	    performed regardless of whether the other operations have requested.]]></description>
+one morphological operation can be specified. Operations are considered in the following \
+order: dilate, erode, open, close. E.g., if dilation is specified, only it will be \
+performed regardless of whether the other operations have requested.]]></description>
         </boolean>
         <boolean>
             <name>erode</name>
@@ -63,9 +63,9 @@
             <flag>e</flag>
             <longflag>erode</longflag>
             <description><![CDATA[If specified, morphological erosion will be performed. Default: False. Only \
-	    one morphological operation can be specified. Operations are considered in the following \
-	    order: dilate, erode, open, close. E.g., if dilation is specified, only it will be \
-	    performed regardless of whether the other operations have requested.]]></description>
+one morphological operation can be specified. Operations are considered in the following \
+order: dilate, erode, open, close. E.g., if dilation is specified, only it will be \
+performed regardless of whether the other operations have requested.]]></description>
         </boolean>        
         <boolean>
             <name>open</name>
@@ -73,9 +73,9 @@
             <channel>input</channel>
             <longflag>op</longflag>
             <description><![CDATA[If specified, morphological opening will be performed. Default: False. Only one \
-	    morphological operation can be specified. Operations are considered in the following order: \
-	    dilate, erode, open, close. E.g., if dilation is specified, only it will be performed \
-	    regardless of whether the other operations have requested.]]></description>
+morphological operation can be specified. Operations are considered in the following order: \
+dilate, erode, open, close. E.g., if dilation is specified, only it will be performed \
+regardless of whether the other operations have requested.]]></description>
         </boolean>
     </parameters>
     <parameters>
@@ -111,10 +111,10 @@
             <flag>r</flag>
             <longflag>region</longflag>
             <description><![CDATA[Users must specify chest-region chest-type pairs. Only \
-	    labels corresponding to the pairs will be operated on. Use this flag to specify \
-	    the string indicator of the chest region of a given pair. Each time this flag is \
-	    used, the -t or --type flag should also be used to specify the corresponding \
-	    type]]></description>
+labels corresponding to the pairs will be operated on. Use this flag to specify \
+the string indicator of the chest region of a given pair. Each time this flag is \
+used, the -t or --type flag should also be used to specify the corresponding \
+type]]></description>
         </string-vector>
         <string-vector>
             <name>typesVecArg</name>
@@ -123,10 +123,10 @@
             <flag>t</flag>
             <longflag>type</longflag>
             <description><![CDATA[Users must specify chest-region chest-type pairs; only \
-	    labels corresponding to the pairs will be operated on. Use this flag to specify \
-	    the string indicator of the chest type of a given pair. Each time this flag is \
-	    used, the -r or --region flag should also be used to specify the corresponding \
-	    region]]></description>
+labels corresponding to the pairs will be operated on. Use this flag to specify \
+the string indicator of the chest type of a given pair. Each time this flag is \
+used, the -r or --region flag should also be used to specify the corresponding \
+region]]></description>
         </string-vector>
         <boolean>
             <name>allRegionTypePairs</name>
@@ -135,8 +135,8 @@
             <flag>a</flag>
             <longflag>all</longflag>
             <description><![CDATA[If specified, all chest-region chest-type pairs present \
-	    in the input label map will be processed. Any region-type pairs specified using \
-	    the -r (--region) and -t (--type) flags will be ignored. (0 by default).]]></description>
+in the input label map will be processed. Any region-type pairs specified using \
+the -r (--region) and -t (--type) flags will be ignored. (0 by default).]]></description>
         </boolean>
-        </parameters>
+    </parameters>
 </executable>

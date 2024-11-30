@@ -7,6 +7,7 @@
 corresponding unsigned short encoding the chest region and chest type value.]]>
     </description>
     <version>0.0.1</version>
+    <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
     <license>Slicer</license>
     <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
     <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

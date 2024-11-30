@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # TODO: Investigate live_thresh and seed_thresh (ranges specified below)
 # TODO: Consider using mask throughout all passes if you're passing an
 #       airway mask in (tried this -- does not seem to have an effect. Bug?)
@@ -7,8 +5,8 @@
 #       passes they are irrelevant.
 
 import os
-import pdb
-from cip_python.particles.chest_particles import ChestParticles
+import tempfile, shutil
+from cip_python.particles import ChestParticles
 
 class VesselParticles(ChestParticles):
     """Class for vessel-specific particles sampling
@@ -70,14 +68,11 @@ class VesselParticles(ChestParticles):
         self._min_intensity = min_intensity
         self._max_scale = max_scale
         self._scale_samples = scale_samples
-        self._down_sample_rate = down_sample_rate
-      
-        self._live_thresh= live_thresh
-        self._seed_thresh= seed_thresh
-
+        self._down_sample_rate = down_sample_rate      
+        self._live_thresh = live_thresh
+        self._seed_thresh = seed_thresh
         self._mode_thresh = -0.3
         self._population_control_period = 3
-  
         self._phase_iterations = [100, 10, 75]
       
         self._phase_irads = [1.5,1.15,0.8]
@@ -87,7 +82,9 @@ class VesselParticles(ChestParticles):
         self._phase_alphas = [1.0, 0.35, 0.84]
         self._phase_betas = [0.77, 0.75, 0.57]
         self._phase_gammas = [0.37, 0.53, 0.57]
-  
+
+        self._cip_type = 'Vessel'
+        
         #Default init mode
         self._init_mode = "PerVoxel"
         self._ppv = 2
@@ -117,13 +114,13 @@ class VesselParticles(ChestParticles):
         self._population_control_period = self._phase_population_control_periods[0]
 
         #Build parameters and run
-        print "Resetting param groups..."
+        print ("Resetting param groups...")
         self.reset_params()
-        print "Building param groups..."
+        print ("Building param groups...")
         self.build_params()
-        print "Starting pass 1..."
+        print ("Starting pass 1...")
         self.execute_pass(out_particles % 1)
-        print "Finished pass 1."
+        print ("Finished pass 1.")
       
         # Pass 2
         # Init params
@@ -151,9 +148,9 @@ class VesselParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "Starting pass 2..."
+        print ("Starting pass 2...")
         self.execute_pass(out_particles % 2)
-        print "Finished pass 2."
+        print ("Finished pass 2.")
 
         # Pass 3
         self._init_mode = "Particles"
@@ -176,16 +173,16 @@ class VesselParticles(ChestParticles):
         # Build parameters and run
         self.reset_params()
         self.build_params()
-        print "Starting pass 3..."
+        print ("Starting pass 3...")
         self.execute_pass(out_particles % 3)
-        print "Finished pass 3."
+        print ("Finished pass 3.")
 
         # Probe quantities and save to VTK
-        print "Probing..."
+        print ("Probing...")
         self.probe_quantities(self._sp_in_file_name, out_particles % 3)
-        print "Finished probing."
+        print ("Finished probing.")
 
-        print "Saving to vtk..."
+        print ("Saving to vtk...")
         self.save_vtk(out_particles % 3)
 
         #Clean tmp Directory
@@ -197,39 +194,52 @@ if __name__ == "__main__":
   parser = ArgumentParser(description='Vessel particles generation tool.')
 
   parser.add_argument("-i", help='input CT scan', dest="input_ct")
-  parser.add_argument("-m", help='input mask for seeding', dest="input_mask", default=None)
-  parser.add_argument("-p", help='input particle points to initialize (if not specified a per-voxel approach is used)', dest="input_particles", default=None)
+  parser.add_argument("-m", help='input mask for seeding', dest="input_mask", 
+    default=None)
+  parser.add_argument("-p", help='input particle points to initialize (if not \
+    specified a per-voxel approach is used)', dest="input_particles", 
+    default=None)
   parser.add_argument("-o", help='output particles (vtk format)',
-                    dest="output_particles")
-  parser.add_argument("-t", help='tmp directory', dest="tmp_dir")
+    dest="output_particles", default=None)
+  parser.add_argument("-t", help='tmp directory', dest="tmp_dir", default=None)
   parser.add_argument("-s", help='max scale [default: %(default)s)]',
-                      dest="max_scale", default=6.0, type=float)
-  parser.add_argument("-r", help='down sampling rate (>=1) [default: %(default)s]',
-                    dest="down_sample_rate", default=1.0, type=float)
-  parser.add_argument("-n", help='number of scale volumes [default: %(default)s]',
-                    dest="scale_samples", default=10, type=int)
-  parser.add_argument("--lth", help='live threshold (<0) [default: %(default)s]', dest="live_th",
-                    default=-95.0, type=float)
-  parser.add_argument("--sth", help='seed threshold (<0) [default: %(default)s]', dest="seed_th",
-                    default=-70.0, type=float)
-  parser.add_argument("--minI", help='min intensity for feature [default: %(default)s]',
-                    dest="min_intensity", default=-800, type=float)
-  parser.add_argument("--maxI", help='max intensity for feature [default: %(default)s]',
-                    dest="max_intensity", default=400, type=float)
+    dest="max_scale", default=6.0, type=float)
+  parser.add_argument("-r", help='down sampling rate (>=1) \
+    [default: %(default)s]', dest="down_sample_rate", default=1.0, type=float)
+  parser.add_argument("-n", help='number of scale volumes \
+    [default: %(default)s]', dest="scale_samples", default=10, type=int)
+  parser.add_argument("--lth", help='live threshold (<0) [default: \
+    %(default)s]', dest="live_th", default=-95.0, type=float)
+  parser.add_argument("--sth", help='seed threshold (<0) [default: \
+    %(default)s]', dest="seed_th", default=-70.0, type=float)
+  parser.add_argument("--minI", help='min intensity for feature [default: \
+    %(default)s]', dest="min_intensity", default=-800, type=float)
+  parser.add_argument("--maxI", help='max intensity for feature [default: \
+    %(default)s]', dest="max_intensity", default=400, type=float)
   
   op = parser.parse_args()
+
+  if op.output_particles is None:
+      raise ValueError('No output particles file name specified.')
   
-  vp = VesselParticles(op.input_ct, op.output_particles, op.tmp_dir, 
+  if op.tmp_dir is not None:
+      tmp_dir = op.tmp_dir
+  else:        
+      tmp_dir = tempfile.mkdtemp()
+  
+  vp = VesselParticles(op.input_ct, op.output_particles, tmp_dir, 
                        op.input_mask, float(op.max_scale),
                        float(op.live_th), float(op.seed_th), 
                        int(op.scale_samples), float(op.down_sample_rate),
                        float(op.min_intensity), float(op.max_intensity))
   if op.input_particles == None:
-    pass
+      pass
   else:
-    vp._init_mode="Particles"
-    vp._in_particles_file_name = op.input_particles
+      vp._init_mode="Particles"
+      vp._in_particles_file_name = op.input_particles
   
   vp.execute()
 
+  if op.tmp_dir is None:
+      shutil.rmtree(tmp_dir)
 

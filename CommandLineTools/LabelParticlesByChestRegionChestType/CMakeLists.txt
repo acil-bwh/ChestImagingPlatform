@@ -23,7 +23,7 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_case_vessel_particles.vtk
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_vessel_particles.vtk
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/case_vessel_particles.vtk
-      -l ${INPUT_DATA_DIR}/lm-64.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_vessel_particles.vtk
+      --ip ${INPUT_DATA_DIR}/case_vessel_particles.vtk
+      --ilm ${INPUT_DATA_DIR}/lm-64.nrrd
+      --op ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_vessel_particles.vtk
 )   

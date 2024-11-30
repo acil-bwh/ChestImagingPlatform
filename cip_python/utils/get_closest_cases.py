@@ -1,7 +1,6 @@
 import heapq
 import numpy as np
-from cip_python.utils.get_mi_similarity_vec \
-    import getMISimilarityVec
+from ..utils import getMISimilarityVec
     
 def getClosestCases(list_of_label_files, list_of_similarity_xml_files, \
     similarity, num_closest_cases, threshold = None):

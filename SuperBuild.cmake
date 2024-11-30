@@ -21,18 +21,31 @@ mark_as_advanced(${PRIMARY_PROJECT_NAME}_USE_QT)
 set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build, only version 4 allowed.")
 set_property(CACHE ITK_VERSION_MAJOR PROPERTY STRINGS "4")
 
-set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build. Version 6 is strongly recommended.")
-set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
+set(VTK_VERSION_MAJOR 8 CACHE STRING "Choose the expected VTK major version to build. At least version 7 is strongly recommended.")
+set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "9" "8" "7" "6")
 
 
 #-----------------------------------------------------------------------------
 # Set a default build type if none was specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+if(NOT CMAKE_BUILD_TYPE)
+  if (CMAKE_CONFIGURATION_TYPES)
+    list(GET CMAKE_CONFIGURATION_TYPES 0 BT_TMP) 
+  message("Setting build type to the first active configuration type because it was not specified: ${BT_TMP}" )
+  else()
+    set(BT_TMP "Release")
+  message(STATUS "Setting build type to 'Release' as none was specified and there are not CMAKE_CONFIGURATION_TYPES")
+  endif()  
+  set(CMAKE_BUILD_TYPE ${BT_TMP} CACHE STRING "Choose the type of build." FORCE)  
 endif()
+#if(NOT CMAKE_CONFIGURATION_TYPES)
+  # Set the possible values of build type for cmake-gui
+#  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "MinSizeRel" "RelWithDebInfo")
+#else()
+#  MESSAGE("CONFIG TYPES: ${CMAKE_CONFIGURATION_TYPES}")
+#  list(REMOVE_ITEM CMAKE_CONFIGURATION_TYPES "Release") 
+#  list(INSERT CMAKE_CONFIGURATION_TYPES 0 "Release")
+#  MESSAGE("CONFIG TYPES after: ${CMAKE_CONFIGURATION_TYPES}")
+#endif()
 
 #-----------------------------------------------------------------------------
 # Update CMake module path
@@ -142,9 +155,7 @@ find_package(Git REQUIRED)
 
 set(ep_common_c_flags "${CMAKE_C_FLAGS_INIT} ${ADDITIONAL_C_FLAGS}")
 set(ep_common_cxx_flags "${CMAKE_CXX_FLAGS_INIT} ${ADDITIONAL_CXX_FLAGS}")
-if (APPLE)
-  set(ep_common_cxx_flags "${ep_common_cxx_flags} -stdlib=libstdc++ -mmacosx-version-min=10.6")
-endif()
+
 
 include(ExternalProject)
 include(ExternalProjectDependency)
@@ -213,39 +224,123 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
+option(FORCE_SYSTEM_LIBXML "Force the build using an installed version of LibXML. The building will fail if not found" OFF)
 
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" OFF)
 set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT OFF)
 
-set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is DOWNLOADED (the installed will be in dir-install by default" )
-set(CIP_PYTHON_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version will be installed" )
 
-mark_as_superbuild(
- VARS
-   CIP_PYTHON_DIR:PATH
-)
 
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
+
+if (DEFINED USE_ITK_4.10)
+  set(USE_ITK_4.10 ${USE_ITK_4.10} CACHE BOOL "Build using ITK 4.10 version. It may be needed in some environments because of HDF5 library incompatibilities")
+else()
+  set(USE_ITK_4.10 OFF CACHE BOOL "Build using ITK 4.10 version. It may be needed in some environments because of HDF5 library incompatibilities")
+endif()
+mark_as_superbuild(USE_ITK_4.10)
+
 set(VTK_EXTERNAL_NAME VTKv${VTK_VERSION_MAJOR})
-if (WIN32) # libxml2 is a prerequisite for other platforms
-  set(LIBXML2_EXTERNAL_NAME LibXml2)
+#if (WIN32) # libxml2 is a prerequisite for other platforms
+#  set(LIBXML2_EXTERNAL_NAME LibXml2)
+#else()
+#  if (FORCE_SYSTEM_LIBXML)
+#    find_package(LibXml2 REQUIRED)
+#  else()
+#    # Try first system. Otherwise use the binaries downloaded from CIPPython
+#    find_package(LibXml2)
+#    if (NOT LIBXML2_INCLUDE_DIR)
+#      # Try to use CIPPython libraries
+#      message("LIBXML libraries NOT found. Use CIPPython ones")
+#      SET (LIBXML2_INCLUDE_DIR  ${CIP_PYTHON_INSTALL_DIR}/include/libxml2 CACHE PATH "")
+#      SET (LIBXML2_LIBRARIES ${CIP_PYTHON_INSTALL_DIR}/lib/libxml2.dylib CACHE PATH "")
+#      SET (LIBXML2_XMLLINT_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/xmllint CACHE FILEPATH "")
+#    endif()
+#  endif()
+#endif()
+
+#----------------
+# CIP PYTHON DISTRIBUTION
+#-------------------
+set(CIP_PYTHON_INSTALL ON CACHE BOOL "Install Python components of CIP")
+set(CIP_PYTHON_SOURCE_DIR ${CMAKE_BINARY_DIR}/CIPPython CACHE PATH "Folder where the CIP recommended Python version is downloaded" )
+set(CIP_PYTHON_INSTALL_DIR ${CIP_PYTHON_SOURCE_DIR}-install CACHE PATH "Folder where the CIP recommended Python version is installed" )
+if (CIP_PYTHON_INSTALL)
+  if (UNIX)
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/bin/python2.7 CACHE FILEPATH "Python executable used for building and testing" FORCE)
+  else()
+    set (PYTHON_EXECUTABLE ${CIP_PYTHON_INSTALL_DIR}/python.exe CACHE FILEPATH "Python executable used for building and testing" FORCE)
+  endif()
+else()
+  message(WARNING "CIP PYTHON will NOT be installed")
+  if (NOT DEFINED PYTHON_EXECUTABLE)
+    message(WARNING "Python not found. Looking for system Python...")
+    FIND_PACKAGE(PythonInterp REQUIRED)  # Set the PYTHON_EXECUTABLE value
+  endif()
+  if (NOT EXISTS ${PYTHON_EXECUTABLE})
+    message( FATAL_ERROR "Python executable not found (${PYTHON_EXECUTABLE})" )
+  endif()
+  # Save the value in cache for child projects
+  set (PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python executable" )
 endif()
 
-## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
-set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
-  CIPPython
-  SlicerExecutionModel
-  ${VTK_EXTERNAL_NAME}
-  ${ITK_EXTERNAL_NAME}
-  Boost
-  teem
-  OpenCV
-  ${LIBXML2_EXTERNAL_NAME}  
-  )
+if (UNIX AND CIP_PYTHON_INSTALL)
+  set(CIP_PYTHON_INSTALL_DL_TOOLS ON CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)")
+else()
+  # Deep Learning tools will not be installed in Windows
+  set(CIP_PYTHON_INSTALL_DL_TOOLS OFF CACHE BOOL "Install Deep Learning modules of CIPPython (keras, tensorflow)" FORCE)
+endif()
 
+message("Using ${PYTHON_EXECUTABLE} as the active Python")
+
+
+mark_as_superbuild(
+ VARS
+    CIP_CMAKE_CXX_FLAGS:STRING
+    PYTHON_EXECUTABLE:FILEPATH
+#    PYTHON_INCLUDE_DIR:PATH
+#    PYTHON_LIBRARY:FILEPATH
+)
+#
+#if (NOT DEFINED USE_BOOST)
+#  # Boost will be ON by default, except for recent versions of Visual Studio compiler (>= Visual Studio 2013)
+#  if (MSVC_VERSION GREATER 1700)
+#    # Disable boost
+#    set(USE_BOOST OFF CACHE BOOL "Enable Boost in VTK and CIP")
+#    message(WARNING "Boost is not supported for Visual Studio >= 2013")
+#  else()
+    set(USE_BOOST ON CACHE BOOL "Enable Boost in VTK and CIP")
+#  endif()
+#endif()
+mark_as_superbuild(USE_BOOST)
+
+## for i in SuperBuild/*; do  echo $i |sed 's/.*External_\([a-zA-Z]*\).*/\1/g'|fgrep -v cmake|fgrep -v Template; done|sort -u
+if (USE_BOOST)
+  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+    CIPPython
+    SlicerExecutionModel
+    ${VTK_EXTERNAL_NAME}
+    ${ITK_EXTERNAL_NAME}
+    Boost
+    teem
+    #OpenCV
+  #  ${LIBXML2_EXTERNAL_NAME}
+    )
+
+else()
+  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES
+          CIPPython
+          SlicerExecutionModel
+          ${VTK_EXTERNAL_NAME}
+          ${ITK_EXTERNAL_NAME}
+          teem
+          )
+endif()
+
+message (STATUS "PRIMARY_PROJECT_NAME_DEPENDENCIES: ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}")
 #-----------------------------------------------------------------------------
 # Define Superbuild global variables
 #-----------------------------------------------------------------------------
@@ -333,9 +428,16 @@ list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
   SITE:STRING
   BUILDNAME:STRING
   ${PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL
-  PYTHON_EXECUTABLE:FILEPATH
-  PYTHON_INCLUDE_DIR:PATH
-  PYTHON_LIBRARY:FILEPATH
+#  PYTHON_EXECUTABLE:FILEPATH
+#  PYTHON_INCLUDE_DIR:PATH
+#  PYTHON_LIBRARY:FILEPATH
+  BUILD_EXAMPLES:BOOL
+  BUILD_TESTING:BOOL
+  ITK_VERSION_MAJOR:STRING
+  ITK_DIR:PATH    
+  #LIBXML2_INCLUDE_DIR:PATH
+  #LIBXML2_LIBRARIES:PATH
+  #LIBXML2_XMLLINT_EXECUTABLE:FILEPATH
   )
 
 #if(${PRIMARY_PROJECT_NAME}_USE_QT)
@@ -375,11 +477,6 @@ set(${PRIMARY_PROJECT_NAME}_CLI_INSTALL_ARCHIVE_DESTINATION  lib)
 # Add external project CMake args
 #-----------------------------------------------------------------------------
 list(APPEND ${CMAKE_PROJECT_NAME}_EP_VARS
-  BUILD_EXAMPLES:BOOL
-  BUILD_TESTING:BOOL
-  ITK_VERSION_MAJOR:STRING
-  ITK_DIR:PATH
-
   ${PRIMARY_PROJECT_NAME}_CLI_LIBRARY_OUTPUT_DIRECTORY:PATH
   ${PRIMARY_PROJECT_NAME}_CLI_ARCHIVE_OUTPUT_DIRECTORY:PATH
   ${PRIMARY_PROJECT_NAME}_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH
@@ -462,13 +559,15 @@ ExternalProject_Add(${proj}
   BINARY_DIR ${PRIMARY_PROJECT_NAME}-build
   CMAKE_GENERATOR ${gen}
   #-DVTK_SOURCE_DIR:PATH=${VTK_SOURCE_DIR}
-  #-DVTK_LIBRARY_DIR:PATH=${VTK_LIBRARY_DIR}	
+  #-DVTK_LIBRARY_DIR:PATH=${VTK_LIBRARY_DIR}
   CMAKE_ARGS
     --no-warn-unused-cli    # HACK Only expected variables should be passed down.
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${${PROJECT_NAME}_EXTERNAL_PROJECT_ARGS}
     -D${PRIMARY_PROJECT_NAME}_SUPERBUILD:BOOL=OFF    #NOTE: VERY IMPORTANT reprocess top level CMakeList.txt
+    -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${CIP_CMAKE_CXX_FLAGS}
   INSTALL_COMMAND ""
+  
   )
 
 ### Force rebuilding of the main subproject every time building from super structure

@@ -1,10 +1,8 @@
-import os
+import platform
 import datetime
 import numpy as np
 import pandas as pd
-from cip_python.ChestConventions import ChestConventions
-
-import pdb
+from cip_python.common import ChestConventions
 
 class Phenotypes:
     """Base class for phenotype genearting classes.
@@ -60,7 +58,7 @@ class Phenotypes:
 
         # Intializes the dataframe with static column names, key names, and
         # phenotype names.
-        cols = self.static_names_handler_.keys()
+        cols = list(self.static_names_handler_.keys())
         for n in self.key_names_:
             cols.append(n)
 
@@ -111,7 +109,7 @@ class Phenotypes:
         os_arch : string
             The OS architecture on which the phenotype data is generated.
         """
-        return os.uname()[4]
+        return platform.uname()[4]
 
     def get_os_kernel(self):
         """Get the OS kernel on which the phenotype data is generated.
@@ -121,7 +119,7 @@ class Phenotypes:
         os_kernel : string
             The OS kernel on which the phenotype data is generated.
         """
-        return os.uname()[2]
+        return platform.uname()[2]
 
     def get_os_version(self):
         """Get the OS version on which the phenotype data is generated.
@@ -131,7 +129,7 @@ class Phenotypes:
         os_version : string
             The OS version on which the phenotype data is generated.
         """
-        return os.uname()[3]
+        return platform.uname()[3]
 
     def get_os_name(self):
         """Get the OS name on which the phenotype data is generated.
@@ -141,7 +139,7 @@ class Phenotypes:
         os_name : string
             The OS name on which the phenotype data is generated.
         """
-        return os.uname()[0]
+        return platform.uname()[0]
 
     def get_machine(self):
         """Get the machine name on which the phenotype data is generated.
@@ -151,7 +149,7 @@ class Phenotypes:
         machine : string
             The machine name on which the phenotype data is generated.
         """
-        return os.uname()[1]
+        return platform.uname()[1]
 
     def declare_pheno_names(self):
         """
@@ -176,12 +174,12 @@ class Phenotypes:
         valid_values = dict()
     
         region_names = [c.GetChestWildCardName()]
-        for i in xrange(0, c.GetNumberOfEnumeratedChestRegions()):
+        for i in range(0, c.GetNumberOfEnumeratedChestRegions()):
             region_names.append(c.GetChestRegionName(i))
         valid_values['Region'] = region_names
 
         type_names = [c.GetChestWildCardName()]
-        for i in xrange(0, c.GetNumberOfEnumeratedChestTypes()):
+        for i in range(0, c.GetNumberOfEnumeratedChestTypes()):
             type_names.append(c.GetChestTypeName(i))
         valid_values['Type'] = type_names
         
@@ -214,24 +212,20 @@ class Phenotypes:
         # Make sure CID has been set
         assert self.static_names_handler_['CID'] is not None, \
             "CID has not been set"
-
-        # Make sure the pheno name is valid
-        assert c.IsPhenotypeName(pheno_name) or pheno_name == \
-            c.GetChestWildCardName(), "Invalid phenotype name"
         
-        # Check if key is valid
-        for i in xrange(0, num_keys):
-            assert key_value[i] in self.valid_key_values_[self.key_names_[i]], \
-                "Invalid key: %s" % key_value[i]
-    
         # Check if pheno_name is valid
         assert pheno_name in self.pheno_names_, \
-            "Invalid phenotype name: %s" % pheno_name
+          "Invalid phenotype name: %s" % pheno_name
+        
+        # Check if key is valid
+        for i in range(0, num_keys):
+            assert key_value[i] in self.valid_key_values_[self.key_names_[i]], \
+                "Invalid key: %s" % key_value[i]
           
         # Check if key already exists, otherwise add entry to data frame
         key_exists = True
         key_row = np.ones(len(self._df.index), dtype=bool)
-        for i in xrange(0, len(self.key_names_)):
+        for i in range(0, len(self.key_names_)):
             key_row = \
                 np.logical_and(key_row, \
                                self._df[self.key_names_[i]] == key_value[i])
@@ -241,15 +235,40 @@ class Phenotypes:
             for k in self.static_names_handler_.keys():
                 tmp[k] = self.static_names_handler_[k]()
             tmp[pheno_name] = pheno_value
-            for i in xrange(0, num_keys):
+            for i in range(0, num_keys):
                 tmp[self.key_names_[i]] = key_value[i]
             self._df = self._df.append(tmp, ignore_index=True)
         else:
-            self._df[pheno_name][np.where(key_row==True)[0][0]] = pheno_value
+            self._df.loc[np.where(key_row==True)[0][0],pheno_name] = pheno_value
         
     def to_csv(self, filename):
         self._df.to_csv(filename, index=False)
   
     def execute(self):
         pass
-  
+
+    #Helper classes
+    def _chest_region_type_assert(self,chest_regions=None,chest_types=None,pairs=None):
+        if chest_regions is not None:
+            if len(chest_regions.shape) != 1:
+                raise ValueError(\
+                             'chest_regions must be a 1D array with elements in [0, 255]')
+            if np.max(chest_regions) > 255 or np.min(chest_regions) < 0:
+                raise ValueError(\
+                             'chest_regions must be a 1D array with elements in [0, 255]')
+        if chest_types is not None:
+            if len(chest_types.shape) != 1:
+                raise ValueError(\
+                               'chest_types must be a 1D array with elements in [0, 255]')
+            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
+                raise ValueError(\
+                              'chest_types must be a 1D array with elements in [0, 255]')
+        if pairs is not None:
+            if len(pairs.shape) != 2:
+                raise ValueError(\
+                               'cpairs must be a 1D array with elements in [0, 255]')
+            if np.max(chest_types) > 255 or np.min(chest_types) < 0:
+                raise ValueError(\
+                                'chest_types must be a 1D array with elements in [0, 255]')
+
+

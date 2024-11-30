@@ -8,7 +8,7 @@ respect to the axial plane. The algorithm proceeds by tallying all voxels of var
 in the label map. The tally for each entity is then multiplied by the in-plane (axial) \
 spacing value to give the cross sectional areas. Quantities are printed to std out.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ComputeCrossSectionalArea</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/quantification</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \

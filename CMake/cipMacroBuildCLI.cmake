@@ -51,9 +51,12 @@ macro(cipMacroBuildCLI)
        TARGET_LIBRARIES ${TARGET_LIBRARIES}
        INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES}
        ADDITIONAL_SRCS ${SRCS}
-       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+       LIBRARY_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+       RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+       ARCHIVE_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+       INSTALL_RUNTIME_DESTINATION ${CIP_CLI_INSTALL_RUNTIME_DESTINATION}
+       INSTALL_LIBRARY_DESTINATION ${CIP_CLI_INSTALL_LIBRARY_DESTINATION}
+       INSTALL_ARCHIVE_DESTINATION ${CIP_CLI_INSTALL_ARCHIVE_DESTINATION}
        ${PASS_EXECUTABLE_ONLY}
   )  
  
@@ -66,8 +69,8 @@ macro(cipMacroBuildCLI)
   	# Default directories for input and ouput data for the tests
   	SET (INPUT_DATA_DIR ${CIP_SOURCE_DIR}/Testing/Data/Input)      # Input files
   	SET (BASELINE_DATA_DIR ${CIP_SOURCE_DIR}/CommandLineTools/${MODULE_NAME}/Data/Baseline)    # Expected output files
-    SET (OUTPUT_DATA_DIR ${CIP_BINARY_DIR}/CommandLineTools/Testing/Output)                    # Testing output files
-  	
+	SET (BASELINE_DATA_DIR_LEGACY ${CIP_SOURCE_DIR}/CommandLineTools/LegacyCLIs/${MODULE_NAME}/Data/Baseline)    # Expected output files	
+        SET (OUTPUT_DATA_DIR ${CIP_BINARY_DIR}/CommandLineTools/Testing/Output)                    # Testing output files  	
   		
   	FILE(MAKE_DIRECTORY "${BASELINE_DATA_DIR}")
     FILE(MAKE_DIRECTORY "${OUTPUT_DATA_DIR}")

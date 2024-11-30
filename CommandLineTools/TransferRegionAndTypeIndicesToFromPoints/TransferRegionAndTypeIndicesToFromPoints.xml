@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
+  <title>TransferRegionAndTypeIndicesToFromPoints</title>
+  <description><![CDATA[This program converts region and type indices files to region and type \
+points files and vice-versa.]]>
+  </description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+
+    <file>
+      <name>inputPointsFile</name>
+      <label>Input region and type points file</label>
+      <channel>input</channel>
+      <longflag>ip</longflag>
+      <description><![CDATA[Input region and type points file name (csv).]]></description>
+      <default>NA</default>
+    </file>
+
+    <file>
+      <name>inputIndicesFile</name>
+      <label>Input region and type indices file</label>
+      <channel>input</channel>
+      <longflag>ii</longflag>
+      <description><![CDATA[Input region and type indices file name (csv).]]></description>
+      <default>NA</default>
+    </file>
+
+    <file>
+      <name>outputPointsFile</name>
+      <label>Output region and type points file</label>
+      <channel>output</channel>
+      <longflag>op</longflag>
+      <description><![CDATA[Output region and type points file name (csv).]]></description>
+      <default>NA</default>
+    </file>
+
+    <file>
+      <name>outputIndicesFile</name>
+      <label>Output region and type indices file</label>
+      <channel>output</channel>
+      <longflag>oi</longflag>
+      <description><![CDATA[Output region and type indices file name (csv).]]></description>
+      <default>NA</default>
+    </file>
+
+    <image>
+      <name>ctFile</name>
+      <label>Reference CT file</label>
+      <channel>input</channel>
+      <longflag>ict</longflag>
+      <description><![CDATA[Input reference CT file needed for origin and spacing information]]></description>
+      <default>NA</default>
+    </image>
+
+  </parameters>
+</executable>

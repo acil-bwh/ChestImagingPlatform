@@ -45,5 +45,5 @@ SET_TARGET_PROPERTIES ( cipGeometryTopologyDataIOTEST
     RUNTIME_OUTPUT_DIRECTORY "${CIP_BINARY_DIR}/IO/Testing"
 )
 
-ADD_TEST( cipGeometryTopologyDataIOTEST cipGeometryTopologyDataIOTEST ${CMAKE_SOURCE_DIR}/Testing/tmp/cipGeometryTopologyDataIOTEST_out.xml 
-	  ${CMAKE_SOURCE_DIR}/Testing/Data/Input/geometryTopologyData.xml )
+ADD_TEST( cipGeometryTopologyDataIOTEST cipGeometryTopologyDataIOTEST
+	  ${CMAKE_SOURCE_DIR}/Testing/Data/Input/geometryTopologyData.xml ${CIP_BINARY_DIR}/IO/Testing/cipGeometryTopologyDataIOTEST_out.xml)

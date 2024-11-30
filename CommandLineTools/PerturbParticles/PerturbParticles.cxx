@@ -6,12 +6,6 @@
  *  translates the particles dataset by a random offset in
  *  the x, y, and z directions. The user can control the
  *  magnitude of the random offset that is used.
- *
- *
- *  $Date: 2013-03-27 16:46:33 -0400 (Wed, 27 Mar 2013) $
- *  $Revision: 386 $
- *  $Author: jross $
- *
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -27,6 +21,7 @@
 #include "vtkFieldData.h"
 #include "vtkPolyData.h"
 #include "vtkIndent.h"
+#include "cipHelper.h"
 
 #ifdef WIN32
 #include <ctime>
@@ -34,14 +29,8 @@
 
 int main( int argc, char *argv[] )
 {
-  //
-  // Parse the input arguments
-  //
   PARSE_ARGS;
 
-  //
-  // Read the poly data
-  //
   std::cout << "Reading VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataReader > reader = vtkSmartPointer< vtkPolyDataReader >::New();
     reader->SetFileName( inFileName.c_str() );
@@ -53,7 +42,7 @@ int main( int argc, char *argv[] )
 
   vtkSmartPointer< vtkPoints > outputPoints = vtkSmartPointer< vtkPoints >::New();
 
-  srand(time(0));
+  srand(seed);
   double starter = rand();
   srand(starter);
   double xOffset = offsetMagnitude*(double(rand())/double(RAND_MAX) - 0.5);
@@ -71,31 +60,19 @@ int main( int argc, char *argv[] )
       outputPoints->InsertNextPoint( point );
     }
 
-  //
   // Create a new polydata to contain the output
-  //
   vtkSmartPointer< vtkPolyData > outPolyData = vtkSmartPointer< vtkPolyData >::New();
     outPolyData->SetPoints( outputPoints );
 
-  //
   // Add the field data to the output
-  //
-  for ( unsigned int i=0; i<numberOfFieldDataArrays; i++ )
-    {
-      outPolyData->GetFieldData()->AddArray( reader->GetOutput()->GetFieldData()->GetArray(i) );
-    }
+  cip::TransferFieldData( reader->GetOutput(), outPolyData );
 
-  //
   // Add the point data to the output
-  //
   for ( unsigned int i=0; i<numberOfPointDataArrays; i++ )
     {
       outPolyData->GetPointData()->AddArray( reader->GetOutput()->GetPointData()->GetArray(i) );
     }
 
-  //
-  // Write the poly data
-  //
   std::cout << "Writing VTK polydata..." << std::endl;
   vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
     writer->SetFileName( outFileName.c_str() );

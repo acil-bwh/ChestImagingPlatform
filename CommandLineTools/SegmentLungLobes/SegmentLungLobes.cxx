@@ -107,20 +107,47 @@ int main( int argc, char *argv[] )
       cip::LabelMapType::IndexType index;
       
       for( ::size_t i = 0; i < rightHorizontalFiducials.size(); ++i )
-	{
-	  // seeds come in ras, convert to lps
-	  lpsPoint[0] = -rightHorizontalFiducials[i][0];
-	  lpsPoint[1] = -rightHorizontalFiducials[i][1];
-	  lpsPoint[2] = rightHorizontalFiducials[i][2];
-	  
-	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  cip::PointType location(3);
-  	    location[0] = index[0];
-	    location[1] = index[1];
-	    location[2] = index[2];
+      {
+        
+      if (coordinateSystem == "RAS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = -rightHorizontalFiducials[i][0];
+        lpsPoint[1] = -rightHorizontalFiducials[i][1];
+        lpsPoint[2] = rightHorizontalFiducials[i][2];
+        }
+      else if (coordinateSystem == "Index")
+        {
+        // seeds come in index, convert to lps
+        index[0] = rightHorizontalFiducials[i][0];
+        index[1] = rightHorizontalFiducials[i][1];
+        index[2] = rightHorizontalFiducials[i][2];
+        leftLungRightLungReader->GetOutput()->TransformIndexToPhysicalPoint(index,lpsPoint);
+        }
+      else if (coordinateSystem == "LPS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = rightHorizontalFiducials[i][0];
+        lpsPoint[1] = rightHorizontalFiducials[i][1];
+        lpsPoint[2] = rightHorizontalFiducials[i][2];
+        
+        }
+      else
+        {
+        //Not supported coordinate system
+        std::cerr<<"Points come in a a non-supported coordinate system"<<std::endl;
+        return cip::EXITFAILURE;
+        }
+        
+      cip::PointType location(3);
+      for (unsigned int ii=0; ii<3; ii++)
+        {
+        location[ii] = lpsPoint[ii];
+        }
 
-	  rhPoints.push_back(location);
-	}
+      rhPoints.push_back(location);
+
+      }
     }
   
   if( rightObliqueFiducials.size() > 0 )
@@ -129,21 +156,46 @@ int main( int argc, char *argv[] )
       cip::LabelMapType::IndexType index;
       
       for( ::size_t i = 0; i < rightObliqueFiducials.size(); ++i )
-	{
-	  // seeds come in ras, convert to lps
-	  lpsPoint[0] = -rightObliqueFiducials[i][0];
-	  lpsPoint[1] = -rightObliqueFiducials[i][1];
-	  lpsPoint[2] = rightObliqueFiducials[i][2];
-	  
-	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  cip::PointType location(3);
-       	    location[0] = index[0];
-	    location[1] = index[1];
-	    location[2] = index[2];
+      {
+      if (coordinateSystem == "RAS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = -rightObliqueFiducials[i][0];
+        lpsPoint[1] = -rightObliqueFiducials[i][1];
+        lpsPoint[2] = rightObliqueFiducials[i][2];
+        }
+      else if (coordinateSystem == "Index")
+        {
+        // seeds come in index, convert to lps
+        index[0] = rightObliqueFiducials[i][0];
+        index[1] = rightObliqueFiducials[i][1];
+        index[2] = rightObliqueFiducials[i][2];
+        leftLungRightLungReader->GetOutput()->TransformIndexToPhysicalPoint(index,lpsPoint);
+        }
+      else if (coordinateSystem == "LPS")
+        {
+        // seeds come in ras, convert to lps
+        lpsPoint[0] = rightObliqueFiducials[i][0];
+        lpsPoint[1] = rightObliqueFiducials[i][1];
+        lpsPoint[2] = rightObliqueFiducials[i][2];
+        }
+      else
+        {
+        //Not supported coordinate system
+        std::cerr<<"Points come in a a non-supported coordinate system"<<std::endl;
+        return cip::EXITFAILURE;
+        }
+        
+      cip::PointType location(3);
+      for (unsigned int ii=0; ii<3; ii++)
+      {
+        location[ii] = lpsPoint[ii];
+      }
 
 	  roPoints.push_back(location);
-	}
+
     }
+  }
   
   if( leftObliqueFiducials.size() > 0 )
     {
@@ -151,21 +203,44 @@ int main( int argc, char *argv[] )
       cip::LabelMapType::IndexType index;
       
       for( ::size_t i = 0; i < leftObliqueFiducials.size(); ++i )
-	{
-	  // seeds come in ras, convert to lps
-	  lpsPoint[0] = -leftObliqueFiducials[i][0];
-	  lpsPoint[1] = -leftObliqueFiducials[i][1];
-	  lpsPoint[2] = leftObliqueFiducials[i][2];
-	  
-	  leftLungRightLungReader->GetOutput()->TransformPhysicalPointToIndex(lpsPoint, index);
-	  
-	  cip::PointType location(3);
-	    location[0] = index[0];
-	    location[1] = index[1];
-	    location[2] = index[2];
+      {
+        if (coordinateSystem == "RAS")
+        {
+          // seeds come in ras, convert to lps
+          lpsPoint[0] = -leftObliqueFiducials[i][0];
+          lpsPoint[1] = -leftObliqueFiducials[i][1];
+          lpsPoint[2] = leftObliqueFiducials[i][2];
+        }
+        else if (coordinateSystem == "Index")
+        {
+          // seeds come in index, convert to lps
+          index[0] = leftObliqueFiducials[i][0];
+          index[1] = leftObliqueFiducials[i][1];
+          index[2] = leftObliqueFiducials[i][2];
+          leftLungRightLungReader->GetOutput()->TransformIndexToPhysicalPoint(index,lpsPoint);
+        }
+        else if (coordinateSystem == "LPS")
+        {
+          // seeds come in ras, convert to lps
+          lpsPoint[0] = leftObliqueFiducials[i][0];
+          lpsPoint[1] = leftObliqueFiducials[i][1];
+          lpsPoint[2] = leftObliqueFiducials[i][2];
+        }
+        else
+        {
+          //Not supported coordinate system
+          std::cerr<<"Points come in a a non-supported coordinate system"<<std::endl;
+          return cip::EXITFAILURE;
+        }
+	  	  
+        cip::PointType location(3);
+        for (unsigned int ii=0; ii<3; ii++)
+        {
+          location[ii] = lpsPoint[ii];
+        }
+        loPoints.push_back(location);
 
-	  loPoints.push_back(location);
-	}
+      }
     }
 
   if ( rhParticlesFileName.compare( "NA" ) != 0 )
@@ -177,6 +252,9 @@ int main( int argc, char *argv[] )
 
     std::cout << "Appending right horizontal fissure points..." << std::endl;
     AppendFissurePoints( &rhPoints, rhParticlesReader->GetOutput() );
+
+    std::cout << "Setting right horizontal fissure particles..." << std::endl;
+    lobeSegmenter->SetRightHorizontalFissureParticles( rhParticlesReader->GetOutput() );    
     }
   if ( roParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -187,6 +265,9 @@ int main( int argc, char *argv[] )
 
     std::cout << "Appending right oblique fissure points..." << std::endl;
     AppendFissurePoints( &roPoints, roParticlesReader->GetOutput() );
+
+    std::cout << "Setting right oblique fissure particles..." << std::endl;
+    lobeSegmenter->SetRightObliqueFissureParticles( roParticlesReader->GetOutput() );
     }
   if ( loParticlesFileName.compare( "NA" ) != 0 )
     {
@@ -197,6 +278,9 @@ int main( int argc, char *argv[] )
 
     std::cout << "Appending left oblique fissure points..." << std::endl;
     AppendFissurePoints( &loPoints, loParticlesReader->GetOutput() );
+
+    std::cout << "Setting left oblique fissure particles..." << std::endl;
+    lobeSegmenter->SetLeftObliqueFissureParticles( loParticlesReader->GetOutput() );    
     }
   if ( leftShapeModelFileName.compare( "NA" ) != 0 )
     { 
@@ -289,23 +373,26 @@ int main( int argc, char *argv[] )
   lobeSegmenter->SetThinPlateSplineSurfaceFromPointsLambda( lambda );
   lobeSegmenter->Update();
   
-  std::cout << "Writing lung lobe label map..." << std::endl;
-  cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
-    writer->SetInput( lobeSegmenter->GetOutput() );
-    writer->UseCompressionOn();
-    writer->SetFileName( outLabelMapFileName );
-  try
+  if ( outLabelMapFileName.compare( "NA" ) != 0 )
     {
-    writer->Update();
-    }
-  catch ( itk::ExceptionObject &excp )
-    {
-    std::cerr << "Exception caught writing label map:";
-    std::cerr << excp << std::endl;
+      std::cout << "Writing lung lobe label map..." << std::endl;
+      cip::LabelMapWriterType::Pointer writer = cip::LabelMapWriterType::New();
+        writer->SetInput( lobeSegmenter->GetOutput() );
+	writer->UseCompressionOn();
+	writer->SetFileName( outLabelMapFileName );
+      try
+	{
+	writer->Update();
+	}
+      catch ( itk::ExceptionObject &excp )
+	{
+	std::cerr << "Exception caught writing label map:";
+	std::cerr << excp << std::endl;
       
-    return cip::LABELMAPWRITEFAILURE;
+	return cip::LABELMAPWRITEFAILURE;
+	}
     }
-    
+
   std::cout << "DONE." << std::endl;
 
   return cip::EXITSUCCESS;
@@ -313,12 +400,16 @@ int main( int argc, char *argv[] )
 
 void AppendFissurePoints( std::vector< cip::PointType >* fissurePoints, vtkSmartPointer< vtkPolyData > particles )
 {  
-  unsigned int inc = 1; //static_cast< unsigned int >( vcl_ceil(
-                        //particles->GetNumberOfPoints()/750.0 ) );
+  // Using too many fissure points can choke the thin plate spline computation,
+  // so we limit the number of points that are added to a reasonable number
+  unsigned int maxNum = 1000;
+  unsigned int added = 0;
+
+  unsigned int inc = (unsigned int)( vcl_ceil(float(particles->GetNumberOfPoints())/float(maxNum) ) );
 
   bool addPoint;
 
-  for ( unsigned int i=0; i<particles->GetNumberOfPoints(); i += inc )
+  for ( unsigned int i=0; i<particles->GetNumberOfPoints() && added <= maxNum; i += inc )
     {
     addPoint = true;
 
@@ -337,6 +428,7 @@ void AppendFissurePoints( std::vector< cip::PointType >* fissurePoints, vtkSmart
     if ( addPoint )
       {
       fissurePoints->push_back( position );
+      added++;
       }
     }
 }

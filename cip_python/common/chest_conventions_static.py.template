@@ -1,0 +1,81 @@
+import inspect
+
+
+class Enum(object):
+    @classmethod
+    def elems_as_list(cls):
+        """ Get a list of tuples (string, int) with all the elements
+        Returns
+        -------
+        List of tuples (string, int)
+        """
+        return [i for i in inspect.getmembers(cls) if isinstance(i[1], int)]
+
+    @classmethod
+    def elems_as_dictionary(cls, key_is_integer=True):
+        """  Return a dictionary with all the elems in the enum class
+        Parameters
+        ----------
+        key_is_integer: if True, the key of the dictionary is the integer value. Otherwise, the key will be the string representation
+
+        Examples
+        -------
+        ChestRegion.get_elems(key_is_integer=True) = {0:'UNDEFINEDREGION', 1:'WHOLELUNG', ... }
+        ChestRegion.get_elems(key_is_integer=False) = {'UNDEFINEDREGION':0, 'WHOLELUNG':1, ... }
+
+        Returns
+        -------
+        Dictionary with the values (see examples)
+        """
+        # Get just the "enum" elements of the class
+        all_members = cls.elems_as_list()
+
+        if key_is_integer:
+            # dictionary int->string
+            key = 1
+            value = 0
+        else:
+            # dictionary string->int
+            key = 0
+            value = 1
+
+        result = {}
+        for elem in all_members:
+            result[elem[key]] = elem[value]
+        return result
+
+    @classmethod
+    def number_of_elems(cls):
+        """ Get the total number of element in the class
+        Returns
+        -------
+        int
+        """
+        return len(cls.elems_as_list())
+
+
+#############################
+# ENUMERATIONS
+#############################
+class ChestRegion(Enum):
+    """Populated automatically from /Resources/ChestConventions.xml file"""
+//##CHEST_REGION_ENUM##
+
+class ChestType(Enum):
+    """Populated automatically from /Resources/ChestConventions.xml file"""
+//##CHEST_TYPE_ENUM##
+
+
+class ImageFeature(Enum):
+    """Populated automatically from /Resources/ChestConventions.xml file"""
+//##IMAGE_FEATURE_ENUM##
+
+
+class ReturnCode(Enum):
+    """Populated automatically from /Resources/ChestConventions.xml file"""
+//##RETURN_CODE_ENUM##
+
+
+class Plane(Enum):
+    """Populated automatically from /Resources/ChestConventions.xml file"""
+//##PLANE_ENUM##

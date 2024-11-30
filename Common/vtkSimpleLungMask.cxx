@@ -52,11 +52,12 @@ vtkSimpleLungMask::vtkSimpleLungMask()
   this->WholeLungLabel = 4; //This is a tmp label to assign
   this->LeftLungLabel = 3;
   this->RightLungLabel = 2;
-  this->TracheaLabel = 31;
+  this->UcharTracheaLabel = 1;
+  this->TracheaLabel = 512;
   this->VesselsLabel = 768;
   this->BodyLabel = 29;
   this->AirLabel = 30;
-  this->UpperTracheaLabel = 15; //This value does not conform to combentions
+  this->UpperTracheaLabel = 512; //This value does not conform to combentions
 
   this->TracheaInitZ = 0;
   this->TracheaEndZ = 0;
@@ -622,7 +623,11 @@ void vtkSimpleLungMask::ExecuteDataWithInformation(vtkDataObject *output, vtkInf
   outPtr = (short *)outData->GetScalarPointer();
   unsigned char* prePtr = (unsigned char*)preMask->GetScalarPointer();
   for (int i=0; i<outData->GetNumberOfPoints();i++) {
+    if (*prePtr == this->UcharTracheaLabel) {
+      *outPtr = (short) this->TracheaLabel;
+    } else {
       *outPtr = (short) *prePtr;
+    }
        outPtr++;
        prePtr++;
   }
@@ -1110,7 +1115,7 @@ void vtkSimpleLungMask::ExtractTrachea(vtkImageData *in) {
 	    //cout<<"Copy process input in output"<<endl;
       for (int i = 0; i< numPoints; i++) {
           if ((short) (*inPtr) == this->WholeLungLabel)
-              *outPtr = (unsigned char) (this->TracheaLabel);
+              *outPtr = (unsigned char) (this->UcharTracheaLabel);
           inPtr++;
           outPtr++;
       }
@@ -1279,7 +1284,7 @@ void vtkSimpleLungMask::ExtractTracheaOLD(vtkImageData *in) {
 	    //cout<<"Copy process input in output"<<endl;
             for (int i = 0; i< numPoints; i++) {
                 if ((short) (*inPtr) == this->WholeLungLabel)
-                    *outPtr = (unsigned char) (this->TracheaLabel);
+                    *outPtr = (unsigned char) (this->UcharTracheaLabel);
                inPtr++;
                 outPtr++;
             }

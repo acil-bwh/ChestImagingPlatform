@@ -29,17 +29,11 @@ struct SESSIONDATA
   std::string caseName;
   std::string ctFileName;
   std::string ctFileNameHeader;
-  std::string ctFileNameRaw;
   std::string ctTmpDirAndFileNameHeader;
-  std::string ctTmpDirAndFileNameRaw;
   std::string inLabelMapFileNameHeader;
-  std::string inLabelMapFileNameRaw;
   std::string inLabelMapTmpDirAndFileNameHeader;
-  std::string inLabelMapTmpDirAndFileNameRaw;
   std::string outLabelMapFileNameHeader;
-  std::string outLabelMapFileNameRaw;
   std::string outLabelMapTmpDirAndFileNameHeader;
-  std::string outLabelMapTmpDirAndFileNameRaw;
   std::string regionTypeIndicesFileName;
   std::string regionTypeIndicesTmpDirAndFileName;
   std::string studyTmpDir;
@@ -524,17 +518,11 @@ void SessionFile_CB( Fl_Widget*, void* ) {
         std::string caseName;
         std::string ctFileName;
         std::string ctFileNameHeader;
-        std::string ctFileNameRaw;
         std::string ctTmpDirAndFileNameHeader;
-        std::string ctTmpDirAndFileNameRaw;
         std::string inLabelMapFileNameHeader;
-        std::string inLabelMapFileNameRaw;
         std::string inLabelMapTmpDirAndFileNameHeader;
-        std::string inLabelMapTmpDirAndFileNameRaw;
         std::string outLabelMapFileNameHeader;
-        std::string outLabelMapFileNameRaw;
         std::string outLabelMapTmpDirAndFileNameHeader;
-        std::string outLabelMapTmpDirAndFileNameRaw;
         std::string regionTypeIndicesFileName;
         std::string regionTypeIndicesTmpDirAndFileName;
         std::string studyTmpDir;
@@ -570,25 +558,16 @@ void SessionFile_CB( Fl_Widget*, void* ) {
         caseTmpDir = tmpStream3.str();
       
         std::stringstream stream1;
-        stream1 << ctFileName << ".nhdr";
+        stream1 << ctFileName << ".nrrd";
         ctFileNameHeader = stream1.str();
-
-        std::stringstream stream2;
-        stream2 << ctFileName << ".raw.gz";
-        ctFileNameRaw = stream2.str();
 
         std::stringstream stream3;
         stream3 << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << ctFileNameHeader;
         ctTmpDirAndFileNameHeader = stream3.str();
 
-        std::stringstream stream3a;
-        stream3a << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << ctFileNameRaw;
-        ctTmpDirAndFileNameRaw = stream3a.str();
-
         if (inLabelMapEntry.compare("NA") == 0)
           {
           inLabelMapFileNameHeader          = "NA";
-          inLabelMapFileNameRaw             = "NA";
           inLabelMapTmpDirAndFileNameHeader = "NA";
           }
         else
@@ -598,26 +577,17 @@ void SessionFile_CB( Fl_Widget*, void* ) {
           std::string inLabelMapExtension = inLabelMapEntry.substr( extensionStart, extensionStop - extensionStart);
 
           std::stringstream stream4;
-          stream4 << caseName << inLabelMapExtension << ".nhdr";
+          stream4 << caseName << inLabelMapExtension << ".nrrd";
           inLabelMapFileNameHeader = stream4.str();
-
-          std::stringstream stream5;
-          stream5 << caseName << inLabelMapExtension << ".raw.gz";
-          inLabelMapFileNameRaw = stream5.str();
 
           std::stringstream stream6;
           stream6 << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << inLabelMapFileNameHeader;
           inLabelMapTmpDirAndFileNameHeader = stream6.str();
-
-          std::stringstream stream6a;
-          stream6a << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << inLabelMapFileNameRaw;
-          inLabelMapTmpDirAndFileNameRaw = stream6a.str();
         }
 
         if (outLabelMapEntry.compare("NA") == 0)
           {
           outLabelMapFileNameHeader          = "NA";
-          outLabelMapFileNameRaw             = "NA";
           outLabelMapTmpDirAndFileNameHeader = "NA";
           }
         else
@@ -627,20 +597,12 @@ void SessionFile_CB( Fl_Widget*, void* ) {
           std::string outLabelMapExtension = outLabelMapEntry.substr( extensionStart, extensionStop - extensionStart);
 
           std::stringstream stream4;
-          stream4 << caseName << outLabelMapExtension << ".nhdr";
+          stream4 << caseName << outLabelMapExtension << ".nrrd";
           outLabelMapFileNameHeader = stream4.str();
-
-          std::stringstream stream5;
-          stream5 << caseName << outLabelMapExtension << ".raw.gz";
-          outLabelMapFileNameRaw = stream5.str();
 
           std::stringstream stream6;
           stream6 << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << outLabelMapFileNameHeader;
           outLabelMapTmpDirAndFileNameHeader = stream6.str();
-
-          std::stringstream stream6a;
-          stream6a << "/var/tmp/" << study << "/" << patientID << "/" << caseName << "/" << outLabelMapFileNameRaw;
-          outLabelMapTmpDirAndFileNameRaw = stream6a.str();
           }
 
         if (regionTypeIndicesEntry.compare("NA") == 0)
@@ -680,17 +642,11 @@ void SessionFile_CB( Fl_Widget*, void* ) {
           data.caseName = caseName;
           data.ctFileName = ctFileName;
           data.ctFileNameHeader = ctFileNameHeader;
-          data.ctFileNameRaw = ctFileNameRaw;
           data.ctTmpDirAndFileNameHeader = ctTmpDirAndFileNameHeader;
-          data.ctTmpDirAndFileNameRaw = ctTmpDirAndFileNameRaw;
           data.inLabelMapFileNameHeader = inLabelMapFileNameHeader;
-          data.inLabelMapFileNameRaw = inLabelMapFileNameRaw;
           data.inLabelMapTmpDirAndFileNameHeader = inLabelMapTmpDirAndFileNameHeader;
-          data.inLabelMapTmpDirAndFileNameRaw = inLabelMapTmpDirAndFileNameRaw;
           data.outLabelMapFileNameHeader = outLabelMapFileNameHeader;
-          data.outLabelMapFileNameRaw = outLabelMapFileNameRaw;
           data.outLabelMapTmpDirAndFileNameHeader = outLabelMapTmpDirAndFileNameHeader;
-          data.outLabelMapTmpDirAndFileNameRaw = outLabelMapTmpDirAndFileNameRaw;
           data.regionTypeIndicesFileName = regionTypeIndicesFileName;
           data.regionTypeIndicesTmpDirAndFileName = regionTypeIndicesTmpDirAndFileName;
           data.studyTmpDir = studyTmpDir;
@@ -1222,25 +1178,14 @@ void CopySessionDataFromMAD( SESSIONDATA data )
   // Now copy over the CT data
   std::stringstream permissionHeaderStream;
   permissionHeaderStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
-    data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr'";
+    data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nrrd'";
   std::string permissionCTheader = permissionHeaderStream.str();
   system( permissionCTheader.c_str() );
 
   std::stringstream headerStream;
-  headerStream << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nhdr " << data.caseTmpDir;
+  headerStream << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".nrrd " << data.caseTmpDir;
   std::string cpCTheader = headerStream.str();
   system( cpCTheader.c_str() );
-
-  std::stringstream permissionRawStream;
-  permissionRawStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
-    data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".raw.gz'";
-  std::string permissionCTraw = permissionRawStream.str();
-  system( permissionCTraw.c_str() );
-
-  std::stringstream rawStream;
-  rawStream << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.ctFileName << ".raw.gz " << data.caseTmpDir;
-  std::string cpCTraw = rawStream.str();
-  system( cpCTraw.c_str() );
 
   // Copy over the input label map if necessary
   if (data.inLabelMapFileNameHeader.compare("NA") != 0)
@@ -1254,18 +1199,7 @@ void CopySessionDataFromMAD( SESSIONDATA data )
       std::stringstream headerStream2;
       headerStream2 << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameHeader << " " << data.caseTmpDir;
       std::string permissionInLabelMapHeader = headerStream2.str();
-      system( permissionInLabelMapHeader.c_str() );
-      
-      std::stringstream permissionRawStream2;
-      permissionRawStream2 << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
-	data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameRaw << "'";
-      std::string permissionCTraw2 = permissionRawStream2.str();
-      system( permissionCTraw2.c_str() );
-
-      std::stringstream rawStream2;
-      rawStream2 << "scp copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.inLabelMapFileNameRaw << " " << data.caseTmpDir;
-      std::string cpInLabelMapRaw = rawStream2.str();
-      system( cpInLabelMapRaw.c_str() );
+      system( permissionInLabelMapHeader.c_str() );      
     }
 }
 
@@ -1285,27 +1219,11 @@ void CopySessionDataToMAD( SESSIONDATA data )
       std::string cpOutLabelMapHeader = headerStream.str();
       system( cpOutLabelMapHeader.c_str() );
       
-      std::stringstream permissionRawStream;
-      permissionRawStream << "ssh copd@mad-replicated1.research.partners.org 'chmod 744 /mad/store-replicated/clients/copd/" << 
-	data.study << "/" << data.patientID << "/" << data.caseName << "/" << data.outLabelMapFileNameRaw << "'";
-      std::string permissionRaw = permissionRawStream.str();
-      system( permissionRaw.c_str() );
-
-      std::stringstream rawStream;
-      rawStream << "scp " << data.outLabelMapTmpDirAndFileNameRaw << " copd@mad-replicated1.research.partners.org:Processed/" << data.study << "/" << data.patientID << "/" << data.caseName << "/";
-      std::string cpOutLabelMapRaw = rawStream.str();
-      system( cpOutLabelMapRaw.c_str() );    
-      
       // Now delete
       std::stringstream deleteHeaderStream;
       deleteHeaderStream << "rm " << data.outLabelMapTmpDirAndFileNameHeader;
       std::string deleteHeader = deleteHeaderStream.str();
-      system( deleteHeader.c_str() );
-      
-      std::stringstream deleteRawStream;
-      deleteRawStream << "rm " << data.outLabelMapTmpDirAndFileNameRaw;
-      std::string deleteRaw = deleteRawStream.str();
-      system( deleteRaw.c_str() );
+      system( deleteHeader.c_str() );      
     }
 
   // Copy over the region and type points if necessary, and then delete
@@ -1335,23 +1253,13 @@ void CopySessionDataToMAD( SESSIONDATA data )
   std::string deleteHeader = deleteHeaderStream.str();
   system( deleteHeader.c_str() );
   
-  std::stringstream deleteRawStream;
-  deleteRawStream << "rm " << data.ctTmpDirAndFileNameRaw;
-  std::string deleteRaw = deleteRawStream.str();
-  system( deleteRaw.c_str() );
-
   // Delete the input label map if necessary
   if ( data.inLabelMapFileNameHeader.compare("NA") != 0 )
     {
     std::stringstream deleteHeaderStream2;
     deleteHeaderStream2 << "rm " << data.inLabelMapTmpDirAndFileNameHeader;
     std::string deleteHeader2 = deleteHeaderStream2.str();
-    system( deleteHeader2.c_str() );
-  
-    std::stringstream deleteRawStream2;
-    deleteRawStream2 << "rm " << data.inLabelMapTmpDirAndFileNameRaw;
-    std::string deleteRaw2 = deleteRawStream2.str();
-    system( deleteRaw2.c_str() );
+    system( deleteHeader2.c_str() );  
     }
 }
 

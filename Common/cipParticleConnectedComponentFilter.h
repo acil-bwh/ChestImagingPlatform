@@ -11,22 +11,14 @@
  *  for further information.
  *
  *  The filter proceeds by first organizing the particle data in an
- *  image-based data structure. This facilitates traversal and access
- *  of the data. In order to construct this dataset, a spacing value
- *  must be determined. The current implementation uses a spacing value
- *  of 1/2 the specified inter-particles distance. This data structure
- *  is common to all inherited classes.
- *
- *  In order to filter the particles, the data structure image is
- *  traversed until a particle is found. A small neighborhood around
- *  that particle is then searched, and if other particles are found,
- *  their connectivity to the first particle is checked. If connected,
- *  a small neighborhood around the second particle is checked for
- *  additional connections. This continues recursively until no more
- *  particles are found to be connected to that component. During this
- *  time, connected particles are removed from further consideration
- *  from the data structure image. See inherited classes for specific
- *  criteria used for connectivity decisions.
+ *  a vtkPointLocator object. This data structure is traversed and
+ *  for each particle, a small neighborhood around that particle is then 
+ *  searched, and if other particles are found, their connectivity to the 
+ *  first particle is checked. If connected, a small neighborhood around the 
+ *  second particle is checked for additional connections. This continues 
+ *  recursively until no more particles are found to be connected to that 
+ *  component. See inherited classes for specific criteria used for 
+ *  connectivity decisions.
  *
  *  $Date: 2012-08-28 17:54:18 -0400 (Tue, 28 Aug 2012) $
  *  $Revision: 212 $
@@ -37,11 +29,9 @@
 #ifndef __cipParticleConnectedComponentFilter_h
 #define __cipParticleConnectedComponentFilter_h
 
-
 #include "vtkPolyData.h"
+#include "vtkPointLocator.h"
 #include "itkImage.h"
-#include "itkImageRegionIteratorWithIndex.h"
-
 
 class cipParticleConnectedComponentFilter
 {
@@ -50,12 +40,6 @@ public:
   cipParticleConnectedComponentFilter();
 
   void SetInput( vtkPolyData* );
-
-  /** This function should be set to the inter-particle spacing value
-      that was used to generate the input particles. It is used to
-      specify the spacing used for the data structure image */
-  void   SetInterParticleSpacing( double );
-  double GetInterParticleSpacing();
 
   /** This allows the user to isolate a specific component to be
       pulled out in the output. It is used mainly for debugging
@@ -70,9 +54,7 @@ public:
 
   /** These two methods allow you to get a particle's associated
       component label and the size of that label. Note these methods
-      can only be called after the filter has been executed. Also, the
-      particle IDs are with respect to the internal poly data, which
-      could be different from the input poly data */
+      can only be called after the filter has been executed. */
   unsigned int GetComponentSizeFromParticleID( unsigned int );
   unsigned int GetComponentLabelFromParticleID( unsigned int );
 
@@ -108,11 +90,6 @@ public:
   vtkPolyData* GetComponent( unsigned int );
 
 protected:
-  typedef itk::Image< unsigned int, 3 >                   ImageType;
-  typedef itk::ImageRegionIteratorWithIndex< ImageType >  IteratorType;
-
-  ImageType::Pointer DataStructureImage;
-
   /** This is method needs to be overridden in inherint classes. By default it 
       simply returns true */
   virtual bool EvaluateParticleConnectedness( unsigned int, unsigned int );
@@ -124,16 +101,15 @@ protected:
   double        GetVectorMagnitude( double[3], double[3] );
   double        GetAngleBetweenVectors( double[3], double[3], bool );
   unsigned int  GetComponentSize( unsigned int );
-  void          InitializeDataStructureImageAndInternalInputPolyData();
   void          ComputeComponentSizes();
   void          GetComponentParticleIndices( unsigned int, std::vector< unsigned int >* );
-  void          QueryNeighborhood( ImageType::IndexType, unsigned int, unsigned int* );
+  void          QueryNeighborhood( unsigned int, unsigned int, unsigned int* );
   
   vtkPolyData* InputPolyData;
-  vtkPolyData* InternalInputPolyData;
   vtkPolyData* OutputPolyData;
+  vtkPointLocator* Locator;
 
-  double InterParticleSpacing;
+  //double InterParticleSpacing;
   double ParticleDistanceThreshold;
   double ParticleAngleThreshold;
 
@@ -142,7 +118,6 @@ protected:
   unsigned int ComponentSizeThreshold;
   unsigned int NumberInputParticles;
   unsigned int NumberOutputParticles;
-  unsigned int NumberInternalInputParticles;
   unsigned int SelectedComponent;
   unsigned int LargestComponentLabel;
 };

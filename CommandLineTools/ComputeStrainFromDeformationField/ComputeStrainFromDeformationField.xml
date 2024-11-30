@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Registration</category>
+  <title>ComputeStrainFromDeformationField</title>
+  <description><![CDATA[ This module computes a the strain tensor eigenvalues from a deformation field.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/registration-0</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <transform type="nonlinear">
+      <name>deformationFileName</name>
+      <label>Input Deformation</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>--inputDeformation</longflag>
+      <description><![CDATA[Input Deformation field file name]]></description>
+    </transform>
+
+    <image type="scalar">
+      <name>outputLambda1</name>
+      <label>First Eigenvalue</label>
+      <longflag>--outputL1</longflag>
+      <channel>output</channel>
+      <description><![CDATA[Output first (smallest) strain tensor eigenvalue]]></description>
+    </image>
+
+    <image type="scalar">
+        <name>outputLambda2</name>
+        <label>Second Eigenvalue</label>
+        <longflag>--outputL2</longflag>
+        <channel>output</channel>
+        <description><![CDATA[Output second (middle) strain tensor eigenvalue]]></description>
+    </image>
+
+    <image type="scalar">
+        <name>outputLambda3</name>
+        <label>Third Eigenvalue</label>
+        <longflag>--outputL3</longflag>
+        <channel>output</channel>
+        <description><![CDATA[Output thrid (largest) strain tensor eigenvalue]]></description>
+    </image>
+
+  </parameters>
+  
+  <parameters>
+   <label> Parameters </label>
+   <description> Filter parameters </description>
+
+    <string-enumeration>
+        <name>StrainType</name>
+        <flag>t</flag>
+        <longflag>straintype</longflag>
+        <element>Lagrangian</element>
+        <element>Almansi</element>
+        <element>Infinitesimal</element>
+        <default>Lagrangian</default>
+        <description><![CDATA[Type of strain tensor (symmetric second order tensor)     \
+            Lagrangian   - Green-Lagrangian definition that \
+                           tracks a material point \
+            Almansi      - Eulerian-Almansi definition that \
+                           tracks a spatial point  \
+            Infinitesimal- feature strength based on Krissian \
+                            paper (only for line-like structures)]]>
+        </description>
+    </string-enumeration>
+    <boolean>
+      <name>DeformationTensor</name>
+      <longflag>deformationTensor</longflag>
+      <description>Computes the deformation tensor instead of strain.</description>
+      <label>Deformation Tensor</label>
+    </boolean>
+    
+  </parameters>
+</executable>

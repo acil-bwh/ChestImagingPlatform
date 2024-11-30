@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9)
-
+cmake_minimum_required(VERSION 3.5.0)
 
 ##################### RPath stuff start ################
 # use, i.e. don't skip the full RPATH for the build tree
@@ -32,9 +31,9 @@ set(CMAKE_MODULE_PATH
   )
 set(CIP_CMAKE_DIR ${CIP_SOURCE_DIR}/CMake)
 
+
 #--------------------------------------------------------------------
 # Find ITK.
-
 FIND_PACKAGE ( ITK )
 if ( ITK_FOUND )
   INCLUDE(${ITK_USE_FILE})
@@ -53,14 +52,18 @@ else ( VTK_FOUND )
 endif ( VTK_FOUND )
 
 #Check Boost status
-if(TARGET vtkInfovisBoostGraphAlgorithms)
-  message(STATUS "VTK Built with BOOST Graph")
+if(TARGET vtkInfovisBoostGraphAlgorithms)   # Make sure we have the needed module
+  message(STATUS "Using Infovis Boost")
   SET(CIP_USE_BOOST ON)
 else()
+  message(STATUS "vtkInfovisBoostGraphAlgorithms not found! CIP will NOT use Boost")
   SET(CIP_USE_BOOST OFF)
 endif()
 
-#---------------------------------------------------------------------
+
+
+
+  #---------------------------------------------------------------------
 # Find Teem
 
 FIND_PACKAGE ( Teem )
@@ -70,10 +73,11 @@ else ( Teem_FOUND )
   MESSAGE ( FATAL_ERROR "Cannot build without Teem" )
 endif( Teem_FOUND )
 
+
 #---------------------------------------------------------------------
 # Find OpenCV
 
-FIND_PACKAGE ( OpenCV )
+#FIND_PACKAGE ( OpenCV )
 
 #---------------------------------------------------------------------
 # Kill the anoying MS VS warning about non-safe functions.
@@ -97,11 +101,20 @@ endif()
 #---------------------------------------------------------------------
 # Output directories.
 
-set( LIBRARY_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
-  CACHE INTERNAL "Single output directory for building all libraries." )
+if( CIP_INTEGRATE_WITH_SLICER ) # may be set with remote module options
 
-set( EXECUTABLE_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
-  CACHE INTERNAL "Single output directory for building all executables." )
+  set( LIBRARY_OUTPUT_PATH ${CIP_CLI_LIBRARY_OUTPUT_DIRECTORY} )
+  set( EXECUTABLE_OUTPUT_PATH ${CIP_CLI_RUNTIME_OUTPUT_DIRECTORY} )
+
+else()
+  
+  set( LIBRARY_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
+    CACHE INTERNAL "Single output directory for building all libraries." )
+
+  set( EXECUTABLE_OUTPUT_PATH ${CIP_BINARY_DIR}/bin
+    CACHE INTERNAL "Single output directory for building all executables." )
+
+endif()
 
 mark_as_advanced( LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH )
 
@@ -109,9 +122,10 @@ get_filename_component( CIP_PARENT_DIR ${CMAKE_BINARY_DIR} PATH )
 
 set( CIP_LIBRARY_PATH "${CIP_PARENT_DIR}/lib" )
 set( CIP_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}" )
-
-
-
+get_filename_component(CIP_PYTHON_BIN_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
+if (WIN32)
+  set(CIP_PYTHON_BIN_DIR ${CIP_PYTHON_BIN_DIR}/Scripts)
+endif()
 #---------------------------------------------------------------------
 # Testing
 
@@ -122,6 +136,14 @@ if ( CIP_BUILD_TESTING )
   include( CTest )  
   SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "Build large tests that require MIDAS server")  
   SET(CIP_BUILD_TESTING_PYTHON ON CACHE BOOL "Build Python tests") 
+  # Copy the Input data for testing to the build directory (same folder structure, so tests will work both in source and build)
+  ADD_CUSTOM_TARGET(copy-input-files ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Testing/Data/Input ${CMAKE_CURRENT_BINARY_DIR}/Testing/Data/Input
+  )
+  if (CIP_BUILD_TESTING_PYTHON)
+    # Set the nosetests executable that will be used for python tests
+    set (CIP_NOSETESTS_EXEC "${CIP_PYTHON_BIN_DIR}/nosetests" CACHE FILEPATH "nosetests executable" FORCE)
+  endif()
 else( CIP_BUILD_TESTING )
   SET(CIP_BUILD_TESTING_LARGE OFF CACHE BOOL "Build large tests that require MIDAS server")
   SET(CIP_BUILD_TESTING_PYTHON OFF CACHE BOOL "Build Python tests")
@@ -133,7 +155,7 @@ if ( CIP_BUILD_TESTING_LARGE )
   include(MIDAS)
   include(MIDASAPILogin)
  
-  set(MIDAS_REST_URL "http://midas.airwayinspector.org/rest" CACHE STRING "The MIDAS server where testing data resides")
+  set(MIDAS_REST_URL "http://midas.chestimagingplatform.org/rest" CACHE STRING "The MIDAS server where testing data resides")
   set(MIDAS_KEY_DIR "${CMAKE_SOURCE_DIR}/Testing/Data/Large/MIDAS_Keys" CACHE PATH "Directory where hash files are stored (included in Source code)")
   set(MIDAS_DATA_DIR "${CIP_BINARY_DIR}/Testing/Data/Large/MIDAS_Data" CACHE PATH "Directory where downloaded files are stored (local directory)")
   FILE(MAKE_DIRECTORY ${MIDAS_DATA_DIR})
@@ -149,7 +171,7 @@ if ( CIP_BUILD_TESTING_LARGE )
           MIDAS_USER_EMAIL ${MIDAS_USER_EMAIL}
           MIDAS_USER_APIKEY ${MIDAS_USER_APIKEY}
           RESULT_VARNAME MIDAS_AUTH_TOKEN
-      )    
+    )
   endif()
 
   if (NOT MIDAS_AUTH_TOKEN)
@@ -167,15 +189,26 @@ set( CIP_INCLUDE_DIRECTORIES
   "${CIP_SOURCE_DIR}/Utilities/ITK"
   "${CIP_SOURCE_DIR}/Utilities/VTK"
   "${CIP_SOURCE_DIR}/Utilities/LesionSizingToolkit"
+  "${CIP_SOURCE_DIR}/Utilities/GraphCutsOptimization"
+  "${CIP_SOURCE_DIR}/Utilities/ITKStrain"
   "${CIP_SOURCE_DIR}/IO"
-  "${CMAKE_BINARY_DIR}/Common"
-  "${CMAKE_BINARY_DIR}/Utilities/VTK"
-  "${CMAKE_BINARY_DIR}/Utilities/ITK"
-  "${CMAKE_BINARY_DIR}/Utilities/LesionSizingToolkit"
-  "${CMAKE_BINARY_DIR}/IO"
+  "${CIP_BINARY_DIR}/Common"
+  "${CIP_BINARY_DIR}/Utilities/VTK"
+  "${CIP_BINARY_DIR}/Utilities/ITK"
+  "${CIP_BINARY_DIR}/Utilities/LesionSizingToolkit"
+  "${CIP_BINARY_DIR}/Utilities/GraphCutsOptimization"
+  "${CIP_BINARY_DIR}/Utilities/ITKStrain"
+  "${CIP_BINARY_DIR}/IO"
 )
 
 include_directories( ${CIP_INCLUDE_DIRECTORIES} )
+#---------------------------------------------------------------------
+# Copy external files
+ADD_CUSTOM_TARGET(copy-external-files ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Resources ${CMAKE_CURRENT_BINARY_DIR}/Resources
+    COMMENT "Copying Resource files"
+  )
+
 
 #---------------------------------------------------------------------
 # Link libraries
@@ -228,9 +261,11 @@ if(BUILD_SANDBOX)
   SUBDIRS (Sandbox)
 endif(BUILD_SANDBOX)
 
-if ( CIP_BUILD_TESTING_PYTHON )
- SUBDIRS ( cip_python )
-endif( CIP_BUILD_TESTING_PYTHON ) 
+SUBDIRS ( cip_python )
+  # Option to disable GCO wrapping when cip python is not going to be needed.
+SET(USE_CYTHON ON CACHE BOOL "Use of Cython, needed to Wrap GraphCutsOptimization for Python")
+mark_as_advanced(FORCE USE_CYTHON)
+
 
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
@@ -251,11 +286,6 @@ include(cipMacroBuildCLI)
 # to create package registry (under .cmake directory) for some reason...
 SET( CIP_DIR ${CIP_BINARY_DIR} )
 
-
-# Option to disable ChestConventions wrapping when cip python is not going to be needed.
-SET(CIP_WRAPCHESTCONVENTIONS ON CACHE BOOL "Wrap ChestConventions, needed for python modules")
-mark_as_advanced(FORCE CIP_WRAPCHESTCONVENTIONS)
-message("ChestConv: ${CIP_WRAPCHESTCONVENTIONS}")
 
 
 # The "use" file.
@@ -279,11 +309,11 @@ CONFIGURE_FILE( ${CIP_CMAKE_DIR}/CIPConfig.cmake.in
 if(APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
   set(CMAKE_EXE_LINKER_FLAGS "-Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-  #Flag for Cython (See https://support.enthought.com/hc/en-us/articles/204469410-OS-X-GCC-Clang-and-Cython-in-10-9-Mavericks)
   #Due to the change to clang on OS X 1.9, you have to build against the old libs (libstdc++ and not the clang one - libc++).
-  set(CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6")
-
+  #set(CMAKE_CXX_FLAGS "-stdlib=libstdc++ -mmacosx-version-min=10.6")
+  #set (CMAKE_CXX_FLAGS ${CIP_cxx_flags})
 endif()
+
     #-----------------------------------------------------------------------------
 # Add needed flag for gnu on linux like enviroments to build static common libs
 # suitable for linking with shared object libs.

@@ -24,6 +24,6 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
     ModuleEntryPoint
       -i ${INPUT_DATA_DIR}/case_vessel_particles.vtk
       -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_case_vessel_particles.vtk
-      -d 1
-      --maxScale 6
+      -d 2
+      --size 60
 )

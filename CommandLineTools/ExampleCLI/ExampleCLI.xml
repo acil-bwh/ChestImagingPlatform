@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Utils</category>
+  <title>ExampleCLI</title>
+    <description><![CDATA[This is just an example CLI that may be used as a template. The CLI just applies a gaussian filter to the image]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/utils</documentation-url>
+  <license></license>
+  <contributor>Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>
+  </acknowledgements>
+
+  <!-- Input/Output parameters -->
+  <parameters>
+    <label>IO</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>inputFileName</name>
+      <label>Input image</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>input</longflag>
+      <description><![CDATA[Input image]]></description>
+      <default></default>
+    </image>
+    <image>
+      <name>outputFileName</name>
+      <label>Output image</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>output</longflag>
+      <description><![CDATA[Output file name]]></description>
+      <default></default>
+    </image>
+  </parameters>
+
+  <!-- Other parameters -->
+  <parameters advanced="true">
+    <label>Parameters</label>
+    <description>Parameters</description>
+    <float>
+      <name>gaussianVariance</name>
+      <flag>v</flag>
+      <longflag>variance</longflag>
+      <label>Gaussian variance</label>
+      <description>Gaussian variance to apply in the filter</description>
+      <default>25.0</default>
+    </float>
+    <integer>
+      <name>maxKernelWidth</name>
+      <flag>k</flag>
+      <longflag>maxKernelWidth</longflag>
+      <label>Maximum kernel width</label>
+      <description>Maximum kernel width</description>
+      <default>32</default>
+    </integer>
+
+  </parameters>
+
+</executable>

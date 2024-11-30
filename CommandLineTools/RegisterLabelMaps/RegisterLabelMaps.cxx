@@ -143,7 +143,61 @@ namespace
     xmlSaveFormatFileEnc(file, doc, "UTF-8", 1);
     xmlFreeDoc(doc);
   }  
-      
+
+  template < unsigned int TDimension > typename itk::Image<unsigned short, TDimension>::Pointer
+  DownsampleLabelMap (typename itk::Image<unsigned short, TDimension>::Pointer labelMap, unsigned int downsampleFactor) 
+  {
+    return NULL;
+  }
+
+  // 2D specialization
+  template <> 
+  itk::Image<unsigned short, 2>::Pointer DownsampleLabelMap<2> (typename itk::Image<unsigned short, 2>::Pointer labelMap, 
+    unsigned int downsampleFactor) 
+  {
+    typedef itk::Image<unsigned short, 2>                                                LabelMapType;
+    typedef itk::CastImageFilter< LabelMapType, cip::LabelMapSliceType >                   CasterTempToCIPType;
+    typedef itk::CastImageFilter< cip::LabelMapSliceType, LabelMapType >                   CasterCIPToTempType;
+
+    // First down-sample the fixed label map
+	  CasterTempToCIPType::Pointer tempToCIPCaster = CasterTempToCIPType::New();
+	  tempToCIPCaster->SetInput( labelMap );
+	  tempToCIPCaster->Update();
+
+	  cip::LabelMapSliceType::Pointer tmp = cip::LabelMapSliceType::New();
+	  tmp = cip::DownsampleLabelMapSlice( downsampleFactor, tempToCIPCaster->GetOutput() );
+
+	  CasterCIPToTempType::Pointer CIPToTempCaster = CasterCIPToTempType::New();
+	  CIPToTempCaster->SetInput( tmp );
+	  CIPToTempCaster->Update();
+	
+	  return CIPToTempCaster->GetOutput();
+  }
+  
+  // 3D specialization
+  template <> 
+  itk::Image<unsigned short, 3>::Pointer DownsampleLabelMap<3> (typename itk::Image<unsigned short, 3>::Pointer labelMap, 
+    unsigned int downsampleFactor) 
+  {
+    typedef itk::Image<unsigned short, 3>                                                LabelMapType;
+    typedef itk::CastImageFilter< LabelMapType, cip::LabelMapType >                        CasterTempToCIPType;
+    typedef itk::CastImageFilter< cip::LabelMapType, LabelMapType >                        CasterCIPToTempType;
+
+  	CasterTempToCIPType::Pointer tempToCIPCaster = CasterTempToCIPType::New();
+	  tempToCIPCaster->SetInput( labelMap );
+	  tempToCIPCaster->Update();
+
+	  cip::LabelMapType::Pointer tmp = cip::LabelMapType::New();
+		tmp = cip::DownsampleLabelMap( downsampleFactor, tempToCIPCaster->GetOutput() );
+
+	  CasterCIPToTempType::Pointer CIPToTempCaster = CasterCIPToTempType::New();
+	  CIPToTempCaster->SetInput( tmp );
+	  CIPToTempCaster->Update();
+	
+	  return CIPToTempCaster->GetOutput();
+  }
+
+
   template <unsigned int TDimension>
   int DoIT(int argc, char * argv[])
   {
@@ -167,10 +221,6 @@ namespace
     typedef itk::CenteredTransformInitializer< TransformType, LabelMapType, LabelMapType > InitializerType;
     typedef itk::ImageFileReader<LabelMapType >                                            LabelMapReaderType;
     typedef itk::CIPExtractChestLabelMapImageFilter  <TDimension>                          LabelMapExtractorType;
-    typedef itk::CastImageFilter< LabelMapType, cip::LabelMapType >                        CasterTempTo3dType;
-    typedef itk::CastImageFilter< cip::LabelMapType, LabelMapType >                        Caster3dToTempType;
-    typedef itk::CastImageFilter< LabelMapType, cip::LabelMapSliceType >                   CasterTempTo2dType;
-    typedef itk::CastImageFilter< cip::LabelMapSliceType, LabelMapType >                   Caster2dToTempType;    
         
     //Read in fixed image label map from file and subsample
     typename LabelMapType::Pointer fixedLabelMap = LabelMapType::New();
@@ -212,71 +262,12 @@ namespace
     // Sub-sample the fixed and moving label maps if required
     typename LabelMapType::Pointer subSampledFixedImage = LabelMapType::New();
     typename LabelMapType::Pointer subSampledMovingImage = LabelMapType::New();
+
+    std::cout << "Subsampling fixed image by a factor of " << downsampleFactor << "..." << std::endl;
+    subSampledFixedImage = DownsampleLabelMap<TDimension>(fixedLabelMap, downsampleFactor);
     
-    if ( TDimension == 2 )
-      {
-	// First down-sample the fixed label map
-	typename CasterTempTo2dType::Pointer fixedTempTo2dCaster = CasterTempTo2dType::New();
-	  fixedTempTo2dCaster->SetInput( fixedLabelMap );
-	  fixedTempTo2dCaster->Update();
-
-	cip::LabelMapSliceType::Pointer tmpFixed = cip::LabelMapSliceType::New();
-	std::cout << "Subsampling fixed image by a factor of " << downsampleFactor << "..." << std::endl;
-	tmpFixed = cip::DownsampleLabelMapSlice( downsampleFactor, fixedTempTo2dCaster->GetOutput() );
-
-	typename Caster2dToTempType::Pointer fixed2dToTempCaster = Caster2dToTempType::New();
-	  fixed2dToTempCaster->SetInput( tmpFixed );
-	  fixed2dToTempCaster->Update();
-	
-	subSampledFixedImage = fixed2dToTempCaster->GetOutput();
-
-	// Now down-sample the moving label map
-	typename CasterTempTo2dType::Pointer movingTempTo2dCaster = CasterTempTo2dType::New();
-	  movingTempTo2dCaster->SetInput( movingLabelMap );
-	  movingTempTo2dCaster->Update();
-
-	cip::LabelMapSliceType::Pointer tmpMoving = cip::LabelMapSliceType::New();
-	std::cout << "Subsampling moving image by a factor of " << downsampleFactor << "..." << std::endl;
-	tmpMoving = cip::DownsampleLabelMapSlice( downsampleFactor, movingTempTo2dCaster->GetOutput() );
-
-	typename Caster2dToTempType::Pointer moving2dToTempCaster = Caster2dToTempType::New();
-	  moving2dToTempCaster->SetInput( tmpMoving );
-	  moving2dToTempCaster->Update();
-	
-	subSampledMovingImage = moving2dToTempCaster->GetOutput();
-      }
-    else
-      {
-	// First down-sample the fixed label map
-	typename CasterTempTo3dType::Pointer fixedTempTo3dCaster = CasterTempTo3dType::New();
-	  fixedTempTo3dCaster->SetInput( fixedLabelMap );
-	  fixedTempTo3dCaster->Update();
-
-	cip::LabelMapType::Pointer tmpFixed = cip::LabelMapType::New();
-	std::cout << "Subsampling fixed image by a factor of " << downsampleFactor << "..." << std::endl;
-	tmpFixed = cip::DownsampleLabelMap( downsampleFactor, fixedTempTo3dCaster->GetOutput() );
-
-	typename Caster3dToTempType::Pointer fixed3dToTempCaster = Caster3dToTempType::New();
-	  fixed3dToTempCaster->SetInput( tmpFixed );
-	  fixed3dToTempCaster->Update();
-	
-	subSampledFixedImage = fixed3dToTempCaster->GetOutput();
-
-	// Now down-sample the moving label map
-	typename CasterTempTo3dType::Pointer movingTempTo3dCaster = CasterTempTo3dType::New();
-	  movingTempTo3dCaster->SetInput( movingLabelMap );
-	  movingTempTo3dCaster->Update();
-
-	cip::LabelMapType::Pointer tmpMoving = cip::LabelMapType::New();
-	std::cout << "Subsampling moving image by a factor of " << downsampleFactor << "..." << std::endl;
-	tmpMoving = cip::DownsampleLabelMap( downsampleFactor, movingTempTo3dCaster->GetOutput() );
-
-	typename Caster3dToTempType::Pointer moving3dToTempCaster = Caster3dToTempType::New();
-	  moving3dToTempCaster->SetInput( tmpMoving );
-	  moving3dToTempCaster->Update();
-	
-	subSampledMovingImage = moving3dToTempCaster->GetOutput();
-      }
+    std::cout << "Subsampling moving image by a factor of " << downsampleFactor << "..." << std::endl;
+    subSampledMovingImage = DownsampleLabelMap<TDimension>(movingLabelMap, downsampleFactor);
         
     LabelMapIteratorType fit( subSampledFixedImage, subSampledFixedImage->GetBufferedRegion() );    
     fit.GoToBegin();
@@ -485,7 +476,7 @@ int main( int argc, char *argv[] )
       {
   	DoIT<2>( argc, argv );
   	break;
-      }
+      } 
     case 3:
       {
   	DoIT<3>( argc, argv );

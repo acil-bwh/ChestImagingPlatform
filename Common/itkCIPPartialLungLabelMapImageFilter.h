@@ -64,6 +64,14 @@ public:
   typedef typename OutputImageType::RegionType         OutputImageRegionType;
   typedef typename InputImageType::SizeType            InputSizeType;
 
+  /** The algorithm performs region growing to find a threshold that
+   *  produces an airway tree with a volume as close to this specified
+   *  value as possible, without going over. This is an optional input
+   *  and is set to a reasonable value by default. The volume should
+   *  be specified in mm^3 (not to be confused with milliliters) */
+  itkSetMacro( MaxAirwayVolume, double );
+  itkGetMacro( MaxAirwayVolume, double );
+
   /** This variable indicates whether or not the patient was scanned
    *  in the supine position (default is true) */
   itkSetMacro( Supine, bool );
@@ -172,6 +180,7 @@ private:
   bool            m_AirwayMaxIntensityThresholdSet;
   InputPixelType  m_AirwayMinIntensityThreshold;
   bool            m_AirwayMinIntensityThresholdSet;
+  double          m_MaxAirwayVolume;
 
   double             m_ExponentialCoefficient;
   double             m_ExponentialTimeConstant;

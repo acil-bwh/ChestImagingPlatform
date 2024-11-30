@@ -44,11 +44,10 @@ if(NOT DEFINED Teem_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       )
   endif()
 
-  set(teem_repo http://svn.code.sf.net/p/teem/code/teem/branches/Teem-1.11.1)
-
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
-    SVN_REPOSITORY ${teem_repo}
+    GIT_REPOSITORY "${git_protocol}://github.com/Slicer/teem"
+    GIT_TAG e4746083c0e1dc0c137124c41eca5d23adf73bfa
     SOURCE_DIR teem
     BINARY_DIR teem-build
     CMAKE_CACHE_ARGS
@@ -56,6 +55,8 @@ if(NOT DEFINED Teem_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       # Not needed -DCMAKE_CXX_FLAGS:STRING=${ep_common_cxx_flags}
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
+      -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+      -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
       -DBUILD_TESTING:BOOL=OFF
       -DBUILD_SHARED_LIBS:BOOL=ON
       ${CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG}

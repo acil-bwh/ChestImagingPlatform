@@ -366,7 +366,6 @@ bool GetSliceHasForeground(cip::LabelMapType::Pointer labelMap, unsigned int whi
     {
       if ( it.Get() > 0 )
 	{
-	  std::cout << it.GetIndex() << std::endl;
 	  return true;
 	}
 

@@ -4,9 +4,9 @@
   <title>RegisterLabelMaps</title>
   <description><![CDATA[This program Registers an input label map to a target label map. It takes as input the 2 label maps and generates either a transform file or outputs the values of the transformation matrix and header information to a file.]]></description>
   <version>0.0.1</version>
-  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.2/Modules/ResampleLabelMap</documentation-url>
+  <documentation-url>https://chestimagingplatform.org/registration</documentation-url>
   <license>Slicer</license>
-  <contributor> Applied Chest Imaging Laboratory, Brigham and women's hospital</contributor>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
 Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
 and does not necessarily represent the official views of the National Institutes of Health.

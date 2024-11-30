@@ -1,10 +1,8 @@
 import numpy as np
 from optparse import OptionParser
-import nrrd
-from cip_python.ChestConventions import ChestConventions
-from cip_python.utils.region_type_parser import RegionTypeParser
-
-import pdb
+from ..common import ChestConventions
+from ..utils import RegionTypeParser
+from ..input_output import ImageReaderWriter
 
 def remap_lm(lm, region_maps=None, type_maps=None, pair_maps=None):
     """Overwrites values in an input label map using the specified mappings.
@@ -193,13 +191,18 @@ if __name__ == "__main__":
             inc = inc+1
             pair = [tmp_from, tmp_to]            
             pair_maps.append(pair)
-            
-    lm_in, header = nrrd.read(options.in_lm)
+
+    lm_io = ImageReaderWriter()
+    lm_in, header = lm_io.read_in_numpy(options.in_lm)
+    #lm_in, header = nrrd.read(options.in_lm)
 
     remapped_lm = remap_lm(lm_in, region_maps=region_maps,
                            type_maps=type_maps, pair_maps=pair_maps)
 
     if options.out_lm is not None:
-        del header['data file']
-        nrrd.write(options.out_lm, remapped_lm, options=header)
+      lm_io.write_from_numpy(remapped_lm,header,options.out_lm)
+  
+#    if options.out_lm is not None:
+#        del header['data file']
+#        nrrd.write(options.out_lm, remapped_lm, options=header)
 

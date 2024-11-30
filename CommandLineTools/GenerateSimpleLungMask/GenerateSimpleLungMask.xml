@@ -3,15 +3,14 @@
   <category>Chest Imaging Platform.Toolkit.Segmentation</category>
   <title>Generate Simple Lung Mask</title>
   <description> Generate Simple Lung Mask</description>
-  <version>0.1.0.$Revision: 1.1 $(alpha)</version>
-  <documentation-url></documentation-url>
-  <license></license>
-  <contributor>Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
-<acknowledgements>
-  This work is funded by the National Heart, Lung, And Blood Institute of the National \
-  Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
-  and does not necessarily represent the official views of the National Institutes of Health.
-</acknowledgements>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/segmentation</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+    Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the author \
+    and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
   
   <parameters>
     <label>IO</label>

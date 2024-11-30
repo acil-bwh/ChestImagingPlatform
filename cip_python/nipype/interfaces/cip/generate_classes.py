@@ -182,12 +182,12 @@ def generate_class(module, launcher):
             if param.getElementsByTagName('description') and param.getElementsByTagName('description')[0].firstChild:
                 traitsParams["desc"] = param.getElementsByTagName('description')[0].firstChild.nodeValue.replace('"', "\\\"").replace("\n", ", ")
 
-            argsDict = {'directory': '%s', 'file': '%s', 'integer': "%d",
-                        'double': "%f", 'float': "%f", 'image': "%s",
-                        'transform': "%s", 'boolean': '',
-                        'string-enumeration': '%s', 'string': "%s",
+            argsDict = {'directory': '"%s"', 'file': '"%s"', 'integer': "%d",
+                        'double': "%f", 'float': "%f", 'image': '"%s"',
+                        'transform': '"%s"', 'boolean': '',
+                        'string-enumeration': '"%s"', 'string': '"%s"',
                         'integer-enumeration': '%s',
-                        'table': '%s', 'point': '%s', 'region': '%s', 'geometry': '%s'}
+                        'table': '"%s"', 'point': '"%s"', 'region': '"%s"', 'geometry': '"%s"'}
 
             if param.nodeName.endswith('-vector'):
                 traitsParams["argstr"] += "%s"
@@ -314,7 +314,7 @@ def parse_params(params):
     list = []
     for key, value in params.iteritems():
         if isinstance(value, str) or isinstance(value, unicode):
-            list.append('%s="%s"' % (key, value.replace('"', "'")))
+            list.append("%s='%s'" % (key, value.replace("'", "''")))
         else:
             list.append('%s=%s' % (key, value))
 
@@ -350,14 +350,36 @@ if __name__ == "__main__":
     #Get list of modules from directory name in CommandLineTools
     dir='../../../../CommandLineTools/'
     modules_list = [str.split(x[0],'/')[5] for x in os.walk(dir)]
+
+    #Inclue LegacyCLIs
+    if 'LegacyCLIs'in modules_list:
+      dir='../../../../CommandLineTools/LegacyCLIs'
+      for x in os.walk(dir):
+        tmp_var=str.split(x[0],'/')
+        print len(tmp_var)
+        if len(tmp_var)>=7:
+            modules_list.append(tmp_var[6])
+
     #Remove duplicates and sort list
     modules_list = list(set(modules_list))
     modules_list.sort()
-    #Remove empty entries
+    print modules_list
+    #Remove dir names and empty entries
     modules_list.remove('')
     modules_list.remove('Testing')
-        
+    modules_list.remove('LegacyCLIs')
+
+    #modules_list.remove('GenerateStatisticsForAirwayGenerationLabeling')
+    #modules_list.remove('LabelAirwayParticlesByGeneration')
+    #modules_list.remove('ReadParticlesWriteConnectedParticles')
+    #modules_list.remove('SegmentLungAirways')
+    #Remove legacy modules
+    if 'GenerateRegionHistogramsAndParenchymaPhenotypes' in modules_list:
+        modules_list.remove('GenerateRegionHistogramsAndParenchymaPhenotypes')
+    if 'CMakeFiles' in modules_list:
+        modules_list.remove('CMakeFiles')        
     print 'Number of modules founds ' + str(len(modules_list))
+
 
     ## SlicerExecutionModel compliant tools that are usually statically built, and don't need the Slicer3 --launcher
     generate_all_classes(modules_list=modules_list,launcher=[],module_name='cip')

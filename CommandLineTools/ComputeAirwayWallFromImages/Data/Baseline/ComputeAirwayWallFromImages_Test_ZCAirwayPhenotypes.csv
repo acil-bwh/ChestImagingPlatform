@@ -1,0 +1,4 @@
+z,method,meanInnerRadius,meanOuterRadius,meanWallThickness,meanInnerRadiusEllipseFitting,meanOuterRadiusEllipseFitting,meanWallThicknessEllipseFitting,stdInnerRadius,stdOuterRadius,stdWallThickness
+0,ZC,1.73767,3.21566,1.47798,1.7563,3.22979,1.47349,0.255246,0.303062,0.150603,
+1,ZC,1.38244,2.67171,1.28926,1.2995,2.27429,0.974791,0.534777,1.29422,0.944985,
+2,ZC,1.7062,3.41173,1.70553,1.72792,3.42339,1.69547,0.272764,0.281794,0.0654655,

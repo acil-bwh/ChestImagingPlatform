@@ -1,13 +1,8 @@
-# TODO: Investigate live_thresh and seed_thresh (ranges specified below)
-# TODO: Consider using mask throughout all passes if you're passing an
-#       airway mask in (tried this -- does not seem to have an effect. Bug?)
-# TODO: Investigate alpha and beta settings -- esp. for pass three. In some
-#       passes they are irrelevant.
-
+from argparse import ArgumentParser
+import tempfile, shutil
 import os
-from optparse import OptionParser
 
-from cip_python.particles.chest_particles import ChestParticles
+from cip_python.particles import ChestParticles
 
 class FissureParticles(ChestParticles):
     """Class for fissure-specific particles sampling
@@ -26,171 +21,112 @@ class FissureParticles(ChestParticles):
     mask_file_name : string (optional)
         File name of mask within which to execute particles
 
-    max_scale : float (optional)
-        The maximum scale to consider in scale space (default is 6.0). If
-        larger structures are desired, it's advised to downsample the input
-        image using the 'down_sample_rate' parameter and not to simply increase
-        'max_scale'. For example, to capture a structure that is best
-        represented at a scale of 12, keep 'max_scale' at 6 and downsample by
-        2. The scale of the output particles is handled properly.    
+    scale : float (optional)
+        The scale of the fissure to consider in scale space.
 
     live_thresh : float (optional)
-        Default is -30. Possible interval to explore: [-50, -150]
-
+        Threshold to use when pruning particles during population control.
+    
     seed_thresh : float (optional)
-        Default is -30. Possible interval to explore: [-30, -200]
-
-    scale_samples : int (optional)
-        The number of pre-blurrings performed on the input image. These
-        pre-blurrings are saved to the specified temp directory and used for
-        interpolation across scale. The scale at which a given blurring is
-        performed is also a function of the 'max_scale' parameter. Note that
-        blurrings are not performed uniformly on the interval [0, max_scale].
-        Instead, more blurrings are performed at the low end in order to better
-        capture smaller structures. Default value is 5.
+        Threshold to use when initializing particles.
 
     down_sample_rate : int (optional)
         The amount by which the input image will be downsampled prior to
         running particles. Default is 1 (no downsampling).
 
+    min_intensity : int (optional)
+        Histogram equilization will be applied to enhance the fissure features
+        within the range [min_intensity, max_intensity].
+
+    max_intensity : int (optional)
+        Histogram equilization will be applied to enhance the fissure features
+        within the range [min_intensity, max_intensity].        
+
+    iterations : int (optional)
+        The number of iterations for which to run the algorithm.
+
+    perm : bool (optional)
+        If true, allow mask and CT volumes to have different shapes or meta data
     """
     def __init__(self, in_file_name, out_particles_file_name, tmp_dir,
-                 mask_file_name=None, max_scale=1.2, live_thresh=-30.6,
-                 seed_thresh=-30.6, scale_samples=1, down_sample_rate=1,
-                 min_intensity=-1000, max_intensity=-500):
+                 mask_file_name=None, scale=0.9, live_thresh=-15,
+                 seed_thresh=-45, down_sample_rate=1,
+                 min_intensity=-920, max_intensity=-400, iterations=100,init_mode="Random", 
+                 perm=False):
         ChestParticles.__init__(self, feature_type="ridge_surface",
-                            in_file_name=in_file_name,
-                            out_particles_file_name=out_particles_file_name,
-                            tmp_dir=tmp_dir, mask_file_name=mask_file_name,
-                            max_scale=max_scale, scale_samples=scale_samples,
-                            down_sample_rate=down_sample_rate)
+            in_file_name=in_file_name, 
+            out_particles_file_name=out_particles_file_name,
+            tmp_dir=tmp_dir, mask_file_name=mask_file_name,
+            max_scale=scale, scale_samples=1,
+            down_sample_rate=down_sample_rate)
 
         self._max_intensity = max_intensity
         self._min_intensity = min_intensity
         self._live_thresh = live_thresh
         self._seed_thresh = seed_thresh
-        self._max_scale = max_scale
-        self._scale_samples = scale_samples
+        self._max_scale = scale
+        self._scale_samples = 1
         self._down_sample_rate = down_sample_rate
-
+        self._iterations = iterations        
         self._mode_thresh = -0.5
         self._population_control_period = 10
         self._no_add = 0
-  
+        self._cip_type = 'Fissure'
+        #Setting up initialization
+        print(init_mode)
+        self._init_mode = init_mode
+        #Config for PerVoxel init mode
+        self._ppv = 1
+        self._nss = 1
+        #Config for Random init mode
+        self._number_init_particles = 10000
+
+
         self._verbose = 1
+        if perm:
+            self._permissive = True
  
     def execute(self):
         #Pre-processing
+
         if self._down_sample_rate > 1:
             downsampled_vol = os.path.join(self._tmp_dir, "ct-down.nrrd")
             self.down_sample(self._in_file_name, downsampled_vol, \
                              "cubic:0,0.5",self._down_sample_rate)
             if self._use_mask == True:
-            	downsampled_mask = os.path.join(self._tmp_dir, \
+                downsampled_mask = os.path.join(self._tmp_dir, \
                                                 "mask-down.nrrd")
-            	self.down_sample(self._mask_file_name, \
+                self.down_sample(self._mask_file_name, \
                         downsampled_mask, "cheap",self._down_sample_rate)
-            	self._tmp_mask_file_name = downsampled_mask
-            
+                self._tmp_mask_file_name = downsampled_mask            
         else:
             downsampled_vol = self._in_file_name
             self._tmp_mask_file_name = self._mask_file_name
 
         deconvolved_vol = os.path.join(self._tmp_dir, "ct-deconv.nrrd")
         self.deconvolve(downsampled_vol, deconvolved_vol)
-              
+
         #Setting member variables that will not change
         self._tmp_in_file_name = deconvolved_vol
         
         # Temporary nrrd particles points
         out_particles = os.path.join(self._tmp_dir, "pass%d.nrrd")
 
-        if self._scale_samples == 1:
-            self._single_scale = 1
-            #Setting up single scale approach
-            self._use_strength = False
-            self._inter_particle_energy_type = "justr"
-            self._init_mode = "Random"
-            self._number_init_particles = 10000
+        self._single_scale = 1
+        #Setting up single scale approach
+        self._use_strength = False
+        self._inter_particle_energy_type = "justr"
 
-            self._beta  = 0 # Irrelevant for pass 1
-            self._alpha = 0.5
-            self._irad = 4
-            self._srad = 1.2
-            self._iterations = 50
+        self._beta  = 0 # Irrelevant for pass 1
+        self._alpha = 0.5
+        self._irad = 1.7 
+        self._srad = 1.2
             
-            #Build parameters and run
-            self.reset_params()
-            self.build_params()
-            self.execute_pass(out_particles % 3)
-        else:              
-          #Pass 1
-          #Init params
-          self._use_strength = False
-          self._inter_particle_energy_type = "uni"
-          self._init_mode = "Random"
-          self._number_init_particles = 10000
+        #Build parameters and run
+        self.reset_params()
+        self.build_params()
 
-          # Energy
-          # Radial energy function (psi_1 in the paper)
-          self._inter_particle_enery_type = "uni"
-          self._beta  = 0.7 # Irrelevant for pass 1
-          self._alpha = 0.5
-          self._irad = 4
-          self._srad = 1.2
-          self._iterations = 10
-
-          #Build parameters and run
-          self.reset_params()
-          self.build_params()
-          self.execute_pass(out_particles % 1)
-
-          # Pass 2
-          # Init params
-          self._init_mode = "Particles"
-          self._in_particles_file_name = out_particles % 1
-          self._use_mask = False #TODO: was 0
-
-          # Energy
-          # Radial energy function (psi_2 in the paper).
-          # Addition of 2 components: scale and space
-          self._inter_particle_energy_type = "add"
-          self._alpha = 0
-
-          # Controls blending in scale and space with respect to
-          # function psi_2
-          self._beta = 0.5
-          self._irad = 4
-          self._srad = 2
-          self._use_strength = True
-
-          self._iterations = 20
-
-          # Build parameters and run
-          self.reset_params()
-          self.build_params()
-          self.execute_pass(out_particles % 2)
-
-          # Pass 3
-          self._init_mode = "Particles"
-          self._in_particles_file_name = out_particles % 2
-          self._use_mask = False # TODO: was 0
-
-          # Energy
-          self._inter_particle_energy_type = "add"
-          self._alpha = 0.25
-          self._beta = 0.25
-          self._gamma = 0.002
-          self._irad = 4
-          self._srad = 4
-          self._use_strength = True
-          self._use_mode_th = True
-          self._iterations = 50
-
-          # Build parameters and run
-          self.reset_params()
-          self.build_params()
-          self.execute_pass(out_particles % 3)
+        self.execute_pass(out_particles % 3)
 
         # Probe quantities and save to VTK
         self.probe_quantities(self._tmp_in_file_name, out_particles % 3)
@@ -204,40 +140,52 @@ class FissureParticles(ChestParticles):
         self.clean_tmp_dir()
 
 if __name__ == "__main__":
-  parser = OptionParser()
-  parser.add_option("-i", help='input CT scan', dest="input_ct")
-  parser.add_option("-m", help='input mask for seeding', dest="input_mask")
-  parser.add_option("-o", help='output particles (vtk format)', \
-                    dest="output_particles")
-  parser.add_option("-t", help='tmp directory', dest="tmp_dir")
-  parser.add_option("-s", help='max scale (default 1.2)', dest="max_scale", \
-                    default=1.2)
-  parser.add_option("-r", help='down sampling rate. Must be greater than or \
-                    equal to 1.0 (default 1.0)', dest="down_sample_rate",
-                    default=1.0)
-  parser.add_option("-n", help='number of scale volumes (default 1)', \
-                    dest="scale_samples", default=1)
-  parser.add_option("--lth", help='live threshold. Must be less than zero \
-                    (default -30)', dest="live_th", default=-30)
-  parser.add_option("--sth", help='seed threshold. Must be less than zero \
-                    (defaut -30)', dest="seed_th", default=-30)
-  parser.add_option("--minI", help='min intensity for feature (default -1000)',
-                    dest="min_intensity", default=-1000)
-  parser.add_option("--maxI", help='max intensity for feature (default -500)',
-                    dest="max_intensity", default=-500)
+    parser = ArgumentParser()
+    parser.add_argument("--ict", help='Input CT scan', dest="ict")
+    parser.add_argument("--ilm", help='Input mask for seeding', 
+      dest="ilm")
+    parser.add_argument("--op", help='Output particles (vtk format)', \
+      dest="op")
+    parser.add_argument("--tmp", help='Temp directory in which to store \
+      intermediate files', dest="tmp", default=None)
+    parser.add_argument("--scale", help='The scale of the fissure to consider \
+      in scale space.', dest="scale", default=0.9)
+    parser.add_argument("--rate", help='Down sampling rate. Must be greater than \
+      or equal to 1.0 (default 1.0)', dest="rate", default=1.0)
+    parser.add_argument("--lth", help='Threshold to use when pruning particles \
+      during population control. Must be less than zero', 
+      dest="lth", default=-15)
+    parser.add_argument("--sth", help='Threshold to use when initializing \
+      particles. Must be less than zero', dest="sth", default=-45)
+    parser.add_argument("--min_int", help='Histogram equilization will be applied \
+      to enhance the fissure features within the range [min_int, max_int]', 
+      dest="min_int", default=-920)
+    parser.add_argument("--max_int", help='Histogram equilization will be applied \
+      to enhance the fissure features within the range [min_int, max_int]', 
+      dest="max_int", default=-400)
+    parser.add_argument("--iters", help='Number of algorithm iterations \
+      (default 100)', dest="iters", default=100) 
+    parser.add_argument("--per_voxel_init", help='Inititalize seeding one particle \
+        per voxel in the input seeding mask', dest="per_voxel_init",action='store_true')   
+    parser.add_argument("--perm", help='Allow mask and CT volumes to have \
+      different shapes or meta data', dest="perm", action='store_true')          
 
-  (op, args) = parser.parse_args()
+    op = parser.parse_args()
+    
+    if op.tmp is not None:
+        tmp = op.tmp
+    else:        
+        tmp = tempfile.mkdtemp()
 
-  #Max scale has to be an integer for multi-scale particles
-  if int(op.scale_samples) > 1:
-    max_scale = round(float(op.max_scale))
-  else:
-    max_scale = float(op.max_scale)
+    if op.per_voxel_init:
+       init_mode="PerVoxel"
+    else:
+       init_mode="Random"
 
-  dp = FissureParticles(op.input_ct, op.output_particles, op.tmp_dir, 
-                        op.input_mask,max_scale, float(op.live_th),
-                        float(op.seed_th), int(op.scale_samples),
-                        float(op.down_sample_rate),
-                        float(op.min_intensity), float(op.max_intensity))
-  dp.execute()
-
+    dp = FissureParticles(op.ict, op.op, tmp, op.ilm, float(op.scale), 
+        float(op.lth), float(op.sth), float(op.rate), float(op.min_int), 
+        float(op.max_int), int(op.iters), init_mode, op.perm)
+    dp.execute()
+    
+    if op.tmp is None:
+        shutil.rmtree(tmp)

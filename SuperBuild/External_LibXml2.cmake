@@ -10,12 +10,12 @@ set(${proj}_DEPENDENCIES "")
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj}_DEPENDENCIES)
 
-if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
-  unset(LibXml2_DIR CACHE)
-  find_package(LIBXML2 REQUIRED)
-  set(LIBXML2_INCLUDE_DIR ${LIBXML2_INCLUDE_DIRS})
-  set(LIBXML2_LIBRARIES ${LIBXML2_LIBRARIES})
-endif()
+#if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
+#  unset(LibXml2_DIR CACHE)
+#  find_package(LIBXML2 REQUIRED)
+#  set(LIBXML2_INCLUDE_DIR ${LIBXML2_INCLUDE_DIRS})
+#  set(LIBXML2_LIBRARIES ${LIBXML2_LIBRARIES})
+#endif()
 
 # Sanity checks
 if(DEFINED LibXml2_DIR AND NOT EXISTS ${LibXml2_DIR})

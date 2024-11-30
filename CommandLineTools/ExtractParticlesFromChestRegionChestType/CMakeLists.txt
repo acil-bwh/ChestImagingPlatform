@@ -16,14 +16,14 @@ cipMacroBuildCLI(
     SRCS ${MODULE_SRCS}
     )
 
-SET (TEST_NAME ${MODULE_NAME}_Test_airway_particles)
+SET (TEST_NAME ${MODULE_NAME}_Test_vessel_particles)
 CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP}Test>
     --compareVTKPolyData 
       ${BASELINE_DATA_DIR}/${TEST_NAME}.vtk
       ${OUTPUT_DATA_DIR}/${TEST_NAME}.vtk
     ModuleEntryPoint
-      -i ${INPUT_DATA_DIR}/airway_particles.vtk
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}.vtk
-      -r 0
-      -t 2
+      --ip ${INPUT_DATA_DIR}/vessel_particles.vtk
+      --op ${OUTPUT_DATA_DIR}/${TEST_NAME}.vtk
+      --cipr UndefinedRegion
+      --cipt Vessel
 )

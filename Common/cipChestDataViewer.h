@@ -86,6 +86,7 @@ public:
 
   vtkSmartPointer< vtkActor > SetAirwayParticlesAsDiscs( vtkPolyData*, double, std::string );
   vtkSmartPointer< vtkActor > SetVesselParticlesAsDiscs( vtkPolyData*, double, std::string );
+  vtkSmartPointer< vtkActor > SetFissureParticlesAsDiscs( vtkPolyData*, double, std::string );
   vtkSmartPointer< vtkActor > SetParticlesAsDiscs( vtkPolyData*, double, std::string, unsigned char, bool );
 
   vtkSmartPointer< vtkActor > SetPolyData( vtkPolyData*, std::string );

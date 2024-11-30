@@ -1,11 +1,10 @@
 import numpy as np
 from scipy.stats import mode, kurtosis, skew
 from optparse import OptionParser
-import nrrd
-from cip_python.phenotypes.phenotypes import Phenotypes
-from cip_python.utils.region_type_parser import RegionTypeParser
-from cip_python.ChestConventions import ChestConventions
-import pdb
+from cip_python.input_output import ImageReaderWriter
+from cip_python.phenotypes import Phenotypes
+from cip_python.common import ChestConventions
+from cip_python.utils import RegionTypeParser
 
 class BodyCompositionPhenotypes(Phenotypes):
     """General purpose class for generating body composition-based phenotypes.
@@ -74,16 +73,10 @@ class BodyCompositionPhenotypes(Phenotypes):
             if len(np.shape(chest_regions)) != 1:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
-            print(chest_regions)
-            print(type(chest_regions))
-            print(np.max(chest_regions))
-            print(np.min(chest_regions))
             if np.max(chest_regions) > 255 or np.min(chest_regions) < 0:
                 raise ValueError(\
                 'chest_regions must be a 1D array with elements in [0, 255]')
         if chest_types is not None:
-            print(chest_types)
-            print(type(chest_types))
             if len(np.shape(chest_types)) != 1:
                 raise ValueError(\
                 'chest_types must be a 1D array with elements in [0, 255]')
@@ -223,13 +216,11 @@ class BodyCompositionPhenotypes(Phenotypes):
             Dataframe containing info about machine, run time, and chest region
             chest type phenotype quantities.         
         """
-
-        print("Executing new\n");
         assert len(ct.shape) == len(lm.shape), \
             "CT and label map are not the same dimension"    
 
         dim = len(ct.shape)
-        for i in xrange(0, dim):
+        for i in range(0, dim):
             assert ct.shape[0] == lm.shape[0], \
                 "Disagreement in CT and label map dimension"
 
@@ -292,11 +283,11 @@ class BodyCompositionPhenotypes(Phenotypes):
                         if 'lean' in n:
                             self.add_pheno_group(ct, lean_mask,
                                 c.GetChestWildCardName(),
-                                c.GetChestTypeName(r), n)
+                                c.GetChestTypeName(t), n)
                         else:
                             self.add_pheno_group(ct, mask,
                                 c.GetChestWildCardName(),
-                                c.GetChestTypeName(r), n)
+                                c.GetChestTypeName(t), n)
         if ps is not None:
             for p in ps:            
                 if not (p[0] == 0 and p[1] == 0):
@@ -404,14 +395,16 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
 
-    
-    lm, lm_header = nrrd.read(options.in_lm)
-    ct, ct_header = nrrd.read(options.in_ct)
+    image_io = ImageReaderWriter()
 
-    spacing = np.zeros(3)
-    spacing[0] = ct_header['space directions'][0][0]
-    spacing[1] = ct_header['space directions'][1][1]
-    spacing[2] = ct_header['space directions'][2][2]
+    lm, lm_header = image_io.read_in_numpy(options.in_lm)
+    ct, ct_header = image_io.read_in_numpy(options.in_ct)
+
+    # spacing = np.zeros(3)
+    # spacing[0] = ct_header['space directions'][0][0]
+    # spacing[1] = ct_header['space directions'][1][1]
+    # spacing[2] = ct_header['space directions'][2][2]
+    spacing = lm_header['spacing']
 
     pheno_names = None
     if options.pheno_names is not None:

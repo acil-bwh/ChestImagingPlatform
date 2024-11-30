@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Processing</category>
+  <title>Extract Fissures from Lobes</title>
+  <description><![CDATA[Label fissures from a lobe segmentantion following the CIP Chest conventions. The output labelmap contains the input labelmap with the fissure information encoded as a chest type.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/processing</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>inputLabelMap</name>
+      <label>Input labelmap Filename</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>ilm</longflag>
+      <description><![CDATA[Input CT file name]]></description>
+      <default>NA</default>
+    </image>
+
+    <image>
+      <name>outputLabelMap</name>
+      <label>Output labelmap File</label>
+      <flag>o</flag>
+      <longflag>--olm</longflag>
+      <channel>output</channel>
+      <description><![CDATA[Output CT file name]]></description>
+      <default>NA</default>
+    </image>
+
+  </parameters>
+</executable>

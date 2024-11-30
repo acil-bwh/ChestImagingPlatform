@@ -5,6 +5,7 @@
   <description><![CDATA[Segment a CT image into lung regions with an approximate aiway segmentation.]]>
   </description>
   <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/segmentation</documentation-url>
   <license>Slicer</license>
   <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
   <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
@@ -42,15 +43,6 @@ and does not necessarily represent the official views of the National Institutes
 can be supplied to assist the segmentation for difficult cases.]]></description>
       <default>NA</default>
     </image>  
-
-    <string>
-      <name>ctDir</name>
-      <label>CT directory name</label>
-      <channel>input</channel>
-      <longflag>dir</longflag>
-      <description><![CDATA[Directory containing DICOM images to segment.]]></description>
-      <default>NA</default>
-    </string>  
   </parameters>
 
   <parameters advanced="true">
@@ -95,7 +87,9 @@ Everything above the clip value will be assigned the replacement value.</descrip
     <integer>
       <name>lungSplitRadius</name>
       <longflag>lsr</longflag>
-      <description>Radius used to split the left and right lungs.</description>
+      <description>Radius used to split the left and right lungs. Large values lead \
+to more aggressive splitting, and may slightly degrade the segmentation quality around \
+the splitting region.</description>
       <label>Lung split radius</label>
       <default>1</default>
     </integer>
@@ -116,14 +110,13 @@ Everything above the clip value will be assigned the replacement value.</descrip
       <default>-800</default>
     </integer>
     
-    <integer>
-      <name>leftRightLungSplitRadius</name>
-      <longflag>radius</longflag>
-      <description>Radius used for left-right lung splitting. Larger values lead to more aggressive \
-      splitting, but may slightly degrade the quality of the seqmentation in the splitting region</description>
-      <label>Left-right lung split radius</label>
-      <default>1</default>
-    </integer>
+    <float>
+      <name>maxAirwayVolume</name>
+      <longflag>av</longflag>
+      <description>The maximum total volume of the airway tree segmentation in mm^3</description>
+      <label>Maximum airway volume</label>
+      <default>30000</default>
+    </float>
 
     <boolean>
       <name>feetFirst</name>

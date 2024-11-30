@@ -23,11 +23,11 @@ CIP_ADD_TEST(NAME ${TEST_NAME} COMMAND ${SEM_LAUNCH_COMMAND} $<TARGET_FILE:${CLP
       ${BASELINE_DATA_DIR}/${TEST_NAME}_airway_particles.nrrd
       ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.nrrd
     ModuleEntryPoint
-      -p ${INPUT_DATA_DIR}/airway_particles.vtk
-      -l ${INPUT_DATA_DIR}/airway.nrrd
-      -o ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.nrrd
+      --ip ${INPUT_DATA_DIR}/airway_particles.vtk
+      --ilm ${INPUT_DATA_DIR}/airway.nrrd
+      --olm ${OUTPUT_DATA_DIR}/${TEST_NAME}_airway_particles.nrrd
       -c
       -a
       --height 0.9
-      -r 2
+      --radius 2
 )

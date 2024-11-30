@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Chest Imaging Platform.Toolkit.Quantification</category>
+  <title>GenerateModel</title>
+    <description><![CDATA[This program extract the airway wall and computes multiple airway wall metrics from an airway image array  using multiple approaches. The output is csv files with the metrics for each image slice along the z-axis.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://chestimagingplatform.org/quantification</documentation-url>
+  <license>Slicer</license>
+  <contributor> Applied Chest Imaging Laboratory, Brigham and Women's Hospital</contributor>
+  <acknowledgements>This work is funded by the National Heart, Lung, And Blood Institute of the National \
+Institutes of Health under Award Number R01HL116931. The content is solely the responsibility of the authors \
+and does not necessarily represent the official views of the National Institutes of Health.
+  </acknowledgements>
+
+  <parameters>
+  <label>IO</label>
+  <description>Input/Output</description>
+    <image type="scalar">
+      <name>inImage</name>
+      <label>Input airway reslice image file name</label>
+      <channel>input</channel>
+      <flag>i</flag>
+      <longflag>input</longflag>
+      <description><![CDATA[Input airway image file name]]></description>
+      <default>NA</default>
+    </image>
+
+    <file>
+      <name>outMetricsCSV</name>
+      <label>Output airway metrics</label>
+      <channel>output</channel>
+      <flag>o</flag>
+      <longflag>output</longflag>
+      <description><![CDATA[Output csv file name]]></description>
+      <default>NA</default>
+    </file>
+  
+  </parameters>
+  
+  <parameters>
+  <label>Parameters</label>
+  <description>Parameters</description>
+    
+  <string-enumeration>
+    <name>method</name>
+    <label>Wall extraction method</label>
+    <description><![CDATA[Method used for the wall computation. \
+             FWHM   - Full Width at a Half Maximum \
+             ZC - Zero Crossing of the second order derivative \
+             PC - Phase Congruency Phase congruency is the recommended one.]]></description>
+    <flag>m</flag>
+    <element>FWHM</element>
+    <element>ZC</element>
+    <element>PC</element>
+    <default>PC</default>
+  </string-enumeration>
+    
+  <integer>
+    <name>numberOfRays</name>
+    <label>Number of rays</label>
+    <description>Number of rays to cast from the airway lumen center to compute the airway wall</description>
+    <flag>n</flag>
+    <longflag>numberOfRays</longflag>
+    <constraints>
+      <minimum>3</minimum>
+      <maximum>128</maximum>
+      <step>1</step>
+    </constraints>
+    <default>30</default>
+  </integer>
+    
+  <integer>
+    <name>wallThreshold</name>
+    <label>Wall contrast threshold</label>
+    <description>Wall constrast threshold at the candidate edge point to qualify (positive value).</description>
+    <longflag>wth</longflag>
+    <constraints>
+      <minimum>50</minimum>
+      <maximum>500</maximum>
+      <step>1</step>
+    </constraints>
+    <default>150</default>
+  </integer>
+    
+  <double>
+    <name>gradientThreshold</name>
+    <label>Gradient threshold</label>
+    <description>Gradient threshold at the candidate edge point to qualify.</description>
+    <longflag>gth</longflag>
+    <constraints>
+      <minimum>0</minimum>
+      <maximum>300</maximum>
+      <step>1</step>
+    </constraints>
+    <default>100</default>
+  </double>
+
+  <double>
+    <name>pcThreshold</name>
+    <label>Phase congruency threshold</label>
+    <description>Phase congruency value threshold at the candidate edge point to qualify.</description>
+    <longflag>pcth</longflag>
+    <constraints>
+      <minimum>0.3</minimum>
+      <maximum>1</maximum>
+      <step>0.05</step>
+    </constraints>
+    <default>0.6</default>
+  </double>
+  
+  <double>
+      <name>stdFactor</name>
+      <label>Std Factor</label>
+      <description>Factor of the std that will be allowed. This factor can be used to reject wall detections that are outlier. Reducing the factor will less variance arond the mean value.</description>
+      <longflag>stdFactor</longflag>
+      <constraints>
+          <minimum>0.1</minimum>
+          <maximum>5</maximum>
+          <step>0.1</step>
+      </constraints>
+      <default>2</default>
+  </double>
+  
+  <boolean>
+    <name>largeAirways</name>
+    <label>Large airways mode</label>
+    <longflag>largeAirways</longflag>
+    <description>Adjust parameters to measure large airways (main bronchi and trachea).</description>
+    <default>false</default>
+  </boolean>
+    
+  <boolean>
+    <name>saveAirwayImages</name>
+    <label>Save airway images</label>
+    <longflag>save</longflag>
+    <description>Save airway images (one per particle) for quality control purposes.</description>
+    <default>false</default>
+  </boolean>
+    
+  <directory>
+    <name>outputDirectory</name>
+    <channel>output</channel>
+    <label>Output directory</label>
+    <channel>input</channel>
+    <longflag>saveDir</longflag>
+    <description>Directory to save airway images</description>
+  </directory>
+    
+  <string>
+    <name>saveAirwayPrefix</name>
+    <label>Airway file prefix</label>
+    <longflag>airwayPrefix</longflag>
+    <description>Prefix for airway image file.</description>
+    <default>airwaySlice</default>
+  </string>
+    
+  </parameters>
+</executable>

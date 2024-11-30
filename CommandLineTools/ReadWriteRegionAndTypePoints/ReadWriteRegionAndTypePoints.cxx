@@ -3,34 +3,6 @@
 *  \details: This program takes as input a file of region and type points. If
 *  the input file is a CSV file, it is converted to a vtk type. If the input
 *  file is a vtk type, it is transformed to a CSV type
-*
-*  USAGE:
-*
-*  ReadWriteRegionAndTypePoints   -i <string> -o <string> [--] [--version][-h]
-*
-*  Where:
-*
-*  -i <string>,  --input <string>
-*    (required)  Input file name
-*
-*  -o <string>,  --output <string>
-*    (required)  Output imge file name
-*
-*  --,  --ignore_rest
-*    Ignores the rest of the labeled arguments following this flag.
-*
-*  --version
-*    Displays version information and exits.
-*
-*  -h,  --help
-*    Displays usage information and exits.
-*
-*  Known bugs: The readers for both file types do not output an error when the files do not exist
-*
-*  $Date: 2013-04-01 16:23:05 -0400 (Mon, 01 Apr 2013) $
-*  $Revision: 397 $
-*  $Author: jross $
-*
 */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -47,109 +19,101 @@
 #include "vtkDoubleArray.h"
 #include "vtkPointData.h"
 #include "vtkFloatArray.h"
+#include "cipHelper.h"
 #include "ReadWriteRegionAndTypePointsCLP.h"
 
 namespace
 {
-    //
-    // Function that converts a vtk file to a csv file given the filenames as inputs
-    //
-    bool ReadVTKWriteCSV(std::string vtkFileName, std::string csvFileName)
-    {
-        cip::ChestConventions conventions;
+  // Function that converts a vtk file to a csv file given the filenames as inputs
+  bool ReadVTKWriteCSV(std::string vtkFileName, std::string csvFileName)
+  {
+    cip::ChestConventions conventions;
+    
+    std::cout << "Reading polydata..." << std::endl;
+    vtkSmartPointer< vtkPolyDataReader > reader = vtkPolyDataReader::New();
+      reader->SetFileName( vtkFileName.c_str() );
+      reader->Update();
 
-        std::cout << "Reading polydata..." << std::endl;
-        vtkSmartPointer< vtkPolyDataReader > reader = vtkPolyDataReader::New();
-        reader->SetFileName( vtkFileName.c_str() );
-        reader->Update();
+    cip::AssertChestRegionChestTypeArrayExistence( reader->GetOutput() );
+    
+    std::ofstream file( csvFileName.c_str() );
+    double* point = new double[3];
+    
+    file << "Region,Type,X Location,Y Location,Z Location" << std::endl;
+    for( unsigned int i=0; i<reader->GetOutput()->GetNumberOfPoints(); i++ )
+      {
+	reader->GetOutput()->GetPoint( i, point );
+	
+	unsigned short chestRegionChestTypeValue =
+	  (unsigned short)(reader->GetOutput()->GetPointData()->GetArray( "ChestRegionChestType" )->GetTuple( i )[0]);
+	
+	file << conventions.GetChestRegionNameFromValue( chestRegionChestTypeValue ) << ",";
+	file << conventions.GetChestTypeNameFromValue( chestRegionChestTypeValue ) << ",";
+	file << point[0] << "," << point[1] << "," << point[2] << std::endl;
+      }    
+    file.close();
+    
+    return true;
+  }
+  
+  // Function that converts a csv file to a vtk file given the filenames as inputs
+  bool ReadCSVWriteVTK( std::string csvFileName, std::string vtkFileName )
+  {
+    cip::ChestConventions conventions;
 
-        std::ofstream file( csvFileName.c_str() );
-        double* point = new double[3];
+    std::cout << "Reading CSV file..." << std::endl;
+    cipChestRegionChestTypeLocationsIO regionTypePointsIO;
+      regionTypePointsIO.SetFileName( csvFileName );
+      regionTypePointsIO.Read();
+    
+    vtkSmartPointer< vtkDoubleArray > pointArray = vtkSmartPointer< vtkDoubleArray >::New();
+      pointArray->SetNumberOfComponents( 3 );
+    
+    vtkSmartPointer< vtkPolyData > polyData = vtkSmartPointer< vtkPolyData >::New();
+    vtkSmartPointer< vtkPoints >   points   = vtkSmartPointer< vtkPoints >::New();
+    
+    vtkSmartPointer< vtkFloatArray > chestRegionChestTypeArray = vtkSmartPointer< vtkFloatArray >::New();
+      chestRegionChestTypeArray->SetNumberOfComponents( 1 );
+      chestRegionChestTypeArray->SetName( "ChestRegionChestType" );
+    
+    // Get the location for each point
+    for ( unsigned int i=0; i<regionTypePointsIO.GetOutput()->GetNumberOfTuples(); i++ )
+      {
+	cip::PointType pointLocation(3);	
+	regionTypePointsIO.GetOutput()->GetLocation( i, pointLocation );
+	
+	double* vtkPoint = new double[3];
+          vtkPoint[0] = pointLocation[0];
+	  vtkPoint[1] = pointLocation[1];
+	  vtkPoint[2] = pointLocation[2];
+	
+	unsigned char cipRegion = regionTypePointsIO.GetOutput()->GetChestRegionValue( i );
+	unsigned char cipType   = regionTypePointsIO.GetOutput()->GetChestTypeValue( i );
+	float chestRegionChestTypeValue = conventions.GetValueFromChestRegionAndType( cipRegion, cipType );
 
-        file << "Region,Type,X Location,Y Location,Z Location" << std::endl;
-        for( unsigned int i=0; i<reader->GetOutput()->GetNumberOfPoints(); i++ )
-        {
-            reader->GetOutput()->GetPoint( i, point );
-
-            unsigned char cipRegion =
-            (unsigned char)(reader->GetOutput()->GetPointData()->GetArray( "ChestRegion" )->GetTuple( i )[0]);
-            unsigned char cipType =
-            (unsigned char)(reader->GetOutput()->GetPointData()->GetArray( "ChestType" )->GetTuple( i )[0]);
-
-            file << conventions.GetChestRegionNameFromValue( cipRegion ) << ",";
-            file << conventions.GetChestTypeNameFromValue( cipType ) << ",";
-            file << point[0] << "," << point[1] << "," << point[2] << std::endl;
-        }
-
-        file.close();
-
-        return true;
-    }
-
-    //
-    // Function that converts a csv file to a vtk file given the filenames as inputs
-    //
-    bool ReadCSVWriteVTK( std::string csvFileName, std::string vtkFileName )
-    {
-        std::cout << "Reading CSV file..." << std::endl;
-        cipChestRegionChestTypeLocationsIO regionTypePointsIO;
-        regionTypePointsIO.SetFileName( csvFileName );
-        regionTypePointsIO.Read();
-
-        vtkSmartPointer< vtkDoubleArray > pointArray = vtkSmartPointer< vtkDoubleArray >::New();
-        pointArray->SetNumberOfComponents( 3 );
-
-        vtkSmartPointer< vtkPolyData > polyData = vtkSmartPointer< vtkPolyData >::New();
-        vtkSmartPointer< vtkPoints >   points   = vtkSmartPointer< vtkPoints >::New();
-
-        vtkSmartPointer< vtkFloatArray > cipRegionArray = vtkSmartPointer< vtkFloatArray >::New();
-        cipRegionArray->SetNumberOfComponents( 1 );
-        cipRegionArray->SetName( "ChestRegion" );
-
-        vtkSmartPointer< vtkFloatArray > cipTypeArray = vtkSmartPointer< vtkFloatArray >::New();
-        cipTypeArray->SetNumberOfComponents( 1 );
-        cipTypeArray->SetName( "ChestType" );
-
-        // Get the location for each point
-        for ( unsigned int i=0; i<regionTypePointsIO.GetOutput()->GetNumberOfTuples(); i++ )
-        {
-	  cip::PointType pointLocation(3);
-
-	  regionTypePointsIO.GetOutput()->GetLocation( i, pointLocation );
-	  
-	  double* vtkPoint = new double[3];
-	    vtkPoint[0] = pointLocation[0];
-	    vtkPoint[1] = pointLocation[1];
-	    vtkPoint[2] = pointLocation[2];
-
-	  float cipRegion = float( regionTypePointsIO.GetOutput()->GetChestRegionValue( i ) );
-	  float cipType   = float( regionTypePointsIO.GetOutput()->GetChestTypeValue( i ) );
-	  
-	  cipTypeArray->InsertTuple( i, &cipType );
-	  cipRegionArray->InsertTuple( i, &cipRegion );
-	  pointArray->InsertTuple( i, vtkPoint );
-        }
-
-        points->SetData( pointArray );
-
-        polyData->SetPoints( points );
-        polyData->GetPointData()->AddArray( cipRegionArray );
-        polyData->GetPointData()->AddArray( cipTypeArray );
-
-        std::cout << "Writing poly data..." << std::endl;
-        vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
-        writer->SetFileName( vtkFileName.c_str() );
-        writer->SetInputData( polyData );
-        writer->SetFileTypeToBinary();
-        writer->Write();
-
-        return true;
-    }
+	chestRegionChestTypeArray->InsertTuple( i, &chestRegionChestTypeValue );
+	pointArray->InsertTuple( i, vtkPoint );
+      }
+    
+    points->SetData( pointArray );
+    
+    polyData->SetPoints( points );
+    polyData->GetPointData()->AddArray( chestRegionChestTypeArray );
+    
+    std::cout << "Writing poly data..." << std::endl;
+    vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New();
+      writer->SetFileName( vtkFileName.c_str() );
+      writer->SetInputData( polyData );
+      writer->SetFileTypeToBinary();
+      writer->Write();
+    
+    return true;
+  }
 }
 int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
-
+  
   std::string inputExtension  = "NA";
   std::string outputExtension = "NA";
   
@@ -189,7 +153,7 @@ int main( int argc, char *argv[] )
       std::cerr << "Input file format must be .vtk or .csv" << std::endl;
       exit(1);
     }
-
+  
   if ( readWriteSuccess )
     {
       std::cout << "DONE." << std::endl;

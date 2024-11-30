@@ -21,38 +21,47 @@ and does not necessarily represent the official views of the National Institutes
   <parameters>
     <label>IO</label>
     <description>Input/output parameters</description>
+    <string>
+      <name>lungLobeLabelMapFileName</name>
+      <label>Lung lobe segmentation label map</label>
+      <channel>input</channel>
+      <longflag>lm</longflag>
+      <description><![CDATA[Lung lobe label map. If specified, surface points along the right oblique, left oblique, and right horizontal boundaries will be extracted from the label map, and they will be used to define the thin plate surfaces that will be used to classify the fissure particles.]]></description>
+      <default>NA</default>
+    </string>
+    
     <geometry type="model">
       <name>particlesFileName</name>
       <label>Particles file name</label>
       <channel>input</channel>
-      <longflag>ip</longflag>
+      <longflag>ifp</longflag>
       <description><![CDATA[Particles file name]]></description>
     </geometry>
 
-    <string>
+    <file fileExtensions=".csv">
       <name>leftShapeModelFileName</name>
-      <longflag>lm</longflag>
+      <longflag>ilsm</longflag>
       <label>Left lung shape model file name</label>
       <channel>input</channel>
       <default>NA</default>
       <description><![CDATA[Left lung shape model file name]]></description>
-    </string>
+    </file>
 
-    <string>
+    <file fileExtensions=".csv">
       <name>rightShapeModelFileName</name>
       <label>Right lung shape model file name</label>
       <channel>input</channel>
-      <longflag>rm</longflag>
+      <longflag>irsm</longflag>
       <default>NA</default>
       <description><![CDATA[Right lung shape model file name]]></description>
-    </string>
+    </file>
 
     <geometry type="model">
       <name>loClassifiedFileName</name>
       <label>Left oblique classified particles file name</label>
       <channel>output</channel>
       <default>NA</default>
-      <longflag>loClassified</longflag>
+      <longflag>olo</longflag>
       <description><![CDATA[Left oblique classified particles file name]]></description>
     </geometry>
 
@@ -61,7 +70,7 @@ and does not necessarily represent the official views of the National Institutes
       <label>Right oblique classified particles file name</label>
       <channel>output</channel>
       <default>NA</default>
-      <longflag>roClassified</longflag>
+      <longflag>oro</longflag>
       <description><![CDATA[Right oblique classified particles file name]]></description>
     </geometry>
 
@@ -70,7 +79,7 @@ and does not necessarily represent the official views of the National Institutes
       <label>Right horizontal classified particles file name</label>
       <channel>output</channel>
       <default>NA</default>
-      <longflag>rhClassified</longflag>
+      <longflag>orh</longflag>
       <description><![CDATA[Right horizontal classified particles file name]]></description>
     </geometry>
   </parameters>
@@ -97,12 +106,20 @@ and does not necessarily represent the official views of the National Institutes
     </double>
 
     <double>
-      <name>threshold</name>
+      <name>fischerThreshold</name>
       <flag>t</flag>
-      <longflag>thresh</longflag>
+      <longflag>fischer_thresh</longflag>
       <description>Threshold for Fischer discriminant based classification</description>
       <label>Threshold</label>
       <default>-30.0</default>
+    </double>
+
+    <double>
+      <name>distanceThreshold</name>
+      <longflag>dist_thresh</longflag>
+      <description>Optional. A particle will be classified as fissure if the Fischer linear discrimant classifier classifies it as such and if it is within this distance to the lobe surface model.</description>
+      <label>Distance Threshold</label>
+      <default>1000</default>
     </double>
   </parameters>
 </executable>
