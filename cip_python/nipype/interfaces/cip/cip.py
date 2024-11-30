@@ -2654,6 +2654,7 @@ class GenerateStenciledLabelMapFromParticlesInputSpec(CommandLineInputSpec):
     cylinder = traits.Bool(desc='Set this flag to indicate that the cylinder stencil should be used.', argstr='--cylinder ')
     scale = traits.Bool(desc='Setting this flag will cause the stencil pattern to be scaled according to particle \nscale. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \nequations relating particle scale and CT point spread function sigma (set using the -ctSigma flag).', argstr='--scale ')
     dnn_radius = traits.Bool(desc='Setting this flag will cause the stencil pattern to be scaled according to particle \ndnn radius. If set, any radius value specified using the -r flag will be ignored. Scaling will be performed using predetermined \nequations relating particle dnn_radius and CT point spread function sigma (set using the -ctSigma flag).', argstr='--dnn_radius ')
+    dnn_radius_name = traits.Str(desc='Name of the particles array containing dnn radius information. If not specified, \nno information will be used for generating the stencil.', argstr='--dnn_radius_name "%s"')
 
 
 class GenerateStenciledLabelMapFromParticlesOutputSpec(TraitedSpec):
