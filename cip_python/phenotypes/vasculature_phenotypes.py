@@ -20,16 +20,16 @@ class VasculaturePhenotypes(Phenotypes):
       
       The user can specify chest regions, chest types and region-type pairs over 
       which to compute the phenotypes. The following phenotypes are computed:
-      'BV5'
-      'BV5_B10'
-      'BV10_15'
-      'BV15_20'
-      'BV20_25'
-      'BV25_30'
-      'BV30_35'
-      'BV35_40'
-      'BV40_45'
-      'TBV'
+      'BV5': Vascular volume of vessels less than 5 mm^2 in cross sectional area
+      'BV5_B10': Vascular volume of lung vessels between 5 mm^2 and 10 mm^2
+      'BV10_15': Vascular volume of lung vessels between 10 mm^2 and 15 mm^2
+      'BV15_20': Vascular volume of lung vessels between 15 mm^2 and 20 mm^2
+      'BV20_25': Vascular volume of lung vessels between 20 mm^2 and 25 mm^2
+      'BV25_30': Vascular volume of lung vessels between 25 mm^2 and 30 mm^2
+      'BV30_35': Vascular volume of lung vessels between 30 mm^2 and 35 mm^2
+      'BV35_40': Vascular volume of lung vessels between 35 mm^2 and 40 mm^2
+      'BV40_45': Vascular volume of lung vessels between 40 mm^2 and 45 mm^2
+      'TBV': Total vascular volume of lung vessels
       
     """
     def __init__(self,chest_regions=None,chest_types=None, pairs=None,plot=False):
