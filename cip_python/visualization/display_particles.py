@@ -8,8 +8,8 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 class DisplayParticles:
     def __init__(self, file_list,spacing_list,feature_type_list,irad = 1.2, h_th_list=[],
-                 glyph_type='sphere', glyph_scale_factor=1,max_rad=6.0,use_field_data=True, opacity_list=[],
-                 color_list=[], lut_list=[], lung=[]):
+                 glyph_type='sphere', glyph_scale_factor=1,max_rad=6.0,min_rad=0.5,use_field_data=True, opacity_list=[],
+                 color_list=[], lut_list=[], lung=[],smooth_glyphs=False):
       
         for feature_type in feature_type_list:
           print (feature_type)
@@ -32,6 +32,7 @@ class DisplayParticles:
         self.actor_list = list()
         self.glyph_list = list()
         self.glyph_type = glyph_type
+        self.smooth_glyphs  = smooth_glyphs
         self.file_list = file_list
         self.spacing_list = spacing_list
         self.opacity_list = opacity_list
@@ -42,6 +43,7 @@ class DisplayParticles:
         self.lung = lung
         self.use_field_data = use_field_data
         self.feature_type_list = feature_type_list
+        self.units="%%"
         self.normal_map=dict()
         self.normal_map['ridge_line'] = "hevec0"
         self.normal_map['valley_line'] = "hevec2"
@@ -57,6 +59,8 @@ class DisplayParticles:
         
         self.glyph_output = None
         
+        self.clip_radius = True
+        
         self.coordinate_system = "LPS"
         
         self.lung_opacity = 0.3
@@ -68,8 +72,7 @@ class DisplayParticles:
             self.height = 1.0
             self.radius = irad
   
-        self.min_rad = 0.5
-        self.min_rad = 0.5
+        self.min_rad = min_rad
         self.max_rad = max_rad
         self.glyph_scale_factor = glyph_scale_factor
 
@@ -169,6 +172,11 @@ class DisplayParticles:
             if rad < spacing/2.0:
                 print ("Setting point to zero "+str(kk))
                 rad=0
+            
+            if self.clip_radius is True:
+                if rad < self.min_rad or rad>self.max_rad:
+                    rad=0
+
             radiusA.SetValue(kk,rad)
 
         poly.GetPointData().SetScalars(radiusA)
@@ -186,7 +194,7 @@ class DisplayParticles:
             glyph.SetRadius(self.radius)
             glyph.SetCenter(0,0,0)
             glyph.SetResolution(10)
-            glyph.CappingOn()
+            glyph.CappingOff()
 
         tt = vtk.vtkTransform()
         tt.RotateZ(90)
@@ -214,7 +222,41 @@ class DisplayParticles:
         glypher.SetScaleFactor(self.glyph_scale_factor)
         glypher.Update()
 
-        return glypher
+        if self.smooth_glyphs is True:
+
+            # Step 3: Merge nearby points to ensure connectivity
+            clean_filter = vtk.vtkCleanPolyData()
+            clean_filter.ConvertPolysToLinesOff()
+            clean_filter.PointMergingOn()
+            clean_filter.ToleranceIsAbsoluteOn()
+            clean_filter.SetTolerance(self.irad/2.0)
+            clean_filter.SetInputConnection(glypher.GetOutputPort())
+            clean_filter.Update()
+
+            # Step 4: Smooth the mesh
+            smooth_filter = vtk.vtkSmoothPolyDataFilter()
+            smooth_filter.SetInputConnection(clean_filter.GetOutputPort())
+            smooth_filter.SetNumberOfIterations(50)
+            smooth_filter.SetRelaxationFactor(0.3)
+            smooth_filter.FeatureEdgeSmoothingOn()
+            smooth_filter.BoundarySmoothingOn()
+            smooth_filter.Update()
+
+            smooth_filter = vtk.vtkWindowedSincPolyDataFilter()
+            smooth_filter.SetInputConnection(clean_filter.GetOutputPort())
+            smooth_filter.SetNumberOfIterations(30)
+            smooth_filter.BoundarySmoothingOn()
+            smooth_filter.NonManifoldSmoothingOn()
+            smooth_filter.NormalizeCoordinatesOn()
+            smooth_filter.Update()
+
+            return smooth_filter
+
+
+        else:
+
+            return glypher
+
 
     def create_lut (self, lut_arr):
         lut = vtk.vtkLookupTable()
@@ -235,13 +277,15 @@ class DisplayParticles:
         if color_by_array_name is not None:
             glyph.GetOutput().GetPointData().SetScalars(glyph.GetOutput().GetPointData().GetArray(color_by_array_name))
             aa=glyph.GetOutput().GetPointData().GetArray(color_by_array_name)
-            range=aa.GetRange()
-            mapper.SetScalarRange(range[0],range[1])
+            range_val=aa.GetRange()
+            mapper.SetScalarRange(range_val[0],range_val[1])
+            mapper.SetScalarRange(18,35)
+
             if lut is not None:
               mapper.SetLookupTable(lut)
         else:
             mapper.SetScalarRange(self.min_rad,self.max_rad)
-        if len(color) > 0:
+        if len(color) == 3 :
             mapper.ScalarVisibilityOff()
         #mapper.SetScalarRange(self.min_rad,self.max_rad)
             #else:
@@ -249,7 +293,7 @@ class DisplayParticles:
         print (color) 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        if len(color) > 0 :
+        if len(color) == 3 :
             actor.GetProperty().SetColor(color)
         actor.GetProperty().SetOpacity(opacity)
         self.mapper_list.append(mapper)
@@ -261,13 +305,54 @@ class DisplayParticles:
 
         return actor
 
+    def set_camera(self):
+
+        #Get mean bounding box for all actors
+        actors = self.ren.GetActors()
+        actors.InitTraversal()
+
+        bounds_list = []
+        while True:
+            actor = actors.GetNextActor()
+            if not actor:
+                break
+            bounds = actor.GetBounds()  # Get bounds [xmin, xmax, ymin, ymax, zmin, zmax]
+            if bounds:
+                bounds_list.append(bounds)
+
+        if not bounds_list:
+            raise ValueError("No actors with bounds in the renderer.")
+
+        # Convert to numpy array for averaging
+        bounds_array = np.array(bounds_list)
+
+        # Compute the average bounding box
+        mean_bounds = bounds_array.mean(axis=0)
+
+        # Compute the mean center (midpoints of the averaged bounds)
+        mean_center = [
+            (mean_bounds[0] + mean_bounds[1]) / 2,  # Center X
+            (mean_bounds[2] + mean_bounds[3]) / 2,  # Center Y
+            (mean_bounds[4] + mean_bounds[5]) / 2,  # Center Z
+        ]
+
+        print("Setting camera")
+
+        print(mean_center)
+
+        #Set initial camera view 
+        camera=self.ren.GetActiveCamera()
+        camera.SetFocalPoint(mean_center[0], mean_center[1], mean_center[2])
+        camera.SetPosition(mean_center[0], mean_center[1] - 500, mean_center[2])
+        camera.SetViewUp(0,0,1)
+
     def add_color_bar(self):
         colorbar=vtk.vtkScalarBarActor()
         colorbar.SetMaximumNumberOfColors(400)
         colorbar.SetLookupTable(self.mapper_list[0].GetLookupTable())
         colorbar.SetWidth(0.09)
         colorbar.SetPosition(0.91,0.1)
-        colorbar.SetLabelFormat("%.3g mm")
+        colorbar.SetLabelFormat("%.3g {}".format(self.units))
         colorbar.VisibilityOn()
         
         if len(self.color_list) == 0:
@@ -296,8 +381,16 @@ class DisplayParticles:
         self.iren.AddObserver('KeyPressEvent', self.capture_window, -1.0)
 
         self.iren.Initialize()
+
+        #Set initial camera view 
+        self.set_camera()
+        
         self.renWin.Render()
+
+
         self.iren.Start()
+
+
                                 
     def execute(self):
         for kk,file_name in enumerate(self.file_list):
@@ -407,6 +500,19 @@ class DisplayParticles:
         ff.Modified()
         sf.Write()
         self.capture_count = 1+self.capture_count
+      if key == "c":
+        camera=self.ren.GetActiveCamera()
+
+        # Extract camera orientation details
+        camera_position = camera.GetPosition()
+        camera_focal_point = camera.GetFocalPoint()
+        camera_view_up = camera.GetViewUp()
+        # Print the camera orientation details
+        print("Camera Position:", camera_position)
+        print("Camera Focal Point:", camera_focal_point)
+        print("Camera View-Up Vector:", camera_view_up)
+
+
 
 
 if __name__ == "__main__":
@@ -423,6 +529,8 @@ if __name__ == "__main__":
     parser.add_argument("--hth", help='Threshold on particle strength', dest="hth", default=None)
     parser.add_argument("--maxrad", help='Maximum radius to display', dest="max_rad", \
                         default=6.0)
+    parser.add_argument("--minrad", help='Minimum  radius to display', dest="min_rad", \
+                          default=0.5)
     parser.add_argument("--color", help='RGB color', dest="color_list", default=None)
     parser.add_argument("--opacity", help='Opacity values', dest="opacity_list", \
                         default=None)
@@ -435,6 +543,8 @@ if __name__ == "__main__":
                         default=1)
     parser.add_argument("--colorBy", help='Array name to color by', dest="color_by", \
                         default=None)
+    parser.add_argument("--smooth", help='Enable glpyer smoothing to have a smoother transition between particles', dest="smooth_glyphs", \
+                        action="store_true", default=False)
     parser.add_argument("--ras", help='Set output for RAS', dest="ras_coordinate_system", \
                         default=False,action="store_true")
     parser.add_argument("--glyphOutput", help='Output vtk with glpyh poly data', dest='glyph_output', \
@@ -454,6 +564,9 @@ if __name__ == "__main__":
     translate_color['green'] = [0.1, 0.8, 0.1]
     translate_color['orange'] = [0.95, 0.5, 0.01]
     translate_color['blue'] = [0.1, 0.1, 0.9]
+    translate_color['gold'] = [0.94509,0.8392,0.56862]
+    translate_color['gray'] = [0.5,0.5,0.5]
+    translate_color['cba'] = [0]
 
     file_list = [i for i in str.split(options.file_name,',')]
     use_field_data = options.use_field_data
@@ -498,7 +611,7 @@ if __name__ == "__main__":
         radius_array_name_list = [str(i) for i in str.split(options.radius_array_name,',')]
 
     dv = DisplayParticles(file_list, spacing_list,feature_type_list,float(options.irad),hth_list, \
-        'cylinder', float(options.glyph_scale_factor),float(options.max_rad),use_field_data, opacity_list, color_list, lut_list,lung_filename)
+        'cylinder', float(options.glyph_scale_factor),float(options.max_rad),float(options.min_rad),use_field_data, opacity_list, color_list, lut_list,lung_filename,options.smooth_glyphs)
     if options.color_by is not None:
         dv.color_by_array_name=options.color_by
     if options.glyph_output is not None:
