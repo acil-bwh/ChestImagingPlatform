@@ -32,11 +32,13 @@ class VasculaturePhenotypes(Phenotypes):
       'TBV': Total vascular volume of lung vessels
       
     """
-    def __init__(self,chest_regions=None,chest_types=None, pairs=None,plot=False):
+    def __init__(self,chest_regions=None,chest_types=None, pairs=None,plot=False,legacy=False):
     
         self.min_csa = 0
         self.max_csa = 90
-        self.csa_th=np.arange(5,self.max_csa+0.001,5)
+        self.csa_th = np.arange(5,self.max_csa+0.001,5)
+        self.legacy = legacy
+        self.sum_operator = False  # If True compute volume and surface as sum of particles instead of using kernel density
         self._spacing = None
         self._sigma0 = 1/np.sqrt(2.)/2.
         #Sigma due to the limited pixel resolution (half of 1 pixel)
@@ -45,14 +47,14 @@ class VasculaturePhenotypes(Phenotypes):
         self._number_test_points=5000
         self.factor=0.16
         self.scale_radius_ratio_th = 3
-        self.filter_particles_with_scale_radius_ratio=None
-        self.old_interarticle_distance=None
+        self.filter_particles_with_scale_radius_ratio=False
+        self.old_interarticle_distance=False
         
         #Method to do KDE of prob(CSA)
         self.bw_method='scott'  #options are scott,botev,silverman or a value
         
         #Array name with radius data (optional)
-        self.rad_arrayname=None
+        self.rad_arrayname = None
 
         self.plot=plot
 
@@ -100,13 +102,33 @@ class VasculaturePhenotypes(Phenotypes):
         """
 
         cols=[]
-        cols.append('TBV')
-        th = self.csa_th[0]
-        cols.append('BV%d'%th)
-        for kk in range(len(self.csa_th)-1):
-          th = self.csa_th[kk]
-          th1 = self.csa_th[kk+1]
-          cols.append('BV%d_%d'%(th,th1))
+        if self.legacy:
+            cols.append('TBV')
+            th = self.csa_th[0]
+            cols.append('BV%d'%th)
+            for kk in range(len(self.csa_th)-1):
+                th = self.csa_th[kk]
+                th1 = self.csa_th[kk+1]
+                cols.append('BV%d_%d'%(th,th1))
+        else:
+            cols.append('TBV')
+            for th in range(1,11):
+                cols.append('BV%d'%th)
+
+            for kk in range(len(self.csa_th)-1):
+                th = self.csa_th[kk]
+                th1 = self.csa_th[kk+1]
+                cols.append('BV%d_%d'%(th,th1))
+
+            cols.append('TBS')
+            for th in range(1,11):
+                cols.append('BS%d'%th)
+
+            for kk in range(len(self.csa_th)-1):
+                th = self.csa_th[kk]
+                th1 = self.csa_th[kk+1]
+                cols.append('BS%d_%d'%(th,th1))
+
         return cols
   
     def get_cid(self):
@@ -323,10 +345,9 @@ class VasculaturePhenotypes(Phenotypes):
             vessel_radius = np.where(ratio < self.scale_radius_ratio_th, radius_scale ,0)
 
 
-
-          
-
         p_csa = self.compute_bv_profile_from_radius(vessel_radius)
+        p_peri = self.compute_bs_profile_from_radius(vessel_radius)
+
         n_points = np.sum(region_vessel_mask == True)
 
         #Set out profile set. This output can be used for plotting and additional analysis
@@ -334,21 +355,75 @@ class VasculaturePhenotypes(Phenotypes):
         
         # Compute blood volume phenotypes integrating along profile
         pheno_name = 'TBV'
-        tbv = self.integrate_volume(p_csa, self.min_csa, self.max_csa, n_points, self._dx)
+        if self.sum_operator:
+            tbv=self.sum_volume(vessel_radius,self.min_csa,self.max_csa,self._dx)
+        else:
+            tbv = self.integrate_profile(p_csa, self.min_csa, self.max_csa, n_points, self._dx)
         self.add_pheno([chest_region_name, chest_type_name], pheno_name, tbv)
 
         bv=dict()
-        th = self.csa_th[0]
-        pheno_name = 'BV%d' % th
-        bv[th] = self.integrate_volume(p_csa, self.min_csa, th, n_points, self._dx)
-        self.add_pheno([chest_region_name, chest_type_name], pheno_name, bv[th])
+        if self.legacy:
+            th = self.csa_th[0]
+            pheno_name = 'BV%d' % th
+            if self.sum_operator:
+                bv[th] = self.sum_volume(vessel_radius,self.min_csa,th,self._dx)
+            else:
+                bv[th] = self.integrate_profile(p_csa, self.min_csa, th, n_points, self._dx)
+            self.add_pheno([chest_region_name, chest_type_name], pheno_name, bv[th])
+        else:
+            for th in range(1,11):
+                pheno_name = 'BV%d' % th
+                if self.sum_operator:
+                    bv[th] = self.sum_volume(vessel_radius,self.min_csa,th,self._dx)
+                else:
+                    bv[th] = self.integrate_profile(p_csa, self.min_csa, th, n_points, self._dx)
+                self.add_pheno([chest_region_name, chest_type_name], pheno_name, bv[th])
 
         for kk in range(len(self.csa_th) - 1):
             th = self.csa_th[kk]
             th1 = self.csa_th[kk + 1]
             pheno_name = 'BV%d_%d' % (th, th1)
-            bv[th] = self.integrate_volume(p_csa, th, th1, n_points, self._dx)
+            if self.sum_operator:
+                bv[th] = self.sum_volume(vessel_radius,th,th1,self._dx)
+            else:
+                bv[th] = self.integrate_profile(p_csa, th, th1, n_points, self._dx)
             self.add_pheno([chest_region_name, chest_type_name], pheno_name, bv[th])
+
+        #Adding vascular lateral surface values
+        if self.legacy is False:
+            bsurf=dict()
+            pheno_name = 'TBS'
+            min_peri = 2.0*np.sqrt(np.pi*self.min_csa)
+            max_peri = 2.0*np.sqrt(np.pi*self.max_csa)
+            if self.sum_operator:
+                tbs = self.sum_surface(vessel_radius,min_peri,max_peri,self._dx)
+            else:
+                tbs = self.integrate_profile(p_peri, min_peri, max_peri, n_points, self._dx)
+            self.add_pheno([chest_region_name, chest_type_name], pheno_name, tbs)
+
+            for th in range(1,11):
+                pheno_name = 'BS%d' % th
+                min_peri = 2.0*np.sqrt(np.pi*self.min_csa)
+                th_peri = 2.0*np.sqrt(np.pi*th)
+                if self.sum_operator:
+                    bsurf[th] = self.sum_surface(vessel_radius,min_peri,th_peri,self._dx)
+                else:
+                    bsurf[th] = self.integrate_profile(p_peri, min_peri, th_peri, n_points, self._dx)
+                self.add_pheno([chest_region_name, chest_type_name], pheno_name, bsurf[th])
+
+            for kk in range(len(self.csa_th) - 1):
+                th = self.csa_th[kk]
+                th1 = self.csa_th[kk + 1]
+                pheno_name = 'BS%d_%d' % (th, th1)
+
+                th_peri = 2.0*np.sqrt(np.pi*th)
+                th1_peri = 2.0*np.sqrt(np.pi*th1)
+
+                if self.sum_operator:
+                    bsurf[th] = self.sum_surface(vessel_radius,th_peri,th1_peri,self._dx)
+                else:
+                    bsurf[th] = self.integrate_profile(p_peri, th_peri, th1_peri, n_points, self._dx)
+                self.add_pheno([chest_region_name, chest_type_name], pheno_name, bsurf[th])
 
         return profile
             
@@ -366,13 +441,39 @@ class VasculaturePhenotypes(Phenotypes):
         p_csa=kde.gaussian_kde(np.pi*radius_arr**2,bw_method=bw_value)
         return p_csa
 
-    def integrate_volume(self,kernel,min_x,max_x,N,dx):
+    def compute_bs_profile_from_radius(self,radius_arr):
+        #Do some automatic bandwithd estimation
+        if self.bw_method=='botev':
+          bw_value=self.botev_kde_bandwidth(2*np.pi*radius_arr)
+          print ("Using botev bw estimation with value=%f"%bw_value)
+        else:
+          bw_value=self.bw_method
+        p_peri=kde.gaussian_kde(2*np.pi*radius_arr,bw_method=bw_value)
+        return p_peri
+
+    def integrate_profile(self,kernel,min_x,max_x,N,dx):
         intval=quadrature(self.csa_times_pcsa,min_x,max_x,args=[kernel],maxiter=200)
         return dx*N*intval[0]
 
     def csa_times_pcsa(self,p,kernel):
-        
+
         return p*kernel[0].evaluate(p)
+
+    def sum_volume(self,radius_arr,min_csa,max_csa,dx):
+        csa_arr=np.pi*radius_arr**2
+        mask=(csa_arr>=min_csa) & (csa_arr<=max_csa)
+        vol=np.sum(csa_arr[mask])*dx
+        return vol
+
+    def sum_surface(self,radius_arr,min_peri,max_peri,dx):
+
+        peri_arr=2*np.pi*radius_arr
+        mask=(peri_arr>=min_peri) & (peri_arr<=max_peri)
+
+        surface_total=np.sum(peri_arr[mask])*dx
+
+        return surface_total
+
 
     def interparticle_distance(self,vessel):
         #Create locator
@@ -455,10 +556,16 @@ if __name__ == "__main__":
     parser.add_option('--filter_scale',
                       help='Used alongside --radius_name option. Uses scale info to compute phenotypes filtering particles that are \
                       out of ratio compare to dnn sizing  (Flag)',
-                      dest='filter_particles_with_scale_radius_ratio',action="store_true")
+                      dest='filter_particles_with_scale_radius_ratio',action="store_true",default=False)
     parser.add_option('--old_interparticle_distance',
                       help='Calculates interparticle distance from 5000 random particles. This mode is deprecated, now it uses all particles. (Flag)',
-                      dest='old_interparticle_distance',action="store_true")
+                      dest='old_interparticle_distance',action="store_true",default=False)
+    parser.add_option('--legacy_phenotypes',
+                        help='Revert to legacy phenotype convention that did not include finer increments of BV and BS metrics',
+                        dest='legacy_phenotypes',action="store_true",default=False)
+    parser.add_option('--sum_operator',
+                        help='Integrate volume and surface as sume of particle points instead of using a kernel density and a quadrature method',
+                        dest='sum_operator',action="store_true",default=False)
     parser.add_option('-s',
                         help='Spacing of the volume that was used to generate the particles (optional).\
                         This information is used if the spacing field of the particle\'s FieldData is not present.',
@@ -498,10 +605,11 @@ if __name__ == "__main__":
     else:
         spacing = np.array([0.625, 0.625, 0.625])
 
-    vasculature_pheno=VasculaturePhenotypes(chest_regions=regions,chest_types=types,pairs=pairs,plot=plot)
+    vasculature_pheno=VasculaturePhenotypes(chest_regions=regions,chest_types=types,pairs=pairs,plot=plot,legacy=options.legacy_phenotypes)
     vasculature_pheno.rad_arrayname=options.radius_array_name
     vasculature_pheno.filter_particles_with_scale_radius_ratio=options.filter_particles_with_scale_radius_ratio
     vasculature_pheno.old_interparticle_distance=options.old_interparticle_distance
+    vasculature_pheno.sum_operator=options.sum_operator
     v_df,figure,profiles=vasculature_pheno.execute(vessel,options.cid,spacing=spacing)
 
 
