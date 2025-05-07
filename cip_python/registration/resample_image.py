@@ -101,8 +101,8 @@ def main():
         "usage: given fixed and moving images, and a lis of "
         "ITK transformations, this script resample the moving image into the "
         "coordinate space defined by the reference image.\n"
-        "NOTE: First Tx passed is the last Tx applied, for emxaple, the"
-        " orden should be [Affine, FFD]")
+        "NOTE: Last Tx passed is the last Tx applied, for example, the"
+        " orden should be [FFD, Taffine] to implement D = FFD o Taffine")
     parser = argparse.ArgumentParser(description=usage)
     parser.add_argument('-r',
                         '--ref',
@@ -123,12 +123,12 @@ def main():
         '-t',
         '--transforms',
         nargs='+',
-        help="List of transformations, for example [Affine, FFD]",
+        help="List of transformations, for example -t FFD Taffine or -t [Taffine,-1] FFDinverse. [T,-1] implements the inverse of the transformation.",
         type=str,
         required=True)
     parser.add_argument("--interpolator", dest="interpolator", choices=['NearestNeighbor','Linear','BSpline','BSpline1','BSpline2','BSpline3','BSpline4','BSpline5',
         'WelchWindowedSinc','HammingWindowedSinc','CosineWindowedSinc','BlackmanWindowedSinc','LanczosWindowSinc'],default='Linear')
-    parser.add_argument('-c', '--correction', action='store_true')
+    parser.add_argument('-c', '--correction', action='store_true',help='Include intensity correction using the Jacobian')
     parser.add_argument('-oc', '--offset_correction', type=float, default=0)
 
     args = parser.parse_args()
