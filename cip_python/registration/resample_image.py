@@ -98,11 +98,18 @@ class ResampleImage():
 def main():
     import argparse
     usage = (
-        "usage: given fixed and moving images, and a lis of "
-        "ITK transformations, this script resample the moving image into the "
-        "coordinate space defined by the reference image.\n"
-        "NOTE: Last Tx passed is the last Tx applied, for example, the"
-        " orden should be [FFD, Taffine] to implement D = FFD o Taffine")
+    "Resample a moving image into the coordinate space defined by a fixed (reference) image "
+    "using a series of ITK-compatible transformations using the ITK Resampler.\n\n"
+    "Transform Ordering:\n"
+    "    Transforms are applied in the order they are listed, from first to last.\n"
+    "    This follows ITK convention: the *last* transform passed is the *last* applied.\n"
+    "    For example, to apply a displacement field after an affine transform, use:\n"
+    "        -t FFD Taffine\n"
+    "    This implements: D = FFD ∘ Taffine (i.e., Taffine is applied first, then FFD).\n\n"
+    "Inverse transforms:\n"
+    "    To apply the inverse of a transform, use the format [transform_file,1]\n"
+    "    Example: -t [Taffine.tfm,1] FFDinverse.tfm")
+
     parser = argparse.ArgumentParser(description=usage)
     parser.add_argument('-r',
                         '--ref',
@@ -123,7 +130,7 @@ def main():
         '-t',
         '--transforms',
         nargs='+',
-        help="List of transformations, for example -t FFD Taffine or -t [Taffine,-1] FFDinverse. [T,-1] implements the inverse of the transformation.",
+        help="List of transformations, for example -t FFD Taffine or -t [Taffine,1] FFDinverse. [T,1] implements the inverse of the transformation.",
         type=str,
         required=True)
     parser.add_argument("--interpolator", dest="interpolator", choices=['NearestNeighbor','Linear','BSpline','BSpline1','BSpline2','BSpline3','BSpline4','BSpline5',
