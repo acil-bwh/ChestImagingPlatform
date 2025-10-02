@@ -628,34 +628,34 @@ if __name__ == "__main__":
             raise ValueError("Lung pipeline requires both fixed and moving lung masks for registration.")
         else:
             final_transform,rigid_transform,reg_filter=reg_engine.pipeline_affine_lung_registration(fixed_image,moving_image,fixed_mask,moving_mask)
-
-    # Perform registration
-    if args.inverse:
-
-        if initial_transform is not None:
-            tmp_tt = sitk.AffineTransform(fixed_image.GetDimension())
-            tmp_tt.SetMatrix(initial_transform.GetMatrix())
-            tmp_tt.SetCenter(initial_transform.GetCenter())
-            tmp_tt.SetTranslation(initial_transform.GetTranslation())
-            initial_transform=tmp_tt.GetInverse()
-
-        final_transform,reg_filter = reg_engine.multiresolution_registration(moving_image,fixed_image, metric=args.metric,
-                                                       transform_type=args.transform_type, fixed_mask=moving_mask, moving_mask=fixed_mask,
-                                                       initial_transform=initial_transform,center_images=args.center_images,use_mask_to_center=args.use_mask_to_center,centering_type=args.centering_type,
-                                                       scaling_from_mask=args.scaling_from_mask,scaling_factor=args.scaling_factor)
-        if isinstance(final_transform,sitk.ScaleVersor3DTransform):
-            #Cast to a AffineTransform to compute the inverse
-            transform=sitk.AffineTransform(fixed_image.GetDimension())
-            transform.SetMatrix(final_transform.GetMatrix())  # Initialize the matrix from the initial transform
-            transform.SetTranslation(final_transform.GetTranslation())
-            transform.SetCenter(final_transform.GetCenter())
-            final_transform=transform.GetInverse()
-        else:
-            final_transform=final_transform.GetInverse()
-
     else:
+        # Perform registration
+        if args.inverse:
 
-        final_transform,reg_filter = reg_engine.multiresolution_registration(fixed_image, moving_image, metric=args.metric,
+            if initial_transform is not None:
+                tmp_tt = sitk.AffineTransform(fixed_image.GetDimension())
+                tmp_tt.SetMatrix(initial_transform.GetMatrix())
+                tmp_tt.SetCenter(initial_transform.GetCenter())
+                tmp_tt.SetTranslation(initial_transform.GetTranslation())
+                initial_transform=tmp_tt.GetInverse()
+
+            final_transform,reg_filter = reg_engine.multiresolution_registration(moving_image,fixed_image, metric=args.metric,
+                                                           transform_type=args.transform_type, fixed_mask=moving_mask, moving_mask=fixed_mask,
+                                                           initial_transform=initial_transform,center_images=args.center_images,use_mask_to_center=args.use_mask_to_center,centering_type=args.centering_type,
+                                                           scaling_from_mask=args.scaling_from_mask,scaling_factor=args.scaling_factor)
+            if isinstance(final_transform,sitk.ScaleVersor3DTransform):
+                #Cast to a AffineTransform to compute the inverse
+                transform=sitk.AffineTransform(fixed_image.GetDimension())
+                transform.SetMatrix(final_transform.GetMatrix())  # Initialize the matrix from the initial transform
+                transform.SetTranslation(final_transform.GetTranslation())
+                transform.SetCenter(final_transform.GetCenter())
+                final_transform=transform.GetInverse()
+            else:
+                final_transform=final_transform.GetInverse()
+
+        else:
+
+            final_transform,reg_filter = reg_engine.multiresolution_registration(fixed_image, moving_image, metric=args.metric,
                                                        transform_type=args.transform_type, fixed_mask=fixed_mask, moving_mask=moving_mask,
                                                        initial_transform=initial_transform,center_images=args.center_images,use_mask_to_center=args.use_mask_to_center,centering_type=args.centering_type,
                                                        scaling_from_mask=args.scaling_from_mask,scaling_factor=args.scaling_factor)
