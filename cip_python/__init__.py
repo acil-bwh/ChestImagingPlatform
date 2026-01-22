@@ -2,6 +2,7 @@
 # import input_output
 # import utils
 # import classification
+# import harmonization
 # import phenotypes
 # import particles
 # import visualization
