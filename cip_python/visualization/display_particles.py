@@ -2,7 +2,7 @@ import vtk
 import math
 import numpy as np
 from argparse import ArgumentParser
-from vtk.util.numpy_support import vtk_to_numpy
+from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 
 
 
@@ -33,6 +33,7 @@ class DisplayParticles:
         self.glyph_list = list()
         self.glyph_type = glyph_type
         self.smooth_glyphs  = smooth_glyphs
+        self.use_glyphMapper = False
         self.file_list = file_list
         self.spacing_list = spacing_list
         self.opacity_list = opacity_list
@@ -44,6 +45,7 @@ class DisplayParticles:
         self.use_field_data = use_field_data
         self.feature_type_list = feature_type_list
         self.units="%%"
+        self.units="mm"
         self.normal_map=dict()
         self.normal_map['ridge_line'] = "hevec0"
         self.normal_map['valley_line'] = "hevec2"
@@ -71,6 +73,8 @@ class DisplayParticles:
         elif feature_type == 'ridge_surface' or feature_type == 'valley_surface':
             self.height = 1.0
             self.radius = irad
+
+        self.resolution=10
   
         self.min_rad = min_rad
         self.max_rad = max_rad
@@ -180,20 +184,40 @@ class DisplayParticles:
             radiusA.SetValue(kk,rad)
 
         poly.GetPointData().SetScalars(radiusA)
+
+        # After rotating the cylinder, its long axis is X. Therefore:
+        #
+        #     X scale = 1       -> fixed cylinder height
+        #     Y scale = radius  -> radial scaling
+        #     Z scale = radius  -> radial scaling
+        #
+        # The source cylinder has radius 1 and height irad.
+
+        scale_vectors = np.column_stack(
+            (
+                np.ones(radiusA.GetNumberOfTuples(), dtype=np.float64),
+                vtk_to_numpy(radiusA),
+                vtk_to_numpy(radiusA)
+            )
+        )   
+        vtk_scales = numpy_to_vtk(scale_vectors, deep=True)
+        vtk_scales.SetName("GlyphScale")
+        poly.GetPointData().AddArray(vtk_scales)
+
         return poly
 
     def create_glyphs (self, poly):    
         if self.glyph_type == 'sphere':
             glyph = vtk.vtkSphereSource()
             glyph.SetRadius(1)
-            glyph.SetPhiResolution(8)
-            glyph.SetThetaResolution(8)
+            glyph.SetPhiResolution(self.resolution)
+            glyph.SetThetaResolution(self.resolution)
         elif self.glyph_type == 'cylinder':
             glyph = vtk.vtkCylinderSource()
             glyph.SetHeight(self.height)
             glyph.SetRadius(self.radius)
-            glyph.SetCenter(0,0,0)
-            glyph.SetResolution(10)
+            glyph.SetCenter(0.0,0.0,0.0)
+            glyph.SetResolution(self.resolution)
             glyph.CappingOff()
 
         tt = vtk.vtkTransform()
@@ -203,59 +227,142 @@ class DisplayParticles:
         tf.SetTransform(tt)
         tf.Update()
 
-#Alternative use of a Glypher that scales independently along X,Y or Z.
-#        try:
-#          glypher = vtk.vtkGlyph3DWithScaling()
-#          glypher.ScalingXOff()
-#          glypher.ScalingYOn()
-#          glypher.ScalingZOn()
-#        except NameError:
-#          glypher = vtk.vtkGlyph3D()
+        # #Alternative use of a Glypher that scales independently along X,Y or Z.
+        # try:
+        #     glypher = vtk.vtkGlyph3DWithScaling()
+        #     glypher.ScalingXOff()
+        #     glypher.ScalingYOn()
+        #     glypher.ScalingZOn()
+        # except NameError:
+        #     glypher = vtk.vtkGlyph3D()
 
-        glypher = vtk.vtkGlyph3D()
-        
-        print (glypher.GetClassName())
-        glypher.SetInputData(poly)
-        glypher.SetSourceConnection(tf.GetOutputPort())
-        glypher.SetVectorModeToUseNormal()
-        glypher.SetScaleModeToScaleByScalar()
-        glypher.SetScaleFactor(self.glyph_scale_factor)
-        glypher.Update()
 
-        if self.smooth_glyphs is True:
+        if self.use_glyphMapper:
+            mapper = vtk.vtkGlyph3DMapper()
+            mapper.SetInputData(poly)
+            mapper.SetSourceConnection(tf.GetOutputPort())
+            mapper.ScalingOn()
+            mapper.SetScaleModeToScaleByVectorComponents()
+            mapper.SetScaleArray("GlyphScale")
+            mapper.OrientOn()
+            orientation_array_name=poly.GetPointData().GetNormals().GetName()
+            mapper.SetOrientationArray(orientation_array_name)
+            mapper.SetScaleFactor(self.glyph_scale_factor)   
 
-            # Step 3: Merge nearby points to ensure connectivity
-            clean_filter = vtk.vtkCleanPolyData()
-            clean_filter.ConvertPolysToLinesOff()
-            clean_filter.PointMergingOn()
-            clean_filter.ToleranceIsAbsoluteOn()
-            clean_filter.SetTolerance(self.irad/2.0)
-            clean_filter.SetInputConnection(glypher.GetOutputPort())
-            clean_filter.Update()
-
-            # Step 4: Smooth the mesh
-            smooth_filter = vtk.vtkSmoothPolyDataFilter()
-            smooth_filter.SetInputConnection(clean_filter.GetOutputPort())
-            smooth_filter.SetNumberOfIterations(50)
-            smooth_filter.SetRelaxationFactor(0.3)
-            smooth_filter.FeatureEdgeSmoothingOn()
-            smooth_filter.BoundarySmoothingOn()
-            smooth_filter.Update()
-
-            smooth_filter = vtk.vtkWindowedSincPolyDataFilter()
-            smooth_filter.SetInputConnection(clean_filter.GetOutputPort())
-            smooth_filter.SetNumberOfIterations(30)
-            smooth_filter.BoundarySmoothingOn()
-            smooth_filter.NonManifoldSmoothingOn()
-            smooth_filter.NormalizeCoordinatesOn()
-            smooth_filter.Update()
-
-            return smooth_filter
-
+            return mapper
 
         else:
 
-            return glypher
+            glypher = vtk.vtkGlyph3D()
+            
+            print (glypher.GetClassName())
+            glypher.SetInputData(poly)
+            glypher.SetSourceConnection(tf.GetOutputPort())
+            # Orientation comes from point normals
+            glypher.OrientOn()
+            glypher.SetVectorModeToUseNormal()
+
+            #Isotropic scaling: Old code
+            glypher.SetScaleModeToScaleByScalar()
+            # Apply independent component scaling:
+            # scale = (1, radius, radius).
+            #glypher.SetScaleModeToScaleByVectorComponents()
+            glypher.SetScaleFactor(self.glyph_scale_factor)
+            glypher.Update()
+
+            #glypher=self.materialize_glyphs(poly,tf.GetOutputPort())
+
+            if self.smooth_glyphs is True:
+
+                # Step 3: Merge nearby points to ensure connectivity
+                clean_filter = vtk.vtkCleanPolyData()
+                clean_filter.ConvertPolysToLinesOff()
+                clean_filter.PointMergingOn()
+                clean_filter.ToleranceIsAbsoluteOn()
+                clean_filter.SetTolerance(self.irad/2.0)
+                clean_filter.SetInputConnection(glypher.GetOutputPort())
+                clean_filter.Update()
+
+                # Step 4: Smooth the mesh
+                smooth_filter = vtk.vtkSmoothPolyDataFilter()
+                smooth_filter.SetInputConnection(clean_filter.GetOutputPort())
+                smooth_filter.SetNumberOfIterations(50)
+                smooth_filter.SetRelaxationFactor(0.3)
+                smooth_filter.FeatureEdgeSmoothingOn()
+                smooth_filter.BoundarySmoothingOn()
+                smooth_filter.Update()
+
+                smooth_filter = vtk.vtkWindowedSincPolyDataFilter()
+                smooth_filter.SetInputConnection(clean_filter.GetOutputPort())
+                smooth_filter.SetNumberOfIterations(30)
+                smooth_filter.BoundarySmoothingOn()
+                smooth_filter.NonManifoldSmoothingOn()
+                smooth_filter.NormalizeCoordinatesOn()
+                smooth_filter.Update()
+
+                return smooth_filter
+
+            else:
+
+                return glypher
+
+
+    def materialize_glyphs(self,poly, source_polydata, scale_name="GlyphScale"):
+
+        #Orientation is in normals
+        pd = poly.GetPointData()
+        scales = vtk_to_numpy(pd.GetArray(scale_name))
+        orientations = vtk_to_numpy(pd.GetNormals())
+        append = vtk.vtkAppendPolyData()
+        for i in range(poly.GetNumberOfPoints()):
+            px, py, pz = poly.GetPoint(i)
+            sx, sy, sz = scales[i]
+            direction = orientations[i]
+            transform = vtk.vtkTransform()
+            # Apply scaling in source coordinates
+            transform.Scale(sx, sy, sz)
+            # rotate source X axis to direction
+            d = direction / np.linalg.norm(direction)
+            x_axis = np.array([1.0, 0.0, 0.0])
+            axis = np.cross(x_axis, d)
+            dot = np.clip(np.dot(x_axis, d), -1.0, 1.0)
+            angle = np.degrees(np.arccos(dot))
+
+            if np.linalg.norm(axis) > 1e-8:
+                axis /= np.linalg.norm(axis)
+                transform.RotateWXYZ(angle, *axis)
+            
+            transform.Translate(px, py, pz)
+            tf = vtk.vtkTransformPolyDataFilter()
+            tf.SetInputConnection(source_polydata)
+            tf.SetTransform(transform)
+            tf.Update()
+                    
+            glyph_poly = vtk.vtkPolyData()
+            glyph_poly.DeepCopy(tf.GetOutput())
+
+            # ------------------------------------
+            # Copy scalar value to every
+            # point in this glyph
+            # ------------------------------------
+            scalar_value = sy
+            glyph_scalars = vtk.vtkDoubleArray()
+            glyph_scalars.SetName("Radius")
+
+            glyph_scalars.SetNumberOfComponents(1)
+            glyph_scalars.SetNumberOfTuples(
+                glyph_poly.GetNumberOfPoints()
+            )
+
+            glyph_scalars.Fill(float(scalar_value))
+            glyph_poly.GetPointData().AddArray(glyph_scalars)
+            append.AddInputData(glyph_poly)
+
+        append.Update()
+        return append
+        #output = vtk.vtkPolyData()
+        #output.ShallowCopy(append.GetOutput())
+        #return output
 
 
     def create_lut (self, lut_arr):
@@ -270,16 +377,39 @@ class DisplayParticles:
 
         return lut
 
+    def output_port_to_polydata(output_port):
+        producer = output_port.GetProducer()
+        producer.Update()
+        output = producer.GetOutputDataObject(
+            output_port.GetIndex()
+        )
+        return vtk.vtkPolyData.SafeDownCast(output)
+
     def create_actor (self, glyph , opacity=1,color=[0.1,0.1,0.1],color_by_array_name=None,lut=None):
-        mapper=vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(glyph.GetOutputPort())
+        #Accomodate the option if glpy is indeed a Glyp3DMapper otherwise create a vtkPolyDataMapper
+        if isinstance(glyph, vtk.vtkGlyph3DMapper):
+            mapper=glyph
+        else:
+            mapper=vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(glyph.GetOutputPort())
+        
         mapper.SetColorModeToMapScalars()
         if color_by_array_name is not None:
-            glyph.GetOutput().GetPointData().SetScalars(glyph.GetOutput().GetPointData().GetArray(color_by_array_name))
-            aa=glyph.GetOutput().GetPointData().GetArray(color_by_array_name)
-            range_val=aa.GetRange()
+            #glyph_pd=glyph.GetOutput()
+            glyph_pd = mapper.GetInput()
+            color_array=glyph_pd.GetPointData().GetArray(color_by_array_name)
+            if color_array is None:
+                raise ValueError(
+                    f"Color array '{color_by_array_name}' "
+                    f"not found in input polydata"
+                )
+            
+            range_val=color_array.GetRange()
             mapper.SetScalarRange(range_val[0],range_val[1])
-            mapper.SetScalarRange(18,35)
+            #mapper.SetScalarRange(18,35)
+            mapper.SetScalarModetoUsePointFieldData()
+            mapper.SetColorArray(color_by_array_name)
+            #glyph_pd.GetPointData().SetScalars(glyph_pd.GetPointData().GetArray(color_by_array_name))
 
             if lut is not None:
               mapper.SetLookupTable(lut)
@@ -337,14 +467,93 @@ class DisplayParticles:
         ]
 
         print("Setting camera")
-
         print(mean_center)
 
         #Set initial camera view 
         camera=self.ren.GetActiveCamera()
         camera.SetFocalPoint(mean_center[0], mean_center[1], mean_center[2])
-        camera.SetPosition(mean_center[0], mean_center[1] - 500, mean_center[2])
+        camera.SetPosition(mean_center[0] - 500, mean_center[1], mean_center[2])
         camera.SetViewUp(0,0,1)
+
+    def set_camera_view(self, view):
+        camera = self.ren.GetActiveCamera()
+        # Get center of all visible actors
+        bounds = self.ren.ComputeVisiblePropBounds()
+        center = [
+            (bounds[0] + bounds[1]) / 2.0,
+            (bounds[2] + bounds[3]) / 2.0,
+            (bounds[4] + bounds[5]) / 2.0,
+        ]
+
+        # Use object size to determine camera distance
+        size_x = bounds[1] - bounds[0]
+        size_y = bounds[3] - bounds[2]
+        size_z = bounds[5] - bounds[4]
+
+        distance = 2.0 * max(size_x, size_y, size_z)
+        cx, cy, cz = center
+        camera.SetFocalPoint(cx, cy, cz)
+        if view == "sagittal":
+            # LPS:
+            # X = Left
+            # Y = Posterior
+            # Z = Superior
+
+            # Looking from patient's right toward left
+            camera.SetPosition(cx - distance, cy, cz)
+            camera.SetViewUp(0, 0, 1)
+
+        elif view == "coronal":
+            # Looking from anterior toward posterior
+            camera.SetPosition(cx, cy - distance, cz)
+            camera.SetViewUp(0, 0, 1)
+
+        elif view == "axial":
+            # Looking from inferior toward superior
+            camera.SetPosition(cx, cy, cz - distance)
+            # Need Y direction as the screen vertical orientation
+            camera.SetViewUp(0, -1, 0)
+        else:
+            raise ValueError(
+                f"Unknown camera view: {view}"
+            )
+
+        camera.OrthogonalizeViewUp()
+        # Optional, but for anatomical views I generally recommend
+        # parallel projection instead of perspective.
+        camera.ParallelProjectionOn()
+        self.ren.ResetCamera()
+        self.ren.ResetCameraClippingRange()
+        self.renWin.Render()
+
+    def flip_camera(self):
+        camera = self.ren.GetActiveCamera()
+        # Get center of all visible actors
+        bounds = self.ren.ComputeVisiblePropBounds()
+        center = [
+            (bounds[0] + bounds[1]) / 2.0,
+            (bounds[2] + bounds[3]) / 2.0,
+            (bounds[4] + bounds[5]) / 2.0,
+        ]
+
+        # Use object size to determine camera distance
+        size_x = bounds[1] - bounds[0]
+        size_y = bounds[3] - bounds[2]
+        size_z = bounds[5] - bounds[4]
+
+        distance = 2.0 * max(size_x, size_y, size_z)
+        cx, cy, cz = center
+        camera_pos=camera.GetPosition()
+        camera_new_pos=-1.0*(np.array(camera_pos) - np.array([cx,cy,cz]))+np.array([cx,cy,cz])
+        camera.SetPosition(camera_new_pos[0],camera_new_pos[1],camera_new_pos[2])
+
+        camera.OrthogonalizeViewUp()
+        # Optional, but for anatomical views I generally recommend
+        # parallel projection instead of perspective.
+        camera.ParallelProjectionOn()
+        self.ren.ResetCamera()
+        self.ren.ResetCameraClippingRange()
+        self.renWin.Render()
 
     def add_color_bar(self):
         colorbar=vtk.vtkScalarBarActor()
@@ -370,7 +579,6 @@ class DisplayParticles:
 
         # create a renderwindowinteractor
         self.iren.SetRenderWindow(self.renWin)
-
         self.iren.SetPicker(self.picker)
 
         # add actor
@@ -384,10 +592,7 @@ class DisplayParticles:
 
         #Set initial camera view 
         self.set_camera()
-        
         self.renWin.Render()
-
-
         self.iren.Start()
 
 
@@ -451,7 +656,7 @@ class DisplayParticles:
 
                 tf=vtk.vtkTransformPolyDataFilter()
                 tf.SetTransform(tt)
-                tf.SetInputData(glypher.GetOutput())
+                tf.SetInputData(glypher)
                 tf.SetTransform(tt)
                 tf.Update()
                 writer=vtk.vtkPolyDataWriter()
@@ -484,36 +689,45 @@ class DisplayParticles:
           self.render()
         
     def capture_window(self,obj, event):
-      if self.capture_prefix == "":
-        return
-      key = obj.GetKeySym()
-      print ("Key press "+key)
-      if key == "s":
-        ff = vtk.vtkWindowToImageFilter()
-        sf = vtk.vtkPNGWriter()
-        
-        ff.SetInput(self.renWin)
-        ff.SetMagnification(4)
-        sf.SetInputData(ff.GetOutput())
-        sf.SetFileName(self.capture_prefix+ "%03d.png" % self.capture_count )
-        self.renWin.Render()
-        ff.Modified()
-        sf.Write()
-        self.capture_count = 1+self.capture_count
-      if key == "c":
-        camera=self.ren.GetActiveCamera()
+        key = obj.GetKeySym()
+        #print ("Key press "+key)
+        if key == "s" and self.capture_prefix != "":
+            ff = vtk.vtkWindowToImageFilter()
+            sf = vtk.vtkPNGWriter()
+            
+            ff.SetInput(self.renWin)
+            ff.SetMagnification(4)
+            sf.SetInputData(ff.GetOutput())
+            sf.SetFileName(self.capture_prefix+ "%03d.png" % self.capture_count )
+            self.renWin.Render()
+            ff.Modified()
+            sf.Write()
+            self.capture_count = 1+self.capture_count
+        #Print current camera settings
+        elif key == "p":
+            camera=self.ren.GetActiveCamera()
 
-        # Extract camera orientation details
-        camera_position = camera.GetPosition()
-        camera_focal_point = camera.GetFocalPoint()
-        camera_view_up = camera.GetViewUp()
-        # Print the camera orientation details
-        print("Camera Position:", camera_position)
-        print("Camera Focal Point:", camera_focal_point)
-        print("Camera View-Up Vector:", camera_view_up)
-
-
-
+            # Extract camera orientation details
+            camera_position = camera.GetPosition()
+            camera_focal_point = camera.GetFocalPoint()
+            camera_view_up = camera.GetViewUp()
+            # Print the camera orientation details
+            print("Camera Position:", camera_position)
+            print("Camera Focal Point:", camera_focal_point)
+            print("Camera View-Up Vector:", camera_view_up)
+        # Axial
+        elif key == "a":
+            self.set_camera_view("axial")
+        # Coronal
+        elif key == "c":
+            self.set_camera_view("coronal")
+        # Sagittal
+        elif key == "g":
+            self.set_camera_view("sagittal")
+        #Flip the direction of the view
+        elif key == "f":
+            self.flip_camera()
+    
 
 if __name__ == "__main__":
     desc=" Visualization of particles vtk files"
