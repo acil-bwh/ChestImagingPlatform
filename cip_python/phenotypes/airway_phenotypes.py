@@ -246,11 +246,20 @@ class AirwayPhenotypes(Phenotypes):
     def mask_from_metrics(self,mean_metrics,ellip_metrics):
         num_points= mean_metrics.shape[0]
         metrics_mask = np.zeros((num_points,),dtype=bool)
-        #Apply the trivial solution for now.
-        #We could implement problem specific thresholds
-        metrics_mask[:]=True
+
+        #Extract ellise info.
+        ai = ellip_metrics[:, 1]
+        bi = ellip_metrics[:, 0]
+        ao = ellip_metrics[:, 4]
+        bo = ellip_metrics[:, 3]
+
+        # Select points with non-degenerated ellipse fitting
+        # Find points with proper ellipse fitting (outer area > inner area)
+        delta_ellipse_r2 = (ao * bo - ai * bi)
+        metrics_mask = delta_ellipse_r2 > 0
 
         return metrics_mask
+
     def add_pheno_group(self, a_pd, mask, keep_mask, chest_region,
                         chest_type, phenos_to_compute):
         """This function computes phenotypes and adds them to the dataframe with
@@ -350,20 +359,6 @@ class AirwayPhenotypes(Phenotypes):
             if mask_sum==0:
                 continue
 
-            ai = ellip_metrics[:,1]
-            bi = ellip_metrics[:,0]
-            ao = ellip_metrics[:,4]
-            bo = ellip_metrics[:,3]
-
-            #Select points with non-degenerated ellipse fitting
-            #Find points with proper ellipse fitting (outer area > inner area)
-            delta_ellipse_r2=(ao * bo - ai * bi)
-            mask_ellipse=delta_ellipse_r2>0
-            ai=ai[mask_ellipse]
-            bi=bi[mask_ellipse]
-            ao=ao[mask_ellipse]
-            bo=bo[mask_ellipse]
-            
             #Setting up regressor for Pi10 and Pi15 metrics
             sqrtwa = np.sqrt(np.pi * (ao * bo - ai * bi))
             peri = self.ellipse_perimeter(ai,bi)
