@@ -110,7 +110,7 @@ class botev_bandwidth(object):
         a2 = self.large_float(a2)
         f = 2 * np.pi ** (2 * l) * np.sum(I ** l * a2 * \
                                         np.exp(-I * np.pi ** 2 * t))
-        for s in xrange(l, 1, -1):
+        for s in range(l, 1, -1):
             K0 = np.prod(np.arange(1, 2 * s, 2)) / np.sqrt(2 * np.pi)
             const = (1 + (1 / 2) ** (s + 1 / 2)) / 3
             time = (2 * const * K0 / M / f) ** (2 / (3 + 2 * s))
