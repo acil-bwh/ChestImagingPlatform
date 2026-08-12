@@ -48,7 +48,7 @@ class VasculaturePhenotypes(Phenotypes):
         self.factor=0.16
         self.scale_radius_ratio_th = 3
         self.filter_particles_with_scale_radius_ratio=False
-        self.old_interarticle_distance=False
+        self.old_interparticle_distance=False
         
         #Method to do KDE of prob(CSA)
         self.bw_method='scott'  #options are scott,botev,silverman or a value
