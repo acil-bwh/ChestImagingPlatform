@@ -121,7 +121,7 @@ cipParticlesToStenciledLabelMapImageFilter< TInputImage >
       if ( this->ScaleStencilPatternByParticleScale )
         {
           double scale = this->ParticlesData->GetPointData()->GetArray("scale")->GetTuple(i)[0];
-          double tempRadius = std::sqrt(2.0)*std::sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
+          double tempRadius = std::sqrt( pow( scale, 2 ) + pow( this->CTPointSpreadFunctionSigma, 2 ) );
 
           this->Stencil->SetRadius( tempRadius );
         }
